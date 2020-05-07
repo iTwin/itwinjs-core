@@ -6,11 +6,10 @@
  * @module AccuDraw
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-import { Button, ButtonType, ButtonProps, Omit } from "@bentley/ui-core";
-
 import "./SquareButton.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { Button, ButtonProps, ButtonType, Omit } from "@bentley/ui-core";
 
 /** @alpha */
 export interface SquareButtonProps extends Omit<ButtonProps, "size" | "buttonType"> { }

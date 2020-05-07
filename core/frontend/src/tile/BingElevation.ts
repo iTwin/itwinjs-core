@@ -2,21 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
-import { Range3d, Range1d, Point3d, Point2d, Range2d, Angle, BilinearPatch } from "@bentley/geometry-core";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { QParams3d, QPoint3d, TextureMapping, RenderTexture, ColorDef, LinePixels, FillFlags } from "@bentley/imodeljs-common";
-import { Mesh, MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
+import { BilinearPatch, Point2d, Point3d, Range1d, Range2d, Range3d } from "@bentley/geometry-core";
+import { Cartographic, ColorDef, FillFlags, LinePixels, QParams3d, QPoint3d, RenderTexture, TextureMapping } from "@bentley/imodeljs-common";
+import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { IModelConnection } from "../IModelConnection";
 import { DisplayParams } from "../render/primitives/DisplayParams";
+import { Mesh, MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
 import { VertexKey } from "../render/primitives/VertexKey";
 import { MeshParams } from "../render/primitives/VertexTable";
-import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
-import { IModelConnection } from "../IModelConnection";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
+
+// cspell:ignore atae qdng uyzv auje sealevel
 
 /** @internal */
 export class BingElevationProvider {
@@ -39,6 +42,16 @@ export class BingElevationProvider {
     this._seaLevelOffsetRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/SeaLevel?points={points}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
     this._heightListRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
   }
+  public async getHeight(carto: Cartographic, geodetic = true) {
+    const requestUrl = this._heightListRequestTemplate.replace("{points}", carto.latitudeDegrees + "," + carto.longitudeDegrees).replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
+    const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
+    try {
+      const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
+      return tileResponse.body.resourceSets[0].resources[0].elevations[0];
+    } catch (error) {
+      return 0.0;
+    }
+  }
   public async getHeights(range: Range2d) {
     const boundingBox = range.low.y + "," + range.low.x + "," + range.high.y + "," + range.high.x;
     const requestUrl = this._heightRangeRequestTemplate.replace("{boundingBox}", boundingBox);
@@ -52,7 +65,7 @@ export class BingElevationProvider {
   }
   public async getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number> {
     const carto = iModel.spatialToCartographicFromEcef(point);
-    const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", Angle.radiansToDegrees(carto.latitude) + "," + Angle.radiansToDegrees(carto.longitude));
+    const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", carto.latitudeDegrees + "," + carto.longitudeDegrees);
     const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
       const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
@@ -62,15 +75,7 @@ export class BingElevationProvider {
     }
   }
   public async getHeightValue(point: Point3d, iModel: IModelConnection, geodetic = true): Promise<number> {
-    const carto = iModel.spatialToCartographicFromEcef(point);
-    const requestUrl = this._heightListRequestTemplate.replace("{points}", Angle.radiansToDegrees(carto.latitude) + "," + Angle.radiansToDegrees(carto.longitude)).replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
-    const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
-    try {
-      const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
-      return tileResponse.body.resourceSets[0].resources[0].elevations[0];
-    } catch (error) {
-      return 0.0;
-    }
+    return this.getHeight(iModel.spatialToCartographicFromEcef(point), geodetic);
   }
 
   public async getHeightRange(iModel: IModelConnection) {
@@ -79,7 +84,7 @@ export class BingElevationProvider {
     range.expandInPlace(1000.);         // Expand for project surroundings.
     for (const corner of range.corners()) {
       const carto = iModel.spatialToCartographicFromEcef(corner);
-      latLongRange.extendXY(Angle.radiansToDegrees(carto.longitude), Angle.radiansToDegrees(carto.latitude));
+      latLongRange.extendXY(carto.longitudeDegrees, carto.latitudeDegrees);
     }
     const heights = await this.getHeights(latLongRange);
     return Range1d.createArray(heights);
@@ -89,7 +94,7 @@ export class BingElevationProvider {
     const latLongRange = Range2d.createNull();
     for (const corner of iModel.projectExtents.corners()) {
       const carto = iModel.spatialToCartographicFromEcef(corner);
-      latLongRange.extendXY(Angle.radiansToDegrees(carto.longitude), Angle.radiansToDegrees(carto.latitude));
+      latLongRange.extendXY(carto.longitudeDegrees, carto.latitudeDegrees);
     }
     const heights = await this.getHeights(latLongRange);
     let total = 0.0;
@@ -104,7 +109,7 @@ export class BingElevationProvider {
     const patch = new BilinearPatch(corners[0], corners[1], corners[2], corners[3]);
     const textureParams = new TextureMapping.Params({ mapMode: TextureMapping.Mode.Parametric });
     const textureMapping = new TextureMapping(texture!, textureParams);
-    const displayParams = new DisplayParams(DisplayParams.Type.Mesh, ColorDef.white.clone(), ColorDef.white.clone(), 0.0, LinePixels.Solid, FillFlags.None, undefined, undefined, false, textureMapping);
+    const displayParams = new DisplayParams(DisplayParams.Type.Mesh, ColorDef.white, ColorDef.white, 0.0, LinePixels.Solid, FillFlags.None, undefined, undefined, false, textureMapping);
     BingElevationProvider._scratchRange.setNull();
     BingElevationProvider._scratchRange.extendArray(corners);
     BingElevationProvider._scratchRange.low.z = 10E8;
@@ -136,9 +141,9 @@ export class BingElevationProvider {
     }
     BingElevationProvider._scratchUV.y = 0.0;
     const delta = 1.0 / sizeM1;
-    for (let row = 0; row < size; row++ , BingElevationProvider._scratchUV.y += delta) {
+    for (let row = 0; row < size; row++, BingElevationProvider._scratchUV.y += delta) {
       BingElevationProvider._scratchUV.x = 0;
-      for (let col = 0; col < size; col++ , BingElevationProvider._scratchUV.x += delta) {
+      for (let col = 0; col < size; col++, BingElevationProvider._scratchUV.x += delta) {
         patch.uvFractionToPoint(BingElevationProvider._scratchUV.x, BingElevationProvider._scratchUV.y, BingElevationProvider._scratchPoint);
         BingElevationProvider._scratchPoint.z = groundBias + heights[(sizeM1 - row) * size + col];
         BingElevationProvider._scratchQPoint.init(BingElevationProvider._scratchPoint, BingElevationProvider._scratchQParams);

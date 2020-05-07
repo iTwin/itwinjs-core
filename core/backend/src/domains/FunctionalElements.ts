@@ -7,7 +7,9 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { FunctionalElementProps, IModel, InformationPartitionElementProps, ModelProps, RelatedElement, TypeDefinitionElementProps } from "@bentley/imodeljs-common";
+import {
+  FunctionalElementProps, IModel, InformationPartitionElementProps, ModelProps, RelatedElement, TypeDefinitionElementProps,
+} from "@bentley/imodeljs-common";
 import { InformationPartitionElement, RoleElement, TypeDefinitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { RoleModel } from "../Model";

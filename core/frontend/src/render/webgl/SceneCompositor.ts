@@ -6,48 +6,38 @@
  * @module WebGL
  */
 
-import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
-import { TextureHandle } from "./Texture";
-import { Target } from "./Target";
-import {
-  AmbientOcclusionGeometry,
-  BlurGeometry,
-  BoundaryType,
-  CachedGeometry,
-  CompositeGeometry,
-  CopyPickBufferGeometry,
-  ScreenPointsGeometry,
-  SingleTexturedViewportQuadGeometry,
-  ViewportQuadGeometry,
-  VolumeClassifierGeometry,
-} from "./CachedGeometry";
-import { Vector2d, Vector3d, Transform } from "@bentley/geometry-core";
-import { TechniqueId } from "./TechniqueId";
-import { System, RenderType, DepthType } from "./System";
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import { Transform, Vector2d, Vector3d } from "@bentley/geometry-core";
+import { Feature, PackedFeatureTable, RenderMode, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { DepthType, RenderType } from "@bentley/webgl-compatibility";
+import { IModelConnection } from "../../IModelConnection";
+import { SceneContext } from "../../ViewContext";
+import { ViewRect } from "../../ViewRect";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
-import { RenderMemory } from "../RenderSystem";
-import { ViewRect } from "../../ViewRect";
-import { IModelConnection } from "../../IModelConnection";
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { GL } from "./GL";
-import {
-  DrawCommands,
-  extractFlashedVolumeClassifierCommands,
-  extractHilitedVolumeClassifierCommands,
-} from "./DrawCommand";
-import { RenderCommands } from "./RenderCommands";
-import { RenderState } from "./RenderState";
-import { CompositeFlags, RenderPass, RenderOrder, TextureUnit } from "./RenderFlags";
+import { RenderMemory } from "../RenderMemory";
 import { BatchState, BranchState } from "./BranchState";
-import { Feature, ViewFlags, PackedFeatureTable, RenderMode, SpatialClassificationProps } from "@bentley/imodeljs-common";
-import { FloatRgba } from "./FloatRGBA";
+import {
+  AmbientOcclusionGeometry, BlurGeometry, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, ScreenPointsGeometry,
+  SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
+} from "./CachedGeometry";
 import { Debug } from "./Diagnostics";
+import { WebGLDisposable } from "./Disposable";
+import { DrawCommands, extractFlashedVolumeClassifierCommands, extractHilitedVolumeClassifierCommands } from "./DrawCommand";
+import { FloatRgba } from "./FloatRGBA";
+import { DepthBuffer, FrameBuffer } from "./FrameBuffer";
+import { GL } from "./GL";
+import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
+import { Matrix4 } from "./Matrix";
+import { RenderCommands } from "./RenderCommands";
+import { CompositeFlags, RenderOrder, RenderPass, TextureUnit } from "./RenderFlags";
+import { RenderState } from "./RenderState";
 import { getDrawParams } from "./ScratchDrawParams";
 import { SolarShadowMap } from "./SolarShadowMap";
-import { SceneContext } from "../../ViewContext";
-import { WebGLDisposable } from "./Disposable";
-import { Matrix4 } from "./Matrix";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
+import { TextureHandle } from "./Texture";
 
 function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -472,6 +462,7 @@ class PixelBuffer implements Pixel.Buffer {
             geometryType = Pixel.GeometryType.None;
             planarity = Pixel.Planarity.None;
             break;
+          case RenderOrder.Background:
           case RenderOrder.BlankingRegion:
           case RenderOrder.LitSurface:
           case RenderOrder.UnlitSurface:
@@ -786,6 +777,15 @@ abstract class Compositor extends SceneCompositor {
     this.target.beginPerfMetricRecord("Render Opaque Layers");
     this.renderLayers(commands, needComposite, RenderPass.OpaqueLayers);
     this.target.endPerfMetricRecord();
+
+    // Render opaque geometry
+    IModelFrameLifecycle.onRenderOpaque.raiseEvent({
+      commands,
+      needComposite,
+      compositeFlags,
+      fbo: this.getBackgroundFbo(needComposite),
+      frameBufferStack: System.instance.frameBufferStack,
+    });
 
     // Render opaque geometry
     this.target.beginPerfMetricRecord("Render Opaque");
@@ -1136,20 +1136,30 @@ abstract class Compositor extends SceneCompositor {
   }
 
   private renderVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
-    // We need to render the classifier stencil volumes one at a time,
-    // so draw them from the cmdsByIndex list which is organized as follows for each primitive:
-    // push branch
-    //  push batch
-    //    draw primitive
-    //  pop batch
-    // pop branch
-    const numCmdsPerClassifier = 5;
-
+    // Sometimes we need to render the classifier stencil volumes one at a time, if so draw them from the cmdsByIndex list
     const cmds = commands.getCommands(RenderPass.Classification);
     const cmdsByIndex = commands.getCommands(RenderPass.ClassificationByIndex);
+    let numCmdsPerClassifier = 0;
+    for (const cmd of cmdsByIndex) { // Figure out how many commands there are per index/primitive
+      numCmdsPerClassifier++;
+      if ("drawPrimitive" === cmd.opcode) {
+        numCmdsPerClassifier += numCmdsPerClassifier - 1;
+        break;
+      }
+    }
     const cmdsForVC = commands.getCommands(RenderPass.VolumeClassifiedRealityData);
     if (!this.target.activeVolumeClassifierProps || (renderForReadPixels && 0 === cmds.length) || 0 === cmdsForVC.length)
       return;
+
+    let outsideFlags = this.target.activeVolumeClassifierProps!.flags.outside;
+    let insideFlags = this.target.activeVolumeClassifierProps!.flags.inside;
+
+    if (this.target.wantThematicDisplay) {
+      if (outsideFlags !== SpatialClassificationProps.Display.Off)
+        outsideFlags = SpatialClassificationProps.Display.On;
+      if (insideFlags !== SpatialClassificationProps.Display.Off)
+        insideFlags = SpatialClassificationProps.Display.On;
+    }
 
     // Render the geometry which we are going to classify.
     this.renderForVolumeClassification(commands, compositeFlags, renderForReadPixels);
@@ -1191,9 +1201,9 @@ abstract class Compositor extends SceneCompositor {
       return;
     }
 
-    const needOutsideDraw = SpatialClassificationProps.Display.On !== this.target.activeVolumeClassifierProps!.flags.outside;
-    const needInsideDraw = SpatialClassificationProps.Display.On !== this.target.activeVolumeClassifierProps!.flags.inside;
-    const doColorByElement = SpatialClassificationProps.Display.ElementColor === this.target.activeVolumeClassifierProps!.flags.inside || renderForReadPixels;
+    const needOutsideDraw = SpatialClassificationProps.Display.On !== outsideFlags;
+    const needInsideDraw = SpatialClassificationProps.Display.On !== insideFlags;
+    const doColorByElement = SpatialClassificationProps.Display.ElementColor === insideFlags || renderForReadPixels;
     const doColorByElementForIntersectingVolumes = this.target.vcSupportIntersectingVolumes;
     const needAltZ = (doColorByElement && !doColorByElementForIntersectingVolumes) || needOutsideDraw;
     let zOnlyFbo = this._frameBuffers.stencilSet;
@@ -1373,8 +1383,8 @@ abstract class Compositor extends SceneCompositor {
     // and we don't really want another whole set of hilite shaders just for this.
     const cmdsSelected = extractHilitedVolumeClassifierCommands(this.target.hilites, commands.getCommands(RenderPass.HiliteClassification));
     commands.replaceCommands(RenderPass.HiliteClassification, cmdsSelected); // replace the hilite command list for use in hilite pass as well.
-    // if (cmdsSelected.length > 0 && this.target.activeVolumeClassifierProps!.flags.inside !== this.target.activeVolumeClassifierProps!.flags.selected) {
-    if (!doColorByElement && cmdsSelected.length > 0 && this.target.activeVolumeClassifierProps!.flags.inside !== SpatialClassificationProps.Display.Hilite) { // assume selected ones are always hilited
+    // if (cmdsSelected.length > 0 && insideFlags !== this.target.activeVolumeClassifierProps!.flags.selected) {
+    if (!doColorByElement && cmdsSelected.length > 0 && insideFlags !== SpatialClassificationProps.Display.Hilite) { // assume selected ones are always hilited
       // Set the stencil using just the hilited volume classifiers.
       fbStack.execute(this._frameBuffers.stencilSet!, false, () => {
         this.target.pushState(this._vcBranchState!);
@@ -1415,7 +1425,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Process the flashed classifier if there is one.
     // Like the selected volumes, we do not need to do this step if we used by-element-color since the flashing is included in the element color.
-    const flashedClassifierCmds = extractFlashedVolumeClassifierCommands(this.target.flashedId, cmdsByIndex);
+    const flashedClassifierCmds = extractFlashedVolumeClassifierCommands(this.target.flashedId, cmdsByIndex, numCmdsPerClassifier);
     if (undefined !== flashedClassifierCmds && !doColorByElement) {
       // Set the stencil for this one classifier.
       fbStack.execute(this._frameBuffers.stencilSet!, false, () => {
@@ -1706,6 +1716,14 @@ class MRTCompositor extends Compositor {
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
       if (needAO || renderForReadPixels) {
         this.drawPass(commands, RenderPass.OpaqueGeneral, true);
+
+        if (renderForReadPixels && 0 < commands.getCommands(RenderPass.BackgroundMap).length) {
+          // Draw background map last for readPixels. Tell shader to discard surface if anything at all is already in pick buffer.
+          this.target.drawingBackgroundForReadPixels = true;
+          this.drawPass(commands, RenderPass.OpaqueGeneral, true, RenderPass.BackgroundMap);
+          this.target.drawingBackgroundForReadPixels = false;
+        }
+
         if (needAO)
           this.renderAmbientOcclusion();
       }
@@ -1927,6 +1945,14 @@ class MPCompositor extends Compositor {
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);
     if (renderForReadPixels || needAO) {
       this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true);
+
+      if (renderForReadPixels && 0 < commands.getCommands(RenderPass.BackgroundMap).length) {
+        // Draw background map last for readPixels. Tell shader to discard surface if anything at all is already in pick buffer.
+        this.target.drawingBackgroundForReadPixels = true;
+        this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true, RenderPass.BackgroundMap);
+        this.target.drawingBackgroundForReadPixels = false;
+      }
+
       if (needAO)
         this.renderAmbientOcclusion();
     }

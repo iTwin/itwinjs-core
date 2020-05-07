@@ -6,12 +6,11 @@
  * @module SearchBox
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-import { CommonProps } from "../utils/Props";
-import { UiCore } from "../UiCore";
-
 import "./SearchBox.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { UiCore } from "../UiCore";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for [[SearchBox]] component
  * @public
@@ -23,7 +22,7 @@ export interface SearchBoxProps extends CommonProps {
   placeholder?: string;
   /** triggered when the content of SearchBox is changed */
   onValueChanged: (value: string) => void;
-  /** frequency to poll for changes in value */
+  /** frequency to poll for changes in value, in milliseconds */
   valueChangedDelay?: number;
   /** listens for <Enter> keypress */
   onEnterPressed?: () => void;

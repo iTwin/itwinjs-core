@@ -7,19 +7,26 @@
  */
 
 import * as React from "react";
-
-import { StatusFieldProps } from "./StatusFieldProps";
-import { ConditionalField } from "./ConditionalField";
 import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";
+import { ConditionalField } from "./ConditionalField";
+import { StatusFieldProps } from "./StatusFieldProps";
 
 // tslint:disable-next-line: variable-name
 const ConditionalFieldWithProps = withStatusFieldProps(ConditionalField);
+
+/** Properties for a FooterModeField component
+ * @public
+ */
+export interface FooterModeFieldProps extends StatusFieldProps {
+  /** Field content. */
+  children?: React.ReactNode;
+}
 
 /**
  * A component that renders its children if the StatusBar is in Footer mode.
  * @public
  */
-export class FooterModeField extends React.PureComponent<StatusFieldProps> {
+export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
 
   public render(): React.ReactNode {
     const { children, ...otherProps } = this.props as any;

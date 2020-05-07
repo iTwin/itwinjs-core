@@ -36,3 +36,45 @@
     }
   }
 }
+
+.nz-toolbar-button-app-small {
+  width: $mls-small-button-width;
+  height: $mls-small-button-height;
+
+  border-width: 0px;
+  box-shadow: 0 1px 3px 0 rgba( 0, 0, 0, .35 );
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  margin-bottom: 0;
+
+  > .nz-bars {
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-flow: column;
+    align-items: flex-start;
+    justify-content: center;
+
+    > .nz-bar {
+      background-color: $buic-foreground-disabled;
+      width: $small-bar-width;
+      height: $small-bar-height;
+      border-top-right-radius: $bar-right-corner-radius;
+      border-bottom-right-radius: $bar-right-corner-radius;
+      filter: $icon-shadow;
+    }
+
+    > .nz-bar:not(:first-child) {
+      margin-top: 5px;
+    }
+  }
+
+  &:active {
+    > .nz-bars {
+      width: 0;
+      height: 0;
+    }
+  }
+}

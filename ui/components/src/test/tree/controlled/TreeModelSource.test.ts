@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "typemoq";
-import sinon from "sinon";
 import * as faker from "faker";
+import sinon from "sinon";
+import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { MutableTreeModel, TreeModelNodeInput, VisibleTreeNodes } from "../../../ui-components/tree/controlled/TreeModel";
 import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
 import { ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider";
-import { TreeModelNodeInput, MutableTreeModel, VisibleTreeNodes } from "../../../ui-components/tree/controlled/TreeModel";
 
 describe("TreeModelSource", () => {
 
@@ -25,6 +26,7 @@ describe("TreeModelSource", () => {
     mutableTreeModelMock.reset();
 
     onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
+    // tslint:disable-next-line:deprecation
     dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => onTreeNodeChanged);
     modelSource = new TreeModelSource();
   });
@@ -49,8 +51,8 @@ describe("TreeModelSource", () => {
       inputNode = {
         id: faker.random.uuid(),
         isExpanded: faker.random.boolean(),
-        item: { id: faker.random.uuid(), label: faker.random.word() },
-        label: faker.random.word(),
+        item: { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
+        label: PropertyRecord.fromString(faker.random.word(), "label"),
         isLoading: faker.random.boolean(),
         isSelected: faker.random.boolean(),
       };
@@ -68,8 +70,8 @@ describe("TreeModelSource", () => {
       const newInput: TreeModelNodeInput = {
         id: faker.random.uuid(),
         isExpanded: faker.random.boolean(),
-        item: { id: faker.random.uuid(), label: faker.random.word() },
-        label: faker.random.word(),
+        item: { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
+        label: PropertyRecord.fromString(faker.random.word(), "label"),
         isLoading: faker.random.boolean(),
         isSelected: faker.random.boolean(),
       };
@@ -100,6 +102,44 @@ describe("TreeModelSource", () => {
       const changes = spy.args[0][0][1];
       expect(changes.modifiedNodeIds.length).to.be.eq(1);
       expect(changes.modifiedNodeIds[0]).to.be.eq(inputNode.id);
+    });
+
+    it("clears model and adds new nodes", () => {
+      modelSource.modifyModel((model) => {
+        model.clearChildren(undefined);
+      });
+      expect(modelSource.getVisibleNodes().getNumNodes()).to.be.eq(0);
+      const newInput: TreeModelNodeInput = {
+        id: faker.random.uuid(),
+        isExpanded: faker.random.boolean(),
+        item: { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
+        label: PropertyRecord.fromString(faker.random.word(), "label"),
+        isLoading: faker.random.boolean(),
+        isSelected: faker.random.boolean(),
+      };
+      modelSource.modifyModel((model) => {
+        model.setChildren(undefined, [newInput], 0);
+      });
+      expect(modelSource.getVisibleNodes().getNumNodes()).to.be.eq(1);
+    });
+
+    it("overrides existing children multiple times", () => {
+      const newInput: TreeModelNodeInput = {
+        id: faker.random.uuid(),
+        isExpanded: faker.random.boolean(),
+        item: { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
+        label: PropertyRecord.fromString(faker.random.word(), "label"),
+        isLoading: faker.random.boolean(),
+        isSelected: faker.random.boolean(),
+      };
+      modelSource.modifyModel((model) => {
+        model.setNumChildren(undefined, 1);
+        model.setChildren(undefined, [newInput], 0);
+      });
+      modelSource.modifyModel((model) => {
+        model.setNumChildren(undefined, 1);
+        model.setChildren(undefined, [inputNode], 0);
+      });
     });
 
   });

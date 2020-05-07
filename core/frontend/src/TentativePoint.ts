@@ -7,14 +7,14 @@
  */
 
 import { Point3d } from "@bentley/geometry-core";
-import { ScreenViewport } from "./Viewport";
-import { BeButtonEvent, BeButton } from "./tools/Tool";
-import { HitList, SnapDetail, SnapHeat, HitDetail, HitSource, SnapMode, HitPriority } from "./HitDetail";
-import { DecorateContext } from "./ViewContext";
-import { HitListHolder } from "./ElementLocateManager";
-import { IModelApp } from "./IModelApp";
 import { AccuSnap } from "./AccuSnap";
-import { ViewManip, ViewHandleType } from "./tools/ViewTool";
+import { HitListHolder } from "./ElementLocateManager";
+import { HitDetail, HitList, HitPriority, HitSource, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
+import { IModelApp } from "./IModelApp";
+import { BeButton, BeButtonEvent } from "./tools/Tool";
+import { ViewHandleType, ViewManip } from "./tools/ViewTool";
+import { DecorateContext } from "./ViewContext";
+import { ScreenViewport } from "./Viewport";
 
 /** @public */
 export class TentativePoint {

@@ -5,10 +5,11 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { UVSurface } from "../geometry3d/GeometryHandler";
 import { Point2d } from "../geometry3d/Point2dVector2d";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+
 /**
  * CurveLocationDetail carries point and paramter data about a point evaluated on a curve.
  * * These are returned by a variety of queries.
@@ -44,6 +45,20 @@ export class UVSurfaceLocationDetail {
     detail.point.setFromPoint3d(point);
     return detail;
   }
+  /**
+   * Create a new detail structure.
+   * @param surface
+   * @param uv coordinates to copy (not capture) into the `detail.uv`
+   * @param point coordinates to copy (not capture) into the `detail.point`
+   */
+  public static createSurfaceUVNumbersPoint(surface: UVSurface | undefined, u: number, v: number, point: Point3d): UVSurfaceLocationDetail {
+    const detail = new UVSurfaceLocationDetail(surface);
+    detail.uv.x = u;
+    detail.uv.y = v;
+    detail.point.setFromPoint3d(point);
+    return detail;
+  }
+
 }
 /**
  * Carrier for both curve and surface data, e.g. from intersection calculations.

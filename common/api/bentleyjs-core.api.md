@@ -126,6 +126,8 @@ export enum BriefcaseStatus {
     // (undocumented)
     CannotUpload = 131074,
     // (undocumented)
+    DownloadCancelled = 131079,
+    // (undocumented)
     VersionNotFound = 131077
 }
 
@@ -249,6 +251,22 @@ export function compareWithTolerance(a: number, b: number, tolerance?: number): 
 
 // @public (undocumented)
 export type ComputePriorityFunction<T> = (value: T) => number;
+
+// @public
+export class Config {
+    static get App(): Config;
+    get(varName: string, defaultVal?: boolean | string | number): any;
+    getBoolean(name: string, defaultVal?: boolean): boolean;
+    getContainer(): any;
+    getNumber(name: string, defaultVal?: number): number;
+    getString(name: string, defaultVal?: string): string;
+    getVars(): string[];
+    has(varName: string): boolean;
+    merge(source: any): void;
+    query(varName: string): any;
+    remove(varName: string): void;
+    set(varName: string, value: boolean | string | number): void;
+}
 
 // @public
 export enum DbOpcode {
@@ -494,6 +512,28 @@ export class EnvMacroSubst {
     static replaceInProperties(obj: any, recurse: boolean, defaultValues?: any): void;
 }
 
+// @beta
+export enum ExtensionStatus {
+    // (undocumented)
+    BadExtension = 143364,
+    // (undocumented)
+    BadRequest = 143362,
+    // (undocumented)
+    DownloadError = 143367,
+    // (undocumented)
+    ExtensionAlreadyExists = 143365,
+    // (undocumented)
+    ExtensionNotFound = 143363,
+    // (undocumented)
+    EXTENSIONSTATUS_BASE = 143360,
+    // (undocumented)
+    Success = 0,
+    // (undocumented)
+    UnknownError = 143361,
+    // (undocumented)
+    UploadError = 143366
+}
+
 // @public
 export type GetMetaDataFunction = () => any;
 
@@ -623,6 +663,8 @@ export enum IModelHubStatus {
     CodeStateInvalid = 102429,
     // (undocumented)
     ConflictsAggregate = 102441,
+    // (undocumented)
+    ContextDoesNotExist = 102447,
     // (undocumented)
     DatabaseOperationFailed = 102443,
     // (undocumented)
@@ -892,6 +934,9 @@ export class IndexMap<T> {
 export const isElectronRenderer: boolean;
 
 // @public
+export function isIDisposable(obj: unknown): obj is IDisposable;
+
+// @public
 export namespace JsonUtils {
     export function asArray(json: any): any;
     export function asBool(json: any, defaultVal?: boolean): boolean;
@@ -926,6 +971,8 @@ export class Logger {
     static set logExceptionCallstacks(b: boolean);
     static get logExceptionCallstacks(): boolean;
     static logInfo(category: string, message: string, metaData?: GetMetaDataFunction): void;
+    // @internal
+    static logRaw(level: LogLevel, category: string, message: string, getMetaData?: GetMetaDataFunction): void;
     static logTrace(category: string, message: string, metaData?: GetMetaDataFunction): void;
     static logWarning(category: string, message: string, metaData?: GetMetaDataFunction): void;
     static makeMetaData(getMetaData?: GetMetaDataFunction): any;
@@ -1071,6 +1118,35 @@ export class PriorityQueue<T> implements Iterable<T> {
     protected _swap(a: number, b: number): void;
 }
 
+// @public
+export class ReadonlySortedArray<T> implements Iterable<T> {
+    [Symbol.iterator](): Iterator<T>;
+    protected constructor(compare: OrderedComparator<T>, allowDuplicates?: boolean, clone?: CloneFunction<T>);
+    // (undocumented)
+    protected readonly _allowDuplicates: boolean;
+    // (undocumented)
+    protected _array: T[];
+    protected _clear(): void;
+    // (undocumented)
+    protected readonly _clone: CloneFunction<T>;
+    // (undocumented)
+    protected readonly _compare: OrderedComparator<T>;
+    contains(value: T): boolean;
+    protected _extractArray(): T[];
+    findEqual(value: T): T | undefined;
+    forEach(func: (value: T) => void): void;
+    get(index: number): T | undefined;
+    indexOf(value: T): number;
+    protected _insert(value: T, onInsert?: (value: T) => any): number;
+    get isEmpty(): boolean;
+    get length(): number;
+    protected lowerBound(value: T): {
+        index: number;
+        equal: boolean;
+    };
+    protected _remove(value: T): number;
+}
+
 // @beta
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
@@ -1120,31 +1196,11 @@ export interface SerializedClientRequestContext {
 export function shallowClone<T>(value: T): T;
 
 // @public
-export class SortedArray<T> implements Iterable<T> {
-    [Symbol.iterator](): Iterator<T>;
+export class SortedArray<T> extends ReadonlySortedArray<T> {
     constructor(compare: OrderedComparator<T>, allowDuplicates?: boolean, clone?: CloneFunction<T>);
-    // (undocumented)
-    protected readonly _allowDuplicates: boolean;
-    // (undocumented)
-    protected _array: T[];
     clear(): void;
-    // (undocumented)
-    protected readonly _clone: CloneFunction<T>;
-    // (undocumented)
-    protected readonly _compare: OrderedComparator<T>;
-    contains(value: T): boolean;
     extractArray(): T[];
-    findEqual(value: T): T | undefined;
-    forEach(func: (value: T) => void): void;
-    get(index: number): T | undefined;
-    indexOf(value: T): number;
     insert(value: T, onInsert?: (value: T) => any): number;
-    get isEmpty(): boolean;
-    get length(): number;
-    protected lowerBound(value: T): {
-        index: number;
-        equal: boolean;
-    };
     remove(value: T): number;
 }
 

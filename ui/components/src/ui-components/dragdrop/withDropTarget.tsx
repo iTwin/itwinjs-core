@@ -6,8 +6,8 @@
  * @module DragDrop
  */
 import * as React from "react";
-import { DropTarget, DropTargetMonitor, ConnectDropTarget, DropTargetConnector, DndComponentClass } from "react-dnd";
-import { DropTargetArguments, DragSourceArguments, DropTargetProps } from "./DragDropDef";
+import { ConnectDropTarget, DndComponentClass, DropTarget, DropTargetConnector, DropTargetMonitor } from "react-dnd";
+import { DragSourceArguments, DropTargetArguments, DropTargetProps } from "./DragDropDef";
 
 /** React properties for withDropTarget Higher-Order Component
  * @beta

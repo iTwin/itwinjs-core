@@ -1,0 +1,26 @@
+{
+  "name": "@bentley/geonames-extension",
+  "entries": [
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/geonames-extension_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "react to changes in imodeljs-clients"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Rename the geonames-plugin to geonames-extension"
+          },
+          {
+            "comment": "Update to support new iModel.js Extension build system and drop support for the iModel.js module system."
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -2,6 +2,39 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/ecschema-metadata_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "new EC Rule 501 - CustomAttribute schemas must be referenced by the container's schema."
+          },
+          {
+            "comment": "Removing deprecated API. Please see NextVersion.md under the heading 'ecschema-metadata Package' for details."
+          },
+          {
+            "comment": "Deprecating schema classes' method 'toJson' and replacing it with the JSON.stringify supported method 'toJSON'.  Also deprecating the 'deserialize' method and replacing it with 'fromJSON' for naming consistency. "
+          },
+          {
+            "comment": "Undefined display labels should equal empty display labels during schema comparison."
+          },
+          {
+            "comment": "order imports."
+          },
+          {
+            "comment": "Removed unused package dependencies"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Added SchemaContext.getCachedSchema to retrieve a previously load Schema by SchemaKey"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/ecschema-metadata_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
@@ -65,9 +98,6 @@
       "comments": {
         "none": [
           {
-            "comment": "Update sinon version."
-          },
-          {
             "comment": "Resolving an error in schema validation in ecschema-metadata"
           }
         ]
@@ -125,7 +155,7 @@
             "comment": "Fixing bug where format overrides which specified a unit but no label set the label to 'undefined'  #177676"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -260,7 +290,7 @@
             "comment": "Added schema validation support via the configuration of rule sets that can be applied during schema traversal"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -428,7 +458,7 @@
       "comments": {
         "none": [
           {
-            "comment": "rename CustomAttributeInstance to CustomAttribute"
+            "comment": "Rename CustomAttributeInstance to CustomAttribute"
           },
           {
             "comment": "Refactored parsing of JSON data to happen in a new dedicated class JsonParser instead of fromJson methods. The fromJson methods have been replaced with deserialize methods which work in conjunction with JsonParser to ensure type safety and objects are created with required properties."
@@ -446,7 +476,7 @@
       "comments": {
         "none": [
           {
-            "comment": "Test added, exports are imported from Index and tested against explicitly imported modules to ensure equality."
+            "comment": "Exports are imported from Index and tested against explicitly imported modules to ensure equality."
           },
           {
             "comment": "Updated how default values are set. They are now all set within the constructor."

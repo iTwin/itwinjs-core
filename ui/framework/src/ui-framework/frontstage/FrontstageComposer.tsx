@@ -7,21 +7,22 @@
  */
 
 import * as React from "react";
-import { CommonProps, PointProps, Rectangle, RectangleProps, BadgeUtilities } from "@bentley/ui-core";
 import { Logger } from "@bentley/bentleyjs-core";
-import { UiFramework } from "../UiFramework";
+import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
+import { CommonProps, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import {
-  ResizeHandle, NineZoneManagerProps, WidgetZoneId, ZoneTargetType, getDefaultZonesManagerProps,
-  getDefaultNineZoneStagePanelsManagerProps, StagePanelType, widgetZoneIds, StagePanelsManager,
+  getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, ResizeHandle, StagePanelsManager, StagePanelType,
+  WidgetZoneId, widgetZoneIds, ZoneTargetType,
 } from "@bentley/ui-ninezone";
-import { StagePanelLocation, getNestedStagePanelKey, stagePanelLocations } from "../stagepanels/StagePanel";
-import { WidgetDef, WidgetState } from "../widgets/WidgetDef";
+import { getNestedStagePanelKey } from "../stagepanels/StagePanel";
+import { PanelStateChangedEventArgs, StagePanelState } from "../stagepanels/StagePanelDef";
+import { UiFramework } from "../UiFramework";
+import { WidgetDef } from "../widgets/WidgetDef";
+import { WidgetTab, WidgetTabs } from "../widgets/WidgetStack";
 import { ZoneDef, ZoneState } from "../zones/ZoneDef";
 import { FrontstageDef } from "./FrontstageDef";
-import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageChangedEventArgs } from "./FrontstageManager";
+import { FrontstageActivatedEventArgs, FrontstageManager, ModalFrontstageChangedEventArgs, ModalFrontstageInfo } from "./FrontstageManager";
 import { ModalFrontstage } from "./ModalFrontstage";
-import { WidgetTabs, WidgetTab } from "../widgets/WidgetStack";
-import { PanelStateChangedEventArgs, StagePanelState } from "../stagepanels/StagePanelDef";
 
 /** Interface defining callbacks for widget changes
  * @public
@@ -107,6 +108,15 @@ const getDefaultWidgetTabs = (): WidgetTabs => ({
   [9]: [],
 });
 
+const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
+  StagePanelLocation.Top,
+  StagePanelLocation.TopMost,
+  StagePanelLocation.Left,
+  StagePanelLocation.Right,
+  StagePanelLocation.Bottom,
+  StagePanelLocation.BottomMost,
+];
+
 /** FrontstageComposer React component.
  * @public
  */
@@ -125,12 +135,15 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     const activeFrontstageId = FrontstageManager.activeFrontstageId;
     this._frontstageDef = FrontstageManager.findFrontstageDef(activeFrontstageId);
 
+    // Get the id and nineZoneProps for the current FrontstageDef
     const nineZone = this.determineNineZoneProps(this._frontstageDef);
+    const widgetTabs = this._frontstageDef ? this.determineWidgetTabs() : getDefaultWidgetTabs();
+
     this.state = {
       allowPointerUpSelection: false,
       nineZone,
       modalFrontstageCount: FrontstageManager.modalFrontstageCount,
-      widgetTabs: getDefaultWidgetTabs(),
+      widgetTabs,
     };
   }
 
@@ -200,7 +213,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         return widgetDef.isVisible && !widgetDef.isFloating;
       });
       const tabs = visibleWidgetDefs.map<WidgetTab>((widgetDef: WidgetDef) => ({
-        badgeType: BadgeUtilities.determineBadgeType(widgetDef.badgeType, widgetDef.betaBadge), // tslint:disable-line: deprecation
+        badgeType: widgetDef.badgeType,
         iconSpec: widgetDef.iconSpec,
         title: widgetDef.label,
         widgetName: widgetDef.id,
@@ -283,9 +296,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       this.setState({ modalFrontstageCount: FrontstageManager.modalFrontstageCount });
   }
 
-  private _navigationBack = () => {
-  }
-
   private _closeModal = () => {
     FrontstageManager.closeModalFrontstage();
   }
@@ -305,7 +315,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       <ModalFrontstage
         isOpen={true}
         title={title}
-        navigateBack={this._navigationBack}
         closeModal={this._closeModal}
         appBarRight={appBarRight}
       >
@@ -353,6 +362,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   public componentDidMount(): void {
     this._isMounted = true;
+    const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZone) ? false : true;
+    if (this._frontstageDef && needInitialLayout)
+      this.initializeFrontstageLayout(this.state.nineZone);
+
     this.layout();
     this.initializeZoneBounds();
     window.addEventListener("resize", this._handleWindowResize, true);
@@ -370,6 +383,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onFrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
     FrontstageManager.onModalFrontstageChangedEvent.removeListener(this._handleModalFrontstageChangedEvent);
     FrontstageManager.onPanelStateChangedEvent.removeListener(this._handlePanelStateChangedEvent);
+    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+    FrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
   }
 
   private _handleWindowResize = () => {
@@ -678,9 +693,9 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       return;
 
     this.setState((prevState) => {
-      const activeToolSettingsNode = FrontstageManager.activeToolSettingsNode;
+      const activeToolSettingsProvider = FrontstageManager.activeToolSettingsProvider;
       const manager = FrontstageManager.NineZoneManager;
-      const nineZone = activeToolSettingsNode ? manager.showWidget(2, prevState.nineZone) : manager.hideWidget(2, prevState.nineZone);
+      const nineZone = activeToolSettingsProvider ? manager.showWidget(2, prevState.nineZone) : manager.hideWidget(2, prevState.nineZone);
       if (nineZone === prevState.nineZone)
         return null;
       return {

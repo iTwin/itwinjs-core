@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import "./IModelSelector.css";
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
-import "./IModelSelector.css";
 
 export interface Props {
   onIModelSelected: (imodel?: IModelConnection) => void;
@@ -35,7 +35,7 @@ export default class IModelSelector extends React.Component<Props, State> {
   private onImodelSelected = async (e: any) => {
     const imodelPath = e.target.value;
     if (MyAppFrontend.iModel) {
-      await MyAppFrontend.iModel.closeSnapshot();
+      await MyAppFrontend.iModel.close();
     }
 
     let imodel: IModelConnection | undefined;

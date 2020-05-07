@@ -3,14 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "typemoq";
 import * as faker from "faker";
+import * as moq from "typemoq";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
+import { SparseArray, SparseTree } from "../../../ui-components/tree/controlled/internal/SparseTree";
 import {
-  MutableTreeModel, MutableTreeModelNode, isTreeModelNodePlaceholder,
-  TreeModelNodeInput, TreeModelRootNode, TreeModelNode, isTreeModelNode, TreeModelNodePlaceholder, isTreeModelRootNode,
+  isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, MutableTreeModel, MutableTreeModelNode, TreeModelNode, TreeModelNodeInput,
+  TreeModelNodePlaceholder, TreeModelRootNode,
 } from "../../../ui-components/tree/controlled/TreeModel";
-import { SparseTree, SparseArray } from "../../../ui-components/tree/controlled/internal/SparseTree";
 import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
 
 const createTreeModelNode = (parentNode: TreeModelNode | TreeModelRootNode, input: TreeModelNodeInput): MutableTreeModelNode => {
@@ -158,10 +159,10 @@ describe("MutableTreeModel", () => {
       const input: TreeModelNodeInput = {
         id: faker.random.uuid(),
         isExpanded: faker.random.boolean(),
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word(), "label"),
         isLoading: faker.random.boolean(),
         isSelected: faker.random.boolean(),
-        item: { id: faker.random.uuid(), label: faker.random.word() },
+        item: { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
       };
 
       treeMock.setup((x) => x.setChildren(undefined, [createTreeModelNode(treeModel.getRootNode(), input)], 0)).verifiable(moq.Times.once());
@@ -209,10 +210,10 @@ describe("MutableTreeModel", () => {
       const input: TreeModelNodeInput = {
         id: faker.random.uuid(),
         isExpanded: faker.random.boolean(),
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word(), "label"),
         isLoading: faker.random.boolean(),
         isSelected: faker.random.boolean(),
-        item: { id: faker.random.uuid(), label: faker.random.word() },
+        item: { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
       };
 
       treeMock.setup((x) => x.insertChild(undefined, createTreeModelNode(treeModel.getRootNode(), input), 0)).verifiable(moq.Times.once());

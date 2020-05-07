@@ -9,20 +9,20 @@
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { Geometry } from "../Geometry";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 // import { Geometry } from "./Geometry";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { NumberArray } from "../geometry3d/PointHelpers";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
-import { NumberArray } from "../geometry3d/PointHelpers";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { PolyfaceData } from "./PolyfaceData";
 import { FacetFaceData } from "./FacetFaceData";
-import { Geometry } from "../Geometry";
-import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
+import { PolyfaceData } from "./PolyfaceData";
 
 function allDefined(valueA: any, valueB: any, valueC: any): boolean {
   return valueA !== undefined && valueB !== undefined && valueC !== undefined;

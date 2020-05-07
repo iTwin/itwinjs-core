@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelConnection, MockRender, ViewState } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
-import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { initializeAsync as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
-import TestUtils, { MockAccessToken } from "./TestUtils";
-import { UiFramework, ColorTheme, CursorMenuData } from "../ui-framework";
+import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+import { ColorTheme, CursorMenuData, UiFramework } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
+import TestUtils, { mockUserInfo } from "./TestUtils";
 
 describe("UiFramework", () => {
 
@@ -47,6 +48,25 @@ describe("UiFramework", () => {
   it("loggerCategory should correctly handle null or undefined object", () => {
     expect(UiFramework.loggerCategory(null)).to.eq(UiFramework.packageName);
     expect(UiFramework.loggerCategory(undefined)).to.eq(UiFramework.packageName);
+  });
+
+  it("calling initialize twice should log", async () => {
+    const spyLogger = sinon.spy(Logger, "logInfo");
+    expect(UiFramework.initialized).to.be.false;
+    await UiFramework.initialize(TestUtils.store, TestUtils.i18n);
+    expect(UiFramework.initialized).to.be.true;
+    await UiFramework.initialize(TestUtils.store, TestUtils.i18n);
+    spyLogger.calledOnce.should.true;
+    (Logger.logInfo as any).restore();
+  });
+
+  it("calling initialize without I18N will use IModelApp.i18n", async () => {
+    await MockRender.App.startup();
+
+    await UiFramework.initialize(TestUtils.store);
+    expect(UiFramework.i18n).to.eq(IModelApp.i18n);
+
+    await MockRender.App.shutdown();
   });
 
   it("projectServices should throw Error without initialize", () => {
@@ -117,13 +137,10 @@ describe("UiFramework", () => {
   it("SessionState setters/getters", async () => {
     await TestUtils.initializeUiFramework();
 
-    const mockToken = new MockAccessToken();
+    const userInfo = mockUserInfo();
 
-    UiFramework.setAccessToken(mockToken);    // tslint:disable-line: deprecation
-    expect(UiFramework.getAccessToken()!.getUserInfo()!.id).to.eq(mockToken.getUserInfo()!.id); // tslint:disable-line: deprecation
-
-    UiFramework.setDefaultRulesetId("TestRuleSet");
-    expect(UiFramework.getDefaultRulesetId()).to.eq("TestRuleSet");
+    UiFramework.setUserInfo(userInfo);
+    expect(UiFramework.getUserInfo()!.id).to.eq(userInfo!.id);
 
     UiFramework.setDefaultIModelViewportControlId("DefaultIModelViewportControlId");
     expect(UiFramework.getDefaultIModelViewportControlId()).to.eq("DefaultIModelViewportControlId");
@@ -146,28 +163,25 @@ describe("UiFramework", () => {
     const viewState = moq.Mock.ofType<ViewState>();
     UiFramework.setDefaultViewState(viewState.object);
     expect(UiFramework.getDefaultViewState()).not.to.be.undefined;
-
-    UiFramework.oidcClient = undefined;
-    expect(UiFramework.oidcClient).to.be.undefined;
   });
 
 });
 
 // before we can test setting scope to a valid scope id we must make sure Presentation Manager is initialized.
 describe("Requires Presentation", () => {
-  const shutdownIModelApp = () => {
+  const shutdownIModelApp = async () => {
     if (IModelApp.initialized)
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
   };
 
   beforeEach(async () => {
-    shutdownIModelApp();
+    await shutdownIModelApp();
     Presentation.terminate();
     await initializePresentationTesting();
   });
 
-  afterEach(() => {
-    terminatePresentationTesting();
+  afterEach(async () => {
+    await terminatePresentationTesting();
   });
 
   describe("initialize and setActiveSelectionScope", () => {
@@ -178,7 +192,7 @@ describe("Requires Presentation", () => {
       TestUtils.terminateUiFramework();
 
       Presentation.terminate();
-      shutdownIModelApp();
+      await shutdownIModelApp();
     });
   });
 });

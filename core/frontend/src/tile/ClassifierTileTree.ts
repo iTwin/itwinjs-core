@@ -3,23 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
-import { compareStrings, compareStringsOrUndefined, Id64String, Id64 } from "@bentley/bentleyjs-core";
-import {
-  BatchType,
-  ClassifierTileTreeId,
-  compareIModelTileTreeIds,
-  iModelTileTreeIdToString,
-} from "@bentley/imodeljs-common";
-import { SpatialClassifiers } from "../SpatialClassifiers";
-import { IModelConnection } from "../IModelConnection";
-import { SceneContext } from "../ViewContext";
-import { TileTreeReference, IModelTileLoader, TileTreeSupplier, TileTreeOwner, tileTreeParamsFromJSON, TileTree, TileTreeSet, TileTreeLoadStatus } from "./internal";
-import { ViewState } from "../ViewState";
+import { compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString } from "@bentley/imodeljs-common";
 import { DisplayStyleState } from "../DisplayStyleState";
-import { GeometricModelState } from "../ModelState";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { GeometricModelState } from "../ModelState";
+import { SpatialClassifiers } from "../SpatialClassifiers";
+import { SceneContext } from "../ViewContext";
+import { ViewState } from "../ViewState";
+import {
+  IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier,
+} from "./internal";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
   modelId: Id64String;
@@ -55,10 +52,15 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     const idStr = iModelTileTreeIdToString(id.modelId, id, IModelApp.tileAdmin);
     const props = await iModel.tiles.getTileTreeProps(idStr);
 
-    const loader = new IModelTileLoader(iModel, props.formatVersion, id.type, false, false, model.geometryGuid);
-    props.rootTile.contentId = loader.rootContentId;
-    const params = tileTreeParamsFromJSON(props, iModel, true, loader, id.modelId);
-    return new TileTree(params);
+    const options = {
+      edgesRequired: false,
+      allowInstancing: false,
+      is3d: true,
+      batchType: id.type,
+    };
+
+    const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, model.geometryGuid, options);
+    return new IModelTileTree(params);
   }
 
   public getOwner(id: ClassifierTreeId, iModel: IModelConnection): TileTreeOwner {
@@ -93,6 +95,10 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   }
 
   public get classifiers(): SpatialClassifiers { return this._classifiers; }
+
+  public get castsShadows() {
+    return false;
+  }
 
   public get treeOwner(): TileTreeOwner {
     const newId = this.createId(this._classifiers, this._source);

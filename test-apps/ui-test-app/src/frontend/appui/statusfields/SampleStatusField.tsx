@@ -7,11 +7,10 @@
  */
 
 import * as React from "react";
-
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { StatusFieldProps, Indicator, StatusBarFieldId } from "@bentley/ui-framework";
-import { TitleBar, Dialog, FooterPopup } from "@bentley/ui-ninezone";
-import { ButtonType, Button, FillCentered } from "@bentley/ui-core";
+import { Button, ButtonType, FillCentered } from "@bentley/ui-core";
+import { Indicator, StatusBarFieldId, StatusFieldProps } from "@bentley/ui-framework";
+import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
 
 interface SampleStatusFieldState {
   target: HTMLElement | null;

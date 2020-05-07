@@ -8,12 +8,12 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { ImageBuffer, ImageBufferFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
-import { GL } from "./GL";
-import { System } from "./System";
-import { UniformHandle } from "./Handle";
-import { TextureUnit, OvrFlags } from "./RenderFlags";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "../../ImageUtil";
 import { WebGLDisposable } from "./Disposable";
+import { GL } from "./GL";
+import { UniformHandle } from "./Handle";
+import { OvrFlags, TextureUnit } from "./RenderFlags";
+import { System } from "./System";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -62,7 +62,6 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
       internalFormat = context2.DEPTH24_STENCIL8;
   }
 
-  gl.getError();
   // send the texture data
   if (undefined !== element) {
     gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, params.format, params.dataType, element);
@@ -75,13 +74,9 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    if (params.anisotropicFilter) {
-      const ext = System.instance.capabilities.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic");
-      if (undefined !== ext) {
-        const max = Math.min(params.anisotropicFilter, gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT));
-        gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, max);
-      }
-    }
+
+    if (params.anisotropicFilter)
+      System.instance.setMaxAnisotropy(params.anisotropicFilter);
   } else {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);

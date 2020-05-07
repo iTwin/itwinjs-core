@@ -6,7 +6,8 @@
  * @module CartesianGeometry
  */
 
-import { BeJSONFunctions, AngleProps, Geometry, TrigValues } from "../Geometry";
+import { AngleProps, BeJSONFunctions, Geometry, TrigValues } from "../Geometry";
+
 /**
  * An `Angle` carries the numeric value of an angle, with methods to allow (require!) callers to be clear about whether their angle is degrees or radians.
  * * The numeric value is private, and callers should not know or care whether it is in degrees or radians.
@@ -33,8 +34,8 @@ export class Angle implements BeJSONFunctions {
   private constructor(radians = 0, degrees?: number) { this._radians = radians; this._degrees = degrees; }
   /** Return a new angle with the same content. */
   public clone(): Angle { return new Angle(this._radians, this._degrees); }
-  /** Freeze this instance so it can be considered read-only */
-  public freeze() { Object.freeze(this); }
+  /** Freeze this instance so it is read-only */
+  public freeze(): Readonly<this> { return Object.freeze(this); }
 
   /**
    * Return a new Angle object for angle given in degrees.
@@ -183,7 +184,7 @@ export class Angle implements BeJSONFunctions {
     const radians1 = Angle.adjustDegrees0To360(-degrees);
     return 360.0 - radians1;
   }
-  /** Adjust a radians value so it is positive in -180..180 */
+  /** Adjust a radians value so it is in -180..180 */
   public static adjustDegreesSigned180(degrees: number): number {
     if (Math.abs(degrees) <= 180.0)
       return degrees;

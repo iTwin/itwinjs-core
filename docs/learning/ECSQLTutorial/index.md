@@ -13,9 +13,9 @@ In the course of the tutorial you will notice how similar ECSQL and SQL are. To 
 
 ### iModelConsole
 
-The tutorial makes reference to the **iModelConsole** application to try out the ECSQL examples in the tutorial yourself and to experiment with your own ECSQL statements.
+The tutorial makes reference to the **iModelConsole** application.  Use the app to follow along with the tutorial by executing the ECSQL examples yourself.  You can also experiment with your own ECSQL statements.
 
-[!alert text="<img src="./media/wip.svg" style="width:2%;height:2%;">  We are working to make the iModelConsole publicly available, but it is not ready yet." kind="warning"]
+[Open the iModelConsole](https://imodelconsole.bentley.com/)
 
 ### Sample iModel
 
@@ -40,7 +40,7 @@ This also enables you to experiment more with ECSQL by modifying the tutorial's 
 ### Step 1 - Start the iModelConsole
 
 1. Launch the console
-1. Authenticate with your CONNECT credentials.
+1. Authenticate with your iTwin credentials.
 
 ### Step 2 - Open the sample iModel
 

@@ -47,6 +47,9 @@
     "SaveImage": {
       "keyin": "dta save image"
     },
+    "OutputShaders": {
+      "keyin": "dta output shaders"
+    },
     "ZoomToSelectedElements": {
       "keyin": "dta zoom selected"
     },
@@ -55,9 +58,6 @@
     },
     "ShutDown": {
       "keyin": "dta shutdown"
-    },
-    "ToggleFrustumIntersection": {
-      "keyin": "dta frustum intersection"
     },
     "ToggleShadowMapTiles": {
       "keyin": "dta shadow tiles"
@@ -76,9 +76,6 @@
     },
     "RecordFps": {
       "keyin": "dta record fps"
-    },
-    "Toggle3dManipulations": {
-      "keyin": "dta manip3d"
     }
   }
 }

@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { SchemaPartVisitorDelegate } from "../src/SchemaPartVisitorDelegate";
-import sinon = require("sinon");
-import { Schema } from "../src/Metadata/Schema";
-import { EntityClass } from "../src/Metadata/EntityClass";
+import { SchemaContext } from "../src/Context";
+import { PrimitiveType, RelationshipEnd } from "../src/ECObjects";
+import { ECClass, MutableClass, StructClass } from "../src/Metadata/Class";
 import { Constant } from "../src/Metadata/Constant";
 import { CustomAttributeClass } from "../src/Metadata/CustomAttributeClass";
+import { EntityClass } from "../src/Metadata/EntityClass";
 import { Enumeration } from "../src/Metadata/Enumeration";
 import { Format } from "../src/Metadata/Format";
 import { InvertedUnit } from "../src/Metadata/InvertedUnit";
@@ -18,12 +18,12 @@ import { Mixin } from "../src/Metadata/Mixin";
 import { Phenomenon } from "../src/Metadata/Phenomenon";
 import { PropertyCategory } from "../src/Metadata/PropertyCategory";
 import { RelationshipClass, RelationshipConstraint } from "../src/Metadata/RelationshipClass";
-import { StructClass, MutableClass, ECClass } from "../src/Metadata/Class";
+import { Schema } from "../src/Metadata/Schema";
 import { Unit } from "../src/Metadata/Unit";
 import { UnitSystem } from "../src/Metadata/UnitSystem";
-import { PrimitiveType, RelationshipEnd } from "../src/ECObjects";
-import { SchemaContext } from "../src/Context";
+import { SchemaPartVisitorDelegate } from "../src/SchemaPartVisitorDelegate";
 
+import sinon = require("sinon");
 describe("SchemaPartVisitorDelegate Tests", () => {
   let schema: Schema;
   let helper: SchemaPartVisitorDelegate;

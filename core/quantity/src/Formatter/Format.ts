@@ -2,13 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { FormatProps } from "./Interfaces";
-import { UnitProps, UnitsProvider, UnitConversion, UnitConversionSpec } from "../Interfaces";
-import { QuantityStatus, QuantityError } from "../Exception";
 import { QuantityConstants } from "../Constants";
-import {
-  FormatType, ScientificType, ShowSignOption, DecimalPrecision, FractionalPrecision, FormatTraits,
-} from "./FormatEnums";
+import { QuantityError, QuantityStatus } from "../Exception";
+import { UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
+import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
+import { FormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative

@@ -5,17 +5,22 @@
 /* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as faker from "faker";
+import * as sinon from "sinon";
+import { RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { RulesetManagerImpl } from "../RulesetManager";
+import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 
 describe("RulesetManager", () => {
 
+  let onRulesetModifiedSpy: sinon.SinonSpy<[RegisteredRuleset, Ruleset], Promise<void>>;
   let manager: RulesetManagerImpl;
 
   beforeEach(() => {
-    manager = new RulesetManagerImpl();
+    onRulesetModifiedSpy = sinon.stub<[RegisteredRuleset, Ruleset], Promise<void>>().resolves();
+    manager = RulesetManagerImpl.create({
+      onRulesetModified: onRulesetModifiedSpy,
+    });
   });
 
   describe("get", () => {
@@ -37,7 +42,7 @@ describe("RulesetManager", () => {
 
   describe("add", () => {
 
-    it("registers a ruleset and raises onStateChanged event", async () => {
+    it("registers a ruleset", async () => {
       const ruleset = await createRandomRuleset();
       await manager.add(ruleset);
       expect((await manager.get(ruleset.id))!.toJSON()).to.deep.eq(ruleset);
@@ -46,10 +51,30 @@ describe("RulesetManager", () => {
     it("allows registering 2 rulesets with the same id", async () => {
       const rulesetId = faker.random.uuid();
       const rulesets = [await createRandomRuleset(), await createRandomRuleset()];
-      await Promise.all(rulesets.map((r) => {
+      await Promise.all(rulesets.map(async (r) => {
         r.id = rulesetId;
         return manager.add(r);
       }));
+    });
+
+  });
+
+  describe("modify", () => {
+
+    it("modifies given ruleset and raises the `onRulesetModified` event", async () => {
+      const initialRuleset = await createRandomRuleset();
+      const registered = await manager.add(initialRuleset);
+      expect(await manager.get(initialRuleset.id)).to.eq(registered);
+      const newRule: Rule = {
+        ruleType: RuleTypes.Content,
+        condition: "test",
+        specifications: [],
+      };
+      const modified = await manager.modify(registered, { rules: [newRule] });
+      expect(modified.rules).to.deep.eq([newRule]);
+      expect(onRulesetModifiedSpy).to.be.calledOnce;
+      expect(onRulesetModifiedSpy.firstCall.args[0]).to.eq(modified);
+      expect(onRulesetModifiedSpy.firstCall.args[1]).to.deep.eq(initialRuleset);
     });
 
   });
@@ -108,5 +133,7 @@ describe("RulesetManager", () => {
       result.dispose();
       expect(eventSpy).to.have.been.calledOnce;
     });
+
   });
+
 });

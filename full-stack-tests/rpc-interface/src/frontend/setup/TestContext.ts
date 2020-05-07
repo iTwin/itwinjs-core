@@ -4,17 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
-import { OpenAPIInfo, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
-import { Config, AccessToken } from "@bentley/imodeljs-clients";
-import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-
-import { Settings, getRpcInterfaces } from "../../common/Settings";
+import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
+import { NoRenderApp } from "@bentley/imodeljs-frontend";
+import { AccessToken } from "@bentley/itwin-client";
+import {
+  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
+} from "@bentley/oidc-signin-tool/lib/frontend";
+import { getRpcInterfaces, Settings } from "../../common/Settings";
+import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
-import { AuthorizationClient } from "./AuthorizationClient";
-
-import { getAccessTokensFromBackend, getProcessEnvFromBackend } from "../../common/SideChannels";
 
 declare const PACKAGE_VERSION: string;
 
@@ -64,8 +63,14 @@ export class TestContext {
     Config.App.set("imjs_buddi_resolve_url_using_region", this.settings.env);
 
     if (undefined !== this.settings.oidcClientId) {
-      const accessTokens = await getAccessTokensFromBackend();
-      this.adminUserAccessToken = accessTokens[0];
+      this.adminUserAccessToken = await getAccessTokenFromBackend({
+        email: this.settings.users[0].email,
+        password: this.settings.users[0].password,
+      } as TestUserCredentials, {
+        clientId: this.settings.oidcClientId,
+        redirectUri: this.settings.oidcRedirect,
+        scope: this.settings.oidcScopes,
+      } as TestBrowserAuthorizationClientConfiguration);
     }
 
     const iModelData = this.settings.iModel;
@@ -76,9 +81,11 @@ export class TestContext {
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
-    NoRenderApp.startup({ applicationVersion: PACKAGE_VERSION, applicationId: this.settings.gprid });
-
-    IModelApp.authorizationClient = new AuthorizationClient(this.adminUserAccessToken);
+    await NoRenderApp.startup({
+      applicationVersion: PACKAGE_VERSION,
+      applicationId: this.settings.gprid,
+      authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
+    });
 
     console.log("TestSetup: Done");
   }

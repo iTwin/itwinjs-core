@@ -2,32 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, ReactWrapper } from "enzyme";
 import { expect } from "chai";
+import { mount, ReactWrapper } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
-import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
+import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
+import { LocalUiSettings, Toggle } from "@bentley/ui-core";
 import { FooterPopup, TitleBarButton } from "@bentley/ui-ninezone";
-import { Toggle, LocalUiSettings } from "@bentley/ui-core";
-
-import TestUtils, { storageMock } from "../../TestUtils";
 import {
-  StatusBar,
-  ToolAssistanceField,
-  StatusBarWidgetControl,
-  WidgetState,
-  ConfigurableCreateInfo,
-  ConfigurableUiControlType,
-  WidgetDef,
-  StatusBarWidgetControlArgs,
-  AppNotificationManager,
-  CursorPopupManager,
-  FrontstageManager,
+  AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, CursorPopupManager, FrontstageManager, StatusBar, StatusBarWidgetControl,
+  StatusBarWidgetControlArgs, ToolAssistanceField, WidgetDef,
 } from "../../../ui-framework";
+import TestUtils, { storageMock } from "../../TestUtils";
 
 describe("ToolAssistanceField", () => {
+  const uiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+
+  before(async () => {
+    await uiSettings.saveSetting("ToolAssistance", "showPromptAtCursor", true);
+    await uiSettings.saveSetting("ToolAssistance", "mouseTouchTabIndex", 0);
+  });
 
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any) {
@@ -35,10 +31,6 @@ describe("ToolAssistanceField", () => {
     }
 
     public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
-      const uiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
-      uiSettings.saveSetting("ToolAssistance", "showPromptAtCursor", true);
-      uiSettings.saveSetting("ToolAssistance", "mouseTouchTabIndex", 0);
-
       return (
         <>
           <ToolAssistanceField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget}
@@ -61,7 +53,7 @@ describe("ToolAssistanceField", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    MockRender.App.startup();
+    await MockRender.App.startup();
 
     const statusBarWidgetDef = new WidgetDef({
       classId: AppStatusBarWidgetControl,
@@ -72,9 +64,9 @@ describe("ToolAssistanceField", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   // cSpell:Ignore TOOLPROMPT
@@ -321,6 +313,24 @@ describe("ToolAssistanceField", () => {
     wrapper.unmount();
   });
 
+  it("should support svg icons in string-based instruction.image", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const notifications = new AppNotificationManager();
+    const mainInstruction = ToolAssistance.createInstruction("svg:test", "This is the prompt");
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction);
+
+    notifications.setToolAssistance(instructions);
+
+    clickIndicator(wrapper);
+
+    expect(wrapper.find("div.uifw-toolassistance-svg").length).to.eq(1);
+    expect(wrapper.find("div.uifw-toolassistance-icon-large").length).to.eq(0);
+
+    wrapper.unmount();
+  });
+
   it("invalid modifier key info along with image should log error", () => {
     const spyMethod = sinon.spy(Logger, "logError");
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
@@ -398,7 +408,7 @@ describe("ToolAssistanceField", () => {
 
   it("should set showPromptAtCursor on toggle click", async () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={false} />);
-
+    await TestUtils.flushAsyncOperations();
     const toolAssistanceField = wrapper.find(ToolAssistanceField);
     expect(toolAssistanceField.length).to.eq(1);
     expect(toolAssistanceField.state("showPromptAtCursor")).to.be.true;

@@ -3,16 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { GlobalContextMenu, ContextMenuItem } from "@bentley/ui-core";
-import {
-  ConfigurableUiManager,
-  ConfigurableCreateInfo,
-  WidgetControl,
-} from "@bentley/ui-framework";
-import { Table, TableCellContextMenuArgs } from "@bentley/ui-components";
+import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
-import { IModelConnection, IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { Table, TableCellContextMenuArgs } from "@bentley/ui-components";
+import { ContextMenuItem, GlobalContextMenu } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
 import { ContextMenuItemInfo } from "./UnifiedSelectionPropertyGridWidget";
 
 // create a HOC property grid component that supports unified selection
@@ -24,7 +19,7 @@ export class UnifiedSelectionTableWidgetControl extends WidgetControl {
     super(info, options);
 
     if (options && options.iModelConnection && options.rulesetId)
-      this.reactElement = <UnifiedSelectionTableWidget iModelConnection={options.iModelConnection} rulesetId={options.rulesetId} />;
+      this.reactNode = <UnifiedSelectionTableWidget iModelConnection={options.iModelConnection} rulesetId={options.rulesetId} />;
   }
 }
 

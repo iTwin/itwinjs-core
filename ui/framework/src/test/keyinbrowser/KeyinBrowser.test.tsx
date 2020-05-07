@@ -2,18 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-import { render, cleanup, fireEvent } from "@testing-library/react";
-import { Button, LabeledInput, AutoSuggest } from "@bentley/ui-core";
-import {
-  KeyinBrowser,
-} from "../../ui-framework";
+import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
+import { AutoSuggest, Button, LabeledInput } from "@bentley/ui-core";
+import { cleanup, fireEvent, render } from "@testing-library/react";
+import { KeyinBrowser } from "../../ui-framework";
 import TestUtils, { storageMock } from "../TestUtils";
-
-import { MockRender, IModelApp } from "@bentley/imodeljs-frontend";
 
 const myLocalStorage = storageMock();
 
@@ -28,13 +25,13 @@ describe("<KeyinBrowser>", () => {
 
     await TestUtils.initializeUiFramework();
     // use mock renderer so standards tools are registered.
-    MockRender.App.startup();
+    await MockRender.App.startup();
   });
 
   afterEach(cleanup);
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
 
     // restore the overriden property getter
     Object.defineProperty(window, "localStorage", propertyDescriptorToRestore);
@@ -130,7 +127,7 @@ describe("<KeyinBrowser>", () => {
     const sut = mount(<KeyinBrowser onExecute={spy} />);
     const btn = sut.find(Button);
     btn.simulate("click");
-    spy.calledOnceWithExactly().should.true;
+    spy.calledOnce.should.true;
     sut.unmount();
   });
 
@@ -159,7 +156,7 @@ describe("<KeyinBrowser>", () => {
     expect(input.length).to.eq(1);
 
     input.simulate("keydown", { key: "Enter" });
-    spy.calledOnceWithExactly().should.true;
+    spy.calledOnce.should.true;
 
     wrapper.unmount();
   });
@@ -183,7 +180,7 @@ describe("<KeyinBrowser>", () => {
 
     input.simulate("keydown", { key: "Enter" });
     await TestUtils.flushAsyncOperations();
-    spy.calledOnceWithExactly().should.true;
+    spy.calledOnce.should.true;
 
     wrapper.unmount();
     document.body.removeChild(outerNode);

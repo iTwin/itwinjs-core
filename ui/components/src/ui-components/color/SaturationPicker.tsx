@@ -6,13 +6,11 @@
  * @module Color
  */
 
-import * as React from "react";
+import "./SaturationPicker.scss";
 import classnames from "classnames";
-
+import * as React from "react";
 import { HSVColor } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
-
-import "./SaturationPicker.scss";
 
 /** Properties for the [[SaturationPicker]] React component
  * @beta
@@ -91,11 +89,7 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
     // istanbul ignore if
     if (value > 100) value = 100;
 
-    const newColor = new HSVColor();
-    newColor.h = hsv.h;
-    newColor.s = saturation;
-    newColor.v = value;
-    return newColor;
+    return new HSVColor(hsv.h, saturation, value);
   }
 
   /** @internal */
@@ -121,40 +115,41 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
   }
 
   private _onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
-    const newColor = this.props.hsv.clone();
+    const h = this.props.hsv.h;
+    let { s, v } = { ...this.props.hsv };
     if (evt.key === "ArrowLeft") {
-      newColor.s -= (evt.ctrlKey ? 10 : 1);
+      s -= (evt.ctrlKey ? 10 : 1);
     } else if (evt.key === "ArrowDown") {
-      newColor.v -= (evt.ctrlKey ? 10 : 1);
+      v -= (evt.ctrlKey ? 10 : 1);
     } else if (evt.key === "ArrowRight") {
-      newColor.s += (evt.ctrlKey ? 10 : 1);
+      s += (evt.ctrlKey ? 10 : 1);
     } else if (evt.key === "ArrowUp") {
-      newColor.v += (evt.ctrlKey ? 10 : 1);
+      v += (evt.ctrlKey ? 10 : 1);
     } else if (evt.key === "PageDown") {
-      newColor.v = 0;
+      v = 0;
     } else if (evt.key === "PageUp") {
-      newColor.v = 100;
+      v = 100;
     } else if (evt.key === "Home") {
-      newColor.s = 0;
+      s = 0;
     } else {
       // istanbul ignore else
       if (evt.key === "End") {
-        newColor.s = 100;
+        s = 100;
       }
     }
 
     // istanbul ignore if
-    if (newColor.s < 0) newColor.s = 0;
+    if (s < 0) s = 0;
     // istanbul ignore if
-    if (newColor.s > 100) newColor.s = 100;
+    if (s > 100) s = 100;
     // istanbul ignore if
-    if (newColor.v < 0) newColor.v = 0;
+    if (v < 0) v = 0;
     // istanbul ignore if
-    if (newColor.v > 100) newColor.v = 100;
+    if (v > 100) v = 100;
 
     // istanbul ignore else
     if (this.props.onSaturationChange)
-      this.props.onSaturationChange(newColor);
+      this.props.onSaturationChange(new HSVColor(h, s, v));
   }
 
   private _onMouseUp = () => {

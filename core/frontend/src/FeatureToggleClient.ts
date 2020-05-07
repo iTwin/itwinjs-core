@@ -6,9 +6,9 @@
  * @module Features
  */
 
-import { LDClient, LDUser, LDFlagValue, initialize } from "ldclient-js";
-import { Guid, assert, Logger } from "@bentley/bentleyjs-core";
-import { Config, AccessToken } from "@bentley/imodeljs-clients";
+import { initialize, LDClient, LDFlagValue, LDUser } from "ldclient-js";
+import { assert, Config, Guid, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 
 /** Client-side class for checking and toggling feature flags
@@ -19,7 +19,7 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
  *
  * @internal
  */
-export class FeatureToggleClient  {
+export class FeatureToggleClient {
   /** App-defined options */
   /** App ids for Launch Darkly deployment environments environments */
   /** Direct reference to the Launch Darkly client in the event the app wants to make its own asynch calls */
@@ -28,12 +28,12 @@ export class FeatureToggleClient  {
 
   protected readonly _loggingCategory = FrontendLoggerCategory.FeatureToggle;
 
-/** initialize initializes the Launch Darkly client. Must be called by the app to set the proper environment and user id */
+  /** initialize initializes the Launch Darkly client. Must be called by the app to set the proper environment and user id */
   public async initialize(envKey?: string): Promise<void> {
     if (!!this._ldClient)
       return;
 
-    const imjsEnvKey: string | undefined = Config.App.get ("imjs_launch_darkly_key");
+    const imjsEnvKey: string | undefined = Config.App.get("imjs_launch_darkly_key");
     const ldId = envKey === undefined ? imjsEnvKey : envKey;
     if (ldId === undefined)
       return;
@@ -44,13 +44,13 @@ export class FeatureToggleClient  {
     this._ldClient = ldClient;
   }
 
-/** sets the Launch Darkly user info from the AccessToken */
+  /** sets the Launch Darkly user info from the AccessToken */
   public async setUser(accessToken: AccessToken): Promise<void> {
     const userInfo = accessToken.getUserInfo();
     assert(userInfo !== undefined, "FeatureToggleClient unable get user id.");
     assert(!!this._ldClient, "FeatureToggleClient.initialize must be called first.");
     if (userInfo !== undefined) {
-      const ldUser: LDUser = {key: userInfo.id};
+      const ldUser: LDUser = { key: userInfo.id };
       await this.ldClient.identify(ldUser);
     }
     Logger.logTrace(this._loggingCategory, "Changed LaunchDarkly Feature Flags user context to current user.", () => ({ userId: userInfo === undefined ? "undefined" : userInfo.id }));
@@ -65,7 +65,7 @@ export class FeatureToggleClient  {
   public evaluateFeature(featureKey: string, defaultValue?: LDFlagValue): LDFlagValue {
     assert(!!this._ldClient, "FeatureToggleClient.initialize hasn't been called yet.");
     const val: LDFlagValue = this.ldClient.variation(featureKey, defaultValue);
-    Logger.logTrace(this._loggingCategory, "Evaluated feature flag.", () => ({featureKey, result: val}));
+    Logger.logTrace(this._loggingCategory, "Evaluated feature flag.", () => ({ featureKey, result: val }));
     return val;
   }
 

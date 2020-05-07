@@ -6,18 +6,20 @@
  * @module iModels
  */
 
-import { assert, DbOpcode, Id64String, Logger, RepositoryStatus, DbResult } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, CodeQuery, CodeState, HubCode, Lock, LockLevel, LockType, LockQuery } from "@bentley/imodeljs-clients";
-import { IModelError, IModelStatus, ElementProps, ModelProps, CodeProps, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { IModelDb } from "./IModelDb";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { RelationshipProps } from "./Relationship";
+import * as deepAssign from "deep-assign";
 import * as path from "path";
-import { IModelJsFs } from "./IModelJsFs";
+import { assert, DbOpcode, DbResult, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
+import { CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps, SyncMode } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
-import { Model } from "./Model";
 import { Element } from "./Element";
+import { BriefcaseDb } from "./IModelDb";
+import { IModelJsFs } from "./IModelJsFs";
+import { Model } from "./Model";
+import { RelationshipProps } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.ConcurrencyControl;
 
@@ -32,13 +34,13 @@ export class ConcurrencyControl {
   private _cache: ConcurrencyControl.StateCache;
   private _modelsAffectedByWrites = new Set<Id64String>(); // TODO: Remove this when we get tile healing
 
-  constructor(private _iModel: IModelDb) {
+  constructor(private _iModel: BriefcaseDb) {
     this._cache = new ConcurrencyControl.StateCache(this);
     this._policy = ConcurrencyControl.PessimisticPolicy;
   }
 
   /** @internal */
-  public get iModel(): IModelDb { return this._iModel; }
+  public get iModel(): BriefcaseDb { return this._iModel; }
 
   /** @internal */
   public get modelsAffectedByWrites(): Id64String[] { return Array.from(this._modelsAffectedByWrites); }
@@ -97,14 +99,17 @@ export class ConcurrencyControl {
   }
 
   /** @internal */
-  public onMergedChanges() { this.applyTransactionOptions(); }
+  public onMergedChanges() {
+    this.applyTransactionOptions();
+    this._iModel.nativeDb.purgeTileTrees(undefined); // TODO: Remove this when we get tile healing
+    const data = { parentChangeSetId: this.iModel.briefcase.parentChangeSetId };
+    this._iModel.eventSink!.emit(IModelWriteRpcInterface.name, "onPulledChanges", data);
+  }
 
   /** @internal */
   public onUndoRedo() { this.applyTransactionOptions(); }
 
-  /** @internal */
-  private applyTransactionOptions() {
-  }
+  private applyTransactionOptions() { }
 
   public async syncCache(requestContext: AuthorizedClientRequestContext): Promise<void> {
     this._cache.clear();
@@ -112,8 +117,8 @@ export class ConcurrencyControl {
   }
 
   public async openOrCreateCache(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (!this.iModel.needsConcurrencyControl)
-      throw new IModelError(IModelStatus.BadRequest, "not a briefcase or not read-write", Logger.logError, loggerCategory);
+    if (this.iModel.isReadonly)
+      throw new IModelError(IModelStatus.BadRequest, "not read-write", Logger.logError, loggerCategory);
     if (this._cache.isOpen)
       return;
     if (this._cache.open())
@@ -168,9 +173,9 @@ export class ConcurrencyControl {
    * @internal
    */
   public onModelWrite(modelClass: typeof Model, model: ModelProps, opcode: DbOpcode): void {
-    if (!this._iModel.needsConcurrencyControl)
-      throw new IModelError(IModelStatus.BadRequest, "this is not a writable briefcase");
-
+    if (this._iModel.isReadonly) {
+      throw new IModelError(IModelStatus.ReadOnly, "iModel is read-only", Logger.logError, loggerCategory);
+    }
     const resourcesNeeded = new ConcurrencyControl.Request();
     this.buildRequestForModelTo(resourcesNeeded, model, opcode, modelClass);
     this.applyPolicyBeforeWrite(resourcesNeeded);
@@ -216,14 +221,13 @@ export class ConcurrencyControl {
    * @internal
    */
   public onElementWrite(elementClass: typeof Element, element: ElementProps, opcode: DbOpcode): void {
-    if (!this._iModel.needsConcurrencyControl)
-      throw new IModelError(IModelStatus.BadRequest, "this is not a writable briefcase");
-
+    if (!this._iModel.isPushEnabled) {
+      throw new IModelError(IModelStatus.ReadOnly, "iModel is read-only - changes cannot be pushed to iModelHub", Logger.logError, loggerCategory);
+    }
     const resourcesNeeded = new ConcurrencyControl.Request();
     this.buildRequestForElementTo(resourcesNeeded, element, opcode, elementClass);
     this.applyPolicyBeforeWrite(resourcesNeeded);
     this.addToPendingRequestIfNotHeld(resourcesNeeded);
-
     this._modelsAffectedByWrites.add(element.model);  // TODO: Remove this when we get tile healing
   }
 
@@ -253,22 +257,32 @@ export class ConcurrencyControl {
   public async requestResources(ctx: AuthorizedClientRequestContext, elements: ConcurrencyControl.ElementAndOpcode[], models?: ConcurrencyControl.ModelAndOpcode[], relationships?: ConcurrencyControl.RelationshipAndOpcode[]): Promise<void> {
     ctx.enter();
 
-    for (const e of elements)
-      this.buildRequestForElement(e.element, e.opcode);
+    const prevRequest = this.pendingRequest.clone();
 
-    if (models) {
-      for (const m of models)
-        this.buildRequestForModel(m.model, m.opcode);
+    try {
+
+      for (const e of elements)
+        this.buildRequestForElement(e.element, e.opcode);
+
+      if (models) {
+        for (const m of models)
+          this.buildRequestForModel(m.model, m.opcode);
+      }
+
+      if (relationships) {
+        for (const r of relationships)
+          this.buildRequestForRelationship(r.relationship, r.opcode);
+      }
+
+      await this.request(ctx);
+
+      assert(!this.hasPendingRequests);
+
+    } catch (err) {
+      // This operation must be atomic - if we didn't obtain the resources, then we must not leave anything in pendingRequests. Caller must re-try after fixing the underlying problem.
+      this._pendingRequest = prevRequest;
+      throw err;
     }
-
-    if (relationships) {
-      for (const r of relationships)
-        this.buildRequestForRelationship(r.relationship, r.opcode);
-    }
-
-    await this.request(ctx);
-
-    assert(!this._iModel.concurrencyControl.hasPendingRequests);
   }
 
   /** @internal */
@@ -333,7 +347,7 @@ export class ConcurrencyControl {
    * @param req The requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
    * @throws [[IModelHubError]] if some or all of the request could not be fulfilled by iModelHub.
    * @throws [[IModelError]] if the IModelDb is not open or is not connected to an iModel.
-   * See [CodeHandler]($clients) and [LockHandler]($clients) for details on what errors may be thrown.
+   * See [CodeHandler]($imodelhub-client) and [LockHandler]($imodelhub-client) for details on what errors may be thrown.
    * See [[ConcurrencyControl.requestResources]] for a convenience method that builds and makes a request in one step.
    */
   public async request(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<void> {
@@ -377,7 +391,7 @@ export class ConcurrencyControl {
     // Must do this to guarantee that the cache does not become stale if the client crashes after pushing but
     // before performing the various post-push clean-up tasks, such as marking reserved codes as used and releasing
     // locks. I cannot know what state things are in until all of that is done. If onPushedChanges is called, then
-    // I can re-populate from the iModel server. If onPushedChanges is never called becuase of a crash, I need to be
+    // I can re-populate from the iModel server. If onPushedChanges is never called because of a crash, I need to be
     // able to detect that. The only way I can do that reliably is to find, the next time the briefcase is opened,
     // that the cache does not exist.
     this._cache.deleteFile();
@@ -385,8 +399,10 @@ export class ConcurrencyControl {
 
   public async onPushedChanges(requestContext: AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
+
     const data = { parentChangeSetId: this.iModel.briefcase.parentChangeSetId };
     this._iModel.eventSink!.emit(IModelWriteRpcInterface.name, "onPushedChanges", data);
+
     return this.openOrCreateCache(requestContext); // re-create after we know that push has succeeded
   }
 
@@ -397,17 +413,17 @@ export class ConcurrencyControl {
   }
 
   public async onOpened(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (!this._iModel.needsConcurrencyControl)
+    if (!this._iModel.isPushEnabled)
       return;
 
-    assert(!this._iModel.concurrencyControl._cache.isOpen, "iModelDb.onOpened should be raised only once");
+    assert(!this._iModel.concurrencyControl._cache.isOpen, "BriefcaseDb.onOpened should be raised only once");
 
     this._iModel.txns.onCommitted.addListener(this.emitOnSavedChangesEvent, this);
 
     return this.openOrCreateCache(requestContext);
   }
 
-  public async onClose(_requestContext: AuthorizedClientRequestContext): Promise<void> {
+  public onClose() {
     this._iModel.txns.onCommitted.removeListener(this.emitOnSavedChangesEvent, this);
     this._cache.close(true);
   }
@@ -419,7 +435,7 @@ export class ConcurrencyControl {
     this.addToPendingRequestIfNotHeld(req);
   }
 
-  /** Obtain the schema lock. This is always an immediate request, never deferred. See [LockHandler]($clients) for details on what errors may be thrown. */
+  /** Obtain the schema lock. This is always an immediate request, never deferred. See [LockHandler]($imodelhub-client) for details on what errors may be thrown. */
   public async lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
     const locks = [ConcurrencyControl.Request.getHubSchemaLock(this)];
 
@@ -429,7 +445,7 @@ export class ConcurrencyControl {
     requestContext.enter();
 
     Logger.logTrace(loggerCategory, `lockSchema`);
-    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelToken.iModelId!, locks);
+    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelId, locks);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive) {
       Logger.logError(loggerCategory, `lockSchema failed`);
       assert(false, "update should have thrown if it could not satisfy the request.");
@@ -447,7 +463,7 @@ export class ConcurrencyControl {
     return this._cache.isLockHeld(ConcurrencyControl.Request.schemaLock);
   }
 
-  /** Returns `true` if the codespecs lock is held.
+  /** Returns `true` if the CodeSpecs lock is held.
    * @param requestContext The client request context
    * @alpha Need to determine if we want this method
    */
@@ -455,7 +471,7 @@ export class ConcurrencyControl {
     return this._cache.isLockHeld(ConcurrencyControl.Request.codeSpecsLock);
   }
 
-  /** Obtain the CodeSpec lock. This is always an immediate request, never deferred. See [LockHandler]($clients) for details on what errors may be thrown. */
+  /** Obtain the CodeSpec lock. This is always an immediate request, never deferred. See [LockHandler]($imodelhub-client) for details on what errors may be thrown. */
   public async lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]> {
 
     const locks = [ConcurrencyControl.Request.getHubCodeSpecsLock(this)];
@@ -465,7 +481,7 @@ export class ConcurrencyControl {
 
     requestContext.enter();
     Logger.logTrace(loggerCategory, `lockCodeSpecs`);
-    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelToken.iModelId!, locks);
+    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelId, locks);
     if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive) {
       Logger.logError(loggerCategory, `lockCodeSpecs failed`);
       assert(false, "update should have thrown if it could not satisfy the request.");
@@ -500,14 +516,14 @@ export class ConcurrencyControl {
     const hubLocks = ConcurrencyControl.Request.toHubLocks(this, locks);
 
     Logger.logTrace(loggerCategory, `acquireLocksFromRequest ${JSON.stringify(locks)}`);
-    const lockStates = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelToken.iModelId!, hubLocks);
+    const lockStates = await BriefcaseManager.imodelClient.locks.update(requestContext, this._iModel.iModelId, hubLocks);
     requestContext.enter();
     Logger.logTrace(loggerCategory, `result = ${JSON.stringify(lockStates)}`);
 
     return lockStates;
   }
 
-  /** Reserve the specified codes. See [CodeHandler]($clients) for details on what errors may be thrown. */
+  /** Reserve the specified codes. See [CodeHandler]($imodelhub-client) for details on what errors may be thrown. */
   public async reserveCodes(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<HubCode[]> {
     requestContext.enter();
 
@@ -527,7 +543,7 @@ export class ConcurrencyControl {
     return codeStates;
   }
 
-  // Query the state of the Codes for the specified CodeSpec and scope. See [CodeHandler]($clients) for details on what errors may be thrown.
+  // Query the state of the Codes for the specified CodeSpec and scope. See [CodeHandler]($imodelhub-client) for details on what errors may be thrown.
   public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
     requestContext.enter();
     if (!this._iModel.isOpen)
@@ -631,7 +647,7 @@ export class ConcurrencyControl {
           continue;
         // If the lock is held by this briefcase, but at a lower level, then it *might* be available for an upgrade.
         // Wait and see if we encounter a conflicting claim by another briefcase later in the list.
-        if (lock.briefcaseId === briefcaseId.value)
+        if (lock.briefcaseId === briefcaseId)
           continue;
         // This lock is held by some other briefcase at some level.
         // If we are requesting it at a higher level, then our request would be denied.
@@ -727,6 +743,12 @@ export namespace ConcurrencyControl {
     private _locks: ConcurrencyControl.LockProps[] = [];
     private _codes: CodeProps[] = [];
 
+    public clone(): Request {
+      const c = new Request();
+      deepAssign(c, this);
+      return c;
+    }
+
     public get locks(): ConcurrencyControl.LockProps[] { return this._locks; }
     public get codes(): CodeProps[] { return this._codes; }
 
@@ -782,7 +804,7 @@ export namespace ConcurrencyControl {
     public removeLocks(filter: (l: LockProps) => boolean, context: any) {
       // NB: The supplied `filter` function chooses the locks to *remove*.
       // The JS array filter function takes as its argument a function that indicates which items to *retain*.
-      // Therefore, we return the negation of the supplied `filter` function to the JS filter opertion.
+      // Therefore, we return the negation of the supplied `filter` function to the JS filter operation.
       this._locks = this._locks.filter((lock) => !filter.apply(context, [lock]));
     }
 
@@ -900,7 +922,7 @@ export namespace ConcurrencyControl {
 
   /** Code manager */
   export class Codes {
-    constructor(private _iModel: IModelDb) { }
+    constructor(private _iModel: BriefcaseDb) { }
 
     /**
      * Reserve Codes.
@@ -948,19 +970,21 @@ export namespace ConcurrencyControl {
 
     private _db: ECDb = new ECDb();
 
-    public constructor(public concurrencyControl: ConcurrencyControl) {
-    }
+    public constructor(public concurrencyControl: ConcurrencyControl) { }
 
     public get isOpen(): boolean { return this._db.isOpen; }
 
     private mustHaveBriefcase() {
-      if (this.concurrencyControl.iModel === undefined || this.concurrencyControl.iModel.briefcase === undefined || !this.concurrencyControl.iModel.needsConcurrencyControl)
-        throw new IModelError(IModelStatus.NotOpenForWrite, "not a read-write iModel briefcase", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel);
+      if (this.concurrencyControl.iModel === undefined || this.concurrencyControl.iModel.briefcase === undefined
+        || this.concurrencyControl.iModel.syncMode !== SyncMode.PullAndPush)
+        throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes to the IModel Hub", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.briefcase.getDebugInfo());
     }
 
-    private mustBeOpen() {
+    private mustBeOpenAndWriteable() {
+      if (!this.concurrencyControl.iModel.isPushEnabled)
+        throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes to the IModel Hub", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.briefcase.getDebugInfo());
       if (!this.isOpen)
-        throw new IModelError(IModelStatus.NotOpen, "", Logger.logError, loggerCategory, () => this.computeCacheFileName());
+        throw new IModelError(IModelStatus.NotOpen, "not open", Logger.logError, loggerCategory, () => this.computeCacheFileName());
     }
 
     private static onOpen(fn: string) {
@@ -1050,14 +1074,14 @@ export namespace ConcurrencyControl {
     }
 
     public clear() {
-      this.mustBeOpen();
+      this.mustBeOpenAndWriteable();
       this._db.withPreparedSqliteStatement("delete from heldLocks", (stmt) => stmt.step());
       this._db.withPreparedSqliteStatement("delete from reservedCodes", (stmt) => stmt.step());
       this._db.saveChanges();
     }
 
     public getHeldLock(type: LockType, objectId: string): LockLevel {
-      this.mustBeOpen();
+      this.mustBeOpenAndWriteable();
       let ll = LockLevel.None;
       this._db.withPreparedSqliteStatement("select level from heldLocks where (type=?) and (objectId=?)", (stmt) => {
         stmt.bindValue(1, type);
@@ -1073,7 +1097,7 @@ export namespace ConcurrencyControl {
     }
 
     public isCodeReserved(code: CodeProps): boolean {
-      this.mustBeOpen();
+      this.mustBeOpenAndWriteable();
       let isFound = false;
       this._db.withPreparedSqliteStatement("select count(*) from reservedCodes where (specid=?) and (scope=?) and (value=?) limit 1", (stmt) => {
         stmt.bindValue(1, code.spec);
@@ -1086,7 +1110,7 @@ export namespace ConcurrencyControl {
     }
 
     public insertCodes(codes: CodeProps[]) {
-      this.mustBeOpen();
+      this.mustBeOpenAndWriteable();
       this._db.withPreparedSqliteStatement("insert into reservedCodes (specid,scope,value) VALUES(?,?,?)", (stmt) => {
         for (const code of codes) {
           stmt.reset();
@@ -1102,7 +1126,7 @@ export namespace ConcurrencyControl {
     }
 
     public insertLocks(locks: LockProps[]) {
-      this.mustBeOpen();
+      this.mustBeOpenAndWriteable();
       this._db.withPreparedSqliteStatement("insert into heldLocks (type,objectId,level) VALUES(?,?,?)", (stmt) => {
         for (const lock of locks) {
           stmt.reset();
@@ -1127,7 +1151,7 @@ export namespace ConcurrencyControl {
       this.clear();
 
       const bcId = this.concurrencyControl.iModel.briefcase.briefcaseId;
-      const iModelId = this.concurrencyControl.iModel.iModelToken.iModelId!;
+      const iModelId = this.concurrencyControl.iModel.iModelId;
 
       const heldLocks = await BriefcaseManager.imodelClient.locks.get(requestContext, iModelId, new LockQuery().byBriefcaseId(bcId));
       const lockProps: LockProps[] = heldLocks.map((lock) => ({ type: lock.lockType!, objectId: lock.objectId!, level: lock.lockLevel! }));

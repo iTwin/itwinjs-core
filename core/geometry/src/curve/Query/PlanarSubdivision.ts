@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CurvePrimitive } from "../CurvePrimitive";
-import { CurveLocationDetailPair, CurveLocationDetail } from "../CurveLocationDetail";
-import { HalfEdgeGraph, HalfEdge } from "../../topology/Graph";
-import { Loop, SignedLoops } from "../Loop";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { RegionOps } from "../RegionOps";
+import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
+import { HalfEdgeGraphMerge } from "../../topology/Merging";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { Loop, SignedLoops } from "../Loop";
+import { RegionOps } from "../RegionOps";
 
 /** @packageDocumentation
  * @module Curve

@@ -6,18 +6,18 @@
  * @module RpcInterface
  */
 
-import { BeEvent, BentleyStatus, Guid, SerializedClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, BentleyStatus, Guid, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { IModelRpcProps } from "../../IModel";
+import { BackendError, IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
+import { RpcConfiguration } from "./RpcConfiguration";
+import { RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
+import { RpcNotFoundResponse } from "./RpcControl";
+import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol } from "./RpcProtocol";
-import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { CURRENT_REQUEST } from "./RpcRegistry";
-import { RpcNotFoundResponse } from "./RpcControl";
-import { IModelTokenProps } from "../../IModel";
-import { IModelError, BackendError } from "../../IModelError";
-import { RpcResponseCacheControl, RpcRequestEvent, RpcRequestStatus, RpcProtocolEvent } from "./RpcConstants";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 
 const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
@@ -39,17 +39,17 @@ export class ResponseLike implements Response {
   public get trailer(): Promise<Headers> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
   public get type(): ResponseType { return "basic"; }
   public get url() { return ""; }
-  public clone() { return Object.assign({}, this); }
+  public clone() { return { ...this }; }
 
   public constructor(data: any) {
     this._data = Promise.resolve(data);
   }
 }
 
-/** Supplies an IModelTokenProps for an RPC request.
+/** Supplies an IModelRpcProps for an RPC request.
  * @public
  */
-export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelTokenProps | undefined;
+export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined;
 
 /** Supplies the initial retry interval for an RPC request.
  * @public
@@ -84,10 +84,23 @@ export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest
  */
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
+class Cancellable<T> {
+  public promise: Promise<T | undefined>;
+  public cancel() { }
+
+  public constructor(task: Promise<T>) {
+    this.promise = new Promise((resolve, reject) => {
+      this.cancel = () => resolve(undefined);
+      task.then(resolve, reject);
+    });
+  }
+}
+
 /** A RPC operation request.
  * @public
  */
 export abstract class RpcRequest<TResponse = any> {
+  private static _activeRequests: Map<string, RpcRequest> = new Map();
   private _resolve: (value?: TResponse | PromiseLike<TResponse> | undefined) => void = () => undefined;
   protected _resolveRaw: (value?: Response | PromiseLike<Response> | undefined) => void = () => undefined;
   private _reject: (reason?: any) => void = () => undefined;
@@ -101,8 +114,12 @@ export abstract class RpcRequest<TResponse = any> {
   private _active: boolean = true;
   private _hasRawListener = false;
   private _raw: ArrayBuffer | string | undefined = undefined;
+  private _sending?: Cancellable<number>;
   protected _response: Response | undefined = undefined;
   protected _rawPromise: Promise<Response>;
+
+  /** All RPC requests that are currently in flight. */
+  public static get activeRequests(): ReadonlyMap<string, RpcRequest> { return this._activeRequests; }
 
   /** Events raised by RpcRequest. See [[RpcRequestEvent]] */
   public static readonly events: BeEvent<RpcRequestEventHandler> = new BeEvent();
@@ -185,9 +202,11 @@ export abstract class RpcRequest<TResponse = any> {
   /** Finds the first parameter of a given structural type if present. */
   public findParameterOfType<T>(requiredProperties: { [index: string]: string }): T | undefined {
     for (const param of this.parameters) {
-      for (const prop of Object.getOwnPropertyNames(requiredProperties)) {
-        if (param.hasOwnProperty(prop) && typeof (param[prop]) === requiredProperties[prop]) {
-          return param;
+      if (typeof (param) === "object" && param !== null) {
+        for (const prop of Object.getOwnPropertyNames(requiredProperties)) {
+          if (param.hasOwnProperty(prop) && typeof (param[prop]) === requiredProperties[prop]) {
+            return param;
+          }
         }
       }
     }
@@ -195,13 +214,9 @@ export abstract class RpcRequest<TResponse = any> {
     return undefined;
   }
 
-  /** Finds the first IModelTokenProps parameter if present. */
-  public findTokenPropsParameter(): IModelTokenProps | undefined {
-    if (RpcConfiguration.developmentMode) {
-      return this.findParameterOfType({ iModelId: "string" });
-    } else {
-      return this.findParameterOfType({ iModelId: "string", contextId: "string" });
-    }
+  /** Finds the first IModelRpcProps parameter if present. */
+  public findTokenPropsParameter(): IModelRpcProps | undefined {
+    return this.findParameterOfType({ iModelId: "string" });
 
   }
 
@@ -243,44 +258,69 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   /* @internal */
+  public cancel() {
+    if (typeof (this._sending) === "undefined") {
+      return;
+    }
+
+    this._sending.cancel();
+    this._sending = undefined;
+
+    this._connecting = false;
+    RpcRequest._activeRequests.delete(this.id);
+    this.setStatus(RpcRequestStatus.Cancelled);
+  }
+
+  /* @internal */
   public async submit(): Promise<void> {
     if (!this._active)
       return;
 
     this._lastSubmitted = new Date().getTime();
 
-    if (this.status === RpcRequestStatus.Created || this.status === RpcRequestStatus.NotFound) {
+    if (this.status === RpcRequestStatus.Created || this.status === RpcRequestStatus.NotFound || this.status === RpcRequestStatus.Cancelled) {
       this.setStatus(RpcRequestStatus.Submitted);
     }
 
     try {
       this._connecting = true;
+      RpcRequest._activeRequests.set(this.id, this);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestCreated, this);
-      const sent = this.setHeaders().then(() => this.send());
+      this._sending = new Cancellable(this.setHeaders().then(() => this.send()));
       this.operation.policy.sentCallback(this);
-      const response: number = await sent;
+
+      const response = await this._sending.promise;
+      if (typeof (response) === "undefined") {
+        return;
+      }
+
+      this._sending = undefined;
 
       const status = this.protocol.getStatus(response);
 
       if (this._hasRawListener && status === RpcRequestStatus.Resolved && typeof (this._response) !== "undefined") {
         this._connecting = false;
+        RpcRequest._activeRequests.delete(this.id);
         this.resolveRaw();
       } else {
         this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoading, this);
 
         if (status === RpcRequestStatus.Unknown) {
           this._connecting = false;
+          RpcRequest._activeRequests.delete(this.id);
           this.handleUnknownResponse(response);
           return;
         }
 
         const value = await this.load();
         this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
+        RpcRequest._activeRequests.delete(this.id);
         this._connecting = false;
         this.handleResponse(response, value);
       }
     } catch (err) {
       this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this, err);
+      RpcRequest._activeRequests.delete(this.id);
       this._connecting = false;
       this.reject(err);
     }

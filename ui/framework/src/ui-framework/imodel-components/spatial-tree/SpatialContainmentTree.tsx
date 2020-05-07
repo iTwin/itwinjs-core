@@ -6,55 +6,73 @@
  * @module IModelComponents
  */
 
+import "./SpatialContainmentTree.scss";
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import "./SpatialContainmentTree.scss";
-import { OldSpatialContainmentTree } from "./OldSpatialContainmentTree";
-import { ControlledSpatialContainmentTree } from "./ControlledSpatialContainmentTree";
+import { Ruleset } from "@bentley/presentation-common";
+import { IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
+import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
+import { useDisposable } from "@bentley/ui-core";
+import { connectIModelConnection } from "../../redux/connectIModel";
+
+const PAGING_SIZE = 20;
+
+/**
+ * Presentation rules used by ControlledSpatialContainmentTree
+ * @internal
+ */
+export const RULESET_SPATIAL_BREAKDOWN: Ruleset = require("./SpatialBreakdown.json"); // tslint:disable-line: no-var-requires
 
 /**
  * Properties for the [[SpatialContainmentTree]] component
- * @alpha
+ * @public
  */
 export interface SpatialContainmentTreeProps {
   iModel: IModelConnection;
   /**
    * Start loading hierarchy as soon as the component is created
-   * @alpha
    */
   enablePreloading?: boolean;
   /**
-   * Specify to use ControlledTree as underlying tree implementation
-   * @alpha Temporary property
-   */
-  useControlledTree?: boolean;
-  /**
    * Used for testing
-   * @internal
    */
-  dataProvider?: IPresentationTreeDataProvider;
-}
-
-/**
- * State for the [[SpatialContainmentTree]] component
- * @alpha
- * @deprecated
- */
-export interface SpatialContainmentTreeState {
   dataProvider?: IPresentationTreeDataProvider;
 }
 
 /**
  * Tree which displays and manages models or categories contained in an iModel.
- * @alpha
+ * @public
  */
-// tslint:disable-next-line:variable-name naming-convention
-export const SpatialContainmentTree: React.FC<SpatialContainmentTreeProps> = (props: SpatialContainmentTreeProps) => {
-  const { useControlledTree, ...strippedProps } = props;
+export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
+  const nodeLoader = usePresentationTreeNodeLoader({
+    imodel: props.iModel,
+    dataProvider: props.dataProvider,
+    ruleset: RULESET_SPATIAL_BREAKDOWN,
+    pageSize: PAGING_SIZE,
+    preloadingEnabled: props.enablePreloading,
+  });
 
-  if (useControlledTree)
-    return <ControlledSpatialContainmentTree {...strippedProps} />;
+  const eventHandler = useDisposable(React.useCallback(() => new UnifiedSelectionTreeEventHandler({
+    nodeLoader,
+    collapsedChildrenDisposalEnabled: true,
+  }), [nodeLoader]));
+  const visibleNodes = useVisibleTreeNodes(nodeLoader.modelSource);
 
-  return <OldSpatialContainmentTree {...strippedProps} />;
-};
+  return (
+    <div className="ui-fw-spatial-tree">
+      <ControlledTree
+        visibleNodes={visibleNodes}
+        nodeLoader={nodeLoader}
+        treeEvents={eventHandler}
+        selectionMode={SelectionMode.Extended}
+      />
+    </div>
+  );
+}
+
+/**
+ * SpatialContainmentTree that is connected to the IModelConnection property in the Redux store. The
+ * application must set up the Redux store and include the FrameworkReducer.
+ * @beta
+ */
+export const IModelConnectedSpatialContainmentTree = connectIModelConnection(null, null)(SpatialContainmentTree); // tslint:disable-line:variable-name

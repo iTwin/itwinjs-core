@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { Format, FormatterSpec } from "../src/Formatter/Format";
-import { BasicUnit } from "../src/Unit";
 import { Formatter } from "../src/Formatter/Formatter";
+import { BasicUnit } from "../src/Unit";
+import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
 describe("Composite Formats tests:", () => {
   it("Bad Composite unit order", async () => {
@@ -473,7 +473,7 @@ describe("Composite Formats tests:", () => {
         spacer: "",
         units: [
           {
-            label: "°",
+            label: "ï¿½",
             name: "Units.ARC_DEG",
           },
         ],
@@ -489,8 +489,8 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30.27146435°" },
-      { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153.10973366°" },
+      { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30.27146435ï¿½" },
+      { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153.10973366ï¿½" },
     ];
 
     for (const testEntry of testQuantityData) {
@@ -513,7 +513,7 @@ describe("Composite Formats tests:", () => {
         spacer: "",
         units: [
           {
-            label: "°",
+            label: "ï¿½",
             name: "Units.ARC_DEG",
           },
         ],
@@ -529,8 +529,8 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30.0°" },
-      { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153.0°" },
+      { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30.0ï¿½" },
+      { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153.0ï¿½" },
     ];
 
     for (const testEntry of testQuantityData) {
@@ -553,7 +553,7 @@ describe("Composite Formats tests:", () => {
         spacer: "",
         units: [
           {
-            label: "°",
+            label: "ï¿½",
             name: "Units.ARC_DEG",
           },
           {
@@ -577,8 +577,8 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30°16'17.27166\"" },
-      { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153°6'35.041176\"" },
+      { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30ï¿½16'17.27166\"" },
+      { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153ï¿½6'35.041176\"" },
     ];
 
     for (const testEntry of testQuantityData) {
@@ -600,7 +600,7 @@ describe("Composite Formats tests:", () => {
         spacer: "",
         units: [
           {
-            label: "°",
+            label: "ï¿½",
             name: "Units.ARC_DEG",
           },
           {
@@ -625,9 +625,9 @@ describe("Composite Formats tests:", () => {
 
     const testQuantityData = [
       {
-        magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30°16'17.272\""
+        magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30ï¿½16'17.272\""
       },
-      { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153°6'35.041\"" },
+      { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153ï¿½6'35.041\"" },
     ];
 
     for (const testEntry of testQuantityData) {

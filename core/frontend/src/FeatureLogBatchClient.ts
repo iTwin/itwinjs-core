@@ -5,10 +5,11 @@
 /** @packageDocumentation
  * @module Features
  */
-import { UlasClient, FeatureLogEntry, AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
 import { Logger } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { FeatureLogEntry, UsageLoggingClient, UsageLoggingClientLoggerCategory } from "@bentley/usage-logging-client";
 
-const loggerCategory: string = ClientsLoggerCategory.UlasClient;
+const loggerCategory: string = UsageLoggingClientLoggerCategory.Client;
 
 /**
  * Options for FeatureLogBatchClient
@@ -45,8 +46,8 @@ export class FeatureLogBatchClient {
   constructor(
     private _getRequestContext: () => Promise<AuthorizedClientRequestContext>,
     options: Partial<FeatureLogBatchOptions> = {},
-    private _client: UlasClient = new UlasClient(),
-    ) {
+    private _client: UsageLoggingClient = new UsageLoggingClient(),
+  ) {
     this._options = { ...this._defaultOptions, ...options };
   }
   /** slices the queue of feature logs in batches limited by the maxBatchSize option then submit them using the UlasClient */
@@ -59,7 +60,7 @@ export class FeatureLogBatchClient {
       while (queue.length > 0) {
         const logs = queue.splice(0, this._options.maxBatchSize);
         const context = await this._getRequestContext();
-        await this._client.logFeature(context, ...logs);
+        await this._client.logFeatureUsage(context, ...logs);
       }
     } catch (ex) {
       Logger.logError(loggerCategory, "Error submitting feature log entries", () => ex);

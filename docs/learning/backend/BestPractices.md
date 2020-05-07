@@ -66,7 +66,7 @@ Frontend and backend never run in the same JavaScript context. Requests are alwa
 
 Web apps must be ready for remote backends to become temporarily or permanently unavailable. If, for example, an RcpInterface method fails with an unexpected error, such as ECONNRESET, the client operation should fail gracefully. The failure may be due to a temporary communications failure. If so, the operation may be re-tried.
 
-<!-- TODO: What if the orchestractor must re-start the backend? Does the client have to acquire a new IModelConnection? -->
+<!-- TODO: What if the orchestrator must re-start the backend? Does the client have to acquire a new IModelConnection? -->
 
 ### Check for RpcInterface Version Errors
 

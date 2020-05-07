@@ -2,21 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-import TestUtils from "../TestUtils";
-import { FrontstageProvider, Frontstage, FrontstageManager, ContentLayoutDef, FrontstageProps, CoreTools } from "../../ui-framework";
+import * as React from "react";
 import { MockRender } from "@bentley/imodeljs-frontend";
+import { ContentLayoutDef, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("FrontstageDef", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    MockRender.App.startup();
+    await MockRender.App.startup();
   });
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
   });
 
   class BadLayoutFrontstage extends FrontstageProvider {

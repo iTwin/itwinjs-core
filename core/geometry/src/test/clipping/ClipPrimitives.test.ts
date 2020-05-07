@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { ClipPrimitive, ClipMaskXYZRangePlanes, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipPlane } from "../../clipping/ClipPlane";
+import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipShape } from "../../clipping/ClipPrimitive";
+import { ClipUtilities } from "../../clipping/ClipUtils";
+import { ClipVector } from "../../clipping/ClipVector";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
+import { Angle } from "../../geometry3d/Angle";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { ClipUtilities } from "../../clipping/ClipUtils";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { Triangulator } from "../../topology/Triangulation";
-import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../../topology/Graph";
-import { ClipVector } from "../../clipping/ClipVector";
-import { Angle } from "../../geometry3d/Angle";
+import { Checker } from "../Checker";
 import { prettyPrint } from "../testFunctions";
 
 // tslint:disable:no-console

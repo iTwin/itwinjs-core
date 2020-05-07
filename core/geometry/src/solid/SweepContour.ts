@@ -7,26 +7,25 @@
  * @module Solid
  */
 
-import { Vector3d, Point3d } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
-
+import { ClipPlane } from "../clipping/ClipPlane";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
+import { AnyCurve } from "../curve/CurveChain";
 import { CurveCollection } from "../curve/CurveCollection";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { ParityRegion } from "../curve/ParityRegion";
+import { RegionOps } from "../curve/RegionOps";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { Transform } from "../geometry3d/Transform";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { Triangulator, MultiLineStringDataVariant } from "../topology/Triangulation";
-import { LineString3d } from "../curve/LineString3d";
-import { AnyCurve } from "../curve/CurveChain";
-import { ParityRegion } from "../curve/ParityRegion";
-import { Loop } from "../curve/Loop";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { PolygonOps } from "../geometry3d/PolygonOps";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
-import { RegionOps } from "../curve/RegionOps";
-import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
-import { ClipPlane } from "../clipping/ClipPlane";
+import { MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
 
 /**
  * Sweepable contour with Transform for local to world interaction.
@@ -69,7 +68,7 @@ export class SweepContour {
         if (localToWorld.matrix.dotColumnZ(defaultNormal))
           localToWorld.matrix.scaleColumnsInPlace(1.0, -1.0, -1.0);
       }
-      const linestrings = LineString3d.createArrayOfLineString3dFromVariantData(points);
+      const linestrings = LineString3d.createArrayOfLineString3d(points);
       const loops = [];
       for (const ls of linestrings) {
         ls.addClosurePoint();
@@ -140,10 +139,9 @@ export class SweepContour {
 
   /**
    * build the (cached) internal facets.
-   * @param _builder (NOT USED -- an internal builder is constructed for the triangulation)
    * @param options options for stroking the curves.
    */
-  public buildFacets(_builder: PolyfaceBuilder | undefined, options: StrokeOptions | undefined): void {
+  public buildFacets(options: StrokeOptions | undefined): void {
     if (!this._facets) {
       if (this.curves instanceof Loop) {
         this._xyStrokes = this.curves.cloneStroked(options);
@@ -205,7 +203,7 @@ export class SweepContour {
    * This method may cache and reuse facets over multiple calls.
    */
   public emitFacets(builder: PolyfaceBuilder, reverse: boolean, transform?: Transform) {
-    this.buildFacets(builder, builder.options);
+    this.buildFacets(builder.options);
     if (this._facets)
       builder.addIndexedPolyface(this._facets, reverse, transform);
   }
@@ -214,7 +212,7 @@ export class SweepContour {
    * This method may cache and reuse facets over multiple calls.
    */
   public announceFacets(announce: (facets: IndexedPolyface) => void, options: StrokeOptions | undefined) {
-    this.buildFacets(undefined, options);
+    this.buildFacets(options);
     if (this._facets)
       announce(this._facets);
   }
@@ -226,7 +224,7 @@ export class SweepContour {
   public sweepToUnionOfConvexClipPlaneSets(): UnionOfConvexClipPlaneSets | undefined {
     const builder = PolyfaceBuilder.create();
     // It's a trip around the barn, but it's easy to make a polyface and scan it . . .
-    this.buildFacets(undefined, builder.options);
+    this.buildFacets(builder.options);
     const vectorZ = this.localToWorld.matrix.columnZ();
     const facets = this._facets;
     const point0 = Point3d.create();

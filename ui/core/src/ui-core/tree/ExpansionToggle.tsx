@@ -6,10 +6,9 @@
  * @module Tree
  */
 
-import * as classnames from "classnames";
-import * as React from "react";
-
 import "./ExpansionToggle.scss";
+import classnames from "classnames";
+import * as React from "react";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[ExpansionToggle]] component
@@ -21,7 +20,7 @@ export interface ExpansionToggleProps extends CommonProps {
   ["data-testid"]?: string;
 }
 
-/** ExpansionToggle React component used by the [[TreeNode]] component
+/** ExpansionToggle React component used by the [[TreeNode]] component to show collapsed or expanded state
  * @public
  */
 export class ExpansionToggle extends React.PureComponent<ExpansionToggleProps> {

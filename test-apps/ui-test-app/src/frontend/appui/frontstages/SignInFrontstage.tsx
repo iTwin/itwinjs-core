@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
-  CoreTools, ContentGroup, ContentControl, ConfigurableCreateInfo,
-  FrontstageProvider, FrontstageProps, Frontstage, SignIn, UiFramework,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, SignIn,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
 
@@ -13,7 +14,11 @@ class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <SignIn oidcClient={UiFramework.oidcClient} onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
+    const client = IModelApp.authorizationClient;
+    if (isFrontendAuthorizationClient(client))
+      this.reactNode = <SignIn onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
+    else
+      this.reactNode = null;
   }
 
   // user chose to work offline from the sign in page

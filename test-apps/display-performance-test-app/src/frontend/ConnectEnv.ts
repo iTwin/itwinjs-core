@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ConnectClient, Project, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { showStatus } from "./Utils";
 
 // Logic to establish a connection to a Connect-hosted project and iModel
-let _connectClient!: ConnectClient;
+let _connectClient!: ContextRegistryClient;
 
 async function getProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project | undefined> {
   let project: Project;
@@ -22,7 +23,7 @@ async function getProjectByName(requestContext: AuthorizedClientRequestContext, 
 }
 
 export async function initializeIModelHub(projectName: string): Promise<Project | undefined> {
-  _connectClient = new ConnectClient();
+  _connectClient = new ContextRegistryClient();
 
   showStatus("opening Project", projectName);
 

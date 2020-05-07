@@ -2,19 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64String, using } from "@bentley/bentleyjs-core";
 import { Angle, Point3d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, Cartographic, ColorDef, Feature, FontMap, FontType, SubCategoryOverride, ViewFlags } from "@bentley/imodeljs-common";
 import {
-  ChangeFlag, ChangeFlags, CompassMode, FeatureSymbology, IModelApp, IModelConnection, MockRender, PanViewTool,
-  PerModelCategoryVisibility, ScreenViewport, SpatialViewState, StandardViewId, TwoWayViewportSync, Viewport, RenderPlan,
+  BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, Cartographic, ColorDef, Feature, FontMap, FontType, SubCategoryOverride, ViewFlags,
+} from "@bentley/imodeljs-common";
+import {
+  ChangeFlag, ChangeFlags, CompassMode, FeatureSymbology, IModelApp, IModelConnection, MockRender, PanViewTool, PerModelCategoryVisibility,
+  RenderPlan, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, TwoWayViewportSync, Viewport,
 } from "@bentley/imodeljs-frontend";
-import { assert, expect } from "chai";
-import * as path from "path";
 
 // cSpell:ignore calibri subcats subcat pmcv ovrs
-
-const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets");
 
 function createViewDiv() {
   const div = document.createElement("div") as HTMLDivElement;
@@ -33,17 +32,17 @@ describe("Viewport", () => {
   const viewDiv2 = createViewDiv();
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(path.join(iModelDir, "test.bim"));
-    imodel2 = await IModelConnection.openSnapshot(path.join(iModelDir, "test2.bim"));
+    await MockRender.App.startup();
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel2 = await SnapshotConnection.openFile("test2.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    if (imodel2) await imodel2.closeSnapshot();
-    MockRender.App.shutdown();
+    if (imodel) await imodel.close();
+    if (imodel2) await imodel2.close();
+    await MockRender.App.shutdown();
   });
 
   it("Viewport", async () => {
@@ -149,7 +148,7 @@ describe("Viewport", () => {
     assert.isDefined(plan);
     if (plan) {
       assert.isTrue(plan.is3d);
-      assert.isUndefined(plan.activeVolume);
+      assert.isUndefined(plan.activeClipSettings);
       assert.isDefined(plan.hline);
       assert.isFalse(plan.hline!.visible.ovrColor);
       assert.equal(plan.hline!.hidden.width, undefined);
@@ -407,19 +406,19 @@ describe("Viewport changed events", async () => {
   document.body.appendChild(viewDiv);
 
   before(async () => {
-    MockRender.App.startup();
-    testBim = await IModelConnection.openSnapshot(path.join(iModelDir, "test.bim"));
-    testImodel = await IModelConnection.openSnapshot(path.join(iModelDir, "testImodel.bim"));
+    await MockRender.App.startup();
+    testBim = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    testImodel = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (undefined !== testBim)
-      await testBim.closeSnapshot();
+      await testBim.close();
 
     if (undefined !== testImodel)
-      await testImodel.closeSnapshot();
+      await testImodel.close();
 
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   // Make an Id64 for testImodel which has briefcase Id=1
@@ -528,7 +527,7 @@ describe("Viewport changed events", async () => {
       vp.saveViewUndo();
 
       // Override subcategories directly on display style => no event
-      const ovr = SubCategoryOverride.fromJSON({ color: ColorDef.green });
+      const ovr = SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr });
       mon.expect(ChangeFlag.None, () => vp.displayStyle.overrideSubCategory("0x123", ovr));
 
       // Override by replacing display style on Viewport
@@ -549,7 +548,7 @@ describe("Viewport changed events", async () => {
 
       // Apply different override to same subcategory
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red })));
+      mon.expect(ChangeFlag.DisplayStyle, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })));
     });
   });
 
@@ -924,8 +923,8 @@ describe("Per-model category visibility overrides", () => {
   const usedCatIds = ["0x17", "0x2d", "0x2f", "0x31"];
 
   before(async () => {
-    MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(path.join(iModelDir, "test.bim"));
+    await MockRender.App.startup();
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
 
@@ -940,9 +939,9 @@ describe("Per-model category visibility overrides", () => {
 
   after(async () => {
     if (imodel)
-      await imodel.closeSnapshot();
+      await imodel.close();
 
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("overrides category selector", async () => {
@@ -1030,10 +1029,10 @@ describe("Per-model category visibility overrides", () => {
     vp.changeCategoryDisplay("0x2d", false);
 
     // Override 30, 32, and 33 to be invisible. Override color of 30, 33, 18, and 2e. (2e's category is turned off).
-    vp.overrideSubCategory("0x30", SubCategoryOverride.fromJSON({ color: ColorDef.green, invisible: true }));
-    vp.overrideSubCategory("0x18", SubCategoryOverride.fromJSON({ color: ColorDef.red }));
-    vp.overrideSubCategory("0x2e", SubCategoryOverride.fromJSON({ color: ColorDef.blue }));
-    vp.overrideSubCategory("0x33", SubCategoryOverride.fromJSON({ color: ColorDef.white, invisible: true }));
+    vp.overrideSubCategory("0x30", SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr, invisible: true }));
+    vp.overrideSubCategory("0x18", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr }));
+    vp.overrideSubCategory("0x2e", SubCategoryOverride.fromJSON({ color: ColorDef.blue.tbgr }));
+    vp.overrideSubCategory("0x33", SubCategoryOverride.fromJSON({ color: ColorDef.white.tbgr, invisible: true }));
     vp.changeSubCategoryDisplay("0x32", false); // adds an override of { invisible: true }
 
     // With no per-model overrides, expect subcategory appearance overrides for invisible subcategories not to be loaded.

@@ -7,22 +7,22 @@
  */
 
 // import { Point2d } from "../Geometry2d";
-/* tslint:disable:variable-name jsdoc-format no-empty no-console*/
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Point4d } from "../geometry4d/Point4d";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { IStrokeHandler } from "../geometry3d/GeometryHandler";
-
 import { LineString3d } from "../curve/LineString3d";
-import { KnotVector } from "./KnotVector";
-import { Bezier1dNd } from "./Bezier1dNd";
-import { UnivariateBezier } from "../numerics/BezierPolynomials";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
+import { IStrokeHandler } from "../geometry3d/GeometryHandler";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+/* tslint:disable:variable-name jsdoc-format no-empty no-console*/
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Point4d } from "../geometry4d/Point4d";
+import { UnivariateBezier } from "../numerics/BezierPolynomials";
+import { Bezier1dNd } from "./Bezier1dNd";
+import { KnotVector } from "./KnotVector";
+
 /**
  * Base class for CurvePrimitive (necessarily 3D) with _polygon.
  * * This has a Bezier1dNd polygon as a member, and implements dimension-independent methods

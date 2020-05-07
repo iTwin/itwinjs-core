@@ -6,47 +6,55 @@
  * @module WebGL
  */
 
-import { assert, using, dispose } from "@bentley/bentleyjs-core";
-import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
-import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
-import { HasMaterialAtlas, IsInstanced, IsAnimated, IsClassified, IsShadowable, TechniqueFlags, FeatureMode, ClipDef, IsEdgeTestNeeded } from "./TechniqueFlags";
-import { ProgramBuilder, ClippingShaders } from "./ShaderBuilder";
-import { DrawParams, DrawCommands } from "./DrawCommand";
-import { Target } from "./Target";
-import { RenderPass } from "./RenderFlags";
-import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
-import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
-import { createCopyColorProgram } from "./glsl/CopyColor";
-import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
-import { createVolClassCopyZProgram, createVolClassSetBlendProgram, createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZUsingPointsProgram } from "./glsl/CopyStencil";
-import { createCompositeProgram } from "./glsl/Composite";
-import { createClipMaskProgram } from "./glsl/ClipMask";
-import { createEVSMProgram } from "./glsl/EVSMFromDepth";
-import { addTranslucency } from "./glsl/Translucency";
-import { addMonochrome } from "./glsl/Monochrome";
-import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
-import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
-import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
-import { addFeatureId, addFeatureSymbology, addUniformFeatureSymbology, addRenderOrder, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
-import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
-import { addFrustum, addEyeSpace } from "./glsl/Common";
-import { addModelViewMatrix } from "./glsl/Vertex";
-import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
-import { createEdgeBuilder } from "./glsl/Edge";
-import { createSkyBoxProgram } from "./glsl/SkyBox";
-import { createSkySphereProgram } from "./glsl/SkySphere";
+import { assert, dispose, using } from "@bentley/bentleyjs-core";
+import { WebGLDisposable } from "./Disposable";
+import { DrawCommands, DrawParams } from "./DrawCommand";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
+import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
+import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
+import { createClipMaskProgram } from "./glsl/ClipMask";
 import { createCombineTexturesProgram } from "./glsl/CombineTextures";
+import { addEyeSpace, addFrustum, addShaderFlags } from "./glsl/Common";
+import { createCompositeProgram } from "./glsl/Composite";
+import { createCopyColorProgram } from "./glsl/CopyColor";
+import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
+import {
+  createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZProgram, createVolClassCopyZUsingPointsProgram,
+  createVolClassSetBlendProgram,
+} from "./glsl/CopyStencil";
+import { createEdgeBuilder } from "./glsl/Edge";
+import { createEVSMProgram } from "./glsl/EVSMFromDepth";
+import { addFeatureId, addFeatureSymbology, addRenderOrder, addUniformFeatureSymbology, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
+import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
 import { addLogDepth } from "./glsl/LogarithmicDepthBuffer";
+import { addUnlitMonochrome } from "./glsl/Monochrome";
+import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
+import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
+import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
+import { createSkyBoxProgram } from "./glsl/SkyBox";
+import { createSkySphereProgram } from "./glsl/SkySphere";
+import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
+import createTerrainMeshBuilder from "./glsl/TerrainMesh";
+import { addTranslucency } from "./glsl/Translucency";
+import { addModelViewMatrix } from "./glsl/Vertex";
+import { RenderPass } from "./RenderFlags";
+import { ClippingShaders, ProgramBuilder } from "./ShaderBuilder";
+import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
-import { WebGLDisposable } from "./Disposable";
+import { Target } from "./Target";
+import {
+  ClipDef, FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, TechniqueFlags,
+} from "./TechniqueFlags";
+import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
 
 /** Defines a rendering technique implemented using one or more shader programs.
  * @internal
  */
 export interface Technique extends WebGLDisposable {
   getShader(flags: TechniqueFlags): ShaderProgram;
+  getShaderByIndex(index: number): ShaderProgram;
+  getShaderCount(): number;
 
   // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
   compileShaders(): boolean;
@@ -62,7 +70,9 @@ export class SingularTechnique implements Technique {
   public constructor(program: ShaderProgram) { this.program = program; }
 
   public getShader(_flags: TechniqueFlags) { return this.program; }
-  public compileShaders(): boolean { return this.program.compile(); }
+  public getShaderByIndex(_index: number) { return this.program; }
+  public getShaderCount() { return 1; }
+  public compileShaders(): boolean { return this.program.compile() === CompileStatus.Success; }
 
   public get isDisposed(): boolean { return this.program.isDisposed; }
 
@@ -83,12 +93,11 @@ const scratchHiliteFlags = new TechniqueFlags();
 export abstract class VariedTechnique implements Technique {
   private readonly _basicPrograms: ShaderProgram[] = [];
   private readonly _clippingPrograms: ClippingShaders[] = [];
-  private readonly _offsetToLogZPrograms: number;
 
   public compileShaders(): boolean {
     let allCompiled = true;
     for (const program of this._basicPrograms) {
-      if (!program.compile())
+      if (program.compile() !== CompileStatus.Success)
         allCompiled = false;
     }
 
@@ -134,7 +143,6 @@ export abstract class VariedTechnique implements Technique {
 
   protected constructor(numPrograms: number) {
     this._basicPrograms.length = numPrograms;
-    this._offsetToLogZPrograms = System.instance.supportsLogZBuffer ? numPrograms : 0;
   }
 
   protected abstract computeShaderIndex(flags: TechniqueFlags): number;
@@ -144,13 +152,11 @@ export abstract class VariedTechnique implements Technique {
     const descr = this._debugDescription + ": " + flags.buildDescription();
     builder.setDebugDescription(descr);
 
+    if (System.instance.supportsLogZBuffer)
+      addLogDepth(builder);
+
     const index = this.getShaderIndex(flags);
     this.addProgram(builder, index, gl, !flags.isClassified);
-    if (System.instance.supportsLogZBuffer) {
-      const withLogZ = builder.clone();
-      addLogDepth(withLogZ);
-      this.addProgram(withLogZ, index + this._offsetToLogZPrograms, gl, !flags.isClassified);
-    }
   }
 
   private addProgram(builder: ProgramBuilder, index: number, gl: WebGLRenderingContext | WebGL2RenderingContext, wantClippingMask: boolean): void {
@@ -165,7 +171,7 @@ export abstract class VariedTechnique implements Technique {
 
   protected addHiliteShader(gl: WebGLRenderingContext | WebGL2RenderingContext, instanced: IsInstanced, classified: IsClassified, create: (instanced: IsInstanced, classified: IsClassified) => ProgramBuilder): void {
     const builder = create(instanced, classified);
-    scratchHiliteFlags.initForHilite(new ClipDef(), instanced, classified, false);
+    scratchHiliteFlags.initForHilite(new ClipDef(), instanced, classified);
     this.addShader(builder, scratchHiliteFlags, gl);
   }
 
@@ -192,10 +198,7 @@ export abstract class VariedTechnique implements Technique {
 
   private getShaderIndex(flags: TechniqueFlags) {
     assert(!flags.isHilite || (!flags.isTranslucent && (flags.isClassified === IsClassified.Yes || flags.hasFeatures)), "invalid technique flags");
-    let index = this.computeShaderIndex(flags);
-    if (flags.usesLogZ)
-      index += this._offsetToLogZPrograms;
-
+    const index = this.computeShaderIndex(flags);
     assert(index < this._basicPrograms.length, "shader index out of bounds");
     return index;
   }
@@ -215,39 +218,55 @@ export abstract class VariedTechnique implements Technique {
 
     return program;
   }
+
+  // NB: Will ignore clipping shaders.
+  public getShaderByIndex(index: number): ShaderProgram {
+    return this._basicPrograms[index];
+  }
+
+  // NB: Will ignore clipping shaders.
+  public getShaderCount(): number {
+    return this._basicPrograms.length;
+  }
 }
 
 class SurfaceTechnique extends VariedTechnique {
   private static readonly _kOpaque = 0;
   private static readonly _kTranslucent = 1;
   private static readonly _kInstanced = 2;
-  private static readonly _kMaterialAtlas = 4;
-  private static readonly _kAnimated = 8;
-  private static readonly _kShadowable = 16;
-  private static readonly _kFeature = 32;
-  private static readonly _kEdgeTestNeeded = 96; // only when hasFeatures
-  private static readonly _kHilite = 160;
-  // Classifiers are never animated or instanced. They do support shadows and translucency.
-  // There are 3 base variations - 1 per feature mode - each with translucent and/or shadowed variants; plus 1 for hilite.
+  private static readonly _kAnimated = 4;
+  private static readonly _kShadowable = 8;
+  private static readonly _kThematic = 16;
+  private static readonly _kFeature = 24;
+  private static readonly _kEdgeTestNeeded = SurfaceTechnique._kFeature * 3; // only when hasFeatures
+  private static readonly _kHilite = SurfaceTechnique._kEdgeTestNeeded + SurfaceTechnique._kFeature * 2;
+  // Classifiers are never animated or instanced. They do support shadows, thematic display, and translucency.
+  // There are 3 base variations - 1 per feature mode - each with translucent/shadowed/thematic variants; plus 1 for hilite.
   private static readonly _kClassified = SurfaceTechnique._kHilite + numHiliteVariants;
 
   public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext) {
-    super(SurfaceTechnique._kClassified + 13);
+    // 3 base classified variations - 1 per feature mode.
+    // Plus thematic variant of each and shadowable variant of each = 9
+    // Plus translucent variant of each of those = 18
+    // Plus 1 hilite shader = 19
+    super(SurfaceTechnique._kClassified + 19);
     const flags = scratchTechniqueFlags;
 
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
       this.addHiliteShader(gl, instanced, IsClassified.No, createSurfaceHiliter);
       for (let iAnimate = IsAnimated.No; iAnimate <= IsAnimated.Yes; iAnimate++) {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
-          for (let hasMaterialAtlas = HasMaterialAtlas.No; hasMaterialAtlas <= HasMaterialAtlas.Yes; hasMaterialAtlas++) {
+          for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
             for (let edgeTestNeeded = IsEdgeTestNeeded.No; edgeTestNeeded <= IsEdgeTestNeeded.Yes; edgeTestNeeded++) {
               for (const featureMode of featureModes) {
                 for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
                   if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
-                    flags.reset(featureMode, instanced, shadowable);
+                    if (IsThematic.Yes === thematic && IsShadowable.Yes === shadowable)
+                      continue; // currently this combination is disallowed.
+
+                    flags.reset(featureMode, instanced, shadowable, thematic);
                     flags.isAnimated = iAnimate;
                     flags.isEdgeTestNeeded = edgeTestNeeded;
-                    flags.hasMaterialAtlas = hasMaterialAtlas;
                     flags.isTranslucent = 1 === iTranslucent;
 
                     const builder = createSurfaceBuilder(flags);
@@ -264,16 +283,21 @@ class SurfaceTechnique extends VariedTechnique {
     this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, createSurfaceHiliter);
     for (let translucent = 0; translucent < 2; translucent++) {
       for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
-        for (const featureMode of featureModes) {
-          flags.reset(featureMode, IsInstanced.No, shadowable);
-          flags.isClassified = IsClassified.Yes;
-          flags.isTranslucent = (0 !== translucent);
+        for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
+          for (const featureMode of featureModes) {
+            if (IsThematic.Yes === thematic && IsShadowable.Yes === shadowable)
+              continue; // currently this combination is disallowed.
 
-          const builder = createSurfaceBuilder(flags);
-          if (flags.isTranslucent)
-            addTranslucency(builder);
+            flags.reset(featureMode, IsInstanced.No, shadowable, thematic);
+            flags.isClassified = IsClassified.Yes;
+            flags.isTranslucent = (0 !== translucent);
 
-          this.addShader(builder, flags, gl);
+            const builder = createSurfaceBuilder(flags);
+            if (flags.isTranslucent)
+              addTranslucency(builder);
+
+            this.addShader(builder, flags, gl);
+          }
         }
       }
     }
@@ -284,6 +308,8 @@ class SurfaceTechnique extends VariedTechnique {
   protected get _debugDescription() { return "Surface"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
+    assert(!(flags.isThematic && flags.isShadowable));
+
     if (flags.isClassified) {
       assert(!flags.isAnimated);
       assert(!flags.isInstanced);
@@ -293,15 +319,17 @@ class SurfaceTechnique extends VariedTechnique {
       if (flags.isHilite)
         return SurfaceTechnique._kClassified;
 
-      // The rest are organized in 3 groups of four - one group per feature mode.
-      // Each group contains opaque, translucent, shadowable, and translucent+shadowable variants.
+      // The rest are organized in 3 groups of 6 - one group per feature mode.
+      // Each group contains opaque, translucent, opaque+thematic, translucent+thematic, opaque+shadowable, and translucent+shadowable variants.
       let baseIndex = SurfaceTechnique._kClassified + 1;
       if (flags.isTranslucent)
         baseIndex += 1;
       if (flags.isShadowable)
         baseIndex += 2;
+      if (flags.isThematic)
+        baseIndex += 4;
 
-      const featureOffset = 4 * flags.featureMode;
+      const featureOffset = 6 * flags.featureMode;
       return baseIndex + featureOffset;
     } else if (flags.isHilite) {
       assert(flags.hasFeatures);
@@ -311,9 +339,9 @@ class SurfaceTechnique extends VariedTechnique {
     assert(flags.hasFeatures || flags.isEdgeTestNeeded === IsEdgeTestNeeded.No);
     let index = flags.isTranslucent ? SurfaceTechnique._kTranslucent : SurfaceTechnique._kOpaque;
     index += SurfaceTechnique._kInstanced * flags.isInstanced;
-    index += SurfaceTechnique._kMaterialAtlas * flags.hasMaterialAtlas;
     index += SurfaceTechnique._kAnimated * flags.isAnimated;
     index += SurfaceTechnique._kShadowable * flags.isShadowable;
+    index += SurfaceTechnique._kThematic * flags.isThematic;
 
     if (flags.isEdgeTestNeeded)
       index += SurfaceTechnique._kEdgeTestNeeded + (flags.featureMode - 1) * SurfaceTechnique._kFeature;
@@ -338,13 +366,13 @@ class PolylineTechnique extends VariedTechnique {
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
       this.addHiliteShader(gl, instanced, IsClassified.No, createPolylineHiliter);
       for (const featureMode of featureModes) {
-        flags.reset(featureMode, instanced, IsShadowable.No);
+        flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No);
         const builder = createPolylineBuilder(instanced);
-        addMonochrome(builder.frag);
+        addUnlitMonochrome(builder.frag);
 
         // The translucent shaders do not need the element IDs.
         const builderTrans = createPolylineBuilder(instanced);
-        addMonochrome(builderTrans.frag);
+        addUnlitMonochrome(builderTrans.frag);
         if (FeatureMode.Overrides === featureMode) {
           addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
           addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
@@ -355,7 +383,7 @@ class PolylineTechnique extends VariedTechnique {
         }
 
         this.addFeatureId(builder, featureMode);
-        flags.reset(featureMode, instanced, IsShadowable.No);
+        flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No);
         this.addShader(builder, flags, gl);
       }
     }
@@ -393,14 +421,14 @@ class EdgeTechnique extends VariedTechnique {
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
       for (let iAnimate = IsAnimated.No; iAnimate <= IsAnimated.Yes; iAnimate++) {
         for (const featureMode of featureModes) {
-          flags.reset(featureMode, instanced, IsShadowable.No);
+          flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No);
           flags.isAnimated = iAnimate;
           const builder = createEdgeBuilder(isSilhouette, flags.isInstanced, flags.isAnimated);
-          addMonochrome(builder.frag);
+          addUnlitMonochrome(builder.frag);
 
           // The translucent shaders do not need the element IDs.
           const builderTrans = createEdgeBuilder(isSilhouette, flags.isInstanced, flags.isAnimated);
-          addMonochrome(builderTrans.frag);
+          addUnlitMonochrome(builderTrans.frag);
           if (FeatureMode.Overrides === featureMode) {
             addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
             addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Linear);
@@ -411,7 +439,7 @@ class EdgeTechnique extends VariedTechnique {
           }
 
           this.addFeatureId(builder, featureMode);
-          flags.reset(featureMode, instanced, IsShadowable.No);
+          flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No);
           flags.isAnimated = iAnimate;
           this.addShader(builder, flags, gl);
         }
@@ -448,13 +476,13 @@ class PointStringTechnique extends VariedTechnique {
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
       this.addHiliteShader(gl, instanced, IsClassified.No, createPointStringHiliter);
       for (const featureMode of featureModes) {
-        flags.reset(featureMode, instanced, IsShadowable.No);
+        flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No);
         const builder = createPointStringBuilder(instanced);
-        addMonochrome(builder.frag);
+        addUnlitMonochrome(builder.frag);
 
         // The translucent shaders do not need the element IDs.
         const builderTrans = createPointStringBuilder(instanced);
-        addMonochrome(builderTrans.frag);
+        addUnlitMonochrome(builderTrans.frag);
         if (FeatureMode.Overrides === featureMode) {
           addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Point);
           addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.Point);
@@ -465,7 +493,7 @@ class PointStringTechnique extends VariedTechnique {
         }
 
         this.addFeatureId(builder, featureMode);
-        flags.reset(featureMode, instanced, IsShadowable.No);
+        flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No);
         this.addShader(builder, flags, gl);
       }
     }
@@ -497,7 +525,7 @@ class PointCloudTechnique extends VariedTechnique {
       const flags = scratchTechniqueFlags;
       const pointCloudFeatureModes = [FeatureMode.None, FeatureMode.Overrides];
       for (const featureMode of pointCloudFeatureModes) {
-        flags.reset(featureMode, IsInstanced.No, IsShadowable.No);
+        flags.reset(featureMode, IsInstanced.No, IsShadowable.No, IsThematic.No);
         flags.isClassified = iClassified;
         const builder = createPointCloudBuilder(flags.isClassified, featureMode);
         if (FeatureMode.Overrides === featureMode)
@@ -520,12 +548,124 @@ class PointCloudTechnique extends VariedTechnique {
   }
 }
 
+class TerrainMeshTechnique extends VariedTechnique {
+  private static readonly _numVariants = 16;
+
+  public constructor(gl: WebGLRenderingContext) {
+    super(TerrainMeshTechnique._numVariants);
+    for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
+      for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
+        for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
+          const flags = scratchTechniqueFlags;
+          const terrainMeshFeatureModes = [FeatureMode.None, FeatureMode.Pick];
+          for (const featureMode of terrainMeshFeatureModes) {
+            flags.reset(featureMode, IsInstanced.No, shadowable, IsThematic.No);
+            flags.isClassified = iClassified;
+            flags.isTranslucent = 1 === iTranslucent;
+            const builder = createTerrainMeshBuilder(flags.isClassified, featureMode, flags.isShadowable);
+            if (FeatureMode.Pick === featureMode)
+              addUniformFeatureSymbology(builder);
+            if (flags.isTranslucent) {
+              addShaderFlags(builder);
+              addTranslucency(builder);
+            } else
+              this.addFeatureId(builder, featureMode);
+            this.addShader(builder, flags, gl);
+          }
+        }
+      }
+    }
+    this.verifyShadersContiguous();
+  }
+
+  protected get _debugDescription() { return "TerrainMesh"; }
+
+  public computeShaderIndex(flags: TechniqueFlags): number {
+    let ndx = 0;
+    if (flags.isClassified)
+      ndx++;
+    if (flags.isShadowable)
+      ndx += 2;
+    if (flags.isTranslucent)
+      ndx += 4;
+    if (flags.featureMode !== FeatureMode.None)
+      ndx += 8;
+    return ndx;
+  }
+}
+
+interface PrioritizedShaderVariation {
+  featureMode: FeatureMode;
+  isInstanced: IsInstanced;
+  isShadowable: IsShadowable;
+  isEdgeTestedNeeded: IsEdgeTestNeeded;
+  isTranslucent: boolean;
+}
+
+interface PrioritizedTechniqueOrShader {
+  techniqueId: TechniqueId;
+  specificShader?: PrioritizedShaderVariation; // if defined, only compile this specific shader variation for the technique; otherwise, compile all uncompiled shader variations for the technique
+}
+
+const _techniquesByPriority: PrioritizedTechniqueOrShader[] = [
+  // Compile these specific shader variations first because they seem most likely to be used immediately upon opening a file.
+  { techniqueId: TechniqueId.Surface, specificShader: { featureMode: FeatureMode.None, isInstanced: IsInstanced.No, isShadowable: IsShadowable.No, isEdgeTestedNeeded: IsEdgeTestNeeded.No, isTranslucent: false } },
+  { techniqueId: TechniqueId.Surface, specificShader: { featureMode: FeatureMode.Pick, isInstanced: IsInstanced.No, isShadowable: IsShadowable.No, isEdgeTestedNeeded: IsEdgeTestNeeded.No, isTranslucent: false } },
+  { techniqueId: TechniqueId.Surface, specificShader: { featureMode: FeatureMode.Pick, isInstanced: IsInstanced.No, isShadowable: IsShadowable.No, isEdgeTestedNeeded: IsEdgeTestNeeded.Yes, isTranslucent: false } },
+  { techniqueId: TechniqueId.Surface, specificShader: { featureMode: FeatureMode.Overrides, isInstanced: IsInstanced.No, isShadowable: IsShadowable.No, isEdgeTestedNeeded: IsEdgeTestNeeded.No, isTranslucent: false } },
+  { techniqueId: TechniqueId.Surface, specificShader: { featureMode: FeatureMode.Overrides, isInstanced: IsInstanced.No, isShadowable: IsShadowable.No, isEdgeTestedNeeded: IsEdgeTestNeeded.Yes, isTranslucent: false } },
+  { techniqueId: TechniqueId.Surface, specificShader: { featureMode: FeatureMode.None, isInstanced: IsInstanced.No, isShadowable: IsShadowable.No, isEdgeTestedNeeded: IsEdgeTestNeeded.No, isTranslucent: true } },
+  { techniqueId: TechniqueId.Surface, specificShader: { featureMode: FeatureMode.Pick, isInstanced: IsInstanced.No, isShadowable: IsShadowable.No, isEdgeTestedNeeded: IsEdgeTestNeeded.No, isTranslucent: true } },
+  { techniqueId: TechniqueId.Surface, specificShader: { featureMode: FeatureMode.Pick, isInstanced: IsInstanced.No, isShadowable: IsShadowable.No, isEdgeTestedNeeded: IsEdgeTestNeeded.Yes, isTranslucent: true } },
+  { techniqueId: TechniqueId.Surface, specificShader: { featureMode: FeatureMode.Overrides, isInstanced: IsInstanced.No, isShadowable: IsShadowable.No, isEdgeTestedNeeded: IsEdgeTestNeeded.No, isTranslucent: true } },
+  { techniqueId: TechniqueId.Surface, specificShader: { featureMode: FeatureMode.Overrides, isInstanced: IsInstanced.No, isShadowable: IsShadowable.No, isEdgeTestedNeeded: IsEdgeTestNeeded.Yes, isTranslucent: true } },
+
+  // Next, compile all shaders in specific techniques.
+  // Do surfaces first because (1) they are the most commonly used and (2) they take longer to compile.
+  { techniqueId: TechniqueId.Surface },
+  { techniqueId: TechniqueId.Edge },
+  { techniqueId: TechniqueId.SilhouetteEdge },
+  { techniqueId: TechniqueId.Polyline },
+  { techniqueId: TechniqueId.PointString },
+  { techniqueId: TechniqueId.PointCloud },
+  { techniqueId: TechniqueId.TerrainMesh },
+
+  // The following techniques take a trivial amount of time to compile - do them last
+  { techniqueId: TechniqueId.OITClearTranslucent },
+  { techniqueId: TechniqueId.CopyPickBuffers },
+  { techniqueId: TechniqueId.CopyColor },
+  { techniqueId: TechniqueId.CopyColorNoAlpha },
+  { techniqueId: TechniqueId.ClearPickAndColor },
+  { techniqueId: TechniqueId.CompositeTranslucent },
+  { techniqueId: TechniqueId.CompositeHilite },
+  { techniqueId: TechniqueId.CompositeHiliteAndTranslucent },
+  { techniqueId: TechniqueId.CompositeOcclusion },
+  { techniqueId: TechniqueId.CompositeTranslucentAndOcclusion },
+  { techniqueId: TechniqueId.CompositeHiliteAndOcclusion },
+  { techniqueId: TechniqueId.CompositeAll },
+  { techniqueId: TechniqueId.VolClassColorUsingStencil },
+  { techniqueId: TechniqueId.ClipMask },
+  { techniqueId: TechniqueId.EVSMFromDepth },
+  { techniqueId: TechniqueId.SkyBox },
+  { techniqueId: TechniqueId.SkySphereGradient },
+  { techniqueId: TechniqueId.SkySphereTexture },
+  { techniqueId: TechniqueId.AmbientOcclusion },
+  { techniqueId: TechniqueId.Blur },
+  { techniqueId: TechniqueId.CombineTextures },
+  { techniqueId: TechniqueId.VolClassCopyZ },
+  { techniqueId: TechniqueId.VolClassSetBlend },
+  { techniqueId: TechniqueId.VolClassBlend },
+];
+const _numTechniquesByPriority = _techniquesByPriority.length;
+
 /** A collection of rendering techniques accessed by ID.
  * @internal
  */
 export class Techniques implements WebGLDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
   private readonly _dynamicTechniqueIds = new Array<string>(); // technique ID = (index in this array) + TechniqueId.NumBuiltIn
+  private _techniqueByPriorityIndex = 0;
+  private _shaderIndex = 0;
 
   public static create(gl: WebGLRenderingContext | WebGL2RenderingContext): Techniques {
     const techs = new Techniques();
@@ -562,7 +702,7 @@ export class Techniques implements WebGLDisposable {
 
   /** Execute the commands for a single given classification primitive (the first 3 commands should be a push, the primitive, then a pop) */
   public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass) {
-    // ###TODO: Disable shadows. Probably in the ClassifierTileTree's ViewFlag.Overrides.
+    // ###TODO: Disable shadows. Probably in the ClassifierTileTree's ViewFlagOverrides.
     this.execute(target, cmdsByIndex, renderPass);
   }
 
@@ -599,6 +739,49 @@ export class Techniques implements WebGLDisposable {
     return allCompiled;
   }
 
+  /** Compile shader of next highest priority. Called when possible during an idle situation before any viewports exist. */
+  public idleCompileNextShader(): boolean {
+    let compileStatus = CompileStatus.Success;
+    let wasPreviouslyCompiled = false;
+
+    do {
+      if (this._techniqueByPriorityIndex >= _numTechniquesByPriority)
+        return false;
+
+      let shader: ShaderProgram;
+      let numShaders = 0;
+
+      const pTech = _techniquesByPriority[this._techniqueByPriorityIndex];
+      const tech = this._list[pTech.techniqueId];
+
+      if (pTech.specificShader !== undefined) { // if this entry consists of a specific shader, just compile that
+        const flags = scratchTechniqueFlags;
+        flags.reset(pTech.specificShader.featureMode, pTech.specificShader.isInstanced, pTech.specificShader.isShadowable, IsThematic.No);
+        flags.isEdgeTestNeeded = pTech.specificShader.isEdgeTestedNeeded;
+        flags.isTranslucent = pTech.specificShader.isTranslucent;
+        shader = tech.getShader(flags);
+      } else { // if this entry only contains a techniqueId, then compile all uncompiled shaders for that technique
+        shader = tech.getShaderByIndex(this._shaderIndex);
+        this._shaderIndex++;
+        numShaders = tech.getShaderCount();
+      }
+
+      if (shader.isCompiled)
+        wasPreviouslyCompiled = true;
+      else {
+        compileStatus = shader.compile();
+        wasPreviouslyCompiled = false;
+      }
+
+      if (this._shaderIndex >= numShaders) {
+        this._techniqueByPriorityIndex++;
+        this._shaderIndex = 0;
+      }
+    } while (wasPreviouslyCompiled);
+
+    return compileStatus === CompileStatus.Success;
+  }
+
   private constructor() { }
 
   private initializeBuiltIns(gl: WebGLRenderingContext | WebGL2RenderingContext): void {
@@ -621,6 +804,7 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
+    this._list[TechniqueId.TerrainMesh] = new TerrainMeshTechnique(gl);
     if (System.instance.capabilities.supportsFragDepth)
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     else

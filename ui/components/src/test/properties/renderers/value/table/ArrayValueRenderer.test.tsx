@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { render } from "@testing-library/react";
 import * as React from "react";
-import { TableArrayValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/ArrayValueRenderer";
+import { ArrayValue } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
+import { render } from "@testing-library/react";
+import { TableArrayValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/ArrayValueRenderer";
 import TestUtils from "../../../../TestUtils";
-import { ArrayValue } from "@bentley/imodeljs-frontend";
 
 describe("ArrayValueRenderer", () => {
   it("renders correctly", () => {

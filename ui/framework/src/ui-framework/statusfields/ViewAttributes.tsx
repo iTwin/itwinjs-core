@@ -6,19 +6,16 @@
  * @module StatusBar
  */
 
+import "./ViewAttributes.scss";
 import * as React from "react";
-
 import { ViewFlagProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Checkbox } from "@bentley/ui-core";
-import { TitleBar, FooterPopup, Dialog } from "@bentley/ui-ninezone";
-
-import { Indicator } from "./Indicator";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
 import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
-
-import "./ViewAttributes.scss";
+import { Indicator } from "./Indicator";
+import { StatusFieldProps } from "./StatusFieldProps";
 
 interface ViewAttributesStatusFieldState {
   viewFlags: ViewFlagProps;
@@ -80,7 +77,6 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
       (props as any)[flagName] = (props as any)[flagName] === undefined ? true : !(props as any)[flagName];
       const viewFlags = ViewFlags.fromJSON(props);
       IModelApp.viewManager.selectedView.viewFlags = viewFlags;
-      IModelApp.viewManager.selectedView.invalidateRenderPlan();
       this.updateState();
     }
   }

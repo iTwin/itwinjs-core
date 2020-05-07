@@ -9,21 +9,22 @@
 
 // import { Geometry, Angle, AngleSweep } from "../Geometry";
 
-import { MomentData } from "../geometry4d/MomentData";
-import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Angle } from "../geometry3d/Angle";
-import { Arc3d } from "./Arc3d";
-import { LineString3d } from "./LineString3d";
-import { LineSegment3d } from "./LineSegment3d";
-import { Loop } from "./Loop";
-import { StrokeOptions } from "./StrokeOptions";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { TransitionSpiral3d } from "./TransitionSpiral";
+import { Angle } from "../geometry3d/Angle";
+import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { MomentData } from "../geometry4d/MomentData";
+import { Arc3d } from "./Arc3d";
 import { CurvePrimitive } from "./CurvePrimitive";
+import { LineSegment3d } from "./LineSegment3d";
+import { LineString3d } from "./LineString3d";
+import { Loop } from "./Loop";
 import { ParityRegion } from "./ParityRegion";
+import { StrokeOptions } from "./StrokeOptions";
+import { TransitionSpiral3d } from "./TransitionSpiral";
 import { UnionRegion } from "./UnionRegion";
+
 /**
  * Implementation class for computing XY area moments.
  * @internal

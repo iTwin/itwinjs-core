@@ -6,12 +6,12 @@
  * @module MessageCenter
  */
 
-import * as classnames from "classnames";
+import "./Dialog.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { TitleBar } from "../dialog/TitleBar";
 import { Dialog } from "../dialog/Dialog";
-import "./Dialog.scss";
+import { TitleBar } from "../dialog/TitleBar";
 
 /** Properties of [[MessageCenterDialog]] component.
  * @beta

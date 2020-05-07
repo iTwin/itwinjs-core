@@ -5,36 +5,40 @@
 /* tslint:disable:no-direct-imports */
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-import * as React from "react";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import * as path from "path";
 import * as faker from "faker";
+import * as path from "path";
+import * as React from "react";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
+import { KeySet } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
 import {
-  Presentation,
-  SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, PresentationManager,
+  ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeType, SelectionHandler, SelectionManager,
 } from "@bentley/presentation-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyData, PropertyDataChangeEvent, PropertyGrid, PropertyGridProps } from "@bentley/ui-components";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyGrid, PropertyGridProps, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
-import { propertyGridWithUnifiedSelection } from "../../presentation-components";
-import { IPresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
+import { IPresentationPropertyDataProvider, IUnifiedSelectionComponent, propertyGridWithUnifiedSelection } from "../../presentation-components";
+import { initializeLocalization } from "../../presentation-components/common/Utils";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationPropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
 
 describe("PropertyGrid withUnifiedSelection", () => {
 
-  before(() => {
-    Presentation.presentation = moq.Mock.ofType<PresentationManager>().object;
-    Presentation.i18n = new I18N("", {
+  before(async () => {
+    Presentation.setPresentationManager(moq.Mock.ofType<PresentationManager>().object);
+    Presentation.setI18nManager(new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    });
+    }));
+    await initializeLocalization();
+  });
+
+  after(() => {
+    Presentation.terminate();
   });
 
   let testRulesetId: string;
@@ -58,7 +62,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
       rulesetId = testRulesetId;
     if (!propertyData) {
       propertyData = {
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         description: faker.random.words(),
         categories: [],
         records: {},
@@ -79,15 +83,13 @@ describe("PropertyGrid withUnifiedSelection", () => {
       selectionHandler={selectionHandlerMock.object} />);
   });
 
-  it("uses data provider's imodel and rulesetId", () => {
+  it("uses data provider's imodel", () => {
     const component = shallow(<PresentationPropertyGrid
       orientation={Orientation.Horizontal}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />).instance() as any as IUnifiedSelectionComponent;
-
     expect(component.imodel).to.equal(imodelMock.object);
-    expect(component.rulesetId).to.equal(testRulesetId);
   });
 
   it("creates default implementation for selection handler when not provided through props", () => {
@@ -95,7 +97,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
     selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
     selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAnyNumber())).returns(() => new KeySet());
-    Presentation.selection = selectionManagerMock.object;
+    Presentation.setSelectionManager(selectionManagerMock.object);
 
     const component = shallow(<PresentationPropertyGrid
       orientation={Orientation.Vertical}

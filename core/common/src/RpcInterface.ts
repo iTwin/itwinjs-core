@@ -6,9 +6,9 @@
  * @module RpcInterface
  */
 
-import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
-import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
 import * as semver from "semver";
+import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
+import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { RpcRequest } from "./rpc/core/RpcRequest";
 
 /** @public */

@@ -2,6 +2,420 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/imodeljs-frontend_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. "
+          },
+          {
+            "comment": "Add a peerDependency on @bentley/extension-client"
+          },
+          {
+            "comment": "lookAtViewAlignedVolume should adjust view delta for limits and not fail."
+          },
+          {
+            "comment": "Show min/max window error for mouse wheel zoom."
+          },
+          {
+            "comment": "Show min/max window error for mouse wheel zoom."
+          },
+          {
+            "comment": "Revert bogus backend extract-api change. More frontend api changes."
+          },
+          {
+            "comment": "Limit minimum alpha weight to prevent transparent geometry at far plane from becoming invisible."
+          },
+          {
+            "comment": "Separate Viewport.scheduleScriptFraction into analysisFraction and timePoint."
+          },
+          {
+            "comment": "SpatialViewState.areAllTileTreesLoaded correctly checks secondary classifier and drape trees."
+          },
+          {
+            "comment": "`IModelApp.startup` is now async."
+          },
+          {
+            "comment": "`IModelApp.shutdown()` is now async."
+          },
+          {
+            "comment": "Make locate work for background map with depth turned off."
+          },
+          {
+            "comment": "Setup initialization of briefcase cache for offline workflows. (VSTS#286489)"
+          },
+          {
+            "comment": "Monitor progress of downloading briefcases, ability to cancel download of briefcases. "
+          },
+          {
+            "comment": "Introduce BriefcaseConnection, make IModelConnection abstract"
+          },
+          {
+            "comment": "Remove ^ for ulas client dep in the frontend\""
+          },
+          {
+            "comment": "Improve performance of shadow display on macOS by avoiding frequent calls to gl.getParameter()."
+          },
+          {
+            "comment": "Added support for customized lighting including hemisphere lights."
+          },
+          {
+            "comment": "React to clients/UlasClient changes"
+          },
+          {
+            "comment": "Expand descendant clipping for reality tiles.   Test noGcsDefined when calculating map ECEF."
+          },
+          {
+            "comment": "Fix regression causing reality models not to be clipped by view clip."
+          },
+          {
+            "comment": "Clip upsampled terrain tile triangles to avoid overlapping transparency anomalies."
+          },
+          {
+            "comment": "Add feature to optionally colorize pixels inside or outside clip regions."
+          },
+          {
+            "comment": "WebGL Compatibility functionality moved to webgl-compatibility package"
+          },
+          {
+            "comment": "Added support for backward slashes in erroneous URLs of Reality Data in PW Context Share"
+          },
+          {
+            "comment": "Reality models now cast and receive solar shadows."
+          },
+          {
+            "comment": "NativeApp.deleteBriefcase should work in offline scenarios. "
+          },
+          {
+            "comment": "Dont reproject tiles if GeoLocation from tool."
+          },
+          {
+            "comment": "Support for progress/cancel from ios"
+          },
+          {
+            "comment": "Ensure view decorations are scaled based on device-pixel ratio."
+          },
+          {
+            "comment": "Ellipsoid API"
+          },
+          {
+            "comment": "Handle map tiles without depth buffering in ellipsoid map projection."
+          },
+          {
+            "comment": "Adjust viewport's Z planes when background map display is toggled."
+          },
+          {
+            "comment": "Refactor ExtensionAdmin for Extension Service support"
+          },
+          {
+            "comment": "Make iModelConnection an optional arg to track() in FeatureTrackingManager."
+          },
+          {
+            "comment": "Fix error explanation from InteractiveTool filterHit not been shown."
+          },
+          {
+            "comment": "Ensure 2d views have known extents at construction."
+          },
+          {
+            "comment": "Do not cull on content range if children present."
+          },
+          {
+            "comment": "Fix global frustum expansion."
+          },
+          {
+            "comment": "Remove deprecated APIs; see NextVersion.md for details."
+          },
+          {
+            "comment": "Fix garbled terrain imagery caused by premature texture disposal."
+          },
+          {
+            "comment": "Fix reprojection of map tiles."
+          },
+          {
+            "comment": "Fix a bug in populating layer command lists, and ensure plan projection elevations are compared properly."
+          },
+          {
+            "comment": "Fix for cannot pick clip handles when elements are emphasized"
+          },
+          {
+            "comment": "Always set planar flag for 2d geometry."
+          },
+          {
+            "comment": "Fix documentation of DisplayStyle timePoint units."
+          },
+          {
+            "comment": "Fix regression causing transparency threshold to be ignored in HiddenLine and SolidFill render modes."
+          },
+          {
+            "comment": "Fix potentially uninitialized lighting uniforms."
+          },
+          {
+            "comment": "fixed pick of volume classified geometry"
+          },
+          {
+            "comment": "fixed hilite for volume classifiers"
+          },
+          {
+            "comment": "Update definition of toolsettings properties.  To assist with responsive UI based on screen size, Lock property is now specified with the property it locks."
+          },
+          {
+            "comment": "Change to make ui-abstract a peer dependency, this required updating some test apps to explicitly defing ui-abstract as a dependency."
+          },
+          {
+            "comment": "Fix for EcefLocation.createFromCartographicOrigin. Tooltip for monument point handle."
+          },
+          {
+            "comment": "Refine frustum/globe intersection calculation."
+          },
+          {
+            "comment": "Request high-performance webgl context."
+          },
+          {
+            "comment": "added rendering frame lifecycle callbacks required for 3dmaps plugin"
+          },
+          {
+            "comment": "react to changes in imodeljs-clients"
+          },
+          {
+            "comment": "move OidcFrontendClient from imodeljs-clients"
+          },
+          {
+            "comment": "update IModelApp to require FrontendAuthorizationClient"
+          },
+          {
+            "comment": "Introduce SnapshotConnection and BlankConnection subclasses of IModelConnection"
+          },
+          {
+            "comment": "Promote properties from IModelToken onto IModelConnection"
+          },
+          {
+            "comment": "When computing the pixel size of a tile in a perspective view, use the point on its bounding sphere closest to the camera.\""
+          },
+          {
+            "comment": "increase default wheel zoom durtaion to .5 seconds"
+          },
+          {
+            "comment": "Discard ECEF-dependent tile trees when ECEF location changes."
+          },
+          {
+            "comment": "And parseKeyin and parseAndRun methods to ToolRegistry."
+          },
+          {
+            "comment": "#285220 Wrong LocateResponse when 1st HitList entry isn't the accepted hit."
+          },
+          {
+            "comment": "Fix terrain sometimes drawing garbage imagery due to freed textures."
+          },
+          {
+            "comment": "Ensure the view updates in response to changes to terrain transparency."
+          },
+          {
+            "comment": "openBriefcase should not access internet."
+          },
+          {
+            "comment": "Fix material color inappropriately being applied in SolidFill mode when feature symbology overrides are in effect."
+          },
+          {
+            "comment": "Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline. "
+          },
+          {
+            "comment": "Refactored NativeApp API and RPC interfaces. This continues to be WIP. "
+          },
+          {
+            "comment": "Differentiated RemoteBriefcaseConnection-s from LocalBriefcaseConnection-s for use in web and native applications. These are now sub-classes of the abstract base class BriefcaseConnection. "
+          },
+          {
+            "comment": "Setup ability to use NativeApp.openBriefcase() in offline scenarios. "
+          },
+          {
+            "comment": "add new interface for native app"
+          },
+          {
+            "comment": "VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP). "
+          },
+          {
+            "comment": "initialize connectivity status on NativeApp.startup() and unregister callback on NativeApp.shutdown()"
+          },
+          {
+            "comment": "VSTS#296110: Setup a way to close briefcases when the native application is offline. "
+          },
+          {
+            "comment": "Remove named clip code, we ended up not wanting to save clips independent of saved views."
+          },
+          {
+            "comment": "Renamed OIDC constructs for consistency; Removed SAML support."
+          },
+          {
+            "comment": "Support OrbitGT point cloud dislay."
+          },
+          {
+            "comment": "RenderSystem.Options allows overriding WebGLContextAttributes."
+          },
+          {
+            "comment": "#275962 Fix EmphasizeElements.toJSON for color overrides"
+          },
+          {
+            "comment": "Change pickNearestVisibleGeometry to not return \"plane\" points outside of npc range."
+          },
+          {
+            "comment": "Fix z-fighting of blanking regions when logarithmic depth buffer is used."
+          },
+          {
+            "comment": "Precompile shaders in order of priority during idle time when no viewports exist."
+          },
+          {
+            "comment": "Project location error messages and tool assistance."
+          },
+          {
+            "comment": "Passing optional iModel context/project as it is the one to be used for Reality Data originating from ContextShare(RDS)"
+          },
+          {
+            "comment": "Ensure unused tile trees are purged at regular intervals."
+          },
+          {
+            "comment": "Added API in MessageManager to display either a Toast or Sticky message using React components."
+          },
+          {
+            "comment": "Always accept point on reality model when snapping and remove message about nearest snap."
+          },
+          {
+            "comment": "Optimize reality tile display.  "
+          },
+          {
+            "comment": "Add mechanism to preload reality tiles included in an expanded frustum. Support display of ellipsoidal map tiles without depth buffering."
+          },
+          {
+            "comment": "Reduce the number of surface shader variations by 75%"
+          },
+          {
+            "comment": "react to new clients packages from imodeljs-clients"
+          },
+          {
+            "comment": "Temporarily reinstated OidcBrowserClient and marked it deprec"
+          },
+          {
+            "comment": "remove decorationDiv member of DecorateContext."
+          },
+          {
+            "comment": "Add ways to set contextId for BlankConnection"
+          },
+          {
+            "comment": "Remove deprecated static PluginAdmin.loadPlugin and PluginAdmin.register methods.  Use the new IModelApp.pluginAdmin versions of the methods."
+          },
+          {
+            "comment": "Remove 'const' from exported enums."
+          },
+          {
+            "comment": "Fix being unable to roll wheel to zoom while rotating the view (merge error)."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "#301812 #288370 Fix label font specifications. Added max label width option to Marker."
+          },
+          {
+            "comment": "Made management of loaded tiles and tile trees more robust, particularly in context of multiple viewports; fixed tile progress statistics for reality/map tiles."
+          },
+          {
+            "comment": "Added some shader debug features"
+          },
+          {
+            "comment": "support for editing"
+          },
+          {
+            "comment": "The API for snapshot iModels is now public."
+          },
+          {
+            "comment": "Add SnapshotConnection.openRemote"
+          },
+          {
+            "comment": "Add SnapshotConnection.isRemote"
+          },
+          {
+            "comment": "Rename iModel.js Plugins to iModel.js Extensions"
+          },
+          {
+            "comment": "Synch drape tile tree settings when terrain settings change."
+          },
+          {
+            "comment": "Tentative snap should not hilite reality models."
+          },
+          {
+            "comment": "Add API and shader system for thematic display."
+          },
+          {
+            "comment": "Alpha feature: thematic sensor display."
+          },
+          {
+            "comment": "Limit the number of simultaneously-active requests for TileTreeProps."
+          },
+          {
+            "comment": "Move Tiles and EditingFunctions out of IModelConnection namespace."
+          },
+          {
+            "comment": "Replaced ViewManager.onNewTilesReady with TileAdmin events."
+          },
+          {
+            "comment": "Clean up Tile and TileTree APIs."
+          },
+          {
+            "comment": "#271737 Fix handle2dRotateZoom"
+          },
+          {
+            "comment": "Fix exception when an extension fails to load."
+          },
+          {
+            "comment": "Prevent edges of nearly-coincident surface from showing through another element."
+          },
+          {
+            "comment": "Prevent text background color from being overridden by FeatureSymbology.Overrides; fix ugly raster text when transparency is overridden to zero."
+          },
+          {
+            "comment": "Promoted some @beta to @public in Ui packages & ToolAssistance for 2.0 release."
+          },
+          {
+            "comment": "Add ToolAdmin method that allows tool to send UI Sync Event messages."
+          },
+          {
+            "comment": "Moved Property classes and interfaces to ui-abstract package."
+          },
+          {
+            "comment": "Update tools to use the new BaseDialogItem for lock toggles in Tool Settings specifications."
+          },
+          {
+            "comment": "Update tools that use the DefaultToolSettingsProvider to match its refactor using DialogItem interfaces rather that ToolSettings classes."
+          },
+          {
+            "comment": "Update to use UiItemManager"
+          },
+          {
+            "comment": "Ensure view extents are updated when iModel's displayed extents change (e.g. when loading reality models)."
+          },
+          {
+            "comment": "Update release tags and documentation for Tile-related APIs."
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          },
+          {
+            "comment": "decrease default durations for viewing operations"
+          },
+          {
+            "comment": "#281634 - make use of WebGL2 bit-wise ops"
+          },
+          {
+            "comment": "Prevent white-on-white reversal from applying to decorations and reality models."
+          },
+          {
+            "comment": "Prevent exceptions in Firefox when more than one viewport is open and one is resized such that its width or height is zero."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/imodeljs-frontend_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
@@ -317,7 +731,7 @@
             "comment": "Make iModel.js viewports adhere to DPI of a host display."
           },
           {
-            "comment": "code cleanup from codeQL hits"
+            "comment": "Code cleanup from codeQL hits"
           },
           {
             "comment": "Setup OidcDesktopClient for Electron use cases. "
@@ -329,13 +743,13 @@
             "comment": "Fix regression causing animation to be uneven."
           },
           {
-            "comment": "fix warnings from static analysis"
+            "comment": "Fix warnings from static analysis"
           },
           {
             "comment": "Don't use map tiles until reprojection is complete."
           },
           {
-            "comment": "#34206 Volume Clasify reality data only"
+            "comment": "Volume Clasify reality data only"
           },
           {
             "comment": "Don't fade grid refs when camera is off, draw based on count. Simplify modal dialog auto close."
@@ -344,7 +758,7 @@
             "comment": "Treat half-floats and full-floats the same."
           },
           {
-            "comment": "added WebGLDisposable interface with defined 'isDisposed' member"
+            "comment": "Added WebGLDisposable interface with defined 'isDisposed' member"
           },
           {
             "comment": "Fix regression in EmphasizeElements.overrideElements() when both color and alpha are overridden."
@@ -390,9 +804,6 @@
           },
           {
             "comment": "Logo card link opens in a new tab/window."
-          },
-          {
-            "comment": "Fix whitespace"
           },
           {
             "comment": "Update PluginAdmin.loadPlugin to accept a plugin path with a url scheme already defined."
@@ -668,7 +1079,7 @@
             "comment": "Geometry of planar classifier models is not required to itself be planar."
           },
           {
-            "comment": "#165461 #183765 #184303 Fixes for getting image from readMarkup"
+            "comment": "Fixes for getting image from readMarkup"
           },
           {
             "comment": "Refine planar texture frustum calculation to handle parallel views."
@@ -689,7 +1100,7 @@
             "comment": "Support transparency for terrain and planar classification."
           },
           {
-            "comment": "#168481 Tool assistance for viewing tools. Prompt punctuation consistency."
+            "comment": "Tool assistance for viewing tools. Prompt punctuation consistency."
           }
         ]
       }
@@ -710,22 +1121,22 @@
             "comment": "Always adjust y dimension for aspectRatioSkew"
           },
           {
-            "comment": "added support for blank IModelConnections"
+            "comment": "Added support for blank IModelConnections"
           },
           {
             "comment": "Added Cesium ION logo; fixed exception when opening a second viewport while terrain, shadows,  or planar classification are enabled."
           },
           {
-            "comment": "add checkbrowser.js, refine i18n in Tool"
+            "comment": "Add checkbrowser.js, refine i18n in Tool"
           },
           {
-            "comment": "#168241 Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg."
+            "comment": "Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg."
           },
           {
             "comment": "Refine frustum calculation for planar projection to create a tighter fit. "
           },
           {
-            "comment": "#136470 Added ViewManager.getElementToolTip for overriding default persistent element tooltip."
+            "comment": "Added ViewManager.getElementToolTip for overriding default persistent element tooltip."
           },
           {
             "comment": "Various EVSM shadow tweaks"
@@ -758,7 +1169,7 @@
             "comment": "Fix failure to locate an element if it also serves as a modeled element for a sub-model."
           },
           {
-            "comment": "#168481 Added missing iconSpec to measure and clipping tools."
+            "comment": "Added missing iconSpec to measure and clipping tools."
           },
           {
             "comment": "Correct ViewClipByPlaneTool icon."
@@ -800,7 +1211,7 @@
             "comment": "Performance optimization (benefits non-chromium-based browsers): Render directly to an on-screen canvas when rendering only a single viewport."
           },
           {
-            "comment": "#168481 Select elements tool assistance. Add touch inputs, use new qualifier+button mouse inputs."
+            "comment": "Select elements tool assistance. Add touch inputs, use new qualifier+button mouse inputs."
           },
           {
             "comment": "Fix for pinch zoom not being smooth."
@@ -818,7 +1229,7 @@
             "comment": "Tool Assistance changes per UX Design"
           },
           {
-            "comment": "#168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
+            "comment": "Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
           },
           {
             "comment": "Added touch entries to ToolAssistanceImage"
@@ -827,7 +1238,7 @@
             "comment": "Only force update of tool assistance for touch tap that creates the touch cursor."
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           },
           {
             "comment": "Fix WindowAreaTool full screen cursor. Added selected view frustum debug tool."
@@ -845,7 +1256,7 @@
             "comment": "Register tools for AccuDraw shortcuts to support keyboard shortcuts."
           },
           {
-            "comment": "Partially support animation of classifiers for MicroSoft Poc.  "
+            "comment": "Partially support animation of classifiers for MicroSoft Poc."
           },
           {
             "comment": "Prevent ambient occlusion from being applied to unlit geometry."
@@ -863,7 +1274,7 @@
             "comment": "Add workaround for ContextCapture tiles with large offsets."
           },
           {
-            "comment": "load bentleyjs-core before geometry-core instead of in parallel from the IModelJsLoader script"
+            "comment": "Load bentleyjs-core before geometry-core instead of in parallel from the IModelJsLoader script"
           },
           {
             "comment": "Refine tile corners on reprojection.  Fix bing HTTP request"
@@ -917,7 +1328,7 @@
             "comment": "Prioritize requests for reality model tiles based on distance from camera."
           },
           {
-            "comment": "#165662. Allow an app to specify touch-specific instructions in tool assistance."
+            "comment": "Allow an app to specify touch-specific instructions in tool assistance."
           },
           {
             "comment": "Tweak tile priorities so that reality models don't block quicker maps and classifiers."
@@ -986,7 +1397,7 @@
             "comment": "Fix specular lighting in specific case when specular exponent is zero."
           },
           {
-            "comment": "#151464 Improved grid display performance."
+            "comment": "Improved grid display performance."
           },
           {
             "comment": "Don't check eyeDot in camera view."
@@ -1016,7 +1427,7 @@
             "comment": "Made onClick event handler in LinkElementInfo optional."
           },
           {
-            "comment": "#139626 Change SelectTool to always start in pick mode, add better filter explanations."
+            "comment": "Change SelectTool to always start in pick mode, add better filter explanations."
           },
           {
             "comment": "Add tool assistance for SelectTool."
@@ -1037,7 +1448,7 @@
             "comment": "Added Tool.parseAndRun to make executing Tools from keyins easier."
           },
           {
-            "comment": "#155077 Project point to ACS plane when zooming if an element isn't identify and no background map is displayed."
+            "comment": "Project point to ACS plane when zooming if an element isn't identify and no background map is displayed."
           }
         ]
       }
@@ -1049,13 +1460,13 @@
       "comments": {
         "none": [
           {
-            "comment": "added optional HTMLElement member to Marker"
+            "comment": "Added optional HTMLElement member to Marker"
           },
           {
             "comment": "Product Backlog Items 148512: OidcBrowserClient can be used for authorization code workflows; Product Backlog Item 148571: Generalized OidcBrowserClient to work with Cesium and SharePoint."
           },
           {
-            "comment": "catch load errors for Sprites"
+            "comment": "Catch load errors for Sprites"
           },
           {
             "comment": "Remove colinear clip shape points. Grid spacing is a double."
@@ -1142,7 +1553,7 @@
             "comment": "Added SelectTool.processMiss method to better support clearing logical selections."
           },
           {
-            "comment": "#128860 Clip from element change to try local range XZ or YZ when XY extents aren't valid."
+            "comment": "Clip from element change to try local range XZ or YZ when XY extents aren't valid."
           },
           {
             "comment": "Added Viewport.onChangeView event to notify listeners when a new ViewState becomes associated with the Viewport."
@@ -1175,7 +1586,7 @@
             "comment": "Ensure new tiles are loaded when edge display is toggled."
           },
           {
-            "comment": "fix usage of varyings"
+            "comment": "Fix usage of varyings"
           },
           {
             "comment": "Fix incorrect range computation when Viewport.zoomToPlacementProps encounters a null range."
@@ -1187,16 +1598,16 @@
             "comment": "Allow index.html to set a CDN from which to load imodeljs external modules."
           },
           {
-            "comment": "make Viewport.invaildateDecorations @beta, was @internal"
+            "comment": "Make Viewport.invaildateDecorations @beta, was @internal"
           },
           {
-            "comment": "add default unhandled exception handler to ToolAdmin"
+            "comment": "Add default unhandled exception handler to ToolAdmin"
           },
           {
             "comment": "Added feature tracking info to UserInfo obtained by OidcBrowserClient. "
           },
           {
-            "comment": "ensure we never have two active snap or tooltip requests"
+            "comment": "Ensure we never have two active snap or tooltip requests"
           },
           {
             "comment": "Refine tile selection for map tiles"
@@ -1211,16 +1622,16 @@
             "comment": "Allow Viewport's readImage() method to resize images as requested."
           },
           {
-            "comment": "Fix Bug 127182 - Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId."
+            "comment": "Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId."
           },
           {
-            "comment": "#130062 fixed skybox for extreeme otho zoomin"
+            "comment": "Fixed skybox for extreeme otho zoomin"
           },
           {
-            "comment": "exit on uncaught exception in render loop (Electron only)"
+            "comment": "Exit on uncaught exception in render loop (Electron only)"
           },
           {
-            "comment": "thumbnail size was limited to 64K"
+            "comment": "Thumbnail size was limited to 64K"
           },
           {
             "comment": "Improve memory management for tile trees."
@@ -1247,13 +1658,13 @@
             "comment": "Updated release tags. "
           },
           {
-            "comment": "added Viewport.changeViewedModel2d"
+            "comment": "Added Viewport.changeViewedModel2d"
           },
           {
             "comment": "Clip shape tool should only set AccuDraw rotation on 1st point."
           },
           {
-            "comment": "#123874 Fix a prompt. #123731 Clip from element change to ignore selection set containing clip transient."
+            "comment": "Fix a prompt. Clip from element change to ignore selection set containing clip transient."
           },
           {
             "comment": "Combine planar classifier textures to converve texture units"
@@ -1298,7 +1709,7 @@
             "comment": "Fix erroneous clipping of instanced geometry."
           },
           {
-            "comment": "constructors for BeButtonEvent classes now take props argument"
+            "comment": "Constructors for BeButtonEvent classes now take props argument"
           },
           {
             "comment": "Remove back face culling option due to lack of performance benefit and other observations"
@@ -1320,9 +1731,6 @@
           },
           {
             "comment": "Refactored and simplified implementation of IModelDb.open"
-          },
-          {
-            "comment": "83505"
           },
           {
             "comment": "Reduce display performance degradation when non-convex clip shapes are applied to a view."
@@ -1391,13 +1799,13 @@
             "comment": "Tool writers only need AccuDrawHintBuilder, AccuDraw should be internal."
           },
           {
-            "comment": "use HTMLElements for tooltips"
+            "comment": "Use HTMLElements for tooltips"
           },
           {
             "comment": "Improve touch cursor visibility. Fix tap on canvas decoration when touch cursor is active."
           },
           {
-            "comment": "loader finds and loads css files in production mode."
+            "comment": "Loader finds and loads css files in production mode."
           }
         ]
       }
@@ -1427,7 +1835,7 @@
             "comment": "Eliminate display performance issue caused by normal matrix computation."
           },
           {
-            "comment": "remove requirement that JavaScript classnames match BIS classnames"
+            "comment": "Remove requirement that JavaScript classnames match BIS classnames"
           },
           {
             "comment": "Reduce the number of geocoordination requests produced when loading map tiles."
@@ -1460,7 +1868,7 @@
             "comment": "Fix clip to element tool. wip: Compute clp plane offset in world to support tool settings to enter distance."
           },
           {
-            "comment": "#114939 Fix handle drag test. Support smart lock wth clip shape tool. Offset all clip planes w/shift."
+            "comment": "Fix handle drag test. Support smart lock wth clip shape tool. Offset all clip planes w/shift."
           },
           {
             "comment": "View clip fixes and start of tools."
@@ -1487,7 +1895,7 @@
             "comment": "Prevent tooltip from blocking tool event loop."
           },
           {
-            "comment": "add test coverage in frontend"
+            "comment": "Add test coverage in frontend"
           },
           {
             "comment": "Debug json clip plane usage."
@@ -1523,13 +1931,10 @@
             "comment": "Fix display of animated edges."
           },
           {
-            "comment": "fixes for release tags"
-          },
-          {
             "comment": "When loading a perspective view, fix up potentially bad camera settings."
           },
           {
-            "comment": "Reduce mininum front clip (Defect 103868)."
+            "comment": "Reduce mininum front clip."
           },
           {
             "comment": "Ensure webgl resources allocated by clip volumes are properly released."
@@ -1565,13 +1970,13 @@
             "comment": "Fix issue with undo/redo view not having render materials"
           },
           {
-            "comment": "Fixes to web mercator. "
+            "comment": "Fixes to web mercator."
           },
           {
             "comment": "Interfaces used by PropertyRecord are set to either beta or alpha as modules that use them to implement UI are not finalized."
           },
           {
-            "comment": "eliminate depedency on JavaScript class names for EnityState subclasses"
+            "comment": "Eliminate depedency on JavaScript class names for EnityState subclasses"
           },
           {
             "comment": "Add support for appending GeoJson to existing IModel"
@@ -1595,28 +2000,28 @@
             "comment": "Introduce LoggerCategory enum to advertise logger categories used by this package."
           },
           {
-            "comment": "Logging fixes. "
+            "comment": "Logging fixes."
           },
           {
             "comment": "Put sourcemap in npm package."
           },
           {
-            "comment": "documentation cleanup"
+            "comment": "Documentation cleanup"
           },
           {
-            "comment": "add SVG to ImageSourceFormat"
+            "comment": "Add SVG to ImageSourceFormat"
           },
           {
-            "comment": "add imodeljs-markup"
+            "comment": "Add imodeljs-markup"
           },
           {
-            "comment": "added vpDiv between parent and canvas"
+            "comment": "Added vpDiv between parent and canvas"
           },
           {
             "comment": "Allow a view's extent limits to be overridden."
           },
           {
-            "comment": "#108055 Update measure distance tooltip on click. Improve total distance visibility."
+            "comment": "Update measure distance tooltip on click. Improve total distance visibility."
           },
           {
             "comment": "Add alpha tags to PropertyEditorParams interfaces that are not ready for public use."
@@ -1625,10 +2030,10 @@
             "comment": "Improved performance of multipass rendering"
           },
           {
-            "comment": "#96348 Improve default rotate point for navigation cube"
+            "comment": "Improve default rotate point for navigation cube"
           },
           {
-            "comment": "Fixes to OidcBrowserClient. "
+            "comment": "Fixes to OidcBrowserClient."
           },
           {
             "comment": "Optimize frontend renderer's performance by minimizing allocations of float arrays passed to the GPU."
@@ -1649,7 +2054,7 @@
             "comment": "Remove \"assembly lock\" from SelectTool now that SelectionScope has been implemented."
           },
           {
-            "comment": "remove IModelApp subclasses"
+            "comment": "Remove IModelApp subclasses"
           },
           {
             "comment": "Remove IModelConnection.openStandalone and IModelConnection.closeStandalone"
@@ -1688,7 +2093,7 @@
             "comment": "Make sky sphere / sky gradient use separate rendering primitive from sky cube."
           },
           {
-            "comment": "don't draw Sprite before it is loaded"
+            "comment": "Don't draw Sprite before it is loaded"
           },
           {
             "comment": "Unit tests and fixed ColorEditor alignment"
@@ -1703,31 +2108,31 @@
             "comment": "Update the primitive types to be within a Primitives namespace."
           },
           {
-            "comment": "allow IModelApp subclass to override applicationId & applicationVersion"
+            "comment": "Allow IModelApp subclass to override applicationId & applicationVersion"
           },
           {
-            "comment": "revert static inheritance in IModelApp.ts"
+            "comment": "Revert static inheritance in IModelApp.ts"
           },
           {
-            "comment": "wrap applicationId & applicationVersion in IModelApp"
+            "comment": "Wrap applicationId & applicationVersion in IModelApp"
           },
           {
             "comment": "Changes to build process to put all JavaScript files in version-specific subdirectories to avoid browser caching problems when deploying new versions."
           },
           {
-            "comment": "view undo only saves changes to ViewState, not categories, models, or diplayStyle"
+            "comment": "View undo only saves changes to ViewState, not categories, models, or diplayStyle"
           },
           {
             "comment": "Clip tool changes now that undo/redo does not affect clipping. Right-click menu support for clip handles."
           },
           {
-            "comment": "only save viewing volume for view undo rather than cloning ViewState"
+            "comment": "Only save viewing volume for view undo rather than cloning ViewState"
           },
           {
             "comment": "Tools to create and modify view clip."
           },
           {
-            "comment": "VSTS#114189 Reality data shown as Model and picker"
+            "comment": "Reality data shown as Model and picker"
           },
           {
             "comment": "World decorations ignore symbology overrides defined for the view."
@@ -1745,7 +2150,7 @@
             "comment": "Add ColorEditor to list of available Type Editors including new ColorParams to specify set of colors."
           },
           {
-            "comment": "#73219 FitViewTool enhancement to fit to isolated elements or clip volume."
+            "comment": "FitViewTool enhancement to fit to isolated elements or clip volume."
           },
           {
             "comment": "Supply additional statistics for monitoring tile requests."
@@ -1757,7 +2162,7 @@
             "comment": "Cleaned up documentation related to the display system."
           },
           {
-            "comment": "use bubble-up for keyboard events"
+            "comment": "Use bubble-up for keyboard events"
           },
           {
             "comment": "Plugin Enhancements"
@@ -1778,7 +2183,7 @@
       "comments": {
         "none": [
           {
-            "comment": "add ios oidc client"
+            "comment": "Add ios oidc client"
           },
           {
             "comment": "geometry-core camel case"
@@ -1787,7 +2192,7 @@
             "comment": "Add Selection Scope toolsettings to SelectTool."
           },
           {
-            "comment": "allow subclasses of Range to use static methods"
+            "comment": "Allow subclasses of Range to use static methods"
           },
           {
             "comment": "Raise events when a Viewport's always- or never-drawn element sets change."
@@ -1799,7 +2204,7 @@
             "comment": "Changes package.json to include api-extractor and adds api-extractor.json"
           },
           {
-            "comment": "#66826 Default SelectTool to select all members of the selected element's assembly."
+            "comment": "Default SelectTool to select all members of the selected element's assembly."
           },
           {
             "comment": "Default scope to element."
@@ -1850,7 +2255,7 @@
             "comment": "noMotion doesn't need to call beginDynamicUpdate"
           },
           {
-            "comment": "example code (in comments) for frustum interpolator"
+            "comment": "Example code (in comments) for frustum interpolator"
           },
           {
             "comment": "Consistent naming of \"get\" methods in Growable arrays."
@@ -1874,7 +2279,7 @@
             "comment": "Fix clipping volume being inconsistently applied to view."
           },
           {
-            "comment": "Dont make textures transparent unless technique enables it."
+            "comment": "Don't make textures transparent unless technique enables it."
           },
           {
             "comment": "Fix incorrect \"fit view\" behavior when empty tiles exist."
@@ -1916,19 +2321,16 @@
             "comment": "Implemented, then commented out, doing jpeg decompression in a web worker"
           },
           {
-            "comment": "added markup mode"
+            "comment": "Added markup mode"
           },
           {
-            "comment": "events are now on ScreenViewport.parentDiv rather than canvas"
+            "comment": "Events are now on ScreenViewport.parentDiv rather than canvas"
           },
           {
-            "comment": "update for geometry GrowableXYArray usage."
+            "comment": "Update for geometry GrowableXYArray usage."
           },
           {
             "comment": "Measure Distance - change selected segment hilite. Measure Location - WIP use ecef transform."
-          },
-          {
-            "comment": "More ui-framework unit tests"
           },
           {
             "comment": "Make it possible to define editor params for default Type Editors not explicitly specified by name."
@@ -1949,10 +2351,10 @@
             "comment": "Save BUILD_SEMVER to globally accessible map. PluginAdmin and Plugin classes defined. IModelJsLoader improved."
           },
           {
-            "comment": "add optional iModel argument to EntityState.clone "
+            "comment": "Add optional iModel argument to EntityState.clone "
           },
           {
-            "comment": "added GeometricModelState.queryModelRange"
+            "comment": "Added GeometricModelState.queryModelRange"
           },
           {
             "comment": "Added creatorId, new method to list RD per project, identified numerous area for changes WIP"
@@ -1985,7 +2387,7 @@
             "comment": "Removed IModelConnection.connectionId, added IModelApp.sessionId"
           },
           {
-            "comment": "make view transition animations smoother"
+            "comment": "Make view transition animations smoother"
           },
           {
             "comment": "Optimizations to tile format and schedule animation."
@@ -1994,7 +2396,7 @@
             "comment": "Tile requests can optionally specify a retryInterval."
           },
           {
-            "comment": " Cleanup of DefaultToolSetting provider and EnumButtonGroup editor including new EditorParams."
+            "comment": "Cleanup of DefaultToolSetting provider and EnumButtonGroup editor including new EditorParams."
           },
           {
             "comment": "Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings. Add toolsettings to Select Tool."
@@ -2006,7 +2408,7 @@
             "comment": "IModelConnection.connectionTimeout is public to allow application customization."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -2174,16 +2576,13 @@
             "comment": "Fix excessive memory consumption by polyline graphics."
           },
           {
-            "comment": "merge"
-          },
-          {
             "comment": "Enable path interpolation"
           },
           {
             "comment": "Enable schedule animation"
           },
           {
-            "comment": "if view delta is too large or small, set it to max/min rather than aborting viewing operations."
+            "comment": "If view delta is too large or small, set it to max/min rather than aborting viewing operations."
           },
           {
             "comment": "Fix transform order when pushing branch."
@@ -2192,7 +2591,7 @@
             "comment": "Implement quaternion interpolation for Synchro schedule animation"
           },
           {
-            "comment": "remove trash files"
+            "comment": "Remove trash files"
           },
           {
             "comment": "Add batch feature overrides to optimize schedule animation."
@@ -2267,7 +2666,7 @@
             "comment": "Renamed ViewStateData to ViewStateProps and ViewState.createFromStateData to ViewState.createFromProps."
           },
           {
-            "comment": "turn off locate circle when mouse leaves a view"
+            "comment": "Turn off locate circle when mouse leaves a view"
           }
         ]
       }
@@ -2300,7 +2699,7 @@
       "comments": {
         "none": [
           {
-            "comment": "route map tiles over https"
+            "comment": "Route map tiles over https"
           }
         ]
       }
@@ -2324,22 +2723,13 @@
       "comments": {
         "none": [
           {
-            "comment": "map api cors fix"
+            "comment": "Map api cors fix"
           },
           {
             "comment": "Fix failure to display Bing maps logo."
           },
           {
             "comment": "Fix \"maximum window\" error when viewing large drawings."
-          },
-          {
-            "comment": "enable tslint rules for asyncs"
-          },
-          {
-            "comment": "T"
-          },
-          {
-            "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on."
           }
         ]
       }
@@ -2364,12 +2754,6 @@
         "none": [
           {
             "comment": "WIP: add support for schedule animation (symbology)."
-          },
-          {
-            "comment": "geometry coverage"
-          },
-          {
-            "comment": "geometry coverage"
           },
           {
             "comment": "Fix incorrect length used to create Uint32Array from Uint8Array."
@@ -2505,9 +2889,6 @@
           },
           {
             "comment": "PrimitiveTool isValidLocation shouldn't require write, want check for measure tools too"
-          },
-          {
-            "comment": "Add Comments"
           },
           {
             "comment": "Updated to TypeScript 3.1"

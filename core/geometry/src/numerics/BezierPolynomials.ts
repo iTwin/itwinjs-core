@@ -11,7 +11,8 @@
 import { Geometry } from "../Geometry";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { PascalCoefficients } from "./PascalCoefficients";
-import { Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, AnalyticRoots } from "./Polynomials";
+import { AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial } from "./Polynomials";
+
 /* tslint:disable:variable-name*/
 /**
  * * BezierCoffs is an abstract base class for one-dimensional (u to f(u)) Bezier polynomials.

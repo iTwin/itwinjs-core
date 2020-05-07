@@ -9,7 +9,9 @@
     "types": [
       "sinon-chai",
       "chai-as-promised",
-      "@bentley/webpack-tools"
+      "mocha",
+      "chai-jest-snapshot",
+      "@bentley/react-scripts"
     ]
   },
   "include": [

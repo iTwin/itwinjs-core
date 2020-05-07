@@ -2,13 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module IModelConnection */
+/** @packageDocumentation
+ * @module IModelConnection
+ */
 
-import { IModelError, Editor3dRpcInterface, GeometricElement3dProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "./IModelConnection";
-import { OpenMode, IModelStatus, Logger, Id64Array, GuidString, Guid } from "@bentley/bentleyjs-core";
-import { Point3d, YawPitchRollAngles, TransformProps } from "@bentley/geometry-core";
+import { Guid, GuidString, Id64Array, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { Point3d, TransformProps, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Editor3dRpcInterface, GeometricElement3dProps, IModelError } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { IModelConnection } from "./IModelConnection";
 
 const LOGGING_CATEGORY = FrontendLoggerCategory.EditorConnection;
 
@@ -40,7 +42,7 @@ export class ElementEditor3d {
       throw new IModelError(IModelStatus.NotOpenForWrite, "", Logger.logError, LOGGING_CATEGORY);
     }
     const c = new ElementEditor3d(iModelConnection);
-    await Editor3dRpcInterface.getClient().start(c.iModelConnection.iModelToken, c._guid);
+    await Editor3dRpcInterface.getClient().start(c.iModelConnection.getRpcProps(), c._guid);
     return c;
   }
 
@@ -56,7 +58,7 @@ export class ElementEditor3d {
   public async restart(): Promise<void> {
     if (this._isOpen)
       throw new IModelError(IModelStatus.AlreadyOpen, "", Logger.logError, LOGGING_CATEGORY);
-    await Editor3dRpcInterface.getClient().start(this.iModelConnection.iModelToken, this._guid);
+    await Editor3dRpcInterface.getClient().start(this.iModelConnection.getRpcProps(), this._guid);
     this._isOpen = true;
   }
 
@@ -66,7 +68,7 @@ export class ElementEditor3d {
    */
   public async end(): Promise<void> {
     this._mustBeOpen();
-    return Editor3dRpcInterface.getClient().end(this.iModelConnection.iModelToken, this._guid);
+    return Editor3dRpcInterface.getClient().end(this.iModelConnection.getRpcProps(), this._guid);
   }
 
   /**
@@ -75,7 +77,7 @@ export class ElementEditor3d {
    */
   public async pushState(): Promise<void> {
     this._mustBeOpen();
-    this._rpc.pushState(this.iModelConnection.iModelToken, this._guid);
+    this._rpc.pushState(this.iModelConnection.getRpcProps(), this._guid);
   }
 
   /**
@@ -84,7 +86,7 @@ export class ElementEditor3d {
    */
   public async popState(): Promise<void> {
     this._mustBeOpen();
-    this._rpc.popState(this.iModelConnection.iModelToken, this._guid);
+    this._rpc.popState(this.iModelConnection.getRpcProps(), this._guid);
   }
 
   /**
@@ -93,7 +95,7 @@ export class ElementEditor3d {
    */
   public async startModifyingElements(elementIds: Id64Array): Promise<void> {
     this._mustBeOpen();
-    return this._rpc.startModifyingElements(this.iModelConnection.iModelToken, this._guid, elementIds);
+    return this._rpc.startModifyingElements(this.iModelConnection.getRpcProps(), this._guid, elementIds);
   }
 
   /**
@@ -102,7 +104,7 @@ export class ElementEditor3d {
    */
   public async applyTransform(tprops: TransformProps) {
     this._mustBeOpen();
-    return this._rpc.applyTransform(this.iModelConnection.iModelToken, this._guid, tprops);
+    return this._rpc.applyTransform(this.iModelConnection.getRpcProps(), this._guid, tprops);
   }
 
   /**
@@ -111,7 +113,7 @@ export class ElementEditor3d {
    */
   public async createElement(props: GeometricElement3dProps, origin?: Point3d, angles?: YawPitchRollAngles, geometry?: any): Promise<void> {
     this._mustBeOpen();
-    return this._rpc.createElement(this.iModelConnection.iModelToken, this._guid, props, origin, angles, geometry);
+    return this._rpc.createElement(this.iModelConnection.getRpcProps(), this._guid, props, origin, angles, geometry);
   }
 
   /**
@@ -120,6 +122,6 @@ export class ElementEditor3d {
    */
   public async write(): Promise<void> {
     this._mustBeOpen();
-    return this._rpc.writeAllChangesToBriefcase(this.iModelConnection.iModelToken, this._guid);
+    return this._rpc.writeAllChangesToBriefcase(this.iModelConnection.getRpcProps(), this._guid);
   }
 }

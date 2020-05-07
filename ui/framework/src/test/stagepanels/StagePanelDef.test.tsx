@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import TestUtils from "../TestUtils";
 import { FrontstageManager, StagePanelDef, StagePanelState, WidgetDef } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("StagePanelDef", () => {
 
@@ -32,7 +32,7 @@ describe("StagePanelDef", () => {
   it("applicationData", () => {
     const panelDef = new StagePanelDef();
     panelDef.panelState = StagePanelState.Open;
-    panelDef.applicationData = "AppData";
+    panelDef.initializeFromProps({ resizable: false, applicationData: "AppData" });
     expect(panelDef.applicationData).to.eq("AppData");
   });
 

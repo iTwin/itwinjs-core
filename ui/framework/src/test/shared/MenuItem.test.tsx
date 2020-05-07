@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
 import { BadgeType } from "@bentley/ui-abstract";
 import { ContextMenuItem, ContextSubMenu } from "@bentley/ui-core";
-
-import { MenuItem, MenuItemProps, MenuItemHelpers } from "../../ui-framework/shared/MenuItem";
-import { render, cleanup } from "@testing-library/react";
+import { cleanup, render } from "@testing-library/react";
+import { MenuItem, MenuItemHelpers, MenuItemProps } from "../../ui-framework/shared/MenuItem";
 import TestUtils from "../TestUtils";
 
 describe("MenuItem", () => {
@@ -22,7 +20,7 @@ describe("MenuItem", () => {
 
   it("should create a valid MenuItem", () => {
     const menuItem = new MenuItem({
-      id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
+      id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } },
     });
 
     expect(menuItem.id).to.eq("test");
@@ -32,9 +30,9 @@ describe("MenuItem", () => {
     expect(menuItem.submenu.length).to.eq(0);
   });
 
-  it("should handle label & iconSpec correctly", () => {
+  it("should handle label & icon correctly", () => {
     const menuItem = new MenuItem({
-      id: "test", label: "test label", iconSpec: "icon-placeholder", item: { label: "wrong label", iconSpec: "wrong icon", execute: () => { } },
+      id: "test", label: "test label", icon: "icon-placeholder", item: { label: "wrong label", icon: "wrong icon", execute: () => { } },
     });
 
     expect(menuItem.id).to.eq("test");
@@ -44,10 +42,10 @@ describe("MenuItem", () => {
 
   it("should create a valid submenu", () => {
     const menuItem = new MenuItem({
-      id: "test", label: "test label", iconSpec: "icon-placeholder",
+      id: "test", label: "test label", icon: "icon-placeholder",
       submenu: [
-        { id: "0", item: { label: "Mode 1", iconSpec: "icon-placeholder", execute: () => { } } },
-        { id: "1", item: { label: "Mode 2", iconSpec: "icon-placeholder", execute: () => { } } },
+        { id: "0", item: { label: "Mode 1", icon: "icon-placeholder", execute: () => { } } },
+        { id: "1", item: { label: "Mode 2", icon: "icon-placeholder", execute: () => { } } },
       ],
     });
 
@@ -68,7 +66,7 @@ describe("MenuItem", () => {
   it("createMenuItems should create a valid MenuItem", () => {
     const menuItemProps: MenuItemProps[] = [
       {
-        id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
+        id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } },
       },
     ];
 
@@ -87,10 +85,10 @@ describe("MenuItem", () => {
   it("createMenuItems should create a valid submenu", () => {
     const menuItemProps: MenuItemProps[] = [
       {
-        id: "test", label: "test label", iconSpec: "icon-placeholder",
+        id: "test", label: "test label", icon: "icon-placeholder",
         submenu: [
-          { id: "0", item: { label: "Mode 1", iconSpec: "icon-placeholder", execute: () => { } } },
-          { id: "1", item: { label: "Mode 2", iconSpec: "icon-placeholder", execute: () => { } } },
+          { id: "0", item: { label: "Mode 1", icon: "icon-placeholder", execute: () => { } } },
+          { id: "1", item: { label: "Mode 2", icon: "icon-placeholder", execute: () => { } } },
         ],
       },
     ];
@@ -109,7 +107,7 @@ describe("MenuItem", () => {
   it("createMenuItemNodes should create a valid MenuItem", () => {
     const menuItemProps: MenuItemProps[] = [
       {
-        id: "test", badgeType: BadgeType.New, item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
+        id: "test", badgeType: BadgeType.New, item: { label: "test label", icon: "icon-placeholder", execute: () => { } },
       },
     ];
 
@@ -132,7 +130,7 @@ describe("MenuItem", () => {
 
     const menuItemProps: MenuItemProps[] = [
       {
-        id: "test", item: { label: "test label", iconSpec: "icon-placeholder", badgeType: BadgeType.New, execute: handleSelect },
+        id: "test", item: { label: "test label", icon: "icon-placeholder", badgeType: BadgeType.New, execute: handleSelect },
       },
     ];
 
@@ -157,10 +155,10 @@ describe("MenuItem", () => {
   it("createMenuItemNodes should create a valid submenu", () => {
     const menuItemProps: MenuItemProps[] = [
       {
-        id: "test", label: "test label", iconSpec: "icon-placeholder",
+        id: "test", label: "test label", icon: "icon-placeholder",
         submenu: [
-          { id: "0", item: { label: "Mode 1", iconSpec: "icon-placeholder", execute: () => { } } },
-          { id: "1", item: { label: "Mode 2", iconSpec: "icon-placeholder", execute: () => { } } },
+          { id: "0", item: { label: "Mode 1", icon: "icon-placeholder", execute: () => { } } },
+          { id: "1", item: { label: "Mode 2", icon: "icon-placeholder", execute: () => { } } },
         ],
       },
     ];

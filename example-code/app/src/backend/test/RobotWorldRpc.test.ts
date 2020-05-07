@@ -3,25 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { IModelDb, IModelJsFs, PhysicalModel } from "@bentley/imodeljs-backend";
-import { SnapshotIModelRpcInterface, IModel, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager, IModelTokenProps, GeometricElement3dProps } from "@bentley/imodeljs-common";
+import { IModelApp, IModelConnection, NoRenderApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
+import {
+  GeometricElement3dProps, IModel, IModelReadRpcInterface, IModelRpcProps, IModelWriteRpcInterface, SnapshotIModelRpcInterface, TestRpcManager,
+} from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { OpenMode, Id64String, Id64, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelTestUtils } from "./Utils";
-import { Point3d, Angle } from "@bentley/geometry-core";
+import { Angle, Point3d } from "@bentley/geometry-core";
 import { RobotWorld } from "../RobotWorldSchema";
 
 const requestContext = new ClientRequestContext();
 
-function simulateBackendDeployment() {
-  RobotWorldEngine.initialize(requestContext);
+async function simulateBackendDeployment(): Promise<void> {
+  await RobotWorldEngine.initialize(requestContext);
 }
 
-function simulateBackendShutdown() {
-  RobotWorldEngine.shutdown();
+async function simulateBackendShutdown() {
+  await RobotWorldEngine.shutdown();
 }
 
 async function setUpTest() {
@@ -29,12 +31,12 @@ async function setUpTest() {
   const iModelFile = IModelTestUtils.prepareOutputFile("RobotWorldRpc.bim");
   const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
   IModelJsFs.copySync(seedFile, iModelFile);
-  const iModel = IModelDb.openStandalone(iModelFile, OpenMode.ReadWrite);
+  const iModel = StandaloneDb.openFile(iModelFile, OpenMode.ReadWrite);
   await RobotWorld.importSchema(requestContext, iModel);
   iModel.saveChanges();
   PhysicalModel.insert(iModel, IModel.rootSubjectId, "test");
   iModel.saveChanges();
-  iModel.closeStandalone();
+  iModel.close();
 }
 
 describe("RobotWorldRpc", () => {
@@ -45,20 +47,20 @@ describe("RobotWorldRpc", () => {
 
   it("should run robotWorld through RPC as a client", async () => {
     // Simulate the deployment of the backend server
-    simulateBackendDeployment();
+    await simulateBackendDeployment();
 
     await setUpTest();  // tricky: do this after simulateBackendDeployment, as that function has the side effect of initializing IModelHost
 
-    NoRenderApp.startup();
+    await NoRenderApp.startup();
 
     // expose interfaces using a direct call mechanism
     TestRpcManager.initialize([SnapshotIModelRpcInterface, IModelReadRpcInterface, IModelWriteRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);
     const roWrite = RobotWorldWriteRpcInterface.getClient();
     const roRead = RobotWorldReadRpcInterface.getClient();
 
-    const iModel: IModelConnection = await IModelConnection.openSnapshot(KnownTestLocations.outputDir + "/" + "RobotWorldRpc.bim");
+    const iModel: IModelConnection = await SnapshotConnection.openFile(KnownTestLocations.outputDir + "/" + "RobotWorldRpc.bim");
     assert.isTrue(iModel !== undefined);
-    const iToken: IModelTokenProps = iModel.iModelToken.toJSON();
+    const iToken: IModelRpcProps = iModel.getRpcProps();
 
     let modelId!: Id64String;
     for (const modelStr of await iModel.queryEntityIds({ from: "bis:element", where: "CodeValue='test'" }))
@@ -109,16 +111,16 @@ describe("RobotWorldRpc", () => {
       }
     }
 
-    await iModel.closeSnapshot();
+    await iModel.close();
 
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
 
-    simulateBackendShutdown();
+    await simulateBackendShutdown();
   });
 });
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudApp
-// tslint:disable:no-duplicate-imports - The imports are intentionally separated in this cease.
+// tslint:disable:no-duplicate-imports - The imports are intentionally separated in this case.
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 export function initializeRpcClientBentleyCloudForApp(interfaces: RpcInterfaceDefinition[]) {

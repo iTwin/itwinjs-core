@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as sinon from "sinon";
-import * as faker from "faker";
-import * as moq from "typemoq";
-import { RpcManager } from "@bentley/imodeljs-common";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { PresentationError } from "@bentley/presentation-common";
-import { Presentation } from "../Presentation";
-import { PresentationManager } from "../PresentationManager";
 import "./IModelHostSetup";
-import { TemporaryStorage } from "../TemporaryStorage";
+import { expect } from "chai";
+import * as faker from "faker";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
+import { IModelHost } from "@bentley/imodeljs-backend";
+import { RpcManager } from "@bentley/imodeljs-common";
+import { PresentationError } from "@bentley/presentation-common";
+import { Presentation } from "../presentation-backend/Presentation";
+import { PresentationManager } from "../presentation-backend/PresentationManager";
+import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
 describe("Presentation", () => {
 

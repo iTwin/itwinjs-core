@@ -6,8 +6,9 @@
  * @module CartesianGeometry
  */
 
-import { Angle } from "./Angle";
 import { BeJSONFunctions, Geometry } from "../Geometry";
+import { Angle } from "./Angle";
+
 /**
  * An `AngleAngleNumber` is a pair of angles (named `longitude` and `latitude`) and an additional number.
  * * This is directly intended to support `Ellipsoid` computations, with the two angles used as

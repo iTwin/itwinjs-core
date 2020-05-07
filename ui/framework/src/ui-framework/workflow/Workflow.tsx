@@ -8,11 +8,10 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
-
 import { ItemDefBase } from "../shared/ItemDefBase";
-import { Task, TaskManager } from "./Task";
-import { UiFramework } from "../UiFramework";
 import { ItemProps } from "../shared/ItemProps";
+import { UiFramework } from "../UiFramework";
+import { Task, TaskManager } from "./Task";
 
 /** Properties for a [[Workflow]].
  * @public
@@ -126,7 +125,7 @@ export class Workflow extends ItemDefBase {
     for (const key of this._tasks.keys()) {
       const task: Task | undefined = this._tasks.get(key);
       // istanbul ignore else
-      if (task && task.isVisible)
+      if (task && task.isVisible) // tslint:disable-line:deprecation
         sortedTasks.push(task);
     }
 

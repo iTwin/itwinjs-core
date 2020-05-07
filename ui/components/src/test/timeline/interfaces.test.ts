@@ -3,11 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
 import { BaseTimelineDataProvider } from "../../ui-components/timeline/BaseTimelineDataProvider";
-import {
-  Milestone, PlaybackSettings,
-} from "../../ui-components/timeline/interfaces";
+import { Milestone, PlaybackSettings } from "../../ui-components/timeline/interfaces";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {
   public pointerCallbackCalled = false;

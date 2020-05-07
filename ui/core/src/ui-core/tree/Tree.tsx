@@ -6,11 +6,10 @@
  * @module Tree
  */
 
+import "./Tree.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Range2d } from "@bentley/geometry-core";
-
-import "./Tree.scss";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[Tree]] presentational React component

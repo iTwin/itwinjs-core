@@ -123,25 +123,33 @@ You can use these environment variables to alter the default behavior of various
   * If defined, shader source code will be preserved as internal strings, useful for debugging purposes.
 * SVT_TILETREE_EXPIRATION_SECONDS
   * If defined, the number of seconds after a TileTree has been most recently drawn before purging it.
+* SVT_TILE_EXPIRATION_SECONDS
+  * If defined, the number of seconds after a Tile has been most recently used before pruning it.
 * SVT_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
 * SVT_FAKE_CLOUD_STORAGE
   * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/webresources/tiles/. They will be removed by a `rush clean`.
     * NOTE: This currently only works when running display-test-app in a browser.
- * SVT_ENABLE_MAP_TEXTURE_FILTER
+* SVT_ENABLE_MAP_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be used for (planar) map tiles.
- * SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER
+* SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
- * SVT_DISABLE_DPI_AWARE_VIEWPORTS
+* SVT_DISABLE_DPI_AWARE_VIEWPORTS
   * If defined, do not respect the DPI of the system when rendering viewports.
- * SVT_NO_CANCEL_TILE_REQUESTS
+* SVT_NO_CANCEL_TILE_REQUESTS
   * If defined, do not cancel tile requests on backend when cancelled on front-end.
- * SVT_DISABLE_EDGE_DISPLAY
+* SVT_DISABLE_EDGE_DISPLAY
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
 * SVT_USE_WEBGL2
   * If defined, the system will attempt to create a WebGL2 context.
 * SVT_MAX_TILES_TO_SKIP
   * The number of levels of iModel tile trees to skip before loading graphics.
+* SVT_DISABLE_IDLE_WORK
+  * If defined, do not try to perform idle work (precompiling shader) when there are no viewports.
+* SVT_DEBUG_SHADERS
+  * If defined, and the WEBGL_debug_shaders extension is supported, collect debug info during shader compilation. See the `dta output shaders` key-in.
+* SVT_WINDOW_SIZE
+  * If defined, a comma-separated startup size for the electron application window as `width,height`.
 
 ## Key-ins
 
@@ -159,6 +167,12 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * **dta zoom selected** - zoom the selected viewport to the elements in the selection set.
 * **dta incident markers** - toggle incident marker demo in the selected viewport.
 * **dta markup** - toggle markup on the selected viewport.
+* **dta output shaders** - output debug information for compiled shaders. Requires SVT_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
+  * `d=output\directory\` - directory into which to put the output files.
+  * filter string: a combination of the following characters to filter the output (e.g., `gu` outputs all used glsl shaders, both fragment and vertex):
+    * `f` or `v`: output only fragment or vertex shaders, respectively.
+    * `g` or `h`: output only glsl or hlsl code, respectively.
+    * `u` or `n`: output only used or not-used shaders, respectively.
 * **dta drawing aid points** - start tool for testing AccuSnap.
 * **dta refresh tiles** *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
 * **dta shutdown** - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.

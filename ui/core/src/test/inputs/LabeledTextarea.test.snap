@@ -5,7 +5,7 @@ exports[`<LabeledTextarea /> renders correctly 1`] = `
   className="uicore-inputs-labeled-textarea"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     textarea test
@@ -22,7 +22,7 @@ exports[`<LabeledTextarea /> renders message correctly 1`] = `
   className="uicore-inputs-labeled-textarea"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     textarea test
@@ -32,7 +32,7 @@ exports[`<LabeledTextarea /> renders message correctly 1`] = `
     rows={3}
   />
   <div
-    className="message"
+    className="uicore-message"
   >
     Test message
   </div>
@@ -44,7 +44,7 @@ exports[`<LabeledTextarea /> renders status correctly 1`] = `
   className="uicore-inputs-labeled-textarea success"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     textarea test

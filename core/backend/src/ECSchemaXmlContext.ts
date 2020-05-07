@@ -7,8 +7,8 @@
  */
 
 import { IModelError } from "@bentley/imodeljs-common";
-import { IModelHost } from "./IModelHost";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelHost } from "./IModelHost";
 
 /** @internal */
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
@@ -30,6 +30,10 @@ export class ECSchemaXmlContext {
 
   public setSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
     this._nativeContext!.setSchemaLocater(locater);
+  }
+
+  public setFirstSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
+    this._nativeContext!.setFirstSchemaLocater(locater);
   }
 
   public readSchemaFromXmlFile(filePath: string): any {

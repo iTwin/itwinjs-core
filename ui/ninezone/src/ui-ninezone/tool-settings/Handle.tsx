@@ -6,30 +6,43 @@
  * @module ToolSettings
  */
 
-import * as classnames from "classnames";
-import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
-import { usePointerCaptor } from "../base/PointerCaptor";
-import { useRefs } from "../base/useRefs";
-import { useToolSettingsEntry } from "./Docked";
-import { useResizeObserver } from "../base/useResizeObserver";
 import "./Handle.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps, Point, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { useDragToolSettings } from "../base/DragManager";
+import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
+import { TOOL_SETTINGS_DRAG_START } from "../base/NineZoneState";
+import { usePointerCaptor } from "../base/PointerCaptor";
 
 /** Properties of [[DockedToolSettingsHandle]] component.
  * @internal
  */
 export interface DockedToolSettingsHandleProps extends CommonProps {
-  onDrag?: () => void;
+  onResize?: (w: number) => void;
 }
 
 /** Component that displays tool settings as a bar across the top of the content view.
  * @internal
  */
-export function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps) {
-  const { onResize } = useToolSettingsEntry();
-  const resizeObserverRef = useResizeObserver<HTMLDivElement>(onResize);
+export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps) { // tslint:disable-line: variable-name no-shadowed-variable
+  const dispatch = React.useContext(NineZoneDispatchContext);
+  const resizeObserverRef = useResizeObserver<HTMLDivElement>(props.onResize);
   const pointerCaptorRef = usePointerCaptor<HTMLDivElement>();
-  const ref = useRefs(pointerCaptorRef, resizeObserverRef);
+  const newWidgetDragItemId = React.useMemo(() => getUniqueId(), []);
+  const onDragStart = useDragToolSettings({ newWidgetDragItemId });
+  const handlePointerDown = React.useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    const initialPointerPosition = new Point(e.clientX, e.clientY);
+    onDragStart({
+      initialPointerPosition,
+    });
+    dispatch({
+      type: TOOL_SETTINGS_DRAG_START,
+      newFloatingWidgetId: newWidgetDragItemId,
+    });
+  }, [dispatch, newWidgetDragItemId, onDragStart]);
+  const refs = useRefs(pointerCaptorRef, resizeObserverRef);
   const className = classnames(
     "nz-toolSettings-handle",
     props.className,
@@ -37,7 +50,8 @@ export function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps) {
   return (
     <div
       className={className}
-      ref={ref}
+      ref={refs}
+      onPointerDown={handlePointerDown}
       style={props.style}
     >
       <div className="nz-row">
@@ -54,4 +68,4 @@ export function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps) {
       </div>
     </div>
   );
-}
+});

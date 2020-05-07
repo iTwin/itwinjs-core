@@ -7,8 +7,6 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ColorDef } from "./ColorDef";
-import { Vector3d } from "@bentley/geometry-core";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
 
 // cSpell:ignore vals
@@ -185,13 +183,4 @@ export class PolylineEdgeArgs {
   public get numLines() { return undefined !== this.lines ? this.lines.length : 0; }
   public get isValid() { return this.numLines > 0; }
   public clear() { this.lines = undefined; }
-}
-
-/** @internal */
-export namespace ImageLight {
-  export class Solar {
-    constructor(public direction: Vector3d = new Vector3d(),
-      public color: ColorDef = ColorDef.white,
-      public intensity: number = 0) { }
-  }
 }

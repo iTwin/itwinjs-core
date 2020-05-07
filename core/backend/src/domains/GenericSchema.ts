@@ -10,7 +10,6 @@ import * as path from "path";
 import { ClassRegistry } from "../ClassRegistry";
 import { KnownLocations } from "../IModelHost";
 import { Schema, Schemas } from "../Schema";
-
 import * as elementsModule from "./GenericElements";
 
 /** @public */

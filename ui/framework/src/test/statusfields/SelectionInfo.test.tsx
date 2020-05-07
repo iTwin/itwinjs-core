@@ -6,21 +6,13 @@ import { expect } from "chai";
 import * as React from "react";
 // import * as sinon from "sinon";
 import { Provider } from "react-redux";
-import { render, cleanup } from "@testing-library/react";
-
-import TestUtils from "../TestUtils";
+import { WidgetState } from "@bentley/ui-abstract";
+import { cleanup, render } from "@testing-library/react";
 import {
-  StatusBar,
-  SelectionInfoField,
-  StatusBarWidgetControl,
-  WidgetState,
-  ConfigurableCreateInfo,
-  ConfigurableUiControlType,
-  WidgetDef,
-  UiFramework,
-  SessionStateActionId,
-  StatusBarWidgetControlArgs,
+  ConfigurableCreateInfo, ConfigurableUiControlType, SelectionInfoField, SessionStateActionId, StatusBar, StatusBarWidgetControl,
+  StatusBarWidgetControlArgs, UiFramework, WidgetDef,
 } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("SelectionInfoField", () => {
 
@@ -35,7 +27,7 @@ describe("SelectionInfoField", () => {
       if (openWidget) { }
       return (
         <>
-          <SelectionInfoField isInFooterMode={isInFooterMode} />
+          <SelectionInfoField isInFooterMode={isInFooterMode} openWidget={null} onOpenWidget={() => { }} />
         </>
       );
     }

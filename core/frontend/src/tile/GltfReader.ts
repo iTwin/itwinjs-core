@@ -3,63 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
+import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
+import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
-  assert,
-  ByteStream,
-  Id64String,
-  JsonUtils,
-  utf8ToString,
-} from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  Matrix3d,
-  Point2d,
-  Point3d,
-  Range3d,
-  Transform,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  BatchType,
-  ColorDef,
-  ElementAlignedBox3d,
-  FeatureTable,
-  FillFlags,
-  GltfBufferData,
-  GltfBufferView,
-  GltfDataType,
-  GltfHeader,
-  GltfMeshMode,
-  ImageSource,
-  ImageSourceFormat,
-  LinePixels,
-  MeshPolyline,
-  MeshPolylineList,
-  OctEncodedNormal,
-  PackedFeatureTable,
-  QParams3d,
-  QPoint3d,
-  QPoint3dList,
-  RenderTexture,
-  TextureMapping,
-  TileReadStatus,
+  BatchType, ColorDef, ElementAlignedBox3d, FeatureTable, FillFlags, GltfBufferData, GltfBufferView, GltfDataType, GltfHeader, GltfMeshMode,
+  ImageSource, ImageSourceFormat, LinePixels, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams3d, QPoint3d, QPoint3dList,
+  RenderTexture, TextureMapping, TileReadStatus,
 } from "@bentley/imodeljs-common";
-import { RenderGraphic } from "../render/RenderGraphic";
+import { getImageSourceFormatForMimeType, imageElementFromImageSource } from "../ImageUtil";
+import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
-import { RenderSystem } from "../render/RenderSystem";
-import {
-  getImageSourceFormatForMimeType,
-  imageElementFromImageSource,
-} from "../ImageUtil";
-import { IModelConnection } from "../IModelConnection";
-import { TileContent } from "./internal";
 import { DisplayParams } from "../render/primitives/DisplayParams";
+import { Mesh, MeshGraphicArgs, MeshList } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
-import { Mesh, MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { RenderSystem } from "../render/RenderSystem";
+import { TileContent } from "./internal";
 
 // tslint:disable:no-const-enum
 
@@ -140,8 +103,6 @@ export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
       super("imageBytesToImageBitmap", [imageBytes, imageMimeType], [imageBytes]);
     }
   }
-
-  declare var BUILD_SEMVER: string;
 -------------------------------------- */
 
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
@@ -189,9 +150,9 @@ export abstract class GltfReader {
   protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
   protected get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
 
-  protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, sizeMultiplier?: number, instances?: InstancedGraphicParams): GltfReaderResult {
+  protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
     if (this._isCanceled)
-      return { readStatus: TileReadStatus.Canceled, isLeaf, sizeMultiplier };
+      return { readStatus: TileReadStatus.Canceled, isLeaf };
 
     if (this._returnToCenter !== undefined || (pseudoRtcBias !== undefined && pseudoRtcBias.magnitude() < 1.0E5))
       pseudoRtcBias = undefined;
@@ -250,7 +211,6 @@ export abstract class GltfReader {
     return {
       readStatus,
       isLeaf,
-      sizeMultiplier,
       contentRange,
       graphic: renderGraphic,
     };
@@ -419,7 +379,8 @@ export abstract class GltfReader {
       else if (materialJson.extensions && materialJson.extensions.KHR_techniques_webgl && materialJson.extensions.KHR_techniques_webgl.values && materialJson.extensions.KHR_techniques_webgl.values.u_color)
         return this.colorFromJson(materialJson.extensions.KHR_techniques_webgl.values.u_color);
     }
-    return ColorDef.white.clone();
+
+    return ColorDef.white;
   }
 
   protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {

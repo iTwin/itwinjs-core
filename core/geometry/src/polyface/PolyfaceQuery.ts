@@ -9,32 +9,33 @@
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { StrokeOptions } from "../curve/StrokeOptions";
+import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 // import { Point3d, Vector3d, Point2d } from "./PointVector";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Polyface, PolyfaceVisitor, IndexedPolyface } from "./Polyface";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
-import { Loop } from "../curve/Loop";
-import { LineString3d } from "../curve/LineString3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
-import { MomentData } from "../geometry4d/MomentData";
-import { IndexedEdgeMatcher, SortableEdgeCluster, SortableEdge } from "./IndexedEdgeMatcher";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Transform } from "../geometry3d/Transform";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { PolyfaceBuilder } from "./PolyfaceBuilder";
-import { Geometry } from "../Geometry";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { ChainMergeContext } from "../topology/ChainMerge";
-import { UnionFindContext } from "../numerics/UnionFind";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { RangeLengthData } from "./RangeLengthData";
-import { XYPointBuckets } from "./multiclip/XYPointBuckets";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { Range3d } from "../geometry3d/Range";
-import { Angle } from "../geometry3d/Angle";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { MomentData } from "../geometry4d/MomentData";
+import { UnionFindContext } from "../numerics/UnionFind";
+import { ChainMergeContext } from "../topology/ChainMerge";
 import { FacetOrientationFixup } from "./FacetOrientation";
+import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
+import { XYPointBuckets } from "./multiclip/XYPointBuckets";
+import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
+import { PolyfaceBuilder } from "./PolyfaceBuilder";
+import { RangeLengthData } from "./RangeLengthData";
+
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public

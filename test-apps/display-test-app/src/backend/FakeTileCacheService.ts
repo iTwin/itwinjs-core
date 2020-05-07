@@ -5,17 +5,10 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
-import {
-  CloudStorageContainerDescriptor,
-  CloudStorageContainerUrl,
-  CloudStorageProvider,
-} from "@bentley/imodeljs-common";
-import {
-  CloudStorageService,
-  CloudStorageUploadOptions,
-} from "@bentley/imodeljs-backend";
+import { CloudStorageService, CloudStorageUploadOptions } from "@bentley/imodeljs-backend";
+import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "@bentley/imodeljs-common";
 
-/** Simulates cloud storage tile cache, caching tiles in ./webresources/tiles/ */
+/** Simulates cloud storage tile cache, caching tiles in ./build/tiles/ */
 export class FakeTileCacheService extends CloudStorageService {
   private readonly _dirname: string;
   public readonly id = CloudStorageProvider.External;

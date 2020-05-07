@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
 import { SchemaContext } from "../../../src/Context";
 import { ECClassModifier } from "../../../src/ECObjects";
 import { MutableClass } from "../../../src/Metadata/Class";
@@ -28,16 +27,16 @@ describe("CustomAttribute Rules Tests", () => {
     context = new SchemaContext();
     schema = new Schema(context, "TestSchema", "ts", 1, 0, 0);
     caSchema = new Schema(context, "TestCASchema", "ts", 1, 0, 0);
-    await (schema as MutableSchema).addReference(caSchema);
   });
 
   describe("CustomAttributeNotOfConcreteClass tests", () => {
     it("CustomAttribute is abstract, rule violated", async () => {
+      await (schema as MutableSchema).addReference(caSchema);
       addCA(ECClassModifier.Abstract);
       const testEntity = new EntityClass(schema, "TestEntity");
       (testEntity as unknown as MutableClass).addCustomAttribute({ className: "TestCASchema.TestCA" });
 
-      const result = await Rules.customAttributeNotOfConcreteClass(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
+      const result = Rules.customAttributeNotOfConcreteClass(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
 
       let resultHasEntries = false;
       for await (const diagnostic of result!) {
@@ -53,11 +52,47 @@ describe("CustomAttribute Rules Tests", () => {
     });
 
     it("CustomAttribute is concrete, rule passes", async () => {
+      await (schema as MutableSchema).addReference(caSchema);
       addCA(ECClassModifier.None);
       const testEntity = new EntityClass(schema, "TestEntity");
       (testEntity as unknown as MutableClass).addCustomAttribute({ className: "TestCASchema.TestCA" });
 
-      const result = await Rules.customAttributeNotOfConcreteClass(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
+      const result = Rules.customAttributeNotOfConcreteClass(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
+
+      for await (const _diagnostic of result!) {
+        expect(false, "Rule should have passed").to.be.true;
+      }
+    });
+  });
+
+  describe("CustomAttributeSchemaMustBeReferenced tests", () => {
+    it("CustomAttribute schema not referenced, rule violated", async () => {
+      addCA(ECClassModifier.None);
+      const testEntity = new EntityClass(schema, "TestEntity");
+      (testEntity as unknown as MutableClass).addCustomAttribute({ className: "TestCASchema.TestCA" });
+
+      const result = Rules.customAttributeSchemaMustBeReferenced(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
+
+      let resultHasEntries = false;
+      for await (const diagnostic of result!) {
+        resultHasEntries = true;
+        expect(diagnostic).to.not.be.undefined;
+        expect(diagnostic!.ecDefinition).to.equal(testEntity);
+        expect(diagnostic!.messageArgs).to.eql([testEntity.fullName, "TestCASchema.TestCA"]);
+        expect(diagnostic!.category).to.equal(DiagnosticCategory.Error);
+        expect(diagnostic!.code).to.equal(Rules.DiagnosticCodes.CustomAttributeSchemaMustBeReferenced);
+        expect(diagnostic!.diagnosticType).to.equal(DiagnosticType.CustomAttributeContainer);
+      }
+      expect(resultHasEntries, "expected rule to return an AsyncIterable with entries.").to.be.true;
+    });
+
+    it("CustomAttribute schema is referenced, rule passes", async () => {
+      await (schema as MutableSchema).addReference(caSchema);
+      addCA(ECClassModifier.None);
+      const testEntity = new EntityClass(schema, "TestEntity");
+      (testEntity as unknown as MutableClass).addCustomAttribute({ className: "TestCASchema.TestCA" });
+
+      const result = Rules.customAttributeSchemaMustBeReferenced(testEntity, testEntity.customAttributes!.get("TestCASchema.TestCA")!);
 
       for await (const _diagnostic of result!) {
         expect(false, "Rule should have passed").to.be.true;

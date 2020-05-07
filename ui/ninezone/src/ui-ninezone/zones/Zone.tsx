@@ -6,13 +6,13 @@
  * @module Zone
  */
 
-import * as classnames from "classnames";
+import "./Zone.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import { CssProperties } from "../utilities/Css";
 import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
 import { WidgetZoneId } from "./manager/Zones";
-import "./Zone.scss";
 
 /** Properties of [[Zone]] component.
  * @beta
@@ -49,7 +49,7 @@ export class Zone extends React.PureComponent<ZoneProps> {
       this.props.className);
 
     const style: React.CSSProperties = {
-      ...!this.props.bounds ? {} : {
+      ...!this.props.bounds ? undefined : {
         ...CssProperties.fromBounds(this.props.bounds),
         position: "absolute",
       },

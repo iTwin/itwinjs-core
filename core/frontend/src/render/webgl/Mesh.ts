@@ -6,32 +6,32 @@
  * @module WebGL
  */
 
-import { dispose, assert } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
-import { LUTGeometry, PolylineBuffers, CachedGeometry } from "./CachedGeometry";
-import { VertexIndices, SurfaceType, MeshParams, SegmentEdgeParams, SilhouetteParams, TesselatedPolyline } from "../primitives/VertexTable";
-import { LineCode } from "./EdgeOverrides";
-import { ColorInfo } from "./ColorInfo";
-import { Graphic } from "./Graphic";
-import { VertexLUT } from "./VertexLUT";
-import { Primitive } from "./Primitive";
-import { FloatRgba } from "./FloatRGBA";
-import { ShaderProgramParams } from "./DrawCommand";
-import { RenderCommands } from "./RenderCommands";
-import { Target } from "./Target";
-import { createMaterialInfo, MaterialInfo } from "./Material";
-import { Texture } from "./Texture";
-import { FeatureIndexType, FillFlags, RenderMode, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
-import { System } from "./System";
-import { BufferHandle, BuffersContainer, BufferParameters } from "./Handle";
-import { GL } from "./GL";
-import { TechniqueId } from "./TechniqueId";
+import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
-import { RenderMemory } from "../RenderSystem";
-import { InstanceBuffers } from "./InstancedGeometry";
+import { MeshParams, SegmentEdgeParams, SilhouetteParams, SurfaceType, TesselatedPolyline, VertexIndices } from "../primitives/VertexTable";
+import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
+import { CachedGeometry, LUTGeometry, PolylineBuffers } from "./CachedGeometry";
+import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
+import { ShaderProgramParams } from "./DrawCommand";
+import { LineCode } from "./EdgeOverrides";
+import { FloatRgba } from "./FloatRGBA";
+import { GL } from "./GL";
+import { Graphic } from "./Graphic";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
+import { InstanceBuffers } from "./InstancedGeometry";
+import { createMaterialInfo, MaterialInfo } from "./Material";
+import { Primitive } from "./Primitive";
+import { RenderCommands } from "./RenderCommands";
+import { RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
+import { Texture } from "./Texture";
+import { VertexLUT } from "./VertexLUT";
 
 /** @internal */
 export class MeshData implements WebGLDisposable {
@@ -403,8 +403,19 @@ export class SurfaceGeometry extends MeshGeometry {
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isTextured() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isGlyph() { return this.mesh.isGlyph; }
+  public get alwaysRenderTranslucent() { return this.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
   public get isClassifier() { return SurfaceType.VolumeClassifier === this.surfaceType; }
+  public get supportsThematicDisplay() {
+    return !this.isGlyph;
+  }
+
+  public get allowColorOverride() {
+    // Text background color should not be overridden by feature symbology overrides - otherwise it becomes unreadable...
+    // We don't actually know if we have text.
+    // We do know that text background color uses blanking fill. So do ImageGraphics, so they're also going to forbid overriding their color.
+    return FillFlags.Blanking !== (this.fillFlags & FillFlags.Blanking);
+  }
 
   public get asSurface() { return this; }
   public get asEdge() { return undefined; }
@@ -412,23 +423,12 @@ export class SurfaceGeometry extends MeshGeometry {
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const system = System.instance;
-    const gl = system.context;
-    const offset = RenderOrder.BlankingRegion === this.renderOrder;
     const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this._buffers;
-
-    if (offset) {
-      gl.enable(GL.POLYGON_OFFSET_FILL);
-      gl.polygonOffset(1.0, 1.0);
-    }
 
     bufs.bind();
     const primType = system.drawSurfacesAsWiremesh ? GL.PrimitiveType.Lines : GL.PrimitiveType.Triangles;
     system.drawArrays(primType, 0, this._numIndices, numInstances);
     bufs.unbind();
-
-    if (offset) {
-      gl.disable(GL.POLYGON_OFFSET_FILL);
-    }
   }
 
   public wantMixMonochromeColor(target: Target): boolean {
@@ -523,34 +523,53 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public get materialInfo(): MaterialInfo | undefined { return this.mesh.materialInfo; }
 
-  public computeSurfaceFlags(params: ShaderProgramParams): SurfaceFlags {
+  public useTexture(params: ShaderProgramParams): boolean {
+    return this.wantTextures(params.target, this.isTextured);
+  }
+
+  public computeSurfaceFlags(params: ShaderProgramParams, flags: Int32Array): void {
     const target = params.target;
     const vf = target.currentViewFlags;
 
     const useMaterial = wantMaterials(vf);
-    let flags = useMaterial ? SurfaceFlags.None : SurfaceFlags.IgnoreMaterial;
+    flags[SurfaceBitIndex.IgnoreMaterial] = useMaterial ? 0 : 1;
+    flags[SurfaceBitIndex.HasMaterialAtlas] = useMaterial && this.hasMaterialAtlas ? 1 : 0;
+
+    flags[SurfaceBitIndex.ApplyLighting] = 0;
+    flags[SurfaceBitIndex.NoFaceFront] = 0;
+    flags[SurfaceBitIndex.HasColorAndNormal] = 0;
     if (this.isLit) {
-      flags |= SurfaceFlags.HasNormals;
+      flags[SurfaceBitIndex.HasNormals] = 1;
       if (wantLighting(vf)) {
-        flags |= SurfaceFlags.ApplyLighting;
+        flags[SurfaceBitIndex.ApplyLighting] = 1;
         if (this.hasFixedNormals)
-          flags |= SurfaceFlags.NoFaceFront;
+          flags[SurfaceBitIndex.NoFaceFront] = 1;
       }
 
       // Textured meshes store normal in place of color index.
       // Untextured lit meshes store normal where textured meshes would store UV coords.
       // Tell shader where to find normal.
       if (!this.isTextured) {
-        flags |= SurfaceFlags.HasColorAndNormal;
+        flags[SurfaceBitIndex.HasColorAndNormal] = 1;
       }
+    } else {
+      flags[SurfaceBitIndex.HasNormals] = 0;
     }
 
-    if (this.wantTextures(target, this.isTextured)) {
-      flags |= SurfaceFlags.HasTexture;
+    if (this.useTexture(params)) {
+      flags[SurfaceBitIndex.HasTexture] = 1;
       if (useMaterial && undefined !== this.mesh.materialInfo && this.mesh.materialInfo.overridesAlpha && RenderPass.Translucent === params.renderPass)
-        flags |= SurfaceFlags.MultiplyAlpha;
+        flags[SurfaceBitIndex.MultiplyAlpha] = 1;
+      else
+        flags[SurfaceBitIndex.MultiplyAlpha] = 0;
+    } else {
+      flags[SurfaceBitIndex.HasTexture] = 0;
+      flags[SurfaceBitIndex.MultiplyAlpha] = 0;
     }
 
+    // The transparency threshold controls how transparent a surface must be to allow light to pass through; more opaque surfaces cast shadows.
+    flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;
+    flags[SurfaceBitIndex.BackgroundFill] = 0;
     switch (params.renderPass) {
       // NB: We need this for opaque pass due to SolidFill (must compute transparency, discard below threshold, render opaque at or above threshold)
       case RenderPass.OpaqueLinear:
@@ -563,20 +582,15 @@ export class SurfaceGeometry extends MeshGeometry {
       case RenderPass.OverlayLayers: {
         const mode = vf.renderMode;
         if (!this.isGlyph && (RenderMode.HiddenLine === mode || RenderMode.SolidFill === mode)) {
-          flags |= SurfaceFlags.TransparencyThreshold;
+          flags[SurfaceBitIndex.TransparencyThreshold] = 1;
           if (RenderMode.HiddenLine === mode && FillFlags.Always !== (this.fillFlags & FillFlags.Always)) {
             // fill flags test for text - doesn't render with bg fill in hidden line mode.
-            flags |= SurfaceFlags.BackgroundFill;
+            flags[SurfaceBitIndex.BackgroundFill] = 1;
           }
           break;
         }
       }
     }
-
-    if (params.target.isDrawingShadowMap)
-      flags |= SurfaceFlags.TransparencyThreshold;
-
-    return flags;
   }
 
   private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData) {
@@ -597,6 +611,9 @@ export class SurfaceGeometry extends MeshGeometry {
 
     if (this.mesh.isTextureAlwaysDisplayed)
       return true;
+
+    if (this.supportsThematicDisplay && target.wantThematicDisplay)
+      return false;
 
     const fill = this.fillFlags;
     const flags = target.currentViewFlags;

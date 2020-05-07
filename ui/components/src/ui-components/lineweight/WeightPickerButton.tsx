@@ -6,13 +6,14 @@
  * @module LineWeight
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { Popup, Position, CommonProps } from "@bentley/ui-core";
-import ReactResizeDetector from "react-resize-detector";
-import { LineWeightSwatch } from "./Swatch";
 import "./WeightPickerButton.scss";
+import classnames from "classnames";
+import * as React from "react";
+import ReactResizeDetector from "react-resize-detector";
+import { ColorDef } from "@bentley/imodeljs-common";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { CommonProps, Popup } from "@bentley/ui-core";
+import { LineWeightSwatch } from "./Swatch";
 
 // cSpell:ignore weightpicker lineweight
 
@@ -190,8 +191,8 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     );
 
     return (
-      <ReactResizeDetector handleWidth>
-        {(width: number) =>
+      <ReactResizeDetector handleWidth
+        render={({ width }) => (
           <>
             <div ref={this._setTarget} >
               <LineWeightSwatch
@@ -210,7 +211,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
               className="components-weightpicker-popup"
               style={{ width: `${width}px` }}
               isOpen={this.state.showPopup}
-              position={Position.Bottom}
+              position={RelativePosition.Bottom}
               offset={0}
               showShadow={false}
               onClose={this._closePopup}
@@ -221,8 +222,8 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
               {this.renderPopup(this.props.dropDownTitle)}
             </Popup>
           </>
-        }
-      </ReactResizeDetector>
+        )}
+      />
     );
   }
 }

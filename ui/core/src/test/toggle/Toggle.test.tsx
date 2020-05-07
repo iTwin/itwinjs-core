@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow } from "enzyme";
-import * as sinon from "sinon";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
+import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-
 import { Toggle, ToggleButtonType } from "../../ui-core";
+import { TestUtils } from "../TestUtils";
 
 describe("<Toggle />", () => {
   it("should render", () => {
@@ -34,9 +34,11 @@ describe("<Toggle />", () => {
     shallow(<Toggle large={true} />).should.matchSnapshot();
   });
 
-  it("Toggle should call onChange handler", () => {
+  it("Toggle should call onChange handler", async () => {
     const spyMethod = sinon.spy();
+    let checked = false;
     const handleChange = (_checked: boolean) => {
+      checked = _checked;
       spyMethod();
     };
 
@@ -48,7 +50,19 @@ describe("<Toggle />", () => {
     input.length.should.eq(1);
 
     input.simulate("change", { checked: true });
+    wrapper.update();
+
+    let toggling = wrapper.find(".core-toggling");
+    toggling.length.should.not.eq(0);
+
+    await TestUtils.flushAsyncOperations();
     spyMethod.calledOnce.should.true;
+    expect(checked).to.be.true;
+
+    await TestUtils.tick(1000);
+    wrapper.update();
+    toggling = wrapper.find(".core-toggling");
+    toggling.length.should.eq(0);
 
     wrapper.unmount();
   });
@@ -64,6 +78,12 @@ describe("<Toggle />", () => {
     input.length.should.eq(1);
 
     input.simulate("blur");
+    spyMethod.calledOnce.should.false;
+
+    const label = wrapper.find("label.core-toggle");
+    label.length.should.eq(1);
+
+    label.simulate("blur");
     spyMethod.calledOnce.should.true;
 
     wrapper.unmount();
@@ -75,17 +95,17 @@ describe("<Toggle />", () => {
       spyMethod();
     };
 
-    const wrapper = mount(
-      <Toggle isOn={false} onChange={handleChange} />,
-    );
+    const component = render(<Toggle isOn={false} onChange={handleChange} />);
+    let input = component.container.querySelector("input[type='checkbox']");
+    expect((input as HTMLInputElement).checked).to.be.false;
 
-    wrapper.setProps({ isOn: true });
-    expect(wrapper.state("checked")).to.be.true;
+    component.rerender(<Toggle isOn={true} onChange={handleChange} />);
+    input = component.container.querySelector("input[type='checkbox']");
+    expect((input as HTMLInputElement).checked).to.be.true;
 
-    wrapper.setProps({ isOn: false });
-    expect(wrapper.state("checked")).to.be.false;
-
-    wrapper.unmount();
+    component.rerender(<Toggle isOn={false} onChange={handleChange} />);
+    input = component.container.querySelector("input[type='checkbox']");
+    expect((input as HTMLInputElement).checked).to.be.false;
   });
 
   it("Toggle should update on props.disabled change", () => {
@@ -104,7 +124,7 @@ describe("<Toggle />", () => {
     const input = wrapper.find("input.core-toggle-input");
     input.length.should.eq(1);
     input.getDOMNode().hasAttribute("disabled").should.true;
-    const label = wrapper.find("label.core-toggle.disabled");
+    const label = wrapper.find("label.core-toggle.uicore-disabled");
     label.length.should.eq(1);
 
     wrapper.unmount();

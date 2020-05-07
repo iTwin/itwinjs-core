@@ -7,13 +7,18 @@
  */
 
 import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
-import { CellProps, Cell } from "../../utilities/Cell";
+import { Cell, CellProps } from "../../utilities/Cell";
 import { DisabledResizeHandles } from "../../utilities/DisabledResizeHandles";
-import { DraggedWidgetManagerProps, getDefaultWidgetHorizontalAnchor, getDefaultWidgetVerticalAnchor, getDefaultWidgetManagerProps, WidgetManagerProps, DraggedWidgetManager, ToolSettingsWidgetManagerProps, getDefaultToolSettingsWidgetManagerProps, ToolSettingsWidgetMode } from "./Widget";
-import { getDefaultZoneManagerProps, ZoneManagerProps, ZoneManager, getWindowResizeSettings } from "./Zone";
-import { HorizontalAnchor, VerticalAnchor, ResizeHandle } from "../../widget/Stacked";
-import { GrowTop, ShrinkTop, GrowBottom, ShrinkBottom, GrowLeft, ShrinkLeft, GrowRight, ShrinkRight, ResizeStrategy, UpdateWindowResizeSettings } from "./ResizeStrategy";
-import { LeftZones, TopZones, RightZones, BottomZones } from "./AdjacentZones";
+import { HorizontalAnchor, ResizeHandle, VerticalAnchor } from "../../widget/Stacked";
+import { BottomZones, LeftZones, RightZones, TopZones } from "./AdjacentZones";
+import {
+  GrowBottom, GrowLeft, GrowRight, GrowTop, ResizeStrategy, ShrinkBottom, ShrinkLeft, ShrinkRight, ShrinkTop, UpdateWindowResizeSettings,
+} from "./ResizeStrategy";
+import {
+  DraggedWidgetManager, DraggedWidgetManagerProps, getDefaultToolSettingsWidgetManagerProps, getDefaultWidgetHorizontalAnchor,
+  getDefaultWidgetManagerProps, getDefaultWidgetVerticalAnchor, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps,
+} from "./Widget";
+import { getDefaultZoneManagerProps, getWindowResizeSettings, ZoneManager, ZoneManagerProps } from "./Zone";
 
 /** Widget zone id.
  *
@@ -293,7 +298,7 @@ export class ZonesManager {
                 },
                 stackId: this._lastStackId++,
               },
-            } : {},
+            } : undefined,
             bounds: mergedZone.bounds,
             widgets: [id],
           },

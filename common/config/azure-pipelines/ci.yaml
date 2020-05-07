@@ -1,0 +1,50 @@
+# iModel.js CI Build
+
+trigger:
+  - master
+
+jobs:
+  - job: Build
+    condition: succeeded()
+    strategy:
+      matrix:
+        "Windows - Node 10":
+          NodeVersion: 10
+          OS: windows-latest
+        "Linux - Node 10":
+          NodeVersion: 10
+          OS: ubuntu-latest
+        "Mac - Node 10":
+          NodeVersion: 10
+          OS: macOS-latest
+        "Windows - Node 12":
+          NodeVersion: 12
+          OS: windows-latest
+        "Linux - Node 12":
+          NodeVersion: 12
+          OS: ubuntu-latest
+        "Mac - Node 12":
+          NodeVersion: 12
+          OS: macOS-latest
+
+    pool:
+      vmImage: $(OS)
+    steps:
+      - checkout: self
+        clean: all
+      - task: NodeTool@0
+        displayName: "Use Node $(NodeVersion).x"
+        inputs:
+          versionSpec: "$(NodeVersion).x"
+          checkLatest: true
+
+      # Used for the rush audit step until upgrade to pnpm version that supports audit.
+      - task: geeklearningio.gl-vsts-tasks-yarn.yarn-installer-task.YarnInstaller@3
+        displayName: "Use Yarn 1.x"
+
+      - template: templates/core-build.yaml
+
+      # Will run if even there is a failure somewhere else in the pipeline.
+      - template: templates/publish-test-results.yaml
+        parameters:
+          NodeVersion: $(NodeVersion) # set to a non-boolean value to h

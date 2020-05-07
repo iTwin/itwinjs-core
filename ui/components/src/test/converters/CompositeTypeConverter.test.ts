@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import TestUtils from "../TestUtils";
+import { Primitives } from "@bentley/ui-abstract";
 import { CompositeTypeConverter } from "../../ui-components/converters/CompositeTypeConverter";
-import { Primitives } from "@bentley/imodeljs-frontend";
+import TestUtils from "../TestUtils";
 
 describe("CompositeTypeConverter", () => {
 

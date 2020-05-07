@@ -2,23 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { mount } from "enzyme";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { mount } from "enzyme";
-import { expect } from "chai";
-
-import TestUtils from "../TestUtils";
+import { WidgetState } from "@bentley/ui-abstract";
 import {
-  StatusBar,
-  PromptField,
-  StatusBarWidgetControl,
-  WidgetState,
-  ConfigurableCreateInfo,
-  MessageManager,
-  ConfigurableUiControlType,
+  ConfigurableCreateInfo, ConfigurableUiControlType, MessageManager, PromptField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs,
   WidgetDef,
-  StatusBarWidgetControlArgs,
 } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("PromptField", () => {
 
@@ -31,7 +24,7 @@ describe("PromptField", () => {
       if (openWidget) { }
       return (
         <>
-          <PromptField isInFooterMode={isInFooterMode} />   {/* tslint:disable-line: deprecation */}
+          <PromptField isInFooterMode={isInFooterMode} openWidget={null} onOpenWidget={() => { }} />   {/* tslint:disable-line: deprecation */}
         </>
       );
     }

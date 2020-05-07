@@ -2,40 +2,43 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IndexedPolyface, Polyface, IndexedPolyfaceVisitor } from "../../polyface/Polyface";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Range3d, Range2d } from "../../geometry3d/Range";
-import { SolidPrimitive } from "../../solid/SolidPrimitive";
-import { LineString3d } from "../../curve/LineString3d";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { Loop } from "../../curve/Loop";
-import { SweepContour } from "../../solid/SweepContour";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
 import * as fs from "fs";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { prettyPrint } from "../testFunctions";
 import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { Path } from "../../curve/Path";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { UVSurface } from "../../geometry3d/GeometryHandler";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { Angle } from "../../geometry3d/Angle";
-import { Cone } from "../../solid/Cone";
-import { Sphere } from "../../solid/Sphere";
-import { Box } from "../../solid/Box";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range2d, Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
 import { MomentData } from "../../geometry4d/MomentData";
-import { Geometry } from "../../Geometry";
+import { IndexedPolyface, IndexedPolyfaceVisitor, Polyface } from "../../polyface/Polyface";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Box } from "../../solid/Box";
+import { Cone } from "../../solid/Cone";
+import { SolidPrimitive } from "../../solid/SolidPrimitive";
+import { Sphere } from "../../solid/Sphere";
+import { SweepContour } from "../../solid/SweepContour";
 import { TorusPipe } from "../../solid/TorusPipe";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+
 /* tslint:disable:no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
@@ -1015,6 +1018,20 @@ it("AddTriangleFan", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
+it("AddSweptLineStrings", () => {
+  const ck = new Checker();
+  const path = Path.create();
+  path.tryAddChild(LineString3d.create([[0, 0, 0], [0, 1, 0], [1, 1, 0]]));
+  path.tryAddChild(LineString3d.create([[1, 1, 0], [0, 1, 0], [0, 2, 0]]));
+  const builder = PolyfaceBuilder.create();
+  builder.addLinearSweepLineStringsXYZOnly(path, Vector3d.create(0, 0, 1));
+  const mesh = builder.claimPolyface();
+  ck.testExactNumber(4, mesh.facetCount);
+
+  builder.applyStrokeCountsToCurvePrimitives(path);
+  expect(ck.getNumErrors()).equals(0);
+});
+
 it("AddTriangles", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -1022,6 +1039,7 @@ it("AddTriangles", () => {
   options.needNormals = true;
   options.needParams = true;
   const builder = PolyfaceBuilder.create(options);
+  builder.addTriangleFacet([Point3d.create(0, 1, 2)]);
   const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0))!;
   const strokes = LineString3d.create();
   arc.emitStrokes(strokes, options);
@@ -1036,6 +1054,7 @@ it("AddTriangles", () => {
   //  const params = [];
   //  const normals = [];
   const du = 1.0 / strokes.numPoints();
+  const pointA = new GrowableXYZArray();
   for (let i = 1; i < strokes.numPoints(); i++) {
     points.length = 0;
     points.push(coneA);
@@ -1052,12 +1071,12 @@ it("AddTriangles", () => {
     normals.push(normalA);
     builder.addTriangleFacet(points, params, normals);
 
-    // build lower half without params.
-    points.length = 0;
-    points.push(coneB);
-    points.push(strokes.pointAt(i)!);
-    points.push(strokes.pointAt(i - 1)!);
-    builder.addTriangleFacet(points);
+    // build lower half without params, use GrowableArray for coverage . ..
+    pointA.length = 0;
+    pointA.push(coneB);
+    pointA.push(strokes.pointAt(i)!);
+    pointA.push(strokes.pointAt(i - 1)!);
+    builder.addTriangleFacet(pointA);
 
   }
 

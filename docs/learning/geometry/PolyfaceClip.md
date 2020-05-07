@@ -28,10 +28,25 @@ Unit Test
  `insideClip` is a boolean controlling which side of the cut is kept. |`  const clippedPolyface = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, insideClip, true);' |
  | Lower and upper parts | ![>](./figs/PolyfaceClip/SectionCut/LowerAndUpperParts.png)
 
-
-
 Unit Test:
   * source: imodeljs\core\geometry\src\test\clipping\PolyfaceClip.test.ts
   * test name: "ClosedSection"
   * output: imodeljs\core\geometry\src\test\output\PolyfaceClip\ClosedSection.imjs
 
+## Clipping with ConvexClipPlaneSet or UnionOfConvexClipPlaneSet
+
+|  |  |
+|---|---|
+| gray box is a closed volume mesh <br> Red shape is to be swept vertically   | ![>](./figs/PolyfaceClip/ClipSets/SlabWithCutter.png)  |
+| Create `SweepContour` as intermediate step to `UnionOfConvexClipPlaneSets` for the clipping. | const contour = SweepContour.createForPolygon([Point3d.create(xA, yA), Point3d.create(xB, yA), Point3d.create(xA, yB), Point3d.create(xA, yA)])!; |
+| Get the clipper out of the `SweepContour` |`const clipper = contourP0.sweepToUnionOfConvexClipPlaneSets()!;` |
+| Create a `ClipBuilders` object for use in the clip |`const clipBuilders = ClippedPolyfaceBuilders.create(true, true, true);`|
+| Do the clip |`PolyfaceClip.clipPolyfaceInsideOutside(facets, clipper, clipBuilders);` |
+| Extract the inside part | `insidePart = clipBuilders.claimPolyface(0, true);` <br> ![>](./figs/PolyfaceClip/ClipSets/InsidePart.png)|
+| Extract the outside part | `insidePart = clipBuilders.claimPolyface(1, true);` <br> ![>](./figs/PolyfaceClip/ClipSets/OutsidePart.png)|
+
+
+Unit Test:
+  * source: imodeljs\core\geometry\src\test\clipping\PolyfaceClip.test.ts
+  * test name: "BoxClosureNonConvex"
+  * output: imodeljs\core\geometry\src\test\output\PolyfaceClip\BoxClosureNonConvex.imjs

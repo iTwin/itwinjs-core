@@ -51,6 +51,3 @@ The first time you "open" a container for a project, it will be built and persis
   - Cause: unknown
   - Workaround: `rm -rf common/temp` and do `rush` install/rebuild/test again
   - To know earlier if you will have this problem, after a `rush rebuild`, run `find -L common/temp -type l`, and if anything other than common/temp/pnpm-store or common/temp/pnpm-local is reported, repeat the above workaround
-- 'tools/webpack/bin/buildIModelJsModule.js' shows as modified
-  - Cause: This file is generated during the build, and will use the system's link endings; it's normally checked in by Windows, so Linux re-generates with different endings
-  - Workaround: Before committing, run `git checkout -- tools/webpack/bin/buildIModelJsModule.js`

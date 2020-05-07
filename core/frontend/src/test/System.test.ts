@@ -2,38 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { Capabilities, RenderType, DepthType, System } from "../webgl";
+import { expect } from "chai";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
-import { TileAdmin } from "../tile/internal";
 import { RenderSystem } from "../render/RenderSystem";
-import { WebGLRenderCompatibilityStatus, WebGLFeature } from "../RenderCompatibility";
-
-class OverriddenFunctions {
-  public origCreateContext = System.createContext;
-
-  public overrideCreateContext(newGetParameter?: (ctx: WebGLRenderingContext | WebGL2RenderingContext, pname: number) => any, useContextAttributes: boolean = true) {
-    System.createContext = (canvas, attr) => {
-      const ctx = this.origCreateContext(canvas, useContextAttributes ? attr : undefined);
-      if (undefined !== ctx && undefined !== newGetParameter) {
-        const origGetParameter = ctx.getParameter;
-        ctx.getParameter = (pname: number) => {
-          const result = newGetParameter(ctx, pname);
-          if (result !== undefined)
-            return result;
-          const boundGetParameter = origGetParameter.bind(ctx);
-          return boundGetParameter(pname);
-        };
-      }
-      return ctx;
-    };
-  }
-
-  public restore() {
-    System.createContext = this.origCreateContext;
-  }
-}
+import { TileAdmin } from "../tile/internal";
+import { System } from "../webgl";
 
 function _createCanvas(): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas") as HTMLCanvasElement;
@@ -43,101 +17,13 @@ function _createCanvas(): HTMLCanvasElement | undefined {
 }
 
 describe("Render Compatibility", () => {
-  let overriddenFunctions: OverriddenFunctions;
-
-  before(() => {
-    overriddenFunctions = new OverriddenFunctions();
-  });
-
-  after(() => {
-    overriddenFunctions.restore();
-  });
-
   // NB: We assume software rendering for these tests because puppeteer only supports software rendering.
   // Further, we run in the context of Chrome, whose Swift software renderer fully supports our renderer.
-
-  it("should query proper render compatibility info assuming software rendering causing performance caveat", () => {
-    const compatibility = IModelApp.queryRenderCompatibility();
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MajorPerformanceCaveat);
-    expect(compatibility.contextErrorMessage).to.not.be.undefined;
-  });
-
-  it("should query proper render compatibility info assuming software rendering ignoring performance caveat", () => {
-    overriddenFunctions.overrideCreateContext(undefined, false);
-    const compatibility = IModelApp.queryRenderCompatibility();
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
-    expect(compatibility.missingRequiredFeatures.length).to.equal(0);
-    expect(compatibility.missingOptionalFeatures.length).to.equal(1);
-    expect(compatibility.missingOptionalFeatures[0]).to.equal("fragment depth");
-    expect(compatibility.contextErrorMessage).to.be.undefined;
-    overriddenFunctions.restore();
-  });
-
-  it("should query proper render compatibility info assuming not enough texture units", () => {
-    overriddenFunctions.overrideCreateContext((ctx: WebGLRenderingContext | WebGL2RenderingContext, pname: number): any => {
-      if (ctx.MAX_TEXTURE_IMAGE_UNITS === pname)
-        return 0;
-      return undefined;
-    });
-
-    const compatibility = IModelApp.queryRenderCompatibility();
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingRequiredFeatures);
-    expect(compatibility.missingRequiredFeatures.indexOf(WebGLFeature.MinimalTextureUnits)).to.not.equal(-1);
-    overriddenFunctions.restore();
-  });
-
-  it("should query proper render compatibility info assuming lack of MRT support", () => {
-    overriddenFunctions.overrideCreateContext((ctx: WebGLRenderingContext | WebGL2RenderingContext, pname: number): any => {
-      const dbExt = ctx.getExtension("WEBGL_draw_buffers");
-      if (null === dbExt)
-        return undefined;
-      if (dbExt.MAX_COLOR_ATTACHMENTS_WEBGL === pname)
-        return 0;
-      return undefined;
-    }, false);
-
-    const compatibility = IModelApp.queryRenderCompatibility();
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
-    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.MrtTransparency)).to.not.equal(-1);
-    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.MrtPick)).to.not.equal(-1);
-    overriddenFunctions.restore();
-  });
-
-  it("should query proper render compatibility info assuming lack of uint element index support", () => {
-    const canvas = _createCanvas();
-    expect(canvas).to.not.be.undefined;
-    const context = System.createContext(canvas!);
-    expect(context).to.not.be.undefined;
-
-    const caps = new Capabilities();
-    const compatibility = caps.init(context!, ["OES_element_index_uint"]);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingRequiredFeatures);
-    expect(compatibility.missingRequiredFeatures.indexOf(WebGLFeature.UintElementIndex)).to.not.equal(-1);
-  });
-
-  it("should query proper render compatibility info assuming lack of depth texture support", () => {
-    const canvas = _createCanvas();
-    expect(canvas).to.not.be.undefined;
-    const context = System.createContext(canvas!);
-    expect(context).to.not.be.undefined;
-
-    const caps = new Capabilities();
-    const compatibility = caps.init(context!, ["WEBGL_depth_texture"]);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
-    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.DepthTexture)).to.not.equal(-1);
-  });
-
   it("should turn off logarithmicZBuffer if the gl frag depth extension is not available", () => {
     const canvas = _createCanvas();
     expect(canvas).to.not.be.undefined;
     const context = System.createContext(canvas!);
     expect(context).to.not.be.undefined;
-
-    const caps = new Capabilities();
-    const compatibility = caps.init(context!, ["EXT_frag_depth"]);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
-    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.FragDepth)).to.not.equal(-1);
-    expect(caps.supportsFragDepth).to.be.false;
 
     let renderSysOpts: RenderSystem.Options = { logarithmicDepthBuffer: false };
     let testSys = System.create(renderSysOpts);
@@ -149,115 +35,70 @@ describe("Render Compatibility", () => {
     testSys = System.create(renderSysOpts);
     expect(testSys.options.logarithmicDepthBuffer).to.be.false;
   });
-
-  it("should query proper render compatibility info assuming lack of instancing support", () => {
-    const canvas = _createCanvas();
-    expect(canvas).to.not.be.undefined;
-    const context = System.createContext(canvas!);
-    expect(context).to.not.be.undefined;
-
-    const caps = new Capabilities();
-    const compatibility = caps.init(context!, ["ANGLE_instanced_arrays"]);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
-    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.Instancing)).to.not.equal(-1);
-  });
 });
 
 describe("Instancing", () => {
   class TestApp extends MockRender.App {
-    public static start(enableInstancing: boolean, supportsInstancing: boolean): void {
+    public static async test(enableInstancing: boolean, supportsInstancing: boolean, expectEnabled: boolean): Promise<void> {
       const tileAdminProps: TileAdmin.Props = { enableInstancing };
       const renderSysOpts: RenderSystem.Options = {};
       if (!supportsInstancing)
         renderSysOpts.disabledExtensions = ["ANGLE_instanced_arrays"];
 
-      IModelApp.startup({
+      await IModelApp.startup({
         renderSys: renderSysOpts,
         tileAdmin: TileAdmin.create(tileAdminProps),
       });
+
+      expect(IModelApp.tileAdmin.enableInstancing).to.equal(expectEnabled);
+      await IModelApp.shutdown();
     }
   }
 
-  after(() => {
+  after(async () => {
     // make sure app shut down if exception occurs during test
     if (IModelApp.initialized)
-      TestApp.shutdown();
+      await TestApp.shutdown();
   });
 
-  it("should properly toggle instancing", () => {
-    TestApp.start(true, true);
-    assert.equal(IModelApp.tileAdmin.enableInstancing, true, "should produce tileAdmin.enableInstancing=true from TestApp.start(true,true)");
-    TestApp.shutdown();
+  it("should enable instancing if supported and requested", async () => {
+    await TestApp.test(true, true, true);
+  });
 
-    TestApp.start(true, false);
-    assert.equal(IModelApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(true,false)");
-    TestApp.shutdown();
+  it("should not enable instancing if requested but not supported", async () => {
+    await TestApp.test(true, false, false);
+  });
 
-    TestApp.start(false, true);
-    assert.equal(IModelApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(false,true)");
-    TestApp.shutdown();
+  it("should not enable instancing if supported but not requested", async () => {
+    await TestApp.test(false, true, false);
+  });
 
-    TestApp.start(false, false);
-    assert.equal(IModelApp.tileAdmin.enableInstancing, false, "should produce tileAdmin.enableInstancing=false from TestApp.start(false,false)");
-    TestApp.shutdown();
+  it("should not enable instancing if neither requested nor supported", async () => {
+    await TestApp.test(false, false, false);
   });
 });
 
-describe("System WebGL Capabilities", () => {
-  it("capabilities should all default to 0 or false", () => {
-    // Test default capabilities.  Change if WebGL2 support added (not all will default to 0 or false).
-    const cap: Capabilities = new Capabilities();
-    expect(cap.maxRenderType).to.equal(RenderType.TextureUnsignedByte);
-    expect(cap.maxDepthType).to.equal(DepthType.RenderBufferUnsignedShort16);
-    expect(cap.maxTextureSize).to.equal(0);
-    expect(cap.maxColorAttachments).to.equal(0);
-    expect(cap.maxDrawBuffers).to.equal(0);
-    expect(cap.maxFragTextureUnits).to.equal(0);
-    expect(cap.maxVertTextureUnits).to.equal(0);
-    expect(cap.maxVertAttribs).to.equal(0);
-    expect(cap.maxVertUniformVectors).to.equal(0);
-    expect(cap.maxVaryingVectors).to.equal(0);
-    expect(cap.maxFragUniformVectors).to.equal(0);
-    expect(cap.supportsNonPowerOf2Textures).to.be.false;
-    expect(cap.supportsDrawBuffers).to.be.false;
-    expect(cap.supports32BitElementIndex).to.be.false;
-    expect(cap.supportsTextureFloat).to.be.false;
-    expect(cap.supportsTextureHalfFloat).to.be.false;
-    expect(cap.supportsShaderTextureLOD).to.be.false;
-    expect(cap.supportsFragDepth).to.be.false;
-  });
+describe("RenderSystem", () => {
+  it("should override webgl context attributes", () => {
+    const expectAttributes = (system: System, expected: WebGLContextAttributes) => {
+      const attrs = system.context.getContextAttributes()!;
+      expect(attrs).not.to.be.null;
+      expect(attrs.premultipliedAlpha).to.equal(expected.premultipliedAlpha);
+      expect(attrs.preserveDrawingBuffer).to.equal(expected.preserveDrawingBuffer);
+      expect(attrs.antialias).to.equal(expected.antialias);
+      expect(attrs.powerPreference).to.equal(expected.powerPreference);
+    };
 
-  // ###TODO: Disabled for now.  Need a way to make a fresh GL obj with new WebGLTestContext API.
-  /*
-  it("capabilities should be able to be initialized", () => {
-    const context = new WebGLTestContext();
-    const gl = context.context;
-    if (undefined === gl) {
-      // do not enable below assert until we know GL can succeed on PRG
-      // assert.isOk(false, "Could not initialize GL");
-      return;
-    }
-    // Test initializing of capabilities
-    const cap: Capabilities = new Capabilities();
-    const isInitialized: boolean = cap.init(gl);
-    expect(isInitialized).to.be.true;
-  });
+    const defaultSys = System.create();
+    expectAttributes(defaultSys, { antialias: true, premultipliedAlpha: true, preserveDrawingBuffer: false, powerPreference: "high-performance" });
 
-  it("capabilities should be able to be read", () => {
-    const context = new WebGLTestContext();
-    const gl = context.context;
-    if (undefined === gl) {
-      // do not enable below assert until we know GL can succeed on PRG
-      // assert.isOk(false, "Could not initialize GL");
-      return;
-    }
-    // Test initializing of capabilities
-    const cap: Capabilities = new Capabilities();
-    expect(cap.init(gl)).to.be.true;
-    expect(cap.maxTextureSize).to.not.equal(0);
-    expect(cap.supportsDrawBuffers).to.be.true; // drawBuffers currently needed (remove when no longer a requirement)
-    expect(cap.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers")).to.not.be.undefined;
-    expect(cap.queryExtensionObject<OES_texture_float>("Fake extension")).to.be.undefined; // test fake extension
+    const sys1Attrs: WebGLContextAttributes = { antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: true, powerPreference: "low-power" };
+    const sys1 = System.create({ contextAttributes: sys1Attrs });
+    expectAttributes(sys1, sys1Attrs);
+
+    // Override only some attributes; use defaults for others.
+    const sys2Attrs: WebGLContextAttributes = { antialias: false, preserveDrawingBuffer: true };
+    const sys2 = System.create({ contextAttributes: sys2Attrs });
+    expectAttributes(sys2, { ...sys2Attrs, powerPreference: "high-performance", premultipliedAlpha: true });
   });
-  */
 });

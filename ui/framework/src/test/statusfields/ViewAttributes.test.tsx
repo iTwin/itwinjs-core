@@ -2,21 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 // import * as sinon from "sinon";
 import { Provider } from "react-redux";
-
 import { MockRender } from "@bentley/imodeljs-frontend";
-
-import TestUtils from "../TestUtils";
-import { WidgetState, WidgetDef } from "../../ui-framework/widgets/WidgetDef";
-import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../../ui-framework/configurableui/ConfigurableUiControl";
+import { WidgetState } from "@bentley/ui-abstract";
+import { Checkbox } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework/configurableui/ConfigurableUiControl";
+import { StatusBar } from "../../ui-framework/statusbar/StatusBar";
 import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../ui-framework/statusbar/StatusBarWidgetControl";
 import { ViewAttributesStatusField } from "../../ui-framework/statusfields/ViewAttributes";
-import { StatusBar } from "../../ui-framework/statusbar/StatusBar";
-import { Checkbox } from "@bentley/ui-core";
+import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import TestUtils from "../TestUtils";
 
 describe("ViewAttributes", () => {
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {
@@ -37,7 +36,7 @@ describe("ViewAttributes", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    MockRender.App.startup();
+    await MockRender.App.startup();
 
     const statusBarWidgetDef = new WidgetDef({
       classId: AppStatusBarWidgetControl,
@@ -48,8 +47,8 @@ describe("ViewAttributes", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
 

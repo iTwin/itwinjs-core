@@ -3,17 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl, WidgetControl } from "@bentley/ui-framework";
-import { WidgetContent, HorizontalAnchor } from "@bentley/ui-ninezone";
+import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PropertyCategory, PropertyGrid, PropertyUpdatedArgs, SimplePropertyDataProvider } from "@bentley/ui-components";
 import { Orientation } from "@bentley/ui-core";
-
-import {
-  PropertyDescription, PropertyRecord, PropertyValueFormat, PrimitiveValue, PropertyValue,
-} from "@bentley/imodeljs-frontend";
-import {
-  PropertyGrid, SimplePropertyDataProvider, PropertyUpdatedArgs, PropertyCategory,
-} from "@bentley/ui-components";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@bentley/ui-framework";
+import { HorizontalAnchor, ScrollableWidgetContent, WidgetContent } from "@bentley/ui-ninezone";
 
 class SamplePropertyRecord extends PropertyRecord {
   constructor(name: string, index: number, value: any, typename: string = "string", editor?: string) {
@@ -59,7 +53,7 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
           { label: "Blue", value: 3 },
         ];
 
-        const booleanPropertyRecord = new SamplePropertyRecord("Boolean", iVolume, true, "boolean");
+        const booleanPropertyRecord = new SamplePropertyRecord("Boolean", iVolume, true, "boolean", iVolume % 2 ? "toggle" : undefined);
         // booleanPropertyRecord.editorLabel = "Optional CheckBox Label";
 
         const propData = [
@@ -97,7 +91,7 @@ export class VerticalPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    super.reactElement = <VerticalPropertyGridWidget />;
+    super.reactNode = <VerticalPropertyGridWidget />;
   }
 }
 
@@ -144,7 +138,7 @@ export class HorizontalPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = (
+    this.reactNode = (
       <WidgetContent
         anchor={HorizontalAnchor.Right}
         content={
@@ -158,6 +152,18 @@ export class HorizontalPropertyGridWidgetControl extends WidgetControl {
   public restoreTransientState() {
     this._ref.current && this._ref.current.forceUpdate();
     return true;
+  }
+}
+
+export class HorizontalPropertyGridWidgetControl2 extends WidgetControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    this.reactNode = (
+      <ScrollableWidgetContent
+        children={<HorizontalPropertyGridWidget style={{ overflow: "unset" }} />}
+      />
+    );
   }
 }
 
@@ -202,7 +208,7 @@ export class HorizontalPropertyGridContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <HorizontalPropertyGridContent />;
+    this.reactNode = <HorizontalPropertyGridContent />;
   }
 }
 

@@ -4,19 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import {
-  PropertyValueFormat,
-  PrimitiveValue,
-} from "@bentley/imodeljs-frontend";
-
-import {
-  ColumnDescription,
-  RowItem,
-  SimpleTableDataProvider,
-} from "../../ui-components";
+import { PrimitiveValue, PropertyValueFormat } from "@bentley/ui-abstract";
 import { SortDirection } from "@bentley/ui-core";
-import { TestUtils } from "../TestUtils";
+import { ColumnDescription, RowItem, SimpleTableDataProvider } from "../../ui-components";
 import { TableFilterDescriptorCollection } from "../../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
+import { TestUtils } from "../TestUtils";
 
 const columns: ColumnDescription[] = [
   {

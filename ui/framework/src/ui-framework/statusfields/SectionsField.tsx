@@ -6,21 +6,16 @@
  * @module StatusBar
  */
 
+import "./SectionsField.scss";
+import classnames from "classnames";
 import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useState, useRef, useEffect } from "react";
-
-import * as classnames from "classnames";
+import { ClipEventType, IModelApp, ViewClipClearTool, ViewClipDecoration, ViewClipDecorationProvider, Viewport } from "@bentley/imodeljs-frontend";
 import { Button, ButtonType, Toggle } from "@bentley/ui-core";
-import { TitleBar, Dialog, FooterPopup } from "@bentley/ui-ninezone";
-import { ViewClipDecorationProvider, IModelApp, ViewClipDecoration, ViewClipClearTool, Viewport, ClipEventType } from "@bentley/imodeljs-frontend";
-
+import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
+import { useActiveViewport } from "../hooks/useActiveViewport";
+import { UiFramework } from "../UiFramework";
 import { Indicator } from "./Indicator";
 import { StatusFieldProps } from "./StatusFieldProps";
-import { UiFramework } from "../UiFramework";
-import { useActiveViewport } from "../hooks/useActiveViewport";
-
-import "./SectionsField.scss";
 
 /** Sections Status Field Props
  * @beta
@@ -32,19 +27,18 @@ export interface SectionsStatusFieldProps extends StatusFieldProps {
 /** Status Field for showing section extra tools for clearing and showing manipulators
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const SectionsStatusField: React.FC<SectionsStatusFieldProps> = (props) => {
-  const [toolTip] = useState(UiFramework.translate("tools.sectionTools"));
-  const [clearLabel] = useState(UiFramework.translate("tools.sectionClear"));
-  const [showHandlesLabel] = useState(UiFramework.translate("tools.sectionShowHandles"));
+export function SectionsStatusField(props: SectionsStatusFieldProps) {
+  const [toolTip] = React.useState(UiFramework.translate("tools.sectionTools"));
+  const [clearLabel] = React.useState(UiFramework.translate("tools.sectionClear"));
+  const [showHandlesLabel] = React.useState(UiFramework.translate("tools.sectionShowHandles"));
   const activeViewport = useActiveViewport();
-  const [showIndicator, setShowIndicator] = useState(false);
-  const [isPopupOpen, setPopupOpen] = useState(false);
-  const targetDiv = useRef<HTMLDivElement>(null);
+  const [showIndicator, setShowIndicator] = React.useState(false);
+  const [isPopupOpen, setPopupOpen] = React.useState(false);
+  const targetDiv = React.useRef<HTMLDivElement>(null);
   const classes = (showIndicator) ? "uifw-indicator-fade-in" : "uifw-indicator-fade-out";
-  const [hasManipulatorsShown, setHasManipulatorsShown] = useState(false);
+  const [hasManipulatorsShown, setHasManipulatorsShown] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // istanbul ignore next
     const onClipChanged = (viewport: Viewport, _eventType: ClipEventType, _provider: ViewClipDecorationProvider) => {
       if (viewport !== activeViewport)
@@ -109,4 +103,4 @@ export const SectionsStatusField: React.FC<SectionsStatusFieldProps> = (props) =
       </FooterPopup>
     </>
   );
-};
+}

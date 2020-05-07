@@ -6,17 +6,20 @@
  * @module NavigationAids
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-import { Popup, Position, CommonProps } from "@bentley/ui-core";
-import { ViewportComponentEvents } from "@bentley/ui-components";
-import { ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupColumn as NZ_Column, GroupTool as NZ_Item, Group as NZ_Tray, withContainIn, containHorizontally } from "@bentley/ui-ninezone";
-import { StandardViewId } from "@bentley/imodeljs-frontend";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { NavigationAidControl } from "./NavigationAidControl";
-import { UiFramework } from "../UiFramework";
-
 import "./StandardRotationNavigationAid.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { StandardViewId } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { ViewportComponentEvents } from "@bentley/ui-components";
+import { CommonProps, Popup } from "@bentley/ui-core";
+import {
+  containHorizontally, ExpandableButton as NZ_Expandable, Group as NZ_Tray, GroupColumn as NZ_Column, GroupTool as NZ_Item, ToolbarIcon as NZ_Icon,
+  withContainIn,
+} from "@bentley/ui-ninezone";
+import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import { UiFramework } from "../UiFramework";
+import { NavigationAidControl } from "./NavigationAidControl";
 
 // tslint:disable-next-line:variable-name
 const NZ_ContainedTray = withContainIn(NZ_Tray);
@@ -29,7 +32,7 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactElement = <StandardRotationNavigationAid />;
+    this.reactNode = <StandardRotationNavigationAid />;
   }
 }
 
@@ -117,7 +120,7 @@ export class StandardRotationNavigationAid extends React.Component<CommonProps, 
           isOpen={this.state.isExpanded}
           offset={0}
           onClose={this._handlePopupClose}
-          position={Position.Bottom}
+          position={RelativePosition.Bottom}
           target={this.state.element}
         >
           {this.getExpandedContent()}

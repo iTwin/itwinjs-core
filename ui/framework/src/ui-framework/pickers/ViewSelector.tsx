@@ -7,17 +7,15 @@
  */
 
 import * as React from "react";
-
-import { IModelConnection, ViewState, IModelApp } from "@bentley/imodeljs-frontend";
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
-
+import { SupportsViewSelectorChange } from "../content/ContentControl";
+import { ContentViewManager } from "../content/ContentViewManager";
+import { connectIModelConnection } from "../redux/connectIModel";
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
-import { ListPicker, ListItem, ListItemType } from "./ListPicker";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { SupportsViewSelectorChange } from "../content/ContentControl";
-import { connectIModelConnection } from "../redux/connectIModel";
+import { ListItem, ListItemType, ListPicker } from "./ListPicker";
 
 // cSpell:ignore Spatials
 
@@ -193,7 +191,6 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       initialized: true,
     });
   }
-
   /**
    * Query the views and set the initial state with the iModel's views.
    */

@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
-import { expect, assert } from "chai";
-
-import { AuthorizationClient } from "./setup/AuthorizationClient";
-import { TestContext } from "./setup/TestContext";
-
-import { AccessToken } from "@bentley/imodeljs-clients";
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { assert, expect } from "chai";
+import { Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
+import { Briefcase as HubBriefcase, BriefcaseQuery } from "@bentley/imodelhub-client";
+import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { AccessToken } from "@bentley/itwin-client";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestContext } from "./setup/TestContext";
 
 describe("IModel Read/Write Connection", () => {
   let accessToken: AccessToken;
@@ -24,7 +22,25 @@ describe("IModel Read/Write Connection", () => {
       this.skip();
 
     accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
+  });
+
+  after(async function () {
+    if (!testContext.settings.runiModelWriteRpcTests)
+      this.skip();
+
+    const iModelId = testContext.settings.writeIModel.id;
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const briefcases: HubBriefcase[] = await IModelApp.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
+    if (briefcases.length > 16) {
+      Logger.logInfo("TestUtility", `Reached limit of maximum number of briefcases for ${iModelId}. Purging all briefcases.`);
+
+      const promises = new Array<Promise<void>>();
+      briefcases.forEach((briefcase: HubBriefcase) => {
+        promises.push(IModelApp.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
+      });
+      await Promise.all(promises);
+    }
   });
 
   it("should successfully open an IModelConnection for read/write", async () => {
@@ -32,18 +48,16 @@ describe("IModel Read/Write Connection", () => {
     const openMode = OpenMode.ReadWrite;
     const iModelId = testContext.settings.writeIModel.id;
 
-    const iModel: IModelConnection = await IModelConnection.open(contextId, iModelId, openMode);
+    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode);
 
     expect(iModel).to.exist.and.be.not.empty;
-
-    const iModelToken = iModel.iModelToken;
-    expect(iModelToken).to.exist.and.be.not.empty;
+    expect(iModel.getRpcProps()).to.exist.and.be.not.empty;
   });
   it("should successfully close an open read/write IModelConnection", async () => {
     const contextId = testContext.settings.writeIModel.projectId;
     const openMode = OpenMode.ReadWrite;
     const iModelId = testContext.settings.writeIModel.id;
-    const iModel: IModelConnection = await IModelConnection.open(contextId, iModelId, openMode);
+    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode);
 
     expect(iModel).to.exist;
     return expect(iModel.close()).to.eventually.be.fulfilled;
@@ -53,7 +67,7 @@ describe("IModel Read/Write Connection", () => {
     const contextId = testContext.settings.writeIModel.projectId;
     const iModelId = testContext.settings.writeIModel.id;
 
-    const iModel: IModelConnection = await IModelConnection.open(contextId, iModelId, OpenMode.ReadWrite);
+    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
     const originalExtents = iModel.projectExtents;
     const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
@@ -63,7 +77,7 @@ describe("IModel Read/Write Connection", () => {
 
     await iModel.saveChanges();
 
-    const updatediModel: IModelConnection = await IModelConnection.open(contextId, iModelId, OpenMode.ReadWrite);
+    const updatediModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
     const updatedExtents = Range3d.fromJSON(updatediModel.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
@@ -73,7 +87,7 @@ describe("IModel Read/Write Connection", () => {
     const contextId = testContext.settings.writeIModel.projectId;
     const iModelId = testContext.settings.writeIModel.id;
 
-    const iModel: IModelConnection = await IModelConnection.open(contextId, iModelId, OpenMode.ReadWrite);
+    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
     const viewList = await iModel.views.getViewList({});
     assert.isAtLeast(viewList.length, 1);

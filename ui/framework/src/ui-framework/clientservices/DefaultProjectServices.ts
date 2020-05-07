@@ -6,12 +6,11 @@
  * @module ClientServices
  */
 
-import { ConnectClient, Project, ConnectRequestQueryOptions } from "@bentley/imodeljs-clients";
 import { Logger } from "@bentley/bentleyjs-core";
-
-import { ProjectServices, ProjectScope, ProjectInfo, ProjectReadStatus } from "./ProjectServices";
-import { UiFramework } from "../UiFramework";
+import { ContextRegistryClient, ContextRegistryRequestQueryOptions, Project } from "@bentley/context-registry-client";
 import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { UiFramework } from "../UiFramework";
+import { ProjectInfo, ProjectReadStatus, ProjectScope, ProjectServices } from "./ProjectServices";
 
 // istanbul ignore next
 class ProjectInfoImpl implements ProjectInfo {
@@ -28,10 +27,10 @@ class ProjectInfoImpl implements ProjectInfo {
  */
 // istanbul ignore next
 export class DefaultProjectServices implements ProjectServices {
-  private _connectClient: ConnectClient;
+  private _connectClient: ContextRegistryClient;
 
   constructor() {
-    this._connectClient = new ConnectClient();
+    this._connectClient = new ContextRegistryClient();
   }
 
   private createProjectInfo(thisProject: Project): ProjectInfo {
@@ -44,7 +43,7 @@ export class DefaultProjectServices implements ProjectServices {
   public async getProjects(projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
 
-    const queryOptions: ConnectRequestQueryOptions = {
+    const queryOptions: ContextRegistryRequestQueryOptions = {
       $select: "*", // TODO: Get Name,Number,AssetType to work
       $top: top,
       $skip: skip,

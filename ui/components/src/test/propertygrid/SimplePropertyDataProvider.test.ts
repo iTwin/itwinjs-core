@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { PrimitiveValue, PropertyValueFormat, PropertyRecord } from "@bentley/imodeljs-frontend";
-import { SimplePropertyDataProvider, PropertyCategory } from "../../ui-components";
+import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PropertyCategory, SimplePropertyDataProvider } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 class SamplePropertyDataProvider extends SimplePropertyDataProvider {

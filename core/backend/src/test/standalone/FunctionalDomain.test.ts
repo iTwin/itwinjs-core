@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Guid, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { Code, CodeScopeSpec, CodeSpec, FunctionalElementProps, IModel } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, BriefcaseManager, ECSqlStatement, FunctionalModel, FunctionalSchema, IModelDb, SqliteStatement } from "../../imodeljs-backend";
+import { DbResult, Guid, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Code, CodeScopeSpec, CodeSpec, FunctionalElementProps, IModel } from "@bentley/imodeljs-common";
+import { BackendRequestContext, ECSqlStatement, FunctionalModel, FunctionalSchema, SqliteStatement, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {
   const requestContext = new BackendRequestContext();
 
   it("should populate FunctionalModel", async () => {
-    const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("FunctionalDomain", "FunctionalTest.bim"), {
+    const iModelDb = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("FunctionalDomain", "FunctionalTest.bim"), {
       rootSubject: { name: "FunctionalTest", description: "Test of the Functional domain schema." },
       client: "Functional",
       globalOrigin: { x: 0, y: 0 },
@@ -21,9 +21,11 @@ describe("Functional Domain", () => {
       guid: Guid.createValue(),
     });
 
+    iModelDb.nativeDb.resetBriefcaseId(100);
+
     // Import the Functional schema
     FunctionalSchema.registerSchema();
-    await FunctionalSchema.importSchema(requestContext, iModelDb);
+    await FunctionalSchema.importSchema(requestContext, iModelDb); // tslint:disable-line:deprecation
 
     let commits = 0;
     let committed = 0;
@@ -36,7 +38,7 @@ describe("Functional Domain", () => {
     dropCommit();
     dropCommitted();
 
-    BriefcaseManager.createStandaloneChangeSet(iModelDb.briefcase); // importSchema below will fail if this is not called to flush local changes
+    IModelTestUtils.flushTxns(iModelDb); // importSchema below will fail if this is not called to flush local changes
 
     await iModelDb.importSchemas(requestContext, [path.join(__dirname, "../assets/TestFunctional.ecschema.xml")]);
 
@@ -91,6 +93,6 @@ describe("Functional Domain", () => {
       }
     });
 
-    iModelDb.closeSnapshot();
+    iModelDb.close();
   });
 });

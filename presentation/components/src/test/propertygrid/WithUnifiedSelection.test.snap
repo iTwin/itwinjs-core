@@ -4,7 +4,9 @@ exports[`PropertyGrid withUnifiedSelection renders correctly when data provider 
 <div
   className="pcomponents-property-grid-with-unified-selection"
 >
-  <Component />
+  <FillCentered>
+    Too many elements selected
+  </FillCentered>
 </div>
 `;
 

@@ -9,9 +9,6 @@
     "ToggleReadPixels": {
       "keyin": "fdt toggle readpixels"
     },
-    "ToggleLogZ": {
-      "keyin": "fdt toggle logz"
-    },
     "ToggleDrapeFrustum": {
       "keyin": "fdt toggle drapefrustum"
     },
@@ -62,6 +59,18 @@
     },
     "TogglePrimitiveVisibility": {
       "keyin": "fdt visibility"
+    },
+    "ToggleRealityTileBounds": {
+      "keyin": "fdt reality bounds"
+    },
+    "ToggleRealityTilePreload": {
+      "keyin": "fdt toggle reality preload"
+    },
+    "ToggleRealityTileFreeze": {
+      "keyin": "fdt toggle reality freeze"
+    },
+    "ToggleRealityTileLogging": {
+      "keyin": "fdt toggle reality logging"
     },
     "SetAspectRatioSkew": {
       "keyin": "fdt aspect skew"
@@ -125,6 +134,24 @@
     },
     "OverrideSubCategoryPriority": {
       "keyin": "fdt subcat priority"
+    },
+    "ClipColorTool": {
+      "keyin": "fdt clip color"
+    },
+    "SourceAspectIdFromElementId": {
+      "keyin": "fdt sourceId from elemId"
+    },
+    "ElementIdFromSourceAspectId": {
+      "keyin": "fdt elemId from sourceId"
+    },
+    "Toggle3dManipulations": {
+      "keyin": "fdt 3dmanip"
+    },
+    "AttachRealityModelTool": {
+      "keyin": "fdt attach reality properties"
+    },
+    "SaveRealityModelTool": {
+      "keyin": "fdt save reality properties"
     }
   }
 }

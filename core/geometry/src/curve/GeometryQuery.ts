@@ -5,16 +5,16 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { BSpline2dNd } from "../bspline/BSplineSurface";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Polyface } from "../polyface/Polyface";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { CurveCollection } from "./CurveCollection";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { CoordinateXYZ } from "./CoordinateXYZ";
+import { CurveCollection } from "./CurveCollection";
+import { CurvePrimitive } from "./CurvePrimitive";
 import { PointString3d } from "./PointString3d";
-import { BSpline2dNd } from "../bspline/BSplineSurface";
 
 /** Describes the category of a [[GeometryQuery]], enabling type-switching like:
  * ```ts

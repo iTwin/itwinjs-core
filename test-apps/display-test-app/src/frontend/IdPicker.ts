@@ -3,27 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  assert,
-  compareStringsOrUndefined,
-  Id64,
-  Id64Arg,
-} from "@bentley/bentleyjs-core";
+import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@bentley/frontend-devtools";
 import { GeometricModel3dProps } from "@bentley/imodeljs-common";
-import {
-  ViewManip,
-  ScreenViewport,
-  SpatialViewState,
-  GeometricModel3dState,
-} from "@bentley/imodeljs-frontend";
-import {
-  CheckBox,
-  createButton,
-  createCheckBox,
-  createComboBox,
-  createTextBox,
-  ComboBoxEntry,
-} from "@bentley/frontend-devtools";
+import { GeometricModel3dState, ScreenViewport, SpatialViewState, ViewManip } from "@bentley/imodeljs-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 export abstract class IdPicker extends ToolBarDropDown {

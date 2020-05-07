@@ -7,26 +7,18 @@
  */
 
 import * as React from "react";
-
 import { Logger } from "@bentley/bentleyjs-core";
 import { XAndY } from "@bentley/geometry-core";
 import {
-  OnNumberCommitFunc, OnCancelFunc, OnItemExecutedFunc,
-  AbstractToolbarProps, RelativePosition,
+  AbstractToolbarProps, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue, PropertyDescription, PropertyRecord,
+  PropertyValueFormat, RelativePosition,
 } from "@bentley/ui-abstract";
-import {
-  PrimitiveValue, PropertyValueFormat, PropertyRecord,
-  PropertyDescription,
-} from "@bentley/imodeljs-frontend";
-
-import { UiEvent, Rectangle, Point, SizeProps, Orientation } from "@bentley/ui-core";
+import { Orientation, Point, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
 import { offsetAndContainInContainer } from "@bentley/ui-ninezone";
-
 import { UiFramework } from "../UiFramework";
-import { InputEditorPopup, InputEditorCommitHandler } from "./InputEditorPopup";
-import { ItemDefFactory } from "../shared/ItemDefFactory";
-import { ToolbarPopup } from "./ToolbarPopup";
 import { HTMLElementPopup } from "./HTMLElementPopup";
+import { InputEditorCommitHandler, InputEditorPopup } from "./InputEditorPopup";
+import { ToolbarPopup } from "./ToolbarPopup";
 
 /** Information maintained by PopupManager about a Popup
  * @alpha
@@ -132,7 +124,7 @@ export class PopupManager {
   public static get defaultOffset(): XAndY { return PopupManager._defaultOffset; }
   public static set defaultOffset(offset: XAndY) { PopupManager._defaultOffset = offset; }
 
-  public static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
+  public static showInputEditor(el: HTMLElement, pt: XAndY, value: Primitives.Value, propertyDescription: PropertyDescription, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc): boolean {
     const primitiveValue: PrimitiveValue = {
       value,
       valueFormat: PropertyValueFormat.Primitive,
@@ -162,11 +154,10 @@ export class PopupManager {
     onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition,
   ): boolean {
 
-    const toolbarItems = ItemDefFactory.createItemListForToolbar(toolbarProps.items, onItemExecuted);
     const id = PopupManager._toolbarId;
     const component = (
       <ToolbarPopup id={id} el={el} pt={pt} offset={offset}
-        items={toolbarItems} relativePosition={relativePosition} orientation={Orientation.Horizontal} onCancel={onCancel} />
+        items={toolbarProps.items} relativePosition={relativePosition} orientation={Orientation.Horizontal} onCancel={onCancel} onItemExecuted={onItemExecuted} />
     );
 
     const popupInfo: PopupInfo = {

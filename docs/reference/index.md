@@ -16,14 +16,28 @@ The iModel.js library is organized into the following separately downloadable [n
 - ($frontend)
 - ($common)
 - ($backend)
-- ($clients)
-- ($clients-backend)
+- ($backend-itwin-client)
 - ($markup)
 - ($i18n)
 - ($bentley)
 - ($geometry)
 - ($frontend-devtools)
+- ($webgl-compatibility)
 - ($logger-config)
+
+## iModel.js Client Packages
+
+- ($context-registry-client)
+- ($extension-client)
+- ($forms-data-management-client)
+- ($frontend-authorization-client)
+- ($imodelhub-client)
+- ($itwin-client)
+- ($product-settings-client)
+- ($projectshare-client)
+- ($rbac-client)
+- ($reality-data-client)
+- ($usage-logging-client)
 
 ## iModel.js UI Packages
 

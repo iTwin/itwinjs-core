@@ -2,43 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import {
-  BentleyCloudRpcManager,
-  CloudStorageContainerUrl,
-  CloudStorageTileCache,
-  ElectronRpcConfiguration,
-  ElectronRpcManager,
-  IModelReadRpcInterface,
-  IModelTileRpcInterface,
-  IModelToken,
-  MobileRpcConfiguration,
-  MobileRpcManager,
-  NativeAppRpcInterface,
-  OidcDesktopClientConfiguration,
-  RpcConfiguration,
-  RpcInterfaceDefinition,
-  RpcOperation,
-  SnapshotIModelRpcInterface,
-  TileContentIdentifier,
+  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
+} from "@bentley/frontend-authorization-client";
+import {
+  BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, ElectronRpcConfiguration,
+  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
+  RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, TileContentIdentifier,
 } from "@bentley/imodeljs-common";
-import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
 import {
-  FrontendRequestContext,
-  IModelApp,
-  IModelConnection,
-  OidcBrowserClient,
-  RenderDiagnostics,
-  RenderSystem,
-  WebGLExtensionName,
-  OidcDesktopClientRenderer,
+  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
-import { showStatus } from "./Utils";
+import { AccessToken } from "@bentley/itwin-client";
+import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { SVTConfiguration } from "../common/SVTConfiguration";
-import { DisplayTestApp } from "./App";
 import SVTRpcInterface from "../common/SVTRpcInterface";
-import { setTitle } from "./Title";
+import { DisplayTestApp } from "./App";
 import { Surface } from "./Surface";
+import { setTitle } from "./Title";
+import { showStatus } from "./Utils";
 import { Dock } from "./Window";
 
 RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
@@ -73,41 +56,60 @@ async function retrieveConfiguration(): Promise<void> {
 // opens the configured iModel from disk
 async function openSnapshotIModel(filename: string): Promise<IModelConnection> {
   configuration.standalone = true;
-  const iModelConnection = await IModelConnection.openSnapshot(filename);
+  const iModelConnection = await SnapshotConnection.openFile(filename);
   configuration.iModelName = iModelConnection.name;
   return iModelConnection;
 }
 
-function createOidcClient(): IOidcFrontendClient {
-  let oidcClient: IOidcFrontendClient;
-  const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
-  if (ElectronRpcConfiguration.isElectron) {
-    const clientId = "imodeljs-electron-test";
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: OidcDesktopClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
-    oidcClient = new OidcDesktopClientRenderer(oidcConfiguration);
-  } else {
-    const clientId = "imodeljs-spa-test";
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
-    oidcClient = new OidcBrowserClient(oidcConfiguration);
+function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
+  const redirectUri = "http://localhost:3000/signin-callback";
+  const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
+
+  return ElectronRpcConfiguration.isElectron
+    ? {
+      clientId: "imodeljs-electron-test",
+      redirectUri,
+      scope: baseOidcScope + " offline_access",
+    }
+    : {
+      clientId: "imodeljs-spa-test",
+      redirectUri,
+      scope: baseOidcScope + " imodeljs-router",
+      responseType: "code",
+    };
+}
+
+async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientConfiguration): Promise<void> {
+  if (!ElectronRpcConfiguration.isElectron) {
+    await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
   }
-  return oidcClient;
+}
+
+async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<DesktopAuthorizationClient | BrowserAuthorizationClient> {
+  if (ElectronRpcConfiguration.isElectron) {
+    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration as DesktopAuthorizationClientConfiguration);
+    await desktopClient.initialize(requestContext);
+    return desktopClient;
+  } else {
+    const browserClient = new BrowserAuthorizationClient(oidcConfiguration as BrowserAuthorizationClientConfiguration);
+    return browserClient;
+  }
 }
 
 // Wraps the signIn process
 // In the case of use in web applications:
 // - called the first time to start the signIn process - resolves to false
-// - called the second time as the Authorization provider redirects to cause the application to refresh/reload - resolves to false
-// - called the third time as the application redirects back to complete the authorization - finally resolves to true
+// - called the second time to catch the incoming auth redirect and save the token - resolves to false
+// - called the third time to restart the app and complete the signin - resolves to true
 // In the case of use in electron applications:
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const oidcClient: IOidcFrontendClient = createOidcClient();
-
   const requestContext = new FrontendRequestContext();
-  await oidcClient.initialize(requestContext);
+  const oidcConfig = getOidcConfiguration();
+  await handleOidcCallback(oidcConfig);
+  const oidcClient = await createOidcClient(requestContext, oidcConfig);
+
   IModelApp.authorizationClient = oidcClient;
   if (oidcClient.isAuthorized)
     return true;
@@ -116,9 +118,12 @@ async function signIn(): Promise<boolean> {
     oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
       resolve(token !== undefined);
     });
+
+    oidcClient.signIn(requestContext).catch((err) => {
+      _reject(err);
+    });
   });
 
-  await oidcClient.signIn(requestContext);
   return retPromise;
 }
 
@@ -150,8 +155,10 @@ async function main() {
     filterMapTextures: true === configuration.filterMapTextures,
     filterMapDrapeTextures: false !== configuration.filterMapDrapeTextures,
     dpiAwareViewports: false !== configuration.dpiAwareViewports,
+    doIdleWork: false !== configuration.doIdleWork,
     useWebGL2: true === configuration.useWebGL2,
     planProjections: true,
+    debugShaders: true === configuration.debugShaders,
   };
 
   const tileAdminProps = DisplayTestApp.tileAdminProps;
@@ -172,6 +179,7 @@ async function main() {
 
   tileAdminProps.cancelBackendTileRequests = (configuration.cancelBackendTileRequests !== false);
   tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
+  tileAdminProps.tileExpirationTime = configuration.tileExpirationSeconds;
   tileAdminProps.maximumLevelsToSkip = configuration.maxTilesToSkip;
 
   if (configuration.useFakeCloudStorageTileCache)
@@ -183,21 +191,15 @@ async function main() {
 
   // Choose RpcConfiguration based on whether we are in electron or browser
   const rpcInterfaces: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
-  let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
     rpcInterfaces.push(NativeAppRpcInterface);
-    rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
+    ElectronRpcManager.initializeClient({}, rpcInterfaces);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
     rpcInterfaces.push(NativeAppRpcInterface);
-    rpcConfiguration = MobileRpcManager.initializeClient(rpcInterfaces);
+    MobileRpcManager.initializeClient(rpcInterfaces);
   } else {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
-    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, rpcInterfaces);
-
-    // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
-    // RPC without any imodel and fails...
-    for (const definition of rpcConfiguration.interfaces())
-      RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
+    BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, rpcInterfaces);
   }
 
   if (!configuration.standalone && !configuration.customOrchestratorUri) {

@@ -4,67 +4,26 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/imodeljs-clients';
-import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
+import { AccessToken } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@bentley/itwin-client';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { CancelRequest } from '@bentley/itwin-client';
 import { Client } from 'openid-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { FileHandler } from '@bentley/imodeljs-clients';
+import { FileHandler } from '@bentley/itwin-client';
 import * as https from 'https';
-import { IAuthorizationClient } from '@bentley/imodeljs-clients';
+import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { Issuer } from 'openid-client';
-import { OidcClient } from '@bentley/imodeljs-clients';
-import { ProgressInfo } from '@bentley/imodeljs-clients';
+import { ProgressCallback } from '@bentley/itwin-client';
+import { SamlAccessToken } from '@bentley/itwin-client';
 import { TokenSet } from 'openid-client';
 import { Transform } from 'stream';
 import { TransformCallback } from 'stream';
-import { UserInfo } from '@bentley/imodeljs-clients';
-
-// @internal
-export class AzureFileHandler implements FileHandler {
-    constructor(useDownloadBuffer?: boolean, threshold?: number);
-    // (undocumented)
-    agent: https.Agent;
-    basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
-    exists(filePath: string): boolean;
-    getFileSize(filePath: string): number;
-    isDirectory(filePath: string): boolean;
-    join(...paths: string[]): string;
-    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
-    }
-
-// @internal
-export class BufferedStream extends Transform {
-    constructor(bufferSize: number);
-    _flush(callback: TransformCallback): void;
-    _transform(chunk: any, encoding: string, callback: TransformCallback): void;
-}
-
-// @public
-export enum ClientsBackendLoggerCategory {
-    IModelHub = "imodeljs-clients.imodelhub",
-    OidcAgentClient = "imodeljs-clients-backend.OidcAgentClient",
-    OidcDesktopClient = "imodeljs-clients.OidcDesktopClient",
-    OidcDeviceClient = "imodeljs-clients-backend.OidcDeviceClient"
-}
-
-// @internal
-export class IOSAzureFileHandler implements FileHandler {
-    constructor();
-    // (undocumented)
-    agent: any;
-    basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string): Promise<void>;
-    exists(filePath: string): boolean;
-    getFileSize(filePath: string): number;
-    isDirectory(filePath: string): boolean;
-    join(...paths: string[]): string;
-    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string): Promise<void>;
-}
+import { UserInfo } from '@bentley/itwin-client';
 
 // @beta
-export class OidcAgentClient extends OidcBackendClient implements IAuthorizationClient {
-    constructor(agentConfiguration: OidcAgentClientConfiguration);
+export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
+    constructor(agentConfiguration: AgentAuthorizationClientConfiguration);
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @deprecated
     getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
@@ -76,30 +35,27 @@ export class OidcAgentClient extends OidcBackendClient implements IAuthorization
 }
 
 // @beta
-export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
+export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
 
-// @internal @deprecated
-export interface OidcAgentClientConfigurationV1 extends OidcBackendClientConfiguration {
+// @internal
+export class AzureFileHandler implements FileHandler {
+    constructor(useDownloadBuffer?: boolean, threshold?: number);
     // (undocumented)
-    serviceUserEmail: string;
-    // (undocumented)
-    serviceUserPassword: string;
-}
-
-// @internal @deprecated
-export class OidcAgentClientV1 extends OidcBackendClient {
-    constructor(_agentConfiguration: OidcAgentClientConfigurationV1);
-    // (undocumented)
-    getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
-    // (undocumented)
-    refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
-}
+    agent: https.Agent;
+    basename(filePath: string): string;
+    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    exists(filePath: string): boolean;
+    getFileSize(filePath: string): number;
+    isDirectory(filePath: string): boolean;
+    join(...paths: string[]): string;
+    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
+    }
 
 // @beta
-export abstract class OidcBackendClient extends OidcClient {
-    constructor(configuration: OidcBackendClientConfiguration);
+export abstract class BackendAuthorizationClient extends ImsAuthorizationClient {
+    constructor(configuration: BackendAuthorizationClientConfiguration);
     // (undocumented)
-    protected _configuration: OidcBackendClientConfiguration;
+    protected _configuration: BackendAuthorizationClientConfiguration;
     // (undocumented)
     protected createToken(tokenSet: TokenSet, userInfo?: UserInfo): AccessToken;
     discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer>;
@@ -110,22 +66,61 @@ export abstract class OidcBackendClient extends OidcClient {
 }
 
 // @beta
-export interface OidcBackendClientConfiguration {
+export interface BackendAuthorizationClientConfiguration {
     clientId: string;
     clientSecret: string;
     scope: string;
 }
 
-// @beta
-export class OidcDelegationClient extends OidcBackendClient {
-    constructor(configuration: OidcDelegationClientConfiguration);
-    getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken>;
-    getJwtFromSaml(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken>;
-    getSamlFromJwt(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
+// @internal
+export class BufferedStream extends Transform {
+    constructor(bufferSize: number);
+    _flush(callback: TransformCallback): void;
+    _transform(chunk: any, encoding: string, callback: TransformCallback): void;
 }
 
-// @beta (undocumented)
-export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
+// @public
+export enum ClientsBackendLoggerCategory {
+    Authorization = "imodeljs-clients-backend.Authorization",
+    IModelHub = "imodelhub-client.iModelHub"
+}
+
+// @beta
+export class DelegationAuthorizationClient extends BackendAuthorizationClient {
+    constructor(configuration: DelegationAuthorizationClientConfiguration);
+    getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken>;
+    getJwtFromSaml(requestContext: ClientRequestContext, samlToken: SamlAccessToken): Promise<AccessToken>;
+    getSamlFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<SamlAccessToken>;
+}
+
+// @beta
+export type DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
+
+// @internal
+export class IOSAzureFileHandler implements FileHandler {
+    constructor();
+    // (undocumented)
+    agent: any;
+    basename(filePath: string): string;
+    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    exists(filePath: string): boolean;
+    getFileSize(filePath: string): number;
+    isDirectory(filePath: string): boolean;
+    join(...paths: string[]): string;
+    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string): Promise<void>;
+}
+
+// @beta @deprecated
+export type OidcAgentClient = AgentAuthorizationClient;
+
+// @beta @deprecated
+export type OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration;
+
+// @beta @deprecated
+export type OidcDelegationClient = DelegationAuthorizationClient;
+
+// @beta @deprecated
+export type OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration;
 
 // @internal
 export class RequestHost {
@@ -144,13 +139,13 @@ export class UrlFileHandler implements FileHandler {
     agent: https.Agent;
     basename(filePath: string): string;
     // (undocumented)
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
     // (undocumented)
-    uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
     // (undocumented)
     protected _uploadMethod: string;
 }

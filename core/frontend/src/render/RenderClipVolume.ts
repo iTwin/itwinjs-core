@@ -8,12 +8,13 @@
 
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { ClipVector } from "@bentley/geometry-core";
-import { RenderMemory } from "./RenderSystem";
+import { ColorDef } from "@bentley/imodeljs-common";
+import { RenderMemory } from "./RenderMemory";
 
 /** Describes the type of a RenderClipVolume.
  * @beta
  */
-export const enum ClippingType { // tslint:disable-line:no-const-enum
+export enum ClippingType {
   /** No clip volume. */
   None,
   /** A 2d mask which excludes geometry obscured by the mask. */
@@ -40,6 +41,14 @@ export abstract class RenderClipVolume implements IDisposable /* , RenderMemory.
 
   /** Disposes of any WebGL resources owned by this volume. Must be invoked when finished with the clip volume object to prevent memory leaks. */
   public abstract dispose(): void;
+
+  /** @internal */
+  public abstract setClipColors(outsideColor: ColorDef | undefined, insideColor: ColorDef | undefined): void;
+
+  /** Returns true if clipped geometry is being drawn due to use of [[setClipColors]].
+   * @internal
+   */
+  public abstract get hasOutsideClipColor(): boolean;
 
   /** @internal */
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;

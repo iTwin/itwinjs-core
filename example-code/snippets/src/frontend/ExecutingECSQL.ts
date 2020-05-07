@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NavigationValue } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { NavigationValue } from "@bentley/imodeljs-common";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+
 // tslint:disable:no-console
 
 async function executeECSql_SampleMethod(iModel: IModelConnection): Promise<void> {

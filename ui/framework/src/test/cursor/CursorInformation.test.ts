@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
-import { CursorInformation, CursorDirection } from "../../ui-framework/cursor/CursorInformation";
+import { CursorDirection, CursorInformation } from "../../ui-framework/cursor/CursorInformation";
 
 describe("CursorInformation", () => {
 

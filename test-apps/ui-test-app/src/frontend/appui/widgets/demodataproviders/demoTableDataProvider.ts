@@ -2,14 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SortDirection } from "@bentley/ui-core";
-import { PropertyValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
 import {
-  TableDataProvider, MutableTableDataProvider,
-  RowItem, TableDataChangeEvent, ColumnDescription,
-  DropTargetArguments, DragSourceArguments, DropStatus, DropEffects, DragSourceProps, DropTargetProps,
+  ColumnDescription, DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps, MutableTableDataProvider,
+  RowItem, TableDataChangeEvent, TableDataProvider,
 } from "@bentley/ui-components";
-
+import { SortDirection } from "@bentley/ui-core";
 import { DemoDragDropObject } from "./demoTreeDataProvider";
 
 export type DemoTableDragDropType = DemoDragDropObject | TableDataProvider;

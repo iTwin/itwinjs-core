@@ -7,17 +7,17 @@
  * @module Polyface
  */
 
+import { Geometry } from "../Geometry";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { NumberArray } from "../geometry3d/PointHelpers";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
-import { NumberArray } from "../geometry3d/PointHelpers";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 import { PolyfaceAuxData } from "./AuxData";
 import { FacetFaceData } from "./FacetFaceData";
-import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
-import { Geometry } from "../Geometry";
 
 /**
  * PolyfaceData carries data arrays for point, normal, param, color and their indices.

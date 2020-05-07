@@ -6,39 +6,44 @@
  * @module Views
  */
 
-import { assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
 import {
-  Angle, AngleSweep, Arc3d, LowAndHighXY, LowAndHighXYZ, Map4d,
-  Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ, Geometry,
+  assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch,
+} from "@bentley/bentleyjs-core";
+import {
+  Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
+  Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, NpcCenter,
-  Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags, Tweens, EasingFunction, Interpolation, Easing,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, Easing, EasingFunction, ElementProps, Frustum, GlobeMode,
+  GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d, Placement2dProps, Placement3d, Placement3dProps,
+  PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
+import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ToolTipOptions } from "./NotificationManager";
+import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
-import { GraphicList } from "./render/RenderGraphic";
-import { RenderPlan } from "./render/RenderPlan";
 import { Pixel } from "./render/Pixel";
-import { Decorations } from "./render/Decorations";
+import { GraphicList } from "./render/RenderGraphic";
+import { RenderMemory } from "./render/RenderMemory";
+import { RenderPlan } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
-import { RenderMemory } from "./render/RenderSystem";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { TileTreeReference, TileTreeSet, TileBoundingBoxes } from "./tile/internal";
+import { TileBoundingBoxes, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { EventController } from "./tools/EventController";
-import { DecorateContext, SceneContext } from "./ViewContext";
-import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewPose, ViewState2d, ViewPose3d, ViewState3d } from "./ViewState";
-import { ViewRect } from "./ViewRect";
-import { ViewingSpace } from "./ViewingSpace";
 import { ToolSettings } from "./tools/ToolSettings";
+import { DecorateContext, SceneContext } from "./ViewContext";
+import { areaToEyeHeight, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
+import { ViewingSpace } from "./ViewingSpace";
+import { ViewRect } from "./ViewRect";
+import { MarginPercent, ViewPose, ViewPose3d, ViewState, ViewState2d, ViewState3d, ViewStatus } from "./ViewState";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -56,13 +61,11 @@ export interface FeatureOverrideProvider {
 }
 
 /** Provides a way for applications to inject additional non-decorative graphics into a [[Viewport]] by supplying one or more [[TileTreeReference]]s capable of loading and drawing the graphics.
- * Typical use cases involve drawing cartographic imagery like weather, traffic conditions, etc.
- * @see [[MapTileTreeReference]] and [[MapImageryTileTreeReference]] for examples of ways to create a TileTree reference.
- * @see [[Viewport.addTiledGraphicsProvider]] and [[Viewport.dropTiledGraphicsProvider]].
- * @internal
+ * @see [[Viewport.addTiledGraphicsProvider]]
+ * @beta
  */
 export interface TiledGraphicsProvider {
-  /** Apply the supplied function to each [[TileTreeReference]] to be drawn in the specified Viewport. */
+  /** Apply the supplied function to each [[TileTreeReference]] to be drawn in the specified [[Viewport]]. */
   forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
 }
 
@@ -113,9 +116,7 @@ export class ChangeFlags {
   /** [[changeView]] was used to replace the previous [[ViewState]] with a new one. */
   public get viewState() { return this.isSet(ChangeFlag.ViewState); }
   public setViewState() { this.set(ChangeFlag.ViewState); }
-  /** The [[PerModelCategoryVisibility.Overrides]] associated with the viewport have changed.
-   * @alpha
-   */
+  /** The [[PerModelCategoryVisibility.Overrides]] associated with the viewport have changed. */
   public get viewedCategoriesPerModel() { return this.isSet(ChangeFlag.ViewedCategoriesPerModel); }
   public setViewedCategoriesPerModel() { this.set(ChangeFlag.ViewedCategoriesPerModel); }
 
@@ -235,6 +236,175 @@ export interface ViewChangeOptions extends ViewAnimationOptions {
   animateFrustumChange?: boolean;
   /** The percentage of the view to leave blank around the edges. */
   marginPercent?: MarginPercent;
+  /** Function to be called when the extents are adjusted due to a limits error (view too larger or too small) */
+  onExtentsError?: (status: ViewStatus) => ViewStatus;
+}
+
+/** Object to animate a Frustum transition of a viewport moving across the earth. The [[Viewport]] will show as many frames as necessary. The animation will last a variable length of time depending on the distance traversed.
+ * This operates on the previous frustum and a destination cartographic coordinate, flying along an earth ellipsoid or flat plane.
+ * @internal
+ */
+class GlobeAnimator implements Animator {
+  private _flightTweens = new Tweens();
+  private _viewport: ScreenViewport;
+  private _startCartographic?: Cartographic;
+  private _ellipsoidArc?: Arc3d;
+  private _columbusLine: Point3d[] = [];
+  private _flightLength = 0;
+  private _endLocation: GlobalLocation;
+  private _endHeight?: number;
+  private _midHeight?: number;
+  private _startHeight?: number;
+  private _fixTakeoffInterpolator?: SmoothTransformBetweenFrusta;
+  private _fixTakeoffFraction?: number;
+  private _fixLandingInterpolator?: SmoothTransformBetweenFrusta;
+  private readonly _fixLandingFraction: number = 0.9;
+  private readonly _scratchFrustum = new Frustum();
+
+  private _moveFlightToFraction(fraction: number): boolean {
+    const vp = this._viewport;
+    const view = vp.view;
+
+    if (!(view.is3d()) || !vp.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
+      return true;
+
+    // If we're done, set the final state directly
+    if (fraction >= 1.0) {
+      view.lookAtGlobalLocation(this._endHeight!, ViewGlobalLocationConstants.birdPitchAngleRadians, this._endLocation);
+      vp.synchWithView();
+      return true;
+    }
+
+    // Possibly smooth the takeoff
+    if (fraction < this._fixTakeoffFraction! && this._fixTakeoffInterpolator !== undefined) {
+      this._moveFixToFraction((1.0 / this._fixTakeoffFraction!) * fraction, this._fixTakeoffInterpolator);
+      return false;
+    }
+
+    // Possibly smooth the landing
+    if (fraction >= this._fixLandingFraction && fraction < 1.0) {
+      if (this._fixLandingInterpolator === undefined) {
+        const beforeLanding = vp.getWorldFrustum();
+        view.lookAtGlobalLocation(this._endHeight!, ViewGlobalLocationConstants.birdPitchAngleRadians, this._endLocation);
+        vp.setupFromView();
+        const afterLanding = vp.getWorldFrustum();
+        this._fixLandingInterpolator = SmoothTransformBetweenFrusta.create(beforeLanding.points, afterLanding.points);
+      }
+      this._moveFixToFraction((1.0 / (1.0 - this._fixLandingFraction)) * (fraction - this._fixLandingFraction), this._fixLandingInterpolator!);
+      return false;
+    }
+
+    // Set the camera based on a fraction along the flight arc
+    const height: number = Interpolation.Bezier([this._startHeight, this._midHeight, this._endHeight], fraction);
+    let targetPoint: Point3d;
+    if (view.globeMode === GlobeMode.Plane)
+      targetPoint = this._columbusLine[0].interpolate(fraction, this._columbusLine[1]);
+    else
+      targetPoint = this._ellipsoidArc!.fractionToPoint(fraction);
+    view.lookAtGlobalLocation(height, ViewGlobalLocationConstants.birdPitchAngleRadians, undefined, targetPoint);
+    vp.setupFromView();
+
+    return false;
+  }
+
+  // Apply a SmoothTransformBetweenFrusta interpolator to the view based on a fraction.
+  private _moveFixToFraction(fract: number, interpolator: SmoothTransformBetweenFrusta): boolean {
+    let done = false;
+
+    if (fract >= 1.0) {
+      fract = 1.0;
+      done = true;
+    }
+
+    interpolator.fractionToWorldCorners(Math.max(fract, 0), this._scratchFrustum.points);
+    this._viewport.setupViewFromFrustum(this._scratchFrustum);
+    return done;
+  }
+
+  public constructor(viewport: ScreenViewport, destination: GlobalLocation) {
+    this._viewport = viewport;
+    this._endLocation = destination;
+    const view = viewport.view;
+
+    if (!(view.is3d()) || !viewport.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
+      return;
+
+    // Calculate start height as the height of the current eye above the earth.
+    // Calculate end height from the destination area (if specified); otherwise, use a constant value.
+    const backgroundMapGeometry = view.displayStyle.getBackgroundMapGeometry();
+    if (undefined === backgroundMapGeometry)
+      return;
+
+    this._startHeight = eyeToCartographicOnGlobe(this._viewport, true)!.height;
+    this._endHeight = destination.area !== undefined ? areaToEyeHeight(view, destination.area, destination.center.height) : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
+
+    // Starting cartographic position is the eye projected onto the globe.
+    let startCartographic = eyeToCartographicOnGlobe(viewport);
+    if (startCartographic === undefined) {
+      startCartographic = Cartographic.fromDegrees(0, 0, 0);
+    }
+    this._startCartographic = startCartographic;
+
+    let maxFlightDuration: number;
+
+    if (view.globeMode === GlobeMode.Plane) {
+      // Calculate a line segment going from the starting cartographic coordinate to the ending cartographic coordinate
+      this._columbusLine.push(view.cartographicToRoot(startCartographic)!);
+      this._columbusLine.push(view.cartographicToRoot(this._endLocation.center)!);
+      this._flightLength = this._columbusLine[0].distance(this._columbusLine[1]);
+      // Set a shorter flight duration in Plane mode
+      maxFlightDuration = 7000.0;
+    } else {
+      // Calculate a flight arc from the ellipsoid of the Earth and the starting and ending cartographic coordinates.
+      const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
+      this._ellipsoidArc = earthEllipsoid.radiansPairToGreatArc(this._startCartographic.longitude, this._startCartographic.latitude, this._endLocation.center.longitude, this._endLocation.center.latitude)!;
+      if (this._ellipsoidArc !== undefined)
+        this._flightLength = this._ellipsoidArc.curveLength();
+      // Set a longer flight duration in 3D mode
+      maxFlightDuration = 13000.0;
+    }
+
+    if (Geometry.isSmallMetricDistance(this._flightLength))
+      return;
+
+    // The peak of the flight varies based on total distance to travel. The larger the distance, the higher the peak of the flight will be.
+    this._midHeight = metersToRange(this._flightLength,
+      ViewGlobalLocationConstants.birdHeightAboveEarthInMeters,
+      ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters * 4,
+      ViewGlobalLocationConstants.largestEarthArc);
+
+    // We will "fix" the initial frustum so it smoothly transitions to some point along the travel arc depending on the starting height.
+    // Alternatively, if the distance to travel is small enough, we will _only_ do a frustum transition to the destination location - ignoring the flight arc.
+    const beforeTakeoff = viewport.getWorldFrustum();
+    this._fixTakeoffFraction = this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive ? 1.0 : metersToRange(this._startHeight!, 0.1, 0.4, ViewGlobalLocationConstants.birdHeightAboveEarthInMeters);
+    this._moveFlightToFraction(this._fixTakeoffFraction!);
+    const afterTakeoff = viewport.getWorldFrustum();
+    this._fixTakeoffInterpolator = SmoothTransformBetweenFrusta.create(beforeTakeoff.points, afterTakeoff.points);
+
+    // The duration of the animation will increase the larger the distance to travel.
+    const flightDurationInMilliseconds = metersToRange(this._flightLength, 1000, maxFlightDuration, ViewGlobalLocationConstants.largestEarthArc);
+
+    // Specify the tweening behavior for this animation.
+    this._flightTweens.create({ fraction: 0.0 }, {
+      to: { fraction: 1.0 },
+      duration: flightDurationInMilliseconds,
+      easing: Easing.Cubic.InOut,
+      start: true,
+      onUpdate: (obj: any) => this._moveFlightToFraction(obj.fraction),
+    });
+  }
+
+  public animate() {
+    if (this._flightLength <= 0) {
+      this._moveFlightToFraction(1.0); // Skip to final frustum
+      return true;
+    }
+    return !this._flightTweens.update();
+  }
+
+  public interrupt() {
+    this._moveFlightToFraction(1.0); // Skip to final frustum
+  }
 }
 
 /** Object to animate a Frustum transition of a viewport. The [[Viewport]] will show as many frames as necessary during the supplied duration.
@@ -355,7 +525,6 @@ export enum ViewUndoEvent { Undo = 0, Redo = 1 }
  */
 export namespace PerModelCategoryVisibility {
   /** Describes whether and how a category's visibility is overridden.
-   * @beta
    */
   export enum Override {
     /** The category's visibility is not overridden; its visibility is wholly controlled by the [[Viewport]]'s [[CategorySelectorState]]. */
@@ -368,7 +537,6 @@ export namespace PerModelCategoryVisibility {
 
   /** Describes a set of per-model category visibility overrides. Changes to these overrides invoke the [[Viewport.onViewedCategoriesPerModelChanged]] event.
    * @see [[Viewport.perModelCategoryVisibility]].
-   * @beta
    */
   export interface Overrides {
     /** Returns the override state of the specified category within the specified model. */
@@ -572,7 +740,6 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
  * @see [[ViewManager]]
  * @public
  */
-
 export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
    * @note This event is invoked *very* frequently. To avoid negatively impacting performance, consider using one of the more specific Viewport events;
@@ -586,36 +753,28 @@ export abstract class Viewport implements IDisposable {
    */
   public readonly onViewUndoRedo = new BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>();
   /** Event called on the next frame after this viewport's set of always-drawn elements changes.
-   * @beta
    */
   public readonly onAlwaysDrawnChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of never-drawn elements changes.
-   * @beta
    */
   public readonly onNeverDrawnChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's [[DisplayStyleState]] or its members change.
    * Aspects of the display style include [ViewFlags]($common), [SubCategoryOverride]($common)s, and [[Environment]] settings.
-   * @beta
    */
   public readonly onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of displayed categories changes.
-   * @beta
    */
   public readonly onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of [[PerModelCategoryVisibility.Overrides]] changes.
-   * @beta
    */
   public readonly onViewedCategoriesPerModelChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of displayed models changes.
-   * @beta
    */
   public readonly onViewedModelsChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's [[FeatureOverrideProvider]] changes, or the internal state of the provider changes such that the overrides needed to be recomputed.
-   * @beta
    */
   public readonly onFeatureOverrideProviderChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's [[FeatureSymbology.Overrides]] change.
-   * @beta
    */
   public readonly onFeatureOverridesChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after any of the viewport's [[ChangeFlags]] changes.
@@ -623,13 +782,11 @@ export abstract class Viewport implements IDisposable {
    */
   public readonly onViewportChanged = new BeEvent<(vp: Viewport, changed: ChangeFlags) => void>();
   /** Event invoked immediately when [[changeView]] is called to replace the current [[ViewState]] with a different one.
-   * @beta
    */
   public readonly onChangeView = new BeEvent<(vp: Viewport, previousViewState: ViewState) => void>();
 
   private _view!: ViewState;
   private readonly _viewportId: number;
-  private _scheduleScriptFraction = 0.0;
   private _doContinuousRendering = false;
   /** @internal */
   protected _inViewChangedEvent = false;
@@ -647,16 +804,15 @@ export abstract class Viewport implements IDisposable {
   protected _controllerValid = false;
   /** @internal */
   public get controllerValid() { return this._controllerValid; }
-  /** @internal */
-  protected _scheduleScriptFractionValid = false;
   private _redrawPending = false;
+  private _analysisFractionValid = false;
+  private _timePointValid = false;
 
   /** Mark the current set of decorations invalid, so that they will be recreated on the next render frame.
    * This can be useful, for example, if an external event causes one or more current decorations to become invalid and you wish to force
    * them to be recreated to show the changes.
    * @note On the next frame, the `decorate` method of all [[ViewManager.decorators]] will be called. There is no way (or need) to
    * invalidate individual decorations.
-   * @beta
    */
   public invalidateDecorations(): void {
     this._decorationsValid = false;
@@ -665,7 +821,7 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public invalidateScene(): void {
     this._sceneValid = false;
-    this._scheduleScriptFractionValid = false;
+    this._timePointValid = false;
     this.invalidateDecorations();
   }
   /** @internal */
@@ -675,7 +831,7 @@ export abstract class Viewport implements IDisposable {
   }
   /** @internal */
   public invalidateController(): void {
-    this._controllerValid = false;
+    this._controllerValid = this._analysisFractionValid = this._timePointValid = false;
     this.invalidateRenderPlan();
   }
 
@@ -691,16 +847,12 @@ export abstract class Viewport implements IDisposable {
   private _animator?: Animator;
   /** @internal */
   protected _changeFlags = new ChangeFlags();
-  private _scheduleTime = 0.0;
   private _selectionSetDirty = true;
   private readonly _perModelCategoryVisibility = new PerModelCategoryVisibilityOverrides(this);
   private _tileSizeModifier?: number;
 
   /** @internal */
   public readonly subcategories = new SubCategoriesCache.Queue();
-
-  /** @internal */
-  public get scheduleTime() { return this._scheduleTime; }
 
   /** Time the current flash started.
    * @internal
@@ -720,25 +872,6 @@ export abstract class Viewport implements IDisposable {
    */
   public lastFlashedElem?: string;
 
-  /** The number of tiles selected for display in the view as of the most recently-drawn frame.
-   * The tiles selected may not meet the desired level-of-detail for the view, instead being temporarily drawn while
-   * tiles of more appropriate level-of-detail are loaded asynchronously.
-   * @note This member should be treated as read-only - it should only be modified internally.
-   * @see Viewport.numRequestedTiles
-   * @see Viewport.numReadyTiles
-   */
-  public numSelectedTiles = 0;
-
-  /** The number of tiles which were ready and met the desired level-of-detail for display in the view as of the most recently-drawn frame.
-   * These tiles may *not* have been selected because some other (probably sibling) tiles were *not* ready for display.
-   * This is a useful metric for determining how "complete" the view is - e.g., one indicator of progress toward view completion can be expressed as:
-   * `  (numReadyTiles) / (numReadyTiles + numRequestedTiles)`
-   * @note This member should be treated as read-only - it should only be modified internally.
-   * @see Viewport.numSelectedTiles
-   * @see Viewport.numRequestedTiles
-   */
-  public numReadyTiles = 0;
-
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
   private static _nextViewportId = 1;
@@ -754,7 +887,37 @@ export abstract class Viewport implements IDisposable {
   private _featureOverrideProvider?: FeatureOverrideProvider;
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _hilite = new Hilite.Settings();
-  private _emphasis = new Hilite.Settings(ColorDef.black.clone(), 0, 0, Hilite.Silhouette.Thick);
+  private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
+  private _outsideClipColor?: ColorDef;
+  private _insideClipColor?: ColorDef;
+
+  /** @alpha */
+  public get lightSettings(): LightSettings | undefined {
+    return this.displayStyle.is3d() ? this.displayStyle.settings.lights : undefined;
+  }
+
+  /** @alpha */
+  public setLightSettings(settings: LightSettings) {
+    if (this.displayStyle.is3d()) {
+      this.displayStyle.settings.lights = settings;
+      this.invalidateRenderPlan();
+      this._changeFlags.setDisplayStyle();
+    }
+  }
+
+  /** Settings controlling shadow display for this viewport. Only applicable to 3d views.
+   * @beta
+   */
+  public get solarShadowSettings(): SolarShadowSettings | undefined {
+    return this.view.displayStyle.is3d() ? this.view.displayStyle.settings.solarShadows : undefined;
+  }
+  public setSolarShadowSettings(settings: SolarShadowSettings) {
+    if (this.view.displayStyle.is3d()) {
+      this.view.displayStyle.solarShadows = settings;
+      this.invalidateRenderPlan();
+      this._changeFlags.setDisplayStyle();
+    }
+  }
 
   /** @internal */
   public get viewingSpace(): ViewingSpace { return this._viewingSpace; }
@@ -768,11 +931,29 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public get frustFraction(): number { return this._viewingSpace.frustFraction; }
 
-  /** @internal */
-  public get scheduleScriptFraction(): number { return this._scheduleScriptFraction; }
-  public set scheduleScriptFraction(fraction: number) {
-    this._scheduleScriptFraction = fraction;
-    this._scheduleScriptFractionValid = false;
+  /** @alpha */
+  public get analysisFraction(): number {
+    return this.displayStyle.settings.analysisFraction;
+  }
+  public set analysisFraction(fraction: number) {
+    this.displayStyle.settings.analysisFraction = fraction;
+    this._analysisFractionValid = false;
+    IModelApp.requestNextAnimation();
+  }
+
+  /** The point in time reflected by the view, in UNIX seconds.
+   * This identifies a point on the timeline of the [[scheduleScript]], if any; it may also affect display of four-dimensional point clouds and reality meshes.
+   * @beta
+   */
+  public get timePoint(): number | undefined {
+    return this.displayStyle.settings.timePoint;
+  }
+  public set timePoint(time: number | undefined) {
+    if (time === this.timePoint)
+      return;
+
+    this.displayStyle.settings.timePoint = time;
+    this._timePointValid = false;
     IModelApp.requestNextAnimation();
   }
 
@@ -807,7 +988,6 @@ export abstract class Viewport implements IDisposable {
 
   /** The settings that control how emphasized elements are displayed in this Viewport. The default settings apply a thick black silhouette to the emphasized elements.
    * @see [FeatureSymbology.Appearance.emphasized].
-   * @beta
    */
   public get emphasisSettings(): Hilite.Settings { return this._emphasis; }
   public set emphasisSettings(settings: Hilite.Settings) {
@@ -819,14 +999,27 @@ export abstract class Viewport implements IDisposable {
    * @return true if the grid display is on.
    */
   public get isGridOn(): boolean { return this.viewFlags.grid; }
-  /** The [ViewFlags]($common) that determine how the contents of this Viewport are rendered. */
+  /** The [ViewFlags]($common) that determine how the contents of this Viewport are rendered.
+   * @note Do **not** modify the ViewFlags directly. Instead do something like:
+   * ```ts
+   *   const vf = viewport.viewFlags.clone();
+   *   vf.backgroundMap = true; // Or any other modifications
+   *   viewport.viewFlags = vf;
+   * ```
+   */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   public set viewFlags(viewFlags: ViewFlags) {
-    if (!this.viewFlags.equals(viewFlags)) {
-      this._changeFlags.setDisplayStyle();
+    if (this.viewFlags.equals(viewFlags))
+      return;
+
+    // Toggling the map requires z-plane adjustment.
+    if (viewFlags.backgroundMap !== this.viewFlags.backgroundMap)
+      this.invalidateController();
+    else
       this.invalidateRenderPlan();
-      this.view.displayStyle.viewFlags = viewFlags;
-    }
+
+    this._changeFlags.setDisplayStyle();
+    this.view.displayStyle.viewFlags = viewFlags;
   }
 
   /** The display style controller how the contents of this viewport are rendered.
@@ -836,6 +1029,39 @@ export abstract class Viewport implements IDisposable {
   public set displayStyle(style: DisplayStyleState) {
     this.view.displayStyle = style;
     this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
+  }
+
+  /** return true if viewing globe (globeMode is 3D and eye location is far above globe
+   * @alpha
+   */
+  public get viewingGlobe() {
+    const view = this.view;
+    if (!view.is3d())
+      return false;
+
+    return this.displayStyle.globeMode === GlobeMode.Ellipsoid && view.isGlobalView;
+  }
+
+  /** This setting controls the color override for pixels outside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
+   * @note The transparency component of the color object is ignored.
+   * @note The render system will hold a reference to the provided color object. If you want to later modify the original color object, pass in a clone to this setter.
+   * @beta
+   */
+  public get outsideClipColor(): ColorDef | undefined { return this._outsideClipColor; }
+  public set outsideClipColor(color: ColorDef | undefined) {
+    this._outsideClipColor = color === undefined ? undefined : color;
+    this.invalidateRenderPlan();
+  }
+
+  /** This setting controls the color override for pixels inside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
+   * @note The transparency component of the color object is ignored.
+   * @note The render system will hold a reference to the provided color object. If you want to later modify the original color object, pass in a clone to this setter.
+   * @beta
+   */
+  public get insideClipColor(): ColorDef | undefined { return this._insideClipColor; }
+  public set insideClipColor(color: ColorDef | undefined) {
+    this._insideClipColor = color === undefined ? undefined : color;
     this.invalidateRenderPlan();
   }
 
@@ -946,7 +1172,6 @@ export abstract class Viewport implements IDisposable {
   /** Change the visibility of geometry belonging to the specified subcategory when displayed in this viewport.
    * @param subCategoryId The Id of the subcategory
    * @param display: True to make geometry belonging to the subcategory visible within this viewport, false to make it invisible.
-   * @alpha
    */
   public changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
     const app = this.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
@@ -967,7 +1192,6 @@ export abstract class Viewport implements IDisposable {
 
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
-   * @beta
    */
   public get backgroundMapSettings(): BackgroundMapSettings { return this.displayStyle.backgroundMapSettings; }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
@@ -983,11 +1207,13 @@ export abstract class Viewport implements IDisposable {
    * ``` ts
    *  viewport.changeBackgroundMapProps({ groundBias: 16.2 });
    * ```
-   * @beta
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.displayStyle.changeBackgroundMapProps(props);
-    this.invalidateScene();
+    if (undefined !== props.transparency)
+      this.invalidateRenderPlan(); // terrain transparency is part of render plan.
+    else
+      this.invalidateScene(); // just need to reselect tiles based on new map settings.
   }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
@@ -1166,6 +1392,7 @@ export abstract class Viewport implements IDisposable {
   protected constructor(target: RenderTarget) {
     this._target = target;
     this._viewportId = Viewport._nextViewportId++;
+    IModelApp.tileAdmin.registerViewport(this);
   }
 
   public dispose(): void {
@@ -1203,7 +1430,7 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   /** @internal */
-  public get backgroundMapPlane() { return this.view.displayStyle.backgroundMapPlane; }
+  public get backgroundMapGeometry(): BackgroundMapGeometry | undefined { return this.view.displayStyle.getBackgroundMapGeometry(); }
 
   /** Ids of a set of elements which should not be rendered within this view.
    * @note Do not modify this set directly - use [[setNeverDrawn]] or [[clearNeverDrawn]] instead.
@@ -1269,7 +1496,7 @@ export abstract class Viewport implements IDisposable {
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
   /** Allows visibility of categories within this viewport to be overridden on a per-model basis.
-   * @alpha
+   * @beta
    */
   public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides { return this._perModelCategoryVisibility; }
 
@@ -1325,12 +1552,19 @@ export abstract class Viewport implements IDisposable {
     trees.disclose(this.view);
   }
 
-  /** @internal */
+  /** Register a provider of tile graphics to be drawn in this viewport.
+   * @see [[dropTiledGraphicsProvider]]
+   * @beta
+   */
   public addTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
     this._tiledGraphicsProviders.add(provider);
     this.invalidateScene();
   }
-  /** @internal */
+
+  /** Remove a previously-registered provider of tile graphics.
+   * @see [[addTiledGraphicsProvider]]
+   * @beta
+   */
   public dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
     this._tiledGraphicsProviders.delete(provider);
     this.invalidateScene();
@@ -1342,10 +1576,10 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @internal */
-  public getDisplayedPlanes(): Plane3dByOriginAndUnitNormal[] {
-    const planes: Plane3dByOriginAndUnitNormal[] = [];
-    this.forEachTileTreeRef((ref) => ref.addPlanes(planes));
-    return planes;
+  public getTerrainHeightRange(): Range1d {
+    const heightRange = Range1d.createNull();
+    this.forEachTileTreeRef((ref) => ref.getTerrainHeight(heightRange));
+    return heightRange;
   }
 
   /** @internal */
@@ -1387,6 +1621,29 @@ export abstract class Viewport implements IDisposable {
    */
   public get numRequestedTiles(): number { return IModelApp.tileAdmin.getNumRequestsForViewport(this); }
 
+  /** The number of tiles selected for display in the view as of the most recently-drawn frame.
+   * The tiles selected may not meet the desired level-of-detail for the view, instead being temporarily drawn while
+   * tiles of more appropriate level-of-detail are loaded asynchronously.
+   * @see Viewport.numRequestedTiles
+   * @see Viewport.numReadyTiles
+   */
+  public get numSelectedTiles(): number {
+    const tiles = IModelApp.tileAdmin.getTilesForViewport(this);
+    return undefined !== tiles ? tiles.selected.size + tiles.external.selected : 0;
+  }
+
+  /** The number of tiles which were ready and met the desired level-of-detail for display in the view as of the most recently-drawn frame.
+   * These tiles may *not* have been selected because some other (probably sibling) tiles were *not* ready for display.
+   * This is a useful metric for determining how "complete" the view is - e.g., one indicator of progress toward view completion can be expressed as:
+   * `  (numReadyTiles) / (numReadyTiles + numRequestedTiles)`
+   * @see Viewport.numSelectedTiles
+   * @see Viewport.numRequestedTiles
+   */
+  public get numReadyTiles(): number {
+    const tiles = IModelApp.tileAdmin.getTilesForViewport(this);
+    return undefined !== tiles ? tiles.ready.size + tiles.external.ready : 0;
+  }
+
   /** @internal */
   public toViewOrientation(from: XYZ, to?: XYZ) { this._viewingSpace.toViewOrientation(from, to); }
   /** @internal */
@@ -1394,14 +1651,13 @@ export abstract class Viewport implements IDisposable {
 
   /** Change the ViewState of this Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
-   * @param _opts options for how the view change operation  should work
+   * @param _opts options for how the view change operation should work
    */
   public changeView(view: ViewState, _opts?: ViewChangeOptions) {
     const prevView = this.view;
 
     this.updateChangeFlags(view);
     this.doSetupFromView(view);
-    this.invalidateScene();
     this.invalidateController();
     this.target.reset();
 
@@ -1667,10 +1923,10 @@ export abstract class Viewport implements IDisposable {
    * @param factor the zoom factor.
    * @param options options for behavior of view change
    */
-  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions): void {
+  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions): ViewStatus {
     const view = this.view;
     if (undefined === view)
-      return;
+      return ViewStatus.InvalidViewport;
 
     if (view.isCameraEnabled()) {
       const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
@@ -1693,12 +1949,13 @@ export abstract class Viewport implements IDisposable {
       // chance of the rotation changing due to numerical precision errors calculating it from the frustum corners.
       const delta = view.getExtents().scale(factor);
 
-      // first check to see whether the zoom operation results in an invalid view. If so, make sure we don't change anything
-      if (ViewStatus.Success !== view.validateViewDelta(delta, true))
-        return;
-
       const rot = view.getRotation();
       const center = rot.multiplyVector(newCenter ? newCenter : view.getCenter());
+
+      // fix for min/max delta
+      const stat = view.adjustViewDelta(delta, center, rot, this.viewRect.aspect, options);
+      if (ViewStatus.Success !== stat)
+        return stat;
 
       if (!view.allow3dManipulations())
         center.z = 0.0;
@@ -1708,6 +1965,7 @@ export abstract class Viewport implements IDisposable {
     }
 
     this.synchWithView(options);
+    return ViewStatus.Success;
   }
 
   /** Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
@@ -1748,7 +2006,11 @@ export abstract class Viewport implements IDisposable {
         viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
     }
 
-    view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, options ? options.marginPercent : undefined);
+    const ignoreError: ViewChangeOptions = {
+      ... options,
+      onExtentsError: () => ViewStatus.Success,
+    };
+    view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, ignoreError );
     this.synchWithView(options);
   }
 
@@ -1781,7 +2043,7 @@ export abstract class Viewport implements IDisposable {
    * @param options options that control how the view change works
    */
   public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions) {
-    this.view.lookAtVolume(volume, this.viewRect.aspect, options ? options.marginPercent : undefined);
+    this.view.lookAtVolume(volume, this.viewRect.aspect, options);
     this.synchWithView(options);
   }
 
@@ -2053,19 +2315,19 @@ export abstract class Viewport implements IDisposable {
 
     let overridesNeeded = changeFlags.areFeatureOverridesDirty;
 
-    if (!this._scheduleScriptFractionValid) {
-      target.animationFraction = this.scheduleScriptFraction;
+    if (!this._analysisFractionValid) {
+      this._analysisFractionValid = isRedrawNeeded = true;
+      target.analysisFraction = this.analysisFraction;
+    }
+
+    if (!this._timePointValid) {
       isRedrawNeeded = true;
-      this._scheduleScriptFractionValid = true;
+      this._timePointValid = true;
       const scheduleScript = view.displayStyle.scheduleScript;
       if (scheduleScript) {
-        const scheduleTime = scheduleScript.duration.fractionToPoint(target.animationFraction);
-        if (scheduleTime !== this._scheduleTime) {
-          this._scheduleTime = scheduleTime;
-          target.animationBranches = scheduleScript.getAnimationBranches(scheduleTime);
-          if (scheduleScript.containsFeatureOverrides)
-            overridesNeeded = true;
-        }
+        target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.computeDuration().low);
+        if (scheduleScript.containsFeatureOverrides)
+          overridesNeeded = true;
       }
     }
 
@@ -2080,7 +2342,8 @@ export abstract class Viewport implements IDisposable {
 
     if (!this._sceneValid) {
       if (!this._freezeScene) {
-        this.numSelectedTiles = this.numReadyTiles = 0;
+        IModelApp.tileAdmin.clearTilesForViewport(this);
+        IModelApp.tileAdmin.clearUsageForViewport(this);
         const context = this.createSceneContext();
         view.createScene(context);
         this.forEachTiledGraphicsProviderTree((ref) => ref.addToScene(context));
@@ -2112,6 +2375,10 @@ export abstract class Viewport implements IDisposable {
       isRedrawNeeded = true;
       requestNextAnimation = undefined !== this._flashedElem;
     }
+
+    target.onBeforeRender(this, (redraw: boolean) => {
+      isRedrawNeeded = isRedrawNeeded || redraw;
+    });
 
     timer.stop();
     if (isRedrawNeeded) {
@@ -2270,7 +2537,6 @@ export abstract class Viewport implements IDisposable {
 
   /** The device pixel ratio used by this Viewport. This value is *not* necessarily equal to `window.devicePixelRatio`.
    * See: https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
-   * @beta
    */
   public get devicePixelRatio(): number {
     return this.target.devicePixelRatio;
@@ -2280,7 +2546,6 @@ export abstract class Viewport implements IDisposable {
    * See: https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
    * @param num The number in CSS pixels to scale
    * @returns The resulting number in device pixels
-   * @beta
    */
   public cssPixelsToDevicePixels(cssPixels: number): number {
     return this.target.cssPixelsToDevicePixels(cssPixels);
@@ -2315,17 +2580,16 @@ export abstract class Viewport implements IDisposable {
  * @public
  */
 export class ScreenViewport extends Viewport {
-
   /** Settings that may be adjusted to control the way animations of viewing operations work.
    * @beta
    */
   public static animation = {
     /** Duration of animations of viewing operations. */
     time: {
-      fast: BeDuration.fromSeconds(.75),
-      normal: BeDuration.fromSeconds(1.25),
-      slow: BeDuration.fromSeconds(2.0),
-      wheel: BeDuration.fromSeconds(.175), // zooming with the wheel
+      fast: BeDuration.fromSeconds(.5),
+      normal: BeDuration.fromSeconds(1.0),
+      slow: BeDuration.fromSeconds(1.25),
+      wheel: BeDuration.fromSeconds(.5), // zooming with the wheel
     },
     /** The easing function to use for view animations. */
     easing: Easing.Cubic.Out,
@@ -2351,7 +2615,7 @@ export class ScreenViewport extends Viewport {
       /** zoom out/in only if the beginning and ending view's range, each expanded by this factor, overlap. */
       margin: 2.5,
       /** multiply the duration of the animation by this factor if perform a zoom out. */
-      durationFactor: 2,
+      durationFactor: 1.5,
     },
   };
 
@@ -2512,7 +2776,21 @@ export class ScreenViewport extends Viewport {
    */
   public pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable = true, out?: Point3d): Point3d | undefined {
     const depthResult = this.pickDepthPoint(pickPoint, radius, { excludeNonLocatable: !allowNonLocatable });
-    if (DepthPointSource.TargetPoint === depthResult.source)
+    let isValidDepth = false;
+    switch (depthResult.source) {
+      case DepthPointSource.Geometry:
+      case DepthPointSource.Model:
+        isValidDepth = true;
+        break;
+      case DepthPointSource.BackgroundMap:
+      case DepthPointSource.GroundPlane:
+      case DepthPointSource.Grid:
+      case DepthPointSource.ACS:
+        const npcPt = this.worldToNpc(depthResult.plane.getOriginRef());
+        isValidDepth = !(npcPt.z < 0.0 || npcPt.z > 1.0);
+        break;
+    }
+    if (!isValidDepth)
       return undefined;
     const result = undefined !== out ? out : new Point3d();
     result.setFrom(depthResult.plane.getOriginRef());
@@ -2543,7 +2821,7 @@ export class ScreenViewport extends Viewport {
 
     if (0 !== picker.doPick(this, pickPoint, radius, locateOpts)) {
       const hitDetail = picker.getHit(0)!;
-      const geomPlane = Plane3dByOriginAndUnitNormal.create(hitDetail.getPoint(), this.view.getZVector())!;
+      const geomPlane = Plane3dByOriginAndUnitNormal.create(hitDetail.getPoint(), hitDetail.isModelHit ? this.view.getUpVector(hitDetail.getPoint()) : this.view.getZVector())!;
       return { plane: geomPlane, source: (hitDetail.isModelHit ? DepthPointSource.Model : DepthPointSource.Geometry), sourceId: hitDetail.sourceId };
     }
 
@@ -2554,21 +2832,29 @@ export class ScreenViewport extends Viewport {
       const xyzEye = direction.scale(aa);
       direction.setFrom(pickPoint.vectorTo(xyzEye));
     }
+
     direction.scaleToLength(-1.0, direction);
-    const boresite = Ray3d.create(pickPoint, direction);
+    const boresiteIntersectRay = Ray3d.create(pickPoint, direction);
     const projectedPt = Point3d.createZero();
 
+    const backgroundMapGeometry = this.backgroundMapGeometry;
+    if (undefined !== backgroundMapGeometry) {
+      const intersect = backgroundMapGeometry.getRayIntersection(boresiteIntersectRay, false);
+
+      if (undefined !== intersect) {
+        const npcPt = this.worldToNpc(intersect.origin);
+        if (npcPt.z < 1)    // Only if in front of eye.
+          return { plane: Plane3dByOriginAndUnitNormal.create(intersect.origin, intersect.direction)!, source: DepthPointSource.BackgroundMap };
+      }
+    }
     // returns true if there's an intersection that isn't behind the front plane
     const boresiteIntersect = (plane: Plane3dByOriginAndUnitNormal) => {
-      const dist = boresite.intersectionWithPlane(plane, projectedPt);
+      const dist = boresiteIntersectRay.intersectionWithPlane(plane, projectedPt);
       if (undefined === dist)
         return false;
       const npcPt = this.worldToNpc(projectedPt);
       return npcPt.z < 1.0;
     };
-
-    if (undefined !== this.backgroundMapPlane && boresiteIntersect(this.backgroundMapPlane))
-      return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.backgroundMapPlane.getNormalRef())!, source: DepthPointSource.BackgroundMap };
 
     if (this.view.getDisplayStyle3d().environment.ground.display) {
       const groundPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, this.view.getGroundElevation()), Vector3d.unitZ());
@@ -2592,6 +2878,27 @@ export class ScreenViewport extends Viewport {
   public animateFrustumChange(options?: ViewAnimationOptions) {
     if (this._lastPose && this._currentBaseline)
       this.setAnimator(new FrustumAnimator(options ? options : {}, this, this._lastPose, this.view.savePose()));
+  }
+  /** Animate the view frustum from a starting frustum to the current view frustum. In other words,
+   * save a starting frustum (presumably what the user is currently looking at), then adjust the view to
+   * a different location and call synchWithView, then call this method. After the animation the viewport
+   * frustum will be restored to its current location.
+   * @internal
+   */
+  public animateToCurrent(_start: Frustum, options?: ViewAnimationOptions) {
+    options = options ? options : {};
+    this.animateFrustumChange(/* start, this.getFrustum(), */ options);
+  }
+
+  /** Animate the view frustum to a destination location the earth from the current frustum.
+   * @internal
+   */
+  public animateFlyoverToGlobalLocation(destination: GlobalLocation) {
+    if (!this.isCameraOn) {
+      this.turnCameraOn();
+      this.setupFromView();
+    }
+    this.setAnimator(new GlobeAnimator(this, destination));
   }
 
   /** @internal */
@@ -2756,11 +3063,9 @@ export class ScreenViewport extends Viewport {
       return; // AccuSnap will flash edge/segment geometry if not a surface hit or snap location has been adjusted...
 
     const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    const color = context.viewport.hilite.color.invert(); // Invert hilite color for good contrast
-    const colorFill = color.clone();
+    const color = context.viewport.hilite.color.inverse().withTransparency(100); // Invert hilite color for good contrast
+    const colorFill = color.withTransparency(200);
 
-    color.setTransparency(100);
-    colorFill.setTransparency(200);
     builder.setSymbology(color, colorFill, 1);
 
     const radius = (2.5 * aperture) * context.viewport.getPixelSizeAtPoint(hit.snapPoint);
@@ -2847,7 +3152,7 @@ export class ScreenViewport extends Viewport {
 /** Forms a 2-way connection between 2 Viewports of the same iModel, such that any change of the parameters in one will be reflected in the other.
  * For example, Navigator uses this class to synchronize two views for revision comparison.
  * @note It is possible to synchronize two Viewports from two different [[IModelConnection]]s of the same iModel.
- * @alpha
+ * @beta
  */
 export class TwoWayViewportSync {
   private _removals: VoidFunction[] = [];

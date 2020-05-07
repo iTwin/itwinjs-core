@@ -2,15 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import "./RpcImpl";
+// Sets up certa to allow a method on the frontend to get an access token
+import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
+import * as path from "path";
+import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { Config } from "@bentley/imodeljs-clients";
 import { IModelJsExpressServer } from "@bentley/express-server";
+import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
-import "./RpcImpl";
 import { CloudEnv } from "./cloudEnv";
+
+// tslint:disable:no-console
 
 async function init() {
   IModelJsConfig.init(true, true, Config.App);
@@ -24,7 +28,8 @@ async function init() {
   hostConfig.imodelClient = CloudEnv.cloudEnv.imodelClient;
   hostConfig.concurrentQuery.concurrent = 2;
   hostConfig.concurrentQuery.pollInterval = 5;
-  IModelHost.startup(hostConfig);
+  await IModelHost.startup(hostConfig);
+  IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();
 
   Logger.initializeToConsole();
   Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
@@ -41,10 +46,27 @@ async function init() {
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;
     const server = new IModelJsExpressServer(rpcConfig.protocol);
     await server.initialize(port);
-    // tslint:disable-next-line:no-console
     console.log("Web backend for full-stack-tests listening on port " + port);
   }
+}
 
+/** A FileNameResolver for resolving test iModel files from core/backend */
+class BackendTestAssetResolver extends FileNameResolver {
+  /** Resolve a base file name to a full path file name in the core/backend/lib/test/assets/ directory. */
+  public tryResolveFileName(inFileName: string): string {
+    if (path.isAbsolute(inFileName)) {
+      return inFileName;
+    }
+    return path.join(__dirname, "../../../../core/backend/lib/test/assets/", inFileName);
+  }
+  /** Resolve a key (for testing FileNameResolver) */
+  public tryResolveKey(fileKey: string): string | undefined {
+    switch (fileKey) {
+      case "test-key": return this.tryResolveFileName("test.bim");
+      case "test2-key": return this.tryResolveFileName("test2.bim");
+      default: return undefined;
+    }
+  }
 }
 
 module.exports = init();

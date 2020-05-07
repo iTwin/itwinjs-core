@@ -1,7 +1,8 @@
 {
-  "rushVersion": "5.14.0",
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.23.2",
   "pnpmVersion": "3.5.3",
-  "nodeSupportedVersionRange": ">=10.6.0 <13.0.0",
+  "nodeSupportedVersionRange": ">=10.16.0 <13.0.0",
   "projectFolderMinDepth": 2,
   "ensureConsistentVersions": true,
   "approvedPackagesPolicy": {
@@ -11,7 +12,7 @@
       "common",
       "tools",
       "internal",
-      "plugins"
+      "extensions"
     ],
     "ignoredNpmScopes": [
       "@types"
@@ -21,6 +22,90 @@
     {
       "packageName": "@bentley/build-tools",
       "projectFolder": "tools/build",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/context-registry-client",
+      "projectFolder": "clients/context-registry",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/extension-client",
+      "projectFolder": "clients/extension",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/forms-data-management-client",
+      "projectFolder": "clients/forms-data-management",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/frontend-authorization-client",
+      "projectFolder": "clients/frontend-authorization",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "projectFolder": "clients/imodelhub",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/itwin-client",
+      "projectFolder": "clients/itwin",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/product-settings-client",
+      "projectFolder": "clients/product-settings",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/projectshare-client",
+      "projectFolder": "clients/projectshare",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/rbac-client",
+      "projectFolder": "clients/rbac",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/reality-data-client",
+      "projectFolder": "clients/reality-data",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/usage-logging-client",
+      "projectFolder": "clients/usage-logging",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/extension-cli",
+      "projectFolder": "tools/extension-cli",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -47,6 +132,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/orbitgt-core",
+      "projectFolder": "core/orbitgt",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/imodeljs-common",
       "projectFolder": "core/common",
       "reviewCategory": "common",
@@ -61,22 +153,8 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodeljs-clients",
-      "projectFolder": "core/clients",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/imodeljs-clients-backend",
-      "projectFolder": "core/clients-backend",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/imodeljs-webserver",
-      "projectFolder": "core/webserver",
+      "packageName": "@bentley/backend-itwin-client",
+      "projectFolder": "core/backend-itwin-client",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -98,6 +176,13 @@
     {
       "packageName": "@bentley/frontend-devtools",
       "projectFolder": "core/frontend-devtools",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/webgl-compatibility",
+      "projectFolder": "core/webgl-compatibility",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -208,13 +293,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/webpack-tools",
-      "projectFolder": "tools/webpack",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/webpack-tools-core",
       "projectFolder": "tools/webpack-core",
       "reviewCategory": "tools",
@@ -224,6 +302,13 @@
     {
       "packageName": "@bentley/backend-webpack-tools",
       "projectFolder": "tools/backend-webpack",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/extension-webpack-tools",
+      "projectFolder": "tools/extension-webpack",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -271,18 +356,24 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/geo-photo-plugin",
-      "projectFolder": "plugins/geo-photo",
-      "reviewCategory": "plugins",
+      "packageName": "@bentley/geonames-extension",
+      "projectFolder": "extensions/geonames",
+      "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/hypermodeling-plugin",
-      "projectFolder": "plugins/hypermodeling",
-      "reviewCategory": "plugins",
+      "packageName": "@bentley/hypermodeling-extension",
+      "projectFolder": "extensions/hypermodeling",
+      "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "internal-tools",
+      "projectFolder": "tools/internal",
+      "reviewCategory": "internal",
+      "shouldPublish": false
     },
     {
       "packageName": "example-code-snippets",
@@ -321,26 +412,26 @@
       "shouldPublish": false
     },
     {
+      "packageName": "imjs-importer",
+      "projectFolder": "test-apps/imjs-importer",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "imodel-from-geojson",
       "projectFolder": "test-apps/imodel-from-geojson",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
     {
-      "packageName": "wms-plugin-example",
-      "projectFolder": "plugins/wms",
+      "packageName": "wms-extension-example",
+      "projectFolder": "extensions/wms",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
     {
       "packageName": "iot-demo",
-      "projectFolder": "plugins/iot-demo",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "test-tools",
-      "projectFolder": "plugins/test-tools",
+      "projectFolder": "extensions/iot-demo",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
@@ -363,6 +454,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "imodel-from-orbitgt-pointcloud",
+      "projectFolder": "test-apps/imodel-from-orbitgt",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "presentation-test-app",
       "projectFolder": "test-apps/presentation-test-app",
       "reviewCategory": "internal",
@@ -381,14 +478,14 @@
       "shouldPublish": false
     },
     {
-      "packageName": "webworker-test-app",
-      "projectFolder": "test-apps/webworker-test-app",
+      "packageName": "core-full-stack-tests",
+      "projectFolder": "full-stack-tests/core",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
     {
-      "packageName": "core-full-stack-tests",
-      "projectFolder": "full-stack-tests/core",
+      "packageName": "native-app-full-stack-tests",
+      "projectFolder": "full-stack-tests/native-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

@@ -6,44 +6,67 @@
  * @module StatusBar
  */
 
-import * as React from "react";
+import "./StatusBar.scss";
 import classnames from "classnames";
-
-import { MessageContainer, MessageSeverity, SmallText, CommonProps, CommonDivProps, Div, UiCore } from "@bentley/ui-core";
-import {
-  Footer,
-  Toast as ToastMessage,
-  Message,
-  MessageLayout,
-  MessageButton, Status, MessageHyperlink, MessageProgress,
-} from "@bentley/ui-ninezone";
-import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
-
-import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
+import * as React from "react";
+import ReactResizeDetector from "react-resize-detector";
+import { OutputMessageType } from "@bentley/imodeljs-frontend";
+import { CommonDivProps, CommonProps, Div, Icon, IconProps, MessageContainer, MessageSeverity, SmallText, UiCore } from "@bentley/ui-core";
+import { Footer, Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Status, Toast } from "@bentley/ui-ninezone";
+import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager";
 import { MessageDiv } from "../messages/MessageSpan";
+import { NotifyMessageDetailsType, NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiFramework } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
-
-import "./StatusBar.scss";
 
 // cspell:ignore safearea
 
-// tslint:disable-next-line: variable-name
-const MessageLabel = (props: { message: HTMLElement | string, className: string }): JSX.Element => {
-  const classNames = classnames("uifw-statusbar-message-label", props.className);
-  return <MessageDiv className={classNames} message={props.message} />;
-};
+/** Interface for StatusBar Message */
+interface StatusBarMessage {
+  id: string;
+  messageDetails: NotifyMessageDetailsType;
+  severity: MessageSeverity;
+}
 
-/** Enum for StatusBar Message Type
- * @internal
- */
-enum StatusBarMessageType {
-  None,
-  Activity,
-  Toast,
-  Sticky,
+/** Manager for StatusBar messages */
+class StatusBarMessageManager {
+  private _messages: ReadonlyArray<StatusBarMessage> = [];
+  private _messageId: number = 0;
+
+  public initialize() {
+    this._messages = [];
+    this._messageId = 0;
+  }
+
+  public get messages() { return this._messages; }
+
+  public add(messageDetails: NotifyMessageDetailsType): void {
+    const id = this._messageId.toString();
+    const severity = MessageManager.getSeverity(messageDetails);
+
+    const messages = this._messages.slice();
+    messages.splice(0, 0, { id, messageDetails, severity });  // Insert at beginning
+    this._messages = messages;
+
+    this._messageId++;
+  }
+
+  public remove(id: string): boolean {
+    let result = false;
+    const foundIndex = this._messages.findIndex((message: StatusBarMessage) => message.id === id);
+
+    // istanbul ignore else
+    if (foundIndex >= 0) {
+      const messages = this._messages.slice();
+      messages.splice(foundIndex, 1);
+      this._messages = messages;
+      result = true;
+    }
+
+    return result;
+  }
 }
 
 /** State for the [[StatusBar]] React component
@@ -51,11 +74,9 @@ enum StatusBarMessageType {
  */
 interface StatusBarState {
   openWidget: StatusBarFieldId;
-  visibleMessage: StatusBarMessageType;
-  messageDetails: NotifyMessageDetails | undefined;
+  messages: ReadonlyArray<StatusBarMessage>;
   activityMessageInfo: ActivityMessageEventArgs | undefined;
   isActivityMessageVisible: boolean;
-  toastMessageKey: number;
   toastTarget: HTMLElement | null;
 }
 
@@ -71,6 +92,8 @@ export interface StatusBarProps extends CommonProps {
  * @public
  */
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
+  private _messageManager = new StatusBarMessageManager();
+
   public static severityToStatus(severity: MessageSeverity): Status {
     let status = Status.Information;
 
@@ -96,11 +119,9 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   /** @internal */
   public readonly state: Readonly<StatusBarState> = {
     openWidget: null,
-    visibleMessage: StatusBarMessageType.None,
-    messageDetails: undefined,
+    messages: [],
     activityMessageInfo: undefined,
     isActivityMessageVisible: false,
-    toastMessageKey: 0,
     toastTarget: null,
   };
 
@@ -128,10 +149,12 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
         <SafeAreaContext.Consumer>
           {(safeAreaInsets) => (
             <Footer
-              messages={this.getFooterMessage()}
+              className={this.props.className}
+              messages={this.getFooterMessages()}
               isInFooterMode={this.props.isInFooterMode}
               onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
               safeAreaInsets={safeAreaInsets}
+              style={this.props.style}
             >
               {footerSections}
             </Footer>
@@ -142,6 +165,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   }
 
   public componentDidMount() {
+    this._messageManager.initialize();
     MessageManager.onMessageAddedEvent.addListener(this._handleMessageAddedEvent);
     MessageManager.onActivityMessageUpdatedEvent.addListener(this._handleActivityMessageUpdatedEvent);
     MessageManager.onActivityMessageCancelledEvent.addListener(this._handleActivityMessageCancelledEvent);
@@ -154,22 +178,9 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   }
 
   private _handleMessageAddedEvent = (args: MessageAddedEventArgs) => {
-    let statusbarMessageType: StatusBarMessageType = StatusBarMessageType.None;
+    this._messageManager.add(args.message);
 
-    switch (args.message.msgType) {
-      case OutputMessageType.Toast:
-        statusbarMessageType = StatusBarMessageType.Toast;
-        break;
-      case OutputMessageType.Sticky:
-        statusbarMessageType = StatusBarMessageType.Sticky;
-        break;
-    }
-
-    this.setVisibleMessage(statusbarMessageType, args.message);
-
-    if (args.message.msgType === OutputMessageType.Toast) {
-      this.setState((prevState) => ({ toastMessageKey: prevState.toastMessageKey + 1 }));
-    }
+    this.setState({ messages: this._messageManager.messages });
   }
 
   /**
@@ -177,9 +188,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
    * @param args  New values to set for ActivityMessage
    */
   private _handleActivityMessageUpdatedEvent = (args: ActivityMessageEventArgs) => {
-    const visibleMessage = StatusBarMessageType.Activity;
     this.setState((prevState) => ({
-      visibleMessage,
       activityMessageInfo: args,
       isActivityMessageVisible: args.restored ? true : prevState.isActivityMessageVisible,
     }));
@@ -194,70 +203,47 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     });
   }
 
-  private getFooterMessage(): React.ReactNode {
-    if (this.state.activityMessageInfo && this.state.isActivityMessageVisible)
-      return this.getActivityMessage();
+  private getFooterMessages(): React.ReactNode {
+    if (!(this.state.activityMessageInfo && this.state.isActivityMessageVisible) && this.state.messages.length === 0)
+      return null;
 
-    if (!this.state.messageDetails)
-      return undefined;
+    const messages = this.state.messages;
+    const maxHeight = Math.floor(window.innerHeight * 0.66);
 
-    const severity = MessageManager.getSeverity(this.state.messageDetails);
-    let message: React.ReactNode;
-
-    switch (this.state.visibleMessage) {
-      case (StatusBarMessageType.Toast): {
-        message = (
-          <ToastMessage
-            animateOutTo={this.state.toastTarget}
-            onAnimatedOut={() => this._hideMessages()}
-            timeout={this.state.messageDetails.displayTime.milliseconds}
-            content={
-              <Message
-                status={StatusBar.severityToStatus(severity)}
-                icon={
-                  <i className={`icon ${MessageContainer.getIconClassName(severity, true)}`} />
-                }
-              >
-                <MessageLayout>
-                  <MessageLabel message={this.state.messageDetails.briefMessage} className="uifw-statusbar-message-brief" />
-                  {this.state.messageDetails.detailedMessage &&
-                    <MessageLabel message={this.state.messageDetails.detailedMessage} className="uifw-statusbar-message-detailed" />
+    return (
+      <ReactResizeDetector handleHeight
+        render={({ height }) => (
+          <div className={classnames("uifw-statusbar-messages-container", (height >= maxHeight) && "uifw-scrollable")}>
+            <ul className="uifw-statusbar-message-list">
+              {messages.length > 0 &&
+                messages.map((message: StatusBarMessage) => {
+                  let messageNode = null;
+                  if (message.messageDetails.msgType === OutputMessageType.Toast) {
+                    messageNode = (
+                      <li key={message.id}>
+                        <ToastMessage message={message} closeMessage={this._closeMessage} toastTarget={this.state.toastTarget} />
+                      </li>
+                    );
+                  } else {
+                    messageNode = (
+                      <li key={message.id}>
+                        <StickyMessage message={message} closeMessage={this._closeMessage} />
+                      </li>
+                    );
                   }
-                </MessageLayout>
-              </Message>
-            }
-          />
-        );
-        break;
-      }
-
-      case (StatusBarMessageType.Sticky): {
-        message = (
-          <Message
-            status={StatusBar.severityToStatus(severity)}
-            icon={
-              <i className={`icon ${MessageContainer.getIconClassName(severity, true)}`} />
-            }
-          >
-            <MessageLayout
-              buttons={
-                <MessageButton onClick={this._hideMessages}>
-                  <i className="icon icon-close" />
-                </MessageButton>
+                  return messageNode;
+                })
               }
-            >
-              <MessageLabel message={this.state.messageDetails.briefMessage} className="uifw-statusbar-message-brief" />
-              {this.state.messageDetails.detailedMessage &&
-                <MessageLabel message={this.state.messageDetails.detailedMessage} className="uifw-statusbar-message-detailed" />
+              {(this.state.activityMessageInfo && this.state.isActivityMessageVisible) &&
+                <li key="activity-message">
+                  {this.getActivityMessage()}
+                </li>
               }
-            </MessageLayout>
-          </Message>
-        );
-        break;
-      }
-    }
-
-    return message;
+            </ul>
+          </div>
+        )}
+      />
+    );
   }
 
   /**
@@ -269,47 +255,12 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     if (!this.state.activityMessageInfo)
       return null;
 
-    const messageDetails = this.state.activityMessageInfo.details;
-    const percentComplete = UiFramework.translate("activityCenter.percentComplete");
-    const cancelMessage = UiCore.translate("dialog.cancel");
     return (
-      <Message
-        status={Status.Information}
-        icon={
-          <i className="icon icon-info-hollow" />
-        }
-      >
-        <MessageLayout
-          buttons={
-            (messageDetails && messageDetails.supportsCancellation) ?
-              <div>
-                <MessageHyperlink onClick={this._cancelActivityMessage}>{cancelMessage}</MessageHyperlink>
-                <span>&nbsp;</span>
-                <MessageButton onClick={this._dismissActivityMessage}>
-                  <i className="icon icon-close" />
-                </MessageButton>
-              </div> :
-              <MessageButton onClick={this._dismissActivityMessage}>
-                <i className="icon icon-close" />
-              </MessageButton>
-          }
-          progress={
-            (messageDetails && messageDetails.showProgressBar) &&
-            <MessageProgress
-              status={Status.Information}
-              progress={this.state.activityMessageInfo.percentage}
-            />
-          }
-        >
-          <div>
-            {<MessageLabel message={this.state.activityMessageInfo.message} className="uifw-statusbar-message-brief" />}
-            {
-              (messageDetails && messageDetails.showPercentInMessage) &&
-              <SmallText>{this.state.activityMessageInfo.percentage + percentComplete}</SmallText>
-            }
-          </div>
-        </MessageLayout>
-      </Message>
+      <ActivityMessage
+        activityMessageInfo={this.state.activityMessageInfo}
+        cancelActivityMessage={this._cancelActivityMessage}
+        dismissActivityMessage={this._dismissActivityMessage}
+      />
     );
   }
 
@@ -336,15 +287,10 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     });
   }
 
-  private _hideMessages = () => {
-    this.setVisibleMessage(StatusBarMessageType.None);
-  }
-
-  private setVisibleMessage(visibleMessage: StatusBarMessageType, messageDetails?: NotifyMessageDetails) {
-    this.setState({
-      visibleMessage,
-      messageDetails,
-    });
+  private _closeMessage = (id: string) => {
+    // istanbul ignore else
+    if (this._messageManager.remove(id))
+      this.setState({ messages: this._messageManager.messages });
   }
 
   private _handleToastTargetRef = (toastTarget: HTMLElement | null) => {
@@ -353,36 +299,36 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 }
 
 /** StatusBar With Space Between Items React functional component
- * @beta
+ * @public
  */
-// tslint:disable-next-line:variable-name
-export const StatusBarSpaceBetween: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
-  return <Div {...props} mainClassName="uifw-statusbar-space-between" />;
-};
+export function StatusBarSpaceBetween(props: CommonDivProps) {
+  const { className, ...divProps } = props;
+  return <Div {...divProps} mainClassName={className ? className : "uifw-statusbar-space-between"} />;
+}
 
 /** StatusBar Left Section React functional component
- * @beta
+ * @public
  */
-// tslint:disable-next-line:variable-name
-export const StatusBarLeftSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
-  return <Div {...props} mainClassName="uifw-statusbar-left" />;
-};
+export function StatusBarLeftSection(props: CommonDivProps) {
+  const { className, ...divProps } = props;
+  return <Div {...divProps} mainClassName={className ? className : "uifw-statusbar-left"} />;
+}
 
 /** StatusBar Center Section React functional component
- * @beta
+ * @public
  */
-// tslint:disable-next-line:variable-name
-export const StatusBarCenterSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
-  return <Div {...props} mainClassName="uifw-statusbar-center" />;
-};
+export function StatusBarCenterSection(props: CommonDivProps) {
+  const { className, ...divProps } = props;
+  return <Div {...divProps} mainClassName={className ? className : "uifw-statusbar-center"} />;
+}
 
 /** StatusBar Right Section React functional component
- * @beta
+ * @public
  */
-// tslint:disable-next-line:variable-name
-export const StatusBarRightSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
-  return <Div {...props} mainClassName="uifw-statusbar-right" />;
-};
+export function StatusBarRightSection(props: CommonDivProps) {
+  const { className, ...divProps } = props;
+  return <Div {...divProps} mainClassName={className ? className : "uifw-statusbar-right"} />;
+}
 
 /** Context providing values for StatusFieldProps and MessageCenterFieldProps
  *  @internal
@@ -393,3 +339,153 @@ export const StatusBarContext = React.createContext<StatusBarWidgetControlArgs>(
   openWidget: "",
   toastTargetRef: { current: null },
 });
+
+/** Message String/Label */
+function MessageLabel(props: { message: NotifyMessageType, className: string }) {
+  const classNames = classnames("uifw-statusbar-message-label", props.className);
+  return <MessageDiv className={classNames} message={props.message} />;
+}
+
+/** Icon for Message */
+function HollowIcon(props: IconProps) {
+  return (
+    <span className="uifw-statusbar-hollow-icon">
+      <Icon {...props} />
+    </span>
+  );
+}
+
+/** Properties for a [[ToastMessage]] */
+interface ToastMessageProps {
+  message: StatusBarMessage;
+  toastTarget: HTMLElement | null;
+  closeMessage: (id: string) => void;
+}
+
+/** Toast Message React component */
+function ToastMessage(props: ToastMessageProps) {
+  const { id, messageDetails, severity } = props.message;
+
+  return (
+    <Toast
+      animateOutTo={props.toastTarget}
+      onAnimatedOut={() => props.closeMessage(id)}
+      timeout={messageDetails.displayTime.milliseconds}
+      content={
+        <Message
+          status={StatusBar.severityToStatus(severity)}
+          icon={
+            <HollowIcon iconSpec={MessageContainer.getIconClassName(severity, true)} />
+          }
+        >
+          <MessageLayout>
+            <MessageLabel message={messageDetails.briefMessage} className="uifw-statusbar-message-brief" />
+            {messageDetails.detailedMessage &&
+              <MessageLabel message={messageDetails.detailedMessage} className="uifw-statusbar-message-detailed" />
+            }
+          </MessageLayout>
+        </Message>
+      }
+    />
+  );
+}
+
+/** Properties for a [[StickyMessage]] */
+interface StickyMessageProps {
+  message: StatusBarMessage;
+  closeMessage: (id: string) => void;
+}
+
+/** Sticky Message React component */
+function StickyMessage(props: StickyMessageProps) {
+  const { id, messageDetails, severity } = props.message;
+  const [closing, setClosing] = React.useState(false);
+
+  const handleClose = () => {
+    setClosing(true);
+    setTimeout(() => props.closeMessage(id), 500);
+  };
+
+  const classNames = classnames(
+    "uifw-statusbar-sticky-message",
+    closing && "uifw-closing",
+  );
+
+  return (
+    <div className={classNames}>
+      <Message
+        status={StatusBar.severityToStatus(severity)}
+        icon={
+          <HollowIcon iconSpec={MessageContainer.getIconClassName(severity, true)} />
+        }
+      >
+        <MessageLayout
+          buttons={
+            <MessageButton onClick={handleClose}>
+              <Icon iconSpec="icon-close" />
+            </MessageButton>
+          }
+        >
+          <MessageLabel message={messageDetails.briefMessage} className="uifw-statusbar-message-brief" />
+          {messageDetails.detailedMessage &&
+            <MessageLabel message={messageDetails.detailedMessage} className="uifw-statusbar-message-detailed" />
+          }
+        </MessageLayout>
+      </Message>
+    </div>
+  );
+}
+
+/** Properties for a [[ActivityMessage]] */
+interface ActivityMessageProps {
+  activityMessageInfo: ActivityMessageEventArgs;
+  cancelActivityMessage: () => void;
+  dismissActivityMessage: () => void;
+}
+
+/** Activity Message React component */
+function ActivityMessage(props: ActivityMessageProps) {
+  const messageDetails = props.activityMessageInfo.details;
+  const [percentCompleteLabel] = React.useState(UiFramework.translate("activityCenter.percentComplete"));
+  const [cancelLabel] = React.useState(UiCore.translate("dialog.cancel"));
+
+  return (
+    <Message
+      status={Status.Information}
+      icon={
+        <HollowIcon iconSpec="icon-info-hollow" />
+      }
+    >
+      <MessageLayout
+        buttons={
+          (messageDetails && messageDetails.supportsCancellation) ?
+            <div>
+              <MessageHyperlink onClick={props.cancelActivityMessage}>{cancelLabel}</MessageHyperlink>
+              <span>&nbsp;</span>
+              <MessageButton onClick={props.dismissActivityMessage}>
+                <Icon iconSpec="icon-close" />
+              </MessageButton>
+            </div> :
+            <MessageButton onClick={props.dismissActivityMessage}>
+              <Icon iconSpec="icon-close" />
+            </MessageButton>
+        }
+        progress={
+          (messageDetails && messageDetails.showProgressBar) &&
+          <MessageProgress
+            status={Status.Information}
+            progress={props.activityMessageInfo.percentage}
+          />
+        }
+      >
+        <div>
+          {<MessageLabel message={props.activityMessageInfo.message} className="uifw-statusbar-message-brief" />}
+          {
+            (messageDetails && messageDetails.showPercentInMessage) &&
+            <SmallText>{props.activityMessageInfo.percentage + percentCompleteLabel}</SmallText>
+          }
+        </div>
+      </MessageLayout>
+    </Message>
+  );
+}

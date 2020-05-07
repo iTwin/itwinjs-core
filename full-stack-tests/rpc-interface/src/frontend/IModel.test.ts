@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-const expect = chai.expect;
-
 import { FontMap } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-
 import { TestContext } from "./setup/TestContext";
+
+const expect = chai.expect;
 
 describe("IModel Views", () => {
 

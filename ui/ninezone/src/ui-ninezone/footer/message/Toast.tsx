@@ -6,11 +6,11 @@
  * @module Message
  */
 
-import * as classnames from "classnames";
-import * as React from "react";
-import { Timer, CommonProps, NoChildrenProps, Rectangle } from "@bentley/ui-core";
-import { Css } from "../../utilities/Css";
 import "./Toast.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps, NoChildrenProps, Rectangle, Timer } from "@bentley/ui-core";
+import { Css } from "../../utilities/Css";
 
 /** Properties of [[Toast]] component.
  * @alpha Review naming of: animateOutTo, content, onAnimatedOut

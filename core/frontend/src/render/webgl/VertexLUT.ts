@@ -8,12 +8,12 @@
 
 import { dispose } from "@bentley/bentleyjs-core";
 import { QParams2d, QParams3d } from "@bentley/imodeljs-common";
-import { ColorInfo } from "./ColorInfo";
-import { TextureHandle } from "./Texture";
-import { qparams2dToArray, qorigin3dToArray, qscale3dToArray } from "./Handle";
+import { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel } from "../primitives/AuxChannelTable";
 import { VertexTable } from "../primitives/VertexTable";
-import { AuxChannelTable, AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../primitives/AuxChannelTable";
+import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
+import { qorigin3dToArray, qparams2dToArray, qscale3dToArray } from "./Handle";
+import { TextureHandle } from "./Texture";
 
 type ChannelPropName = "normals" | "displacements" | "params";
 

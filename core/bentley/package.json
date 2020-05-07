@@ -1,33 +1,24 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "1.14.1",
+  "version": "2.0.0",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
+  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/bentley"
   },
   "scripts": {
-    "build": "buildIModelJsModule",
-    "clean": "rimraf lib .rush package-deps.json",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=bentleyjs-core",
-    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson %TYPEDOC_THEME%",
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "extract-api": "betools extract-api --entry=bentleyjs-core",
+    "test": "betools test",
+    "docs": "betools docs --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "tslint --project . 1>&2"
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/bentleyjs-core.js",
-        "bundleName": "bentleyjs-core"
-      }
-    }
   },
   "keywords": [
     "Bentley",
@@ -39,8 +30,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "1.14.1",
-    "@bentley/webpack-tools": "1.14.1",
+    "@bentley/build-tools": "2.0.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",
@@ -48,7 +38,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "mocha": "^5.2.0",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",

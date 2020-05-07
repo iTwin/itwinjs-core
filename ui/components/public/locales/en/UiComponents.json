@@ -23,6 +23,12 @@
   "tree": {
     "noResultsForFilter": "0 matches found for \"{{searchText}}\""
   },
+  "table": {
+    "filter": {
+      "numericTooltip": "Input Methods: Range (x-y), Greater Then (>x), Less Then (<y)",
+      "numericPlaceholder": "e.g. 3,10-15,>20"
+    }
+  },
   "showhide": {
     "noLabel": "[unlabeled]",
     "showAll": "Show all",
@@ -116,5 +122,17 @@
   },
   "filteringInput": {
     "placeholder": "Search..."
+  },
+  "cube": {
+    "front": "Front",
+    "back": "Back",
+    "top": "Top",
+    "bottom": "Bottom",
+    "left": "Left",
+    "right": "Right"
+  },
+  "drawing": {
+    "unrotate": "Un-Rotate",
+    "rotateStyle": "Toggle background-rotate"
   }
 }

@@ -71,6 +71,7 @@ To define an interface, write a TypeScript class that extends [RpcInterface]($co
 The interface definition class must define a method for each operation that is to be exposed by the server. Each method signature must include the names and types of the input parameters. Each method must return a `Promise` of the appropriate type. These methods and their signatures define the interface.
 
 The definition class must also define two static properties as interface metadata:
+
 ```ts
 public static readonly interfaceName = "theNameOfThisInterface"; // The immutable name of the interface
 public static interfaceVersion = "1.2.3"; // The API version of the interface
@@ -95,9 +96,11 @@ In a real interface definition class, each method and parameter should be commen
 ## Client Stub
 
 The client stub is an implementation of the interface that forwards method calls to the RPC mechanism. Each method in the client stub is exactly the same single line of code:
+
 ```ts
 return this.forward(arguments);
 ```
+
 The forward property is implemented by the base class, and its forward method sends the call and its arguments through the configured RPC mechanism to the server. As shown in the previous example, the client stub code is incorporated into the interface definition class.
 
 ## Server Implementation
@@ -112,7 +115,7 @@ Each impl method must return the operation's result as a Promise.
 
 The impl method must obtain the ClientRequestContext by calling [ClientRequestContext.current]($bentley). It must then follow the [rules of managing the ClientRequestContext](./backend/ManagingClientRequestContext.md).
 
-The methods in the impl may have to transform certain argument types, such as IModelTokenProps, before they can be used by backend code.
+The methods in the impl may have to transform certain argument types, such as IModelRpcProps, before they can be used by backend code.
 
 A best practice is that an impl should be a thin layer on top of normal classes in the server. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcinterfaces).
 
@@ -157,6 +160,7 @@ The server must call [RpcManager.registerImpl]($common) to register the impl cla
 ```
 
 ### Choose Interfaces
+
 The server must decide which interfaces it wants to expose. A server can expose multiple interfaces. A server can expose both its own implementations, if any, and imported implementations. The server can decide at run time which interfaces to expose, perhaps based on deployment parameters.
 
 *Example:*
@@ -250,7 +254,7 @@ A request may pass through many communication tiers. A request will generally be
 
 Frontend methods may also optionally log additional messages that are tagged with the same ActivityId, to provide useful information about the purpose of the activity.
 
-Frontend methods that invoke imodeljs-clients methods directly are responsible for generating or forwarding an ActivityId to them.
+Frontend methods that invoke client methods directly are responsible for generating or forwarding an ActivityId to them.
 
 A backend method that turns around an invokes another backend's method via RpcInterfaces will propagate the current ActivityId to it.
 

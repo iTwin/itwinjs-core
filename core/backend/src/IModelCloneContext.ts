@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { Element } from "./Element";
@@ -65,10 +65,18 @@ export class IModelCloneContext {
     this._nativeContext.addElementId(sourceId, targetId);
   }
 
+  /** Remove a rule that remaps the specified source Element. */
+  public removeElement(sourceId: Id64String): void {
+    this._nativeContext.removeElementId(sourceId);
+  }
+
   /** Look up a target CodeSpecId from the source CodeSpecId.
    * @returns the target CodeSpecId or [Id64.invalid]($bentley) if a mapping not found.
    */
   public findTargetCodeSpecId(sourceId: Id64String): Id64String {
+    if (Id64.invalid === sourceId) {
+      return Id64.invalid;
+    }
     return this._nativeContext.findCodeSpecId(sourceId);
   }
 
@@ -76,6 +84,9 @@ export class IModelCloneContext {
    * @returns the target ElementId or [Id64.invalid]($bentley) if a mapping not found.
    */
   public findTargetElementId(sourceElementId: Id64String): Id64String {
+    if (Id64.invalid === sourceElementId) {
+      return Id64.invalid;
+    }
     return this._nativeContext.findElementId(sourceElementId);
   }
 
@@ -103,7 +114,7 @@ export class IModelCloneContext {
       if ((meta.isNavigation) && (undefined === (sourceElement as any)[propertyName])) {
         (targetElementProps as any)[propertyName] = RelatedElement.none;
       }
-    });
+    }, false); // exclude custom because C++ has already handled them
     if (this.isBetweenIModels) {
       // The native C++ cloneElement strips off federationGuid, want to put it back if transformation is between iModels
       targetElementProps.federationGuid = sourceElement.federationGuid;

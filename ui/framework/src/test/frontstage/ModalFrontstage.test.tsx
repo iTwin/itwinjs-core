@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
+import { FrontstageManager, ModalFrontstage, ModalFrontstageInfo } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import { ModalFrontstageInfo, FrontstageManager, ModalFrontstage } from "../../ui-framework";
 
 const navigationBackSpy = sinon.spy();
 const closeModalSpy = sinon.spy();
@@ -54,6 +53,10 @@ describe("ModalFrontstage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   it("openModalFrontstage, updateModalFrontstage & closeModalFrontstage", () => {

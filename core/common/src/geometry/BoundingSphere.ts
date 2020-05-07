@@ -6,10 +6,7 @@
  * @module Geometry
  */
 
-import {
-  Point3d,
-  Transform,
-} from "@bentley/geometry-core";
+import { Point3d, Transform } from "@bentley/geometry-core";
 
 /** Represents a bounding sphere.  Optional optimization for FrustumPlane containment test.
  * @internal

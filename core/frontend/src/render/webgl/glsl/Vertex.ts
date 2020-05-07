@@ -7,14 +7,14 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
-import { Matrix4 } from "../Matrix";
-import { TextureUnit, RenderPass } from "../RenderFlags";
-import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
+import { UniformHandle } from "../Handle";
+import { Matrix4 } from "../Matrix";
+import { RenderPass, TextureUnit } from "../RenderFlags";
+import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { decodeUint16, decodeUint24 } from "./Decode";
-import { addLookupTable } from "./LookupTable";
 import { addInstanceOverrides } from "./Instancing";
+import { addLookupTable } from "./LookupTable";
 
 const initializeVertLUTCoords = `
   g_vertexLUTIndex = decodeUInt24(a_pos);
@@ -76,19 +76,19 @@ const computeInstancedRtcMatrix = `
 
 /** @internal */
 export function addInstancedRtcMatrix(vert: VertexShaderBuilder): void {
-  if (vert.usesInstancedGeometry) {
-    assert(undefined !== vert.find("g_modelMatrixRTC")); // set up in VertexShaderBuilder constructor...
-    if (undefined === vert.find("g_instancedModelMatrix")) {
-      vert.addUniform("u_instanced_rtc", VariableType.Mat4, (prog) => {
-        prog.addGraphicUniform("u_instanced_rtc", (uniform, params) => {
-          const modelt = params.geometry.asInstanced!.getRtcOnlyTransform();
-          uniform.setMatrix4(Matrix4.fromTransform(modelt));
-        });
-      });
-      vert.addGlobal("g_instancedRtcMatrix", VariableType.Mat4);
-      vert.addInitializer(computeInstancedRtcMatrix);
-    }
-  }
+  if (!vert.usesInstancedGeometry)
+    return;
+
+  assert(undefined !== vert.find("g_modelMatrixRTC")); // set up in VertexShaderBuilder constructor...
+  vert.addUniform("u_instanced_rtc", VariableType.Mat4, (prog) => {
+    prog.addGraphicUniform("u_instanced_rtc", (uniform, params) => {
+      const modelt = params.geometry.asInstanced!.getRtcOnlyTransform();
+      uniform.setMatrix4(Matrix4.fromTransform(modelt));
+    });
+  });
+
+  vert.addGlobal("g_instancedRtcMatrix", VariableType.Mat4);
+  vert.addInitializer(computeInstancedRtcMatrix);
 }
 
 /** @internal */
@@ -232,7 +232,6 @@ export function replaceLineCode(vert: VertexShaderBuilder, func: string): void {
 
 /** @internal */
 export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
-  assert(!vert.usesInstancedGeometry);
   if (undefined !== vert.find("g_featureAndMaterialIndex"))
     return;
 
@@ -242,7 +241,10 @@ export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
   g_featureAndMaterialIndex = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);`;
 
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
-  vert.addInitializer(computeFeatureAndMaterialIndex);
+  if (!vert.usesInstancedGeometry) {
+    // Only needed for material atlas, and instanced geometry never uses material atlas.
+    vert.addInitializer(computeFeatureAndMaterialIndex);
+  }
 }
 
 // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.

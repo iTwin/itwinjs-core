@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
 import { Panel } from "../../../../../ui-ninezone";
-import { expect } from "chai";
 
 describe("<Panel />", () => {
   it("should render", () => {

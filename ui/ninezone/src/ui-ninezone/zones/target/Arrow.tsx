@@ -6,11 +6,11 @@
  * @module Zone
  */
 
-import * as classnames from "classnames";
+import "./Arrow.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { WidgetZoneId } from "../manager/Zones";
-import "./Arrow.scss";
 
 /** Properties of [[Arrow]] component.
  * @internal

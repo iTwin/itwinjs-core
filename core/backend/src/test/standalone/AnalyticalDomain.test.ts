@@ -4,18 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
+import * as semver from "semver";
+import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  CategoryProps, Code, IModel, InformationPartitionElementProps, GeometricElement3dProps, TypeDefinitionElementProps, ColorDef, ModelProps, PropertyMetaData, RelatedElement,
+  CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, PropertyMetaData, RelatedElement,
+  TypeDefinitionElementProps,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, AnalyticalSchema, AnalyticalModel, AnalyticalElement, AnalyticalPartition,
-  IModelDb, SpatialCategory, SubjectOwnsPartitionElements, Schema,
-  Schemas, ClassRegistry, KnownLocations, IModelJsFs, BisCoreSchema, GenericSchema, PhysicalPartition, GeometricElement3d,
+  AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema, BackendRequestContext, BisCoreSchema, ClassRegistry, GenericSchema,
+  GeometricElement3d, IModelDb, IModelJsFs, KnownLocations, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
+  SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import * as semver from "semver";
 
 class TestAnalyticalSchema extends Schema {
   public static get schemaName(): string { return "TestAnalytical"; }
@@ -52,7 +53,7 @@ describe("Analytical Domain", () => {
   const requestContext = new BackendRequestContext();
 
   it("should import Analytical schema", async () => {
-    const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IModel", "ImportAnalytical.bim"), { rootSubject: { name: "ImportAnalytical" } });
+    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "ImportAnalytical.bim"), { rootSubject: { name: "ImportAnalytical" } });
     // import schemas
     const analyticalSchemaFileName: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", "Analytical.ecschema.xml");
     const testSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestAnalytical.ecschema.xml");
@@ -60,7 +61,7 @@ describe("Analytical Domain", () => {
     assert.isTrue(IModelJsFs.existsSync(analyticalSchemaFileName));
     assert.isTrue(IModelJsFs.existsSync(testSchemaFileName));
     await iModelDb.importSchemas(new BackendRequestContext(), [analyticalSchemaFileName, testSchemaFileName]);
-    assert.isTrue(iModelDb.nativeDb.hasSavedChanges(), "Expect importSchemas to have saved changes");
+    assert.isFalse(iModelDb.nativeDb.hasPendingTxns(), "Expect importSchemas to not have txns for snapshots");
     assert.isFalse(iModelDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
     iModelDb.saveChanges();
     // test querySchemaVersion
@@ -74,7 +75,7 @@ describe("Analytical Domain", () => {
     assert.isDefined(iModelDb.querySchemaVersion("analytical"), "Expect case-insensitive comparison");
     assert.isUndefined(iModelDb.querySchemaVersion("NotImported"), "Expect undefined to be returned for schemas that have not been imported");
     // insert category
-    const categoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", { color: ColorDef.blue });
+    const categoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", { color: ColorDef.blue.tbgr });
     assert.isTrue(Id64.isValidId64(categoryId));
     // insert TypeDefinition
     const typeDefinitionProps: TypeDefinitionElementProps = {
@@ -121,7 +122,7 @@ describe("Analytical Domain", () => {
         case "codeValue": assert.isFalse(meta.isNavigation); break;
         case "userLabel": assert.isFalse(meta.isNavigation); break;
       }
-    }, true); // `true` means include custom properties
+    });
     // test typeDefinition update scenarios
     assert.isTrue(Id64.isValidId64(elementId));
     assert.isTrue(Id64.isValidId64(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition!.id), "Expect valid typeDefinition.id");
@@ -133,11 +134,11 @@ describe("Analytical Domain", () => {
     assert.isUndefined(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition, "Expect typeDefinition to be undefined");
     // close
     iModelDb.saveChanges();
-    iModelDb.closeSnapshot();
+    iModelDb.close();
   });
 
   it("should create elements exercising the Analytical domain", async () => {
-    const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("AnalyticalDomain", "AnalyticalTest.bim"), {
+    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("AnalyticalDomain", "AnalyticalTest.bim"), {
       rootSubject: { name: "AnalyticalTest", description: "Test of the Analytical domain schema." },
       client: "Analytical",
       globalOrigin: { x: 0, y: 0 },
@@ -189,6 +190,6 @@ describe("Analytical Domain", () => {
 
     iModelDb.saveChanges("Insert Test Analytical elements");
 
-    iModelDb.closeSnapshot();
+    iModelDb.close();
   });
 });

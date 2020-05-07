@@ -6,9 +6,9 @@
  * @module Viewport
  */
 
-import { IModelApp, Viewport, SelectedViewportChangedArgs, StandardViewId } from "@bentley/imodeljs-frontend";
-import { UiEvent, Face } from "@bentley/ui-core";
 import { Matrix3d, Point3d, Vector3d } from "@bentley/geometry-core";
+import { IModelApp, SelectedViewportChangedArgs, StandardViewId, Viewport } from "@bentley/imodeljs-frontend";
+import { Face, UiEvent } from "@bentley/ui-core";
 
 /** Arguments for [[DrawingViewportChangeEvent]]
  * @public

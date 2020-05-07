@@ -6,13 +6,11 @@
  * @module Icon
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-
-import { CommonProps } from "../utils/Props";
-
 import "./WebFontIcon.scss";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[WebFontIcon]] React component
  * @public
@@ -26,15 +24,16 @@ export interface WebFontIconProps extends CommonProps {
   title?: string;
   /** Size of the icon */
   iconSize?: "small" | "medium" | "large" | "x-large";
+  /** Class name of icon used for custom font-family icons */
+  iconClassName?: string;
 }
 
 /** WebFontIcon React component
  * @public
  */
-// tslint:disable-next-line:variable-name
-export const WebFontIcon: React.FunctionComponent<WebFontIconProps> = (props) => {
+export function WebFontIcon(props: WebFontIconProps) {
   const className = classnames(
-    "bui-webfont-icon",
+    props.iconClassName || "bui-webfont-icon",
     props.iconName,
     props.iconSize ? `uicore-icons-${props.iconSize}` : undefined,
     props.className,
@@ -48,4 +47,4 @@ export const WebFontIcon: React.FunctionComponent<WebFontIconProps> = (props) =>
       onClick={props.onClick}
     />
   );
-};
+}

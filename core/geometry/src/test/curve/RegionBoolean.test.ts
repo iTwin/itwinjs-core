@@ -3,30 +3,31 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { LineString3d } from "../../curve/LineString3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { RegionOps } from "../../curve/RegionOps";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Loop, SignedLoops } from "../../curve/Loop";
 import { Arc3d } from "../../curve/Arc3d";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { AnyCurve } from "../../curve/CurveChain";
 import { CurveFactory } from "../../curve/CurveFactory";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Angle } from "../../geometry3d/Angle";
-import { LinearSweep } from "../../solid/LinearSweep";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop, SignedLoops } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
-import { GraphChecker } from "../topology/Graph.test";
+import { RegionOps } from "../../curve/RegionOps";
+import { Angle } from "../../geometry3d/Angle";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { LinearSweep } from "../../solid/LinearSweep";
 import { HalfEdgeGraph } from "../../topology/Graph";
-import { PolyfaceQuery, DuplicateFacetClusterSelector } from "../../polyface/PolyfaceQuery";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GraphChecker } from "../topology/Graph.test";
+
 /* tslint:disable:no-console */
 
 describe("RegionBoolean", () => {

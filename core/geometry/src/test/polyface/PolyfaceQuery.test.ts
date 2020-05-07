@@ -2,25 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PolyfaceQuery, DuplicateFacetClusterSelector } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { ChainMergeContext } from "../../topology/ChainMerge";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
+import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { TorusImplicit } from "../../numerics/Polynomials";
 import { Angle } from "../../geometry3d/Angle";
+import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { TorusImplicit } from "../../numerics/Polynomials";
+import { IndexedPolyface } from "../../polyface/Polyface";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { ChainMergeContext } from "../../topology/ChainMerge";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /* tslint:disable:no-console */
 /** Functions useful for modifying test data. */

@@ -2,6 +2,276 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/ui-framework_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for 2.0 ui Tool and Navigation widgets to react to UiFramework.onUiVisibilityChanged events"
+          },
+          {
+            "comment": "Add support for showing modal stages when using 2.0 UI components."
+          },
+          {
+            "comment": "Added following zone names to be used in-lieu of old ninezone names: contentManipulationTools, toolSettings, viewNavigationTools, and statusBar."
+          },
+          {
+            "comment": "Add support for groupPriority for ToolbarItems. If specified then a group separator is shown when the priority changes."
+          },
+          {
+            "comment": "Improved Tool Settings inline editor group layout when narrow"
+          },
+          {
+            "comment": "Fixed Message Center count for MessageManager.clearMessages()"
+          },
+          {
+            "comment": "Add ConditionStringValue support. Used to define labels and icons."
+          },
+          {
+            "comment": "Removed @deprecated APIs from ui-framework & ui-core and updated NextVersion.md"
+          },
+          {
+            "comment": "Rename some new widget classes and deprecate classes we don't want user to continue to use."
+          },
+          {
+            "comment": "Fix to properly initialize enable/disable state of toolsettings editor based on lock property."
+          },
+          {
+            "comment": "Fix bug where toolbar buttons did not show expand arrow on custom button when not in 'DragInteraction' mode.  Fix display of key-in browser 1.0 UI."
+          },
+          {
+            "comment": "Call FrontstageDef.setActiveViewFromViewport when viewport is available to ensure activeContent is properly set."
+          },
+          {
+            "comment": "Ensure ui-abstract is listed as peer dependency and not just a dev dependency."
+          },
+          {
+            "comment": "Fix type in ToolSettingsGridProps name"
+          },
+          {
+            "comment": "Fix bug 292829 where toolbar border displayed when all items are hidden. Add new camera on/off icons definitions."
+          },
+          {
+            "comment": "Update test to avoid warnings."
+          },
+          {
+            "comment": "Fix for setting active Frontstage before FrontstageComposer mount"
+          },
+          {
+            "comment": "Fixed ReactResizeDetector usage after upgrade. Converted Toggle component to function. Hover/pressed styling in 2.0 Toolbar."
+          },
+          {
+            "comment": "react to renaming of imodeljs-clients"
+          },
+          {
+            "comment": "Moved KeyinBrowser component to @beta for 2.0"
+          },
+          {
+            "comment": "Using center of Messages indicator as target. Added CSS classname overrides to StatusBarComposer for sections. UI 2.0 color tweaks."
+          },
+          {
+            "comment": "Fixed FrontendAuthorizationClient type guard. "
+          },
+          {
+            "comment": "Update GroupButton definition to use ReadonlyArray for child items."
+          },
+          {
+            "comment": "Modal Frontstage styling"
+          },
+          {
+            "comment": "Ui 2.0 - Blur the toolbar item background"
+          },
+          {
+            "comment": "Moved the CubeNavigationAid & DrawingNavigationAid to ui-components package"
+          },
+          {
+            "comment": "Renamed OIDC constructs for consistency; Removed SAML support."
+          },
+          {
+            "comment": "Fixed popup location when passing htmlElement to UiAdmin functions"
+          },
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Hide stage panel when panel state is off. "
+          },
+          {
+            "comment": "Added ability to customize selection handling in VisibilityWidget's Models tree"
+          },
+          {
+            "comment": "Made React functional component specifications consistent across UI packages"
+          },
+          {
+            "comment": "Slider component tooltipBelow prop & tooltip styling"
+          },
+          {
+            "comment": "Added API in MessageManager to display either a Toast or Sticky message using React components."
+          },
+          {
+            "comment": "react to new clients packages from imodeljs-clients"
+          },
+          {
+            "comment": "Remove comment text shown in render function."
+          },
+          {
+            "comment": " Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead."
+          },
+          {
+            "comment": "For consistency add reactNode getters/setters and deprecate use of reactElement."
+          },
+          {
+            "comment": "Revert back to using svg-sprite-loader and sprite resourceQuery."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Cleanups needed to Signin/Signout and related components in UiFramework"
+          },
+          {
+            "comment": "Deprecated UiFramework.oidcClient and added isIOidcFrontendClient to imodeljs-clients"
+          },
+          {
+            "comment": "Fixed className usage in StatusBar section components"
+          },
+          {
+            "comment": "Update StatusBarComposer to support Overflow panel."
+          },
+          {
+            "comment": "Fixed sizing for string-based SVG in ToolAssistance"
+          },
+          {
+            "comment": "Fixed several Tool Assistance issues"
+          },
+          {
+            "comment": "Ui 2.0 - Toolbar display changes"
+          },
+          {
+            "comment": "Updated Toolbar colors/opacity for Ui 2.0"
+          },
+          {
+            "comment": "Update ToolbarComposer to use new ToolbarWithOverflow."
+          },
+          {
+            "comment": "Learning docs for UiAdmin & UiItemsArbiter"
+          },
+          {
+            "comment": "Extract base behavior and styling from Models and Categories trees."
+          },
+          {
+            "comment": "Promoted some @beta to @public in Ui packages & ToolAssistance for 2.0 release."
+          },
+          {
+            "comment": "Categories Tree should react to display changes from other components"
+          },
+          {
+            "comment": "Changed Categories Tree to take filter info as property and removed searchbox from it"
+          },
+          {
+            "comment": "In source documentation. Some learning docs & API changes."
+          },
+          {
+            "comment": "Move react to peerDependencies."
+          },
+          {
+            "comment": "Learning documentation for ui-core"
+          },
+          {
+            "comment": "TOC for UI 2.0 Docs, @alpha to @beta, Components Examples"
+          },
+          {
+            "comment": "Documentation updates and change camera tool to use SVG icons."
+          },
+          {
+            "comment": "Ability to drag docked tool settings to widget mode."
+          },
+          {
+            "comment": "Fix mergeWithZone when frontstage is activated before FrontstageComposer mounts."
+          },
+          {
+            "comment": "Support for floating widget targets."
+          },
+          {
+            "comment": "Passing on style props from ui-framework Toolbar to ui-ninezone Toolbar"
+          },
+          {
+            "comment": "Started ui-components Learning doc section"
+          },
+          {
+            "comment": "Use panel zones with fallback to frontstage zones to define 2.0 UI."
+          },
+          {
+            "comment": "Updated ModelTree ruleset to use RelationshipPathSpecification"
+          },
+          {
+            "comment": "Filtering support in Models Tree"
+          },
+          {
+            "comment": "Move redux and react-redux to peerDependencies."
+          },
+          {
+            "comment": "Removed `UiFramework.getDefaultRulesetId()` and `UiFramework.setDefaultRulesetId()`"
+          },
+          {
+            "comment": "Ability to save and restore frontstage layout."
+          },
+          {
+            "comment": "UI: Toggle Component - only use animation on value change"
+          },
+          {
+            "comment": "Added custom message to render if filter returns no data in Categories and Models trees"
+          },
+          {
+            "comment": "Fix visibility widget trees styles"
+          },
+          {
+            "comment": "Ability to switch to 9-Zone 2.0"
+          },
+          {
+            "comment": "Refactor to remove duplicate ComponentGenerator instatiation. Rename filea nd components to remove React reference."
+          },
+          {
+            "comment": "Update auto-generated dialog items to work with the Tool Settings Bar."
+          },
+          {
+            "comment": "Moved Property classes and interfaces to ui-abstract package. Created a \"DefaultDialogGridContainer\" to turn specifications from abstract DialogItems UI into React components. "
+          },
+          {
+            "comment": "Refactor DefaultToolSettingsProvider to use DialogItemsManager and remove duplicate code."
+          },
+          {
+            "comment": "Fix Indicator to properly load SVG icons."
+          },
+          {
+            "comment": "Refactor DefaultToolSettingsProvider to use the DialogItem interfaces in place of ToolSettings classes."
+          },
+          {
+            "comment": "Moved Checkbox, Radio, Select, Toggle, Slider & AutoSuggest into their own category"
+          },
+          {
+            "comment": "Defaulting to IModelApp.i18n in UI packages and cascading initialize() calls"
+          },
+          {
+            "comment": "UI: Support for multiple Toast & Sticky messages"
+          },
+          {
+            "comment": "Added UiSetting. Saving/restoring settings in ui-test-app."
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          },
+          {
+            "comment": "Hide 3d tools when active view is 2d."
+          },
+          {
+            "comment": "Add support for Horizontal Tool Settings container"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/ui-framework_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
@@ -377,7 +647,7 @@
             "comment": "Fixed Frontstage resizing problem exposed by Chrome update"
           },
           {
-            "comment": "#168241 Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg."
+            "comment": "Don't try to correct clip plane handle location when plane has been moved outside project extents. Updated image for two finger drag svg."
           },
           {
             "comment": "Changed ToolWidget, NavigatonWidget, and Toolbar render method to only render items in state and to not generate them during render."
@@ -416,19 +686,19 @@
             "comment": "Fixed ToolAssistanceField pin problem"
           },
           {
-            "comment": "#168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
+            "comment": "Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
           },
           {
             "comment": "Added touch entries to ToolAssistanceImage"
           },
           {
-            "comment": "Joe G required the tree (empty data) be more descriptive and generic."
+            "comment": "Update the tree (empty data) be more descriptive and generic."
           },
           {
             "comment": "In the Model/Category/Spatial trees, center the error message"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           },
           {
             "comment": "Ability to collapse stage panel using StagePanelDef."
@@ -470,7 +740,7 @@
             "comment": "Had to back up to react-split-pane 0.1.77"
           },
           {
-            "comment": "#165662. Allow an app to specify touch-specific instructions in tool assistance."
+            "comment": "Allow an app to specify touch-specific instructions in tool assistance."
           },
           {
             "comment": "Visibility Component: Preserve active tree state by saving and restoring scroll position"
@@ -512,7 +782,7 @@
             "comment": "Added @bentley/icons-generic to dependencies which was wrongly set in devDependencies."
           },
           {
-            "comment": "#159907. Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button"
+            "comment": "Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button"
           },
           {
             "comment": "Allow enter key in arguments field of keyin browser to trigger command execution. Select text on focus in to allow easy argument replacement"
@@ -584,7 +854,7 @@
             "comment": "Add support for GroupItemInsertSpec, badges, and svg symbolId in ToolbarItemInsertSpecs"
           },
           {
-            "comment": "Bug 148507: Removed redundant call to OidcClient.initialize in UiFramework."
+            "comment": "Removed redundant call to OidcClient.initialize in UiFramework."
           },
           {
             "comment": "Add PluginUiManager class and PluginUiProvider interface that will be used by Plugins to specify UI components to add to an iModeljs application."
@@ -614,7 +884,7 @@
             "comment": "Ability to close Panel of PopupButton."
           },
           {
-            "comment": "remove node selection logic from model Tree"
+            "comment": "Remove node selection logic from model Tree"
           },
           {
             "comment": "Convert Widget, Zone and StagePanel components to PureComponents."
@@ -662,9 +932,6 @@
             "comment": "Fixed Minimum/Maximum window toast message spam"
           },
           {
-            "comment": "Update tests."
-          },
-          {
             "comment": "Fixed ActionButtonItemDef random key unit test"
           },
           {
@@ -674,13 +941,13 @@
             "comment": "Save & Restore View Layouts"
           },
           {
-            "comment": "Fix Bug 127182 - Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId."
+            "comment": "Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId."
           },
           {
             "comment": "Added *.svg to .npmignore file"
           },
           {
-            "comment": "#137311 - Fix issue where cached tool settings values in UI would get out of sync with actual values in tool."
+            "comment": "Fix issue where cached tool settings values in UI would get out of sync with actual values in tool."
           },
           {
             "comment": "Update to TypeScript 3.5"
@@ -797,7 +1064,7 @@
             "comment": "Visibility Tree: Enable all subcategories' display when making category visible"
           },
           {
-            "comment": "#124300. Add a notification event when a view is chosen in ViewSelector. #124295. ViewSelector incorrectly handles the case when a selected view has not initialized with a viewport."
+            "comment": "Add a notification event when a view is chosen in ViewSelector. #124295. ViewSelector incorrectly handles the case when a selected view has not initialized with a viewport."
           },
           {
             "comment": "Added ViewSelectorChangedEvent"
@@ -884,7 +1151,7 @@
             "comment": "Fixed navigation aid bugs"
           },
           {
-            "comment": "Fixes to OidcBrowserClient. "
+            "comment": "Fixes to OidcBrowserClient."
           },
           {
             "comment": "Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option."
@@ -893,7 +1160,7 @@
             "comment": "Require React & React-dom 16.8"
           },
           {
-            "comment": "remove IModelApp subclasses"
+            "comment": "Remove IModelApp subclasses"
           },
           {
             "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
@@ -1160,7 +1427,7 @@
             "comment": "Update to use newer generic-icons-webfont package."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           },
           {
             "comment": "WIP: ViewportComponent unit tests. Removed imodeljs-clients-backend dependency from ui-framework"
@@ -1370,10 +1637,7 @@
       "comments": {
         "none": [
           {
-            "comment": "More information logged from BriefcaseManager.\\nFixed deletion/cleanup of invalid briefcases.\\nAdded OIDC support for simpleviewtest application. "
-          },
-          {
-            "comment": "Unit tests"
+            "comment": "More information logged from BriefcaseManager.\\nFixed deletion/cleanup of invalid briefcases.\\nAdded OIDC support for simpleviewtest application."
           },
           {
             "comment": "Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components"
@@ -1388,7 +1652,7 @@
       "comments": {
         "none": [
           {
-            "comment": "Fix to OIDC browser client. "
+            "comment": "Fix to OIDC browser client."
           }
         ]
       }
@@ -1434,9 +1698,6 @@
           },
           {
             "comment": "Hiding items by rendering them conditionally instead of using a CSS class."
-          },
-          {
-            "comment": "Fixed tests"
           },
           {
             "comment": "Tree cell editing unit tests"

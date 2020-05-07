@@ -6,10 +6,10 @@
  * @module Schema
  */
 
-import { AuthStatus, ClientRequestContext, DbResult, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { IModelError } from "@bentley/imodeljs-common";
 import * as path from "path";
+import { AuthStatus, ClientRequestContext, DbResult, Logger } from "@bentley/bentleyjs-core";
+import { IModelError } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelDb } from "../IModelDb";
@@ -35,13 +35,14 @@ export class FunctionalSchema extends Schema {
   public static async importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb) {
     // NOTE: this concurrencyControl logic was copied from IModelDb.importSchema
     requestContext.enter();
-    if (!iModelDb.isStandalone) {
-      if (!(requestContext instanceof AuthorizedClientRequestContext))
+    if (iModelDb.isBriefcaseDb()) {
+      if (!(requestContext instanceof AuthorizedClientRequestContext)) {
         throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
+      }
       await iModelDb.concurrencyControl.lockSchema(requestContext);
       requestContext.enter();
     }
-    const stat = iModelDb.briefcase.nativeDb.importFunctionalSchema();
+    const stat = iModelDb.nativeDb.importFunctionalSchema();
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing Functional schema", Logger.logError, loggerCategory);
     }

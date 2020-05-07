@@ -6,33 +6,22 @@
  * @module Picker
  */
 
-import * as React from "react";
-import * as _ from "lodash";
-import {
-  ModelSelectorWidgetProps,
-  ModelSelectorWidgetState,
-  ModelGroup,
-  ModelSelectorDataProvider,
-  Groups,
-} from "./ModelSelectorDefinitions";
-import classnames from "classnames";
-import {
-  IModelApp,
-  Viewport,
-  SpatialViewState,
-  SpatialModelState,
-} from "@bentley/imodeljs-frontend";
-import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import { RegisteredRuleset } from "@bentley/presentation-common";
-import { LoadingSpinner, SpinnerSize } from "@bentley/ui-core";
-import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
-import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
-import { WidgetControl } from "../../widgets/WidgetControl";
-import { UiFramework } from "../../UiFramework";
-import { ListItem, ListItemType } from "../ListPicker";
-import { CategoryModelTree } from "./ModelSelectorTree";
 import "./ModelSelector.scss";
+import classnames from "classnames";
+import * as _ from "lodash";
+import * as React from "react";
+import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
+import { IModelApp, SpatialModelState, SpatialViewState, Viewport } from "@bentley/imodeljs-frontend";
+import { RegisteredRuleset } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
+import { LoadingSpinner, SpinnerSize } from "@bentley/ui-core";
+import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
+import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
+import { UiFramework } from "../../UiFramework";
+import { WidgetControl } from "../../widgets/WidgetControl";
+import { ListItem, ListItemType } from "../ListPicker";
+import { Groups, ModelGroup, ModelSelectorDataProvider, ModelSelectorWidgetProps, ModelSelectorWidgetState } from "./ModelSelectorDefinitions";
+import { CategoryModelTree } from "./ModelSelectorTree";
 
 /**
  * Model Selector [[WidgetControl]]
@@ -44,8 +33,8 @@ export class ModelSelectorWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = (
-      <ModelSelectorWidget iModelConnection={options.iModelConnection} />
+    this.reactNode = (
+      <ModelSelectorWidget iModelConnection={options.iModelConnection} /> // tslint:disable-line:deprecation
     );
   }
 }
@@ -360,7 +349,7 @@ export class ModelSelectorWidget extends React.Component<
 
   private _getTabContent = () => {
     return (
-      <CategoryModelTree
+      <CategoryModelTree // tslint:disable-line:deprecation
         key={this.state.activeGroup!.id}
         iModelConnection={this.props.iModelConnection}
         activeGroup={this.state.activeGroup!}

@@ -5,7 +5,6 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-
 import { Item } from "../../../ui-ninezone";
 
 describe("<Item />", () => {

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ECObjectsError } from "../../src/Exception";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
+import { ECObjectsError } from "../../src/Exception";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 describe("JsonParser", () => {
@@ -85,10 +85,6 @@ describe("JsonParser", () => {
 
     it("should throw for invalid description", () => testInvalidAttribute("description", "string", 0));
     it("should throw for invalid label", () => testInvalidAttribute("label", "string", 0));
-
-    // TODO: Item-only parsing?? How's this gonna work?
-    it.skip("should throw for invalid schema", () => testInvalidAttribute("schema", "string", 0));
-    it.skip("should throw for invalid schemaVersion", () => testInvalidAttribute("schemaVersion", "string", 0));
 
     it("should throw for invalid modifier", async () => {
       const json: any = { ...baseJson, modifier: 0 };

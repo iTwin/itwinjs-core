@@ -6,12 +6,23 @@
     "skipLibCheck": true,
     "outDir": "./lib",
     "jsx": "react",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
     "types": [
-      "@bentley/webpack-tools"
+      "@bentley/react-scripts"
     ]
   },
   "include": [
     "./src/**/*.ts",
     "./src/**/*.tsx"
+  ],
+  "exclude": [
+    "./src/backend/**/*.ts"
   ]
 }

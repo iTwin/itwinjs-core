@@ -6,21 +6,21 @@
  * @module Elements
  */
 
-import { DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, assert } from "@bentley/bentleyjs-core";
-import { ClipVector, Range3d, Transform } from "@bentley/geometry-core";
+import { assert, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Range3d, Transform } from "@bentley/geometry-core";
+import { LockLevel } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
-  GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometryPartProps, GeometryStreamProps,
-  IModel, InformationPartitionElementProps, LineStyleProps, Placement2d, Placement3d, RelatedElement,
-  SectionLocationProps, SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps,
+  GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel,
+  InformationPartitionElementProps, LineStyleProps, Placement2d, Placement3d, RelatedElement, SectionLocationProps, SectionType,
+  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps,
 } from "@bentley/imodeljs-common";
+import { ConcurrencyControl } from "./ConcurrencyControl";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
-import { DrawingModel } from "./Model";
+import { DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
-import { ConcurrencyControl } from "./ConcurrencyControl";
-import { LockLevel } from "@bentley/imodeljs-clients";
 
 /** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
  * Each element represents an entity in the real world. Sets of Elements (contained in [[Model]]s) are used to model
@@ -61,24 +61,27 @@ export class Element extends Entity implements ElementProps {
    */
   constructor(props: ElementProps, iModel: IModelDb) {
     super(props, iModel);
-    this.code = Code.fromJSON(props.code);
+    this.code = Code.fromJSON(props.code);  // TODO: Validate props.code - don't silently fail if it is the wrong type
     this.model = RelatedElement.idFromJson(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = props.federationGuid;
     this.userLabel = props.userLabel;
-    this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
+    this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
-  /**
-   * Disclose the codes and locks needed to perform the specified operation on this element
+  /** Disclose the codes and locks needed to perform the specified operation on this element
    * @param req the request to populate
    * @param props the version of the element that will be written
-   * @param _iModel the iModel
+   * @param iModel the iModel
    * @param opcode the operation
    * @param original a pre-change copy of the element. Passed only in the case of Update.
    * @beta
    */
-  public static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, _iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined) {
+  public static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined) {
+    assert(iModel.isBriefcaseDb());
+    if (!iModel.isBriefcaseDb()) {
+      return;
+    }
     switch (opcode) {
       case DbOpcode.Insert: {
         if (Code.isValid(props.code) && !Code.isEmpty(props.code))
@@ -112,31 +115,41 @@ export class Element extends Entity implements ElementProps {
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onInsert(props: ElementProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Insert); }
+  protected static onInsert(props: ElementProps, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Insert); }
+  }
   /** Called before an Element is updated.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onUpdate(props: ElementProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Update); }
+  protected static onUpdate(props: ElementProps, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Update); }
+  }
   /** Called before an Element is deleted.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onDelete(props: ElementProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete); }
+  protected static onDelete(props: ElementProps, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete); }
+  }
   /** Called after a new Element was inserted.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onInserted(props: ElementProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Insert); }
+  protected static onInserted(props: ElementProps, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Insert); }
+  }
   /** Called after an Element was updated.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onUpdated(props: ElementProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Update); }
+  protected static onUpdated(props: ElementProps, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Update); }
+  }
   /** Called after an Element was deleted.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
@@ -250,7 +263,11 @@ export class Element extends Entity implements ElementProps {
   /** Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.
    */
-  public buildConcurrencyControlRequest(opcode: DbOpcode) { this.iModel.concurrencyControl.buildRequestForElement(this, opcode); }
+  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
+    if (this.iModel.isBriefcaseDb()) {
+      this.iModel.concurrencyControl.buildRequestForElement(this, opcode);
+    }
+  }
 }
 
 /** An abstract base class to model real world entities that intrinsically have geometry.
@@ -464,19 +481,11 @@ export class VolumeElement extends SpatialLocationElement {
 
 /** A SectionLocation element defines how a section drawing should be generated in a 3d view.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.6
- * @beta
+ * @alpha
  */
 export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
   /** Section type */
   public sectionType: SectionType;
-  /** Details on how this section was clipped. */
-  public clipGeometry?: string;
-  /** The element Id of the [[ModelSelector]] for this SectionLocation */
-  public modelSelectorId: Id64String;
-  /** The element Id of the [[CategorySelector]] for this SectionLocation */
-  public categorySelectorId: Id64String;
-  /** clipGeometry represented as a ClipVector. */
-  private _clipVector?: ClipVector;
 
   /** @internal */
   public static get className(): string { return "SectionLocation"; }
@@ -485,44 +494,14 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
   public constructor(props: SectionLocationProps, iModel: IModelDb) {
     super(props, iModel);
     this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
-    this.clipGeometry = props.clipGeometry;
-    this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
-    this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
   }
 
   /** @internal */
   public toJSON(): SectionLocationProps {
-    const val = super.toJSON() as SectionLocationProps;
-    val.sectionType = this.sectionType;
-    val.clipGeometry = this.clipGeometry;
-    val.modelSelectorId = this.modelSelectorId;
-    val.categorySelectorId = this.categorySelectorId;
-    return val;
-  }
-
-  /** @alpha */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    predecessorIds.add(this.modelSelectorId);
-    predecessorIds.add(this.categorySelectorId);
-  }
-
-  /** Set the clip for this section location.
-   * @param clip the new clipping volume. If undefined, clipping is removed.
-   * @note The SectionLocation takes ownership of the supplied ClipVector - it should not be modified after passing it to this function.
-   */
-  public setClip(clip?: ClipVector) {
-    this._clipVector = clip;
-    this.clipGeometry = (clip && clip.isValid) ? clip.toJSON().toString() : undefined;
-  }
-
-  /** Get the clipping for this section location.
-   * @note Do *not* modify the returned ClipVector. If you wish to change the ClipVector, clone the returned ClipVector, modify it as desired, and pass the clone to [[setClip]].
-   */
-  public getClip(): ClipVector | undefined {
-    if (undefined === this._clipVector)
-      this._clipVector = this.clipGeometry ? ClipVector.fromJSON(JSON.parse(this.clipGeometry)) : ClipVector.createEmpty();
-    return this._clipVector.isValid ? this._clipVector : undefined;
+    return {
+      ...super.toJSON(),
+      sectionType: this.sectionType,
+    };
   }
 }
 
@@ -743,6 +722,7 @@ export class Sheet extends Document implements SheetProps {
 /** An Information Carrier carries information, but is not the information itself. For example, the arrangement
  * of ink on paper or the sequence of electronic bits are information carriers.
  * @deprecated BisCore will focus on the information itself and not how it is carried.
+ * @note This TypeScript class should not be removed until the (deprecated) InformationCarrierElement class is removed from the BisCore schema.
  * @internal
  */
 export abstract class InformationCarrierElement extends Element {
@@ -754,9 +734,10 @@ export abstract class InformationCarrierElement extends Element {
 
 /** An Information Carrier that carries a Document. An electronic file is a good example.
  * @deprecated BisCore will focus on the information itself and not how it is carried.
+ * @note This TypeScript class should not be removed until the (deprecated) DocumentCarrier class is removed from the BisCore schema.
  * @internal
  */
-export abstract class DocumentCarrier extends InformationCarrierElement {
+export abstract class DocumentCarrier extends InformationCarrierElement {  // tslint:disable-line: deprecation
   /** @internal */
   public static get className(): string { return "DocumentCarrier"; }
   /** @internal */
@@ -808,8 +789,8 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
   }
 }
 
-/** Defines a recipe for generating a *type*.
- * @internal
+/** Defines a recipe for generating instances from a definition.
+ * @beta
  */
 export abstract class RecipeDefinitionElement extends DefinitionElement {
   /** @internal */
@@ -860,14 +841,56 @@ export abstract class SpatialLocationType extends TypeDefinitionElement {
   }
 }
 
-/** A recipe that uses a 3d template for creating new instances.
- * @internal
+/** A TemplateRecipe3d is a DefinitionElement that has a sub-model that contains the 3d template elements.
+ * @beta
  */
 export class TemplateRecipe3d extends RecipeDefinitionElement {
   /** @internal */
   public static get className(): string { return "TemplateRecipe3d"; }
   /** @internal */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+  /** Create a Code for a TemplateRecipe3d given a name that is meant to be unique within the scope of its Model.
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that contains this TemplateRecipe3d element.
+   * @param codeValue The name of the TemplateRecipe3d element.
+   */
+  public static createCode(iModelDb: IModelDb, definitionModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.templateRecipe3d);
+    return new Code({ spec: codeSpec.id, scope: definitionModelId, value: codeValue });
+  }
+  /** Create a TemplateRecipe3d
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that contains this TemplateRecipe3d element.
+   * @param name The name (Code.value) of the TemplateRecipe3d
+   * @returns The newly constructed TemplateRecipe3d
+   * @throws [[IModelError]] if there is a problem creating the TemplateRecipe3d
+   */
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): TemplateRecipe3d {
+    const elementProps: DefinitionElementProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      isPrivate,
+    };
+    return new TemplateRecipe3d(elementProps, iModelDb);
+  }
+  /** Insert a TemplateRecipe3d and a PhysicalModel (sub-model) that will contain the 3d template elements.
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that contains this TemplateRecipe3d element.
+   * @param name The name (Code.value) of the TemplateRecipe3d
+   * @returns The Id of the newly inserted TemplateRecipe3d and the PhysicalModel that sub-models it.
+   * @throws [[IModelError]] if there is a problem inserting the TemplateRecipe3d or its sub-model.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
+    const element = this.create(iModelDb, definitionModelId, name, isPrivate);
+    const modeledElementId: Id64String = iModelDb.elements.insertElement(element);
+    const modelProps: GeometricModel3dProps = {
+      classFullName: PhysicalModel.classFullName,
+      modeledElement: { id: modeledElementId },
+      isTemplate: true,
+    };
+    return iModelDb.models.insertModel(modelProps);
+  }
 }
 
 /** Defines a set of properties (the *type*) that can be associated with a 2D Graphical Element.

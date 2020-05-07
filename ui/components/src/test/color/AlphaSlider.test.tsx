@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup, fireEvent } from "@testing-library/react"; // , waitForElement
 import { expect } from "chai";
+import React from "react";
 import sinon from "sinon";
+import { cleanup, fireEvent, render } from "@testing-library/react"; // , waitForElement
 import { AlphaSlider } from "../../ui-components/color/AlphaSlider";
 
 describe("<AlphaSlider />", () => {

@@ -6,6 +6,7 @@
  * @module RpcInterface
  */
 
+import "@ungap/url-search-params/index";
 import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
@@ -16,7 +17,6 @@ import { RpcRequest } from "../core/RpcRequest";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
 import { RpcMultipart } from "./RpcMultipart";
 import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
-import "@ungap/url-search-params/index";
 
 /** @public */
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
@@ -89,16 +89,14 @@ export class WebAppRpcRequest extends RpcRequest {
   /** Sends the response for a web request. */
   public static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
     const transportType = WebAppRpcRequest.computeTransportType(fulfillment.result, fulfillment.rawResult);
-    if (transportType === RpcContentType.Text) {
-      WebAppRpcRequest.sendText(protocol, request, fulfillment, res);
-    } else if (transportType === RpcContentType.Binary) {
+    if (transportType === RpcContentType.Binary) {
       WebAppRpcRequest.sendBinary(protocol, request, fulfillment, res);
     } else if (transportType === RpcContentType.Multipart) {
       WebAppRpcRequest.sendMultipart(protocol, request, fulfillment, res);
     } else if (transportType === RpcContentType.Stream) {
       WebAppRpcRequest.sendStream(protocol, request, fulfillment, res);
     } else {
-      throw new IModelError(BentleyStatus.ERROR, "Unknown response type.");
+      WebAppRpcRequest.sendText(protocol, request, fulfillment, res);
     }
   }
 
@@ -165,14 +163,12 @@ export class WebAppRpcRequest extends RpcRequest {
         const contentType = response.headers.get(WEB_RPC_CONSTANTS.CONTENT);
         const responseType = WebAppRpcProtocol.computeContentType(contentType);
 
-        if (responseType === RpcContentType.Text) {
-          resolve(await this.loadText(response));
-        } else if (responseType === RpcContentType.Binary) {
+        if (responseType === RpcContentType.Binary) {
           resolve(await this.loadBinary(response));
         } else if (responseType === RpcContentType.Multipart) {
           resolve(await this.loadMultipart(response, contentType!));
         } else {
-          reject(new IModelError(BentleyStatus.ERROR, "Unknown response type"));
+          resolve(await this.loadText(response));
         }
 
         this._loading = false;
@@ -240,16 +236,14 @@ export class WebAppRpcRequest extends RpcRequest {
 
   private static async parseFromBody(req: HttpServerRequest): Promise<RpcSerializedValue> {
     const contentType = WebAppRpcProtocol.computeContentType(req.header(WEB_RPC_CONSTANTS.CONTENT));
-    if (contentType === RpcContentType.Text) {
-      return RpcSerializedValue.create(req.body as string);
-    } else if (contentType === RpcContentType.Binary) {
+    if (contentType === RpcContentType.Binary) {
       const objects = JSON.stringify([MarshalingBinaryMarker.createDefault()]);
       const data = [req.body as Buffer];
       return RpcSerializedValue.create(objects, data);
     } else if (contentType === RpcContentType.Multipart) {
       return RpcMultipart.parseRequest(req);
     } else {
-      throw new IModelError(BentleyStatus.ERROR, `Unknown content type.`);
+      return RpcSerializedValue.create(req.body as string);
     }
   }
 
@@ -294,10 +288,8 @@ export class WebAppRpcRequest extends RpcRequest {
       this.setupBinaryTransport(parameters);
     } else if (transportType === RpcContentType.Multipart) {
       this.setupMultipartTransport(parameters);
-    } else if (transportType === RpcContentType.Text) {
-      this.setupTextTransport(parameters);
     } else {
-      throw new IModelError(BentleyStatus.ERROR, "Unknown request type.");
+      this.setupTextTransport(parameters);
     }
   }
 

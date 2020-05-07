@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// tslint:disable:no-console
-import { RpcInterfaceDefinition, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { IModelJsExpressServer } from "@bentley/express-server";
+// tslint:disable:no-console
+import { BentleyCloudRpcManager, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 /**
  * Initializes Web Server backend

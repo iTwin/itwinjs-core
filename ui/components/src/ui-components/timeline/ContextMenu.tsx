@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import classnames from "classnames";
-import { CommonProps, Popup, Position } from "@bentley/ui-core";
 import "./ContextMenu.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { CommonProps, Popup } from "@bentley/ui-core";
 
 /** Properties for [[ContextMenuItem]] component
  * @internal
@@ -69,7 +70,7 @@ export interface ContextMenuProps extends CommonProps {
   /** Show or hide the context menu */
   isOpened: boolean;
   /** Position the context menu relative to the parent */
-  position: Position;
+  position: RelativePosition;
   /** List of context menu items */
   items?: MenuItem[];
   /** Called when the mouse is clicked outside the context menu */

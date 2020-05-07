@@ -3,37 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
-import {
-  ByteStream,
-  Id64String,
-  JsonUtils,
-} from "@bentley/bentleyjs-core";
-import {
-  Point3d,
-  Transform,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  B3dmHeader,
-  BatchType,
-  ElementAlignedBox3d,
-  Feature,
-  FeatureTable,
-  TileReadStatus,
-} from "@bentley/imodeljs-common";
-import {
-  BatchedTileIdMap,
-  GltfReader,
-  GltfReaderProps,
-  GltfReaderResult,
-  ShouldAbortReadGltf,
-} from "./internal";
-import { RenderSystem } from "../render/RenderSystem";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { B3dmHeader, BatchType, ElementAlignedBox3d, Feature, FeatureTable, TileReadStatus } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { RenderSystem } from "../render/RenderSystem";
+import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf } from "./internal";
 
 /**
  * Deserializes a tile in [b3dm](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/Batched3DModel) format.

@@ -7,18 +7,8 @@
  * @module Tools
  */
 
-import {
-  AxisAlignedBox3d,
-  ColorDef,
-  LinePixels,
-} from "@bentley/imodeljs-common";
-import {
-  DecorateContext,
-  GraphicType,
-  IModelApp,
-  IModelConnection,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { AxisAlignedBox3d, ColorDef, LinePixels } from "@bentley/imodeljs-common";
+import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** @beta */
@@ -55,8 +45,8 @@ export class ProjectExtentsDecoration {
 
     const builderAccVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
     const builderAccHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    const colorAccVis = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
-    const colorAccHid = colorAccVis.clone(); colorAccHid.setAlpha(100);
+    const colorAccVis = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
+    const colorAccHid = colorAccVis.withAlpha(100);
 
     builderAccVis.setSymbology(colorAccVis, ColorDef.black, 3);
     builderAccHid.setSymbology(colorAccHid, ColorDef.black, 1, LinePixels.Code2);

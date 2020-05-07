@@ -24,9 +24,11 @@ export type RpcConfigurationSupplier = () => { new(): RpcConfiguration };
 export abstract class RpcConfiguration {
   /** Whether development mode is enabled.
    * @note This parameter determines whether developer convenience features like backend stack traces are available.
-   * @note This parameter facilitates development-only scenarios like using snapshot iModels in a web application.
    */
   public static developmentMode: boolean = false;
+
+  /** Whether frontend checks that are relevant in a cloud-hosted routing scenario are disabled. */
+  public static disableRoutingValidation: boolean = false;
 
   /** Whether strict mode is enabled.
    * This parameter determines system behaviors relating to strict checking:
@@ -35,8 +37,8 @@ export abstract class RpcConfiguration {
   public static strictMode: boolean = false;
 
   /**
-   * Whether to throw an error when the IModelToken in the operation parameter list differs from the token in the URL.
-   * @note By default, a warning is loggged and the operation is allowed to proceed.
+   * Whether to throw an error when the IModelRpcProps in the operation parameter list differs from the token in the URL.
+   * @note By default, a warning is logged and the operation is allowed to proceed.
    * @note The parameter token is always replaced by the url token (unless RpcOperationPolicy.allowTokenMismatch is set).
    */
   public static throwOnTokenMismatch = false;

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
-import { Slider, Rail, Handles, SliderItem, Tracks, GetTrackProps } from "react-compound-slider";
 import "./Scrubber.scss";
+import * as React from "react";
+import { GetTrackProps, Handles, Rail, Slider, SliderItem, Tracks } from "react-compound-slider";
+import { CommonProps } from "@bentley/ui-core";
 
 // istanbul ignore next - WIP
 const formatDuration = (value: number) => {

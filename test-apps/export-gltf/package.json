@@ -4,28 +4,27 @@
   "license": "MIT",
   "description": "Example of exporting graphics from an iModel",
   "scripts": {
-    "build": "npm run build-code && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2",
     "lint": "tslint -p . 1>&2",
-    "build-code": "tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "test": "",
     "docs": "",
     "cover": ""
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "1.14.1",
-    "@bentley/geometry-core": "1.14.1",
-    "@bentley/imodeljs-clients": "1.14.1",
-    "@bentley/imodeljs-common": "1.14.1",
-    "@bentley/imodeljs-backend": "1.14.1",
-    "yargs": "^12.0.0"
+    "@bentley/bentleyjs-core": "2.0.0",
+    "@bentley/geometry-core": "2.0.0",
+    "@bentley/itwin-client": "2.0.0",
+    "@bentley/imodeljs-common": "2.0.0",
+    "@bentley/imodeljs-backend": "2.0.0",
+    "yargs": "^15.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "1.14.1",
+    "@bentley/build-tools": "2.0.0",
     "@types/node": "10.14.1",
     "@types/yargs": "^12.0.5",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"

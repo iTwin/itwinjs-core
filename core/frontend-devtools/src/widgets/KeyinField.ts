@@ -7,70 +7,30 @@
  * @module Widgets
  */
 
-import { ToolType, IModelApp, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
+import { IModelApp, MessageBoxIconType, MessageBoxType, ParseAndRunResult } from "@bentley/imodeljs-frontend";
 import { createButton } from "../ui/Button";
+import { appendDataListEntries, createDataList, DataList, DataListEntry } from "../ui/DataList";
 import { createTextBox, TextBox } from "../ui/TextBox";
-import { createDataList, DataList, DataListEntry, appendDataListEntries } from "../ui/DataList";
-
-interface Keyin {
-  tool?: ToolType;
-  args: string[];
-}
-
-// ###TODO Remove this when ToolRegistry has a (better) implementation of keyin parsing.
-function parseKeyin(input: string): Keyin {
-  const tools = IModelApp.tools.getToolList();
-  let tool: ToolType | undefined;
-  const args: string[] = [];
-  const findTool = (lowerKeyin: string) => tools.find((x) => x.keyin.toLowerCase() === lowerKeyin || x.englishKeyin.toLowerCase() === lowerKeyin);
-
-  // try the trivial, common case first
-  tool = findTool(input.toLowerCase());
-  if (undefined !== tool)
-    return { tool, args };
-
-  // Tokenize to separate keyin from arguments
-  // ###TODO handle quoted arguments
-  // ###TODO there's actually nothing that prevents a Tool from including leading/trailing spaces in its keyin, or sequences of more than one space...we will fail to find such tools if they exist...
-  const tokens = input.split(" ").filter((x) => 0 < x.length);
-  if (tokens.length <= 1)
-    return { tool, args };
-
-  // Find the longest starting substring that matches a tool's keyin.
-  for (let i = tokens.length - 2; i >= 0; i--) {
-    let substr = tokens[0];
-    for (let j = 1; j <= i; j++) {
-      substr += " ";
-      substr += tokens[j];
-    }
-
-    tool = findTool(substr.toLowerCase());
-    if (undefined !== tool) {
-      for (let k = i + 1; k < tokens.length; k++)
-        args.push(tokens[k]);
-
-      break;
-    }
-  }
-
-  return { tool, args };
-}
-
-function findKeyins(): string[] {
-  const keyins: string[] = [];
-  const tools = IModelApp.tools.getToolList();
-  for (const tool of tools) {
-    keyins.push(tool.keyin);
-  }
-  return keyins;
-}
 
 function keyinsToDataListEntries(keyins: string[]): DataListEntry[] {
   const entries: DataListEntry[] = [];
   for (const keyin of keyins) {
     entries.push({ value: keyin });
   }
+
   return entries;
+}
+
+/** Controls whether localized and/or non-localized key-in strings appear in a KeyinField's auto-completion list.
+ * @beta
+ */
+export enum KeyinFieldLocalization {
+  /** Include only non-localized key-in strings. */
+  NonLocalized,
+  /** Include only localized key-in strings. */
+  Localized,
+  /** Include localized and non-localized strings for each key-in. */
+  Both,
 }
 
 /** Properties controlling how a KeyinField is created.
@@ -90,6 +50,11 @@ export interface KeyinFieldProps {
    * Default: zero;
    */
   historyLength?: number;
+  /** Controls whether localized and/or non-localized keyin strings appear in the autocompletion list.
+   * Note: the KeyinField will still accept either localized or non-localized strings; this option only controls what is displayed in the auto-completion list.
+   * Default: non-localized
+   */
+  localization?: KeyinFieldLocalization;
 }
 
 /** A textbox allowing input of key-ins (localized tool names) combined with a drop-down that lists all registered key-ins, filtered by substring match on the current input.
@@ -104,9 +69,11 @@ export class KeyinField {
   private _historyIndex?: number;
   private _historyLength = 0;
   private readonly _history: string[] | undefined;
+  private readonly _localization: KeyinFieldLocalization;
 
   public constructor(props: KeyinFieldProps) {
-    this.keyins = findKeyins();
+    this._localization = props.localization ?? KeyinFieldLocalization.NonLocalized;
+    this.keyins = this.findKeyins();
     const autoCompleteListId = props.baseId + "_autoComplete";
     this.autoCompleteList = createDataList({
       parent: props.parent,
@@ -165,9 +132,7 @@ export class KeyinField {
       return Promise.resolve();
 
     // NB: History list is ordered by most to least recent so moving "backwards" means incrementing the index.
-    const upArrow = 38;
-    const downArrow = 40;
-    const direction = ev.keyCode === downArrow ? 1 : (ev.keyCode === upArrow ? 1 : 0);
+    const direction = ev.key === "ArrowDown" ? 1 : (ev.key === "ArrowUp" ? 1 : 0);
     if (0 === direction)
       return Promise.resolve();
 
@@ -212,43 +177,36 @@ export class KeyinField {
     this.selectAll();
     const textBox = this.textBox.textbox;
 
-    const outputMessage = async (msg: string) => {
-      await IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, msg, MessageBoxIconType.Warning);
-      this.focus();
-    };
-
     const input = textBox.value;
     this.pushHistory(input);
 
-    const keyin = parseKeyin(input);
-    if (undefined === keyin.tool) {
-      await outputMessage("Cannot find a key-in that matches: " + input);
-      return;
-    }
-
-    const maxArgs = keyin.tool.maxArgs;
-    if (keyin.args.length < keyin.tool.minArgs || (undefined !== maxArgs && keyin.args.length > maxArgs)) {
-      await outputMessage("Incorrect number of arguments");
-      return;
-    }
-
-    const tool = new keyin.tool();
-    let runStatus = false;
+    let message: string | undefined;
     try {
-      runStatus = keyin.args.length > 0 ? tool.parseAndRun(...keyin.args) : tool.run();
-      if (!runStatus)
-        await outputMessage("Key-in failed to run");
-    } catch (e) {
-      await outputMessage("Key-in caused the following exception to occur: " + e);
+      switch (IModelApp.tools.parseAndRun(input)) {
+        case ParseAndRunResult.ToolNotFound:
+          message = "Cannot find a key-in that matches: " + input;
+          break;
+        case ParseAndRunResult.BadArgumentCount:
+          message = "Incorrect number of arguments";
+          break;
+        case ParseAndRunResult.FailedToRun:
+          message = "Key-in failed to run";
+          break;
+      }
+    } catch (ex) {
+      message = "Key-in produced exception: " + ex;
     }
+
+    if (undefined !== message)
+      await IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, message, MessageBoxIconType.Warning);
   }
 
   private respondToKeyinFocus() {
     this.resetHistoryIndex();
 
     // Handle case in which new tools were registered since we last populated the auto-complete list.
-    // This can occur e.g. as a result of loading a plugin, or deferred initialization of a package like markup.
-    const keyins = findKeyins();
+    // This can occur e.g. as a result of loading a extension, or deferred initialization of a package like markup.
+    const keyins = this.findKeyins();
     if (keyins.length > this.keyins.length) {
       const newKeyins: string[] = [];
       for (const keyin of keyins)
@@ -260,5 +218,28 @@ export class KeyinField {
       if (newKeyins.length > 0)
         appendDataListEntries(this.autoCompleteList, keyinsToDataListEntries(newKeyins));
     }
+  }
+
+  private findKeyins(): string[] {
+    const keyins: string[] = [];
+    const tools = IModelApp.tools.getToolList();
+    for (const tool of tools) {
+      switch (this._localization) {
+        case KeyinFieldLocalization.Localized:
+          keyins.push(tool.keyin);
+          break;
+        case KeyinFieldLocalization.Both:
+          keyins.push(tool.keyin);
+          if (tool.keyin === tool.englishKeyin)
+            break;
+        /* falls through */
+        default:
+        case KeyinFieldLocalization.NonLocalized:
+          keyins.push(tool.englishKeyin);
+          break;
+      }
+    }
+
+    return keyins;
   }
 }

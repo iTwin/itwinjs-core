@@ -6,7 +6,7 @@
  * @module Entities
  */
 
-import { Id64String, Id64 } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d } from "@bentley/geometry-core";
 import { RelatedElement } from "./ElementProps";
 

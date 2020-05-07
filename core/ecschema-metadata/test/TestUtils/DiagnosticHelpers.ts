@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { CustomAttributeClass, EntityClass, IRuleSuppressionSet, Mixin, StructClass } from "../../src/ecschema-metadata";
 import { AnyClass } from "../../src/Interfaces";
 import { Constant } from "../../src/Metadata/Constant";
-import { CustomAttributeContainerProps, CustomAttribute } from "../../src/Metadata/CustomAttribute";
+import { CustomAttribute, CustomAttributeContainerProps } from "../../src/Metadata/CustomAttribute";
 import { Enumeration } from "../../src/Metadata/Enumeration";
 import { Format } from "../../src/Metadata/Format";
 import { InvertedUnit } from "../../src/Metadata/InvertedUnit";
@@ -15,15 +16,14 @@ import { AnyProperty } from "../../src/Metadata/Property";
 import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
 import { RelationshipClass, RelationshipConstraint } from "../../src/Metadata/RelationshipClass";
 import { Schema } from "../../src/Metadata/Schema";
+import { SchemaItem } from "../../src/Metadata/SchemaItem";
 import { Unit } from "../../src/Metadata/Unit";
 import { UnitSystem } from "../../src/Metadata/UnitSystem";
-import { IDiagnosticReporter } from "../../src/Validation/DiagnosticReporter";
 import * as Diagnostics from "../../src/Validation/Diagnostic";
+import { IDiagnosticReporter } from "../../src/Validation/DiagnosticReporter";
 import { IRuleSet } from "../../src/Validation/Rules";
-import sinon = require("sinon");
-import { SchemaItem } from "../../src/Metadata/SchemaItem";
-import { EntityClass, StructClass, Mixin, CustomAttributeClass, IRuleSuppressionSet } from "../../src/ecschema-metadata";
 
+import sinon = require("sinon");
 export class TestReporter implements IDiagnosticReporter {
   public async report(_diagnostic: Diagnostics.AnyDiagnostic) {
   }

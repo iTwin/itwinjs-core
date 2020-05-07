@@ -7,12 +7,7 @@
  * @module Tools
  */
 
-import {
-  IModelApp,
-  MessageBoxIconType,
-  MessageBoxType,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { IModelApp, MessageBoxIconType, MessageBoxType, Tool } from "@bentley/imodeljs-frontend";
 
 /** Queries the client's level of compatibility with the rendering system and outputs it to NotificationManager.
  * @beta

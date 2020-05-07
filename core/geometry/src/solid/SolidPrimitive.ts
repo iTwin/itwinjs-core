@@ -12,10 +12,10 @@ import { GeometryQuery } from "../curve/GeometryQuery";
 import { Transform } from "../geometry3d/Transform";
 import { Box } from "./Box";
 import { Cone } from "./Cone";
-import { Sphere } from "./Sphere";
 import { LinearSweep } from "./LinearSweep";
 import { RotationalSweep } from "./RotationalSweep";
 import { RuledSweep } from "./RuledSweep";
+import { Sphere } from "./Sphere";
 import { TorusPipe } from "./TorusPipe";
 
 /** Describes the concrete type of a [[SolidPrimitive]]. Each type name maps to a specific subclass and can be used for type-switching in conditional statements.

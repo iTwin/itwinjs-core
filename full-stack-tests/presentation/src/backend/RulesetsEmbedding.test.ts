@@ -2,20 +2,44 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import faker from "faker";
 import fs from "fs";
-import { expect } from "chai";
 import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { Ruleset } from "@bentley/presentation-common";
-import { Presentation, RulesetEmbedder, DuplicateRulesetHandlingStrategy, PresentationManagerMode } from "@bentley/presentation-backend";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/NativePlatform";
-import { tweakRuleset } from "./Helpers";
-import { initialize, terminate } from "../IntegrationTests";
+import { SnapshotDb } from "@bentley/imodeljs-backend";
+import { DuplicateRulesetHandlingStrategy, Presentation, PresentationManagerMode, RulesetEmbedder } from "@bentley/presentation-backend";
+import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { initialize, terminate } from "../IntegrationTests";
+import { tweakRuleset } from "./Helpers";
+
+const RULESET_1: Ruleset = {
+  id: "ruleset_1",
+  rules: [{
+    ruleType: RuleTypes.RootNodes,
+    specifications: [{
+      specType: ChildNodeSpecificationTypes.CustomNode,
+      type: "test 1",
+      label: "label 1",
+    }],
+  }],
+};
+
+const RULESET_2: Ruleset = {
+  id: "ruleset_2",
+  rules: [{
+    ruleType: RuleTypes.RootNodes,
+    specifications: [{
+      specType: ChildNodeSpecificationTypes.CustomNode,
+      type: "test 2",
+      label: "label 2",
+    }],
+  }],
+};
 
 describe("RulesEmbedding", () => {
-  let imodel: IModelDb;
+  let imodel: SnapshotDb;
   let embedder: RulesetEmbedder;
   let ruleset: Ruleset;
   let nativePlatform: NativePlatformDefinition;
@@ -31,10 +55,10 @@ describe("RulesEmbedding", () => {
     expect(expected).to.not.deep.equal(actual);
   }
 
-  function createSnapshotFromSeed(testFileName: string, seedFileName: string): IModelDb {
-    const seedDb: IModelDb = IModelDb.openSnapshot(seedFileName);
-    const testDb: IModelDb = seedDb.createSnapshot(testFileName);
-    seedDb.closeSnapshot();
+  function createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotDb {
+    const seedDb = SnapshotDb.openFile(seedFileName);
+    const testDb = SnapshotDb.createFrom(seedDb, testFileName);
+    seedDb.close();
     return testDb;
   }
 
@@ -45,25 +69,27 @@ describe("RulesEmbedding", () => {
       localeDirectories: [],
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadWrite,
+      isChangeTrackingEnabled: false,
+      cacheDirectory: "",
     });
     nativePlatform = new TNativePlatform();
     imodel = createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
 
-  after(() => {
-    imodel.closeSnapshot();
+  after(async () => {
+    imodel.close();
     nativePlatform.dispose();
 
     fs.unlink(testIModelName, (err: Error) => {
       if (err)
         expect(false);
     });
-    terminate();
+    await terminate();
   });
 
   beforeEach(async () => {
-    embedder = new RulesetEmbedder(imodel);
+    embedder = new RulesetEmbedder({ imodel });
     ruleset = await createRandomRuleset();
   });
 
@@ -113,30 +139,28 @@ describe("RulesEmbedding", () => {
 
   it("locates rulesets", async () => {
     // Create a ruleset and insert it
-    const rulesetToLocate = require("../../test-rulesets/Rulesets/default");
-    const insertId = await embedder.insertRuleset(rulesetToLocate);
+    const insertId = await embedder.insertRuleset(RULESET_1);
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    const rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetId: rulesetToLocate.id });
+    const rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 
   it("locates rulesets correctly if rules are updated", async () => {
     // Create a ruleset and insert it
-    const rulesetToLocate = require("../../test-rulesets/Rulesets/default");
-    const insertId = await embedder.insertRuleset(rulesetToLocate);
+    const insertId = await embedder.insertRuleset(RULESET_1);
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    let rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetId: rulesetToLocate.id });
+    let rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
 
     const rulesetElement = imodel.elements.getElement(insertId);
     rulesetElement.setJsonProperty("id", faker.random.uuid());
     imodel.elements.updateElement(rulesetElement);
 
-    rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetId: rulesetToLocate.id });
+    rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 
@@ -155,8 +179,7 @@ describe("RulesEmbedding", () => {
     const insertId1 = await embedder.insertRuleset(ruleset, DuplicateRulesetHandlingStrategy.Skip);
     expect(Id64.isValid(insertId1)).true;
 
-    const rulesetChanged = require("../../test-rulesets/Rulesets/other");
-    rulesetChanged.id = ruleset.id;
+    const rulesetChanged = { ...RULESET_2, id: ruleset.id };
     expectRulesetsToNotBeDeepEqual(ruleset, rulesetChanged);
     expect(ruleset.id).to.be.equal(rulesetChanged.id);
 
@@ -174,8 +197,7 @@ describe("RulesEmbedding", () => {
     const insertId1 = await embedder.insertRuleset(ruleset, DuplicateRulesetHandlingStrategy.Replace);
     expect(Id64.isValid(insertId1)).true;
 
-    const rulesetChanged = require("../../test-rulesets/Rulesets/other");
-    rulesetChanged.id = ruleset.id;
+    const rulesetChanged = { ...RULESET_2, id: ruleset.id };
     expectRulesetsToNotBeDeepEqual(ruleset, rulesetChanged);
     expect(ruleset.id).to.be.equal(rulesetChanged.id);
 

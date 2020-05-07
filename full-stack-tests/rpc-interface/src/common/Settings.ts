@@ -3,18 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
-import {
-  IModelReadRpcInterface, IModelWriteRpcInterface,
-  IModelTileRpcInterface, DevToolsRpcInterface,
-} from "@bentley/imodeljs-common";
+import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
 // tslint:disable:ter-indent
-
-export type User = [
-  string,
-  string
-];
 
 export interface Backend {
   version: string;
@@ -64,12 +57,12 @@ export class Settings {
   public discovery!: string;
   public gprid?: string;
   public logLevel?: number;
-  public users: User[] = [];
+  public users: TestUserCredentials[] = [];
 
   public iModels: IModelData[] = [];
   public get iModel(): IModelData { return this.iModels[0]; }
   public get writeIModel(): IModelData { return this.iModels[1]; }
-  public get user(): User { return this.users[0]; }
+  public get user(): TestUserCredentials { return this.users[0]; }
 
   public get Backend(): Backend { return this._backend; }
 
@@ -177,7 +170,10 @@ export class Settings {
     this._backend.name = process.env.BACKEND_NAME;
 
     // Get users
-    this.users.push([process.env.USER_WITH_ACCESS_USERNAME || "", process.env.USER_WITH_ACCESS_PASSWORD || ""]);
+    this.users.push({
+      email: process.env.USER_WITH_ACCESS_USERNAME || "",
+      password: process.env.USER_WITH_ACCESS_PASSWORD || "",
+    });
     // this.users.push([process.env.USER_WITHOUT_ACCESS_USERNAME || "", process.env.USER_WITHOUT_ACCESS_PASSWORD || ""]);
   }
 

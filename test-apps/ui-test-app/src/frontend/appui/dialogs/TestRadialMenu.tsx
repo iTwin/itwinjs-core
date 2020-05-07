@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { RadialMenu, RadialButton } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { RadialButton, RadialMenu } from "@bentley/ui-core";
 
 export interface TestRadialMenuProps {
   opened: boolean;
+  onClose?: () => void;
 }
 
 export interface TestRadialMenuState {
@@ -60,7 +59,8 @@ export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRad
 
   private _close = () => {
     this.setState({ opened: false }, () => {
-      ModalDialogManager.closeDialog();
+      if (this.props.onClose)
+        this.props.onClose();
     });
   }
 

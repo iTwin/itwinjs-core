@@ -5,24 +5,16 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { render, cleanup, fireEvent } from "@testing-library/react";
-import { Presentation } from "@bentley/presentation-frontend";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { initializeAsync as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
-import TestUtils from "../TestUtils";
+import { Presentation } from "@bentley/presentation-frontend";
+import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+import { WidgetState } from "@bentley/ui-abstract";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import {
-  StatusBar,
-  SelectionScopeField,
-  StatusBarWidgetControl,
-  WidgetState,
-  ConfigurableCreateInfo,
-  ConfigurableUiControlType,
-  WidgetDef,
-  UiFramework,
-  SessionStateActionId,
-  StatusBarWidgetControlArgs,
-  PresentationSelectionScope,
+  ConfigurableCreateInfo, ConfigurableUiControlType, PresentationSelectionScope, SelectionScopeField, SessionStateActionId, StatusBar,
+  StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework, WidgetDef,
 } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -96,13 +88,13 @@ describe("Test that requires Presentation", () => {
 
   let widgetControl: StatusBarWidgetControl | undefined;
 
-  const shutdownIModelApp = () => {
+  const shutdownIModelApp = async () => {
     if (IModelApp.initialized)
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
   };
 
   before(async () => {
-    shutdownIModelApp();
+    await shutdownIModelApp();
     Presentation.terminate();
 
     await initializePresentationTesting();
@@ -117,9 +109,9 @@ describe("Test that requires Presentation", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
-    terminatePresentationTesting();
+    await terminatePresentationTesting();
   });
 
   afterEach(cleanup);

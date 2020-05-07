@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import "./GridWidget.css";
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationTableDataProvider, tableWithUnifiedSelection, IPresentationTableDataProvider } from "@bentley/presentation-components";
+import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
 import { Table } from "@bentley/ui-components";
-import "./GridWidget.css";
 
 // tslint:disable-next-line:variable-name naming-convention
 const SampleTable = tableWithUnifiedSelection(Table);
@@ -18,7 +18,7 @@ export interface Props {
 }
 
 export interface State {
-  dataProvider: IPresentationTableDataProvider;
+  dataProvider: PresentationTableDataProvider;
 }
 
 export default class GridWidget extends React.PureComponent<Props, State> {

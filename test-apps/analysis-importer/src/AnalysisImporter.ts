@@ -2,19 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "@bentley/imodeljs-backend";
-import { GeometryStreamBuilder, GeometryStreamProps, Gradient, Code, GeometricElement3dProps, ViewFlags, ColorDef, RenderMode, AnalysisStyleProps } from "@bentley/imodeljs-common";
-import { Id64, Id64String, Id64Array } from "@bentley/bentleyjs-core";
-import { Angle, Polyface, IModelJson, AuxChannelDataType, AuxChannel, PolyfaceBuilder, Point3d, StrokeOptions, AuxChannelData, PolyfaceAuxData } from "@bentley/geometry-core";
-import * as path from "path";
 import { readFileSync } from "fs";
+import * as path from "path";
+import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import {
+  Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions,
+} from "@bentley/geometry-core";
+import {
+  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
+} from "@bentley/imodeljs-backend";
+import {
+  AnalysisStyleProps, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, RenderMode, ThematicGradientColorScheme,
+  ThematicGradientMode, ThematicGradientSettingsProps, ViewFlags,
+} from "@bentley/imodeljs-common";
 
 export class AnalysisImporter {
-  public iModelDb: IModelDb;
+  public iModelDb: SnapshotDb;
   public definitionModelId: Id64String = Id64.invalid;
 
   public constructor(iModelFileName: string) {
-    this.iModelDb = IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: "Analysis Example" } });
+    this.iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "Analysis Example" } });
   }
   /** Create a geometry stream from a Polyface. */
   private generateGeometryStreamFromPolyface(polyface: Polyface): GeometryStreamProps {
@@ -38,12 +45,12 @@ export class AnalysisImporter {
 
     for (const channel of polyface.data.auxData.channels) {
       if (channel.isScalar) {
-        const thematicSettings = new Gradient.ThematicSettings();
+        const thematicSettingsJSON: ThematicGradientSettingsProps = {};
         const displacementChannel = displacementChannels.get(channel.inputName!);
         /**  If this channel ends with "Height" assign it a "Sea to Mountain" Gradient rather than the default (green-red) gradient. */
         if (channel.name && channel.name.endsWith("Height")) {
-          thematicSettings.colorScheme = Gradient.ThematicColorScheme.SeaMountain;
-          thematicSettings.mode = Gradient.ThematicMode.SteppedWithDelimiter;
+          thematicSettingsJSON.colorScheme = ThematicGradientColorScheme.SeaMountain;
+          thematicSettingsJSON.mode = ThematicGradientMode.SteppedWithDelimiter;
         }
         /** create the [[AnalysisStyle]] and add to the array. */
         analysisStyleProps.push({
@@ -51,7 +58,7 @@ export class AnalysisImporter {
           displacementScale: displacementScaleValue,
           scalarRange: channel.scalarRange,
           scalarChannelName: channel.name,
-          scalarThematicSettings: thematicSettings,
+          scalarThematicSettings: thematicSettingsJSON,
           inputName: channel.inputName,
         });
       }
@@ -120,13 +127,15 @@ export class AnalysisImporter {
     const nDimensions = 100;
     const spacing = 1.0;
 
-    /** Create a simple flat mesh with 10,000 points (100x100) */
+    /* Create a simple flat mesh with 10,000 points (100x100) */
     for (let iRow = 0; iRow < nDimensions - 1; iRow++) {
       for (let iColumn = 0; iColumn < nDimensions - 1; iColumn++) {
-        const quad = [Point3d.create(iRow * spacing, iColumn * spacing, 0.0),
+        const quad = [
+          Point3d.create(iRow * spacing, iColumn * spacing, 0.0),
           Point3d.create((iRow + 1) * spacing, iColumn * spacing, 0.0),
           Point3d.create((iRow + 1) * spacing, (iColumn + 1) * spacing, 0.0),
-          Point3d.create(iRow * spacing, (iColumn + 1) * spacing)];
+          Point3d.create(iRow * spacing, (iColumn + 1) * spacing),
+        ];
         builder.addQuadFacet(quad);
       }
     }
@@ -210,7 +219,7 @@ export class AnalysisImporter {
     this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Analysis Definitions");
 
     /** Create category for analytical polyfaces */
-    const categoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, "GeoJSON Feature", { color: ColorDef.white });
+    const categoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, "GeoJSON Feature", { color: ColorDef.white.tbgr });
 
     /** import a polyface representing a cantilever beam with stress and displacement data. */
     const importedPolyface = this.importPolyfaceFromJson("Cantilever.json");

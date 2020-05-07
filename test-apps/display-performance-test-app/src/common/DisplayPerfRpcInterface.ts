@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import * as chromeLauncher from "chrome-launcher";
-import * as https from "https";
 import * as http from "http";
+import * as https from "https";
+import { RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 
 /** Display Performance RPC interface. */
 export default class DisplayPerfRpcInterface extends RpcInterface {

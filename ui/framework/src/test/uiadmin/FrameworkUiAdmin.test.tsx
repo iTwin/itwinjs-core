@@ -4,12 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
-import { AbstractMenuItemProps, AbstractToolbarProps, RelativePosition } from "@bentley/ui-abstract";
+import { AbstractMenuItemProps, AbstractToolbarProps, PropertyDescription, RelativePosition } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
-
-import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 import { CursorInformation } from "../../ui-framework/cursor/CursorInformation";
+import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 import TestUtils from "../TestUtils";
 
 // cSpell:ignore uiadmin
@@ -39,8 +37,8 @@ describe("FrameworkUiAdmin", () => {
 
   it("showContextMenu should return true", () => {
     const menuItemProps: AbstractMenuItemProps[] = [
-      { id: "test", item: { commandId: "command", label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
-      { id: "test2", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
+      { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
+      { id: "test2", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
     ];
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
@@ -52,9 +50,9 @@ describe("FrameworkUiAdmin", () => {
     const toolbarProps: AbstractToolbarProps = {
       toolbarId: "test",
       items: [
-        { toolId: "tool", label: "tool label", iconSpec: "icon-placeholder", execute: () => { } },
-        { commandId: "command", label: "command label", iconSpec: "icon-placeholder", execute: () => { } },
-        { label: "command label", iconSpec: "icon-placeholder", execute: () => { } },
+        { id: "tool", itemPriority: 1, label: "tool label", icon: "icon-placeholder", execute: () => { } },
+        { id: "command", itemPriority: 2, label: "command label", icon: "icon-placeholder", execute: () => { } },
+        { id: "command2", itemPriority: 3, label: "command label", icon: "icon-placeholder", execute: () => { } },
       ],
     };
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
@@ -68,8 +66,8 @@ describe("FrameworkUiAdmin", () => {
 
   it("showMenuButton should return true", () => {
     const menuItemProps: AbstractMenuItemProps[] = [
-      { id: "test", item: { commandId: "command", label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
-      { id: "test2", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
+      { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
+      { id: "test2", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
     ];
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
@@ -115,6 +113,17 @@ describe("FrameworkUiAdmin", () => {
 
     expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.true;
     expect(uiAdmin.showHeightEditor(100, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.true;
+    expect(uiAdmin.hideInputEditor()).to.be.true;
+  });
+
+  it("showInputEditor should return false by default", () => {
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    const spyCommit = sinon.fake();
+    const spyCancel = sinon.fake();
+    const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: "number" };
+
+    expect(uiAdmin.showInputEditor(100, propertyDescription, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.true;
+    expect(uiAdmin.showInputEditor(100, propertyDescription, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.true;
     expect(uiAdmin.hideInputEditor()).to.be.true;
   });
 

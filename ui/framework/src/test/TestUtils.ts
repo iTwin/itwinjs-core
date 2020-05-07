@@ -3,26 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as enzyme from "enzyme";
+import { createStore, Store } from "redux";
+import * as sinon from "sinon";
 import { I18N } from "@bentley/imodeljs-i18n";
+import { UserInfo } from "@bentley/itwin-client";
+import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  UiFramework,
-  FrameworkReducer,
-  FrameworkState,
-  DeepReadonly,
-  ActionsUnion,
-  createAction,
-  ConfigurableUiManager,
-  ContentLayoutProps,
-  ContentGroupProps,
-  combineReducers,
+  ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, createAction, DeepReadonly, FrameworkReducer,
+  FrameworkState, UiFramework,
 } from "../ui-framework";
-import { UiComponents } from "@bentley/ui-components";
-import { UiCore } from "@bentley/ui-core";
-import { Store, createStore } from "redux";
-import { TestContentControl } from "./frontstage/FrontstageTestUtils";
-import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
 import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatcher";
-import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
+import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
+import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 
 // tslint:disable: completed-docs
 
@@ -95,15 +87,13 @@ export class TestUtils {
         (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
       if (testAlternateKey)
-        await UiFramework.initialize(this.store, TestUtils.i18n, undefined, "testDifferentFrameworkKey");
+        await UiFramework.initialize(this.store, TestUtils.i18n, "testDifferentFrameworkKey");
       else
         await UiFramework.initialize(this.store, TestUtils.i18n);
 
       TestUtils.defineContentGroups();
       TestUtils.defineContentLayouts();
 
-      await UiComponents.initialize(TestUtils.i18n);
-      await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiFrameworkInitialized = true;
     }
     ToolUiManager.clearToolSettingsData();
@@ -111,8 +101,6 @@ export class TestUtils {
   }
 
   public static terminateUiFramework() {
-    UiCore.terminate();
-    UiComponents.terminate();
     UiFramework.terminate();
     TestUtils._uiFrameworkInitialized = false;
   }
@@ -211,19 +199,14 @@ export class TestUtils {
 
 // cSpell:ignore testuser mailinator saml
 
-export class MockAccessToken extends AccessToken {
-  public constructor() { super(); this._samlAssertion = ""; }
-  public getUserInfo(): UserInfo | undefined {
-    const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
-    const email = { id: "testuser001@mailinator.com" };
-    const profile = { firstName: "test", lastName: "user" };
-    const organization = { id: "fefac5b-bcad-488b-aed2-df27bffe5786", name: "Bentley" };
-    const featureTracking = { ultimateSite: "1004144426", usageCountryIso: "US" };
-    return new UserInfo(id, email, profile, organization, featureTracking);
-  }
-
-  public toTokenString() { return ""; }
-}
+export const mockUserInfo = (): UserInfo => {
+  const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
+  const email = { id: "testuser001@mailinator.com" };
+  const profile = { firstName: "test", lastName: "user" };
+  const organization = { id: "fefac5b-bcad-488b-aed2-df27bffe5786", name: "Bentley" };
+  const featureTracking = { ultimateSite: "1004144426", usageCountryIso: "US" };
+  return new UserInfo(id, email, profile, organization, featureTracking);
+};
 
 export const storageMock = () => {
   const storage: { [key: string]: any } = {};
@@ -246,6 +229,29 @@ export const storageMock = () => {
     },
   };
 };
+
+export class UiSettingsStub implements UiSettings {
+  public async deleteSetting(): Promise<UiSettingsResult> {
+    return {
+      status: UiSettingsStatus.Success,
+      setting: {},
+    };
+  }
+
+  public async getSetting(): Promise<UiSettingsResult> {
+    return {
+      status: UiSettingsStatus.NotFound,
+      setting: {},
+    };
+  }
+
+  public async saveSetting(): Promise<UiSettingsResult> {
+    return {
+      status: UiSettingsStatus.Success,
+      setting: {},
+    };
+  }
+}
 
 export type ReactWrapper<C extends React.Component, P = C["props"], S = C["state"]> = enzyme.ReactWrapper<P, S, C>;
 

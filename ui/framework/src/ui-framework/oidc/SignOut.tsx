@@ -6,16 +6,15 @@
  * @module OIDC
  */
 
+import "./SignOut.scss";
 import * as React from "react";
-
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
+import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { UserInfo } from "@bentley/itwin-client";
 import { getUserColor } from "@bentley/ui-core";
-
 import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
-
-import "./SignOut.scss";
 
 // cSpell:Ignore userprofile signoutprompt
 
@@ -27,11 +26,9 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
   private _signOut = UiFramework.translate("userProfile.signout");
   private _signOutPrompt = UiFramework.translate("userProfile.signoutprompt");
   private _userInfo: UserInfo | undefined = undefined;
-  private _handleSignOut?: () => void;
 
-  constructor(accessToken: AccessToken, onSignOut?: () => void) {
-    this._userInfo = accessToken.getUserInfo();
-    this._handleSignOut = onSignOut;
+  constructor(userInfo?: UserInfo) {
+    this._userInfo = userInfo;
   }
 
   private _getInitials(): string {
@@ -53,8 +50,8 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
   private _getFullName(): string {
     let name: string = "";
     // istanbul ignore else
-    if (this._userInfo) {
-      name = this._userInfo.profile!.firstName + " " + this._userInfo.profile!.lastName;
+    if (this._userInfo && this._userInfo.profile) {
+      name = this._userInfo.profile.firstName + " " + this._userInfo.profile.lastName;
     }
 
     return name;
@@ -63,15 +60,13 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
   private _onSignOut = async () => {
     FrontstageManager.closeModalFrontstage();
 
-    // istanbul ignore next
-    if (UiFramework.oidcClient)
-      UiFramework.oidcClient.signOut(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
-    else
-      Logger.logInfo(UiFramework.loggerCategory(this), "UiFramework.oidcClient must be set for signOut");
+    const authorizationClient = IModelApp.authorizationClient;
 
-    // istanbul ignore else
-    if (this._handleSignOut)
-      this._handleSignOut();
+    // istanbul ignore next
+    if (isFrontendAuthorizationClient(authorizationClient))
+      await authorizationClient.signOut(new ClientRequestContext());
+    else
+      Logger.logError(UiFramework.loggerCategory(this), "IModelApp.authorizationClient must be set for signOut");
   }
 
   public get content(): React.ReactNode {

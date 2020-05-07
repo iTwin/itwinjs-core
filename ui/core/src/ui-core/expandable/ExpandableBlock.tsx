@@ -6,10 +6,10 @@
  * @module Expandable
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-import { CommonProps } from "../utils/Props";
 import "./ExpandableBlock.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[ExpandableBlock]] React component
  * @public
@@ -27,7 +27,7 @@ export interface ExpandableBlockProps extends CommonProps {
   caption?: string;
 }
 
-/** ExpandableBlock is a React component that shows and hides child content.
+/** ExpandableBlock React component is a container that shows and hides child content.
  * @public
  */
 export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {

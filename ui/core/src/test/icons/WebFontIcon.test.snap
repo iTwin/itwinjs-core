@@ -1,3 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`WebFontIcon renders 1`] = `"<span class=\\"bui-webfont-icon icon-test\\" title=\\"test icon\\" style=\\"color: red;\\"></span>"`;
+
+exports[`WebFontIcon renders with custom font class 1`] = `"<span class=\\"fas fas-test\\" title=\\"fas test icon\\" style=\\"color: green;\\"></span>"`;

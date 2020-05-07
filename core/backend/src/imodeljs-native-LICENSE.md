@@ -7,7 +7,7 @@ This right-to-run authorization is an agreement between Bentley Systems Internat
 **BY USING THE SOFTWARE, YOU ACCEPT THESE TERMS. IF YOU DO NOT ACCEPT THEM, DO NOT USE THE SOFTWARE. IF YOU COMPLY WITH THESE TERMS, YOU HAVE THE RIGHTS BELOW.**
 
 1. **RIGHT-TO-RUN.** You may use the software if:
-    **a.** You are using a [Snapshot iModel](https://www.imodeljs.org/learning/backend/accessingimodels/snapshot-imodels),
+    **a.** You are using a [Snapshot iModel](https://www.imodeljs.org/learning/backend/accessingimodels/#snapshot-imodels),
     **b.** Or, for **all other iModels**, you and the program you are operating are identified and authorized by the owner of the data you wish to access, and such owner has been duly authorized by either Bentley or a third party authorized by Bentley to grant such permission.
 
 2. **SCOPE.** The right-to-run granted to you by this agreement only gives you some rights to use the software on a per use basis. Bentley reserves all other rights. You may use the software only as expressly permitted in this agreement. In doing so, you must comply with any technical limitations in the software that only allow you to use it in certain ways.

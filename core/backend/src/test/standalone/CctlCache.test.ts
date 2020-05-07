@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { LockType, LockLevel } from "@bentley/imodeljs-clients";
-import { CodeProps } from "@bentley/imodeljs-common";
+import { LockLevel, LockType } from "@bentley/imodelhub-client";
+import { CodeProps, SyncMode } from "@bentley/imodeljs-common";
+import { ConcurrencyControl, IModelJsFs } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelJsFs } from "../../IModelJsFs";
 
 describe("ConcurrencyControl.StateCache", () => {
 
@@ -25,10 +24,12 @@ describe("ConcurrencyControl.StateCache", () => {
         briefcase: {
           pathname: mockBriefcasePathname,
         },
+        syncMode: SyncMode.PullAndPush,
+        isPushEnabled: true,
       },
     };
 
-    const cctl = new ConcurrencyControl.StateCache(concurrencyControlMock as ConcurrencyControl);
+    const cctl = new ConcurrencyControl.StateCache(concurrencyControlMock as unknown as ConcurrencyControl);
     if (!cctl.open())
       cctl.create();
 

@@ -2,26 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "../VisibilityTreeBase";
 
-.uifw-categories-tree {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-
-  .filteredTree {
-    position: relative;
-    flex: 1;
-    width: unset;
-    height: unset;
-
-    .filteredTreeOverlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 9999;
-      background-color: rgba(255,255,255,.8);
-    }
-  }
-};
+.ui-fw-categories-tree {
+  @include ui-fw-visibility-tree-base;
+}

@@ -6,10 +6,10 @@
  * @module ToolAssistance
  */
 
-import * as classnames from "classnames";
+import "./NewDot.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./NewDot.scss";
 
 /** 'New' dot used in Tool assistance instruction component.
  * @internal

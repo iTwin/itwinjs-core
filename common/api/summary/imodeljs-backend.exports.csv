@@ -26,9 +26,11 @@ beta;BackendActivityMonitor
 public;BackendLoggerCategory
 public;BackendRequestContext 
 public;BisCoreSchema 
+public;BriefcaseDb 
 internal;BriefcaseEntry
-public;BriefcaseId
-internal;BriefcaseManager
+public;BriefcaseId = number
+public;BriefcaseIdValue
+beta;BriefcaseManager
 public;CachedECSqlStatement
 internal;CachedSqliteStatement
 public;class Callout 
@@ -36,7 +38,6 @@ public;Category
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
 internal;ChangedElementsDb 
-public;ChangeSetDescriber = (endTxnId: TxnIdString) => string
 internal;ChangeSetToken
 beta;ChangeSummary
 beta;ChangeSummaryExtractContext
@@ -56,6 +57,7 @@ alpha;CrashReportingConfigNameValuePair
 public;class DefinitionElement 
 public;DefinitionModel 
 public;DefinitionPartition 
+alpha;DesktopAuthorizationClient 
 public;DetailCallout 
 public;class DetailingSymbol 
 internal;DevTools
@@ -108,32 +110,30 @@ public;ElementRefersToElements
 public;ElementUniqueAspect 
 public;ElevationCallout 
 public;EmbeddedFileLink 
+internal;EmitOptions
+internal;EmitStrategy
 public;Entity 
 internal;EventSink
 internal;EventSinkManager
 internal;EventSinkOptions
 public;ExportGraphics
-beta;areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
 public;ExportGraphicsLines
 public;ExportGraphicsMesh
 public;ExportGraphicsOptions
-beta;ExportGraphicsProps = ExportGraphicsOptions
 public;ExportLinesFunction = (info: ExportLinesInfo) => void
 public;ExportLinesInfo
 public;ExportPartDisplayInfo
-beta;ExportPartDisplayProps = ExportPartDisplayInfo
 public;ExportPartFunction = (info: ExportPartInfo) => void
 public;ExportPartGraphicsOptions
-beta;ExportPartGraphicsProps = ExportPartGraphicsOptions
 public;ExportPartInfo
 public;ExportPartInstanceInfo
-beta;ExportPartInstanceProps = ExportPartInstanceInfo
 public;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
 public;ExportPartLinesInfo
 public;ExternalSourceAspect 
 public;ExternalSourceAspect
+public;class FileNameResolver
 public;class FunctionalBreakdownElement 
 public;class FunctionalComponentElement 
 public;FunctionalComposite 
@@ -172,7 +172,7 @@ beta;ILinearLocationLocatesElement
 beta;ILinearlyLocatedAlongILinearElement 
 beta;ILinearlyLocatedAttributesElement 
 beta;IModelCloneContext
-public;IModelDb 
+public;class IModelDb 
 public;IModelDb
 internal;TileContentState
 internal;Tiles
@@ -182,6 +182,7 @@ public;IModelHost
 public;IModelHostConfiguration
 beta;IModelImporter
 beta;IModelImportOptions
+internal;IModelJsAdditionalFeatureData 
 public;IModelJsFs
 public;IModelJsFsStats
 beta;IModelTransformer 
@@ -196,7 +197,6 @@ public;InformationRecordPartition
 public;class InformationReferenceElement 
 beta;InstanceChange
 beta;IReferentReferencesElement 
-public;KeepBriefcase
 public;KnownLocations
 internal;LightLocation 
 beta;LinearElement
@@ -225,7 +225,7 @@ public;LinkPartition
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
-alpha;OidcDesktopClient 
+internal;NativeAppBackend
 public;OpenParams
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
@@ -238,7 +238,7 @@ public;PhysicalPartition
 public;class PhysicalType 
 public;PlanCallout 
 public;Platform
-internal;class RecipeDefinitionElement 
+beta;class RecipeDefinitionElement 
 beta;Referent 
 beta;class ReferentElement 
 public;Relationship 
@@ -258,12 +258,13 @@ public;Schemas
 public;SectionCallout 
 public;SectionDrawing 
 public;SectionDrawingModel 
-beta;SectionLocation 
+alpha;SectionLocation 
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
 public;SheetTemplate 
 public;SheetViewDefinition 
+public;SnapshotDb 
 public;SourceAndTarget
 public;SpatialCategory 
 public;class SpatialElement 
@@ -279,14 +280,15 @@ internal;SqliteStatement
 internal;SqliteStatementCache
 internal;SqliteValue
 internal;SqliteValueType
+internal;StandaloneDb 
 internal;StringParam
 public;SubCategory 
 public;Subject 
 public;SubjectOwnsPartitionElements 
 public;SubjectOwnsSubjects 
-public;SyncMode
+beta;TemplateModelCloner 
 internal;TemplateRecipe2d 
-internal;TemplateRecipe3d 
+beta;TemplateRecipe3d 
 internal;TemplateViewDefinition2d 
 internal;TemplateViewDefinition3d 
 public;TextAnnotation2d 
@@ -297,9 +299,9 @@ public;TxnAction
 public;TxnIdString = string
 beta;TxnManager
 public;class TypeDefinitionElement 
-internal;UlasUtilities
 public;UpdateModelOptions 
 public;UrlLink 
+internal;UsageLoggingUtilities
 beta;ValidationError
 public;ViewAttachment 
 public;ViewAttachmentLabel 

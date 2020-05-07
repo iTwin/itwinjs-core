@@ -7,12 +7,11 @@
  */
 
 import { UiError } from "@bentley/ui-abstract";
-
-import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
-import { ToolUiProvider } from "./ToolUiProvider";
-import { ToolUiManager } from "./ToolUiManager";
+import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../../UiFramework";
+import { ToolUiManager } from "./ToolUiManager";
+import { ToolUiProvider } from "./ToolUiProvider";
 
 /** Provides information about a tool with a given id, including the ToolUiProvider.
  * @public
@@ -40,14 +39,10 @@ export class ToolInformation {
           throw new UiError(UiFramework.loggerCategory(this), "toolUiProvider: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
         }
 
-        provider.initialize();
         this._toolUiProvider = provider;
       }
-    } else {
-      // if the tool settings are coming from tool, reinitialize provider so latest properties published from tool are displayed in UI
-      if (ToolUiManager.useDefaultToolSettingsProvider && this._toolUiProvider)
-        this._toolUiProvider.initialize();
     }
+
     return this._toolUiProvider;
   }
 }

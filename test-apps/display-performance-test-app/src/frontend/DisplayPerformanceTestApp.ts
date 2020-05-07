@@ -1,27 +1,31 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64String, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
-import { HubIModel, OidcFrontendClientConfiguration, Project, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
+import * as path from "path";
+import { ClientRequestContext, Id64, Id64Arg, Id64String, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { Project } from "@bentley/context-registry-client";
 import {
-  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
-  IModelTileRpcInterface, IModelToken, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
-  SnapshotIModelRpcInterface, ViewDefinitionProps, OidcDesktopClientConfiguration,
+  BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
+} from "@bentley/frontend-authorization-client";
+import { HubIModel } from "@bentley/imodelhub-client";
+import {
+  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, DisplayStyleProps, ElectronRpcConfiguration,
+  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager, RenderMode, RpcConfiguration,
+  SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
-  AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
-  OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
-  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, OidcDesktopClientRenderer,
+  AuthorizedFrontendRequestContext, DesktopAuthorizationClient, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider,
+  FeatureSymbology, FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, PerformanceMetrics, Pixel, RenderSystem,
+  ScreenViewport, SnapshotConnection, Target, TileAdmin, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
+import { AccessToken } from "@bentley/itwin-client";
+import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery } from "@bentley/projectshare-client";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
-import { ConnectProjectConfiguration, SVTConfiguration } from "../common/SVTConfiguration";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
-import * as path from "path";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
@@ -32,6 +36,11 @@ const testNamesTimings = new Map<string, number>(); // Keep track of test names 
 let minimize = false;
 interface Options {
   [key: string]: any; // Add index signature
+}
+
+interface ConnectProjectConfiguration {
+  projectName: string;
+  iModelName: string;
 }
 
 // Retrieve default config data from json file
@@ -76,9 +85,9 @@ function combineFilePaths(additionalPath: string, initPath?: string) {
   if (initPath === undefined || additionalPath[1] === ":") // if additionalPath is full path (like D:), ignore the initial path
     return additionalPath;
   let combined = initPath;
-  while (combined.endsWith("\\") || combined.endsWith("\/"))
+  while (combined.endsWith("\\") || combined.endsWith("/"))
     combined = combined.slice(0, -1);
-  if (additionalPath[0] !== "\\" && additionalPath[0] !== "\/")
+  if (additionalPath[0] !== "\\" && additionalPath[0] !== "/")
     combined += "\\";
   combined += additionalPath;
   return combined;
@@ -100,10 +109,10 @@ function getBrowserName(userAgent: string) {
 }
 
 class DisplayPerfTestApp {
-  public static startup(opts?: IModelAppOptions) {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
-    IModelApp.startup(opts);
+    await IModelApp.startup(opts);
     IModelApp.animationInterval = undefined;
   }
 }
@@ -123,40 +132,42 @@ function getRenderOpts(): string {
   for (const [key, value] of Object.entries(curRenderOpts)) {
     switch (key) {
       case "disabledExtensions":
-        if (value) value.forEach((ext: string) => {
-          switch (ext) {
-            case "WEBGL_draw_buffers":
-              optString += "-drawBuf";
-              break;
-            case "OES_element_index_uint":
-              optString += "-unsignedInt";
-              break;
-            case "OES_texture_float":
-              optString += "-texFloat";
-              break;
-            case "OES_texture_half_float":
-              optString += "-texHalfFloat";
-              break;
-            case "WEBGL_depth_texture":
-              optString += "-depthTex";
-              break;
-            case "EXT_color_buffer_float":
-              optString += "-floats";
-              break;
-            case "EXT_shader_texture_lod":
-              optString += "-texLod";
-              break;
-            case "ANGLE_instanced_arrays":
-              optString += "-instArrays";
-              break;
-            case "EXT_frag_depth":
-              optString += "-fragDepth";
-              break;
-            default:
-              optString += "-" + ext;
-              break;
+        if (value) {
+          for (const ext of value) {
+            switch (ext) {
+              case "WEBGL_draw_buffers":
+                optString += "-drawBuf";
+                break;
+              case "OES_element_index_uint":
+                optString += "-unsignedInt";
+                break;
+              case "OES_texture_float":
+                optString += "-texFloat";
+                break;
+              case "OES_texture_half_float":
+                optString += "-texHalfFloat";
+                break;
+              case "WEBGL_depth_texture":
+                optString += "-depthTex";
+                break;
+              case "EXT_color_buffer_float":
+                optString += "-floats";
+                break;
+              case "EXT_shader_texture_lod":
+                optString += "-texLod";
+                break;
+              case "ANGLE_instanced_arrays":
+                optString += "-instArrays";
+                break;
+              case "EXT_frag_depth":
+                optString += "-fragDepth";
+                break;
+              default:
+                optString += "-" + ext;
+                break;
+            }
           }
-        });
+        }
         break;
       // case "enableOptimizedSurfaceShaders": // No longer supported
       //   if (value) optString += "+optSurf";
@@ -214,7 +225,7 @@ function getTileProps(): string {
 
 function getBackgroundMapProps(): string {
   let bmPropsStr = "";
-  const bmProps = activeViewState.viewState!.displayStyle.backgroundMap.settings;
+  const bmProps = activeViewState.viewState!.displayStyle.settings.backgroundMap;
   switch (bmProps.providerName) {
     case "BingProvider":
       break;
@@ -719,11 +730,10 @@ class SimpleViewState {
   public viewState?: ViewState;
   public viewPort?: Viewport;
   public projectConfig?: ConnectProjectConfiguration;
-  public oidcClient?: OidcBrowserClient;
+  public oidcClient?: BrowserAuthorizationClient;
   public externalSavedViews?: any[];
   public overrideElements?: any[];
   public selectedElements?: Id64Arg;
-  constructor() { }
 }
 
 class FOProvider implements FeatureOverrideProvider {
@@ -821,21 +831,23 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
   }
 }
 
-function createOidcClient(): IOidcFrontendClient {
-  let oidcClient: IOidcFrontendClient;
+async function createOidcClient(requestContext: ClientRequestContext): Promise<FrontendAuthorizationClient> {
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+
   if (ElectronRpcConfiguration.isElectron) {
     const clientId = "imodeljs-electron-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: OidcDesktopClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
-    oidcClient = new OidcDesktopClientRenderer(oidcConfiguration);
+    const oidcConfiguration: DesktopAuthorizationClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
+    const desktopClient = new DesktopAuthorizationClient(oidcConfiguration);
+    await desktopClient.initialize(requestContext);
+    return desktopClient;
   } else {
     const clientId = "imodeljs-spa-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
-    oidcClient = new OidcBrowserClient(oidcConfiguration);
+    const oidcConfiguration: BrowserAuthorizationClientConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+    const browserClient = new BrowserAuthorizationClient(oidcConfiguration);
+    return browserClient;
   }
-  return oidcClient;
 }
 
 // Wraps the signIn process
@@ -847,10 +859,9 @@ function createOidcClient(): IOidcFrontendClient {
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const oidcClient: IOidcFrontendClient = createOidcClient();
-
   const requestContext = new FrontendRequestContext();
-  await oidcClient.initialize(requestContext);
+  const oidcClient: FrontendAuthorizationClient = await createOidcClient(requestContext);
+
   IModelApp.authorizationClient = oidcClient;
   if (oidcClient.isAuthorized)
     return true;
@@ -867,13 +878,13 @@ async function signIn(): Promise<boolean> {
 
 async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   activeViewState = new SimpleViewState();
-  activeViewState.viewState;
+  activeViewState.viewState; // eslint-disable-line @typescript-eslint/no-unused-expressions
 
   // Open an iModel from a local file
   let openLocalIModel = (testConfig.iModelLocation !== undefined) || MobileRpcConfiguration.isMobileFrontend;
   if (openLocalIModel) {
     try {
-      activeViewState.iModelConnection = await IModelConnection.openSnapshot(testConfig.iModelFile!);
+      activeViewState.iModelConnection = await SnapshotConnection.openFile(testConfig.iModelFile!);
     } catch (err) {
       alert("openSnapshot failed: " + err.toString());
       openLocalIModel = false;
@@ -884,7 +895,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
     }
   }
 
-  // Open an iModel from the iModelHub
+  // Open an iModel from iModelHub
   if (!openLocalIModel && testConfig.iModelHubProject !== undefined && !MobileRpcConfiguration.isMobileFrontend) {
     const signedIn: boolean = await signIn();
     if (!signedIn)
@@ -893,12 +904,49 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
-    activeViewState.projectConfig = { projectName: testConfig.iModelHubProject, iModelName: testConfig.iModelName!.replace(".ibim", "").replace(".bim", "") } as ConnectProjectConfiguration;
+    const iModelName = testConfig.iModelName!.replace(".ibim", "").replace(".bim", "");
+    activeViewState.projectConfig = { projectName: testConfig.iModelHubProject, iModelName } as ConnectProjectConfiguration;
     activeViewState.project = await initializeIModelHub(activeViewState.projectConfig!.projectName);
     activeViewState.iModel = await IModelApi.getIModelByName(requestContext, activeViewState.project!.wsgId, activeViewState.projectConfig!.iModelName);
     if (activeViewState.iModel === undefined)
       throw new Error(`${activeViewState.projectConfig!.iModelName} - IModel not found in project ${activeViewState.project!.name}`);
     activeViewState.iModelConnection = await IModelApi.openIModel(activeViewState.project!.wsgId, activeViewState.iModel!.wsgId, undefined, OpenMode.Readonly);
+
+    if (activeViewState.project) { // Get any external saved views from iModelHub if they exist
+      try {
+        const projectShareClient: ProjectShareClient = new ProjectShareClient();
+        const projectId = activeViewState.project.wsgId;
+        const findFile = async (folderId: string): Promise<boolean> => {
+          const files: ProjectShareFile[] = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolderWithNameLike(folderId, iModelName + "_ESV.json"));
+          if (files && files.length > 0) {
+            const content = await projectShareClient.readFile(requestContext, files[0]);
+            const esvString = new TextDecoder("utf-8").decode(content);
+            if (undefined !== esvString && "" !== esvString) {
+              activeViewState.externalSavedViews = JSON.parse(esvString) as any[];
+            }
+            return true;
+          }
+          return false;
+        };
+        const findAllFiles = async (folderId: string): Promise<boolean> => {
+          if (await findFile(folderId))
+            return true;
+          else {
+            const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(folderId));
+            let fileFound = false;
+            for (let i = 0; i < folders.length && !fileFound; i++) {
+              fileFound = await findAllFiles(folders[i].wsgId);
+            }
+            return fileFound;
+          }
+        };
+        // Set activeViewState.externalSavedViews using the first _ESV.json file found in iModelHub with the iModel's name
+        await findAllFiles(activeViewState.project!.wsgId);
+      } catch (error) {
+        // Couldn't access the project share files
+      }
+
+    }
   }
 
   // open the specified view
@@ -940,8 +988,8 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
     }
     if (undefined !== testConfig.backgroundMap) {
       // Use the testConfig.backgroundMap data for each property in Background if it exists; otherwise, keep using the viewState's ViewFlags info
-      const bmSettings = activeViewState.viewState.displayStyle.backgroundMap.settings;
-      activeViewState.viewState.displayStyle.backgroundMap.settings = bmSettings.clone(testConfig.backgroundMap);
+      const bmSettings = activeViewState.viewState.displayStyle.settings.backgroundMap;
+      activeViewState.viewState.displayStyle.changeBackgroundMapProps(bmSettings.clone(testConfig.backgroundMap));
     }
   }
 
@@ -968,19 +1016,16 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   return true;
 }
 
-async function closeIModel(isSnapshot: boolean) {
+async function closeIModel() {
   debugPrint("start closeIModel" + activeViewState.iModelConnection);
   if (activeViewState.iModelConnection) {
-    if (isSnapshot)
-      await activeViewState.iModelConnection.closeSnapshot();
-    else
-      await activeViewState.iModelConnection!.close();
+    await activeViewState.iModelConnection.close();
   }
   debugPrint("end closeIModel");
 }
 
 // Restart the IModelApp if either the TileAdmin.Props or the Render.Options has changed
-function restartIModelApp(testConfig: DefaultConfigs) {
+async function restartIModelApp(testConfig: DefaultConfigs): Promise<void> {
   const newRenderOpts: RenderSystem.Options = testConfig.renderOptions ? testConfig.renderOptions : {};
   const newTileProps: TileAdmin.Props = testConfig.tileProps ? testConfig.tileProps : {};
   if (IModelApp.initialized) {
@@ -1015,13 +1060,13 @@ function restartIModelApp(testConfig: DefaultConfigs) {
         theViewport.dispose();
         theViewport = undefined;
       }
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
     }
   }
   curRenderOpts = newRenderOpts;
   curTileProps = newTileProps;
   if (!IModelApp.initialized) {
-    DisplayPerfTestApp.startup({
+    await DisplayPerfTestApp.startup({
       renderSys: testConfig.renderOptions,
       tileAdmin: TileAdmin.create(curTileProps),
     });
@@ -1176,12 +1221,12 @@ async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array
 
 async function runTest(testConfig: DefaultConfigs) {
   // Restart the IModelApp if needed
-  restartIModelApp(testConfig);
+  await restartIModelApp(testConfig);
 
   // Open and finish loading model
   const loaded = await loadIModel(testConfig);
   if (!loaded) {
-    await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
+    await closeIModel();
     return; // could not properly open the given model or saved view so skip test
   }
 
@@ -1190,7 +1235,7 @@ async function runTest(testConfig: DefaultConfigs) {
     await savePng(getImageString(testConfig));
     if (testConfig.testType === "image") {
       // Close the imodel & exit if nothing else needs to happen
-      await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
+      await closeIModel();
       return;
     }
   }
@@ -1258,12 +1303,12 @@ async function runTest(testConfig: DefaultConfigs) {
     await testReadPix(Pixel.Selector.Feature, "+feature");
     await testReadPix(Pixel.Selector.GeometryAndDistance, "+geom+dist");
     await testReadPix(Pixel.Selector.All, "+feature+geom+dist");
-    await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
+    await closeIModel();
   } else {
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false, gpuResultsCallback);
     await renderAsync(theViewport!, testConfig.numRendersToTime!, timingsForActualFPS, gpuResultsCallback);
     // Close model & save csv file
-    await closeIModel(testConfig.iModelLocation !== undefined || MobileRpcConfiguration.isMobileFrontend);
+    await closeIModel();
     const rowData = getRowData(timingsForActualFPS, finalGPUFrameTimings, timingsForActualFPS, testConfig);
     await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
 
@@ -1405,32 +1450,24 @@ async function main() {
   await DisplayPerfRpcInterface.getClient().finishCsv(renderData, testConfig.outputPath, testConfig.outputName, testConfig.csvFormat);
 
   DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
-  IModelApp.shutdown();
+  await IModelApp.shutdown();
 }
 
-window.onload = () => {
-  const configuration = {} as SVTConfiguration;
-
+window.onload = async () => {
   // Choose RpcConfiguration based on whether we are in electron or browser
   RpcConfiguration.developmentMode = true;
-  let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
-    rpcConfiguration = ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
+    ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
-    rpcConfiguration = MobileRpcManager.initializeClient([DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
+    MobileRpcManager.initializeClient([DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   } else {
-    const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
-    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
-
-    // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
-    // RPC without any imodel and fails...
-    for (const definition of rpcConfiguration.interfaces())
-      RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
+    const uriPrefix = "http://localhost:3001";
+    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
   }
 
   // ###TODO: Raman added one-time initialization logic IModelApp.startup which replaces a couple of RpcRequest-related functions.
   // Cheap hacky workaround until that's fixed.
-  DisplayPerfTestApp.startup();
+  await DisplayPerfTestApp.startup();
 
-  main(); // tslint:disable-line:no-floating-promises
+  await main();
 };

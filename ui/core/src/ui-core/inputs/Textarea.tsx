@@ -6,8 +6,8 @@
  * @module Inputs
  */
 
+import classnames from "classnames";
 import * as React from "react";
-import * as classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for [[Textarea]] component

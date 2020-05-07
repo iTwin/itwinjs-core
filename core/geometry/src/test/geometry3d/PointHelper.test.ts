@@ -2,37 +2,37 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Matrix4d } from "../../geometry4d/Matrix4d";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Arc3d } from "../../curve/Arc3d";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Point3dArray, Point2dArray, Vector3dArray, Point4dArray, NumberArray } from "../../geometry3d/PointHelpers";
-import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
-import { Checker } from "../Checker";
-import { expect } from "chai";
-import { Sample } from "../../serialization/GeometrySamples";
-import { MomentData } from "../../geometry4d/MomentData";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point4d } from "../../geometry4d/Point4d";
-import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
-import { HalfEdgeGraph } from "../../topology/Graph";
-
-import { Triangulator, MultiLineStringDataVariant } from "../../topology/Triangulation";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Loop } from "../../curve/Loop";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { NumberArray, Point2dArray, Point3dArray, Point4dArray, Vector3dArray } from "../../geometry3d/PointHelpers";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
+import { Matrix4d } from "../../geometry4d/Matrix4d";
+import { MomentData } from "../../geometry4d/MomentData";
+import { Point4d } from "../../geometry4d/Point4d";
+import { Sample } from "../../serialization/GeometrySamples";
+import { HalfEdgeGraph } from "../../topology/Graph";
+import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
+import { Triangulator } from "../../topology/Triangulation";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 /* tslint:disable:no-console */
 /**
  * Return the radius of a circle with area matching centroidData.a
@@ -48,15 +48,8 @@ describe("FrameBuilder", () => {
     ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
 
     for (const points of [
-      [Point3d.create(0, 0, 0),
-        Point3d.create(1, 0, 0),
-        Point3d.create(0, 1, 0)],
-      [Point3d.create(0, 0, 0),
-        Point3d.create(1, 0, 0),
-        Point3d.create(1, 1, 0)],
-      [Point3d.create(1, 2, -1),
-        Point3d.create(1, 3, 5),
-        Point3d.create(-2, 1, 7)],
+      [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(0, 1, 0)], [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0),
+        /* */ Point3d.create(1, 1, 0)], [Point3d.create(1, 2, -1), Point3d.create(1, 3, 5), Point3d.create(-2, 1, 7)],
     ]) {
       builder.clear();
       const point0 = points[0];
@@ -652,10 +645,7 @@ describe("Point3dArray", () => {
 
   it("Point3dArrayCarrierBadIndex", () => {
     const ck = new Checker();
-    const carrier = new Point3dArrayCarrier([Point3d.create(1, 2, 3),
-      Point3d.create(6, 2, 9),
-      Point3d.create(6, 2, 0),
-      Point3d.create(-4, 2, 8)]);
+    const carrier = new Point3dArrayCarrier([Point3d.create(1, 2, 3), Point3d.create(6, 2, 9), Point3d.create(6, 2, 0), Point3d.create(-4, 2, 8)]);
     const a = carrier.length;
     // These methods should return undefined if any index is bad.
     // (we know the index tests happen in a single validation function -- "some" calls need to test both extremes of out-of-bounds, but any particular arg only has to be tested in one direction)
@@ -960,7 +950,7 @@ describe("PolygonAreas", () => {
     const dataB = Point3dArray.cloneDeepXYZPoint3dArrays(pointA);
     ck.testExactNumber(11, dataB.length, "Round Trip as Point3d[]");
     const dataABC = Point3dArray.cloneDeepJSONNumberArrays([pointA, pointB, pointC]);
-    const linestringsABC0 = LineString3d.createArrayOfLineString3dFromVariantData(dataABC);
+    const linestringsABC0 = LineString3d.createArrayOfLineString3d(dataABC);
 
     const lsA = LineString3d.create(pointA);
     const lsB = LineString3d.create(pointB);
@@ -970,55 +960,6 @@ describe("PolygonAreas", () => {
       ck.testTrue(lsB.isAlmostEqual(linestringsABC0[1]), "pointB");
       ck.testTrue(lsC.isAlmostEqual(linestringsABC0[2]), "pointC");
     }
-    expect(ck.getNumErrors()).equals(0);
-  });
-
-  /**
-   * Exercise streaming functions that were deprecated in favor of object args instead of immediate function callbacks.
-   */
-  it("deprecatedStreamXYZ", () => {
-    const ck = new Checker();
-    // const allGeometry: GeometryQuery[] = [];
-    const pointA = Sample.createStar(1, 2, 3, 4, 6, 5, true);
-    const pointB = Sample.createRectangle(-2, 4, 5, 2);
-
-    const pointC = GrowableXYZArray.create([1, 2, 2, 4, 2, 1, 5, 2, 3]);
-    const dataABC = [pointA, pointB, pointC];
-    const rangeOld = Range3d.createNull();
-    Point3dArray.streamXYZ(dataABC,
-      (_chainData: MultiLineStringDataVariant, _isLeaf: boolean) => { },
-      (x: number, y: number, z: number) => { rangeOld.extendXYZ(x, y, z); },
-      (_chainData: MultiLineStringDataVariant, _isLeaf: boolean) => { },
-    );
-    const rangeNew = Range3d.createFromVariantData(dataABC);
-    ck.testRange3d(rangeNew, rangeOld);
-
-    expect(ck.getNumErrors()).equals(0);
-  });
-
-  /**
-   * Exercise streaming functions that were deprecated in favor of object args instead of immediate function callbacks.
-   */
-  it("deprecatedStreamXYZXYZ", () => {
-    const ck = new Checker();
-    // const allGeometry: GeometryQuery[] = [];
-    const pointA = Sample.createStar(1, 2, 3, 4, 6, 5, true);
-    const pointB = Sample.createRectangle(-2, 4, 5, 2);
-
-    const pointC = GrowableXYZArray.create([1, 2, 2, 4, 2, 1, 5, 2, 3]);
-    const dataABC = [pointA, pointB, pointC];
-    const rangeOld = Range3d.createNull();
-    Point3dArray.streamXYZXYZ(dataABC,
-      (_chainData: MultiLineStringDataVariant, _isLeaf: boolean) => { },
-      (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) => {
-        rangeOld.extendXYZ(x0, y0, z0);
-        rangeOld.extendXYZ(x1, y1, z1);
-      },
-      (_chainData: MultiLineStringDataVariant, _isLeaf: boolean) => { },
-    );
-    const rangeNew = Range3d.createFromVariantData(dataABC);
-    ck.testRange3d(rangeNew, rangeOld);
-
     expect(ck.getNumErrors()).equals(0);
   });
 

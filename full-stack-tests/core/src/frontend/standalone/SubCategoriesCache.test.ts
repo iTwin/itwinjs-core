@@ -3,19 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as path from "path";
-import {
-  BeDuration,
-  Id64,
-  Id64Arg,
-  Id64Set,
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  IModelConnection,
-  MockRender,
-  SubCategoriesCache,
-} from "@bentley/imodeljs-frontend";
+import { BeDuration, Id64, Id64Arg, Id64Set, Id64String } from "@bentley/bentleyjs-core";
+import { IModelConnection, MockRender, SnapshotConnection, SubCategoriesCache } from "@bentley/imodeljs-frontend";
 
 describe("SubCategoriesCache", () => {
   // test.bim:
@@ -33,15 +22,15 @@ describe("SubCategoriesCache", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim"));
+    await MockRender.App.startup();
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (undefined !== imodel)
-      await imodel.closeSnapshot();
+      await imodel.close();
 
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("should not repeatedly request same categories", async () => {

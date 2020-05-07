@@ -1,0 +1,8 @@
+sep=;
+Release Tag;API Item
+alpha;ProjectShareClient 
+alpha;ProjectShareFile 
+alpha;ProjectShareFileQuery 
+alpha;ProjectShareFolder 
+alpha;ProjectShareFolderQuery 
+alpha;ProjectShareQuery 

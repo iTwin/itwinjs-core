@@ -15,11 +15,6 @@ import { NewBadge } from "./NewBadge";
  * @internal
  */
 export class BadgeUtilities {
-  /** Converts optional BetaType & optional betaBadge flag to BadgeType */
-  public static determineBadgeType(badgeType?: BadgeType, betaBadge?: boolean): BadgeType {
-    return badgeType !== undefined ? badgeType : (betaBadge ? BadgeType.TechnicalPreview : BadgeType.None);
-  }
-
   /** Converts BetaType to Badge React component */
   public static getComponentForBadgeType(badgeType?: BadgeType): React.ReactNode {
     if (badgeType === undefined)
@@ -42,8 +37,4 @@ export class BadgeUtilities {
     return component;
   }
 
-  /** Converts optional BetaType & optional betaBadge flag to Badge React component */
-  public static getComponentForBadge(badgeType?: BadgeType, betaBadge?: boolean): React.ReactNode {
-    return BadgeUtilities.getComponentForBadgeType(BadgeUtilities.determineBadgeType(badgeType, betaBadge));
-  }
 }

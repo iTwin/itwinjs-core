@@ -5,16 +5,11 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import {
-  Value, ValuesArray, ValuesMap, NestedContentValue,
-  ValuesArrayJSON, ValuesMapJSON,
-  DisplayValuesArrayJSON, DisplayValuesMapJSON,
-  NestedContentValueJSON,
-  DisplayValue,
-  DisplayValuesArray,
-  DisplayValuesMap,
-} from "../../content/Value";
-import { createRandomECInstanceKeyJSON, createRandomECInstanceKey } from "../_helpers/random";
-import { InstanceKey } from "../../EC";
+  DisplayValue, DisplayValuesArray, DisplayValuesArrayJSON, DisplayValuesMap, DisplayValuesMapJSON, NestedContentValue, NestedContentValueJSON, Value,
+  ValuesArray, ValuesArrayJSON, ValuesMap, ValuesMapJSON,
+} from "../../presentation-common/content/Value";
+import { InstanceKey } from "../../presentation-common/EC";
+import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "../_helpers/random";
 
 describe("Value", () => {
 

@@ -3,10 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  compareStrings,
-  SortedArray,
-} from "@bentley/bentleyjs-core";
+import { compareStrings, SortedArray } from "@bentley/bentleyjs-core";
 
 export class NamedViewStatePropsString {
   private _name: string;

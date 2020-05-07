@@ -6,14 +6,14 @@
  * @module CheckListBox
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-import { Checkbox } from "../inputs/checkbox/Checkbox";
-import { CommonProps } from "../utils/Props";
 import "./CheckListBox.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { Checkbox } from "../checkbox/Checkbox";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[CheckListBoxItem]] component
- * @beta
+ * @public
  */
 export interface CheckListBoxItemProps extends CommonProps {
   /** Label */
@@ -27,7 +27,7 @@ export interface CheckListBoxItemProps extends CommonProps {
 }
 
 /** Item with a checkbox added to a [[CheckListBox]].
- * @beta
+ * @public
  */
 export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps> {
   public render() {
@@ -43,17 +43,16 @@ export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps>
 }
 
 /** Separator added to a [[CheckListBox]].
- * @beta
+ * @public
  */
-// tslint:disable-next-line:variable-name
-export const CheckListBoxSeparator: React.FunctionComponent = () => {
+export function CheckListBoxSeparator() {
   return (
     <div className="core-chk-listbox-separator" />
   );
-};
+}
 
 /** React component showing a list of Checkbox items.
- * @beta
+ * @public
  */
 export class CheckListBox extends React.PureComponent<CommonProps> {
   public render() {

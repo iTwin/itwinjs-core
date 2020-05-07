@@ -6,19 +6,19 @@
  * @module Tools
  */
 
-import { BeButtonEvent, InputCollector, BeButton, EventHandled, BeTouchEvent, InputSource, Tool, CoordinateLockOverrides } from "./Tool";
-import { DecorateContext } from "../ViewContext";
+import { AxisOrder, Geometry, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Ray3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Npc } from "@bentley/imodeljs-common";
+import { AccuDraw } from "../AccuDraw";
+import { TentativeOrAccuSnap } from "../AccuSnap";
+import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { ManipulatorToolEvent } from "./ToolAdmin";
 import { IModelConnection } from "../IModelConnection";
 import { SelectionSetEvent } from "../SelectionSet";
-import { HitDetail } from "../HitDetail";
-import { Viewport, CoordSystem } from "../Viewport";
-import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry, Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
-import { Npc } from "@bentley/imodeljs-common";
 import { StandardViewId } from "../StandardView";
-import { TentativeOrAccuSnap } from "../AccuSnap";
-import { AccuDraw } from "../AccuDraw";
+import { DecorateContext } from "../ViewContext";
+import { CoordSystem, Viewport } from "../Viewport";
+import { BeButton, BeButtonEvent, BeTouchEvent, CoordinateLockOverrides, EventHandled, InputCollector, InputSource, Tool } from "./Tool";
+import { ManipulatorToolEvent } from "./ToolAdmin";
 
 /** A manipulator maintains a set of controls used to modify element(s) or pickable decorations.
  * Interactive modification is handled by installing an InputCollector tool.

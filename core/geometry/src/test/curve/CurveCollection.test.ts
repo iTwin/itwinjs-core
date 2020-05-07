@@ -3,26 +3,40 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Sample } from "../../serialization/GeometrySamples";
-import { CurveCollection, ConsolidateAdjacentCurvePrimitivesOptions } from "../../curve/CurveCollection";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { Range3d } from "../../geometry3d/Range";
-import { Loop } from "../../curve/Loop";
-import { Path } from "../../curve/Path";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { RegionOps } from "../../curve/RegionOps";
+import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
+import { ConsolidateAdjacentCurvePrimitivesOptions, CurveCollection } from "../../curve/CurveCollection";
+import { CurveFactory } from "../../curve/CurveFactory";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { Path } from "../../curve/Path";
+import { RegionOps } from "../../curve/RegionOps";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 /* tslint:disable:no-console */
 
+const consolidateAdjacentPath = "./src/test/testInputs/curve/";
+/**
+ * mutate data so it is an array or undefined.
+ */
+function resolveToArray(data: any) {
+  if (data === undefined)
+    return data;
+  if (Array.isArray(data))
+    return data;
+  return [data];
+}
 function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
   const scaleFactor = 3.0;
   const scaleTransform = Transform.createScaleAboutPoint(Point3d.createZero(), scaleFactor);
@@ -176,27 +190,6 @@ describe("ConsolidateAdjacentPrimitives", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("FilletsInLinestring", () => {
-    const ck = new Checker();
-    const allGeometry: GeometryQuery[] = [];
-    let x0 = 0.0;
-    const points = [Point3d.create(0, 0, 0), Point3d.create(2, 0, 0), Point3d.create(2, 3, 1), Point3d.create(4, 3, 1), Point3d.create(6, 2, 1)];
-    const lineString0 = LineString3d.create(points);
-    points.reverse();
-    const lineString1 = LineString3d.create(points);
-    for (const filletRadius of [0.2, 0.4, 0.6, 1.2, 2.0, 4.0]) {
-      let y0 = 0.0;
-      for (const lineString of [lineString0, lineString1]) {
-        const chain0 = CurveFactory.createFilletsInLineString(lineString, filletRadius, false)!;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
-        y0 += 8.0;
-      }
-      x0 += 20.0;
-    }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacentPrimitives", "FilletsInLineString");
-    expect(ck.getNumErrors()).equals(0);
-  });
-
   it("LinesAndArcs", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -248,6 +241,41 @@ describe("ConsolidateAdjacentPrimitives", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacentPrimitives", "LinesAndArcs");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("consolidateAdjacentFiles", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    for (const filename of ["consolidateAdjacent00"]) {
+      const stringData = fs.readFileSync(consolidateAdjacentPath + filename + ".imjs", "utf8");
+      if (stringData) {
+        const jsonData = JSON.parse(stringData);
+        const fragments = resolveToArray(IModelJson.Reader.parse(jsonData));
+        if (Array.isArray(fragments)) {
+          for (const g of fragments) {
+            let g1 = g;
+            if (g instanceof CurvePrimitive)
+              g1 = Path.create(g);
+            if (g1 instanceof CurveCollection) {
+              const range = g.range();
+              const dx = 2.0 * range.xLength();
+              const dy = 1.1 * range.yLength();
+              const lengthA = g1.sumLengths ();
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, g1, x0, y0);
+              RegionOps.consolidateAdjacentPrimitives(g1);
+              const lengthB = g1.sumLengths ();
+              ck.testCoordinate (lengthA, lengthB, "consolidateAdjacentPrimitives should not change length");
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, g1, x0, y0 + dy);
+              x0 += dx;
+            }
+          }
+        }
+      }
+      GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacent", filename);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("Misc", () => {
     const ck = new Checker();
     const unitCircle = Arc3d.createUnitCircle();

@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
+import { Field, NestedContentField, PropertiesField, Property, PropertyValueFormat, StructTypeDescription } from "../../presentation-common";
+import { PropertiesFieldJSON } from "../../presentation-common/content/Fields";
 import {
-  createRandomECClassInfo, createRandomECClassInfoJSON,
-  createRandomRelationshipPath, createRandomRelationshipPathJSON,
-  createRandomCategory, createRandomPrimitiveTypeDescription,
-  createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomNestedFieldJSON, createRandomNestedContentField,
+  createRandomCategory, createRandomECClassInfo, createRandomECClassInfoJSON, createRandomNestedContentField, createRandomNestedFieldJSON,
+  createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomPrimitiveTypeDescription, createRandomRelationshipPath,
+  createRandomRelationshipPathJSON,
 } from "../_helpers/random";
-import { PropertiesFieldJSON } from "../../content/Fields";
-import { Field, PropertiesField, NestedContentField, PropertyValueFormat, StructTypeDescription, Property } from "../../presentation-common";
 
 const generateTestData = () => {
   const testData: any = {};

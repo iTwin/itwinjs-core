@@ -29,9 +29,9 @@ export interface ClientRequestContextProps {
  * request that originated at the client. This context is used to pass information for various
  * purposes including usage tracking and logging. Services that require authorization are
  * passed an instance of the subclass:
- * [[AuthorizedClientRequestContext]].
+ * [AuthorizedClientRequestContext]($itwin-client)
  * @see [ClientRequestContext rules]($docs/learning/backend/managingclientrequestcontext.md).
- * @see [[AuthorizedClientRequestContext]]
+ * @see [AuthorizedClientRequestContext]($itwin-client)
  * @public
  */
 export class ClientRequestContext implements ClientRequestContextProps {

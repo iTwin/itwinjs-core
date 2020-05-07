@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { createViewportQuadBuilder } from "./ViewportQuad";
-import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
+import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
+import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computeBaseColor = "return u_bgColor;";
 
@@ -38,6 +38,9 @@ export function createClearPickAndColorProgram(context: WebGLRenderingContext | 
     frag.addDrawBuffersExtension();
     frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
   }
+
+  builder.vert.headerComment = "//!V! ClearPickAndColor";
+  builder.frag.headerComment = "//!F! ClearPickAndColor";
 
   return builder.buildProgram(context);
 }

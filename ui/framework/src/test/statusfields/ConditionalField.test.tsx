@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
-
-import { ConditionalField, StatusFieldProps } from "../../ui-framework";
+import { mount } from "enzyme";
+import * as React from "react";
 import { FooterSeparator } from "@bentley/ui-ninezone";
+import { ConditionalField, StatusFieldProps } from "../../ui-framework";
 
 describe("ConditionalField", () => {
 

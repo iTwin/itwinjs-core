@@ -8,9 +8,10 @@
  */
 
 import { Geometry } from "../Geometry";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { SmallSystem } from "./Polynomials";
+
 // cspell:word currentdFdX
 /** base class for Newton iterations in various dimensions.
  * Dimension-specific classes carry all dimension-related data and answer generalized queries

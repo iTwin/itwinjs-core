@@ -7,19 +7,21 @@
  */
 
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { IModelToken } from "../../IModel";
+import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcRegistry, OPERATION, POLICY } from "./RpcRegistry";
-import { RpcInvocationCallback_T } from "./RpcInvocation";
-import { RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T } from "./RpcRequest";
 import { RpcResponseCacheControl } from "./RpcConstants";
+import { RpcInvocationCallback_T } from "./RpcInvocation";
+import { OPERATION, POLICY, RpcRegistry } from "./RpcRegistry";
+import {
+  RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T,
+} from "./RpcRequest";
 
 /** The policy for an RPC operation.
  * @public
  */
 export class RpcOperationPolicy {
-  /** Supplies the IModelToken for an operation request. */
+  /** Supplies the IModelRpcProps for an operation request. */
   public token: RpcRequestTokenSupplier_T = (request) => request.findTokenPropsParameter();
 
   /** Supplies the initial retry interval for an operation request. */
@@ -43,7 +45,7 @@ export class RpcOperationPolicy {
   /** Forces RpcConfiguration.strictMode for this operation. */
   public forceStrictMode: boolean = false;
 
-  /** Whether the IModelToken in the operation parameter list is allowed to differ from the token in the request URL. */
+  /** Whether the IModelRpcProps in the operation parameter list is allowed to differ from the token in the request URL. */
   public allowTokenMismatch: boolean = false;
 }
 
@@ -52,7 +54,7 @@ export class RpcOperationPolicy {
  */
 export class RpcOperation {
   /** A fallback token to use for RPC requests that do not semantically depend on an iModel. */
-  public static fallbackToken: IModelToken | undefined = undefined;
+  public static fallbackToken: IModelRpcProps | undefined = undefined;
 
   /** Looks up an RPC operation by name. */
   public static lookup(target: string | RpcInterfaceDefinition, operationName: string): RpcOperation {
@@ -133,6 +135,15 @@ export namespace RpcOperation {
     return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
       descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, new class extends RpcOperationPolicy {
         public allowResponseCaching = () => control;
+      }());
+    };
+  }
+
+  /** Convenience decorator for setting an RPC operation policy that supplies the IModelRpcProps for an operation. */
+  export function setRoutingProps(handler: RpcRequestTokenSupplier_T) {
+    return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
+      descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, new class extends RpcOperationPolicy {
+        public token = handler;
       }());
     };
   }

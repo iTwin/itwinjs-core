@@ -2,21 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow, ReactWrapper } from "enzyme";
-import { render, cleanup, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
+import { mount, ReactWrapper, shallow } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
-import TestUtils from "../TestUtils";
-import {
-  PopupButton,
-  SyncUiEventDispatcher,
-  BaseItemState,
-} from "../../ui-framework";
+import { BadgeType } from "@bentley/ui-abstract";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
-import { BadgeType } from "@bentley/ui-abstract";
+import { cleanup, fireEvent, render } from "@testing-library/react";
+import { BaseItemState, PopupButton, SyncUiEventDispatcher } from "../../ui-framework";
+// tslint:disable: deprecation
+import TestUtils from "../TestUtils";
 
 // cSpell:ignore buttonstate
 

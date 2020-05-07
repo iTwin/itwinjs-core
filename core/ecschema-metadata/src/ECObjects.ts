@@ -5,6 +5,7 @@
 
 import { ECStringConstants } from "./Constants";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
+
 export { PropertyType } from "./PropertyTypes";
 
 // NEEDSWORK: This shim is currently required to use async iterators.  See https://github.com/Microsoft/TypeScript/issues/14151

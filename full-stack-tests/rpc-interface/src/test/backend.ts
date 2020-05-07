@@ -5,14 +5,13 @@
 
 // Sets up a local backend to be used for testing within the iModel.js repo.
 
+import { Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { Config } from "@bentley/imodeljs-clients";
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { IModelJsExpressServer } from "@bentley/express-server";
+import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { Presentation as PresentationBackend } from "@bentley/presentation-backend";
-
-import { Settings, getRpcInterfaces } from "../common/Settings";
+import { getRpcInterfaces, Settings } from "../common/Settings";
 
 IModelJsConfig.init(true, true, Config.App);
 const settings = new Settings(process.env);
@@ -25,7 +24,7 @@ const settings = new Settings(process.env);
   const hostConfig = new IModelHostConfiguration();
   hostConfig.concurrentQuery.concurrent = 2;
   hostConfig.concurrentQuery.pollInterval = 5;
-  IModelHost.startup(hostConfig);
+  await IModelHost.startup(hostConfig);
 
   PresentationBackend.initialize();
 

@@ -3,20 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useCallback } from "react";
-import { useAsync } from "react-async-hook";
-import {
-  ConfigurableUiManager,
-  ConfigurableCreateInfo,
-  WidgetControl,
-} from "@bentley/ui-framework";
-import { Orientation, GlobalContextMenu, ContextMenuItem, ContextMenuItemProps } from "@bentley/ui-core";
-import { PropertyGrid, PropertyGridContextMenuArgs, ActionButtonRendererProps } from "@bentley/ui-components";
-import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { Field } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import { IModelApp, IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+import { ActionButtonRendererProps, PropertyGrid, PropertyGridContextMenuArgs, useAsyncValue } from "@bentley/ui-components";
+import { ContextMenuItem, ContextMenuItemProps, GlobalContextMenu, Orientation } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
 
 // create a HOC property grid component that supports unified selection
 // tslint:disable-next-line:variable-name
@@ -26,14 +19,13 @@ export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    if (options && options.iModelConnection && options.rulesetId)
-      this.reactElement = <UnifiedSelectionPropertyGridWidget iModelConnection={options.iModelConnection} rulesetId={options.rulesetId} />;
+    if (options && options.iModelConnection)
+      this.reactNode = <UnifiedSelectionPropertyGridWidget iModelConnection={options.iModelConnection} />;
   }
 }
 
 interface UnifiedSelectionPropertyGridWidgetProps {
   iModelConnection: IModelConnection;
-  rulesetId: string;
 }
 
 export type ContextMenuItemInfo = ContextMenuItemProps & React.Attributes & { label: string };
@@ -49,20 +41,16 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   constructor(props: UnifiedSelectionPropertyGridWidgetProps) {
     super(props);
     this.state = {
-      dataProvider: createDataProvider(this.props.iModelConnection, this.props.rulesetId),
+      dataProvider: createDataProvider(this.props.iModelConnection),
     };
   }
 
   private _onAddFavorite = async (propertyField: Field) => {
-    const imodelId = this.props.iModelConnection.iModelToken.iModelId;
-    const projectId = this.props.iModelConnection.iModelToken.contextId;
-    await Presentation.favoriteProperties.add(propertyField, projectId, imodelId);
+    await Presentation.favoriteProperties.add(propertyField, this.props.iModelConnection, FavoritePropertiesScope.IModel);
     this.setState({ contextMenu: undefined });
   }
   private _onRemoveFavorite = async (propertyField: Field) => {
-    const imodelId = this.props.iModelConnection.iModelToken.iModelId;
-    const projectId = this.props.iModelConnection.iModelToken.contextId;
-    await Presentation.favoriteProperties.remove(propertyField, projectId, imodelId);
+    await Presentation.favoriteProperties.remove(propertyField, this.props.iModelConnection, FavoritePropertiesScope.IModel);
     this.setState({ contextMenu: undefined });
   }
 
@@ -84,9 +72,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
     const field = await this.state.dataProvider.getFieldByPropertyRecord(args.propertyRecord);
     const items: ContextMenuItemInfo[] = [];
     if (field !== undefined) {
-      const imodelId = this.props.iModelConnection.iModelToken.iModelId;
-      const projectId = this.props.iModelConnection.iModelToken.contextId;
-      if (Presentation.favoriteProperties.has(field, projectId, imodelId)) {
+      if (Presentation.favoriteProperties.has(field, this.props.iModelConnection, FavoritePropertiesScope.IModel)) {
         items.push({
           key: "remove-favorite",
           icon: "icon-remove-2",
@@ -142,20 +128,17 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
 
   private _favoriteActionButtonRenderer = (props: ActionButtonRendererProps) => {
     const { dataProvider } = this.state;
-    const getFieldByPropertyRecordCallback = useCallback((property: PropertyRecord) => dataProvider.getFieldByPropertyRecord(property), [dataProvider]);
-    const { result: field } = useAsync(getFieldByPropertyRecordCallback, [props.property]);
-    const imodelId = this.props.iModelConnection.iModelToken.iModelId;
-    const projectId = this.props.iModelConnection.iModelToken.contextId;
+    const { property } = props;
+    const field = useAsyncValue(React.useMemo(() => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
 
     return (
       <div>
         {
           field &&
-          (Presentation.favoriteProperties.has(field, projectId, imodelId) || props.isPropertyHovered) &&
+          (Presentation.favoriteProperties.has(field, this.props.iModelConnection, FavoritePropertiesScope.IModel) || props.isPropertyHovered) &&
           <FavoriteActionButton
             field={field}
-            projectId={projectId}
-            imodelId={imodelId} />
+            imodel={this.props.iModelConnection} />
         }
       </div>
     );
@@ -163,7 +146,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
 
   public render() {
     const actionButtonRenderers = [this._favoriteActionButtonRenderer];
-    if (this.props.iModelConnection && this.props.rulesetId)
+    if (this.props.iModelConnection)
       return (
         <div style={{ height: "100%" }}>
           <UnifiedSelectionPropertyGrid
@@ -181,16 +164,15 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   }
 }
 
-function createDataProvider(imodel: IModelConnection, rulesetId: string): PresentationPropertyDataProvider {
-  return new PresentationPropertyDataProvider(imodel, rulesetId);
+function createDataProvider(imodel: IModelConnection): PresentationPropertyDataProvider {
+  return new PresentationPropertyDataProvider({ imodel });
 }
 
 ConfigurableUiManager.registerControl("UnifiedSelectionPropertyGridDemoWidget", UnifiedSelectionPropertyGridWidgetControl);
 
 interface FavoriteActionButtonProps {
   field: Field;
-  projectId?: string;
-  imodelId?: string;
+  imodel: IModelConnection;
 }
 
 class FavoriteActionButton extends React.Component<FavoriteActionButtonProps> {
@@ -221,14 +203,14 @@ class FavoriteActionButton extends React.Component<FavoriteActionButtonProps> {
 
   private async toggleFavoriteProperty() {
     if (this.isFavorite())
-      await Presentation.favoriteProperties.remove(this.props.field, this.props.projectId, this.props.imodelId);
+      await Presentation.favoriteProperties.remove(this.props.field, this.props.imodel, FavoritePropertiesScope.IModel);
     else
-      await Presentation.favoriteProperties.add(this.props.field, this.props.projectId, this.props.imodelId);
+      await Presentation.favoriteProperties.add(this.props.field, this.props.imodel, FavoritePropertiesScope.IModel);
     if (this._isMounted)
       this.setState({ isFavorite: this.isFavorite() });
   }
 
   private isFavorite(): boolean {
-    return Presentation.favoriteProperties.has(this.props.field, this.props.projectId, this.props.imodelId);
+    return Presentation.favoriteProperties.has(this.props.field, this.props.imodel, FavoritePropertiesScope.IModel);
   }
 }

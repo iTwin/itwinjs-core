@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import _ from "lodash";
+import * as React from "react";
 import { Omit } from "@bentley/ui-core";
-import { PropertyCategoryBlock, PropertyCategoryBlockProps } from "./PropertyCategoryBlock";
-import { PropertyList, PropertyListProps, getPropertyKey } from "./PropertyList";
 import { PropertyCategory } from "../PropertyDataProvider";
+import { PropertyCategoryBlock, PropertyCategoryBlockProps } from "./PropertyCategoryBlock";
+import { getPropertyKey, PropertyList, PropertyListProps } from "./PropertyList";
 
 /** @internal */
 export interface SelectablePropertyBlockProps extends PropertyCategoryBlockProps, Omit<PropertyListProps, "onColumnChanged" | "columnRatio"> {

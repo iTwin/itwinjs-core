@@ -3,24 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { expect } from "chai";
+import { Arc3d } from "../../curve/Arc3d";
+import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineString3d } from "../../curve/LineString3d";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-
-import { Arc3d } from "../../curve/Arc3d";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Angle } from "../../geometry3d/Angle";
-import { prettyPrint } from "../testFunctions";
-import { Checker } from "../Checker";
-import { expect } from "chai";
 import { Sample } from "../../serialization/GeometrySamples";
-import { LineString3d } from "../../curve/LineString3d";
-import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
-import { Geometry } from "../../Geometry";
+import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import { prettyPrint } from "../testFunctions";
+
 /* tslint:disable:no-console */
 
 function sampleSweeps(): AngleSweep[] {

@@ -6,22 +6,13 @@
  * @module WebGL
  */
 
-import {
-  InverseMatrixState,
-  Matrix4d,
-  Point3d,
-  Transform,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  Frustum,
-  Npc,
-} from "@bentley/imodeljs-common";
+import { InverseMatrixState, Matrix4d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Frustum, Npc } from "@bentley/imodeljs-common";
 import { RenderTarget } from "../RenderTarget";
-import { desync, sync } from "./Sync";
 import { UniformHandle } from "./Handle";
+import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
 import { Matrix4 } from "./Matrix";
-import { Target } from "./Target";
+import { desync, sync } from "./Sync";
 
 /** @internal */
 export const enum FrustumUniformType { // tslint:disable-line:no-const-enum
@@ -54,14 +45,15 @@ export class FrustumUniforms {
   private readonly _nearPlaneCenter = new Point3d();
   public readonly viewMatrix = Transform.createIdentity();
   public readonly projectionMatrix = Matrix4d.createIdentity();
-  private _useLogZ = false;
-  private readonly _target: Target;
+  private readonly _worldUpVector = Vector3d.unitZ();
+  private readonly _viewUpVector = Vector3d.unitZ();
 
   // GPU state
   private readonly _planeData: Float32Array = new Float32Array(4);
   private readonly _frustumData: Float32Array = new Float32Array(3);
   public readonly projectionMatrix32 = new Matrix4();
   private readonly _logZData = new Float32Array(2);
+  private readonly _viewUpVector32 = new Float32Array(3);
 
   // SyncTarget
   public syncKey = 0;
@@ -75,13 +67,17 @@ export class FrustumUniforms {
     viewZ: new Vector3d(),
   };
 
-  public constructor(target: Target) {
-    this._target = target;
+  public constructor() {
   }
 
   public bindProjectionMatrix(uniform: UniformHandle): void {
     if (!sync(this, uniform))
       uniform.setMatrix4(this.projectionMatrix32);
+  }
+
+  public bindUpVector(uniform: UniformHandle): void {
+    if (!sync(this, uniform))
+      uniform.setUniform3fv(this._viewUpVector32);
   }
 
   // uniform vec4 u_frustumPlanes; // { top, bottom, left, right }
@@ -97,7 +93,7 @@ export class FrustumUniforms {
   public get planFraction(): number { return this._planFraction; }
 
   // uniform vec2 u_logZ where x = 1/near and y = log(far/near)
-  public get logZ(): Float32Array | undefined { return this._useLogZ ? this._logZData : undefined; }
+  public get logZ(): Float32Array { return this._logZData; }
 
   public changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void {
     if (newFraction === this._planFraction && is3d !== this.is2d && newFrustum.equals(this.planFrustum))
@@ -135,7 +131,7 @@ export class FrustumUniforms {
       ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, 0, depth, this.projectionMatrix);
 
       this.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
-      this.setFrustum(0, depth, FrustumUniformType.TwoDee, false);
+      this.setFrustum(0, depth, FrustumUniformType.TwoDee);
     } else if (newFraction > 0.999) { // ortho
       const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, this._scratch.vec3d).magnitude() * 0.5;
       const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
@@ -148,7 +144,7 @@ export class FrustumUniforms {
       this._nearPlaneCenter.interpolate(0.5, nearUpperRight, this._nearPlaneCenter);
 
       this.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
-      this.setFrustum(0, depth, FrustumUniformType.Orthographic, false);
+      this.setFrustum(0, depth, FrustumUniformType.Orthographic);
     } else { // perspective
       const scale = 1.0 / (1.0 - newFraction);
       const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, this._scratch.vec3d);
@@ -164,14 +160,36 @@ export class FrustumUniforms {
       lookIn(cameraPosition, viewX, viewY, viewZ, this.viewMatrix);
       frustum(frustumLeft, frustumRight, frustumBottom, frustumTop, frustumFront, frustumBack, this.projectionMatrix);
 
+      IModelFrameLifecycle.onChangeCameraView.raiseEvent({
+        cameraPosition,
+        viewX,
+        viewY,
+        viewZ,
+      });
+      IModelFrameLifecycle.onChangeCameraFrustum.raiseEvent({
+        type: FrustumUniformType.Perspective,
+        left: frustumLeft,
+        right: frustumRight,
+        bottom: frustumBottom,
+        top: frustumTop,
+        front: frustumFront,
+        back: frustumBack,
+      });
+
       this._nearPlaneCenter.setFrom(nearLowerLeft);
       this._nearPlaneCenter.interpolate(0.5, nearUpperRight, this._nearPlaneCenter);
 
       this.setPlanes(frustumTop, frustumBottom, frustumLeft, frustumRight);
-      this.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective, this._target.useLogZ);
+      this.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective);
     }
 
     this.viewMatrix.matrix.inverseState = InverseMatrixState.unknown;
+
+    this.viewMatrix.matrix.multiplyVector(this._worldUpVector, this._viewUpVector);
+    this._viewUpVector.normalizeInPlace();
+    this._viewUpVector32[0] = this._viewUpVector.x;
+    this._viewUpVector32[1] = this._viewUpVector.y;
+    this._viewUpVector32[2] = this._viewUpVector.z;
 
     this.projectionMatrix32.initFromMatrix4d(this.projectionMatrix);
   }
@@ -189,15 +207,14 @@ export class FrustumUniforms {
     this._planeData[Plane.kRight] = right;
   }
 
-  protected setFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType, useLogZ: boolean): void {
+  protected setFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType): void {
     this._frustumData[FrustumData.kNear] = nearPlane;
     this._frustumData[FrustumData.kFar] = farPlane;
     this._frustumData[FrustumData.kType] = type as number;
-    this._useLogZ = useLogZ && (FrustumUniformType.Perspective === type);
-    if (this._useLogZ) {
-      this._logZData[0] = 0 !== nearPlane ? 1 / nearPlane : 0;
-      this._logZData[1] = 0 !== nearPlane ? Math.log(farPlane / nearPlane) : 1;
-    }
+
+    // If nearPlane is zero, we don't have a camera (or got very unlucky); in that case shader will compute linear depth.
+    this._logZData[0] = 0 !== nearPlane ? 1 / nearPlane : 0;
+    this._logZData[1] = 0 !== nearPlane ? Math.log(farPlane / nearPlane) : farPlane;
   }
 }
 

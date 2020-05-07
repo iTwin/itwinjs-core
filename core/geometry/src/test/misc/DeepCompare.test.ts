@@ -2,14 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { DeepCompare } from "../../serialization/DeepCompare";
-
 /* tslint:disable:no-console trailing-comma object-literal-key-quotes*/
-
 // Requires for grabbing json object from external file
 import * as fs from "fs";
+import { DeepCompare } from "../../serialization/DeepCompare";
+import { Checker } from "../Checker";
 
 // Variables used for testing
 const deepComparisonFolderPath = "./src/test/deepComparisonTestFiles/";

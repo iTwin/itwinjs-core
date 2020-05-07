@@ -3,22 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  AmbientOcclusion,
-  RenderMode,
-  ViewFlags,
-} from "@bentley/imodeljs-common";
-import {
-  Viewport,
-  ViewState,
-  ViewState3d,
-} from "@bentley/imodeljs-frontend";
-import {
-  createCheckBox,
-  Slider,
-  createSlider,
-  createButton,
-} from "@bentley/frontend-devtools";
+import { createButton, createCheckBox, createSlider, Slider } from "@bentley/frontend-devtools";
+import { AmbientOcclusion, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
 
 export class AmbientOcclusionEditor {
   private readonly _vp: Viewport;

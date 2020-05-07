@@ -18,7 +18,7 @@ export type AuthorizationResponseCompletedListener = (error?: AuthorizationError
 export type AuthorizationResponseListener = (error: AuthorizationErrorJson | null, response: AuthorizationResponseJson | null) => void;
 
 /**
- * Internal events used by authorization by OidcDesktopClient and related classes
+ * Internal events used by authorization by DesktopAuthorizationClient and related classes
  * @internal
  */
 export class ElectronAuthorizationEvents {

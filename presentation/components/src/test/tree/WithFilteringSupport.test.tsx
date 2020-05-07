@@ -4,20 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
-import * as React from "react";
 import { expect } from "chai";
-import * as sinon from "sinon";
 import { shallow, ShallowWrapper } from "enzyme";
 import * as faker from "faker";
+import * as React from "react";
+import * as sinon from "sinon";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { NodePathElement } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { waitForPendingAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Tree, ActiveMatchInfo } from "@bentley/ui-components";
-import { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "../../tree/WithFilteringSupport";
-import { FilteredPresentationTreeDataProvider } from "../../tree/FilteredDataProvider";
-import { IPresentationTreeDataProvider } from "../../tree/IPresentationTreeDataProvider";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { NodePathElement } from "@bentley/presentation-common";
+import { ActiveMatchInfo, DEPRECATED_Tree as Tree } from "@bentley/ui-components";
+import { FilteredPresentationTreeDataProvider } from "../../presentation-components/tree/FilteredDataProvider";
+import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
+import {
+  DEPRECATED_treeWithFilteringSupport as treeWithFilteringSupport, TreeWithFilteringSupportProps,
+} from "../../presentation-components/tree/WithFilteringSupport";
+
+// tslint:disable:deprecation
 
 // tslint:disable-next-line:variable-name naming-convention
 const FilteredTree = treeWithFilteringSupport(Tree);

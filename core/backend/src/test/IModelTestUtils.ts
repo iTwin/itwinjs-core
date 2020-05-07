@@ -3,23 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { DbResult, IModelStatus, Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory } from "@bentley/bentleyjs-core";
-import { Config, ChangeSet, AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
-import { IModelError, Code, ElementProps, RpcManager, GeometricElement3dProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
-import {
-  IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
-  IModelJsNative, NativeLoggerCategory,
-} from "../imodeljs-backend";
-import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
-import { KnownTestLocations } from "./KnownTestLocations";
-import { HubUtility } from "./integration/HubUtility";
 import * as path from "path";
-import { Schema, Schemas } from "../Schema";
-import { ElementDrivesElement, RelationshipProps } from "../Relationship";
-import { PhysicalElement } from "../Element";
-import { ClassRegistry } from "../ClassRegistry";
+import {
+  BeEvent, BentleyLoggerCategory, ChangeSetStatus, Config, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel,
+  OpenMode,
+} from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
+import {
+  BriefcaseProps, Code, CodeProps, ElementProps, GeometricElement3dProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, RelatedElement,
+  RpcConfiguration, RpcManager, SyncMode,
+} from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
+import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
+import { ClassRegistry } from "../ClassRegistry";
+import { PhysicalElement } from "../Element";
+import {
+  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, InformationPartitionElement,
+  Model, NativeLoggerCategory, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
+} from "../imodeljs-backend";
+import { ElementDrivesElement, RelationshipProps } from "../Relationship";
+import { Schema, Schemas } from "../Schema";
+import { HubUtility } from "./integration/HubUtility";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 /** Class for simple test timing */
 export class Timer {
@@ -129,13 +135,22 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
 }
 
 export class IModelTestUtils {
+  /** Helper to open a briefcase db */
+  public static async downloadAndOpenBriefcaseDb(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, syncMode: SyncMode, version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseDb> {
+    requestContext.enter();
+    const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, contextId, iModelId, { syncMode }, version);
+    requestContext.enter();
+    return BriefcaseDb.open(requestContext, briefcaseProps.key);
+  }
+
+  public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: BriefcaseDb) {
+    briefcaseDb.close();
+    await BriefcaseManager.delete(requestContext, briefcaseDb.briefcaseKey);
+  }
+
   public static async getTestModelInfo(requestContext: AuthorizedClientRequestContext, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
     const iModelInfo = new TestIModelInfo(iModelName);
     iModelInfo.id = await HubUtility.queryIModelIdByName(requestContext, testProjectId, iModelInfo.name);
-
-    const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
-    iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
-    iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
     iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelInfo.id);
     return iModelInfo;
@@ -171,10 +186,10 @@ export class IModelTestUtils {
   }
 
   /** Orchestrates the steps necessary to create a new snapshot iModel from a seed file. */
-  public static createSnapshotFromSeed(testFileName: string, seedFileName: string): IModelDb {
-    const seedDb: IModelDb = IModelDb.openSnapshot(seedFileName);
-    const testDb: IModelDb = seedDb.createSnapshot(testFileName);
-    seedDb.closeSnapshot();
+  public static createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotDb {
+    const seedDb: SnapshotDb = SnapshotDb.openFile(seedFileName);
+    const testDb: SnapshotDb = SnapshotDb.createFrom(seedDb, testFileName);
+    seedDb.close();
     return testDb;
   }
 
@@ -212,7 +227,7 @@ export class IModelTestUtils {
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
-    if (testDb instanceof IModelDb) {
+    if (testDb.isBriefcaseDb()) {
       await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [modeledElement]);
       rqctx.enter();
     }
@@ -232,7 +247,7 @@ export class IModelTestUtils {
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   public static async createAndInsertPhysicalModelAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    if (testDb instanceof IModelDb) {
+    if (testDb.isBriefcaseDb()) {
       await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [], [newModel]);
       rqctx.enter();
     }
@@ -290,11 +305,11 @@ export class IModelTestUtils {
     return testImodel.elements.createElement(elementProps);
   }
 
-  public static startBackend() {
+  public static async startBackend(): Promise<void> {
     IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
     const config = new IModelHostConfiguration();
     config.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
-    IModelHost.startup(config);
+    await IModelHost.startup(config);
   }
 
   public static registerTestBimSchema() {
@@ -305,8 +320,8 @@ export class IModelTestUtils {
     }
   }
 
-  public static shutdownBackend() {
-    IModelHost.shutdown();
+  public static async shutdownBackend(): Promise<void> {
+    await IModelHost.shutdown();
   }
 
   public static setupLogging() {
@@ -326,6 +341,7 @@ export class IModelTestUtils {
       Logger.configureLevels(require(loggingConfigFile));
     }
   }
+
   public static init() {
     // dummy method to get this script included
   }
@@ -334,9 +350,9 @@ export class IModelTestUtils {
     Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
     Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
     Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.IModelHub, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(ITwinClientLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(IModelHubClientLoggerCategory.IModelHub, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(ITwinClientLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.Licensing, reset ? LogLevel.Error : LogLevel.Trace);
@@ -367,7 +383,20 @@ export class IModelTestUtils {
       return rows;
     });
   }
+
+  /** Flushes the Txns in the TxnTable - this allows importing of schemas */
+  public static flushTxns(iModelDb: IModelDb): boolean {
+    const res: IModelJsNative.ErrorStatusOrResult<ChangeSetStatus, string> = iModelDb.nativeDb.startCreateChangeSet();
+    if (res.error)
+      return false;
+    const status = iModelDb.nativeDb.finishCreateChangeSet();
+    if (ChangeSetStatus.Success !== status)
+      return false;
+    return true;
+  }
 }
 
-IModelTestUtils.setupLogging();
-IModelTestUtils.startBackend();
+before(async () => {
+  IModelTestUtils.setupLogging();
+  await IModelTestUtils.startBackend();
+});

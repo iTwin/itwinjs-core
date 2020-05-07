@@ -6,12 +6,13 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Transform } from "./Transform";
-import { BeJSONFunctions, Geometry, AxisOrder, PlaneAltitudeEvaluator } from "../Geometry";
+import { AxisOrder, BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { Matrix3d } from "./Matrix3d";
+import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Transform } from "./Transform";
+
 /**
  * A plane defined by
  *

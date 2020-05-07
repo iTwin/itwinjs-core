@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, IAuthorizationClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { TestOidcClient } from "./TestOidcClient";
-import { TestUserCredentials, TestUsers, TestOidcConfiguration } from "./TestUsers";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestBrowserAuthorizationClient } from "./TestBrowserAuthorizationClient";
+import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials, TestUsers } from "./TestUsers";
 
 /**
  * A set of convenience methods to get an Access Token, AuthorizationClient or an AuthorizedClientRequestContext for a given TestUserCredential.
@@ -12,30 +12,30 @@ import { TestUserCredentials, TestUsers, TestOidcConfiguration } from "./TestUse
  * @internal
  */
 export class TestUtility {
-  private static _clients = new Map<string, IAuthorizationClient>();
+  private static _clients = new Map<string, TestBrowserAuthorizationClient>();
 
   /**
    * Gets the authorization client for the specified iModel.js test user.
    * - Caches the client for future use.
    * - Uses the default iModel.js internal OIDC SPA client registration by default.
    * @param user Test user credentials
-   * @param oidcConfig Test oidc coniguration to use for the provided user
+   * @param oidcConfig Test oidc configuration to use for the provided user
    * @internal
    */
-  public static getAuthorizationClient(user: TestUserCredentials, oidcConfig?: TestOidcConfiguration): IAuthorizationClient {
+  public static getAuthorizationClient(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): TestBrowserAuthorizationClient {
     let client = this._clients.get(user.email);
     if (client !== undefined)
       return client;
 
-    const config = undefined === oidcConfig ? TestUsers.getTestOidcConfiguration() : oidcConfig;
-    client = new TestOidcClient(config, user);
+    const config = undefined === oidcConfig ? TestUsers.getTestBrowserAuthorizationClientConfiguration() : oidcConfig;
+    client = new TestBrowserAuthorizationClient(config, user);
     this._clients.set(user.email, client);
     return client;
   }
 
   /**
    * Get the access token for the specified iModel.js test user.
-   * - Retrieves a previously cached token if that's available, or otherwise uses [[TestOidcClient]]
+   * - Retrieves a previously cached token if that's available, or otherwise uses [[TestBrowserAuthorizationClient]]
    * to signin the user through a headless browser.
    * - Uses the default iModel.js internal OIDC SPA client registration
    * @param user Test user credentials
@@ -48,7 +48,7 @@ export class TestUtility {
 
   /**
    * Create or retrieve the client request context for the specified iModel.js test user
-   * - A previously cached token is reused if available to construct the context, or otherwise uses [[TestOidcClient]]
+   * - A previously cached token is reused if available to construct the context, or otherwise uses [[TestBrowserAuthorizationClient]]
    * to signin the user through a headless browser.
    * - Uses the default iModel.js internal OIDC SPA client registration
    * @param user Test user credentials

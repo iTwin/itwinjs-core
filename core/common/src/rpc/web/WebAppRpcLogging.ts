@@ -6,15 +6,15 @@
  * @module RpcInterface
  */
 
-import { RpcRequest } from "../core/RpcRequest";
-import { SerializedRpcRequest, SerializedRpcOperation } from "../core/RpcProtocol";
-import { RpcInvocation } from "../core/RpcInvocation";
-import { WebAppRpcRequest } from "./WebAppRpcRequest";
 import { Logger } from "@bentley/bentleyjs-core";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcProtocolEvent } from "../core/RpcConstants";
+import { RpcInvocation } from "../core/RpcInvocation";
 import { RpcOperation } from "../core/RpcOperation";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
+import { RpcRequest } from "../core/RpcRequest";
+import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
 // tslint:disable-next-line:no-var-requires
 const os = (typeof (process) !== "undefined") ? require("os") : undefined;

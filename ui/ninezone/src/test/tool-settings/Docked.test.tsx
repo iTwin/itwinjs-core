@@ -4,10 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import ResizeObserver from "resize-observer-polyfill";
-import { render, act, fireEvent, queryByText } from "@testing-library/react";
-import { DockedToolSettings, getOverflown, DockedToolSetting } from "../../ui-ninezone";
+import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill"; // tslint:disable-line: no-direct-imports
+import { act, fireEvent, queryByText, render } from "@testing-library/react";
+import {
+  DockedToolSetting, DockedToolSettings, DragManager, DragManagerContext, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize,
+} from "../../ui-ninezone";
 import { createDOMRect, ResizeObserverMock } from "../Utils";
+
+function DragManagerProvider(props: { children?: React.ReactNode }) {
+  const dragManager = React.useRef(new DragManager());
+  return (
+    <DragManagerContext.Provider value={dragManager.current}>
+      {props.children}
+    </DragManagerContext.Provider>
+  );
+}
 
 describe("DockedToolSettings", () => {
   const sandbox = sinon.createSandbox();
@@ -17,7 +28,11 @@ describe("DockedToolSettings", () => {
   });
 
   it("should render w/o entries", () => {
-    const { container } = render(<DockedToolSettings />);
+    const { container } = render(<DockedToolSettings />,
+      {
+        wrapper: DragManagerProvider,
+      },
+    );
     container.firstChild!.should.matchSnapshot();
   });
 
@@ -29,6 +44,9 @@ describe("DockedToolSettings", () => {
         Entry 3
         <span>Entry 4</span>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -49,6 +67,9 @@ describe("DockedToolSettings", () => {
         <>Entry 2</>
         <>Entry 3</>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -69,6 +90,9 @@ describe("DockedToolSettings", () => {
         <>Entry 2</>
         <>Entry 3</>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
 
     act(() => {
@@ -95,6 +119,9 @@ describe("DockedToolSettings", () => {
         <DockedToolSetting>Entry 2</DockedToolSetting>
         <DockedToolSetting>Entry 3</DockedToolSetting>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
 
     act(() => {
@@ -119,6 +146,9 @@ describe("DockedToolSettings", () => {
         <DockedToolSetting>Entry 2</DockedToolSetting>
         <DockedToolSetting>Entry 3</DockedToolSetting>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
 
     act(() => {
@@ -149,7 +179,8 @@ describe("DockedToolSettings", () => {
 
     let resizeObserver: ResizeObserverMock | undefined;
     let target: Element | undefined;
-    sandbox.stub(ResizeObserver.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
+    sandbox.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sandbox.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       if (element.classList.contains("nz-toolSettings-docked")) {
         resizeObserver = this;
         target = element;
@@ -162,6 +193,9 @@ describe("DockedToolSettings", () => {
         <DockedToolSetting>Entry 2</DockedToolSetting>
         <DockedToolSetting>Entry 3</DockedToolSetting>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
 
     queryAllByText(/Entry [0-9]$/).length.should.eq(2);
@@ -169,7 +203,7 @@ describe("DockedToolSettings", () => {
     act(() => {
       width = 50;
       resizeObserver!.callback([{
-        contentRect: createDOMRect({ width: 50 }),
+        contentRect: createDOMRect(),
         target: target!,
       }], resizeObserver!);
     });
@@ -188,20 +222,26 @@ describe("DockedToolSettings", () => {
       }
       return createDOMRect();
     });
+
     let resizeObserver: ResizeObserverMock | undefined;
     let target: Element | undefined;
-    sandbox.stub(ResizeObserver.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
-      if (element instanceof HTMLElement && queryByText(element, "Entry 1")) {
+    sandbox.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sandbox.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
+      if (element instanceof HTMLElement && element.classList.contains("nz-toolSettings-setting") && queryByText(element, "Entry 1")) {
         resizeObserver = this;
         target = element;
       }
     });
+
     const { queryAllByText } = render(
       <DockedToolSettings>
         <DockedToolSetting>Entry 1</DockedToolSetting>
         <DockedToolSetting>Entry 2</DockedToolSetting>
         <DockedToolSetting>Entry 3</DockedToolSetting>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
 
     queryAllByText(/Entry [0-9]$/).length.should.eq(2);
@@ -209,7 +249,7 @@ describe("DockedToolSettings", () => {
     act(() => {
       width = 100;
       resizeObserver!.callback([{
-        contentRect: createDOMRect({ width: 100 }),
+        contentRect: createDOMRect(),
         target: target!,
       }], resizeObserver!);
     });
@@ -226,5 +266,26 @@ describe("getOverflown", () => {
       ["3", 40],
     ], 50);
     overflown.should.eql(["2", "3"]);
+  });
+
+  it("should not overflow active item", () => {
+    const overflown = getOverflown(100, [
+      ["1", 40],
+      ["2", 40],
+      ["3", 40],
+    ], 50, 1);
+    overflown.should.eql(["1", "3"]);
+  });
+});
+
+describe("onOverflowLabelAndEditorResize", () => {
+  it("should not throw", () => {
+    (() => onOverflowLabelAndEditorResize()).should.not.throw();
+  });
+});
+
+describe("eqlOverflown", () => {
+  it("should return false if entries are not equal", () => {
+    eqlOverflown(["a", "b"], ["a", "c"]).should.false;
   });
 });

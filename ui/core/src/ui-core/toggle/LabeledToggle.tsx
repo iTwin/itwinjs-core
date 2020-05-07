@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Inputs
+ * @module Toggle
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-import { ToggleProps, Toggle } from "./Toggle";
 import "./LabeledToggle.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { Toggle, ToggleProps } from "./Toggle";
 
 /** Properties for [[LabeledToggle]]
  * @public
@@ -33,12 +33,12 @@ export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
     return (
       <label style={this.props.style} className={classnames(
         "core-inputs-labeled-toggle",
-        this.props.disabled && "disabled",
+        this.props.disabled && "uicore-disabled",
         this.props.className,
       )}>
         <Toggle className={className} style={style} {...props} />
         {label &&
-          <div className={classnames("label", labelClassName)}>{label}</div>
+          <div className={classnames("uicore-label", labelClassName)}>{label}</div>
         }
       </label>
     );

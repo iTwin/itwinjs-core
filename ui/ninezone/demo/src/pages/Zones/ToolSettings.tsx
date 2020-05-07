@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { DockedToolSettings, useToolSettingsEntry } from "@src/tool-settings/Docked";
-import { ToolSettingProps, ToolSetting } from "./ToolSetting";
-import { DockedToolSettingsHandle } from "@src/tool-settings/Handle";
+import { ToolSettingsStateContext } from "@src/base/NineZone";
+import { DockedToolSettings } from "@src/tool-settings/Docked";
+import { ToolSetting, ToolSettingProps } from "./ToolSetting";
 
 export interface ToolSettingsProps {
   readonly settings: ReadonlyArray<ToolSettingProps>;
@@ -16,22 +16,34 @@ function PanelContainer(props: { children?: React.ReactNode }) {
 }
 
 export default function ToolSettings(props: ToolSettingsProps) {
+  const toolSettingsState = React.useContext(ToolSettingsStateContext);
+  if (toolSettingsState.type !== "docked")
+    return null;
   return (
     <DockedToolSettings
       panelContainer={PanelContainer}
     >
-      <ToolSetting
-        id="Custom"
-        type="checkbox"
-      />
+      <ToolSettingWrapper>
+        <ToolSetting
+          id="Custom"
+          type="checkbox"
+        />
+      </ToolSettingWrapper>
       {props.settings.map((setting) => {
         return (
-          <ToolSetting
+          <ToolSettingWrapper
             key={setting.id}
-            {...setting}
-          />
+          >
+            <ToolSetting
+              {...setting}
+            />
+          </ToolSettingWrapper>
         );
       })}
     </DockedToolSettings>
   );
+}
+
+function ToolSettingWrapper(props: { children?: React.ReactNode }) {
+  return <>{props.children}</>;
 }

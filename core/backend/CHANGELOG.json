@@ -2,6 +2,288 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/imodeljs-backend_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. "
+          },
+          {
+            "comment": "Added RivisionUtility class for debug/testing"
+          },
+          {
+            "comment": "node addon 2.0.18"
+          },
+          {
+            "comment": "addon 2.0.25"
+          },
+          {
+            "comment": "Update to addon 2.0.5"
+          },
+          {
+            "comment": "imodeljs-addon 2.0.6"
+          },
+          {
+            "comment": "New IModelJS Node Addon 2.0.8"
+          },
+          {
+            "comment": "Update to imodeljs-native 2.0.24"
+          },
+          {
+            "comment": "Accusnap: improve performance and accuracy."
+          },
+          {
+            "comment": "BriefcaseIModelDb.pushChanges now requires a description"
+          },
+          {
+            "comment": "Performance tests for Applying Changesets"
+          },
+          {
+            "comment": "`IModelHost.startup` is now async."
+          },
+          {
+            "comment": "`IModelHost.shutdown` is now async."
+          },
+          {
+            "comment": "Refined checks for briefcase id, and fixed failing integration tests. "
+          },
+          {
+            "comment": "Product Backlog Item 276268: Deleting the briefcase cache if the cache version is incorrect should not attempt to delete the root directory."
+          },
+          {
+            "comment": "Setup initialization of briefcase cache for offline workflows. (VSTS#286489)"
+          },
+          {
+            "comment": "Monitor progress of downloading briefcases, ability to cancel download of briefcases. "
+          },
+          {
+            "comment": "Move briefcase-specific events into BriefcaseIModelDb subclass"
+          },
+          {
+            "comment": "Fixed param when calling logger so that it is a function as the logger expects"
+          },
+          {
+            "comment": "Setup a common cache locaton for iModel.js, with briefcases taking up a sub-folder. "
+          },
+          {
+            "comment": "Changed ChangeSets download API"
+          },
+          {
+            "comment": "Added unlink for file handler"
+          },
+          {
+            "comment": "Update UlasClient tests to send more detailed feature log data"
+          },
+          {
+            "comment": "react to renaming of imodeljs-clients-backend to backend-itwin-client"
+          },
+          {
+            "comment": "apply changeset performance tests with local datasets"
+          },
+          {
+            "comment": "BriefcaseManager.delete should work in offline scenarios. "
+          },
+          {
+            "comment": "Remove deprecated members of SectionLocation and downgrade to alpha pending refactor."
+          },
+          {
+            "comment": "Support for progress/cancel from ios"
+          },
+          {
+            "comment": "Remove deprecated ExportGraphics types etc for 2.0"
+          },
+          {
+            "comment": "Updated docs. "
+          },
+          {
+            "comment": "IModelDb.findByKey replaces IModelDb.find"
+          },
+          {
+            "comment": "Include model extents with ViewStateProps for drawing views."
+          },
+          {
+            "comment": "Remove deprecated APIs; see NextVersion.md for details."
+          },
+          {
+            "comment": "Entity.forEachProperty has moved from beta to public. Please note that the default value of includeCustom has changed to better match typical use."
+          },
+          {
+            "comment": "Removed/moved some properties from AuthorizationClient interf"
+          },
+          {
+            "comment": "Add IModelDb.Elements.getAspect method"
+          },
+          {
+            "comment": "txn.hasPendingTxns returns false if all local changes have been undone"
+          },
+          {
+            "comment": "Adding a new method setFirstSchemaLocater to ECSchemaXMLContext to allow control over the first locater used to locate schemas."
+          },
+          {
+            "comment": "IModelDb.containsClass now supports schema aliases"
+          },
+          {
+            "comment": "react to changes in imodeljs-clients"
+          },
+          {
+            "comment": "Promote properties from IModelToken onto IModelDb"
+          },
+          {
+            "comment": "IModelTransformer now processes RepositoryLinks"
+          },
+          {
+            "comment": "Update minimum Node version to 10.16.0"
+          },
+          {
+            "comment": "test"
+          },
+          {
+            "comment": " Logging fixes, separated open/download of briefcases a little more."
+          },
+          {
+            "comment": "Fix issue when initialize briefcase cache from disk and cache folder does not exist"
+          },
+          {
+            "comment": "openBriefcase RPC method now find the cached briefcase before opening it."
+          },
+          {
+            "comment": "Introduce the BriefcaseIModelDb class, make IModelDb abstract."
+          },
+          {
+            "comment": "Cleaned up unused async-s in BriefcaseManager"
+          },
+          {
+            "comment": "Avoided casting of BriefcaseProps to IModelRpcProps."
+          },
+          {
+            "comment": "Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline. "
+          },
+          {
+            "comment": "Move briefcase property from IModelDb --> BriefcaseIModelDb"
+          },
+          {
+            "comment": "BriefcaseId is now an enum instead of a class"
+          },
+          {
+            "comment": "Rename BriefcaseId --> ReservedBriefcaseId, introduce BriefcaseId type"
+          },
+          {
+            "comment": "VSTS#297017: Update cached briefcase information if changes were applied. "
+          },
+          {
+            "comment": "Refactored NativeApp API and RPC interfaces. This continues to be WIP. "
+          },
+          {
+            "comment": "Removed the call to simultaneously download and open the briefcase at the backend. This should be done in two separate steps henceforth. The download must be done with BriefcaseManager, and the open is now a synchronous call in BriefcaseDb. "
+          },
+          {
+            "comment": "Added DownloadBriefcaseOptions and OpenBriefcaseOptions as parameters to the download/open calls for a briefcase. "
+          },
+          {
+            "comment": "Removed BriefcaseDb.create"
+          },
+          {
+            "comment": "Setup ability to use NativeApp.openBriefcase() in offline scenarios. "
+          },
+          {
+            "comment": "fixed flaky test"
+          },
+          {
+            "comment": "VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP). "
+          },
+          {
+            "comment": "do not throw exception in NativeAppBackend.startup()"
+          },
+          {
+            "comment": "VSTS#296110: Setup a way to close briefcases when the native application is offline. "
+          },
+          {
+            "comment": "Move concurrencyControl from IModelDb to BriefcaseIModelDb"
+          },
+          {
+            "comment": "Renamed OIDC constructs for consistency; Removed SAML support."
+          },
+          {
+            "comment": "Add support for password-protecting snapshot iModels"
+          },
+          {
+            "comment": "Fixed typo for ElementAspect perf tests"
+          },
+          {
+            "comment": "VSTS#217447, VSTS#162382: Reinstated option to open briefcases with SyncMode = PullOnly. "
+          },
+          {
+            "comment": "Add purge dir method to iModelJsFs"
+          },
+          {
+            "comment": "react to creation of new clients packages from imodeljs-clients"
+          },
+          {
+            "comment": "; substitute current date for feature usage without any set start/end dates"
+          },
+          {
+            "comment": "Removed deprecated utilities. "
+          },
+          {
+            "comment": "enforce opening Snapshots readonly through StandaloneDb"
+          },
+          {
+            "comment": "Remove the deprecated Entity.clone method"
+          },
+          {
+            "comment": "Adjusted calls to some node addon changes (ECUtils removed)"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "support for editing"
+          },
+          {
+            "comment": "The API for snapshot iModels is now public."
+          },
+          {
+            "comment": "When creating a snapshot iModel, there is now an option to create class views for interoperability."
+          },
+          {
+            "comment": "Add IModelHost.snapshotFileNameResolver"
+          },
+          {
+            "comment": "Add FileNameResolver class"
+          },
+          {
+            "comment": "Move snapshot methods out of IModelDb and into new SnapshotIModelDb class."
+          },
+          {
+            "comment": "Add TemplateModelCloner to place instances of a template model"
+          },
+          {
+            "comment": "Renamed TestOidcClient and related constructs for consistency. "
+          },
+          {
+            "comment": "Add IModelDb.tryPrepareStatement"
+          },
+          {
+            "comment": "Fixed usage logging. "
+          },
+          {
+            "comment": "fix failing ulas tests due to invalid featureId"
+          },
+          {
+            "comment": "update ULAS test logging & feedback"
+          },
+          {
+            "comment": "Update UlasUtilities to support exception-throwing native functions"
+          },
+          {
+            "comment": "Use standalone briefcases for PullOnly cases. "
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/imodeljs-backend_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
@@ -323,13 +605,13 @@
             "comment": "added support for blank IModelConnections"
           },
           {
-            "comment": "170215: Setup a way to supply authorization through the backend for frontend requests. "
+            "comment": "Setup a way to supply authorization through the backend for frontend requests. "
           },
           {
-            "comment": "174346: Error log when downloading change sets should include iModelId for context. "
+            "comment": "Error log when downloading change sets should include iModelId for context. "
           },
           {
-            "comment": "Bug 173765: Fixed the iModelHub client to properly dispose a file handle after upload to the iModelHub. "
+            "comment": "Fixed the iModelHub client to properly dispose a file handle after upload to the iModelHub. "
           },
           {
             "comment": "Add IModelDb.Elements.hasSubModel"
@@ -353,9 +635,6 @@
             "comment": "briefcase editing and undo/redo"
           },
           {
-            "comment": "api"
-          },
-          {
             "comment": "upgrade to TypeScript 3.6.2"
           }
         ]
@@ -368,13 +647,13 @@
       "comments": {
         "none": [
           {
-            "comment": "170215: Setup a way to supply authorization through the backend for frontend requests. "
+            "comment": "Setup a way to supply authorization through the backend for frontend requests. "
           },
           {
-            "comment": "Bug 163480: Allow attaching change cache file before change summary extraction. "
+            "comment": "Allow attaching change cache file before change summary extraction. "
           },
           {
-            "comment": "162722, 162377: Added change summary test, and improved doc a little. "
+            "comment": "Added change summary test, and improved doc a little. "
           },
           {
             "comment": "Add minimum brep size option to IModelDb.exportGraphics"
@@ -389,7 +668,7 @@
             "comment": "Added performance logging for tile upload"
           },
           {
-            "comment": "Bug 162459: IModelConnection.close() for read-only connections should not close the Db at the backend; Bug 162373: Opening an iModel with SyncModel.PullAndPush() multiple times (without disposing it) must reuse the briefcase. "
+            "comment": "IModelConnection.close() for read-only connections should not close the Db at the backend; Opening an iModel with SyncModel.PullAndPush() multiple times (without disposing it) must reuse the briefcase. "
           },
           {
             "comment": "Add method to create view with camera"
@@ -410,7 +689,7 @@
             "comment": "Allow custom tile cache services."
           },
           {
-            "comment": "Bug 155921: Always acquire a briefcase when creating a new backend instance for PullAndPush workflows. "
+            "comment": "Always acquire a briefcase when creating a new backend instance for PullAndPush workflows. "
           },
           {
             "comment": "Added Change Summary integration test, and fixed documentation. "
@@ -428,19 +707,13 @@
             "comment": "Mark ExportGraphics API as public"
           },
           {
-            "comment": "Fixed typo"
-          },
-          {
             "comment": "Support for gzip compression of tiles"
           },
           {
-            "comment": "Bug 148574: Fixed issue with opening iModels with names that are invalid on Unix or Windows. "
+            "comment": "Fixed issue with opening iModels with names that are invalid on Unix or Windows. "
           },
           {
             "comment": "Add IModelDb.isSnapshot"
-          },
-          {
-            "comment": "internal addon API refactoring"
           },
           {
             "comment": "Tile upload error catching."
@@ -602,7 +875,7 @@
             "comment": "Updated code to use new ownedByMe option when quering briefcases"
           },
           {
-            "comment": "Logging changes. "
+            "comment": "Logging changes."
           },
           {
             "comment": "Refactored and simplified implementation of IModelDb.open"
@@ -614,7 +887,7 @@
             "comment": "The IModelDb.createSnapshot instance method replaces the IModelDb.createSnapshotFromSeed static method"
           },
           {
-            "comment": "crash reporting, node-report opt-in"
+            "comment": "Crash reporting, node-report opt-in"
           },
           {
             "comment": "Throw IModelError if an IModelDb query would return too many rows"
@@ -626,7 +899,7 @@
             "comment": "Introduced tile format v4.0"
           },
           {
-            "comment": "improve ulas error message logs"
+            "comment": "Improve ulas error message logs"
           },
           {
             "comment": "Catch tile upload errors."
@@ -650,16 +923,16 @@
             "comment": "Adds parameter for api-extractor to validate missing release tags"
           },
           {
-            "comment": "remove requirement that JavaScript classnames match BIS classnames"
+            "comment": "Remove requirement that JavaScript classnames match BIS classnames"
           },
           {
-            "comment": "Avoided iModelHub calls when opening iModels for Design Review. "
+            "comment": "Avoided iModelHub calls when opening iModels for Design Review."
           },
           {
             "comment": "Fixed reinitializing briefcase cache when there are .tiles files."
           },
           {
-            "comment": "Enabled use of checkpoint service. "
+            "comment": "Enabled use of checkpoint service."
           },
           {
             "comment": "Added option to use azure-based tile caching"
@@ -668,10 +941,10 @@
             "comment": "Added a utility to diagnose backends"
           },
           {
-            "comment": "Improved backend diagnostic utility. "
+            "comment": "Improved backend diagnostic utility."
           },
           {
-            "comment": "adapt to Range2d name change"
+            "comment": "Adapt to Range2d name change"
           },
           {
             "comment": "Allow a view to define a set of elements which should never be drawn in that view."
@@ -680,13 +953,13 @@
             "comment": "Added texture support to exportGraphics"
           },
           {
-            "comment": "Fixes for file-based tile caching\""
+            "comment": "Fixes for file-based tile caching"
           },
           {
             "comment": "Catch tile upload errors"
           },
           {
-            "comment": "fix for release tags"
+            "comment": "Fix for release tags"
           },
           {
             "comment": "Fix broken links"
@@ -695,19 +968,10 @@
             "comment": "LoggerCategory -> BackendLoggerCategory"
           },
           {
-            "comment": "cleanup old imodelbank references"
-          },
-          {
-            "comment": "back out experimental changes"
-          },
-          {
-            "comment": "crash reporting WIP"
+            "comment": "Cleanup old imodelbank references"
           },
           {
             "comment": "Add InformationRecordModel.insert, GroupModel.insert"
-          },
-          {
-            "comment": "Fixed integration tests. "
           },
           {
             "comment": "Introduce LoggerCategory enum to advertise logger categories used by this package."
@@ -716,13 +980,7 @@
             "comment": "Limited maximum cache size of the backend PromiseMemoizer. "
           },
           {
-            "comment": "missing dependency on node-report"
-          },
-          {
-            "comment": "rush update"
-          },
-          {
-            "comment": "node-report"
+            "comment": "Missing dependency on node-report"
           },
           {
             "comment": "Fixed memoization problem that caused an endless stream of 404 NotFound errors. "
@@ -740,16 +998,16 @@
             "comment": "Memoization fix when opening iModels in shared, read-only mode ."
           },
           {
-            "comment": "Fixed setup of application version. "
+            "comment": "Fixed setup of application version."
           },
           {
             "comment": "Updated Element CRUD perf tests"
           },
           {
-            "comment": "added tile generation perf test"
+            "comment": "Added tile generation perf test"
           },
           {
-            "comment": "queryPage use memoization/pending pattern"
+            "comment": "QueryPage use memoization/pending pattern"
           },
           {
             "comment": "Remove IModelDb.createStandalone, use IModelDb.createSnapshot instead."
@@ -776,10 +1034,10 @@
             "comment": "Simplified tile caching IModelHost config and removed dev flags. Allow"
           },
           {
-            "comment": "typo in documentation"
+            "comment": "Typo in documentation"
           },
           {
-            "comment": "fix missing ULAS client request data"
+            "comment": "Fix missing ULAS client request data"
           },
           {
             "comment": "ExportGraphicsFunction return type is now void"
@@ -788,10 +1046,10 @@
             "comment": "Upgrade TypeDoc dependency to 0.14.2"
           },
           {
-            "comment": "add usage logging tests"
+            "comment": "Add usage logging tests"
           },
           {
-            "comment": "edit usage logging tests to support revised usage logging syntax"
+            "comment": "Edit usage logging tests to support revised usage logging syntax"
           }
         ]
       }
@@ -806,7 +1064,7 @@
             "comment": "Added IModelDb.exportGraphics"
           },
           {
-            "comment": "fix issue for ios"
+            "comment": "Fix issue for ios"
           }
         ]
       }
@@ -830,7 +1088,7 @@
             "comment": "Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the \"fs\" module, and turns it into a browser only package. "
           },
           {
-            "comment": "clone methods are no longer generic"
+            "comment": "Clone methods are no longer generic"
           },
           {
             "comment": "Remove unneeded typedoc plugin dependency"
@@ -854,10 +1112,10 @@
             "comment": "Enable IModelWriteTest create/delete iModels on per user-machine basis"
           },
           {
-            "comment": "Validated size of change sets before applying them. "
+            "comment": "Validated size of change sets before applying them."
           },
           {
-            "comment": "codespec lock example"
+            "comment": "Codespec lock example"
           },
           {
             "comment": "Add backend Material API"
@@ -869,22 +1127,19 @@
             "comment": "Save BUILD_SEMVER to globally accessible map"
           },
           {
-            "comment": "Fixed resolution of queryable promises. "
+            "comment": "Fixed resolution of queryable promises."
           },
           {
-            "comment": "added queryModelRange "
+            "comment": "Added queryModelRange"
           },
           {
-            "comment": "IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections. "
+            "comment": "IModelConnection.close() always disposes the briefcase held at the backend in the case of ReadWrite connections."
           },
           {
             "comment": "Move the IModelUnitTestRpcImpl into the testbed and out of the public API and marked nativeDb as hidden"
           },
           {
             "comment": "Remove loadNativeAsset and formatElements RPC calls from the IModelReadRpcInterface"
-          },
-          {
-            "comment": "debugging aid"
           },
           {
             "comment": "Removed IModelConnection.connectionId, added IModelApp.sessionId"
@@ -902,13 +1157,13 @@
             "comment": "Handled error with fetching host information on deployed machines."
           },
           {
-            "comment": "Quick fix to ULAS failures. "
+            "comment": "Quick fix to ULAS failures."
           },
           {
-            "comment": "WIP fixes to Usage Logging. "
+            "comment": "WIP fixes to Usage Logging."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -995,7 +1250,7 @@
             "comment": "Implement the typescript side for new Geocoordinate services in the native iModel.js addon"
           },
           {
-            "comment": "upgrade to Node 10. There is no longer separate packages for Node and Electron."
+            "comment": "Upgrade to Node 10. There is no longer separate packages for Node and Electron."
           }
         ]
       }
@@ -1007,7 +1262,7 @@
       "comments": {
         "none": [
           {
-            "comment": "upgrade to Node 10. There is no longer separate packages for Node and Electron."
+            "comment": "Upgrade to Node 10. There is no longer separate packages for Node and Electron."
           }
         ]
       }
@@ -1040,7 +1295,7 @@
       "comments": {
         "none": [
           {
-            "comment": "temporarily disable TxnManager events."
+            "comment": "Temporarily disable TxnManager events."
           }
         ]
       }
@@ -1058,7 +1313,7 @@
       "comments": {
         "none": [
           {
-            "comment": "fix for timing problem in TxnManager test"
+            "comment": "Fix for timing problem in TxnManager test"
           },
           {
             "comment": "Add IModelDb.Elements.updateAspect"
@@ -1094,7 +1349,7 @@
             "comment": "Use IOSAzureFileHandler when on mobile"
           },
           {
-            "comment": "added IModelConnection.findClassFor"
+            "comment": "Added IModelConnection.findClassFor"
           },
           {
             "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on."
@@ -1109,7 +1364,7 @@
       "comments": {
         "none": [
           {
-            "comment": "don't register testing domain multiple times"
+            "comment": "Don't register testing domain multiple times"
           }
         ]
       }
@@ -1127,25 +1382,25 @@
             "comment": "Add ElementRefersToElements.insert"
           },
           {
-            "comment": "Fixed front end integration tests. "
+            "comment": "Fixed front end integration tests."
           },
           {
             "comment": "Document the intended purpose of IModelJsExpressServer within a deployment environment."
           },
           {
-            "comment": "Fixed integration tests. "
+            "comment": "Fixed integration tests."
           },
           {
             "comment": "added tests for ElementDrivesElement handlers"
           },
           {
-            "comment": "Fixes to integration tests. "
+            "comment": "Fixes to integration tests."
           },
           {
             "comment": "Add OrthographicViewDefinition.setRange"
           },
           {
-            "comment": "Cleaned up use of mocks in core tests. "
+            "comment": "Cleaned up use of mocks in core tests."
           },
           {
             "comment": "Enable test now that addon was updated."
@@ -1169,7 +1424,7 @@
             "comment": "Fix GeometryParams constructor. Added test to ensure subcategory id set correctly."
           },
           {
-            "comment": "rename LinkTableRelationship to just Relationship. Work on adding callbacks for dependency propagation."
+            "comment": "Rename LinkTableRelationship to just Relationship. Work on adding callbacks for dependency propagation."
           }
         ]
       }
@@ -1202,7 +1457,7 @@
             "comment": "Add missing createCode methods"
           },
           {
-            "comment": "Changes to debug utilities. "
+            "comment": "Changes to debug utilities."
           },
           {
             "comment": "Added IModelHubClient.IModel, removed IModelQuery.primary(), use IModelHubClient.IModel.Get instead"
@@ -1235,7 +1490,7 @@
       "comments": {
         "none": [
           {
-            "comment": "clean up IModelImporter"
+            "comment": "Clean up IModelImporter"
           },
           {
             "comment": "Add static insert methods to many classes to simplify iModel creation."
@@ -1301,7 +1556,7 @@
             "comment": "Fully support mixed binary and JSON content in both directions in RPC la"
           },
           {
-            "comment": "remove obsolete script"
+            "comment": "Remove obsolete script"
           }
         ]
       }
@@ -1364,7 +1619,7 @@
       "comments": {
         "none": [
           {
-            "comment": "move up to new version of addon (updated electron dependency to 2.0.8)"
+            "comment": "Move up to new version of addon (updated electron dependency to 2.0.8)"
           },
           {
             "comment": "Removed KnownRegions Enum"

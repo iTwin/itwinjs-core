@@ -3,13 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  assert,
-  Id64,
-  Id64Arg,
-  Id64Set,
-  Id64String,
-} from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64Arg, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 
@@ -90,7 +84,7 @@ export class SubCategoriesCache {
   }
 
   private static createSubCategoryAppearance(json?: any) {
-    let props: SubCategoryAppearance | undefined;
+    let props: SubCategoryAppearance.Props | undefined;
     if ("string" === typeof json && 0 < json.length)
       props = JSON.parse(json);
 

@@ -2,10 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, MarkerSet, Marker, MarkerImage, Cluster, BeButtonEvent, BeButton, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
-import { ColorDef, NpcCenter, ColorByName, AxisAlignedBox3d } from "@bentley/imodeljs-common";
-import { Point3d, XYAndZ, XAndY, Point2d, AngleSweep, Arc3d } from "@bentley/geometry-core";
 import { Logger } from "@bentley/bentleyjs-core";
+import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { AxisAlignedBox3d, ColorByName, ColorDef, NpcCenter } from "@bentley/imodeljs-common";
+import {
+  BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, Marker, MarkerImage, MarkerSet,
+  MessageBoxIconType, MessageBoxType,
+} from "@bentley/imodeljs-frontend";
 
 /// cSpell:ignore lerp
 
@@ -97,7 +100,7 @@ class IncidentMarker extends Marker {
   private static _size = Point2d.create(30, 30);
   private static _imageSize = Point2d.create(40, 40);
   private static _imageOffset = Point2d.create(0, 30);
-  private static _amber = new ColorDef(ColorByName.amber);
+  private static _amber = ColorDef.create(ColorByName.amber);
   private static _sweep360 = AngleSweep.create360();
   private _color: ColorDef;
 
@@ -185,7 +188,7 @@ class IncidentClusterMarker extends Marker {
     this.imageSize = new Point2d(30, 30);
     this.label = cluster.markers.length.toLocaleString();
     this.labelColor = "black";
-    this.labelFont = "bold 14px san-serif";
+    this.labelFont = "bold 14px sans-serif";
 
     let title = "";
     sorted.forEach((marker) => {

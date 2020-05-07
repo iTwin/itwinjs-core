@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { PropertyCategory } from "../../../ui-components/propertygrid/PropertyDataProvider";
 import { PropertyCategoryBlock } from "../../../ui-components/propertygrid/component/PropertyCategoryBlock";
+import { PropertyCategory } from "../../../ui-components/propertygrid/PropertyDataProvider";
 
 describe("PropertyCategoryBlock", () => {
   let category: PropertyCategory;

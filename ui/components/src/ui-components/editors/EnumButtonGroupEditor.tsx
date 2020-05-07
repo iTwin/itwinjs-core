@@ -6,16 +6,16 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import {
-  PropertyValueFormat, PrimitiveValue, PropertyValue, EnumerationChoice,
-  PropertyEditorParamTypes, IconDefinition, PropertyEditorParams, ButtonGroupEditorParams, PropertyRecord,
-} from "@bentley/imodeljs-frontend";
-import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./EnumButtonGroupEditor.scss";
+import classnames from "classnames";
+import * as React from "react";
+import {
+  ButtonGroupEditorParams, EnumerationChoice, IconDefinition, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord,
+  PropertyValue, PropertyValueFormat,
+} from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** @internal */
 interface EnumEditorState {
@@ -78,11 +78,6 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     }
   }
 
-  // istanbul ignore next
-  public getValue(): string | number {
-    return this.state.selectValue;
-  }
-
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
     let propertyValue: PropertyValue | undefined;
@@ -97,13 +92,6 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     }
 
     return propertyValue;
-  }
-
-  public setFocus(): void {
-    const button = this._btnRefs.get(this.state.selectValue);
-    // istanbul ignore else
-    if (button)
-      button.focus({ preventScroll: true });
   }
 
   /** @internal */
@@ -228,12 +216,13 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   }
 }
 
-/** EnumPropertyButtonGroupEditor React component that uses the [[EnumButtonGroupEditor]] property editor.
+/** Enum Property Button Group Editor registered for the "enum" type name and the "enum-buttongroup" editor name.
+ * It uses the [[EnumButtonGroupEditor]] React component.
  * @beta
  */
 export class EnumPropertyButtonGroupEditor extends PropertyEditorBase {
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <EnumButtonGroupEditor />;
   }
 }

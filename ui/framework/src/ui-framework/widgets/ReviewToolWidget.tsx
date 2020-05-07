@@ -7,12 +7,12 @@
  */
 
 import * as React from "react";
-import { ToolWidget } from "./ToolWidget";
-import { CoreTools } from "../CoreToolDefinitions";
-import { ItemList } from "../shared/ItemMap";
-import { Backstage } from "../backstage/Backstage";
-import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
 import { IconSpec } from "@bentley/ui-core";
+import { Backstage } from "../backstage/Backstage";
+import { CoreTools } from "../CoreToolDefinitions";
+import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
+import { ItemList } from "../shared/ItemMap";
+import { ToolWidget } from "./ToolWidget";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
  * @beta
@@ -60,9 +60,9 @@ export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any
   ]);
 
   public render() {
-    let appButtonCommandItemDef = Backstage.backstageToggleCommand;
+    let appButtonCommandItemDef = Backstage.backstageToggleCommand; // tslint:disable-line:deprecation
     if (this.props.iconSpec) {
-      appButtonCommandItemDef = Backstage.getBackstageToggleCommand(this.props.iconSpec);
+      appButtonCommandItemDef = Backstage.getBackstageToggleCommand(this.props.iconSpec); // tslint:disable-line:deprecation
     }
 
     const horizontalToolbarItems = new ItemList();
@@ -82,7 +82,7 @@ export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any
     if (this.props.suffixVerticalItems) verticalToolbarItems.addItems(this.props.suffixVerticalItems);
 
     return (
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         appButton={appButtonCommandItemDef}
         horizontalItems={horizontalToolbarItems}
         verticalItems={verticalToolbarItems}

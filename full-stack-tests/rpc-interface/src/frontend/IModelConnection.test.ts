@@ -2,21 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
 import * as chai from "chai";
-const expect = chai.expect;
-
 import { Id64, Id64Set, OpenMode } from "@bentley/bentleyjs-core";
-import { Matrix4d, Point3d, Transform, YawPitchRollAngles, XYZProps } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { Matrix4d, Point3d, Transform, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  IModelTileRpcInterface, MassPropertiesOperation, EcefLocation, IModelReadRpcInterface,
-  ModelQueryParams, SnapResponseProps, IModelCoordinatesResponseProps, GeoCoordStatus, MassPropertiesRequestProps,
+  EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelTileRpcInterface, MassPropertiesOperation,
+  MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps,
 } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
-
-import { AuthorizationClient } from "./setup/AuthorizationClient";
+import { IModelApp, IModelConnection, RemoteBriefcaseConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
+import { AccessToken } from "@bentley/itwin-client";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestContext } from "./setup/TestContext";
+
+const expect = chai.expect;
 
 // tslint:disable-next-line:no-var-requires
 (global as any).btoa = (str: string) => {
@@ -35,7 +33,7 @@ describe("IModel Connection", () => {
       this.skip();
 
     accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
   it("should successfully open an IModelConnection for read", async () => {
@@ -43,18 +41,18 @@ describe("IModel Connection", () => {
     const openMode = OpenMode.Readonly;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
 
-    const iModel: IModelConnection = await IModelConnection.open(contextId, iModelId, openMode);
+    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode);
 
     expect(iModel).to.exist.and.be.not.empty;
 
-    const iModelToken = iModel.iModelToken;
-    expect(iModelToken).to.exist.and.be.not.empty;
+    const iModelRpcProps = iModel.getRpcProps();
+    expect(iModelRpcProps).to.exist.and.be.not.empty;
   });
 
   it("should successfully close an open an IModelConnection", async () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const contextId = testContext.iModelWithChangesets!.contextId;
-    const iModel: IModelConnection = await IModelConnection.open(contextId, iModelId);
+    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId);
 
     expect(iModel).to.exist;
     return expect(iModel.close()).to.eventually.be.fulfilled;
@@ -77,8 +75,8 @@ describe("IModelConnection Tiles", () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
-    iModel = await IModelConnection.open(contextId, iModelId);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
+    iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
   });
 
   it("IModelTileRpcInterface method getTileCacheContainerUrl should work as expected", async () => {
@@ -207,8 +205,8 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
-    iModel = await IModelConnection.open(contextId, iModelId);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
+    iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
   });
 
   it("IModelReadRpcInterface method queryEntityIds should work as expected", async () => {
@@ -235,7 +233,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
   it("IModelReadRpcInterface method getGeometrySummary should work as expected", async () => {
     const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
     const id = ids.values().next().value;
-    const result = await IModelReadRpcInterface.getClient().getGeometrySummary(iModel.iModelToken.toJSON(), { elementIds: [id], options: {} });
+    const result = await IModelReadRpcInterface.getClient().getGeometrySummary(iModel.getRpcProps(), { elementIds: [id], options: {} });
     expect(result).to.not.be.undefined;
   });
 
@@ -387,7 +385,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
       operation: MassPropertiesOperation.AccumulateVolumes,
     };
 
-    const result = await IModelReadRpcInterface.getClient().getMassProperties(iModel.iModelToken.toJSON(), requestProps);
+    const result = await IModelReadRpcInterface.getClient().getMassProperties(iModel.getRpcProps(), requestProps);
     expect(result).to.not.be.null;
   });
 });
@@ -407,8 +405,8 @@ describe("Snapping", () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
-    iModel = await IModelConnection.open(contextId, iModelId);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
+    iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
   });
 
   it("should be able to request a snap", async () => {
@@ -423,7 +421,7 @@ describe("Snapping", () => {
       worldToView: worldToView.toJSON(),
     };
 
-    const snap = await IModelReadRpcInterface.getClient().requestSnap(iModel.iModelToken.toJSON(), id, snapProps);
+    const snap = await IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps);
 
     expect(snap.status).to.not.be.undefined;
   });
@@ -441,8 +439,8 @@ describe("Snapping", () => {
     };
 
     const requestSnapPromises: Array<Promise<SnapResponseProps>> = [];
-    requestSnapPromises.push(IModelReadRpcInterface.getClient().requestSnap(iModel.iModelToken.toJSON(), id, snapProps));
-    await IModelReadRpcInterface.getClient().cancelSnap(iModel.iModelToken.toJSON(), id);
+    requestSnapPromises.push(IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps));
+    await IModelReadRpcInterface.getClient().cancelSnap(iModel.getRpcProps(), id);
 
     try {
       const snaps = await Promise.all(requestSnapPromises);

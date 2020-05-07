@@ -7,7 +7,7 @@
  */
 
 /** Describes 2d dimensions.
- * @beta
+ * @public
  */
 export interface SizeProps {
   readonly width: number;

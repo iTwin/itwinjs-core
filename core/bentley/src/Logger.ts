@@ -6,10 +6,10 @@
  * @module Logging
  */
 
-import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError";
-import { IDisposable } from "./Disposable";
-import { ClientRequestContext } from "./ClientRequestContext";
+import { BentleyError, GetMetaDataFunction, IModelStatus } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
+import { ClientRequestContext } from "./ClientRequestContext";
+import { IDisposable } from "./Disposable";
 
 /** Defines the *signature* for a log function.
  * @public
@@ -71,6 +71,31 @@ export class Logger {
     Logger.turnOffCategories();
   }
 
+  /**
+   * Gets raw callbacks which can be use to forward logging
+   * @internal
+   */
+  public static logRaw(level: LogLevel, category: string, message: string, getMetaData?: GetMetaDataFunction): void {
+    switch (level) {
+      case LogLevel.Error:
+        if (this._logError)
+          this._logError(category, message, getMetaData);
+        break;
+      case LogLevel.Info:
+        if (this._logInfo)
+          this._logInfo(category, message, getMetaData);
+        break;
+      case LogLevel.Trace:
+        if (this._logTrace)
+          this._logTrace(category, message, getMetaData);
+        break;
+      case LogLevel.Warning:
+        if (this._logWarning)
+          this._logWarning(category, message, getMetaData);
+        break;
+    }
+  }
+
   /** Initialize the logger streams to the console. Should be called at application initialization time. */
   public static initializeToConsole(): void {
     // tslint:disable:no-console
@@ -119,7 +144,7 @@ export class Logger {
 
   /** Compose the metadata for a log message.  */
   public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
-    const metaData: any = getMetaData ? Object.assign({}, getMetaData()) : {}; // Copy object to avoid mutating the original
+    const metaData: any = getMetaData ? { ...getMetaData() } : {}; // Copy object to avoid mutating the original
     Logger.addClientRequestContext(metaData);
     return metaData;
   }

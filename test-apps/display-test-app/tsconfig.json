@@ -2,14 +2,22 @@
   "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "target": "es2017",
-    "module": "commonjs",
-    "outDir": "./lib"
+    "module": "esnext",
+    "outDir": "./lib",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true
   },
   "include": [
     "./src/**/*.ts"
   ],
   "exclude": [
     "lib",
-    "node_modules"
+    "node_modules",
+    "./src/backend/**/*.ts"
   ]
 }

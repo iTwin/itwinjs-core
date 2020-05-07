@@ -7,19 +7,8 @@
  * @module Tools
  */
 
-import {
-  ColorDef,
-  LinePixels,
-} from "@bentley/imodeljs-common";
-import {
-  DecorateContext,
-  GraphicBuilder,
-  GraphicType,
-  IModelApp,
-  TileTree,
-  Tool,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
+import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
+import { DecorateContext, GraphicBuilder, GraphicType, IModelApp, TileTree, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
 class TileRequestDecoration {
@@ -49,10 +38,10 @@ class TileRequestDecoration {
 
     const map = new Map<TileTree, GraphicBuilder>();
     for (const tile of tiles) {
-      let builder = map.get(tile.root);
+      let builder = map.get(tile.tree);
       if (undefined === builder) {
-        builder = context.createGraphicBuilder(GraphicType.WorldDecoration, tile.root.iModelTransform);
-        map.set(tile.root, builder);
+        builder = context.createGraphicBuilder(GraphicType.WorldDecoration, tile.tree.iModelTransform);
+        map.set(tile.tree, builder);
       }
 
       let color = ColorDef.white;

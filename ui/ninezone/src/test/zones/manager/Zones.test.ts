@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as Moq from "typemoq";
 import * as sinon from "sinon";
-import { RectangleProps, PointProps, Rectangle } from "@bentley/ui-core";
+import * as Moq from "typemoq";
+import { PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import {
-  ZoneTargetType, ZonesManagerProps, HorizontalAnchor, ZonesManager, getZoneCell, WidgetZoneId,
-  getClosedWidgetTabIndex, ZoneManager, DraggedWidgetManager, ToolSettingsWidgetMode, DisabledResizeHandles,
+  DisabledResizeHandles, DraggedWidgetManager, getClosedWidgetTabIndex, getZoneCell, HorizontalAnchor, ToolSettingsWidgetMode, WidgetZoneId,
+  ZoneManager, ZonesManager, ZonesManagerProps, ZoneTargetType,
 } from "../../../ui-ninezone";
-import { TestProps } from "./TestProps";
-import { widgetZoneIds, getColumnZones } from "../../../ui-ninezone/zones/manager/Zones";
 import { ResizeHandle } from "../../../ui-ninezone/widget/Stacked";
 import { ResizeStrategy } from "../../../ui-ninezone/zones/manager/ResizeStrategy";
+import { getColumnZones, widgetZoneIds } from "../../../ui-ninezone/zones/manager/Zones";
+import { TestProps } from "./TestProps";
 
 describe("ZonesManager", () => {
   const managerProps = Moq.Mock.ofType<ZonesManagerProps>();

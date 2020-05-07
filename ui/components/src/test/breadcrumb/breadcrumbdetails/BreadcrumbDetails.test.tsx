@@ -2,16 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
+import * as React from "react";
 import * as sinon from "sinon";
-import { waitForUpdate } from "../../test-helpers/misc";
-import { render, cleanup, RenderResult, waitForElement, wait } from "@testing-library/react";
-import TestUtils from "../../TestUtils";
+import { cleanup, render, RenderResult, wait, waitForElement } from "@testing-library/react";
 import { BreadcrumbDetails, BreadcrumbPath } from "../../../ui-components";
-import { mockRawTreeDataProvider, mockInterfaceTreeDataProvider } from "../mockTreeDataProvider";
+import { getPropertyRecordAsString } from "../../../ui-components/common/getPropertyRecordAsString";
+import { Table, TableProps } from "../../../ui-components/table/component/Table";
 import { ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
-import { TableProps, Table } from "../../../ui-components/table/component/Table";
+import { waitForUpdate } from "../../test-helpers/misc";
+import TestUtils from "../../TestUtils";
+import { mockInterfaceTreeDataProvider, mockRawTreeDataProvider } from "../mockTreeDataProvider";
+
+// tslint:disable:deprecation
 
 describe("BreadcrumbDetails", () => {
   let renderSpy: sinon.SinonSpy;
@@ -54,7 +57,7 @@ describe("BreadcrumbDetails", () => {
       path.setCurrentNode(undefined);
       await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 12);
       const node = mockRawTreeDataProvider[1];
-      expect(await waitForElement(() => renderedComponent.getByText(node.label as string))).to.exist;
+      expect(await waitForElement(() => renderedComponent.getByText(getPropertyRecordAsString(node.label)))).to.exist;
     });
 
     it("should render when node is defined", async () => {
@@ -62,7 +65,7 @@ describe("BreadcrumbDetails", () => {
       path.setCurrentNode(mockRawTreeDataProvider[1]);
       await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 9);
       const node = mockRawTreeDataProvider[1].children![0];
-      expect(await waitForElement(() => renderedComponent.getByText(node.label as string))).to.exist;
+      expect(await waitForElement(() => renderedComponent.getByText(getPropertyRecordAsString(node.label)))).to.exist;
     });
 
     it("should change path", async () => {
@@ -76,7 +79,7 @@ describe("BreadcrumbDetails", () => {
       const nodeInterface = (await mockInterfaceTreeDataProvider.getNodes())[1];
       const path = new BreadcrumbPath(mockInterfaceTreeDataProvider);
       renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />);
-      expect(await waitForElement(() => renderedComponent.getByText(nodeInterface.label as string))).to.exist;
+      expect(await waitForElement(() => renderedComponent.getByText(getPropertyRecordAsString(nodeInterface.label)))).to.exist;
       path.setDataProvider(mockRawTreeDataProvider);
       await waitForUpdate(() => renderedComponent.rerender(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 9);
     });
@@ -85,7 +88,7 @@ describe("BreadcrumbDetails", () => {
       const nodeRaw = mockRawTreeDataProvider[1];
       const path = new BreadcrumbPath(mockRawTreeDataProvider);
       renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />);
-      expect(await waitForElement(() => renderedComponent.getByText(nodeRaw.label as string))).to.exist;
+      expect(await waitForElement(() => renderedComponent.getByText(getPropertyRecordAsString(nodeRaw.label)))).to.exist;
       path.setDataProvider(mockInterfaceTreeDataProvider);
       await waitForUpdate(() => renderedComponent.rerender(<BreadcrumbDetails onChildrenLoaded={renderSpy} path={path} />), renderSpy, 4);
     });
@@ -131,7 +134,7 @@ describe("BreadcrumbDetails", () => {
       const pathUpdateSpy = sinon.stub();
       path.BreadcrumbUpdateEvent.addListener(pathUpdateSpy);
       await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 12);
-      const listRow = renderedComponent.getByText(node.label as string);
+      const listRow = renderedComponent.getByText(getPropertyRecordAsString(node.label));
       const event = new MouseEvent("click", { bubbles: true });
       await waitForUpdate(() => listRow.dispatchEvent(event), pathUpdateSpy, 1);
       expect(pathUpdateSpy).to.have.been.called;

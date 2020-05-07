@@ -6,8 +6,8 @@
  * @module Collections
  */
 
-import { CloneFunction, shallowClone, lowerBound } from "./SortedArray";
 import { OrderedComparator } from "./Compare";
+import { CloneFunction, lowerBound, shallowClone } from "./SortedArray";
 
 /** Associates a value of type T with an index representing its insertion order in an IndexMap<T>
  * @public

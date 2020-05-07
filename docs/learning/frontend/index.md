@@ -1,17 +1,17 @@
 # The App Frontend
 
 The frontend of an app is concerned mainly with data display and user interaction. Frontend code:
+
 * Always runs in a web browser.
 * Gets access to the data in an iModel by making requests on a [backend](../backend/index.md).
 
 The following app configurations are supported:
+
 * [Web app](../App.md#web-apps) - See [browser compatibility](#web-browser-compatibility)
 * [Desktop app](../App.md#desktop-apps)
 * [Mobile app](../App.md#mobile-apps)
 
 See the [app architecture overview](../SoftwareArchitecture.md) for more on app structure.
-
-See [best practices](../backend/BestPractices.md) for writing frontend code and using ECSQL efficiently.
 
 An app's frontend always implements its own frontend script and resources.
 
@@ -31,8 +31,7 @@ These packages provide the following functions that a frontend requires:
 * Displaying [Views](./Views.md) of iModels
 * Executing [ECSQL queries](./ExecutingECSQL.md) on iModels
 * Storing [Settings](./Settings.md) for Applications, Projects, and iModels.
-* Implementing [Plugins](./Plugins.md)
-* Building [Modules](./BuildingIModelJsModules.md)
+* Implementing [Extensions](./Extensions.md)
 
 ## Web browser compatibility
 

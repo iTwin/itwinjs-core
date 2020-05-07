@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { ShaderProgram } from "../ShaderProgram";
 import { FragmentShaderComponent } from "../ShaderBuilder";
-import { createViewportQuadBuilder } from "./ViewportQuad";
+import { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
+import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computeBaseColor = "return vec4(0.0);";
 const assignFragData = `
@@ -31,6 +31,9 @@ export function createClearTranslucentProgram(context: WebGLRenderingContext | W
     // NB: This shader is never used - we just gl.clear() directly
     frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   }
+
+  builder.vert.headerComment = "//!V! ClearTranslucent";
+  builder.frag.headerComment = "//!F! ClearTranslucent";
 
   return builder.buildProgram(context);
 }

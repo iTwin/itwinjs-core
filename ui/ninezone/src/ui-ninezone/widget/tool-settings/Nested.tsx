@@ -6,10 +6,10 @@
  * @module ToolSettings
  */
 
-import * as classnames from "classnames";
+import "./Nested.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Nested.scss";
 
 /** Properties of [[NestedToolSettings]] component.
  * @beta

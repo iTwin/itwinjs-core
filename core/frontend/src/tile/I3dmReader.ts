@@ -3,39 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
-import {
-  ByteStream,
-  Id64String,
-  JsonUtils,
-  utf8ToString,
-} from "@bentley/bentleyjs-core";
-import {
-  AxisOrder,
-  Matrix3d,
-  Point3d,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  BatchType,
-  ElementAlignedBox3d,
-  Feature,
-  FeatureTable,
-  I3dmHeader,
-  TileReadStatus,
-} from "@bentley/imodeljs-common";
-import {
-  BatchedTileIdMap,
-  GltfReader,
-  GltfReaderProps,
-  GltfReaderResult,
-  ShouldAbortReadGltf,
-} from "./internal";
-import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
-import { RenderSystem } from "../render/RenderSystem";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { ByteStream, Id64String, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
+import { AxisOrder, Matrix3d, Point3d, Vector3d } from "@bentley/geometry-core";
+import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
+import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { RenderSystem } from "../render/RenderSystem";
+import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf } from "./internal";
 
 function setTransform(transforms: Float32Array, index: number, rotation: Matrix3d, origin: Point3d): void {
   const i = index * 12;
@@ -126,7 +103,7 @@ export class I3dmReader extends GltfReader {
     if (undefined === instances)
       return Promise.resolve({ readStatus: TileReadStatus.InvalidTileData, isLeaf: this._isLeaf });
 
-    return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._range, undefined, undefined, undefined, instances);
+    return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._range, undefined, undefined, instances);
   }
 
   protected readFeatures(_features: Mesh.Features, _json: any): boolean {

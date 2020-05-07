@@ -3,14 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-// import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d } from "@bentley/geometry-core";
-import { ViewDefinitionProps, GeometryClass, Feature, RgbColor, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
-import * as path from "path";
-// import { DeepCompare } from "@bentley/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { ViewState, SpatialViewState, IModelConnection, FeatureSymbology, IModelApp } from "@bentley/imodeljs-frontend";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
+import { Feature, GeometryClass, LinePixels, RgbColor, ViewDefinitionProps, ViewFlags } from "@bentley/imodeljs-common";
+import { FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
 
 class Overrides extends FeatureSymbology.Overrides {
   public constructor(view?: ViewState) { super(view); }
@@ -28,8 +23,8 @@ describe("FeatureSymbology.Overrides", () => {
     viewState: SpatialViewState;
 
   before(async () => {
-    IModelApp.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
@@ -37,8 +32,8 @@ describe("FeatureSymbology.Overrides", () => {
 
   after(async () => {
     if (imodel)
-      await imodel.closeSnapshot();
-    IModelApp.shutdown();
+      await imodel.close();
+    await IModelApp.shutdown();
   });
 
   it("constructor with ViewState parameter works as expected", () => {

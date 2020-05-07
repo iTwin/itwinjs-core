@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Diagnostics as ECDiagnostics } from "./../../src/Validation/ECRules";
+import { Diagnostics as ECDiagnostics } from "../../src/Validation/ECRules";
 
 describe("DiagnosticClasses tests", () => {
   function getMessageArgsHolders(text: string): string[] {

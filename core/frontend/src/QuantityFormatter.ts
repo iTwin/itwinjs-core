@@ -7,7 +7,9 @@
  */
 
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { BadUnit, Parser, ParserSpec, ParseResult, Format, Formatter, FormatterSpec, UnitConversion, UnitProps, UnitsProvider, BasicUnit } from "@bentley/imodeljs-quantity";
+import {
+  BadUnit, BasicUnit, Format, Formatter, FormatterSpec, Parser, ParseResult, ParserSpec, UnitConversion, UnitProps, UnitsProvider,
+} from "@bentley/imodeljs-quantity";
 import { IModelApp } from "./IModelApp";
 
 /** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values.

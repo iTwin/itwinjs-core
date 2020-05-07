@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { assert, expect } from "chai";
 import { Logger } from "@bentley/bentleyjs-core";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { assert, expect } from "chai";
-import sinon = require("sinon");
-
 import { PrimitiveType } from "../../src/ECObjects";
-import { EntityClass, PrimitiveProperty, Schema, SchemaContext, FormatDiagnosticReporter } from "../../src/ecschema-metadata";
+import { EntityClass, FormatDiagnosticReporter, PrimitiveProperty, Schema, SchemaContext } from "../../src/ecschema-metadata";
 import { ECClass, MutableClass } from "../../src/Metadata/Class";
 import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../src/Validation/Diagnostic";
 import { LoggingDiagnosticReporter } from "../../src/Validation/LoggingDiagnosticReporter";
+
+import sinon = require("sinon");
 
 class TestDiagnosticReporter extends FormatDiagnosticReporter {
   constructor(suppressions?: Map<string, string[]>) {

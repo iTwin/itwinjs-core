@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow, ReactWrapper } from "enzyme";
+import { mount, ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import * as useTargetedModule from "@bentley/ui-core";
 import { WidgetTarget, WidgetTargetProps } from "../../../ui-ninezone/zones/target/Target";
-import * as useTargetedModule from "../../../ui-ninezone/base/useTargeted";
 
 describe("<WidgetTarget />", () => {
   const sandbox = sinon.createSandbox();

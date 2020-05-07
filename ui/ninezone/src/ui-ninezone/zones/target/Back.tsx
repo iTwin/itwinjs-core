@@ -6,7 +6,7 @@
  * @module Zone
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { WidgetZoneId } from "../manager/Zones";
 import { Arrow } from "./Arrow";

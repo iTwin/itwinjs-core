@@ -3,36 +3,38 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
+import { TimelineComponent } from "@bentley/ui-components";
 import {
-  GroupButton,
-  ToolButton,
-  ToolWidget,
-  ZoneState,
-  WidgetState,
-  NavigationWidget,
-  Frontstage,
-  Zone,
-  Widget,
-  FrontstageProvider,
-  FrontstageProps,
-  ZoneLocation,
-  ActionItemButton,
-  CommandItemDef,
-  FrontstageManager,
-  CoreTools,
-  ContentLayoutManager,
-  StagePanel,
+  ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
+  NavigationWidget, StagePanel, ToolButton, ToolWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
-
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import { AppTools } from "../../tools/ToolSpecifications";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 // import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
-
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
-import { AppTools } from "../../tools/ToolSpecifications";
-import { NestedFrontstage1 } from "./NestedFrontstage1";
+import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
+import { NestedFrontstage1 } from "./NestedFrontstage1";
+
+function SampleTimelineComponent() {
+  const duration = 20 * 1000;
+  const startDate = new Date(2014, 6, 6);
+  const endDate = new Date(2016, 8, 12);
+
+  return (
+    <div>
+      <TimelineComponent
+        startDate={startDate}
+        endDate={endDate}
+        initialDuration={0}
+        totalDuration={duration}
+        minimized={true}
+        showDuration={true}
+        alwaysMinimized={true}
+      />
+    </div>
+  );
+}
 
 export class Frontstage1 extends FrontstageProvider {
   private _topMostPanel = {
@@ -60,7 +62,7 @@ export class Frontstage1 extends FrontstageProvider {
 
   private _bottomPanel = {
     widgets: [
-      <Widget element={<h2>Bottom panel</h2>} />,
+      <Widget element={<SampleTimelineComponent />} />,
     ],
   };
 
@@ -241,8 +243,12 @@ class FrontstageToolWidget extends React.Component {
           <GroupButton
             labelKey="SampleApp:buttons.anotherGroup"
             iconSpec="icon-placeholder"
-            items={[AppTools.tool1, AppTools.tool2, AppTools.item3, AppTools.item4, AppTools.item5,
-              AppTools.item6, AppTools.item7, AppTools.item8]}
+            items={
+              [
+                AppTools.tool1, AppTools.tool2, AppTools.item3, AppTools.item4, AppTools.item5,
+                AppTools.item6, AppTools.item7, AppTools.item8,
+              ]
+            }
           />
         </>
       }

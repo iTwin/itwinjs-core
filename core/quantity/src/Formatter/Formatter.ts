@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { QuantityConstants } from "../Constants";
-import { QuantityStatus, QuantityError } from "../Exception";
+import { QuantityError, QuantityStatus } from "../Exception";
 import { FormatterSpec } from "./Format";
-import { FormatType, ScientificType, ShowSignOption, DecimalPrecision, FractionalPrecision, FormatTraits } from "./FormatEnums";
+import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
 
 /**  rounding additive
  * @internal

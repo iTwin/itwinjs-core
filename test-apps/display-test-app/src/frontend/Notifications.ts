@@ -3,16 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  NotifyMessageDetails, IModelApp,
-} from "@bentley/imodeljs-frontend";
-import {
-  Window,
-  WindowProps,
-} from "./Window";
-import {
-  Surface,
-} from "./Surface";
+import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
+import { Surface } from "./Surface";
+import { Window, WindowProps } from "./Window";
 
 export interface NotificationsWindowProps extends WindowProps {
   maxStoredMessages: number;

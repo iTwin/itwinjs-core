@@ -3,20 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  compareStrings,
-  BeEvent,
-  Id64String,
-  Id64,
-  SortedArray,
-} from "@bentley/bentleyjs-core";
-import {
-  DisplayStyle3dState,
-  IModelConnection,
-  SpatialViewState,
-  ViewState,
-} from "@bentley/imodeljs-frontend";
+import { BeEvent, compareStrings, Id64, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { ColorDef } from "@bentley/imodeljs-common";
+import { DisplayStyle3dState, IModelConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
 
 export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
   private _defaultViewId = Id64.invalid;

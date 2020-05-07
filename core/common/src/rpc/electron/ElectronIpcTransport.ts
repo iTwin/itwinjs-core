@@ -8,23 +8,19 @@
 
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
-import { SerializedRpcRequest, RpcRequestFulfillment } from "../core/RpcProtocol";
-import { ElectronRpcRequest } from "./ElectronRpcRequest";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
+import { RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
+import { ElectronRpcRequest } from "./ElectronRpcRequest";
 
 const OBJECTS_CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol/objects";
 const DATA_CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol/data";
 
-declare var __non_webpack_require__: NodeRequire;
-
 /** @internal */
 export const interop = (() => {
   let electron = null;
-  if (typeof (global) !== "undefined" && global && global.process && (global.process as any).type) {
-    const realRequire = (typeof (__non_webpack_require__) !== "undefined") ? __non_webpack_require__ : require;
-    electron = realRequire("electron");
-  }
+  if (typeof (global) !== "undefined" && global && global.process && (global.process as any).type)
+    electron = require("electron");
 
   return electron;
 })();
@@ -150,7 +146,6 @@ class FrontendIpcTransport extends ElectronIpcTransport<RpcRequestFulfillment> {
     const message = this.loadMessage(id);
     const protocol = this._protocol;
     const request = protocol.requests.get(message.id) as ElectronRpcRequest;
-    protocol.requests.delete(message.id);
     request.notifyResponse(message);
   }
 }

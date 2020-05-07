@@ -6,13 +6,11 @@
  * @module LineWeight
  */
 
-import * as React from "react";
+import "./Swatch.scss";
 import classnames from "classnames";
-
+import * as React from "react";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
-
-import "./Swatch.scss";
 
 /** Properties for the [[LineWeightSwatch]] React component
  * @beta

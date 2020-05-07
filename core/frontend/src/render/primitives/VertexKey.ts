@@ -6,9 +6,9 @@
  * @module Rendering
  */
 
-import { IndexMap, assert, compareWithTolerance } from "@bentley/bentleyjs-core";
+import { assert, compareWithTolerance, IndexMap } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
-import { QPoint3d, OctEncodedNormal } from "@bentley/imodeljs-common";
+import { OctEncodedNormal, QPoint3d } from "@bentley/imodeljs-common";
 
 /** @internal */
 export interface VertexKeyProps {

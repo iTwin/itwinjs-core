@@ -3,30 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
 import {
-  GroupButton,
-  ToolButton,
-  ToolWidget,
-  ZoneState,
-  WidgetState,
-  NavigationWidget,
-  Frontstage,
-  Zone,
-  Widget,
-  FrontstageProvider,
-  FrontstageProps,
-  ZoneLocation,
-  ActionItemButton,
-  NestedFrontstage,
-  CoreTools,
+  ActionItemButton, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget, NestedFrontstage, ToolButton,
+  ToolWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
-
-import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
-import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
-
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
+import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 
 export class NestedFrontstage1 extends FrontstageProvider {
 
@@ -38,21 +22,21 @@ export class NestedFrontstage1 extends FrontstageProvider {
         contentGroup="TestContentGroup2"
         isInFooterMode={false}
         applicationData={{ key: "value" }}
-        topLeft={
+        contentManipulationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={<FrontstageToolWidget />} />,
             ]}
           />
         }
-        topCenter={
+        toolSettings={
           <Zone
             widgets={[
               <Widget isToolSettings={true} />,
             ]}
           />
         }
-        topRight={
+        viewNavigationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={<FrontstageNavigationWidget />} />,
@@ -66,7 +50,7 @@ export class NestedFrontstage1 extends FrontstageProvider {
           <Zone defaultState={ZoneState.Open} allowsMerging={true} mergeWithZone={ZoneLocation.BottomRight}
           />
         }
-        bottomCenter={
+        statusBar={
           <Zone defaultState={ZoneState.Open}
             widgets={[
               <Widget isStatusBar={true} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={SmallStatusBarWidgetControl} />,
@@ -100,8 +84,7 @@ class FrontstageToolWidget extends React.Component {
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconSpec="icon-placeholder"
-            items={[AppTools.tool1, AppTools.tool2, AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
-              AppTools.item6, AppTools.item7, AppTools.item8]}
+            items={[AppTools.tool1, AppTools.tool2, AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5, AppTools.item6, AppTools.item7, AppTools.item8]}
             direction={Direction.Bottom}
             itemsInColumn={7}
           />
@@ -120,8 +103,7 @@ class FrontstageToolWidget extends React.Component {
           <GroupButton
             labelKey="SampleApp:buttons.anotherGroup"
             iconSpec="icon-placeholder"
-            items={[AppTools.tool1, AppTools.tool2, AppTools.item3, AppTools.item4, AppTools.item5,
-              AppTools.item6, AppTools.item7, AppTools.item8]}
+            items={[AppTools.tool1, AppTools.tool2, AppTools.item3, AppTools.item4, AppTools.item5, AppTools.item6, AppTools.item7, AppTools.item8]}
           />
         </>
       }

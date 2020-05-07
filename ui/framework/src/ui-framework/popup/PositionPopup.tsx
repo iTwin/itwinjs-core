@@ -6,12 +6,10 @@
  * @module Popup
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-
-import { CommonProps, PointProps, SizeProps, Size, CommonDivProps, Div } from "@bentley/ui-core";
-
 import "./PositionPopup.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonDivProps, CommonProps, Div, PointProps, Size, SizeProps } from "@bentley/ui-core";
 
 /** @alpha */
 export interface PositionPopupProps extends CommonProps {
@@ -61,7 +59,6 @@ export class PositionPopup extends React.PureComponent<PositionPopupProps> {
 /** PositionPopup content with padding
  * @alpha
  */
-// tslint:disable-next-line:variable-name
-export const PositionPopupContent: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function PositionPopupContent(props: CommonDivProps) {
   return <Div {...props} mainClassName="uifw-position-popup-content" />;
-};
+}

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { StagePanelTarget, StagePanelType, SafeAreaInsets } from "../../../ui-ninezone";
+import { SafeAreaInsets, StagePanelTarget, StagePanelType } from "../../../ui-ninezone";
 
 describe("<StagePanelTarget />", () => {
   it("should render", () => {

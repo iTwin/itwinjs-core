@@ -6,8 +6,8 @@
  * @module Geometry
  */
 
-import { Id64String, Id64Array } from "@bentley/bentleyjs-core";
-import { XYZProps, Matrix4dProps } from "@bentley/geometry-core";
+import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { Matrix4dProps, XYZProps } from "@bentley/geometry-core";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { GeometryClass } from "./GeometryParams";
 
@@ -33,7 +33,6 @@ export interface SnapRequestProps {
   snapAperture?: number;
   snapDivisor?: number;
   subCategoryId?: Id64String;
-  /** @alpha */
   geometryClass?: GeometryClass;
   intersectCandidates?: Id64Array;
   decorationGeometry?: DecorationGeometryProps[];

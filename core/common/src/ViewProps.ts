@@ -6,13 +6,13 @@
  * @module Views
  */
 
-import { Id64String, Id64Array } from "@bentley/bentleyjs-core";
-import { EntityQueryParams } from "./EntityProps";
-import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
-import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
-import { DisplayStyleProps } from "./DisplayStyleSettings";
+import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { AngleProps, Range3dProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { CameraProps } from "./Camera";
-import { ViewDetailsProps, ViewDetails3dProps } from "./ViewDetails";
+import { DisplayStyleProps } from "./DisplayStyleSettings";
+import { DefinitionElementProps, ElementProps, SheetProps } from "./ElementProps";
+import { EntityQueryParams } from "./EntityProps";
+import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend)
  * @public
@@ -26,6 +26,10 @@ export interface ViewStateProps {
   sheetProps?: SheetProps;
   /** @beta */
   sheetAttachments?: Id64Array;
+  /** For drawing views, the extents of the drawing model.
+   * @alpha
+   */
+  modelExtents?: Range3dProps;
 }
 
 /** Properties that define a ModelSelector

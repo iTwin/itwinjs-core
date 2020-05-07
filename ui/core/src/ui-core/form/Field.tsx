@@ -7,27 +7,27 @@
  */
 
 import * as React from "react";
-import { FormContext, FormContextState, FieldDef } from "./Form";
+import { Checkbox } from "../checkbox/Checkbox";
 import { Input } from "../inputs/Input";
-import { Checkbox } from "../inputs/checkbox/Checkbox";
 import { Textarea } from "../inputs/Textarea";
-import { Select } from "../inputs/Select";
+import { Select } from "../select/Select";
+import { FieldDef, FormContext, FormContextState } from "./Form";
 
 // cSpell:ignore multilinetextbox
 
 /** Properties used to create a [[Field]] in a [[Form]]
- * @alpha
+ * @beta
  */
-interface IFieldProps extends FieldDef {
+export interface FieldProps extends FieldDef {
   /* The unique field name */
   id: string;
 }
 
 /** Component that represents a single field in an input form. Only four type of editors are supported. Field gets/sets state data from/to the context control by the form.
- * @alpha
+ * @beta
  */
-export class Field extends React.Component<IFieldProps> {
-  constructor(props: IFieldProps) {
+export class Field extends React.Component<FieldProps> {
+  constructor(props: FieldProps) {
     super(props);
   }
 

@@ -9,11 +9,11 @@ import { Content } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
+import { EventSink } from '@bentley/imodeljs-backend';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelDb } from '@bentley/imodeljs-backend';
-import { IModelDb as IModelDb_2 } from '@bentley/imodeljs-backend/lib/IModelDb';
 import { InstanceKey } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { LabelDefinition } from '@bentley/presentation-common';
@@ -22,15 +22,19 @@ import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
+import { PartialHierarchyModification } from '@bentley/presentation-common';
+import { PartialHierarchyModificationJSON } from '@bentley/presentation-common';
+import { PresentationDataCompareOptions } from '@bentley/presentation-common';
+import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
-import { Ruleset as Ruleset_2 } from '@bentley/presentation-common/lib/rules/Ruleset';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SelectionScopeRequestOptions } from '@bentley/presentation-common';
-import { VariableValue } from '@bentley/presentation-common/lib/RulesetVariables';
-import { VariableValueJSON } from '@bentley/presentation-common/lib/RulesetVariables';
-import { VariableValueTypes } from '@bentley/presentation-common/lib/RulesetVariables';
+import { UpdateInfoJSON } from '@bentley/presentation-common';
+import { VariableValue } from '@bentley/presentation-common';
+import { VariableValueJSON } from '@bentley/presentation-common';
+import { VariableValueTypes } from '@bentley/presentation-common';
 
 // @beta
 export enum DuplicateRulesetHandlingStrategy {
@@ -53,6 +57,9 @@ export class Presentation {
 export class PresentationManager {
     constructor(props?: PresentationManagerProps);
     activeLocale: string | undefined;
+    activeUnitSystem: PresentationUnitSystem | undefined;
+    // (undocumented)
+    compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb>): Promise<PartialHierarchyModification[]>;
     computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet>;
     dispose(): void;
     getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
@@ -62,12 +69,8 @@ export class PresentationManager {
     }>;
     getContentDescriptor(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
     getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
-    // @deprecated
-    getDisplayLabel(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<string>;
     getDisplayLabelDefinition(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<LabelDefinition>;
-    // @deprecated
-    getDisplayLabels(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<string[]>;
-    getDisplayLabelsDefinitions(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<LabelDefinition[]>;
+    getDisplayLabelDefinitions(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<LabelDefinition[]>;
     getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
     getFilteredNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]>;
     // @internal (undocumented)
@@ -79,15 +82,17 @@ export class PresentationManager {
         count: number;
     }>;
     getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number>;
+    // @internal (undocumented)
+    getRulesetId(rulesetOrId: Ruleset | string): string;
     getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
-    // @beta
+    // @alpha
     loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void>;
     get props(): PresentationManagerProps;
     rulesets(): RulesetManager;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
-// @beta
+// @public
 export enum PresentationManagerMode {
     ReadOnly = 0,
     ReadWrite = 1
@@ -96,20 +101,27 @@ export enum PresentationManagerMode {
 // @public
 export interface PresentationManagerProps {
     activeLocale?: string;
+    // @alpha
+    activeUnitSystem?: PresentationUnitSystem;
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
+    // @internal
+    cacheDirectory?: string;
     enableSchemasPreload?: boolean;
+    // @internal (undocumented)
+    eventSink?: EventSink;
     // @internal
     id?: string;
     localeDirectories?: string[];
-    // @beta
     mode?: PresentationManagerMode;
+    presentationAssetsRoot?: string;
     rulesetDirectories?: string[];
     supplementalRulesetDirectories?: string[];
-    // @alpha
     taskAllocationsMap?: {
         [priority: number]: number;
     };
+    // @alpha
+    updatesPollInterval?: number;
 }
 
 // @public
@@ -122,10 +134,15 @@ export interface PresentationProps extends PresentationManagerProps {
 
 // @beta
 export class RulesetEmbedder {
-    constructor(iModelDb: IModelDb_2);
-    getRulesets(): Promise<Ruleset_2[]>;
-    insertRuleset(ruleset: Ruleset_2, duplicateHandlingStrategy?: DuplicateRulesetHandlingStrategy): Promise<Id64String>;
+    constructor(props: RulesetEmbedderProps);
+    getRulesets(): Promise<Ruleset[]>;
+    insertRuleset(ruleset: Ruleset, duplicateHandlingStrategy?: DuplicateRulesetHandlingStrategy): Promise<Id64String>;
     }
+
+// @public
+export interface RulesetEmbedderProps {
+    imodel: IModelDb;
+}
 
 // @public
 export interface RulesetManager {

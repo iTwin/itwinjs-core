@@ -6,22 +6,20 @@
  * @module Elements
  */
 
-import { Id64String, assert, DbResult } from "@bentley/bentleyjs-core";
+import { assert, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import {
-  ElementProps, GeometricElement3dProps, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationProps,
-  LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationProps, LinearlyReferencedFromToLocationAspectProps,
-  ReferentElementProps, RelatedElement, IModelError, Code, LinearLocationReference, QueryParams, ComparisonOption,
-  LinearlyReferencedLocationType,
+  Code, ComparisonOption, ElementProps, GeometricElement3dProps, IModelError, LinearLocationReference, LinearlyLocatedAttributionProps,
+  LinearlyReferencedAtLocationAspectProps, LinearlyReferencedAtLocationProps, LinearlyReferencedFromToLocationAspectProps,
+  LinearlyReferencedFromToLocationProps, LinearlyReferencedLocationType, QueryParams, ReferentElementProps, RelatedElement,
 } from "@bentley/imodeljs-common";
+import { ECSqlStatement } from "../ECSqlStatement";
 import { PhysicalElement, SpatialLocationElement } from "../Element";
 import { ElementAspect } from "../ElementAspect";
 import { IModelDb } from "../IModelDb";
 import { LinearlyReferencedAtLocation, LinearlyReferencedFromToLocation } from "./LinearReferencingElementAspects";
 import {
-  ILinearlyLocatedAlongILinearElement, ILinearlyLocatedAttributesElement, ILinearLocationLocatesElement,
-  IReferentReferencesElement,
+  ILinearLocationLocatesElement, ILinearlyLocatedAlongILinearElement, ILinearlyLocatedAttributesElement, IReferentReferencesElement,
 } from "./LinearReferencingRelationships";
-import { ECSqlStatement } from "../ECSqlStatement";
 
 /** Base class for Spatial Location Element subclasses representing properties whose value is located along a Linear-Element and only applies to a portion of an Element.
  * @beta
@@ -367,7 +365,7 @@ class QueryLinearLocationsECSQLGen {
       "WHERE Along.TargetECInstanceId = ?) LinearlyLocated ON meta.ECClassDef.ECInstanceId = LinearlyLocated.ClassId ";
   }
 
-  private _addFromClause(impl: ECSQLGenImpl/*bvector<double>& bindVals*/): void {
+  private _addFromClause(impl: ECSQLGenImpl/* bvector<double>& bindVals */): void {
     let from = "FROM ";
     from += this._genLinearlyLocated();
     from += impl.genFromJoin();

@@ -6,25 +6,25 @@
 /* tslint:disable: no-console */
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-
-import { HalfEdgeGraph } from "../../topology/Graph";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { GraphChecker } from "./Graph.test";
-import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangulateContext";
-import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Angle } from "../../geometry3d/Angle";
 import { LineSegment3d } from "../../curve/LineSegment3d";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Triangulator } from "../../topology/Triangulation";
-import { lisajouePoint3d } from "../geometry3d/PointHelper.test";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { LineString3d } from "../../curve/LineString3d";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Angle } from "../../geometry3d/Angle";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { HalfEdgeGraph } from "../../topology/Graph";
+import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
+import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangulateContext";
+import { HalfEdgeGraphMerge } from "../../topology/Merging";
+import { Triangulator } from "../../topology/Triangulation";
+import { Checker } from "../Checker";
+import { lisajouePoint3d } from "../geometry3d/PointHelper.test";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GraphChecker } from "./Graph.test";
+
 /**
  * Output for HalfEdgePositionDetail:
  * * If oldDetail is given, line from old to new.

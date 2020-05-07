@@ -3,33 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, IModel } from "@bentley/imodeljs-common";
 import {
-  Guid,
-  Id64,
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  Box,
-  Point3d,
-  Range3d,
-  Vector3d,
-  YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import {
-  Code,
-  ColorDef,
-  GeometricElement3dProps,
-  GeometryStreamBuilder,
-  IModel,
-} from "@bentley/imodeljs-common";
-import {
-  BackendRequestContext,
-  GenericSchema,
-  IModelDb,
-  PhysicalModel,
-  PhysicalObject,
-  PhysicalPartition,
-  SpatialCategory,
+  BackendRequestContext, GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -38,7 +16,7 @@ let uniqueId = 0;
 
 const defaultExtents = Range3d.fromJSON({
   low: { x: -500, y: -200, z: -50 },
-  high: {x: 500, y: 200, z: 50 },
+  high: { x: 500, y: 200, z: 50 },
 });
 
 // Tile tree range is scaled+offset a bit.
@@ -94,7 +72,7 @@ function scaleProjectExtents(db: IModelDb, scale: number): Range3d {
 }
 
 describe("tile tree", () => {
-  let db: IModelDb;
+  let db: SnapshotDb;
   let modelId: string;
 
   before(() => {
@@ -107,13 +85,13 @@ describe("tile tree", () => {
     };
 
     const name = "Test_" + (++uniqueId) + ".bim";
-    db = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("TileTree", name), props);
+    db = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("TileTree", name), props);
     modelId = insertPhysicalModel(db);
 
     // NB: The model needs to contain at least one element with a range - otherwise tile tree will have null range.
     const geomBuilder = new GeometryStreamBuilder();
     geomBuilder.appendGeometry(Box.createDgnBox(Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, 2), 2, 2, 2, 2, true)!);
-    const category = SpatialCategory.insert(db, IModel.dictionaryId, "kittycat", { color: ColorDef.white, transp: 0, invisible: false });
+    const category = SpatialCategory.insert(db, IModel.dictionaryId, "kittycat", { color: ColorDef.white.toJSON(), transp: 0, invisible: false });
     const elemProps: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
       model: modelId,
@@ -131,7 +109,7 @@ describe("tile tree", () => {
 
   after(() => {
     if (db)
-      db.closeSnapshot();
+      db.close();
   });
 
   it("should update after changing project extents and purging", async () => {

@@ -6,11 +6,11 @@
  * @module Toolbar
  */
 
-import * as classnames from "classnames";
-import * as React from "react";
-import { OmitChildrenProp, NoChildrenProps } from "@bentley/ui-core";
-import { ToolbarIcon, ToolbarIconProps } from "./Icon";
 import "./Back.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { NoChildrenProps, OmitChildrenProp } from "@bentley/ui-core";
+import { ToolbarIcon, ToolbarIconProps } from "./Icon";
 
 /** Properties of [[BackButton]] component.
  * @alpha

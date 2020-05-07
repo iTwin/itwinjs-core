@@ -1,6 +1,67 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- add freeze method and degrees accessors to Cartographic class
+- Show min/max window error for mouse wheel zoom.
+- Show min/max window error for mouse wheel zoom.
+- Make animation state of a display style persistent.
+- Send a default pending message since Azure strips content-type header if no data is present
+- Monitor progress of downloading briefcases, ability to cancel download of briefcases. 
+- Added to DisplayStyle3dSettings: MonochromeMode, LightSettings.
+- Simplify GeometryStreamIteratorEntry (breaking API change).
+- constructor of ColorDef wasn't setting transparency properly for rgba() strings
+- added ColorDef.toRgbaString
+- Deprecate members of SectionLocationProps pending refactor.
+- Support for progress/cancel from ios
+- EcefLocation can now optionally preserve a meaningful cartographic origin.
+- Fix for electron request lifecycle.
+- IModelTokenProps.key is now a required member
+- Include model extents with ViewStateProps for drawing views.
+- hsl color conversion wasn't working if s===0
+- Remove deprecated APIs; see NextVersion.md for details.
+- Fix documentation of RenderSchedule time units.
+- Fix for EcefLocation.createFromCartographicOrigin.
+- ColorDef, HSVColor, and HSLColor are immutable types.
+- react to changes in imodeljs-clients
+- Promote properties from IModelToken onto IModel
+- Support suspend/resume in mobile apps.
+- Store current mobile RPC port in protocol.
+- Added file size.
+- Supply RPC routing props for SnapshotIModelRpcInterface open methods"
+- MobileRpcConfiguration throws exception
+- Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline. 
+- Refactored NativeApp API and RPC interfaces. This continues to be WIP. 
+- Added DownloadBriefcaseOptions and OpenBriefcaseOptions as parameters to the download/open calls for a briefcase. 
+- Added new interface for native app
+- VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP). 
+- Handle null JSON in ViewDetails.
+- Renamed OIDC constructs for consistency; Removed SAML support.
+- OrbitGT point cloud interface.
+- Support OrbitGT Point Clouds
+- Fix BackgroundMapSettings.toJSON() discarding the 'useDepthBuffer' flag.
+- Add mechanism for preloading reality tiles by frustum.
+- react to new clients packages from imodeljs-clients
+- IModelRpcProps replaces IModelToken and IModelTokenProps
+- Change RenderTexture.Type to a non-const enum
+- Remove 'const' from exported enums.
+- Remove check for contextId in BentleyCloudRpcProtocol since remote snapshots are now possible.
+- "Default to text if no content-type in RPC request handling.
+- React to BentleyCloudRpcManager change.
+- Track active RPC requests
+- RPC fix
+- Upgrade to Rush 5.23.2
+- support for editing
+- Add API for thematic display.
+- Alpha feature: thematic sensor display.
+- Rename GlobeMode: ThreeD => Ellipsoid, Columbus => Plane.
+- Remove support for the iModel.js module system by no longer delivering modules.
+- Add a ViewFlag to control white-on-white reversal.
 
 ## 1.14.1
 Wed, 22 Apr 2020 19:04:00 GMT
@@ -65,7 +126,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 - Added Tween.js code
 - Added AliCloud tile cache service
 - Code quality report fixes
-- fix warnings from static analysis
+- Fix warnings from static analysis
 - Add PropertyMetaData.isNavigation
 - Addressing typo in a couple of members, making them match the schema properly.
 
@@ -79,7 +140,7 @@ Fri, 22 Nov 2019 14:03:34 GMT
 - Fix defect where isMobileBackend return true on windows
 - Change terrain lighting default to off.
 - Change SectionLocationProps.clipGeometry type to string. Add get/set ClipVector methods on SectionLocation.
-- mark bias as alpha
+- Mark bias as alpha
 - Update to allow Node 12
 - Add support for view-independent display of geometry streams.
 - Fixed camera.equals
@@ -120,14 +181,14 @@ Mon, 30 Sep 2019 22:28:48 GMT
 
 ### Updates
 
-- added support for blank IModelConnections
-- Fixed reporting of errors when the ClientRequestContext is established at the backend. 
+- Added support for blank IModelConnections
+- Fixed reporting of errors when the ClientRequestContext is established at the backend.
 - Add DisplayStyleSettings.subCategoryOverrides
 - Make ExternalSourceAspectProps.checksum optional
 - Added geometry primitive typing and geometry summary types
 - Support animation of models within RenderSchedule.
 - Refine planar projection frustum calculation
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -135,8 +196,8 @@ Tue, 10 Sep 2019 12:09:49 GMT
 ### Updates
 
 - Add documentation for RenderSchedule
-- fix casing of displayStyle.contextRealityModels
-- Fixed reporting of errors when the ClientRequestContext is established at the backend. 
+- Fix casing of displayStyle.contextRealityModels
+- Fixed reporting of errors when the ClientRequestContext is established at the backend.
 - Electron IPC transport fix for large messages.
 - Added ability to clear individual overridden flags in ViewFlag.Overrides.
 
@@ -205,8 +266,8 @@ Mon, 13 May 2019 15:52:05 GMT
 - Introduce LoggerCategory enum to advertise logger categories used by this package.
 - Logging fixes. 
 - Put sourcemap in npm package.
-- add SVG to ImageSourceFormat
-- add imodeljs-markup
+- Add SVG to ImageSourceFormat
+- Add imodeljs-markup
 - New tile cache naming scheme.
 - queryPage use memoization/pending pattern
 - Remove StandaloneIModelRpcInterface
@@ -218,7 +279,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Support solar shadow display.
 - Simplified tile caching IModelHost config and removed dev flags. Allow browser caching of tiles
 - Upgrade TypeDoc dependency to 0.14.2
-- only save viewing volume for view undo rather than cloning ViewState
+- Only save viewing volume for view undo rather than cloning ViewState
 
 ## 0.190.0
 Thu, 14 Mar 2019 14:26:49 GMT
@@ -234,8 +295,8 @@ Wed, 06 Mar 2019 15:41:22 GMT
 
 ### Updates
 
-- allow to check if frontend is ios wkwebview
-- allow subclasses of Range to use static methods
+- Allow to check if frontend is ios wkwebview
+- Allow subclasses of Range to use static methods
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Update docs for BRepEntity.DataProps
 - Use new buildIModelJsBuild script
@@ -260,7 +321,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Remove loadNativeAsset and formatElements RPC calls from the IModelReadRpcInterface
 - Removed IModelConnection.connectionId, added IModelApp.sessionId
 - Tile requests can optionally specify a retryInterval.
-- upgrade to TypeScript 3.2.2
+- Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT
@@ -268,7 +329,7 @@ Wed, 16 Jan 2019 16:36:09 GMT
 ### Updates
 
 - Changed Elements Db support for addon changes and generating the changed elements cache. Added WipRpcInterface methods to get changed elements list and check if a changeset is processed in the cache. Bumped WipRpcInterface version. Integration tests for changed elements db.
-- Fix error in semver parsing."
+- Fix error in semver parsing.
 
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT
@@ -280,8 +341,8 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
-- Add TextureProps for use by new backend Texture API
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
+- Add TextureProps for use by new backend Texture API.
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
@@ -293,7 +354,7 @@ Thu, 10 Jan 2019 22:46:17 GMT
 
 ### Updates
 
-- Add support for general 3d tilesets
+- Add support for general 3d tilesets.
 - Fix drag select decorator when cursor moves out of view. Doc fixes.
 
 ## 0.183.0
@@ -302,7 +363,7 @@ Mon, 07 Jan 2019 21:49:21 GMT
 ### Updates
 
 - Add ambient occlusion structures.
-- Change iModelReadRpcInterface' version because Geocoordinate calculation methods added.
+- Change iModelReadRpcInterface version because Geocoordinate calculation methods added.
 
 ## 0.182.0
 Mon, 07 Jan 2019 13:31:34 GMT
@@ -319,7 +380,6 @@ Wed, 02 Jan 2019 15:18:23 GMT
 
 ### Updates
 
-- merge
 - Do not send X-Application-Version header if empty.
 - Add path pivot data to render schedule
 

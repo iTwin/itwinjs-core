@@ -2,18 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
 import { expect } from "chai";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { CoincidentGeometryQuery } from "../../geometry3d/CoincidentGeometryOps";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Checker } from "../Checker";
-import { Range1d } from "../../geometry3d/Range";
-import { prettyPrint } from "../testFunctions";
 import { Arc3d } from "../../curve/Arc3d";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { CoincidentGeometryQuery } from "../../geometry3d/CoincidentGeometryOps";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range1d } from "../../geometry3d/Range";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+
 describe("CoincidentGeometryQuery", () => {
 
   it("SegmentSegment", () => {

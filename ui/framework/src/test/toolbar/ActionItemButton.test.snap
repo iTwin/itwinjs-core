@@ -3,7 +3,7 @@
 exports[`ActionItemButton enabled renders correctly 1`] = `
 <Item
   icon={
-    <Unknown
+    <Icon
       iconSpec="icon-placeholder"
     />
   }
@@ -21,7 +21,7 @@ exports[`ActionItemButton hidden renders correctly 1`] = `""`;
 exports[`ActionItemButton renders correctly 1`] = `
 <Item
   icon={
-    <Unknown
+    <Icon
       iconSpec="icon-placeholder"
     />
   }

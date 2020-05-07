@@ -6,20 +6,21 @@
  * @module Notification
  */
 
+import classnames from "classnames";
 import * as React from "react";
-import * as classnames from "classnames";
-
-import { UiEvent, CommonProps, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-core";
-import { Tooltip, offsetAndContainInContainer } from "@bentley/ui-ninezone";
 import { XAndY } from "@bentley/geometry-core";
 import { ToolTipOptions } from "@bentley/imodeljs-frontend";
+import { CommonProps, Point, PointProps, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
+import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";
+import { MessageDiv } from "../messages/MessageSpan";
+import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
 
 /** [[ElementTooltip]] State.
  * @internal
  */
 interface ElementTooltipState {
   isVisible: boolean;
-  message: HTMLElement | string;
+  message: NotifyMessageType;
   position: PointProps;
   options?: ToolTipOptions;
 }
@@ -29,7 +30,7 @@ interface ElementTooltipState {
  */
 export interface ElementTooltipChangedEventArgs {
   isTooltipVisible: boolean;
-  message: HTMLElement | string;
+  message: NotifyMessageType;
   el?: HTMLElement;
   pt?: XAndY;
   options?: ToolTipOptions;
@@ -50,7 +51,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
   public static get onElementTooltipChangedEvent(): ElementTooltipChangedEvent { return ElementTooltip._elementTooltipChangedEvent; }
   public static get isTooltipVisible(): boolean { return ElementTooltip._isTooltipVisible; }
 
-  public static showTooltip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void {
+  public static showTooltip(el: HTMLElement, message: NotifyMessageType, pt?: XAndY, options?: ToolTipOptions): void {
     ElementTooltip._isTooltipVisible = true;
     ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: true, el, message, pt, options });
   }
@@ -89,11 +90,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
       "uifw-element-tooltip",
       this.props.className);
 
-    let messageNode: React.ReactNode;
-    if (typeof this.state.message === "string")
-      messageNode = <div>{this.state.message}</div>;
-    else
-      messageNode = <div dangerouslySetInnerHTML={{ __html: this.state.message.outerHTML }} />;
+    const messageNode = <MessageDiv message={this.state.message} />;
 
     return (
       <div className="uifw-element-tooltip-container">

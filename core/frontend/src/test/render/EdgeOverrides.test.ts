@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { LinePixels, HiddenLine } from "@bentley/imodeljs-common";
-import { LineCode, EdgeOverrides } from "../../render/webgl/EdgeOverrides";
+import { HiddenLine, LinePixels } from "@bentley/imodeljs-common";
+import { EdgeOverrides, LineCode } from "../../render/webgl/EdgeOverrides";
 import { FloatRgba } from "../../render/webgl/FloatRGBA";
 import { OvrFlags } from "../../render/webgl/RenderFlags";
 

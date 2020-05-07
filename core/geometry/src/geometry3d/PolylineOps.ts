@@ -6,10 +6,11 @@
  * @module CartesianGeometry
  */
 
-import { Point3d } from "./Point3dVector3d";
-import { Range1d } from "./Range";
-import { PolylineCompressionContext } from "./PolylineCompressionByEdgeOffset";
 import { GrowableXYZArray } from "./GrowableXYZArray";
+import { Point3d } from "./Point3dVector3d";
+import { PolylineCompressionContext } from "./PolylineCompressionByEdgeOffset";
+import { Range1d } from "./Range";
+
 // cspell:word Puecker
 /**
  * PolylineOps is a collection of static methods operating on polylines.

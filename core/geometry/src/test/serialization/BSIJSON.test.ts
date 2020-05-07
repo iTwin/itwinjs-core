@@ -2,47 +2,45 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+/* tslint:disable:no-console trailing-comma object-literal-key-quotes*/
+// Requires for grabbing json object from external file
+import * as fs from "fs";
+import { Arc3d } from "../../curve/Arc3d";
+import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { BagOfCurves } from "../../curve/CurveCollection";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { Path } from "../../curve/Path";
+import { PointString3d } from "../../curve/PointString3d";
+import { TransitionSpiral3d } from "../../curve/TransitionSpiral";
+import { UnionRegion } from "../../curve/UnionRegion";
 import { BeJSONFunctions } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Angle } from "../../geometry3d/Angle";
-import { Complex } from "../../numerics/Complex";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Ray3d } from "../../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { Range1d, Range2d, Range3d } from "../../geometry3d/Range";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
-import { UnionRegion } from "../../curve/UnionRegion";
-import { BagOfCurves } from "../../curve/CurveCollection";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { Loop } from "../../curve/Loop";
-import { Path } from "../../curve/Path";
-
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { Checker } from "../Checker";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { Map4d } from "../../geometry4d/Map4d";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Point4d } from "../../geometry4d/Point4d";
-import { TransitionSpiral3d } from "../../curve/TransitionSpiral";
-import { expect } from "chai";
+import { Complex } from "../../numerics/Complex";
+import { IndexedPolyface } from "../../polyface/Polyface";
 import { Sample } from "../../serialization/GeometrySamples";
-import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
-
-import { LineString3d } from "../../curve/LineString3d";
-import { PointString3d } from "../../curve/PointString3d";
-import { Arc3d } from "../../curve/Arc3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
-/* tslint:disable:no-console trailing-comma object-literal-key-quotes*/
+import { Checker } from "../Checker";
 
-// Requires for grabbing json object from external file
-import * as fs from "fs";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 // cspell::word bsijson
 
 // Variables used for testing

@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelJsFs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
-import { Config } from "@bentley/imodeljs-clients";
+import { Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { IModelJsFs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
+
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 export class KnownTestLocations {

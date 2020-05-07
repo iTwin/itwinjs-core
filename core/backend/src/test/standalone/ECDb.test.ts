@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { ECDbTestHelper } from "./ECDbTestHelper";
-import { DbResult, Id64String, Id64, using } from "@bentley/bentleyjs-core";
-import { ECSqlInsertResult, ECDb, ECDbOpenMode, ECSqlStatement, SqliteStatement, SqliteValue, SqliteValueType } from "../../imodeljs-backend";
+import { DbResult, Id64, Id64String, using } from "@bentley/bentleyjs-core";
+import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, SqliteStatement, SqliteValue, SqliteValueType } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { ECDbTestHelper } from "./ECDbTestHelper";
 
 describe("ECDb", () => {
   const _outDir = KnownTestLocations.outputDir;

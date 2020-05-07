@@ -2,19 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
 import { expect } from "chai";
 import { Vector3d } from "@bentley/geometry-core";
-import {
-  DisplayStyle3dProps,
-} from "@bentley/imodeljs-common";
-import {
-  DisplayStyle3dState,
-  IModelConnection,
-  MockRender,
-} from "@bentley/imodeljs-frontend";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
+import { DisplayStyle3dProps } from "@bentley/imodeljs-common";
+import { DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;
@@ -29,15 +20,15 @@ describe("DisplayStyle", () => {
   };
 
   before(async () => {
-    MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    await MockRender.App.startup();
+    imodel = await SnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {
     if (imodel)
-      await imodel.closeSnapshot();
+      await imodel.close();
 
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   it("should clone correctly", () => {
@@ -45,12 +36,12 @@ describe("DisplayStyle", () => {
     const style2 = style1.clone(imodel);
     expect(JSON.stringify(style1)).to.equal(JSON.stringify(style2));
 
-      // ###TODO More substantial tests (change style properties)
+    // ###TODO More substantial tests (change style properties)
   });
 
   it("should preserve sun direction", () => {
     const style1 = new DisplayStyle3dState(styleProps, imodel);
-    expect(style1.sunDirection).to.be.undefined;
+    expect(style1.sunDirection).not.to.be.undefined;
 
     style1.setSunTime(Date.now());
     expect(style1.sunDirection).not.to.be.undefined;

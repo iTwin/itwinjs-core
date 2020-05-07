@@ -6,21 +6,29 @@
  * @module TypeConverters
  */
 
-import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
+import { Primitives } from "@bentley/ui-abstract";
+import { StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { Primitives } from "@bentley/imodeljs-frontend";
 
 /** Operators for string types
  * @public
  */
 export interface StringOperatorProcessor {
+  /** Determines if one string starts with another string */
   startsWith(a: string, b: string, caseSensitive: boolean): boolean;
+  /** Determines if one string ends with another string */
   endsWith(a: string, b: string, caseSensitive: boolean): boolean;
+  /** Determines if one string contains another string */
   contains(a: string, b: string, caseSensitive: boolean): boolean;
+  /** Determines if one string does not contain another string */
   doesNotContain(a: string, b: string, caseSensitive: boolean): boolean;
+  /** Determines if one string is contained within another string */
   isContainedIn(a: string, b: string, caseSensitive: boolean): boolean;
+  /** Determines if one string is not contained within another string */
   isNotContainedIn(a: string, b: string, caseSensitive: boolean): boolean;
+  /** Determines if a string is empty */
   isEmpty(a: string): boolean;
+  /** Determines if a string is not empty */
   isNotEmpty(a: string): boolean;
 }
 

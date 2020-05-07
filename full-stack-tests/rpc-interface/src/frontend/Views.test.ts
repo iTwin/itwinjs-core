@@ -3,11 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-const expect = chai.expect;
-
 import { IModelConnection, SpatialViewState } from "@bentley/imodeljs-frontend";
-
 import { TestContext } from "./setup/TestContext";
+
+const expect = chai.expect;
 
 describe("IModel Views", () => {
   let iModel: IModelConnection;

@@ -3,25 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Node, NodeJSON } from "../../hierarchy/Node";
-import {
-  createRandomECInstanceNode, createRandomECInstanceNodeKey,
-  createRandomECInstanceKeyJSON,
-  createRandomLabelDefinitionJSON,
-} from "../_helpers/random";
-import { ECInstanceNodeKeyJSON } from "../../hierarchy/Key";
-
-const createRandomECInstanceNodeKeyJSON = (): ECInstanceNodeKeyJSON => {
-  return {
-    ...createRandomECInstanceNodeKey(),
-    instanceKey: createRandomECInstanceKeyJSON(),
-  };
-};
+import { Node, NodeJSON } from "../../presentation-common/hierarchy/Node";
+import { createRandomECInstancesNode, createRandomECInstancesNodeKeyJSON, createRandomLabelDefinitionJSON } from "../_helpers/random";
 
 const createRandomNodeJSON = (): NodeJSON => {
   return {
-    ...createRandomECInstanceNode(),
-    key: createRandomECInstanceNodeKeyJSON(),
+    ...createRandomECInstancesNode(),
+    key: createRandomECInstancesNodeKeyJSON(),
     labelDefinition: createRandomLabelDefinitionJSON(),
   };
 };
@@ -31,14 +19,7 @@ describe("Node", () => {
   describe("toJSON", () => {
 
     it("serializes Node", () => {
-      const node = createRandomECInstanceNode();
-      const json = Node.toJSON(node);
-      expect(json).to.matchSnapshot();
-    });
-
-    it("serializes Node without labelDefinition", () => {
-      const node = createRandomECInstanceNode();
-      node.labelDefinition = undefined;
+      const node = createRandomECInstancesNode();
       const json = Node.toJSON(node);
       expect(json).to.matchSnapshot();
     });

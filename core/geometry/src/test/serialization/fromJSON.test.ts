@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+// import { expect } from "chai";
+import * as g from "../../geometry-core";
 /* tslint:disable: no-console */
 import { Checker } from "../Checker";
-// import { expect } from "chai";
-
-import * as g from "../../geometry-core";
 import { SimpleFactory } from "../SimpleFactory";
+
 let noisy = 0;
 function report(a: any, b: any) {
   if (noisy > 0)

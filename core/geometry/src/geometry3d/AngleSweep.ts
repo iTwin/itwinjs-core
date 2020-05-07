@@ -6,9 +6,10 @@
  * @module CartesianGeometry
  */
 
-import { GrowableFloat64Array } from "./GrowableFloat64Array";
+import { AngleSweepProps, BeJSONFunctions, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
-import { BeJSONFunctions, Geometry, AngleSweepProps } from "../Geometry";
+import { GrowableFloat64Array } from "./GrowableFloat64Array";
+
 /**
  * An `AngleSweep` is a pair of angles at start and end of an interval.
  *
@@ -179,7 +180,7 @@ export class AngleSweep implements BeJSONFunctions {
    * Convert each value in an array from radians to fraction.
    * @param data array that is input as radians, output as fractions
    */
-  public radiansArraytoPositivePeriodicFractions(data: GrowableFloat64Array) {
+  public radiansArrayToPositivePeriodicFractions(data: GrowableFloat64Array) {
     const n = data.length;
     for (let i = 0; i < n; i++) {
       data.reassign(i, this.radiansToPositivePeriodicFraction(data.atUncheckedIndex(i)));

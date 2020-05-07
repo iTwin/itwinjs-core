@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import "./FindSimilarWidget.css";
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { tableWithUnifiedSelection, IPresentationTableDataProvider } from "@bentley/presentation-components";
-import { Table, SelectionMode } from "@bentley/ui-components";
-import "./FindSimilarWidget.css";
+import { IPresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
+import { SelectionMode, Table } from "@bentley/ui-components";
 
 // tslint:disable-next-line:variable-name naming-convention
 const SampleTable = tableWithUnifiedSelection(Table);
 
 export interface Props {
-  dataProvider: IPresentationTableDataProvider;
+  dataProvider: IPresentationTableDataProvider & { dispose?: () => void };
   onDismissed?: () => void;
 }
 
@@ -23,10 +23,11 @@ export default class FindSimilarWidget extends React.PureComponent<Props> {
     this.state = { prevProps: props };
   }
   public componentWillUnmount() {
-    this.props.dataProvider.dispose();
+    if (this.props.dataProvider.dispose)
+      this.props.dataProvider.dispose();
   }
   public componentDidUpdate(prevProps: Props) {
-    if (this.props.dataProvider !== prevProps.dataProvider)
+    if (this.props.dataProvider !== prevProps.dataProvider && prevProps.dataProvider.dispose)
       prevProps.dataProvider.dispose();
   }
   private _onDismissClicked = () => {

@@ -42,17 +42,27 @@
       "BIS": "bis",
       "Learning": "learning",
       "API Reference": "reference",
-      "v1.14.0": "changehistory"
+      "v2.0.0": "changehistory"
     },
+    "archivedVersions": [
+      {
+        "version": "v1.14.0",
+        "archivedPath": "/v1"
+      }
+    ],
     "packageAliases": {
       "backend": "imodeljs-backend",
       "bentley": "bentleyjs-core",
-      "clients-backend": "imodeljs-clients-backend",
-      "clients": "imodeljs-clients",
+      "itwin-client": "itwin-client",
+      "backend-itwin-client": "backend-itwin-client",
       "common": "imodeljs-common",
+      "context-registry-client": "context-registry-client",
+      "extension-client": "extension-client",
       "frontend": "imodeljs-frontend",
+      "frontend-authorization-client": "frontend-authorization-client",
       "geometry": "geometry-core",
       "i18n": "imodeljs-i18n",
+      "imodelhub-client": "imodelhub-client",
       "markup": "imodeljs-markup",
       "quantity": "imodeljs-quantity",
       "frontend-devtools": "frontend-devtools",
@@ -64,9 +74,27 @@
       "presentation-backend": "presentation-backend",
       "presentation-common": "presentation-common",
       "presentation-components": "presentation-components",
-      "presentation-frontend": "presentation-frontend"
+      "presentation-frontend": "presentation-frontend",
+      "product-settings-client": "product-settings-client",
+      "projectshare-client": "projectshare-client",
+      "rbac-client": "rbac-client",
+      "reality-data-client": "reality-data-client",
+      "usage-logging-client": "usage-logging-client",
+      "webgl-compatibility": "webgl-compatibility"
     },
     "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"imodeljs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
-    "ogShareImage": "landing-page/assets/twitter-share.png"
+    "ogShareImage": "landing-page/assets/twitter-share.png",
+    "katexOptions": {
+      "macros": {
+        "\\matrixXY": "{\\begin{bmatrix}#1_{xx}\\ #1_{xy}\\ #1_{xz} \\\\ #1_{yx}\\ #1_{yy}\\ #1_{yz} \\\\ #1_{zx}\\ #1_{zy}\\ #1_{zz}\\end{bmatrix}}",
+        "\\matrixTransposeSubXY": "{\\begin{bmatrix}#1_{xx}\\ #1_{yx}\\ #1_{zx} \\\\ #1_{xy}\\ #1_{yy}\\ #1_{zy} \\\\ #1_{xz}\\ #1_{yz}\\ #1_{zz}\\end{bmatrix}}",
+        "\\blockTransform": "{\\begin{bmatrix}#1 & #2 \\\\ 0 & 1\\end{bmatrix}}",
+        "\\rowMajorMatrixXY": "{\\begin{bmatrix}#1_{xx}\\ #1_{xy}\\ #1_{xz}\\ #1_{yx}\\ #1_{yy}\\ #1_{yz}\\ #1_{zx}\\ #1_{zy}\\ #1_{zz}\\end{bmatrix}}",
+        "\\rowSubXYZ": "{\\begin{bmatrix}#1_{x}\\ #1_{y}\\ #1_{z}\\end{bmatrix}}",
+        "\\columnSubXYZ": "{\\begin{bmatrix}#1_{x}\\\\#1_{y}\\\\#1_{z}\\end{bmatrix}}",
+        "\\columnXYZ": "{\\begin{bmatrix}#1\\\\#2\\\\#3\\end{bmatrix}}",
+        "\\rowXYZ": "{\\begin{bmatrix} #1 & #2 & #3\\end{bmatrix}}"
+      }
+    }
   }
 }

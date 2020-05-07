@@ -6,12 +6,13 @@
  * @module WebGL
  */
 import { dispose } from "@bentley/bentleyjs-core";
-import { RenderMemory, RenderTextureDrape } from "../RenderSystem";
-import { Texture } from "./Texture";
-import { Target } from "./Target";
 import { Matrix4d } from "@bentley/geometry-core";
 import { SceneContext } from "../../ViewContext";
+import { RenderMemory } from "../RenderMemory";
+import { RenderTextureDrape } from "../RenderSystem";
 import { WebGLDisposable } from "./Disposable";
+import { Target } from "./Target";
+import { Texture } from "./Texture";
 
 export abstract class TextureDrape implements RenderTextureDrape, RenderMemory.Consumer, WebGLDisposable {
   protected _texture?: Texture;

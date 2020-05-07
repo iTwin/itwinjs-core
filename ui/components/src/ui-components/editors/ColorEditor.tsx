@@ -6,14 +6,16 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes, ColorEditorParams } from "@bentley/imodeljs-frontend"; //
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { ColorPickerButton } from "../color/ColorPickerButton";
-import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import "./ColorEditor.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { ColorDef } from "@bentley/imodeljs-common";
+import {
+  ColorEditorParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+} from "@bentley/ui-abstract"; //
+import { ColorPickerButton } from "../color/ColorPickerButton";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** @internal */
 interface ColorEditorState {
@@ -46,18 +48,13 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
       // istanbul ignore else
       if (colorParams) {
         colorParams.colorValues.forEach((colorNumber: number) => {
-          this._availableColors.push(new ColorDef(colorNumber));
+          this._availableColors.push(ColorDef.create(colorNumber));
         });
         // istanbul ignore else
         if (colorParams.numColumns)
           this._numColumns = colorParams.numColumns;
       }
     }
-  }
-
-  // istanbul ignore next
-  public getValue(): number {
-    return this.state.colorValue;
   }
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
@@ -100,15 +97,18 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
     });
   }
 
+  /** @internal */
   public componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // tslint:disable-line:no-floating-promises
   }
 
+  /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
   }
 
+  /** @internal */
   public componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // tslint:disable-line:no-floating-promises
@@ -139,8 +139,9 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
       );
   }
 
+  /** @internal */
   public render() {
-    const colorDef = new ColorDef(this.state.colorValue);
+    const colorDef = ColorDef.create(this.state.colorValue);
     return (
       <div className={classnames("components-color-editor", this.props.className)} style={this.props.style}>
         <ColorPickerButton ref={(control) => this._control = control}
@@ -156,11 +157,12 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
   }
 }
 
-/** ColorPropertyEditor returns React component [[ColorEditor]] to select a  color value.
+/** Color Property Editor registered for the "number" type name and "color-picker" editor name.
+ * It uses the [[ColorEditor]] React component.
  * @beta
  */
 export class ColorPropertyEditor extends PropertyEditorBase {
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <ColorEditor />;
   }
 }

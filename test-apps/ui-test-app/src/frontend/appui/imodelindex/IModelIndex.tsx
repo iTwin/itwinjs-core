@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "./IModelIndex.scss";
 import * as React from "react";
-import { Tab, Tabs } from "./Tabs";
-import { IModelConnection, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelHubClient, IModelClient, IModelQuery, VersionQuery, Version } from "@bentley/imodeljs-clients";
+import { IModelClient, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { AuthorizedFrontendRequestContext, IModelConnection } from "@bentley/imodeljs-frontend";
+import { LoadingSpinner } from "@bentley/ui-core";
+import { UiFramework } from "@bentley/ui-framework";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
-import { UiFramework } from "@bentley/ui-framework";
-import { LoadingSpinner } from "@bentley/ui-core";
-import "./IModelIndex.scss";
+import { Tab, Tabs } from "./Tabs";
 
 /* represents a tab item on the IModelIndex page */
 interface Category {
@@ -64,8 +64,8 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
   /* retrieve imodel thumbnail and version information on mount */
   public async componentDidMount() {
-    const projectId = this.props.iModelConnection.iModelToken.contextId!;
-    const iModelId = this.props.iModelConnection.iModelToken.iModelId!;
+    const projectId = this.props.iModelConnection.contextId!;
+    const iModelId = this.props.iModelConnection.iModelId!;
 
     await this.startRetrieveThumbnail(projectId, iModelId);
     await this.startRetrieveIModelInfo();
@@ -99,8 +99,8 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   private async startRetrieveIModelInfo() {
     const hubClient: IModelClient = new IModelHubClient();
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
-    const contextId = this.props.iModelConnection.iModelToken.contextId!;
-    const iModelId = this.props.iModelConnection.iModelToken.iModelId!;
+    const contextId = this.props.iModelConnection.contextId!;
+    const iModelId = this.props.iModelConnection.iModelId!;
 
     /* get the iModel name */
     const imodels = await hubClient.iModels.get(requestContext, contextId, new IModelQuery().byId(iModelId));
@@ -109,7 +109,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     const _versions: Version[] = await hubClient.versions.get(requestContext, iModelId, new VersionQuery().top(1));
 
     /* determine if the version is up-to-date */
-    const changeSetId = this.props.iModelConnection.iModelToken.changeSetId!;
+    const changeSetId = this.props.iModelConnection.changeSetId!;
     const _upToDate = (_versions.length > 0 && _versions[0].changeSetId === changeSetId);
 
     /* get the version name */
@@ -185,7 +185,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
       <div className="imodelindex fade-in">
         <div className="imodelindex-header">
           <div className="thumbnail">
-            {this.state.thumbnail && <img id="base64image" src={this.state.thumbnail} />}
+            {this.state.thumbnail && <img id="base64image" src={this.state.thumbnail} alt="" />}
             {!this.state.thumbnail && <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" enableBackground="new 0 0 16 16"><g><path d="M10.3 5.9 7.7 9.3 6 7.6 3 11 13 11z" /><circle cx="4.4" cy="5.9" r="1.3" /><path d="M0,2v12h16V2H0z M14,12H2V4h12V12z" /></g></svg>}
           </div>
           <div className="details">

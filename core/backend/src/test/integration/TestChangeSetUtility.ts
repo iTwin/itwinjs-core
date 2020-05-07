@@ -3,15 +3,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { GuidString } from "@bentley/bentleyjs-core";
-import { IModelVersion, IModel, SubCategoryAppearance, ColorDef } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KeepBriefcase, IModelDb, OpenParams, BriefcaseManager } from "../../imodeljs-backend";
-import { HubUtility } from "./HubUtility";
-import { ConcurrencyControl } from "../../ConcurrencyControl";
+import { ColorDef, IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { SpatialCategory } from "../../Category";
+import { ConcurrencyControl } from "../../ConcurrencyControl";
+import { BriefcaseDb, BriefcaseManager } from "../../imodeljs-backend";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { HubUtility } from "./HubUtility";
 
 /** Test utility to push an iModel and ChangeSets */
 export class TestChangeSetUtility {
@@ -20,7 +19,7 @@ export class TestChangeSetUtility {
 
   public projectId!: GuidString;
   public iModelId!: GuidString;
-  private _iModel!: IModelDb;
+  private _iModel!: BriefcaseDb;
   private _requestContext: AuthorizedClientRequestContext;
 
   private _modelId!: string;
@@ -38,7 +37,7 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
-    this._iModel = await IModelDb.open(this._requestContext, this.projectId, this.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    this._iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(this._requestContext, this.projectId, this.iModelId, SyncMode.PullAndPush, IModelVersion.latest());
     this._iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
     await this._iModel.concurrencyControl.request(this._requestContext);
@@ -46,7 +45,7 @@ export class TestChangeSetUtility {
   }
 
   private async addTestCategory(): Promise<void> {
-    this._categoryId = SpatialCategory.insert(this._iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
+    this._categoryId = SpatialCategory.insert(this._iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
     await this._iModel.concurrencyControl.request(this._requestContext);
     this._iModel.saveChanges("Added test category");
   }
@@ -58,7 +57,7 @@ export class TestChangeSetUtility {
     this._iModel.saveChanges("Added test elements");
   }
 
-  public async createTestIModel(): Promise<IModelDb> {
+  public async createTestIModel(): Promise<BriefcaseDb> {
     await this.initialize();
 
     // Re-create iModel on iModelHub
@@ -70,7 +69,7 @@ export class TestChangeSetUtility {
     await this.addTestElements();
 
     // Push changes to the hub
-    await this._iModel.pushChanges(this._requestContext, () => "Setup test model");
+    await this._iModel.pushChanges(this._requestContext, "Setup test model");
 
     return this._iModel;
   }
@@ -79,13 +78,13 @@ export class TestChangeSetUtility {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await this.addTestElements();
-    await this._iModel.pushChanges(this._requestContext, () => "Added test elements");
+    await this._iModel.pushChanges(this._requestContext, "Added test elements");
   }
 
   public async deleteTestIModel(): Promise<void> {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
-    await this._iModel.close(this._requestContext, KeepBriefcase.No);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(this._requestContext, this._iModel);
     await BriefcaseManager.imodelClient.iModels.delete(this._requestContext, this.projectId, this.iModelId);
   }
 }

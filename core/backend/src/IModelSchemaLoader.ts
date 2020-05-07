@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType, SchemaProps } from "@bentley/ecschema-metadata";
 import { IModelError } from "@bentley/imodeljs-common";
-import { Logger, IModelStatus } from "@bentley/bentleyjs-core";
-import { IModelJsNative, BackendLoggerCategory } from "./imodeljs-backend";
-import { IModelDb } from "./IModelDb";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
-import { ISchemaLocater, Schema, SchemaKey, SchemaMatchType, SchemaContext, SchemaProps, ECVersion } from "@bentley/ecschema-metadata";
+import { IModelDb } from "./IModelDb";
 
 const loggerCategory: string = BackendLoggerCategory.IModelSchemaLoader;
 

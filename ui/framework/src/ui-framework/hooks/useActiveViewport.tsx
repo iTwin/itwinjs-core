@@ -6,7 +6,7 @@
  * @module Hooks
  */
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 
 /** React hook that maintains the active viewport.

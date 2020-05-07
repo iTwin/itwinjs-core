@@ -6,8 +6,8 @@
  * @module TypeConverters
  */
 
-import { PropertyDescription, EnumerationChoice, Primitives } from "@bentley/imodeljs-frontend";
-import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
+import { EnumerationChoice, Primitives, PropertyDescription } from "@bentley/ui-abstract";
+import { StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 
 /**

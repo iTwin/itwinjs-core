@@ -75,7 +75,7 @@ Relationships that derive from ElementOwnsChildElements may make the following c
 
 - Limit the parent to only one child by changing the target multiplicity to `(0..1)`.
 
-- Limit either endpoint to a classes more specialized than Element by changing the Class constraint to an entity class which derives from Element.
+- Limit either endpoint to a class more specialized than Element by changing the Class constraint to an entity class which derives from Element.
 
 - Limit either endpoint to a specific class by changing the polymorphic flag to `false`.
 

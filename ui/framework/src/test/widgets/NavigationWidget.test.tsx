@@ -2,27 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
+import * as React from "react";
 import * as moq from "typemoq";
-import TestUtils from "../TestUtils";
-import {
-  AnyWidgetProps,
-  WidgetState,
-  NavigationWidgetDef,
-  ToolButton,
-  NavigationWidget,
-  ContentControl,
-  ConfigurableCreateInfo,
-  FrontstageManager,
-  ItemList,
-} from "../../ui-framework";
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
-import { ConfigurableUiManager } from "../../ui-framework/configurableui/ConfigurableUiManager";
-import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import {
+  AnyWidgetProps, ConfigurableCreateInfo, ContentControl, FrontstageManager, ItemList, NavigationAidHost, NavigationWidget, NavigationWidgetDef,
+  ToolButton,
+} from "../../ui-framework";
+import { ConfigurableUiManager } from "../../ui-framework/configurableui/ConfigurableUiManager";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
+import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
+import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
+import TestUtils from "../TestUtils";
 
 describe("NavigationWidget", () => {
 
@@ -48,16 +43,16 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidgetDef from WidgetProps", () => {
 
-    const widgetDef = new NavigationWidgetDef(widgetProps);
-    expect(widgetDef).to.be.instanceof(NavigationWidgetDef);
+    const widgetDef = new NavigationWidgetDef(widgetProps); // tslint:disable-line:deprecation
+    expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // tslint:disable-line:deprecation
 
-    const navigationWidgetDef = widgetDef as NavigationWidgetDef;
+    const navigationWidgetDef = widgetDef as NavigationWidgetDef; // tslint:disable-line:deprecation
 
-    const reactElement = navigationWidgetDef.reactElement;
-    expect(reactElement).to.not.be.undefined;
-
-    const reactNode = navigationWidgetDef.renderCornerItem();
+    const reactNode = navigationWidgetDef.reactNode;
     expect(reactNode).to.not.be.undefined;
+
+    const cornerNode = navigationWidgetDef.renderCornerItem();
+    expect(cornerNode).to.not.be.undefined;
   });
 
   const horizontalToolbar =
@@ -84,7 +79,7 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidget should render", () => {
     const wrapper = mount(
-      <NavigationWidget
+      <NavigationWidget // tslint:disable-line:deprecation
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
       />,
@@ -94,7 +89,7 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidget should render correctly", () => {
     shallow(
-      <NavigationWidget
+      <NavigationWidget // tslint:disable-line:deprecation
         id="navigationWidget"
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
@@ -107,7 +102,7 @@ describe("NavigationWidget", () => {
     const vItemList = new ItemList([CoreTools.fitViewCommand]);
 
     const wrapper = mount(
-      <NavigationWidget
+      <NavigationWidget // tslint:disable-line:deprecation
         horizontalItems={hItemList}
         verticalItems={vItemList}
       />,
@@ -117,7 +112,7 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidget should support update", () => {
     const wrapper = mount(
-      <NavigationWidget
+      <NavigationWidget // tslint:disable-line:deprecation
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
       />,
@@ -135,7 +130,7 @@ describe("NavigationWidget", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div />;
+      this.reactNode = <div />;
     }
   }
 
@@ -143,12 +138,12 @@ describe("NavigationWidget", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div>Test Navigation Aid</div>;
+      this.reactNode = <div>Test Navigation Aid</div>;
     }
   }
 
   it("NavigationWidgetDef with invalid navigation aid should throw Error", () => {
-    const def = new NavigationWidgetDef({
+    const def = new NavigationWidgetDef({ // tslint:disable-line:deprecation
       navigationAidId: "Aid1",
     });
     ConfigurableUiManager.registerControl("Aid1", TestContentControl);
@@ -157,13 +152,13 @@ describe("NavigationWidget", () => {
   });
 
   it("NavigationWidgetDef should handle updateNavigationAid", () => {
-    const def = new NavigationWidgetDef({
+    const def = new NavigationWidgetDef({ // tslint:disable-line:deprecation
       navigationAidId: "Aid1",
     });
     ConfigurableUiManager.registerControl("Aid1", TestNavigationAidControl);
 
-    const element = def.reactElement;
-    expect(def.reactElement).to.eq(element);
+    const element = def.reactNode;
+    expect(def.reactNode).to.eq(element);
     const wrapper = mount(element as React.ReactElement<any>);
 
     const connection = moq.Mock.ofType<IModelConnection>();
@@ -173,6 +168,14 @@ describe("NavigationWidget", () => {
     FrontstageManager.setActiveToolId(CoreTools.selectElementCommand.toolId);
 
     ConfigurableUiManager.unregisterControl("Aid1");
+    wrapper.unmount();
+  });
+
+  it("NavigationAidHost should render in 2.0 mode", () => {
+    const wrapper = mount(
+      <FrameworkVersion version="2">
+        <NavigationAidHost />
+      </FrameworkVersion>);
     wrapper.unmount();
   });
 

@@ -1,0 +1,48 @@
+sep=;
+Release Tag;API Item
+beta;AccessToken
+beta;AuthenticationError 
+beta;AuthorizationClient
+public;AuthorizedClientRequestContext 
+public;AuthorizedClientRequestContextProps 
+beta;CancelRequest
+beta;ChangeState = "new" | "modified" | "deleted"
+internal;ClassKeyMapInfo
+beta;class Client
+internal;ConstructorType = new () => any
+internal;DefaultRequestOptionsProvider
+internal;DefaultWsgRequestOptionsProvider 
+internal;DownloadFailed 
+beta;class ECInstance
+internal;ECJsonTypeMap
+beta;FileHandler
+internal;getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise
+internal;getJson(requestContext: ClientRequestContext, url: string): Promise
+beta;ImsAuthorizationClient 
+beta;IncludePrefix
+beta;isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext
+beta;ITwinClientLoggerCategory
+beta;ProgressCallback = (progress: ProgressInfo) => void
+beta;ProgressInfo
+internal;request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise
+beta;RequestBasicCredentials
+beta;RequestGlobalOptions
+beta;requestIdHeaderName = "X-Correlation-Id"
+beta;RequestOptions
+beta;RequestQueryOptions
+beta;RequestQueryStringifyOptions
+beta;RequestTimeoutOptions
+beta;Response
+beta;ResponseError 
+internal;SamlAccessToken 
+internal;SamlAuthorizationToken 
+internal;class SamlToken
+beta;SasUrlExpired 
+internal;UrlDiscoveryClient 
+internal;UserCancelledError 
+beta;UserInfo
+beta;class WsgClient 
+beta;WsgError 
+beta;class WsgInstance 
+beta;WsgQuery
+beta;WsgRequestOptions

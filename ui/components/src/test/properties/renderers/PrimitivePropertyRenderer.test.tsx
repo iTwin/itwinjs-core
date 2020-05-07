@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import TestUtils from "../../TestUtils";
-import { PrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
 import { PrimitivePropertyLabelRenderer } from "../../../ui-components";
+import { PrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
 import { PropertyView } from "../../../ui-components/properties/renderers/PropertyView";
+import TestUtils from "../../TestUtils";
 
 describe("PrimitivePropertyRenderer", () => {
   it("renders properly", () => {

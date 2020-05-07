@@ -6,19 +6,16 @@
  * @module iModels
  */
 
-import { GeometryStreamBuilder, GeometricElement3dProps, Placement3d } from "@bentley/imodeljs-common";
-import { IModelDb } from "./IModelDb";
-import { DbOpcode, BentleyError, IModelStatus, Id64Array, Id64, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { Transform, Point3d, YawPitchRollAngles, IModelJson, GeometryQuery, TransformProps } from "@bentley/geometry-core";
-import { GeometricElement3d } from "./Element";
+import * as deepAssign from "deep-assign";
+import { BentleyError, DbOpcode, Id64, Id64Array, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { GeometryQuery, IModelJson, Point3d, Transform, TransformProps, YawPitchRollAngles } from "@bentley/geometry-core";
+import { GeometricElement3dProps, GeometryStreamBuilder, Placement3d } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { GeometricElement3d } from "./Element";
+import { IModelDb } from "./IModelDb";
 
 const loggingCategory = BackendLoggerCategory.Editing;
-
-function deepCopy(obj: any): any {
-  return JSON.parse(JSON.stringify(obj));
-}
 
 export interface IElementEditor {
   readonly iModel: IModelDb;
@@ -78,15 +75,17 @@ export class GeometricElement3dEditor implements IElementEditor {
   }
 
   /**
-   * The tool is delcaring its intention to edit the specified elements. The editor
+   * The tool is declaring its intention to edit the specified elements. The editor
    * will make sure that the required locks and codes are held. The editor will then
    * start tracking the state of these elements.
    */
   public async startModifyingElements(ctx: AuthorizedClientRequestContext, elementIds: Id64Array): Promise<void> {
     ctx.enter();
     const elements = elementIds.map((id: string) => ({ element: this.iModel.elements.getElement<GeometricElement3d>(id), opcode: DbOpcode.Update }));
-    await this.iModel.concurrencyControl.requestResources(ctx, elements);  // don't allow the tool to start editing this element until we have locked them and their models.
-    ctx.enter();
+    if (this.iModel.isBriefcaseDb()) {
+      await this.iModel.concurrencyControl.requestResources(ctx, elements); // don't allow the tool to start editing this element until we have locked them and their models.
+      ctx.enter();
+    }
     elements.forEach((e) => this._targets.push({ element: e.element }));
   }
 
@@ -118,7 +117,10 @@ export class GeometricElement3dEditor implements IElementEditor {
       if (geometry !== undefined) {
         const builder = new GeometryStreamBuilder();
         this.buildGeometry(builder, geometry);
-        // TODO ask builder to compute placement using origin, angles, and geometry
+        if (origin)
+          newGeom3d.placement.origin = origin;
+        if (angles !== undefined && angles.yaw !== undefined)
+          newGeom3d.placement.angles = angles;
         newGeom3d.geom = builder.geometryStream;
       }
       newElements = [newGeom3d];
@@ -145,7 +147,9 @@ export class GeometricElement3dEditor implements IElementEditor {
   }
 
   public pushState() {
-    this._stateStack.push(deepCopy(this._targets));
+    const t: GeometricElement3dEditor.Target[] = [];
+    deepAssign(t, this._targets);
+    this._stateStack.push(t);
   }
 
   public popState() {

@@ -6,21 +6,21 @@
  * @module Curve
  */
 
+import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { AngleSweep } from "../geometry3d/AngleSweep";
 /* tslint:disable: no-console */
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Arc3d } from "./Arc3d";
 import { CurveCollection } from "./CurveCollection";
+import { CurveCurve } from "./CurveCurve";
+import { CurveCurveApproachType, CurveLocationDetailPair } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { LineSegment3d } from "./LineSegment3d";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { CurveCurveApproachType, CurveLocationDetailPair } from "./CurveLocationDetail";
 import { LineString3d } from "./LineString3d";
-import { Path } from "./Path";
 import { Loop } from "./Loop";
-import { Arc3d } from "./Arc3d";
-import { CurveCurve } from "./CurveCurve";
-import { Angle } from "../geometry3d/Angle";
-import { Geometry } from "../Geometry";
-import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Path } from "./Path";
 import { RegionOps } from "./RegionOps";
 
 /**
@@ -589,12 +589,12 @@ export class CurveChainWireOffsetContext {
     } else if (g instanceof Arc3d) {
       const g1 = g.cloneAtZ();
       if (g1.isCircular) {
-        const sign = g1.sweep.sweepRadians * g1.matrix.coffs[8] >= 0.0 ? 1.0 : -1.0;
-        const r = g1.matrix.columnXMagnitude();
+        const sign = g1.sweep.sweepRadians * g1.matrixRef.coffs[8] >= 0.0 ? 1.0 : -1.0;
+        const r = g1.matrixRef.columnXMagnitude();
         const r1 = r - sign * distanceLeft;
         if (r1 >= 0) {
           const factor = r1 / r;
-          const matrix = g1.matrix;
+          const matrix = g1.matrixClone ();
           matrix.scaleColumnsInPlace(factor, factor, 1.0);
           return this.applyBasePoints(Arc3d.createRefs(g1.center.clone(), matrix, g1.sweep.clone()), g.startPoint(), g.endPoint());
         }

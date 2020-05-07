@@ -6,12 +6,12 @@
  * @module Widget
  */
 
-import * as classnames from "classnames";
+import "./Tab.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
-import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
 import { DragHandle } from "../../../base/DragHandle";
-import "./Tab.scss";
+import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
 
 /** Describes available tab modes.
  * @alpha

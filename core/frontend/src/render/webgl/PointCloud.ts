@@ -2,21 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module WebGL
  */
-import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { CachedGeometry } from "./CachedGeometry";
-import { QBufferHandle3d, BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
-import { TechniqueId } from "./TechniqueId";
-import { RenderPass, RenderOrder } from "./RenderFlags";
-import { Target } from "./Target";
-import { GL } from "./GL";
-import { System } from "./System";
-import { dispose, assert } from "@bentley/bentleyjs-core";
+
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { FeatureIndexType } from "@bentley/imodeljs-common";
-import { RenderMemory } from "../RenderSystem";
+import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
+import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
+import { CachedGeometry } from "./CachedGeometry";
+import { ShaderProgramParams } from "./DrawCommand";
+import { GL } from "./GL";
+import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle3d } from "./Handle";
+import { RenderOrder, RenderPass } from "./RenderFlags";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
 
 /** @internal */
 export class PointCloudGeometry extends CachedGeometry {
@@ -26,7 +29,12 @@ export class PointCloudGeometry extends CachedGeometry {
   private readonly _colorHandle: BufferHandle | undefined = undefined;
   private readonly _hasFeatures: boolean;
 
+  private readonly _voxelSize: number;
+  public readonly colorIsBgr: boolean;
+  public readonly minimumPointSize: number;
+
   public get isDisposed(): boolean { return this.buffers.isDisposed && this._vertices.isDisposed; }
+  public get asPointCloud(): PointCloudGeometry | undefined { return this; }
 
   public dispose() {
     dispose(this.buffers);
@@ -39,9 +47,14 @@ export class PointCloudGeometry extends CachedGeometry {
     this._vertices = QBufferHandle3d.create(pointCloud.pointParams, pointCloud.points) as QBufferHandle3d;
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointCloud, false);
     assert(undefined !== attrPos);
-    this.buffers.addBuffer(this._vertices, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedShort, false, 0, 0, false)]);
+    const vertexDataType = (pointCloud.points instanceof Uint8Array) ? GL.DataType.UnsignedByte : GL.DataType.UnsignedShort;
+    this.buffers.addBuffer(this._vertices, [BufferParameters.create(attrPos!.location, 3, vertexDataType, false, 0, 0, false)]);
     this._vertexCount = pointCloud.points.length / 3;
     this._hasFeatures = FeatureIndexType.Empty !== pointCloud.features.type;
+    this._voxelSize = pointCloud.voxelSize;
+    this.colorIsBgr = pointCloud.colorIsBgr;
+    this.minimumPointSize = pointCloud.minimumPointSize;
+
     if (undefined !== pointCloud.colors) {
       this._colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);
       const attrColor = AttributeMap.findAttribute("a_color", TechniqueId.PointCloud, false);
@@ -73,5 +86,9 @@ export class PointCloudGeometry extends CachedGeometry {
     this.buffers.bind();
     System.instance.context.drawArrays(GL.PrimitiveType.Points, 0, this._vertexCount);
     this.buffers.unbind();
+  }
+  public getLineWeight(_params: ShaderProgramParams): number {
+    // If line weight < 0 it is real size in meters (voxel size).
+    return (this._voxelSize > 0) ? - this._voxelSize : 1;
   }
 }

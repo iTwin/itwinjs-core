@@ -6,21 +6,21 @@
  * @module WebGL
  */
 
-import { dispose, assert } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { FeatureIndexType, QParams3d } from "@bentley/imodeljs-common";
-import { Target } from "./Target";
-import { LUTGeometry } from "./CachedGeometry";
-import { RenderPass, RenderOrder } from "./RenderFlags";
-import { TechniqueId } from "./TechniqueId";
 import { PointStringParams } from "../primitives/VertexTable";
-import { VertexLUT } from "./VertexLUT";
-import { BufferHandle, BuffersContainer, BufferParameters } from "./Handle";
-import { GL } from "./GL";
-import { System } from "./System";
-import { ShaderProgramParams } from "./DrawCommand";
-import { RenderMemory } from "../RenderSystem";
+import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
+import { LUTGeometry } from "./CachedGeometry";
+import { ShaderProgramParams } from "./DrawCommand";
+import { GL } from "./GL";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
+import { RenderOrder, RenderPass } from "./RenderFlags";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
+import { VertexLUT } from "./VertexLUT";
 
 /** @internal */
 export class PointStringGeometry extends LUTGeometry {

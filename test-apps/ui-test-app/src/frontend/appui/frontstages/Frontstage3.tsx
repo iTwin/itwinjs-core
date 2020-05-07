@@ -3,35 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
 import {
-  GroupButton,
-  ToolButton,
-  ToolWidget,
-  ZoneState,
-  WidgetState,
-  NavigationWidget,
-  ContentLayoutDef,
-  ContentGroup,
-  Frontstage,
-  Zone,
-  Widget,
-  FrontstageProvider,
-  FrontstageProps,
-  ZoneLocation,
-  ActionItemButton,
-  CoreTools,
-  UiFramework,
-  IModelViewportControl,
+  ActionItemButton, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, IModelViewportControl,
+  NavigationWidget, ToolButton, ToolWidget, UiFramework, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
-
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
-import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
-import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
-import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { IModelViewportControl as App_IModelViewport } from "../contentviews/IModelViewport";
+import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
+import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
+import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 
 export class Frontstage3 extends FrontstageProvider {
 
@@ -75,21 +57,21 @@ export class Frontstage3 extends FrontstageProvider {
         contentGroup={myContentGroup}
         isInFooterMode={true}
         applicationData={{ key: "value" }}
-        topLeft={
+        contentManipulationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={this.getToolWidget()} />,
             ]}
           />
         }
-        topCenter={
+        toolSettings={
           <Zone
             widgets={[
               <Widget isToolSettings={true} />,
             ]}
           />
         }
-        topRight={
+        viewNavigationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={this.getNavigationWidget()} />,
@@ -110,7 +92,7 @@ export class Frontstage3 extends FrontstageProvider {
             ]}
           />
         }
-        bottomCenter={
+        statusBar={
           <Zone defaultState={ZoneState.Open}
             widgets={[
               <Widget isStatusBar={true} control={SmallStatusBarWidgetControl} />,
@@ -143,8 +125,7 @@ export class Frontstage3 extends FrontstageProvider {
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
-              items={[AppTools.tool1, AppTools.tool2, AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand, AppTools.noIconMessageCommand,
-                AppTools.item6, AppTools.item7, AppTools.item8]}
+              items={[AppTools.tool1, AppTools.tool2, AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand, AppTools.noIconMessageCommand, AppTools.item6, AppTools.item7, AppTools.item8]}
               direction={Direction.Bottom}
               itemsInColumn={5}
             />
@@ -162,8 +143,7 @@ export class Frontstage3 extends FrontstageProvider {
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
-              items={[AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
-                AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2]}
+              items={[AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand, AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2]}
               direction={Direction.Right}
               itemsInColumn={7}
             />

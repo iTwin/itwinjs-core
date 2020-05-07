@@ -7,17 +7,8 @@
  * @module Tools
  */
 
-import {
-  DisplayStyle3dState,
-  Environment,
-  IModelApp,
-  Tool,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
-import {
-  RenderMode,
-  ViewFlags,
-} from "@bentley/imodeljs-common";
+import { RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { DisplayStyle3dState, Environment, IModelApp, Tool, Viewport } from "@bentley/imodeljs-frontend";
 
 type BooleanFlagName =
   "dimensions" | "patterns" | "weights" | "styles" | "transparency" | "fill" | "textures" | "materials" | "acsTriad" | "grid" | "visibleEdges" |

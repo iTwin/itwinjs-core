@@ -6,13 +6,14 @@
  * @module WebGL
  */
 
-import { AuxChannel, AuxParamChannel, AuxDisplacementChannel } from "../../primitives/AuxChannelTable";
-import { VertexShaderComponent, VertexShaderBuilder, VariableType } from "../ShaderBuilder";
-import { DrawParams } from "../DrawCommand";
-import { octDecodeNormal } from "./Surface";
-import { AnalysisStyle, Gradient } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
+import { AnalysisStyle, ThematicGradientSettings } from "@bentley/imodeljs-common";
+import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
+import { DrawParams } from "../DrawCommand";
 import { TextureUnit } from "../RenderFlags";
+import { VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
+import { IsThematic } from "../TechniqueFlags";
+import { octDecodeNormal } from "./Surface";
 
 const initialize = `
   g_anim_step = vec2(1.0) / u_animLUTParams.xy;
@@ -179,7 +180,7 @@ function computeAnimParams(params: Float32Array, channel: AuxChannel, fraction: 
 }
 
 /** @internal */
-export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): void {
+export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isThematic: IsThematic): void {
   // Lookup table
   vert.addGlobal("g_anim_step", VariableType.Vec2);
   vert.addGlobal("g_anim_center", VariableType.Vec2);
@@ -219,7 +220,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
       if (undefined !== disp)
-        computeAnimParams(animParams, disp.channel, params.target.animationFraction);
+        computeAnimParams(animParams, disp.channel, params.target.analysisFraction);
 
       uniform.setUniform3fv(animParams);
     });
@@ -265,35 +266,37 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
         const animParams = getAnimParams(3, -1.0);
         const channel = getNormalChannel(params);
         if (undefined !== channel)
-          computeAnimParams(animParams, channel, params.target.animationFraction);
+          computeAnimParams(animParams, channel, params.target.analysisFraction);
 
         uniform.setUniform3fv(animParams);
       });
     });
 
-    vert.addUniform("u_animScalarParams", VariableType.Vec3, (prog) => {
-      prog.addGraphicUniform("u_animScalarParams", (uniform, params) => {
-        const scalars = getScalarChannel(params);
-        const animParams = getAnimParams(3, -1.0);
-        if (undefined !== scalars)
-          computeAnimParams(animParams, scalars.channel, params.target.animationFraction);
+    if (isThematic === IsThematic.No) {
+      vert.addUniform("u_animScalarParams", VariableType.Vec3, (prog) => {
+        prog.addGraphicUniform("u_animScalarParams", (uniform, params) => {
+          const scalars = getScalarChannel(params);
+          const animParams = getAnimParams(3, -1.0);
+          if (undefined !== scalars)
+            computeAnimParams(animParams, scalars.channel, params.target.analysisFraction);
 
-        uniform.setUniform3fv(animParams);
+          uniform.setUniform3fv(animParams);
+        });
       });
-    });
 
-    vert.addUniform("u_animScalarQParams", VariableType.Vec2, (prog) => {
-      prog.addGraphicUniform("u_animScalarQParams", (uniform, params) => {
-        const scalars = getScalarChannel(params);
-        const animParams = getAnimParams(2, 1.0);
-        if (undefined !== scalars) {
-          const rangeScale = scalars.style.scalarRange!.high - scalars.style.scalarRange!.low;
-          animParams[0] = Gradient.ThematicSettings.margin + (scalars.channel.qOrigin - scalars.style.scalarRange!.low) / rangeScale;
-          animParams[1] = Gradient.ThematicSettings.contentRange * scalars.channel.qScale / rangeScale;
-        }
+      vert.addUniform("u_animScalarQParams", VariableType.Vec2, (prog) => {
+        prog.addGraphicUniform("u_animScalarQParams", (uniform, params) => {
+          const scalars = getScalarChannel(params);
+          const animParams = getAnimParams(2, 1.0);
+          if (undefined !== scalars) {
+            const rangeScale = scalars.style.scalarRange!.high - scalars.style.scalarRange!.low;
+            animParams[0] = ThematicGradientSettings.margin + (scalars.channel.qOrigin - scalars.style.scalarRange!.low) / rangeScale;
+            animParams[1] = ThematicGradientSettings.contentRange * scalars.channel.qScale / rangeScale;
+          }
 
-        uniform.setUniform2fv(animParams);
+          uniform.setUniform2fv(animParams);
+        });
       });
-    });
+    }
   }
 }

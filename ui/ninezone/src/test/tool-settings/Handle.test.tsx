@@ -3,12 +3,28 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { render } from "@testing-library/react";
-import { DockedToolSettingsHandle } from "../../ui-ninezone";
+import * as sinon from "sinon";
+import { fireEvent, render } from "@testing-library/react";
+import {
+  DockedToolSettingsHandle, DragManager, DragManagerContext, NineZoneDispatch, NineZoneDispatchContext, TOOL_SETTINGS_DRAG_START,
+} from "../../ui-ninezone";
 
 describe("DockedToolSettingsHandle", () => {
-  it("should render", () => {
-    const { container } = render(<DockedToolSettingsHandle />);
-    container.firstChild!.should.matchSnapshot();
+  it("should dispatch TOOL_SETTINGS_DRAG_START", () => {
+    const dragManager = new DragManager();
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    const { container } = render(
+      <NineZoneDispatchContext.Provider value={dispatch}>
+        <DragManagerContext.Provider value={dragManager}>
+          <DockedToolSettingsHandle />
+        </DragManagerContext.Provider>
+      </NineZoneDispatchContext.Provider>,
+    );
+    const handle = container.getElementsByClassName("nz-toolSettings-handle")[0];
+    fireEvent.pointerDown(handle);
+
+    dispatch.calledOnceWithExactly(sinon.match({
+      type: TOOL_SETTINGS_DRAG_START,
+    })).should.true;
   });
 });

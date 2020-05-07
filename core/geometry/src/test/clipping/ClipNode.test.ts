@@ -4,25 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Arc3d } from "../../curve/Arc3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-
-import { ClipPlane } from "../../clipping/ClipPlane";
-
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Loop } from "../../curve/Loop";
-import { BooleanClipNode } from "../../clipping/BooleanClipNode";
 import { BooleanClipFactory } from "../../clipping/BooleanClipFactory";
+import { BooleanClipNode } from "../../clipping/BooleanClipNode";
+import { ClipPlane } from "../../clipping/ClipPlane";
 import { Clipper, ClipUtilities } from "../../clipping/ClipUtils";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
+import { Arc3d } from "../../curve/Arc3d";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { LineString3d } from "../../curve/LineString3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Sample } from "../../serialization/GeometrySamples";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 /* tslint:disable:no-console variable-name */
 /**
  *

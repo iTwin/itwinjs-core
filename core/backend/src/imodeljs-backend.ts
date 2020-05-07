@@ -44,6 +44,7 @@ export * from "./domains/AnalyticalRelationships";
 export * from "@bentley/imodeljs-native/IModelJsNative";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
+export * from "./NativeAppBackend";
 export * from "./IModelExporter";
 export * from "./IModelImporter";
 export * from "./IModelTransformer";
@@ -52,8 +53,8 @@ export * from "./BackendRequestContext";
 export * from "./CloudStorageBackend";
 export * from "./AliCloudStorageService";
 export * from "./DevTools";
-export * from "./oidc/OidcDesktopClient";
-export * from "./ulas/UlasUtilities";
+export * from "./oidc/DesktopAuthorizationClient";
+export * from "./usage-logging/UsageLoggingUtilities";
 export * from "./IModelDb"; // must be last
 /** @docs-package-description
  * The imodeljs-backend package always runs on the computer with a local Briefcase.

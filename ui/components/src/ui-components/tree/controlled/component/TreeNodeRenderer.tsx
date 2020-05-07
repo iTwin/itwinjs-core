@@ -8,14 +8,14 @@
 
 import * as React from "react";
 import { CommonProps, NodeCheckboxProps, NodeCheckboxRenderer, TreeNode } from "@bentley/ui-core";
-import { TreeActions } from "../TreeActions";
-import { TreeModelNode, CheckBoxInfo } from "../TreeModel";
-import { TreeNodeContent } from "./NodeContent";
+import { ImageRenderer } from "../../../common/ImageRenderer";
 import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
 import { HighlightableTreeNodeProps } from "../../HighlightingEngine";
 import { ITreeImageLoader } from "../../ImageLoader";
-import { ImageRenderer } from "../../../common/ImageRenderer";
-import { TreeTest } from "../../component/Tree";
+import { TreeComponentTestId } from "../../TreeComponentTestId";
+import { TreeActions } from "../TreeActions";
+import { CheckBoxInfo, TreeModelNode } from "../TreeModel";
+import { TreeNodeContent } from "./NodeContent";
 import { TreeNodeEditorRenderer } from "./TreeNodeEditor";
 
 /**
@@ -25,10 +25,12 @@ import { TreeNodeEditorRenderer } from "./TreeNodeEditor";
 export interface TreeNodeRendererProps extends CommonProps {
   node: TreeModelNode;
   treeActions: TreeActions;
+
   /** Properties used to highlight matches when tree is filtered. */
   nodeHighlightProps?: HighlightableTreeNodeProps;
 
-  /** Callback used to detect when label is rendered. It is used by TreeRenderer for scrolling to active match.
+  /**
+   * Callback used to detect when label is rendered. It is used by TreeRenderer for scrolling to active match.
    * @internal
    */
   onLabelRendered?: (node: TreeModelNode) => void;
@@ -53,8 +55,7 @@ export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
  * Default component for rendering tree node.
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps) => {
+export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps) => { // tslint:disable-line: variable-name
   const label = (
     <TreeNodeContent
       key={props.node.id}
@@ -68,13 +69,10 @@ export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps
   );
 
   function onExpansionToggle() {
-    if (props.node.isExpanded) {
+    if (props.node.isExpanded)
       props.treeActions.onNodeCollapsed(props.node.id);
-
-      return;
-    }
-
-    props.treeActions.onNodeExpanded(props.node.id);
+    else
+      props.treeActions.onNodeExpanded(props.node.id);
   }
 
   const createCheckboxProps = (checkboxInfo: CheckBoxInfo): NodeCheckboxProps => ({
@@ -86,7 +84,7 @@ export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps
 
   return (
     <TreeNode
-      data-testid={TreeTest.TestId.Node}
+      data-testid={TreeComponentTestId.Node}
       className={props.className}
       checkboxProps={props.node.checkbox.isVisible ? createCheckboxProps(props.node.checkbox) : undefined}
       style={props.style}
@@ -111,7 +109,8 @@ interface TreeNodeIconProps {
   imageLoader: ITreeImageLoader;
 }
 
-const TreeNodeIcon: React.FC<TreeNodeIconProps> = ({ imageLoader, node }) => { // tslint:disable-line:variable-name
+function TreeNodeIcon(props: TreeNodeIconProps) {
+  const { imageLoader, node } = props;
   const image = imageLoader.load(node.item);
 
   if (!image)
@@ -119,4 +118,4 @@ const TreeNodeIcon: React.FC<TreeNodeIconProps> = ({ imageLoader, node }) => { /
 
   const renderer = new ImageRenderer();
   return <>{renderer.render(image)}</>;
-};
+}

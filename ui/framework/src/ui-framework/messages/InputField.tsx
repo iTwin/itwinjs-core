@@ -6,18 +6,18 @@
  * @module Notification
  */
 
-import * as React from "react";
-import classnames = require("classnames");
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { Popup, Position } from "@bentley/ui-core";
-
-import { MessageManager, InputFieldMessageEventArgs } from "../messages/MessageManager";
-import { MessageDiv } from "./MessageSpan";
-
 import "./InputField.scss";
+import * as React from "react";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Popup } from "@bentley/ui-core";
+import { InputFieldMessageEventArgs, MessageManager } from "../messages/MessageManager";
+import { MessageDiv } from "./MessageSpan";
+import { NotifyMessageType } from "./ReactNotifyMessageDetails";
 
+import classnames = require("classnames");
 /** Properties of [[InputFieldMessage]] component.
- * @beta
+ * @public
  */
 interface InputFieldMessageProps {
   showCloseButton?: boolean;
@@ -29,8 +29,8 @@ interface InputFieldMessageProps {
 interface InputFieldMessageState {
   isVisible: boolean;
   priority: OutputMessagePriority;
-  message: HTMLElement | string;
-  detailedMessage?: HTMLElement | string;
+  message: NotifyMessageType;
+  detailedMessage?: NotifyMessageType;
   inputFieldElement?: HTMLElement;
   showCloseButton?: boolean;
 }
@@ -69,7 +69,7 @@ export class InputFieldMessage extends React.PureComponent<InputFieldMessageProp
     return (
       <Popup
         isOpen={isVisible}
-        position={Position.BottomLeft}
+        position={RelativePosition.BottomLeft}
         onClose={this._onInputMessageClose}
         target={inputFieldElement}>
         <div className="uifw-popup-message-inputField">

@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { mount, shallow } from "enzyme";
-import TestUtils from "../TestUtils";
-
-import { DefaultNavigationWidget } from "../../ui-framework/widgets/DefaultNavigationWidget";
-import { ItemList } from "../../ui-framework/shared/ItemMap";
+import * as React from "react";
 import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
+import { ItemList } from "../../ui-framework/shared/ItemMap";
+import { DefaultNavigationWidget } from "../../ui-framework/widgets/DefaultNavigationWidget";
+import TestUtils from "../TestUtils";
 
 describe("DefaultNavigationWidget", () => {
 
@@ -21,12 +20,12 @@ describe("DefaultNavigationWidget", () => {
   });
 
   it("DefaultNavigationWidget should render", () => {
-    const wrapper = mount(<DefaultNavigationWidget />);
+    const wrapper = mount(<DefaultNavigationWidget />); // tslint:disable-line:deprecation
     wrapper.unmount();
   });
 
   it("DefaultNavigationWidget should render correctly", () => {
-    shallow(<DefaultNavigationWidget />).should.matchSnapshot();
+    shallow(<DefaultNavigationWidget />).should.matchSnapshot(); // tslint:disable-line:deprecation
   });
 
   it("DefaultNavigationWidget with suffix and prefix items should render correctly", () => {
@@ -58,7 +57,7 @@ describe("DefaultNavigationWidget", () => {
       label: "test-h2-tool",
     });
 
-    shallow(<DefaultNavigationWidget prefixVerticalItems={new ItemList([testV1Def])} suffixVerticalItems={new ItemList([testV2Def])}
+    shallow(<DefaultNavigationWidget prefixVerticalItems={new ItemList([testV1Def])} suffixVerticalItems={new ItemList([testV2Def])} // tslint:disable-line:deprecation
       prefixHorizontalItems={new ItemList([testH1Def])} suffixHorizontalItems={new ItemList([testH2Def])} />).should.matchSnapshot();
   });
 

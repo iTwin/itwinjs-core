@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-const expect = chai.expect;
-
-import { Id64String, Id64Set } from "@bentley/bentleyjs-core";
+import { Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { ElementProps } from "@bentley/imodeljs-common";
-
-import { TestContext } from "./setup/TestContext";
 import { IModelConnection, SpatialModelState } from "@bentley/imodeljs-frontend";
+import { TestContext } from "./setup/TestContext";
+
+const expect = chai.expect;
 
 describe("IModel Elements", () => {
   let iModel: IModelConnection;

@@ -6,9 +6,11 @@
  * @module Symbology
  */
 
-import { Point2d, Point3d, YawPitchRollAngles, Matrix3d, Transform, YawPitchRollProps, XYZProps, AngleProps, XYProps, Angle, Geometry } from "@bentley/geometry-core";
-import { ColorDef, ColorDefProps } from "../ColorDef";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import {
+  Angle, AngleProps, Geometry, Matrix3d, Point2d, Point3d, Transform, XYProps, XYZProps, YawPitchRollAngles, YawPitchRollProps,
+} from "@bentley/geometry-core";
+import { ColorDef, ColorDefProps } from "../ColorDef";
 
 /** @public */
 export namespace AreaPattern {
@@ -75,7 +77,7 @@ export namespace AreaPattern {
   }
 
   /** Defines a hatch, cross hatch, or area pattern. */
-  export class Params implements ParamsProps {
+  export class Params {
     public origin?: Point3d;
     public rotation?: YawPitchRollAngles;
     public space1?: number;
@@ -115,8 +117,15 @@ export namespace AreaPattern {
       return result;
     }
 
+    public toJSON(): ParamsProps {
+      return {
+        ...this,
+        color: this.color?.toJSON(),
+      };
+    }
+
     public clone(): Params {
-      return Params.fromJSON(this);
+      return Params.fromJSON(this.toJSON());
     }
 
     public equals(other: Params): boolean {

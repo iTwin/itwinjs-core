@@ -2,7 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterfaceDefinition, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelWriteRpcInterface, Editor3dRpcInterface, NativeAppRpcInterface } from "@bentley/imodeljs-common";
+import {
+  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, NativeAppRpcInterface, RpcInterfaceDefinition,
+  SnapshotIModelRpcInterface,
+} from "@bentley/imodeljs-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
 /**
@@ -11,10 +14,10 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
 export default function getSupportedRpcs(): RpcInterfaceDefinition[] {
   return [
     IModelReadRpcInterface,
-    IModelWriteRpcInterface,
     IModelTileRpcInterface,
-    PresentationRpcInterface,
     SnapshotIModelRpcInterface,
+    PresentationRpcInterface,
+    IModelWriteRpcInterface,
     Editor3dRpcInterface,
     NativeAppRpcInterface,
   ];

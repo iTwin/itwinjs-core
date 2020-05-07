@@ -2,31 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
 import { assert, expect } from "chai";
-import {
-  ElementAgenda,
-  HiliteSet,
-  IModelConnection,
-  MockRender,
-  ModifyElementSource,
-  SelectionSet,
-  SelectionSetEventType,
-} from "@bentley/imodeljs-frontend";
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
+import {
+  ElementAgenda, HiliteSet, IModelConnection, MockRender, ModifyElementSource, SelectionSet, SelectionSetEventType, SnapshotConnection,
+} from "@bentley/imodeljs-frontend";
 
 describe("Tools", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    await MockRender.App.startup();
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    MockRender.App.shutdown();
+    if (imodel) await imodel.close();
+    await MockRender.App.shutdown();
   });
 
   it("ElementAgenda tests", () => {
@@ -169,15 +160,15 @@ describe("HiliteSet", () => {
   let hilited: HiliteSet;
 
   before(async () => {
-    MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    await MockRender.App.startup();
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     selected = imodel.selectionSet;
     hilited = imodel.hilited;
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    MockRender.App.shutdown();
+    if (imodel) await imodel.close();
+    await MockRender.App.shutdown();
   });
 
   function expectHilitedElements(ids: Id64Arg) {

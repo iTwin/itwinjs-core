@@ -6,10 +6,10 @@
  * @module Message
  */
 
-import * as classnames from "classnames";
+import "./Dialog.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Dialog.scss";
 
 /** Properties of [[Dialog]] component.
  * @beta

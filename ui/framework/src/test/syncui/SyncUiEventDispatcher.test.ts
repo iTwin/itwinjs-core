@@ -5,35 +5,23 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-
-import {
-  FrontstageManager,
-  FrontstageActivatedEventArgs, FrontstageReadyEventArgs,
-  ModalFrontstageChangedEventArgs,
-  ToolActivatedEventArgs,
-} from "../../ui-framework/frontstage/FrontstageManager";
-import { Backstage, BackstageEventArgs } from "../../ui-framework/backstage/Backstage";
-import { WorkflowManager, TaskActivatedEventArgs, WorkflowActivatedEventArgs } from "../../ui-framework/workflow/Workflow";
-import { ContentViewManager, ActiveContentChangedEventArgs } from "../../ui-framework/content/ContentViewManager";
-import {
-  UiFramework,
-  SyncUiEventDispatcher,
-  SyncUiEventArgs,
-  ContentControlActivatedEventArgs,
-  ContentLayoutActivatedEventArgs,
-  WidgetStateChangedEventArgs,
-  NavigationAidActivatedEventArgs,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
-
-import { IModelToken } from "@bentley/imodeljs-common";
-import { IModelConnection, SelectionSet, MockRender, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { RpcRequestsHandler, InstanceKey } from "@bentley/presentation-common";
-import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
+import { IModelRpcProps } from "@bentley/imodeljs-common";
+import { IModelApp, IModelConnection, MockRender, ScreenViewport, SelectionSet } from "@bentley/imodeljs-frontend";
+import { InstanceKey, RpcRequestsHandler } from "@bentley/presentation-common";
 // tslint:disable-next-line: no-direct-imports
+import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
 import {
-  createRandomSelectionScope, createRandomECInstanceKey, createRandomId,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+  ContentControlActivatedEventArgs, ContentLayoutActivatedEventArgs, NavigationAidActivatedEventArgs, SyncUiEventArgs, SyncUiEventDispatcher,
+  UiFramework, WidgetStateChangedEventArgs,
+} from "../../ui-framework";
+import { Backstage, BackstageEventArgs } from "../../ui-framework/backstage/Backstage";
+import { ActiveContentChangedEventArgs, ContentViewManager } from "../../ui-framework/content/ContentViewManager";
+import {
+  FrontstageActivatedEventArgs, FrontstageManager, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs, ToolActivatedEventArgs,
+} from "../../ui-framework/frontstage/FrontstageManager";
+import { TaskActivatedEventArgs, WorkflowActivatedEventArgs, WorkflowManager } from "../../ui-framework/workflow/Workflow";
+import TestUtils from "../TestUtils";
 
 const timeToWaitForUiSyncCallback = 60;
 
@@ -211,7 +199,7 @@ describe("SyncUiEventDispatcher", () => {
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    Backstage.onBackstageEvent.emit({} as BackstageEventArgs);
+    Backstage.onBackstageEvent.emit({} as BackstageEventArgs); // tslint:disable-line:deprecation
     await TestUtils.tick(timeToWaitForUiSyncCallback);
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
@@ -235,7 +223,7 @@ describe("SyncUiEventDispatcher", () => {
 
   describe("ConnectionEvents", () => {
 
-    const imodelToken = new IModelToken();
+    const imodelToken: IModelRpcProps = { key: "" };
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
     const source: string = "test";
@@ -260,7 +248,7 @@ describe("SyncUiEventDispatcher", () => {
 
     beforeEach(() => {
       imodelMock.reset();
-      imodelMock.setup((x) => x.iModelToken).returns(() => imodelToken);
+      imodelMock.setup((x) => x.getRpcProps()).returns(() => imodelToken);
 
       ss = new SelectionSet(imodelMock.object);
       imodelMock.setup((x) => x.selectionSet).returns(() => ss);
@@ -279,7 +267,7 @@ describe("SyncUiEventDispatcher", () => {
 
       baseSelection = generateSelection();
 
-      Presentation.selection = new SelectionManager({ scopes: getManager() });
+      Presentation.setSelectionManager(new SelectionManager({ scopes: getManager() }));
     });
 
     it("clearConnectionEvents with no intervening initializeConnectionEvents", () => {
@@ -317,12 +305,12 @@ describe("SyncUiEventDispatcher", () => {
   describe("SelectedViewportChanged", () => {
     before(async () => {
       await TestUtils.initializeUiFramework();
-      MockRender.App.startup();
+      await MockRender.App.startup();
       SyncUiEventDispatcher.initialize();
     });
 
-    after(() => {
-      MockRender.App.shutdown();
+    after(async () => {
+      await MockRender.App.shutdown();
       TestUtils.terminateUiFramework();
     });
 

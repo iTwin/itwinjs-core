@@ -8,8 +8,9 @@
 
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { LowAndHighXY } from "../../geometry3d/XYZProps";
-import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray";
 import { GriddedRaggedRange2dSet } from "./GriddedRaggedRange2dSet";
+import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray";
+
 /**
  * Use GriddedRaggedRange2dSetWithOverflow for searching among many ranges for which
  * * Most ranges are of somewhat consistent size.

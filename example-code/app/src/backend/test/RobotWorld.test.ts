@@ -2,27 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { assert } from "chai";
-import { IModelDb, IModelJsFs, PhysicalModel } from "@bentley/imodeljs-backend";
-import { IModelTestUtils } from "./Utils";
-import { RobotWorldEngine } from "../RobotWorldEngine";
-import { RobotWorld } from "../RobotWorldSchema";
-import { Point3d, Angle } from "@bentley/geometry-core";
+import { ClientRequestContext, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Angle, Point3d } from "@bentley/geometry-core";
+import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import { IModel } from "@bentley/imodeljs-common";
 import { Barrier } from "../BarrierElement";
-import { Id64String, OpenMode, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Robot } from "../RobotElement";
+import { RobotWorldEngine } from "../RobotWorldEngine";
+import { RobotWorld } from "../RobotWorldSchema";
+import { IModelTestUtils } from "./Utils";
 
 const requestContext = new ClientRequestContext();
 
 describe("RobotWorld", () => {
   it("should run robotworld", async () => {
-    RobotWorldEngine.initialize(requestContext);
+    await RobotWorldEngine.initialize(requestContext);
 
     const iModelFile = IModelTestUtils.prepareOutputFile("should-run-robotworld.bim");
     const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
     IModelJsFs.copySync(seedFile, iModelFile);
-    const iModel: IModelDb = IModelDb.openStandalone(iModelFile, OpenMode.ReadWrite);
+    const iModel = StandaloneDb.openFile(iModelFile, OpenMode.ReadWrite);
     assert.isTrue(iModel !== undefined);
 
     try {
@@ -83,8 +84,8 @@ describe("RobotWorld", () => {
     }
 
     iModel.saveChanges();
-    iModel.closeStandalone();
+    iModel.close();
 
-    RobotWorldEngine.shutdown();
+    await RobotWorldEngine.shutdown();
   });
 });

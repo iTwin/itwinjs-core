@@ -6,13 +6,11 @@
  * @module Color
  */
 
-import * as React from "react";
+import "./Swatch.scss";
 import classnames from "classnames";
-
+import * as React from "react";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
-
-import "./Swatch.scss";
 
 /** Properties for the [[ColorSwatch]] React component
  * @beta
@@ -26,11 +24,10 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
   round?: boolean;
 }
 
-/** ColorSwatch Functional component
+/** ColorSwatch Functional component displays a color swatch in a button
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const ColorSwatch: React.FunctionComponent<ColorSwatchProps> = (props) => {
+export function ColorSwatch(props: ColorSwatchProps) {
   const { b, g, r, t } = props.colorDef.colors as any;
 
   const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
@@ -57,4 +54,4 @@ export const ColorSwatch: React.FunctionComponent<ColorSwatchProps> = (props) =>
   } = props as any;
 
   return <button {...otherProps} style={colorStyle} className={classes} onClick={handleClick} />;
-};
+}

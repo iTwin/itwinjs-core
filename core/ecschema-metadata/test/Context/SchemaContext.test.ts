@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import { SchemaCache, SchemaContext } from "../../src/Context";
+import { SchemaMatchType } from "../../src/ECObjects";
+import { ECObjectsError } from "../../src/Exception";
+import { Schema } from "../../src/Metadata/Schema";
+import { SchemaKey } from "../../src/SchemaKey";
+
 const assert = chai.assert;
 const expect = chai.expect;
 
-import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
-
-import { Schema } from "./../../src/Metadata/Schema";
-import { SchemaMatchType } from "./../../src/ECObjects";
-import { SchemaKey } from "./../../src/SchemaKey";
-import { SchemaContext, SchemaCache } from "./../../src/Context";
-import { ECObjectsError } from "./../../src/Exception";
 
 describe("Schema Context", () => {
   it("should succeed locating added schema", async () => {
@@ -47,6 +47,62 @@ describe("Schema Context", () => {
 
     await context.addSchema(schema);
     await expect(context.addSchema(schema2)).to.be.rejectedWith(ECObjectsError);
+  });
+
+  it("schema added, getCachedSchema returns the schema", async () => {
+    const context = new SchemaContext();
+    const schema = new Schema(context, "TestSchema", "ts", 1, 5, 9);
+
+    await context.addSchema(schema);
+
+    const testKey = new SchemaKey("TestSchema", 1, 5, 9);
+    const loadedSchema = await context.getCachedSchema(testKey);
+
+    expect(loadedSchema).to.equal(schema);
+  });
+
+  it("schema not added, getCachedSchema returns undefined", async () => {
+    const context = new SchemaContext();
+    const testKey = new SchemaKey("TestSchema", 1, 5, 9);
+    const loadedSchema = await context.getCachedSchema(testKey);
+
+    assert.isUndefined(loadedSchema);
+  });
+
+  it("schema added, getCachedSchema called with different schema version and incompatible match type, returns undefined", async () => {
+    const context = new SchemaContext();
+    const schema = new Schema(context, "TestSchema", "ts", 1, 5, 9);
+
+    await context.addSchema(schema);
+
+    const testKey = new SchemaKey("TestSchema", 1, 5, 8);
+    const loadedSchema = await context.getCachedSchema(testKey, SchemaMatchType.Exact);
+
+    assert.isUndefined(loadedSchema);
+  });
+
+  it("schema added, getCachedSchema called with different schema version with compatible match type, returns true", async () => {
+    const context = new SchemaContext();
+    const schema = new Schema(context, "TestSchema", "ts", 1, 5, 9);
+
+    await context.addSchema(schema);
+
+    const testKey = new SchemaKey("TestSchema", 1, 5, 8);
+    const loadedSchema = await context.getCachedSchema(testKey, SchemaMatchType.LatestReadCompatible);
+
+    expect(loadedSchema).to.equal(schema);
+  });
+
+  it("schema added, getCachedSchema called with different schema version with compatible match type (default), returns true", async () => {
+    const context = new SchemaContext();
+    const schema = new Schema(context, "TestSchema", "ts", 1, 5, 9);
+
+    await context.addSchema(schema);
+
+    const testKey = new SchemaKey("TestSchema", 1, 5, 8);
+    const loadedSchema = await context.getCachedSchema(testKey);
+
+    expect(loadedSchema).to.equal(schema);
   });
 
   it("successfully finds schema from added locater", async () => {

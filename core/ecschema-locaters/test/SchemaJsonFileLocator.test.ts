@@ -5,10 +5,9 @@
 
 import { assert } from "chai";
 import * as path from "path";
-
-import { SchemaJsonFileLocater } from "../src/SchemaJsonFileLocater";
-import { FileSchemaKey } from "./../src/SchemaFileLocater";
 import * as EC from "@bentley/ecschema-metadata";
+import { FileSchemaKey } from "../src/SchemaFileLocater";
+import { SchemaJsonFileLocater } from "../src/SchemaJsonFileLocater";
 
 describe("SchemaJsonFileLocater tests: ", () => {
   let locater: SchemaJsonFileLocater;

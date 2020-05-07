@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
 .player-button {
   width: 38px;
@@ -16,11 +16,11 @@
   border: solid 1px $buic-background-5;
   // background-image: linear-gradient(to bottom, $buic-background-1, $buic-background-2);
   background-image: linear-gradient(to bottom, $buic-background-3, $buic-background-3), linear-gradient(to bottom, $buic-background-1, $buic-background-1);
+  color: $buic-foreground-body;
 
-  color: rgba(black, .85);
   cursor: pointer;
 
   &:hover {
-    color: rgba(black, 1);
+    color: $buic-foreground-activehover;
   }
 }

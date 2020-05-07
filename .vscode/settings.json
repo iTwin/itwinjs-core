@@ -19,9 +19,10 @@
     "**/node_modules": true,
     "**/out": true,
     "**/lib": true,
+    "**/test-apps/**/build": true,
     "common/temp": true,
     "tools/build/mocha-reporter": true,
-    "tools/build/tslint-rules": true,
+    "tools/build/tslint-rules": true
   },
   "files.trimTrailingWhitespace": true,
   "typescript.tsdk": "node_modules\\typescript\\lib",
@@ -30,7 +31,7 @@
     ".nycrc": "json",
     "certa.json": "jsonc"
   },
-  "cSpell.enabledLanguageIds": [
+  "cSpell.enableFiletypes": [
     "c",
     "cpp",
     "csharp",
@@ -72,9 +73,41 @@
     "typescriptreact",
   ],
   "eslint.workingDirectories": [
+    "./presentation/common",
+    "./presentation/backend",
+    "./presentation/frontend",
+    "./presentation/components",
+    "./presentation/testing",
     "./ui/components",
     "./ui/core",
     "./ui/framework",
     "./ui/ninezone"
-  ]
+  ],
+  "importSorter.importStringConfiguration.quoteMark": "double",
+  "importSorter.generalConfiguration.sortImportsInDirectory": false,
+  "importSorter.importStringConfiguration.trailingComma": "multiLine",
+  "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 150,
+  "importSorter.importStringConfiguration.tabSize": 2,
+  "importSorter.sortConfiguration.removeUnusedImports": true,
+  "importSorter.sortConfiguration.customOrderingRules.rules": [
+    {
+      "type": "importMember",
+      "regex": "^$",
+      "orderLevel": 5,
+      "disableSort": true
+    },
+    {
+      "regex": "^[^.@]",
+      "orderLevel": 10
+    },
+    {
+      "regex": "^[@]",
+      "orderLevel": 15
+    },
+    {
+      "regex": "^[.]",
+      "orderLevel": 30
+    }
+  ],
+  "importSorter.sortConfiguration.customOrderingRules.defaultNumberOfEmptyLinesAfterGroup": 0
 }

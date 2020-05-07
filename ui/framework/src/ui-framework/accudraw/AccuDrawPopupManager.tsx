@@ -7,24 +7,16 @@
  */
 
 import * as React from "react";
-
 import { XAndY } from "@bentley/geometry-core";
-import {
-  AbstractMenuItemProps, IconSpecUtilities,
-  OnNumberCommitFunc, OnCancelFunc,
-} from "@bentley/ui-abstract";
-import {
-  AngleDescription, LengthDescription,
-} from "@bentley/imodeljs-frontend";
-
+import { AngleDescription, LengthDescription } from "@bentley/imodeljs-frontend";
+import { AbstractMenuItemProps, IconSpecUtilities, OnCancelFunc, OnNumberCommitFunc, OnValueCommitFunc } from "@bentley/ui-abstract";
+import { PopupInfo, PopupManager } from "../popup/PopupManager";
 import { MenuItemHelpers } from "../shared/MenuItem";
-import { MenuButtonPopup } from "./MenuButtonPopup";
+import angleIcon from "./angle.svg?sprite";
 import { CalculatorPopup } from "./CalculatorPopup";
-import { PopupManager, PopupInfo } from "../popup/PopupManager";
-
-import angleIcon from "./angle.svg";
-import lengthIcon from "./distance.svg";
-import heightIcon from "./height-2.svg";
+import lengthIcon from "./distance.svg?sprite";
+import heightIcon from "./height-2.svg?sprite";
+import { MenuButtonPopup } from "./MenuButtonPopup";
 
 /** AccuDraw Popup Manager class
  * @alpha
@@ -74,16 +66,16 @@ export class AccuDrawPopupManager {
 
   public static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
     const propertyDescription = new AngleDescription(undefined, undefined, IconSpecUtilities.createSvgIconSpec(angleIcon));
-    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit, onCancel);
+    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit as OnValueCommitFunc, onCancel);
   }
 
   public static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
     const propertyDescription = new LengthDescription(undefined, undefined, IconSpecUtilities.createSvgIconSpec(lengthIcon));
-    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit, onCancel);
+    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit as OnValueCommitFunc, onCancel);
   }
 
   public static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean {
     const propertyDescription = new LengthDescription(undefined, undefined, IconSpecUtilities.createSvgIconSpec(heightIcon));
-    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit, onCancel);
+    return PopupManager.showInputEditor(el, pt, value, propertyDescription, onCommit as OnValueCommitFunc, onCancel);
   }
 }

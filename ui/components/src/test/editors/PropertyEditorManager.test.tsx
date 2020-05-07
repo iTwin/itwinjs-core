@@ -3,13 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
 import { expect } from "chai";
-import { PropertyEditorManager, BasicPropertyEditor, PropertyEditorBase, DataControllerBase } from "../../ui-components/editors/PropertyEditorManager";
-import { TextEditor } from "../../ui-components/editors/TextEditor";
-
-import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes, IconEditorParams } from "@bentley/imodeljs-frontend";
+import * as React from "react";
+import {
+  IconEditorParams, PropertyDescription, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+} from "@bentley/ui-abstract";
 import { AsyncValueProcessingResult } from "../../ui-components/converters/TypeConverter";
+import {
+  BasicPropertyEditor, DataControllerBase, PropertyEditorBase, PropertyEditorManager,
+} from "../../ui-components/editors/PropertyEditorManager";
+import { TextEditor } from "../../ui-components/editors/TextEditor";
 
 describe("PropertyEditorManager", () => {
   it("createEditor should create a BasicPropertyEditor for unknown type", () => {
@@ -17,7 +20,7 @@ describe("PropertyEditorManager", () => {
     expect(propertyEditor).to.not.be.null;
     if (propertyEditor) {
       expect(propertyEditor).to.be.instanceof(BasicPropertyEditor);
-      expect(React.isValidElement(propertyEditor.reactElement)).to.be.true;
+      expect(React.isValidElement(propertyEditor.reactNode)).to.be.true;
     }
   });
 
@@ -32,7 +35,7 @@ describe("PropertyEditorManager", () => {
   });
 
   class MinePropertyEditor extends PropertyEditorBase {
-    public get reactElement(): React.ReactNode {
+    public get reactNode(): React.ReactNode {
       return <TextEditor />;
     }
   }
@@ -159,7 +162,7 @@ describe("PropertyEditorManager", () => {
   });
 
   class PropertyEditorWithEditorParams extends PropertyEditorBase {
-    public get reactElement(): React.ReactNode {
+    public get reactNode(): React.ReactNode {
       return <TextEditor />;
     }
 

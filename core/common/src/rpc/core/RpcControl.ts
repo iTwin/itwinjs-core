@@ -6,15 +6,15 @@
  * @module RpcInterface
  */
 
+import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { IModelRpcProps } from "../../IModel";
+import { IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
-import { RpcManager, RpcInterfaceEndpoints } from "../../RpcManager";
+import { RpcInterfaceEndpoints, RpcManager } from "../../RpcManager";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcInvocation } from "./RpcInvocation";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry } from "./RpcRegistry";
-import { IModelToken } from "../../IModel";
-import { IModelError } from "../../IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
 
 // tslint:disable:space-before-function-paren
 
@@ -127,7 +127,8 @@ export class RpcControlChannel {
     }
 
     this._clientActive = true;
-    RpcOperation.forEach(this._channelInterface, (operation) => operation.policy.token = (_request) => RpcOperation.fallbackToken || new IModelToken("none", "none", "none", "none", undefined));
+    const token: IModelRpcProps = { key: "none", contextId: "none", iModelId: "none", changeSetId: "none" };
+    RpcOperation.forEach(this._channelInterface, (operation) => operation.policy.token = (_request) => RpcOperation.fallbackToken ?? token);
     const client = RpcManager.getClientForInterface(this._channelInterface);
     this._describeEndpoints = async () => client.describeEndpoints();
   }

@@ -6,16 +6,17 @@
  * @module ContentView
  */
 
-import { ScreenViewport, IModelApp, IModelConnection, ViewState, SpatialViewState, OrthographicViewState, DrawingViewState, SheetViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
-
-import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { ContentControl, SupportsViewSelectorChange } from "./ContentControl";
-import { ViewUtilities } from "../utils/ViewUtilities";
-import { ContentViewManager } from "./ContentViewManager";
+import {
+  DrawingViewState, IModelApp, IModelConnection, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState, ViewState,
+} from "@bentley/imodeljs-frontend";
+import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
+import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
+import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
-import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAid";
-import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAid";
+import { ViewUtilities } from "../utils/ViewUtilities";
+import { ContentControl, SupportsViewSelectorChange } from "./ContentControl";
+import { ContentViewManager } from "./ContentViewManager";
 
 /** The base class for Frontstage Viewport content controls.
  * @public
@@ -42,6 +43,7 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
 
   /** Returns true if this control is a Viewport control. */
   public get isViewport(): boolean { return true; }
+
   /** The underlying ScreenViewport */
   public get viewport(): ScreenViewport | undefined { return this._viewport; }
   public set viewport(v: ScreenViewport | undefined) {
@@ -114,9 +116,9 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
       if (IModelApp.viewManager && this.viewport === IModelApp.viewManager.selectedView)
         this.viewport.changeView(viewState);
     } else {
-      this.reactElement = this.getReactElementForViewSelectorChange(iModel, viewDefinitionId, viewState, name);
-      ContentViewManager.refreshActiveContent(this.reactElement);
+      this.reactNode = this.getReactElementForViewSelectorChange(iModel, viewDefinitionId, viewState, name);
     }
+    ContentViewManager.refreshActiveContent(this.reactNode);
   }
 
   /** Get the React.Element for a ViewSelector change. */

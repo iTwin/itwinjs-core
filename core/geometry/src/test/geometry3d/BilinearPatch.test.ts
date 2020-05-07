@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { BilinearPatch } from "../../geometry3d/BilinearPatch";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Angle } from "../../geometry3d/Angle";
-import { Vector3d, Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
 import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { BilinearPatch } from "../../geometry3d/BilinearPatch";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
+import { Checker } from "../Checker";
+
 /* tslint:disable: no-console */
 function verifyPatch(ck: Checker, patch: BilinearPatch) {
   const transform = Transform.createOriginAndMatrix(Point3d.create(10, 20, 10), Matrix3d.createRotationAroundVector(Vector3d.create(1, 4, 2), Angle.createDegrees(20)));

@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
-
-import { ColumnDragLayer } from "../../../ui-components/table/component/ColumnDragLayer";
+import { mount } from "enzyme";
+import * as React from "react";
 import { DragSourceArguments, DropEffects, DropStatus } from "../../../ui-components/dragdrop/DragDropDef";
+import { ColumnDragLayer } from "../../../ui-components/table/component/ColumnDragLayer";
 
 describe("ColumnDragLayer", () => {
 

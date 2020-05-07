@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as path from "path";
 import { Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorByName, QParams3d, QPoint3dList } from "@bentley/imodeljs-common";
-import { IModelConnection, IModelApp, RenderGraphic, RenderMemory } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, RenderGraphic, RenderMemory, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
 
 export class FakeGraphic extends RenderGraphic {
@@ -14,18 +13,16 @@ export class FakeGraphic extends RenderGraphic {
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
 }
 
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
-
 describe("createTriMesh", () => {
   let imodel: IModelConnection;
   before(async () => {
-    IModelApp.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    IModelApp.shutdown();
+    if (imodel) await imodel.close();
+    await IModelApp.shutdown();
   });
 
   it("should create a simple mesh graphic", () => {

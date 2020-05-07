@@ -7,12 +7,12 @@
  */
 
 import { EMPTY } from "rxjs/internal/observable/empty";
+import { TreeNodeItem } from "../../TreeDataProvider";
 import { Observable } from "../Observable";
 import { CheckboxStateChange } from "../TreeEvents";
+import { TreeModelNode, TreeModelNodeEditingInfo } from "../TreeModel";
 import { TreeModelSource } from "../TreeModelSource";
 import { ITreeNodeLoader, TreeNodeLoadResult } from "../TreeNodeLoader";
-import { TreeNodeItem } from "../../TreeDataProvider";
-import { TreeModelNode, TreeModelNodeEditingInfo } from "../TreeModel";
 
 /**
  * Provides basic tree manipulation implementation for various cases like
@@ -30,6 +30,8 @@ export class TreeModelMutator {
     this._nodeLoader = nodeLoader;
     this._collapsedChildrenDisposalEnabled = collapsedChildrenDisposalEnabled;
   }
+
+  public get modelSource() { return this._modelSource; }
 
   public expandNode(nodeId: string): Observable<TreeNodeLoadResult> {
     let needToLoadChildren = false;

@@ -2,20 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { expect } from "chai";
-
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  ConfigurableCreateInfo,
-  ContentControl,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupManager, ContentGroupProps, ContentProps,
   NavigationAidControl,
-  ContentGroupProps,
-  ContentGroupManager,
-  ContentGroup,
-  ContentProps,
-  ConfigurableUiManager,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
@@ -25,7 +18,7 @@ describe("ContentGroup", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div>Test</div>;
+      this.reactNode = <div>Test</div>;
     }
   }
 
@@ -33,12 +26,16 @@ describe("ContentGroup", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div>Test</div>;
+      this.reactNode = <div>Test</div>;
     }
   }
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   it("ContentGroupManager.loadGroup should throw Error if ContentGroupProps does not have an id", () => {

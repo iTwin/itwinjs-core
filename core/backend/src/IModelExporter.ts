@@ -5,18 +5,19 @@
 /** @packageDocumentation
  * @module iModels
  */
+import * as path from "path";
 import { DbResult, GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ChangeSet } from "@bentley/imodeljs-clients";
+import { ChangeSet } from "@bentley/imodelhub-client";
 import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import * as path from "path";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { Element, GeometricElement } from "./Element";
+import { Element, GeometricElement, RepositoryLink } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
-import { IModelDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 
@@ -190,6 +191,7 @@ export class IModelExporter {
     this.exportFonts();
     this.exportModelContainer(IModel.repositoryModelId);
     this.exportElement(IModel.rootSubjectId);
+    this.exportRepositoryLinks();
     this.exportSubModels(IModel.repositoryModelId);
     this.exportRelationships(ElementRefersToElements.classFullName);
   }
@@ -201,6 +203,9 @@ export class IModelExporter {
    */
   public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
     requestContext.enter();
+    if (!this.sourceDb.isBriefcaseDb()) {
+      return Promise.reject(new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes", Logger.logError, loggerCategory));
+    }
     if ((undefined === this.sourceDb.briefcase.parentChangeSetId) || ("" === this.sourceDb.briefcase.parentChangeSetId)) {
       this.exportAll(); // no changesets, so revert to exportAll
       return Promise.resolve();
@@ -226,6 +231,11 @@ export class IModelExporter {
     for (const relInstanceId of this._sourceDbChanges.relationship.deleteIds) {
       this.handler.callProtected.onDeleteRelationship(relInstanceId);
     }
+  }
+
+  /** For logging, indicate the change type if known. */
+  private getChangeOpSuffix(isUpdate: boolean | undefined): string {
+    return isUpdate ? " UPDATE" : undefined === isUpdate ? "" : " INSERT";
   }
 
   /** Export all CodeSpecs from the source iModel.
@@ -264,7 +274,7 @@ export class IModelExporter {
     }
     // CodeSpec has passed standard exclusion rules, now give handler a chance to accept/reject export
     if (this.handler.callProtected.shouldExportCodeSpec(codeSpec)) {
-      Logger.logTrace(loggerCategory, `exportCodeSpec(${codeSpecName})` + isUpdate ? " UPDATE" : "");
+      Logger.logTrace(loggerCategory, `exportCodeSpec(${codeSpecName})${this.getChangeOpSuffix(isUpdate)}`);
       this.handler.callProtected.onExportCodeSpec(codeSpec, isUpdate);
     }
   }
@@ -432,7 +442,7 @@ export class IModelExporter {
       }
     }
     const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: true });
-    Logger.logTrace(loggerCategory, `exportElement()`);
+    Logger.logTrace(loggerCategory, `exportElement("${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     if (this.shouldExportElement(element)) {
       this.handler.callProtected.onExportElement(element, isUpdate);
       this.exportElementAspects(elementId);
@@ -451,6 +461,17 @@ export class IModelExporter {
         this.exportElement(childElementId);
       }
     }
+  }
+
+  /** Export RepositoryLinks in the RepositoryModel. */
+  public exportRepositoryLinks(): void {
+    const sql = `SELECT ECInstanceId FROM ${RepositoryLink.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindId("modelId", IModel.repositoryModelId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        this.exportElement(statement.getValue(0).getId());
+      }
+    });
   }
 
   /** Returns true if the specified ElementAspect should be excluded from the export. */
@@ -514,7 +535,7 @@ export class IModelExporter {
   }
 
   /** Export a relationship from the source iModel. */
-  private exportRelationship(relClassFullName: string, relInstanceId: Id64String): void {
+  public exportRelationship(relClassFullName: string, relInstanceId: Id64String): void {
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
       if (this._sourceDbChanges.relationship.insertIds.has(relInstanceId)) {
@@ -562,7 +583,7 @@ class ChangedInstanceIds {
   public relationship = new ChangedInstanceOps();
   public font = new ChangedInstanceOps();
   private constructor() { }
-  public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: IModelDb, startChangeSetId: GuidString): Promise<ChangedInstanceIds> {
+  public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: BriefcaseDb, startChangeSetId: GuidString): Promise<ChangedInstanceIds> {
     requestContext.enter();
     const extractContext = new ChangeSummaryExtractContext(iModelDb); // NOTE: ChangeSummaryExtractContext is nothing more than a wrapper around IModelDb that has a method to get the iModelId
     // NOTE: ChangeSummaryManager.downloadChangeSets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangeSets)
@@ -570,7 +591,7 @@ class ChangedInstanceIds {
     requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
     changeSets.forEach((changeSet: ChangeSet): void => {
-      const changeSetPath: string = path.join(BriefcaseManager.getChangeSetsPath(iModelDb.iModelToken.iModelId!), changeSet.fileName!);
+      const changeSetPath: string = path.join(BriefcaseManager.getChangeSetsPath(iModelDb.iModelId), changeSet.fileName!);
       const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = iModelDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
       if (undefined !== statusOrResult.error) {
         throw new IModelError(statusOrResult.error.status, "Error processing changeSet", Logger.logError, loggerCategory);

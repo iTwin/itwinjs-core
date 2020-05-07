@@ -21,7 +21,7 @@ It will include necessary breaking API changes to:
 
 - remove some concepts and apis that were *deprecated* during 1.x
 - add new UI concepts to subsume/replace existing ones
-- formalize the [Plugin API](../learning/frontend/plugins.md) as the primary way to add functionality to web applications
+- formalize the [Extension API](../learning/frontend/extensions.md) as the primary way to add functionality to web applications
 - enhance and refine the Briefcase APIs
 - enhance and refine the authorization APIs to
   - remove support for SAML tokens - all authorization will be done through [JSON Web Tokens](https://jwt.io/) following the OAuth 2.0 protocol for authorization.
@@ -51,11 +51,11 @@ We expect the transition from 1.x to 2.x to be trivial and uneventful for most u
 - Synch with changesets from iModelHub
 - Minimize power consumption
 
-### Plugins
+### Extensions
 
-- Finalize Plugin APIs
-- Streamline Plugin development and deployment processes
-- Create Plugin examples for broad set of scenarios
+- Finalize Extension APIs
+- Streamline Extension development and deployment processes
+- Create Extension examples for broad set of scenarios
 
 ### User Interface
 

@@ -7,14 +7,14 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ProgramBuilder, VariableType, VariablePrecision, FragmentShaderComponent } from "../ShaderBuilder";
-import { addModelViewMatrix } from "./Vertex";
-import { addWindowToTexCoords } from "./Fragment";
+import { ClippingType } from "../../RenderClipVolume";
 import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { ClipDef } from "../TechniqueFlags";
 import { addEyeSpace } from "./Common";
-import { ClippingType } from "../../RenderClipVolume";
+import { addWindowToTexCoords } from "./Fragment";
+import { addModelViewMatrix } from "./Vertex";
 
 const getClipPlaneFloat = `
   vec4 getClipPlane(int index) {
@@ -84,8 +84,19 @@ const applyClipPlanes = `
       }
 
   numSetsClippedBy += int(clippedByCurrentPlaneSet);
-  if (numSetsClippedBy == numPlaneSets)
+  if (numSetsClippedBy == numPlaneSets) {
+    if (u_outsideRgba.a > 0.0) {
+      g_clipColor = u_outsideRgba.rgb;
+      return true;
+    }
+    else
       discard;
+  } else if (u_insideRgba.a > 0.0) {
+    g_clipColor = u_insideRgba.rgb;
+    return true;
+  }
+
+  return false;
 `;
 
 const applyClipMask = `
@@ -93,6 +104,7 @@ const applyClipMask = `
   vec4 texel = TEXTURE(s_clipSampler, tc);
   if (texel.r < 0.5)
     discard;
+  return false;
 `;
 
 /** @internal */
@@ -115,6 +127,18 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
       const numClips = (doClipping && params.target.hasClipVolume) ? params.target.clips.count : 0;
       assert(numClips > 0 || !doClipping);
       uniform.setUniform1i(numClips);
+    });
+  });
+
+  prog.addUniform("u_outsideRgba", VariableType.Vec4, (program) => {
+    program.addGraphicUniform("u_outsideRgba", (uniform, params) => {
+      params.target.clips.outsideRgba.bind(uniform);
+    });
+  });
+
+  prog.addUniform("u_insideRgba", VariableType.Vec4, (program) => {
+    program.addGraphicUniform("u_insideRgba", (uniform, params) => {
+      params.target.clips.insideRgba.bind(uniform);
     });
   });
 

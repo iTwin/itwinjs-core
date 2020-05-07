@@ -3,30 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d, DeepCompare } from "@bentley/geometry-core";
-import { AmbientOcclusion, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
-import * as path from "path";
+import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AuxCoordSystemSpatialState,
-  CategorySelectorState,
-  DisplayStyle3dState,
-  DrawingModelState,
-  IModelConnection,
-  MarginPercent,
-  MockRender,
-  ModelSelectorState,
-  SheetModelState,
-  SpatialModelState,
-  SpatialViewState,
-  StandardView,
-  StandardViewId,
-  ViewState3d,
-  ViewStatus,
+  AmbientOcclusion, BackgroundMapSettings, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
+} from "@bentley/imodeljs-common";
+import {
+  AuxCoordSystemSpatialState, CategorySelectorState, DisplayStyle3dState, DrawingModelState, DrawingViewState, IModelConnection, MarginPercent,
+  MockRender, ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
+  StandardViewId, ViewState3d, ViewStatus,
 } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
-const iModelLocation2 = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
 
 describe("ViewState", () => {
   let imodel: IModelConnection;
@@ -35,21 +21,21 @@ describe("ViewState", () => {
   let unitTestRpcImp: TestRpcInterface;
 
   before(async () => {
-    MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    await MockRender.App.startup();
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
 
-    imodel2 = await IModelConnection.openSnapshot(iModelLocation2);
+    imodel2 = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
 
     unitTestRpcImp = TestRpcInterface.getClient();
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    if (imodel2) await imodel2.closeSnapshot();
-    MockRender.App.shutdown();
+    if (imodel) await imodel.close();
+    if (imodel2) await imodel2.close();
+    await MockRender.App.shutdown();
   });
 
   const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
@@ -157,17 +143,17 @@ describe("ViewState", () => {
     const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
     if (undefined !== oldBackgroundMap) {
       const mt = oldBackgroundMap.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Hybrid;
-      vs0DisplayStyle3d.setBackgroundMap({
+      vs0DisplayStyle3d.changeBackgroundMapProps(BackgroundMapSettings.fromJSON({
         providerName: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider",
         providerData: { mapType: mt },
-      });
+      }));
     } else {
-      vs0DisplayStyle3d.setBackgroundMap({
+      vs0DisplayStyle3d.changeBackgroundMapProps(BackgroundMapSettings.fromJSON({
         providerName: "BingProvider",
         providerData: {
           mapType: BackgroundMapType.Aerial,
         },
-      });
+      }));
     }
     const vs0BackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
 
@@ -251,8 +237,8 @@ describe("ViewState", () => {
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
 
-    let cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "lookAtVolume", testParams);
-    viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
+    let cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtVolume", testParams);
+    viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, { marginPercent: testParams.margin });
     compareView(viewState, cppView, "LookAtVolume 1");
 
     // LookAtVolume test #3
@@ -265,8 +251,8 @@ describe("ViewState", () => {
     testParams.volume = Range3d.createXYZXYZ(1000, -10, 6, -5, 0, 0);
     testParams.margin = new MarginPercent(.01, .02, .03, .04);
     testParams.aspectRatio = 1.2;
-    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "lookAtVolume", testParams);
-    viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
+    cppView = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtVolume", testParams);
+    viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, { marginPercent: testParams.margin });
     compareView(viewState, cppView, "LookAtVolume 3");
 
     // LookAtVolume test #2
@@ -279,10 +265,38 @@ describe("ViewState", () => {
     testParams.volume = Range3d.createXYZXYZ(10, 20, 0.5, 35, 21, 2);
     testParams.aspectRatio = 1.0;
     testParams.margin = new MarginPercent(0, 0, 0, 0);
-    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "lookAtVolume", testParams);
-    viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
+    cppView = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtVolume", testParams);
+    viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, { marginPercent: testParams.margin });
     compareView(viewState, cppView, "LookAtVolume 2");
   });
+
+  // Changes were made in TypeScript to the near/far plane adjustment. The native code hasn't been adjusted to match.
+  function compareToCppView(tsView: SpatialViewState, cppView: SpatialViewDefinitionProps, expectedZExtent: number, name: string): void {
+    const expectAlmostEqual = (a: number, b: number, tolerance?: number) => {
+      if (undefined === tolerance)
+        tolerance = Geometry.smallMetricDistance;
+
+      expect(Math.abs(a - b)).most(tolerance);
+    };
+
+    expectAlmostEqual(tsView.extents.z, expectedZExtent);
+
+    const cppOrigin = Point3d.fromJSON(cppView.origin);
+    expectAlmostEqual(tsView.origin.x, cppOrigin.x, 0.5);
+    expectAlmostEqual(tsView.origin.y, cppOrigin.y, 0.4);
+    expectAlmostEqual(tsView.origin.z, cppOrigin.z, 0.4);
+
+    const zExtent = tsView.extents.z;
+    const origin = tsView.origin.clone();
+
+    const cppExtents = Point3d.fromJSON(cppView.extents);
+    tsView.extents.z = cppExtents.z;
+    cppOrigin.clone(tsView.origin);
+    compareView(tsView, cppView, name);
+
+    tsView.extents.z = zExtent;
+    origin.clone(tsView.origin);
+  }
 
   it("rotateCameraLocal should work", async () => {
     const testParams: any = {
@@ -298,22 +312,9 @@ describe("ViewState", () => {
     viewState.setLensAngle(Angle.createDegrees(50));
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
-    let cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "rotateCameraLocal", testParams);
+    const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "rotateCameraLocal", testParams);
     viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
-    compareView(viewState, cppView, "RotateCameraLocal 1");
-
-    viewState.setOrigin(Point3d.create(100, 23, -18));
-    viewState.setExtents(Vector3d.create(55, 0.01, 23));
-    viewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toMatrix3d());
-    viewState.setLensAngle(Angle.createDegrees(11));
-    viewState.setFocusDistance(191);
-    viewState.setEyePoint(Point3d.create(-64, 120, 500));
-    testParams.angle = 1.6788888;
-    testParams.axis = Vector3d.create(-1, 6, 3);
-    testParams.about = Point3d.create(1, 2, 3);
-    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "rotateCameraLocal", testParams);
-    viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
-    compareView(viewState, cppView, "RotateCameraLocal 2");
+    compareToCppView(viewState, cppView, 49.5035, "RotateCameraLocal 1");
   });
 
   it("lookAtUsingLensAngle should work", async () => {
@@ -333,9 +334,9 @@ describe("ViewState", () => {
     viewState.setLensAngle(Angle.createDegrees(65));
     viewState.setFocusDistance(191);
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
-    const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "lookAtUsingLensAngle", testParams);
+    const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtUsingLensAngle", testParams);
     viewState.lookAtUsingLensAngle(testParams.eye, testParams.target, testParams.up, testParams.lens, testParams.front, testParams.back);
-    compareView(viewState, cppView, "lookAtUsingLensAngle");
+    compareToCppView(viewState, cppView, 116.961632, "lookAtUsingLensAngle");
 
     // changing the focus distance shouldn't change the viewing frustum
     const oldFrust = viewState.calculateFrustum()!;
@@ -374,32 +375,42 @@ describe("ViewState", () => {
     expect(view.extentLimits.min).to.equal(defaultLimits.min);
     expect(view.extentLimits.max).to.equal(defaultLimits.max);
 
+    const origin = new Point3d(0, 0, 0);
+    const rot = Matrix3d.identity;
     // Default limits are accepted
     const delta = new Vector3d(defaultLimits.min, defaultLimits.min, defaultLimits.min);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
     delta.set(defaultLimits.max, defaultLimits.max, defaultLimits.max);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
     delta.scale(0.5, delta);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
 
     // Outside default limits rejected
     delta.scale(5.0, delta);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.MaxWindow);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.MaxWindow);
     delta.scale(0.0, delta);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.MinWindow);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.MinWindow);
 
     // Override default limits
     view.extentLimits = { min: 20, max: 100 };
     expect(view.extentLimits.min).to.equal(20);
     expect(view.extentLimits.max).to.equal(100);
     delta.set(20, 20, 20);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
     delta.set(100, 100, 100);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.Success);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.Success);
     delta.set(10, 10, 10);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.MinWindow);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.MinWindow);
     delta.set(110, 110, 110);
-    expect(view.validateViewDelta(delta)).to.equal(ViewStatus.MaxWindow);
+    expect(view.adjustViewDelta(delta, origin, rot)).to.equal(ViewStatus.MaxWindow);
+
+    delta.set(0, 21, 50);
+    expect(view.adjustViewDelta(delta, origin, rot, 2)).to.equal(ViewStatus.MinWindow);
+    assert.isTrue(delta.isAlmostEqual({ x: 42, y: 21, z: 50 }));
+
+    delta.set(0, 0, 50);
+    expect(view.adjustViewDelta(delta, origin, rot, .5)).to.equal(ViewStatus.MinWindow);
+    assert.isTrue(delta.isAlmostEqual({ x: 20, y: 40, z: 50 }));
 
     // Cloning preserved extent overrides
     const view2 = view.clone();
@@ -432,5 +443,41 @@ describe("ViewState", () => {
 
     const fromJSON = new SpatialViewState(view.toJSON(), view.iModel, view.categorySelector, view.getDisplayStyle3d(), view.modelSelector);
     expect(fromJSON.allow3dManipulations()).to.be.false;
+  });
+});
+
+describe("ViewState2d", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    await MockRender.App.startup();
+    imodel = await SnapshotConnection.openFile("ReadWriteTest.bim");
+  });
+
+  after(async () => {
+    if (imodel)
+      await imodel.close();
+
+    await MockRender.App.shutdown();
+  });
+
+  it("should have valid viewed extents", async () => {
+    const sheetView = await imodel.views.load("0x1000000002e") as SheetViewState;
+    expect(sheetView).instanceof(SheetViewState);
+    const sheetViewExtents = sheetView.getViewedExtents();
+    expect(sheetViewExtents.isNull).to.be.false;
+
+    // The sheet's viewed extents are based on the *sheet size* property, not the model range.
+    // In this case, somebody scribbled outside of the sheet boundaries.
+    const sheetModelExtents = Range3d.fromJSON((await imodel.models.queryModelRanges(sheetView.baseModelId))[0]);
+    expect(sheetViewExtents.containsRange(sheetModelExtents)).to.be.false;
+
+    const drawingView = await imodel.views.load("0x10000000020") as DrawingViewState;
+    expect(drawingView).instanceof(DrawingViewState);
+    const drawingViewExtents = drawingView.getViewedExtents();
+    expect(drawingViewExtents.isNull).to.be.false;
+
+    const drawingModelExtents = Range3d.fromJSON((await imodel.models.queryModelRanges(drawingView.baseModelId))[0]);
+    expect(drawingModelExtents.isAlmostEqual(drawingViewExtents)).to.be.true;
   });
 });

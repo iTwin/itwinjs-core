@@ -2,39 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  RpcRequest,
-  RpcManager,
-  RpcOperation,
-  RpcRequestEvent,
-  RpcInterface,
-  RpcInterfaceDefinition,
-  RpcConfiguration,
-  IModelReadRpcInterface,
-  IModelToken,
-  RpcResponseCacheControl,
-  WipRpcInterface,
-  RpcOperationPolicy,
-  RpcRequestStatus,
-} from "@bentley/imodeljs-common";
-import { BentleyError, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
-import {
-  TestRpcInterface,
-  TestOp1Params,
-  TestRpcInterface2,
-  TestNotFoundResponse,
-  TestNotFoundResponseCode,
-  RpcTransportTestImpl,
-  RpcTransportTest,
-  ZeroMajorRpcInterface,
-  TokenValues,
-} from "../common/TestRpcInterface";
 import { assert } from "chai";
-import { BackendTestCallbacks } from "../common/SideChannels";
 import * as semver from "semver";
+import { BentleyError, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import {
+  IModelReadRpcInterface, IModelRpcProps, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcOperation, RpcOperationPolicy,
+  RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue, WipRpcInterface,
+} from "@bentley/imodeljs-common";
+import { BackendTestCallbacks } from "../common/SideChannels";
+import {
+  RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2,
+  TokenValues, ZeroMajorRpcInterface,
+} from "../common/TestRpcInterface";
 
 const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
 
 describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
@@ -257,10 +240,11 @@ describe("RpcInterface", () => {
     const endpointsRestored = await RpcManager.describeAvailableEndpoints();
     assert.isTrue(endpointsRestored[0].compatible);
 
-    RpcOperation.fallbackToken = new IModelToken("test", "test", "test", "test", OpenMode.Readonly);
+    const originalToken = RpcOperation.fallbackToken;
+    RpcOperation.fallbackToken = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
     assert.equal(controlPolicy.token(undefined as any)!.contextId, "test");
-    RpcOperation.fallbackToken = undefined;
-    assert.equal(controlPolicy.token(undefined as any)!.contextId, "none");
+    RpcOperation.fallbackToken = originalToken;
+    assert.equal(controlPolicy.token(undefined as any)!.contextId, originalToken ? originalToken.contextId : "none");
   });
 
   it("should support retrieving binary resources from the backend", async () => {
@@ -447,7 +431,7 @@ describe("RpcInterface", () => {
   });
 
   it("should successfully call WipRpcInterface.placeholder", async () => {
-    const s: string = await WipRpcInterface.getClient().placeholder(new IModelToken("test", "test", "test", "test", OpenMode.Readonly).toJSON());
+    const s: string = await WipRpcInterface.getClient().placeholder(testToken);
     assert.equal(s, "placeholder");
   });
 
@@ -477,21 +461,103 @@ describe("RpcInterface", () => {
   it("should transport imodel tokens correctly", async () => {
     RpcOperation.lookup(TestRpcInterface, "op16").policy.token = new RpcOperationPolicy().token;
 
-    async function check(k?: string, c?: string, i?: string, s?: string, o?: OpenMode) {
-      const token = new IModelToken(k, c, i, s, o);
-      const values: TokenValues = { key: k, contextId: c, iModelId: i, changeSetId: s, openMode: o };
-      assert.isTrue(await TestRpcInterface.getClient().op16(token.toJSON(), values));
+    async function check(key: string, contextId?: string, iModelId?: string, changeSetId?: string, openMode?: OpenMode) {
+      const token: IModelRpcProps = { key, contextId, iModelId, changeSetId, openMode };
+      const values: TokenValues = { key, contextId, iModelId, changeSetId, openMode };
+      assert.isTrue(await TestRpcInterface.getClient().op16(token, values));
     }
 
     await check("key1", "context1", "imodel1", "change1", OpenMode.ReadWrite);
     await check("key1", "context1", "imodel1", "", OpenMode.ReadWrite);
     await check("key1", "context1", "imodel1", undefined, OpenMode.ReadWrite);
     await check("", "context1", "imodel1", "change1", OpenMode.ReadWrite);
-    await check(undefined, "context1", "imodel1", "change1", OpenMode.ReadWrite);
 
     await check("key1", "context1", "imodel1", "change1", OpenMode.Readonly);
     await check("key1", "context1", "imodel1", "", OpenMode.Readonly);
     await check("", "context1", "imodel1", "change1", OpenMode.Readonly);
-    await check(undefined, "context1", "imodel1", "change1", OpenMode.Readonly);
+  });
+
+  it("should recover when the underlying transport is replaced, resend all active requests, and disregard any zombie responses", async () => {
+    class TestInterface extends RpcInterface {
+      public static interfaceName = "TestInterface";
+      public static interfaceVersion = "0.0.0";
+      public req1() { }
+      public req2() { }
+      public req3() { }
+    }
+
+    RpcManager.initializeInterface(TestInterface);
+
+    class Resolver<T> {
+      public promise: Promise<T>;
+      public resolve() { }
+      constructor(private _value: () => T) { this.promise = new Promise((callback, _) => this.resolve = () => callback(this._value())); }
+    }
+
+    const backend: Map<string, Resolver<number>> = new Map();
+    const frontend = RpcRequest.activeRequests;
+    const pending: Set<Promise<void>> = new Set();
+    let replaced = 0;
+    let completed = 0;
+
+    class TestRequest extends RpcRequest {
+      protected setHeader(_name: string, _value: string): void { }
+
+      protected async send(): Promise<number> {
+        assert.isFalse(backend.has(this.id));
+
+        const resolver = new Resolver(() => RpcRequestStatus.Resolved);
+        assert(frontend.has(this.id));
+        backend.set(this.id, resolver);
+
+        if (replaced) {
+          resolver.resolve();
+          backend.delete(this.id);
+        } else if (backend.size === 3) {
+          assert(frontend.has(requests[0].id) && frontend.has(requests[1].id) && frontend.has(requests[2].id));
+          frontend.forEach((req) => req.cancel());
+          backend.forEach((completer) => completer.resolve()); // should be ignored on the frontend...no load call will happen
+          backend.clear();
+          ++replaced;
+        }
+
+        return resolver.promise;
+      }
+
+      protected async load(): Promise<RpcSerializedValue> {
+        assert.equal(1, replaced);
+        return RpcSerializedValue.create(this.parameters[0]);
+      }
+
+      public dispose(): void {
+        ++completed;
+        assert.equal(this.parameters[0], (this as any)._raw);
+        super.dispose();
+      }
+    }
+
+    const client = new TestInterface();
+    const requests = [new TestRequest(client, "req1", ["1"]), new TestRequest(client, "req2", ["2"]), new TestRequest(client, "req3", ["3"])];
+
+    assert.equal(replaced, 0);
+    assert.equal(frontend.size, 0);
+    assert.equal(backend.size, 0);
+    assert.equal(completed, 0);
+
+    await Promise.all(requests.map((r) => r.submit()));
+    pending.clear();
+
+    assert.equal(replaced, 1);
+    assert.equal(frontend.size, 0);
+    assert.equal(backend.size, 0);
+    assert.equal(completed, 0);
+
+    await Promise.all(requests.map((r) => r.submit()));
+    pending.clear();
+
+    assert.equal(replaced, 1);
+    assert.equal(frontend.size, 0);
+    assert.equal(backend.size, 0);
+    assert.equal(completed, 3);
   });
 });

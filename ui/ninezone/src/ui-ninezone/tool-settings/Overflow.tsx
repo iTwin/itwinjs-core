@@ -6,13 +6,12 @@
  * @module ToolSettings
  */
 
-import * as classnames from "classnames";
-import * as React from "react";
-import { ToolSettingProps } from "./Setting";
-import { Ellipsis } from "../base/Ellipsis";
-import { useResizeObserver } from "../base/useResizeObserver";
-import { useToolSettingsEntry } from "./Docked";
 import "./Overflow.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { useResizeObserver } from "@bentley/ui-core";
+import { Ellipsis } from "../base/Ellipsis";
+import { ToolSettingProps } from "./Setting";
 
 /** Properties of [[ToolSettingsOverflow]] component.
  * @internal
@@ -20,14 +19,15 @@ import "./Overflow.scss";
 export interface DockedToolSettingsOverflowProps extends ToolSettingProps {
   /** Function called when button is clicked. */
   onClick?: () => void;
+  /** Function called when button is resized. */
+  onResize?: (w: number) => void;
 }
 
 /** Entry point to overflown tool settings of [[DockedToolSettings]] component.
  * @internal
  */
-export function DockedToolSettingsOverflow(props: DockedToolSettingsOverflowProps) {
-  const { onResize } = useToolSettingsEntry();
-  const ref = useResizeObserver<HTMLDivElement>(onResize);
+export const DockedToolSettingsOverflow = React.memo(function DockedToolSettingsOverflow(props: DockedToolSettingsOverflowProps) { // tslint:disable-line: variable-name no-shadowed-variable
+  const ref = useResizeObserver<HTMLDivElement>(props.onResize);
   const className = classnames(
     "nz-toolSettings-overflow",
     props.className,
@@ -42,4 +42,4 @@ export function DockedToolSettingsOverflow(props: DockedToolSettingsOverflowProp
       <Ellipsis />
     </div>
   );
-}
+});

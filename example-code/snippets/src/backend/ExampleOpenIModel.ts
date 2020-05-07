@@ -2,22 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelDb, ConcurrencyControl, OpenParams } from "@bentley/imodeljs-backend";
-import { OpenMode, EnvMacroSubst, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
+import { ClientRequestContext, Config, EnvMacroSubst, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
+import { BriefcaseProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 
-// __PUBLISH_EXTRACT_START__ imodeljs-clients.getAccessToken
-import { AccessToken, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, Config, AuthorizedClientRequestContext, ImsUserCredentials } from "@bentley/imodeljs-clients";
-
-async function getUserAccessToken(userCredentials: ImsUserCredentials): Promise<AccessToken> {
-  const requestContext = new ClientRequestContext();
-  const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(requestContext, userCredentials);
-
-  const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(requestContext, authToken!);
-
-  return accessToken;
+async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessToken> {
+  return TestUtility.getAccessToken(userCredentials);
 }
-// __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ Service.readConfig
 export function readConfigParams(): any {
@@ -37,17 +30,17 @@ export function readConfigParams(): any {
 // __PUBLISH_EXTRACT_END__
 
 function configureIModel() {
-  // __PUBLISH_EXTRACT_START__ IModelDb.onOpen
-  IModelDb.onOpen.addListener((_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, openParams: OpenParams, _version: IModelVersion) => {
+  // __PUBLISH_EXTRACT_START__ BriefcaseDb.onOpen
+  BriefcaseDb.onOpen.addListener((_requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseProps: BriefcaseProps) => {
     // A read-only service might want to reject all requests to open an iModel for writing. It can do this in the onOpen event.
-    if (openParams.openMode !== OpenMode.Readonly)
+    if (briefcaseProps.openMode !== OpenMode.Readonly)
       throw new IModelError(IModelStatus.BadRequest, "Navigator is readonly");
   });
   // __PUBLISH_EXTRACT_END__
 
-  // __PUBLISH_EXTRACT_START__ IModelDb.onOpened
-  IModelDb.onOpened.addListener((_requestContext: AuthorizedClientRequestContext, iModel: IModelDb) => {
-    if (iModel.openParams.openMode !== OpenMode.ReadWrite)
+  // __PUBLISH_EXTRACT_START__ BriefcaseDb.onOpened
+  BriefcaseDb.onOpened.addListener((_requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModel: BriefcaseDb) => {
+    if (iModel.openMode !== OpenMode.ReadWrite)
       return;
 
     // Setting a concurrency control policy is an example of something you might do in an onOpened event handler.

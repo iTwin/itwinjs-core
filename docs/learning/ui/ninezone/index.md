@@ -38,7 +38,7 @@ The 9-Zone pattern includes a variety of strategies to support content that is l
 
 ## Responsive strategy
 
-To work across a range of devices and stop shrinking the content area, the layout will adjust depending of the size of the screen or device.
+To work across a range of devices and stop shrinking the content area, the layout will adjust depending on the size of the screen or device.
 
 ## Accessibility
 

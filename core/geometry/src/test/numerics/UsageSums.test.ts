@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
 import { UsageSums } from "../../numerics/UsageSums";
+import { Checker } from "../Checker";
+
 /* tslint:disable:no-console */
 
 describe("UsageSums", () => {

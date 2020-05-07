@@ -12,22 +12,6 @@ const {
   JSDOM
 } = require('jsdom');
 global.DOMParser = new JSDOM().window.DOMParser;
-try {
-  require("resize-observer-polyfill").default = class {
-    constructor(callback) {
-      this.callback = callback;
-    }
-
-    observe() {
-    }
-
-    unobserve() {
-    }
-
-    disconnect() {
-    }
-  };
-} catch { }
 
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
@@ -35,6 +19,13 @@ const chaiAsPromised = require("chai-as-promised");
 const chaiJestSnapshot = require("chai-jest-snapshot");
 const enzyme = require("enzyme/build");
 const spies = require("chai-spies");
+
+// Fix node's module loader to strip ?sprite from SVG imports
+const m = require("module");
+const origLoader = m._load;
+m._load = (request, parent, isMain) => {
+  return origLoader(request.replace("?sprite", ""), parent, isMain);
+};
 
 // setup enzyme (testing utils for React)
 enzyme.configure({

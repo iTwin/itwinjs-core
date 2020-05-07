@@ -7,13 +7,14 @@
  */
 
 import * as React from "react";
-
 import { getDisplayName } from "@bentley/ui-core";
-import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../dragdrop/DragDropDef";
-import { BreadcrumbProps, BreadcrumbNode, BreadcrumbNodeProps } from "../Breadcrumb";
+import { DragSourceArguments, DragSourceProps, DropTargetArguments, DropTargetProps } from "../../dragdrop/DragDropDef";
+import { TreeDragDropType } from "../../tree/deprecated/hocs/withDragDrop";
 import { TreeNodeItem } from "../../tree/TreeDataProvider";
-import { TreeDragDropType } from "../../tree/hocs/withDragDrop";
+import { BreadcrumbNode, BreadcrumbNodeProps, BreadcrumbProps } from "../Breadcrumb";
 import { DragDropBreadcrumbNode } from "./DragDropBreadcrumbNode";
+
+// tslint:disable:deprecation
 
 /**
  * Props that are injected to the HOC component.

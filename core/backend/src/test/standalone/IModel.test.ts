@@ -2,47 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  ClientRequestContext,
-  BeEvent,
-  DbResult,
-  Guid,
-  Id64,
-  Id64String,
-  using,
-  Logger,
-  LogLevel,
-  GetMetaDataFunction,
-} from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  GeometryQuery,
-  LineString3d,
-  Loop,
-  Matrix4d,
-  Point3d,
-  Range3d,
-  Transform,
-  StrokeOptions,
-  PolyfaceBuilder,
-  YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import { AccessToken, IAuthorizationClient } from "@bentley/imodeljs-clients";
-import {
-  AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
-  FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
-  ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat,
-  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, GeometryStreamBuilder, GeometricElement3dProps, GeometryParams,
-  SpatialViewDefinitionProps, ModelProps,
-} from "@bentley/imodeljs-common";
+
 import { assert, expect } from "chai";
 import * as path from "path";
 import {
-  AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionModel, DefinitionPartition,
-  DictionaryModel, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
-  GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, InformationPartitionElement,
-  LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
-  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext,
+  BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
+} from "@bentley/bentleyjs-core";
+import {
+  GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, ElementProps,
+  EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams,
+  GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, ModelProps, PrimitiveTypeCode, RelatedElement, RenderMode,
+  SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
+} from "@bentley/imodeljs-common";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import {
+  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
+  ClassRegistry, DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
+  ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
+  GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, LightLocation, LinkPartition, Model, PhysicalModel,
+  PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb,
+  SubCategory, Subject, Texture, ViewDefinition,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -76,18 +58,18 @@ function exerciseGc() {
 }
 
 describe("iModel", () => {
-  let imodel1: IModelDb;
-  let imodel2: IModelDb;
-  let imodel3: IModelDb;
-  let imodel4: IModelDb;
-  let imodel5: IModelDb;
+  let imodel1: SnapshotDb;
+  let imodel2: SnapshotDb;
+  let imodel3: SnapshotDb;
+  let imodel4: SnapshotDb;
+  let imodel5: SnapshotDb;
   const requestContext = new BackendRequestContext();
 
   before(async () => {
     IModelTestUtils.registerTestBimSchema();
     imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    imodel3 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
+    imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
     imodel4 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
@@ -96,24 +78,21 @@ describe("iModel", () => {
   });
 
   after(() => {
-    imodel1.closeSnapshot();
-    imodel2.closeSnapshot();
-    imodel3.closeSnapshot();
-    imodel4.closeSnapshot();
-    imodel5.closeSnapshot();
+    imodel1.close();
+    imodel2.close();
+    imodel3.close();
+    imodel4.close();
+    imodel5.close();
   });
 
-  /** test the copy constructor and to/from Json methods for the supplied entity */
-  const testCopyAndJson = (entity: Entity) => {
-    const copyOf = entity.clone();
-    const s1 = JSON.stringify(entity); let s2 = JSON.stringify(copyOf);
-    assert.equal(s1, s2);
-
-    // now round trip the entity through a json string and back to a new entity.
-    const jsonObj = JSON.parse(s1) as EntityProps;
-    const el2 = new (entity.constructor as any)(jsonObj, entity.iModel); // create a new entity from the json
-    s2 = JSON.stringify(el2);
-    assert.equal(s1, s2);
+  /** Roundtrip the entity through a json string and back to a new entity. */
+  const roundtripThroughJson = (entity1: Entity): Entity => {
+    const string1 = JSON.stringify(entity1);
+    const props1 = JSON.parse(string1) as EntityProps;
+    const entity2 = new (entity1.constructor as any)(props1, entity1.iModel); // create a new entity from the EntityProps
+    const string2 = JSON.stringify(entity2);
+    assert.equal(string1, string2);
+    return entity2;
   };
 
   it("should verify object vault", () => {
@@ -307,7 +286,7 @@ describe("iModel", () => {
       assert.equal(Id64.getBriefcaseId(subCat.code.spec), 0);
       assert.isTrue(subCat.code.scope === "0x2d");
       assert.isTrue(subCat.code.value === "A-Z013-G-Legn");
-      testCopyAndJson(subCat);
+      roundtripThroughJson(subCat);
     }
 
     /// Get the parent Category of the subcategory.
@@ -320,7 +299,7 @@ describe("iModel", () => {
       assert.equal(Id64.getLocalId(cat.code.spec), 22);
       assert.equal(Id64.getBriefcaseId(cat.code.spec), 0);
       assert.isTrue(cat.code.value === "A-Z013-G-Legn");
-      testCopyAndJson(cat);
+      roundtripThroughJson(cat);
     }
 
     const phys = imodel1.elements.getElement("0x38");
@@ -336,7 +315,7 @@ describe("iModel", () => {
     assert.exists(el3);
     assert.notEqual(a2, el3);
     assert.equal(a2.id, el3.id);
-    testCopyAndJson(el3);
+    roundtripThroughJson(el3);
 
     const newEl = el3;
     newEl.federationGuid = undefined;
@@ -527,7 +506,7 @@ describe("iModel", () => {
 
     const modelId = PhysicalModel.insert(imodel5, IModelDb.rootSubjectId, "test_render_material_model_name");
 
-    const categoryId = SpatialCategory.insert(imodel5, IModel.dictionaryId, "GeoJSON Feature", { color: ColorDef.white });
+    const categoryId = SpatialCategory.insert(imodel5, IModel.dictionaryId, "GeoJSON Feature", { color: ColorDef.white.toJSON() });
 
     /** generate a geometry stream containing the polyface */
     const gsBuilder = new GeometryStreamBuilder();
@@ -556,7 +535,7 @@ describe("iModel", () => {
     expect(model).not.to.be.undefined;
 
     const settings: DisplayStyleSettingsProps = {
-      backgroundColor: ColorDef.blue,
+      backgroundColor: ColorDef.blue.toJSON(),
       viewflags: ViewFlags.fromJSON({
         renderMode: RenderMode.SolidFill,
       }),
@@ -618,7 +597,7 @@ describe("iModel", () => {
       assert.exists(childElement);
       assert.isTrue(childElement instanceof Element);
 
-      testCopyAndJson(childElement);
+      roundtripThroughJson(childElement);
       assert.equal(rootSubject.id, childElement.parent!.id);
 
       const childLocalId = Id64.getLocalId(childId);
@@ -658,17 +637,17 @@ describe("iModel", () => {
     assert.exists(formatter, "formatter should exist as json property");
     assert.equal(formatter.fmtFlags.angMode, 1, "fmtFlags");
     assert.equal(formatter.mastUnit.label, "m", "mastUnit is meters");
-    testCopyAndJson(model2);
+    roundtripThroughJson(model2);
     let model = imodel1.models.getModel(IModel.repositoryModelId);
     assert.exists(model);
-    testCopyAndJson(model!);
+    roundtripThroughJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
     model = imodel1.models.getSubModel(code1);
     // By this point, we expect the submodel's class to be in the class registry *cache*
     const geomModel = ClassRegistry.getClass(PhysicalModel.classFullName, imodel1);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
-    testCopyAndJson(model!);
+    roundtripThroughJson(model!);
     const modelExtents: AxisAlignedBox3d = (model as PhysicalModel).queryExtents();
     assert.isBelow(modelExtents.low.x, modelExtents.high.x);
     assert.isBelow(modelExtents.low.y, modelExtents.high.y);
@@ -728,7 +707,7 @@ describe("iModel", () => {
 
   // NOTE: this test can be removed when the deprecated executeQuery method is removed
   it("should produce an array of rows", () => {
-    const rows: any[] = imodel1.executeQuery(`SELECT * FROM ${Category.classFullName}`); // tslint:disable-line: deprecation
+    const rows: any[] = IModelTestUtils.executeQuery(imodel1, `SELECT * FROM ${Category.classFullName}`); // tslint:disable-line: deprecation
     assert.exists(rows);
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);
@@ -907,7 +886,7 @@ describe("iModel", () => {
     assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
     assert.isUndefined(testElem.asAny.integerProperty1);
 
-    const newTestElem = testElem.clone();
+    const newTestElem = roundtripThroughJson(testElem) as Element;
     assert.equal(newTestElem.classFullName, testElem.classFullName);
     newTestElem.asAny.integerProperty1 = 999;
     assert.isTrue(testElem.asAny.arrayOfPoint3d[0].isAlmostEqual(newTestElem.asAny.arrayOfPoint3d[0]));
@@ -1040,7 +1019,7 @@ describe("iModel", () => {
     newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
-    const updatedProps = JSON.parse(imodel1.briefcase!.nativeDb.getIModelProps());
+    const updatedProps = JSON.parse(imodel1.nativeDb.getIModelProps());
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
     const updatedExtents = Range3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
@@ -1086,8 +1065,8 @@ describe("iModel", () => {
     assert.isTrue(z2.isAlmostEqual(center), "ecefToSpatial");
 
     const carto = imodel5.spatialToCartographicFromEcef(center);
-    assert.approximately(Angle.radiansToDegrees(carto.longitude), 132.70599650539427, .1); // this data is in Japan
-    assert.approximately(Angle.radiansToDegrees(carto.latitude), 34.35461328445589, .1);
+    assert.approximately(carto.longitudeDegrees, 132.70599650539427, .1); // this data is in Japan
+    assert.approximately(carto.latitudeDegrees, 34.35461328445589, .1);
     const c2 = { longitude: 2.316156576159219, latitude: 0.5996011150631385, height: 10 };
     assert.isTrue(carto.equalsEpsilon(c2, .001), "spatialToCartographic");
 
@@ -1277,7 +1256,7 @@ describe("iModel", () => {
 
     // Write new CodeSpec to iModel
     if (true) {
-      const iModelDb: IModelDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+      const iModelDb: SnapshotDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
       const codeSpec: CodeSpec = CodeSpec.create(iModelDb, codeSpecName, CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
       codeSpec.isManagedWithIModel = false;
       const codeSpecId: Id64String = iModelDb.codeSpecs.insert(codeSpec);
@@ -1287,19 +1266,19 @@ describe("iModel", () => {
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
       assert.isFalse(codeSpec.isManagedWithIModel);
-      iModelDb.closeSnapshot();
+      iModelDb.close();
     }
 
     // Reopen iModel (ensure CodeSpec cache is cleared) and reconfirm CodeSpec properties
     if (true) {
-      const iModelDb: IModelDb = IModelDb.openSnapshot(iModelFileName);
+      const iModelDb = SnapshotDb.openFile(iModelFileName);
       const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(codeSpecName);
       assert.isTrue(Id64.isValidId64(codeSpec.id));
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
       assert.isFalse(codeSpec.isManagedWithIModel);
-      iModelDb.closeSnapshot();
+      iModelDb.close();
     }
   });
 
@@ -1384,10 +1363,9 @@ describe("iModel", () => {
   });
 
   it("should create link table relationship instances", () => {
-    const testImodel = imodel1;
+    const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "CreateLinkTable.bim");
+    const testImodel = StandaloneDb.createEmpty(snapshotFile2, { rootSubject: { name: "test1" }, allowEdit: JSON.stringify({ txns: true }) });
     const elements = testImodel.elements;
-
-    testImodel.nativeDb.enableTxnTesting();
 
     // Create a new physical model
     const newModelId = PhysicalModel.insert(testImodel, IModel.rootSubjectId, "TestModel");
@@ -1452,7 +1430,7 @@ describe("iModel", () => {
 
     ede1.delete();
     testImodel.saveChanges("step 4");
-
+    testImodel.close();
   });
 
   it("should set EC properties of various types", async () => {
@@ -1542,7 +1520,7 @@ describe("iModel", () => {
       guid: Guid.createValue(),
     };
 
-    const iModel: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot.bim"), args);
+    const iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot.bim"), args);
     assert.equal(iModel.getGuid(), args.guid);
     assert.equal(iModel.rootSubject.name, args.rootSubject.name);
     assert.equal(iModel.rootSubject.description, args.rootSubject.description);
@@ -1585,7 +1563,14 @@ describe("iModel", () => {
     next = iModel.queryNextAvailableFileProperty(myPropsStr);
     assert.equal(0, next, "queryNextAvailableFileProperty, should return 0 when none present");
 
-    iModel.closeSnapshot();
+    const testLocal = "TestLocal";
+    const testValue = "this is a test";
+    const nativeDb = iModel.nativeDb;
+    assert.isUndefined(nativeDb.queryLocalValue(testLocal));
+    assert.equal(DbResult.BE_SQLITE_DONE, nativeDb.saveLocalValue(testLocal, testValue));
+    assert.equal(nativeDb.queryLocalValue(testLocal), testValue);
+
+    iModel.close();
   });
 
   it("The same promise can have two subscribers, and it will notify both.", async () => {
@@ -1634,14 +1619,12 @@ describe("iModel", () => {
       },
     };
 
-    const authorizationClient: IAuthorizationClient = {
+    const authorizationClient: AuthorizationClient = {
       getAccessToken: async (_requestContext: ClientRequestContext): Promise<AccessToken> => {
         const fakeAccessToken2 = {} as AccessToken;
         return fakeAccessToken2;
       },
       isAuthorized: true,
-      hasExpired: false,
-      hasSignedIn: true,
     };
 
     lastPushTimeMillis = 0;
@@ -1732,62 +1715,185 @@ describe("iModel", () => {
     autoPush.cancel();
   });
 
-  it.skip("ImodelJsTest.MeasureInsertPerformance", () => {
-
-    const seedFileName = IModelTestUtils.resolveAssetFile("DgnPlatformSeedManager_OneSpatialModel10.bim");
-    const testFileName = IModelTestUtils.prepareOutputFile("IModel", "ImodelJsTest_MeasureInsertPerformance.bim");
-    const ifperfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-
-    // tslint:disable-next-line:no-console
-    console.time("ImodelJsTest.MeasureInsertPerformance");
-
-    // TODO: Look up model by code (i.e., codevalue of a child of root subject, where child has a PhysicalPartition)
-    // const physicalPartitionCode: Code = PhysicalPartition::CreateCode(*m_db->Elements().GetRootSubject(), "DefaultModel");
-    // const modelId: Id64String = ifperfimodel.models.querySubModelId(physicalPartitionCode);
-    const modelId = Id64.fromString("0X11");
-
-    const defaultCategoryId: Id64String | undefined = SpatialCategory.queryCategoryIdByName(ifperfimodel, IModel.dictionaryId, "DefaultCategory");
-    assert.isFalse(undefined === defaultCategoryId);
-
-    const elementCount = 10000;
-    for (let i = 0; i < elementCount; ++i) {
-      const elementProps = { classFullName: "DgnPlatformTest:ImodelJsTestElement", model: modelId, id: Id64.invalid, code: Code.createEmpty(), category: defaultCategoryId };
-      const element: Element = ifperfimodel.elements.createElement(elementProps);
-
-      element.asAny.integerProperty1 = i;
-      element.asAny.integerProperty2 = i;
-      element.asAny.integerProperty3 = i;
-      element.asAny.integerProperty4 = i;
-      element.asAny.doubleProperty1 = i;
-      element.asAny.doubleProperty2 = i;
-      element.asAny.doubleProperty3 = i;
-      element.asAny.doubleProperty4 = i;
-      element.asAny.b = (0 === (i % 100));
-      const pt: Point3d = new Point3d(i, 0, 0);
-      element.asAny.pointProperty1 = pt;
-      element.asAny.pointProperty2 = pt;
-      element.asAny.pointProperty3 = pt;
-      element.asAny.pointProperty4 = pt;
-      // const dtUtc: Date = new Date("2013-09-15 12:05:39Z");    // Dates are so expensive to parse in native code that this skews the performance results
-      // element.dtUtc = dtUtc;
-
-      const insertedElemId = ifperfimodel.elements.insertElement(element);
-      assert.isTrue(Id64.isValidId64(insertedElemId), "insert worked");
-      if (0 === (i % 100))
-        ifperfimodel.saveChanges();
+  function hasClassView(db: IModelDb, name: string): boolean {
+    try {
+      return db.withPreparedSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
+    } catch (e) {
+      return false;
     }
+  }
 
-    ifperfimodel.saveChanges();
+  it("Standalone iModel properties", () => {
+    const standaloneRootSubjectName = "Standalone";
+    const standaloneFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
+    let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName } });
+    assert.isTrue(standaloneDb1.isStandaloneDb());
+    assert.isTrue(standaloneDb1.isStandalone);
+    assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
+    assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(standaloneDb1.filePath, standaloneFile1);
+    assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneFile1), "Should be in the list of open StandaloneDbs");
+    assert.isUndefined(SnapshotDb.tryFindByKey(standaloneFile1), "Should not be in the list of open SnapshotDbs");
+    assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
+    assert.equal(standaloneDb1.elements.getRootSubject().code.getValue(), standaloneRootSubjectName);
+    assert.isTrue(standaloneDb1.isOpen);
+    assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
+    assert.isUndefined(standaloneDb1.contextId);
+    assert.isUndefined(standaloneDb1.changeSetId);
+    assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
+    standaloneDb1.close();
+    assert.isFalse(standaloneDb1.isOpen);
+    standaloneDb1.close(); // calling `close()` a second time is a no-op
+    assert.isUndefined(StandaloneDb.tryFindByKey(standaloneFile1));
+    standaloneDb1 = StandaloneDb.openFile(standaloneFile1);
+    assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneFile1));
+    assert.isFalse(standaloneDb1.isReadonly, "By default, StandaloneDbs are opened read/write");
+    standaloneDb1.close();
+    assert.isUndefined(StandaloneDb.tryFindByKey(standaloneFile1));
+  });
 
-    ifperfimodel.withPreparedStatement("select count(*) as [count] from DgnPlatformTest.ImodelJsTestElement", (stmt: ECSqlStatement) => {
-      assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
-      const row = stmt.getRow();
-      assert.equal(row.count, elementCount);
-    });
+  it("Snapshot iModel properties", () => {
+    const snapshotRootSubjectName = "Snapshot";
+    const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
+    const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
+    const snapshotFile3: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
+    let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
+    let snapshotDb2 = SnapshotDb.createFrom(snapshotDb1, snapshotFile2);
+    let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { createClassViews: true });
+    assert.isTrue(snapshotDb1.isSnapshotDb());
+    assert.isTrue(snapshotDb2.isSnapshotDb());
+    assert.isTrue(snapshotDb3.isSnapshotDb());
+    assert.isTrue(snapshotDb1.isSnapshot);
+    assert.isTrue(snapshotDb2.isSnapshot);
+    assert.isTrue(snapshotDb3.isSnapshot);
+    assert.isFalse(snapshotDb1.txns.hasPendingTxns);
+    assert.isFalse(snapshotDb2.txns.hasPendingTxns);
+    assert.isFalse(snapshotDb3.txns.hasPendingTxns);
+    assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
+    assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
+    assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");
+    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb1.filePath, snapshotFile1);
+    assert.equal(snapshotDb2.filePath, snapshotFile2);
+    assert.equal(snapshotDb3.filePath, snapshotFile3);
+    assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotFile1));
+    assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotFile2));
+    assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotFile3));
+    assert.isUndefined(StandaloneDb.tryFindByKey(snapshotFile1), "Should not be in the list of open StandaloneDbs");
+    assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
+    assert.isFalse(snapshotDb2.nativeDb.isEncrypted());
+    assert.isFalse(snapshotDb3.nativeDb.isEncrypted());
+    assert.isFalse(imodel1.nativeDb.isEncrypted());
+    const iModelGuid1: GuidString = snapshotDb1.getGuid();
+    const iModelGuid2: GuidString = snapshotDb2.getGuid();
+    const iModelGuid3: GuidString = snapshotDb3.getGuid();
+    assert.notEqual(iModelGuid1, iModelGuid2, "Expect different iModel GUIDs for each snapshot");
+    assert.notEqual(iModelGuid2, iModelGuid3, "Expect different iModel GUIDs for each snapshot");
+    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.getValue();
+    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.getValue();
+    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.getValue();
+    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.getValue();
+    assert.equal(rootSubjectName1, snapshotRootSubjectName);
+    assert.equal(rootSubjectName1, rootSubjectName2, "Expect a snapshot to maintain the root Subject name from its seed");
+    assert.equal(rootSubjectName3, imodel1RootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
+    assert.isTrue(snapshotDb1.isOpen);
+    assert.isTrue(snapshotDb2.isOpen);
+    assert.isTrue(snapshotDb3.isOpen);
+    snapshotDb1.close();
+    snapshotDb2.close();
+    snapshotDb3.close();
+    assert.isFalse(snapshotDb1.isOpen);
+    assert.isFalse(snapshotDb2.isOpen);
+    assert.isFalse(snapshotDb3.isOpen);
+    snapshotDb1.close(); // calling `close()` a second time is a no-op
+    snapshotDb2.close(); // calling `close()` a second time is a no-op
+    snapshotDb3.close(); // calling `close()` a second time is a no-op
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile1));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile2));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile3));
+    snapshotDb1 = SnapshotDb.openFile(snapshotFile1);
+    snapshotDb2 = SnapshotDb.openFile(snapshotFile2);
+    snapshotDb3 = SnapshotDb.openFile(snapshotFile3);
+    assert.equal(snapshotDb1, SnapshotDb.tryFindByKey(snapshotFile1));
+    assert.equal(snapshotDb2, SnapshotDb.tryFindByKey(snapshotFile2));
+    assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotFile3));
+    assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
+    assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
+    assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
+    assert.isTrue(hasClassView(snapshotDb1, "bis.Element"));
+    assert.isTrue(hasClassView(snapshotDb1, "bis.ElementAspect"));
+    assert.isTrue(hasClassView(snapshotDb1, "bis.Model"));
+    assert.isTrue(hasClassView(snapshotDb1, "bis.ElementRefersToElements"));
+    assert.isFalse(hasClassView(snapshotDb2, "bis.Element"));
+    assert.isTrue(hasClassView(snapshotDb3, "bis.Element"));
+    snapshotDb1.close();
+    snapshotDb2.close();
+    snapshotDb3.close();
 
-    // tslint:disable-next-line:no-console
-    console.timeEnd("ImodelJsTest.MeasureInsertPerformance");
+    assert.throws(() => { StandaloneDb.openFile(snapshotFile1); }); // attempt to open snapshot writeable should throw
+    snapshotDb1 = StandaloneDb.openFile(snapshotFile1, OpenMode.Readonly);
+    assert.isDefined(snapshotDb1, "should open readonly");
+    snapshotDb1.close();
 
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile1));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile2));
+    assert.isUndefined(SnapshotDb.tryFindByKey(snapshotFile3));
+  });
+
+  it("Password-protected Snapshot iModels", () => {
+    const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "pws1.bim");
+    const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "pws2.bim");
+    const snapshotFile3: string = IModelTestUtils.prepareOutputFile("IModel", "pws3.bim");
+    const snapshotFile4: string = IModelTestUtils.prepareOutputFile("IModel", "pws4.bim");
+
+    // create snapshot from scratch without a password, then unnecessarily specify a password to open
+    let snapshotDb1 = SnapshotDb.createFrom(imodel1, snapshotFile1);
+    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    snapshotDb1.close();
+    snapshotDb1 = SnapshotDb.openFile(snapshotFile1, { password: "unnecessaryPassword" });
+    assert.isTrue(snapshotDb1.isSnapshotDb());
+    assert.isTrue(snapshotDb1.isSnapshot);
+    assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
+    assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
+    assert.isFalse(hasClassView(snapshotDb1, "bis.Element"));
+
+    // create snapshot from scratch and give it a password
+    let snapshotDb2 = SnapshotDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password", createClassViews: true });
+    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    const subjectName2 = "TestSubject2";
+    const subjectId2: Id64String = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
+    assert.isTrue(Id64.isValidId64(subjectId2));
+    snapshotDb2.close();
+    snapshotDb2 = SnapshotDb.openFile(snapshotFile2, { password: "password" });
+    assert.isTrue(snapshotDb2.isSnapshotDb());
+    assert.isTrue(snapshotDb2.isSnapshot);
+    assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
+    assert.isTrue(snapshotDb2.nativeDb.isEncrypted());
+    assert.exists(snapshotDb2.elements.getElement(subjectId2));
+    assert.isTrue(hasClassView(snapshotDb2, "bis.Element"));
+
+    // create a new snapshot from a non-password-protected snapshot and then give it a password
+    let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { password: "password" });
+    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    snapshotDb3.close();
+    snapshotDb3 = SnapshotDb.openFile(snapshotFile3, { password: "password" });
+    assert.isTrue(snapshotDb3.isSnapshotDb());
+    assert.isTrue(snapshotDb3.isSnapshot);
+    assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
+    assert.isTrue(snapshotDb3.nativeDb.isEncrypted());
+
+    // it is invalid to create a snapshot from a password-protected iModel
+    assert.throws(() => SnapshotDb.createFrom(snapshotDb2, snapshotFile4), IModelError);
+    assert.isFalse(IModelJsFs.existsSync(snapshotFile4));
+    assert.throws(() => SnapshotDb.createFrom(snapshotDb2, snapshotFile4, { password: "password" }), IModelError);
+    assert.isFalse(IModelJsFs.existsSync(snapshotFile4));
+
+    snapshotDb1.close();
+    snapshotDb2.close();
+    snapshotDb3.close();
   });
 
   it("Run plain SQL", () => {
@@ -1856,10 +1962,10 @@ describe("iModel", () => {
   });
 
   it("Run plain SQL against readonly connection", () => {
-    let iModel: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IModel", "sqlitesqlreadonlyconnection.bim"), { rootSubject: { name: "test" } });
-    const iModelPath: string = iModel.briefcase.pathname;
-    iModel.closeSnapshot();
-    iModel = IModelDb.openSnapshot(iModelPath);
+    let iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "sqlitesqlreadonlyconnection.bim"), { rootSubject: { name: "test" } });
+    const iModelPath: string = iModel.filePath;
+    iModel.close();
+    iModel = SnapshotDb.openFile(iModelPath);
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
       let rowCount: number = 0;
@@ -1893,6 +1999,34 @@ describe("iModel", () => {
       }
       assert.equal(rowCount, 2);
     });
-    iModel.closeSnapshot();
+    iModel.close();
+  });
+
+  it("tryPrepareStatement", () => {
+    const sql = `SELECT * FROM ${Element.classFullName} LIMIT 1`;
+    const invalidSql = "SELECT * FROM InvalidSchemaName:InvalidClassName LIMIT 1";
+    assert.throws(() => imodel1.prepareStatement(invalidSql));
+    assert.isUndefined(imodel1.tryPrepareStatement(invalidSql));
+    const statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
+    assert.isDefined(statement);
+    assert.isTrue(statement?.isPrepared);
+    statement!.dispose();
+  });
+
+  it("containsClass", () => {
+    assert.isTrue(imodel1.containsClass(Element.classFullName));
+    assert.isTrue(imodel1.containsClass("BisCore:Element"));
+    assert.isTrue(imodel1.containsClass("BisCore.Element"));
+    assert.isTrue(imodel1.containsClass("biscore:element"));
+    assert.isTrue(imodel1.containsClass("biscore.element"));
+    assert.isTrue(imodel1.containsClass("bis:Element"));
+    assert.isTrue(imodel1.containsClass("bis.Element"));
+    assert.isTrue(imodel1.containsClass("bis:element"));
+    assert.isTrue(imodel1.containsClass("bis.element"));
+    assert.isFalse(imodel1.containsClass("BisCore:Element:InvalidExtra"));
+    assert.isFalse(imodel1.containsClass("BisCore"));
+    assert.isFalse(imodel1.containsClass(":Element"));
+    assert.isFalse(imodel1.containsClass("BisCore:InvalidClassName"));
+    assert.isFalse(imodel1.containsClass("InvalidSchemaName:Element"));
   });
 });

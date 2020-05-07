@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import "./RulesetSelector.css";
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
-
-import "./RulesetSelector.css";
 
 export interface RulesetSelectorProps {
   onRulesetSelected?: (rulesetId?: string) => void;

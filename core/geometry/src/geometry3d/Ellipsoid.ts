@@ -7,32 +7,30 @@
  * @module CartesianGeometry
  */
 
-import { Point3d, Vector3d } from "./Point3dVector3d";
-
-import { Transform } from "./Transform";
-
-import { SphereImplicit, SineCosinePolynomial, TrigPolynomial } from "../numerics/Polynomials";
-import { Ray3d } from "./Ray3d";
-import { Matrix3d } from "./Matrix3d";
-import { Point2d } from "./Point2dVector2d";
-import { Range3d, Range1d } from "./Range";
-import { AngleSweep } from "./AngleSweep";
-import { AxisIndex, Geometry, AxisOrder } from "../Geometry";
-import { Angle } from "./Angle";
-import { UVSurface } from "./GeometryHandler";
-import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
 import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { LongitudeLatitudeNumber } from "./LongitudeLatitudeAltitude";
-import { NewtonEvaluatorRRtoRRD, Newton2dUnboundedWithDerivative } from "../numerics/Newton";
-import { Arc3d } from "../curve/Arc3d";
-import { TriDiagonalSystem } from "../numerics/TriDiagonalSystem";
-import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
-import { XYAndZ } from "./XYZProps";
-import { Point4d } from "../geometry4d/Point4d";
 import { Clipper } from "../clipping/ClipUtils";
-import { Order3Bezier } from "../numerics/BezierPolynomials";
+import { Arc3d } from "../curve/Arc3d";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { AxisIndex, AxisOrder, Geometry } from "../Geometry";
+import { Point4d } from "../geometry4d/Point4d";
+import { Order3Bezier } from "../numerics/BezierPolynomials";
+import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../numerics/Newton";
+import { SineCosinePolynomial, SphereImplicit, TrigPolynomial } from "../numerics/Polynomials";
+import { TriDiagonalSystem } from "../numerics/TriDiagonalSystem";
+import { Angle } from "./Angle";
+import { AngleSweep } from "./AngleSweep";
+import { UVSurface } from "./GeometryHandler";
+import { LongitudeLatitudeNumber } from "./LongitudeLatitudeAltitude";
+import { Matrix3d } from "./Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
+import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Range1d, Range3d } from "./Range";
+import { Ray3d } from "./Ray3d";
+import { Transform } from "./Transform";
+import { XYAndZ } from "./XYZProps";
+
 /**
  * For one component (x,y, or z) on the sphere
  *    f(theta,phi) = c + (u * cos(theta) + v * sin(theta)) * cos(phi) + w * sin(phi)
@@ -279,7 +277,7 @@ export class Ellipsoid implements Clipper {
    * * For each optional array, caller must of course initialize an array (usually empty)
    * * return 0 if ray length is too small.
    */
-  public intersectRay(ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number {
+  public intersectRay(ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: LongitudeLatitudeNumber[] | undefined): number {
     if (xyz)
       xyz.length = 0;
     if (thetaPhiRadians !== undefined)
@@ -630,14 +628,7 @@ export class Ellipsoid implements Clipper {
     const plane = this.radiansToPointAndDerivatives(thetaRadians, phiRadians, false);
     return plane.unitNormalRay(result);
   }
-  /**
-   * Find the (unique) extreme point for a given true surface perpendicular vector (outward)
-   * @deprecated Instead of using `Point2d` to carry radians, use `surfaceNormalToAngles` which carries radians in `LongitudeLatitudeNumber`.
-   */
-  public surfaceNormalToRadians(normal: Vector3d, result?: Point2d): Point2d {
-    const angles = this.surfaceNormalToAngles(normal);
-    return Point2d.create(angles.longitudeRadians, angles.latitudeRadians, result);
-  }
+
   /**
    * Find the (unique) extreme point for a given true surface perpendicular vector (outward)
    */
@@ -830,19 +821,26 @@ export class EllipsoidPatch implements UVSurface {
     const result: CurveAndSurfaceLocationDetail[] = [];
     const rayFractions: number[] = [];
     const xyz: Point3d[] = [];
-    const thetaPhi: Point2d[] = [];
+    const thetaPhi: LongitudeLatitudeNumber[] = [];
     const n = this.ellipsoid.intersectRay(ray, rayFractions, xyz, thetaPhi);
     for (let i = 0; i < n; i++) {
+      const longitudeRadians = thetaPhi[i].longitudeRadians;
+      const latitudeRadians = thetaPhi[i].latitudeRadians;
+
       if (!restrictToPatch
-        || (this.longitudeSweep.isRadiansInSweep(thetaPhi[i].x)
-          && this.latitudeSweep.isRadiansInSweep(thetaPhi[i].y))) {
+        || (this.longitudeSweep.isRadiansInSweep(longitudeRadians)
+          && this.latitudeSweep.isRadiansInSweep(latitudeRadians))) {
         if (convertIntersectionRadiansToFractions) {
-          thetaPhi[i].x = this.longitudeSweep.radiansToSignedPeriodicFraction(thetaPhi[i].x);
-          thetaPhi[i].y = this.latitudeSweep.radiansToSignedPeriodicFraction(thetaPhi[i].y);
+          const uFraction = this.longitudeSweep.radiansToSignedPeriodicFraction(longitudeRadians);
+          const vFraction = this.latitudeSweep.radiansToSignedPeriodicFraction(latitudeRadians);
+          result.push(new CurveAndSurfaceLocationDetail(
+            CurveLocationDetail.createRayFractionPoint(ray, rayFractions[i], xyz[i]),
+            UVSurfaceLocationDetail.createSurfaceUVNumbersPoint(this, uFraction, vFraction, xyz[i])));
+        } else {
+          result.push(new CurveAndSurfaceLocationDetail(
+            CurveLocationDetail.createRayFractionPoint(ray, rayFractions[i], xyz[i]),
+            UVSurfaceLocationDetail.createSurfaceUVNumbersPoint(this, longitudeRadians, latitudeRadians, xyz[i])));
         }
-        result.push(new CurveAndSurfaceLocationDetail(
-          CurveLocationDetail.createRayFractionPoint(ray, rayFractions[i], xyz[i]),
-          UVSurfaceLocationDetail.createSurfaceUVPoint(this, thetaPhi[i], xyz[i])));
       }
     }
     return result;

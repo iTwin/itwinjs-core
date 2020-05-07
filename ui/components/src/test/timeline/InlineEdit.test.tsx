@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup } from "@testing-library/react";
 import { expect } from "chai";
+import React from "react";
 import * as sinon from "sinon";
-
+import { cleanup, render } from "@testing-library/react";
 import { InlineEdit } from "../../ui-components/timeline/InlineEdit";
 
 describe("<InlineEdit />", () => {

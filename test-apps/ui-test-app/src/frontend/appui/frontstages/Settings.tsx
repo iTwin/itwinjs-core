@@ -6,13 +6,13 @@
  * @module Settings
  */
 
+import "./Settings.scss";
 import * as React from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
 import { Toggle } from "@bentley/ui-core";
-import { UiFramework, ColorTheme, ModalFrontstageInfo, UiShowHideManager } from "@bentley/ui-framework";
-import "./Settings.scss";
-import { RootState, SampleAppActions } from "../..";
+import { ColorTheme, ModalFrontstageInfo, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
+import { RootState, SampleAppActions, SampleAppIModelApp } from "../..";
 
 /** Modal frontstage displaying the active settings.
  * @alpha
@@ -25,6 +25,8 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
 interface SettingsPageProps {
   dragInteraction: boolean;
   onToggleDragInteraction: () => void;
+  frameworkVersion: string;
+  onToggleFrameworkVersion: () => void;
 }
 
 /** SettingsPage displaying the active settings. */
@@ -35,18 +37,32 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
   private _autoHideDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.autoHideDescription");
   private _dragInteractionTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.dragInteractionTitle");
   private _dragInteractionDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.dragInteractionDescription");
+  private _useNewUiTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.newUiTitle");
+  private _useNewUiDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.newUiDescription");
+  private _useProximityOpacityTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.useProximityOpacityTitle");
+  private _useProximityOpacityDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.useProximityOpacityDescription");
 
-  private _onThemeChange = () => {
+  private _onThemeChange = async () => {
     const theme = this._isLightTheme() ? ColorTheme.Dark : ColorTheme.Light;
     UiFramework.setColorTheme(theme);
+
+    await SampleAppIModelApp.appUiSettings.colorTheme.saveSetting(SampleAppIModelApp.uiSettings);
   }
 
   private _isLightTheme(): boolean {
     return (UiFramework.getColorTheme() === ColorTheme.Light);
   }
 
-  private _onAutoHideChange = () => {
+  private _onAutoHideChange = async () => {
     UiShowHideManager.autoHideUi = !UiShowHideManager.autoHideUi;
+
+    await SampleAppIModelApp.appUiSettings.autoHideUi.saveSetting(SampleAppIModelApp.uiSettings);
+  }
+
+  private _onUseProximityOpacityChange = async () => {
+    UiShowHideManager.useProximityOpacity = !UiShowHideManager.useProximityOpacity;
+
+    await SampleAppIModelApp.appUiSettings.useProximityOpacity.saveSetting(SampleAppIModelApp.uiSettings);
   }
 
   public render(): React.ReactNode {
@@ -62,6 +78,7 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
           </div>
           <div className="panel right-panel">
             <Toggle isOn={isLightTheme} showCheckmark={false} onChange={this._onThemeChange} />
+            &nbsp;&nbsp;
             {_theme}
           </div>
         </div>
@@ -83,18 +100,43 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
             <Toggle isOn={this.props.dragInteraction} showCheckmark={false} onChange={this.props.onToggleDragInteraction} />
           </div>
         </div>
+        <div className="uifw-settings-item">
+          <div className="panel left-panel">
+            <span className="title">{this._useNewUiTitle}</span>
+            <span className="description">{this._useNewUiDescription}</span>
+          </div>
+          <div className="panel right-panel">
+            <Toggle isOn={this.props.frameworkVersion === "2"} showCheckmark={false} onChange={this.props.onToggleFrameworkVersion} />
+          </div>
+        </div>
+        <div className="uifw-settings-item">
+          <div className="panel left-panel">
+            <span className="title">{this._useProximityOpacityTitle}</span>
+            <span className="description">{this._useProximityOpacityDescription}</span>
+          </div>
+          <div className="panel right-panel">
+            <Toggle isOn={UiShowHideManager.useProximityOpacity} showCheckmark={false} onChange={this._onUseProximityOpacityChange} />
+          </div>
+        </div>
       </div>
     );
   }
 }
 
 function mapStateToProps(state: RootState) {
-  return { dragInteraction: state.sampleAppState.dragInteraction };
+  return { dragInteraction: state.sampleAppState.dragInteraction, frameworkVersion: state.sampleAppState.frameworkVersion };
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    onToggleDragInteraction: () => dispatch(SampleAppActions.toggleDragInteraction()),
+    onToggleDragInteraction: async () => {
+      dispatch(SampleAppActions.toggleDragInteraction());
+      await SampleAppIModelApp.appUiSettings.dragInteraction.saveSetting(SampleAppIModelApp.uiSettings);
+    },
+    onToggleFrameworkVersion: async () => {
+      dispatch(SampleAppActions.toggleFrameworkVersion());
+      await SampleAppIModelApp.appUiSettings.frameworkVersion.saveSetting(SampleAppIModelApp.uiSettings);
+    },
     dispatch,
   };
 }

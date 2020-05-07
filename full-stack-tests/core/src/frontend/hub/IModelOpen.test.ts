@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OpenMode, Logger, ClientRequestContext, GuidString, BeDuration } from "@bentley/bentleyjs-core";
-
-import { ImsTestAuthorizationClient, ChangeSetQuery, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
+import { BeDuration, GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
+import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, MockRender, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
-import { TestUsers } from "./TestUsers";
-import { IModelConnection, MockRender, IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 
 describe("Opening IModelConnection (#integration)", () => {
   let testProjectId: GuidString;
@@ -17,18 +16,16 @@ describe("Opening IModelConnection (#integration)", () => {
   let testChangeSetId: GuidString;
 
   before(async () => {
-    MockRender.App.startup();
+    await MockRender.App.startup({
+      applicationVersion: "1.2.1.1",
+    });
     Logger.initializeToConsole();
 
     const testProjectName = "iModelJsIntegrationTest";
     const testIModelName = "Stadium Dataset 1";
 
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
-
-    const requestContext = new ClientRequestContext();
-    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
-    await imsTestAuthorizationClient.signIn(requestContext, TestUsers.regular);
-    IModelApp.authorizationClient = imsTestAuthorizationClient;
+    const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    IModelApp.authorizationClient = authorizationClient;
 
     // Setup a model with a large number of change sets
     testProjectId = await TestUtility.getTestProjectId(testProjectName);
@@ -43,7 +40,7 @@ describe("Opening IModelConnection (#integration)", () => {
 
   after(async () => {
     await TestUtility.purgeAcquiredBriefcases(testIModelId);
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   const doTest = async (openMode: OpenMode) => {
@@ -52,7 +49,7 @@ describe("Opening IModelConnection (#integration)", () => {
     let promiseChainWithFullWaits: Promise<void> = Promise.resolve();
     let n = 0;
     while (++n < 10) {
-      const openPromise = IModelConnection.open(testProjectId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
+      const openPromise = RemoteBriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
       const waitPromise = BeDuration.wait(5000); // 5 seconds
       const racePromise = Promise.race([openPromise, waitPromise]).then(() => Promise.resolve());
 

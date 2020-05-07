@@ -1,6 +1,14 @@
 # Change Log - @bentley/config-loader
 
-This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- Remove unused scripts createConfigFile.js and write.js.
+- Upgrade to Rush 5.23.2
 
 ## 1.14.1
 Wed, 22 Apr 2020 19:04:00 GMT
@@ -61,7 +69,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 
 ### Updates
 
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -109,7 +117,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 ### Updates
 
 - Use new buildIModelJsBuild script
-- upgrade to TypeScript 3.2.2
+- Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT

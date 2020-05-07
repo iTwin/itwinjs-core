@@ -2,6 +2,69 @@
   "name": "@bentley/presentation-frontend",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/presentation-frontend_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "react to changes in imodeljs-clients"
+          },
+          {
+            "comment": "update tests to utilize FrontendAuthorizationClient"
+          },
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Change argument lists to props object"
+          },
+          {
+            "comment": "Made `HiliteSetProvider` and related APIs @public"
+          },
+          {
+            "comment": "Made Presentation.initialize async"
+          },
+          {
+            "comment": "Do not use EventSource in non-native apps to avoid error logs"
+          },
+          {
+            "comment": "Do an authorization check before using the settings client to avoid errors being logged."
+          },
+          {
+            "comment": "Added the ability to change favorite property order. Favorite properties API now needs IModelConnection for all functions."
+          },
+          {
+            "comment": "Translate string with multiple localization keys"
+          },
+          {
+            "comment": "Add offline mode support. Currently the only component that makes use of that is favorite properties persistence layer - the data will be cached locally until the application comes online and then synced with the persistence service."
+          },
+          {
+            "comment": "Change internal `Presentation` setters to functions (so they can actually be @internal)"
+          },
+          {
+            "comment": "Separate tests from source"
+          },
+          {
+            "comment": "Add ability to set active units system for property values formatting"
+          },
+          {
+            "comment": "Add ability to modify a ruleset and get a list of modifications that need to be applied to components to represent the changed hierarchies and content"
+          },
+          {
+            "comment": "react to new clients packages from imodeljs-clients"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/presentation-frontend_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
@@ -125,7 +188,7 @@
             "comment": "Added Ruleset and Ruleset variables to request options to support stateless presentation backend"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -239,7 +302,7 @@
             "comment": "Always compute selection when syncing tool selection with logical selection - that's necessary to determine concrete element class names. Without that, we're adding keys with \"BisCore:Element\" class to selection and then our keys compare fails (presentation components like the table always have concrete class names). This can cause rows / nodes not to be highlighted in components."
           },
           {
-            "comment": "remove IModelApp subclasses"
+            "comment": "Remove IModelApp subclasses"
           },
           {
             "comment": "Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. "
@@ -290,7 +353,7 @@
             "comment": "RPC Interface changes to optimize getting first page of nodes/content"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }

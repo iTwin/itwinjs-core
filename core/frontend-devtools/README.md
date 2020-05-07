@@ -54,11 +54,12 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt freeze scene` - Toggles scene freeze for the active viewport. While scene freeze is enabled, the same set of tiles will continue to be displayed until the scene is unfrozen - no new tiles will be loaded. Useful for zooming in or out to inspect geometry inside specific tiles.
 * `fdt frustum selected` - Toggles a decoration representing the current frustum of the selected viewport. The decoration is displayed in any *other* open viewports - so if no other viewports are open, this key-in has no effect.
 * `fdt shadow frustum` - Like `fdt frustum selected`, but visualizes the frustum used to select tiles for the shadow map (when shadows are enabled).
-* `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. `fdt frustum selected` is much more useful, but requires at least two open viewports.
+* `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. `fdt frustum selected` is much more useful, but requires at least two open viewports.  Including `fdt snapshot preload` will also display the preload frustum decoration.
 * `fdt tooltips` - Toggles debugging tooltips for element locate. When enabled, hovering over an element will display a tooltip containing information like element ID, subcategory ID, and model ID.
 * `fdt metric` - Toggles use of metric quantity formatting, e.g. as used to format output from the measure tools. Turning metric "off" switches to use of imperial units.
 * `fdt fadeout` - Toggles "fade-out" transparency mode for the selected viewport.
 * `fdt tile requests` - When enabled, displays in each viewport the bounding boxes of all tiles currently requested for loading by the viewport that was selected at the time the key-in was executed. Green boxes indicate pending requests; red indicate requests being actively processed.
+* `fdt 3dmanip` - Change the `allow3dManipulations` flag for the 3d view associated with the active viewport.
 
 ### Other key-ins
 
@@ -121,6 +122,10 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "transparent" - Fade from reality model to BIM model.
 * `fdt attach reality model` - Attach a "context" reality model to the currently selected viewport.
   * the URL for the reality model root JSON file.
+* `fdt attach reality properties` - Attach a "context" reality model from properties JSON (generally saved from `fdt save reality properties`)
+  * the json properties representing a reality model.  These can be created by using the `fdt save reality modelproperties` keyin.
+* `fdt save reality properties` - Save reality model properties to the clipboard.  These can then be used by the `fdt attach reality properties` keyin.
+  * the name of the context model.  If omitted the first reality model is saved.
 * `fdt layer dump` - Dump to the notification manager a JSON representation of the current plan projection settings for the selected viewport. Optional argument `copy` also copies the JSON to the clipboard.
 * `fdt layer set` - change plan projection settings for the selected viewport. The first argument is required and specifies the plan projection model(s) to be affected, either as `all` or as a comma-separated list of model Ids (e.g., `0x1c,0x9a`). Subsequent arguments are optional and are used to build a PlanProjectionSettings. Any arguments omitted will get their default values. Only the first character of each argument is significant; the name of the setting is separated from the value by an `=` sign:
   * `transparency=`: transparency in [0..1].
@@ -128,3 +133,14 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * `overlay=`: 1 to draw as an overlay, 0 to draw normally (with depth).
   * `priority=`: 1 to enforce subcategory display priority, 0 to ignore.
 * `fdt subcat priority` - Override display priority of one or more subcategories. Only has an effect on plan projection models. The first argument is a comma-separated list of subcategory Ids; the second is the integer priority value. Omit the second argument to clear the overrides for the specified subcategories.
+* `fdt toggle reality preload` - Toggles the display of preloaded reality tile bounding boxes.
+* `fdt toggle reality freeze`  - Toggles the freezing of reality tile loading, when the reality tiles are frozen new reality tiles are not downloaded or purged.
+* `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
+* `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
+* `fdt clip color` - Specify or unspecify a clip color to use for pixels inside or outside the clip region. `<color string>` must be in one of the following forms: "rgb(255,0,0)", "rgba(255,0,0,255)", "rgb(100%,0%,0%)", "hsl(120,50%,50%)", "#rrbbgg", "blanchedAlmond" (see possible values from `ColorByName`; case insensitive). At least one argument must be specified. Arguments can be:
+  * "clear": Clear all clip colors
+  * "inside `<color string>` | clear": Set or clear an inside clip color
+  * "outside  `<color string>` | clear": Set or clear an outside clip color
+* `fdt sourceId from elemId` and `fdt elemId from sourceId` - Converts between the Id of an element in the iModel and the corresponding object in the source document from which it originated. Outputs the result to IModelApp.notifications.
+*   * `id=`: the source aspect Id or element Id.
+*   * `copy=`: (optional) 1 to copy the resultant Id to the system clipboard.

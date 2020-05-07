@@ -3,14 +3,16 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelConnection, ElementEditor3d, IModelApp, IModelAppOptions, BeButtonEvent, Viewport } from "@bentley/imodeljs-frontend";
+import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelJson, LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { LockLevel } from "@bentley/imodelhub-client";
 import { Code } from "@bentley/imodeljs-common";
-import { Point3d, LineSegment3d, IModelJson, YawPitchRollAngles } from "@bentley/geometry-core";
-import { OpenMode, Id64String } from "@bentley/bentleyjs-core";
-import { TestUtility } from "./TestUtility";
-import { TestUsers } from "./TestUsers";
+import {
+  BeButtonEvent, ElementEditor3d, IModelApp, IModelAppOptions, IModelConnection, RemoteBriefcaseConnection, Viewport,
+} from "@bentley/imodeljs-frontend";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { PlacementTestTool } from "./TestPrimitiveTools";
-import { LockLevel } from "@bentley/imodeljs-clients";
+import { TestUtility } from "./TestUtility";
 
 const testProjectName = "iModelJsIntegrationTest";
 const testIModelName = "elementEditorTest";
@@ -32,13 +34,14 @@ describe("Element editor tests (#integration)", async () => {
 
   before(async () => {
 
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
 
     const options: IModelAppOptions = {
-      authorizationClient: TestUtility.imodelCloudEnv.authorization,
+      authorizationClient,
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
+      applicationVersion: "1.2.1.1",
     };
-    IModelApp.startup(options);
+    await IModelApp.startup(options);
 
     // NB: Call IModelApp.startup and set the authorizationClient *before* calling any other functions that might query the server.
 
@@ -48,14 +51,14 @@ describe("Element editor tests (#integration)", async () => {
     assert.isTrue(imodelId !== undefined);
     assert.isTrue(imodelId !== "");
 
-    iModel = await IModelConnection.open(contextId, imodelId, OpenMode.ReadWrite);
+    iModel = await RemoteBriefcaseConnection.open(contextId, imodelId, OpenMode.ReadWrite);
   });
 
   after(async () => {
     if (iModel) {
       await iModel.close();
     }
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("ElementEditor3d test", async () => {

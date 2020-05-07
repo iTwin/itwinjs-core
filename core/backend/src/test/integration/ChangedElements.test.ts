@@ -4,16 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult } from "@bentley/bentleyjs-core";
-import { ChangeSet } from "@bentley/imodeljs-clients";
-import { IModelVersion, ChangedElements } from "@bentley/imodeljs-common";
+import { ChangeSet } from "@bentley/imodelhub-client";
+import { ChangedElements, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import {
-  BriefcaseManager, ChangedElementsDb, AuthorizedBackendRequestContext,
-  IModelDb, OpenParams, IModelJsFs,
-} from "../../imodeljs-backend";
+import { ChangedElementsManager } from "../../ChangedElementsManager";
+import { AuthorizedBackendRequestContext, BriefcaseManager, ChangedElementsDb, IModelJsFs } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { ChangedElementsManager } from "../../ChangedElementsManager";
 
 function setupTest(iModelId: string): void {
   const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModelId);
@@ -40,11 +37,11 @@ describe("ChangedElements (#integration)", () => {
   it("Create ChangedElements Cache and process changesets", async () => {
     setupTest(testIModel.id);
 
-    const iModel: IModelDb = await IModelDb.open(requestContext, testProjectId, testIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, testIModel.id, SyncMode.FixedVersion, IModelVersion.latest());
     const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, testIModel.id);
     assert.exists(iModel);
 
-    const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelToken.iModelId!);
+    const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
     if (IModelJsFs.existsSync(filePath))
       IModelJsFs.removeSync(filePath);
 
@@ -103,10 +100,10 @@ describe("ChangedElements (#integration)", () => {
     cache = undefined;
     changes = undefined;
     // Check that the changesets should still be in the cache
-    assert.isTrue(ChangedElementsManager.isProcessed(iModel.iModelToken.iModelId!, startChangesetId));
-    assert.isTrue(ChangedElementsManager.isProcessed(iModel.iModelToken.iModelId!, endChangesetId));
+    assert.isTrue(ChangedElementsManager.isProcessed(iModel.iModelId, startChangesetId));
+    assert.isTrue(ChangedElementsManager.isProcessed(iModel.iModelId, endChangesetId));
     // Check that we can get elements
-    changes = ChangedElementsManager.getChangedElements(iModel.iModelToken.iModelId!, startChangesetId, endChangesetId);
+    changes = ChangedElementsManager.getChangedElements(iModel.iModelId, startChangesetId, endChangesetId);
     assert.isTrue(changes !== undefined);
     assert.isTrue(changes!.elements.length !== 0);
     assert.isTrue(changes!.elements.length === changes!.classIds.length && changes!.elements.length === changes!.opcodes.length);
@@ -114,7 +111,7 @@ describe("ChangedElements (#integration)", () => {
       assert.isTrue(changes!.elements.length === changes!.modelIds.length);
 
     // Test change data full return type and ensure format is correct
-    const changeData = ChangedElementsManager.getChangeData(iModel.iModelToken.iModelId!, startChangesetId, endChangesetId);
+    const changeData = ChangedElementsManager.getChangeData(iModel.iModelId, startChangesetId, endChangesetId);
     assert.isTrue(changeData !== undefined);
     assert.isTrue(changeData!.changedElements !== undefined);
     assert.isTrue(changeData!.changedModels !== undefined);

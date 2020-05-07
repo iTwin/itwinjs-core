@@ -203,7 +203,7 @@ export * from "./curve/ParityRegion";
 export * from "./curve/Path";
 export * from "./curve/RegionMomentsXY";
 export * from "./curve/RegionOps";
-export * from "./curve/PolygonOffsetContext";
+export * from "./curve/internalContexts/PolygonOffsetContext";
 export * from "./curve/PointString3d";
 export * from "./curve/StrokeOptions";
 export * from "./curve/TransitionSpiral";
@@ -240,11 +240,3 @@ export * from "./topology/Triangulation";
 export * from "./serialization/IModelJsonSchema";
 export * from "./serialization/DeepCompare";
 export * from "./serialization/GeometrySamples";
-
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("geometry-core", BUILD_SEMVER);
-}

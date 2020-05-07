@@ -16,12 +16,11 @@ if (argv.entry === undefined) {
 
 const isCI = (process.env.TF_BUILD);
 const entryPointFileName = argv.entry;
-const isPresentation = argv.isPresentation;
 const ignoreMissingTags = argv.ignoreMissingTags;
 
 const config = {
   $schema: "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
-  projectFolder: isPresentation ? "../src" : "../",
+  projectFolder: "../",
   compiler: {
     tsconfigFilePath: "<projectFolder>/tsconfig.json"
   },

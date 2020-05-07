@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
+import { Descriptor, Field, NestedContentField, PropertyValueFormat, StructTypeDescription } from "../../presentation-common";
+import { DescriptorJSON, DescriptorSource } from "../../presentation-common/content/Descriptor";
 import {
-  createRandomDescriptorJSON, createRandomDescriptor, createRandomPrimitiveField, createRandomCategory,
-  createRandomECClassInfo, createRandomRelationshipPath, createRandomNestedFieldJSON, createRandomPrimitiveFieldJSON
+  createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfo, createRandomNestedFieldJSON,
+  createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomRelationshipPath,
 } from "../_helpers/random";
-import { Descriptor, Field, NestedContentField, StructTypeDescription, PropertyValueFormat } from "../../presentation-common";
-import { DescriptorJSON, DescriptorSource } from "../../content/Descriptor";
 
 describe("Descriptor", () => {
 

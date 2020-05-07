@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { AbstractStatusBarCustomItem, CommonStatusBarItem, StatusBarItemType } from "@bentley/ui-abstract";
+import { AbstractStatusBarCustomItem, CommonStatusBarItem } from "@bentley/ui-abstract";
 
 /** Describes the data needed to insert an item into the StatusBar.
  * @beta
@@ -21,5 +21,5 @@ export interface StatusBarItem extends AbstractStatusBarCustomItem {
  * @alpha
  */
 export const isStatusBarItem = (item: CommonStatusBarItem): item is StatusBarItem => {
-  return item.type === StatusBarItemType.CustomItem && ("reactNode" in item);
+  return (!!(item as AbstractStatusBarCustomItem).isCustom) && ("reactNode" in item);
 };

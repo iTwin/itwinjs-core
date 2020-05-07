@@ -6,12 +6,11 @@
  * @module ToolSettings
  */
 
-import * as classnames from "classnames";
-import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
-import { useToolSettingsEntry } from "./Docked";
-import { useResizeObserver } from "../base/useResizeObserver";
 import "./Setting.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps, useResizeObserver } from "@bentley/ui-core";
+import { useToolSettingsEntry } from "./Docked";
 
 /** Properties of [[ToolSetting]] component.
  * @internal future
@@ -25,11 +24,10 @@ export interface ToolSettingProps extends CommonProps {
  * @internal future
  */
 export function DockedToolSetting(props: ToolSettingProps) {
-  const { isOverflown, onResize } = useToolSettingsEntry();
+  const { onResize } = useToolSettingsEntry();
   const ref = useResizeObserver<HTMLDivElement>(onResize);
   const className = classnames(
     "nz-toolSettings-setting",
-    isOverflown && "nz-overflown",
     props.className,
   );
   return (

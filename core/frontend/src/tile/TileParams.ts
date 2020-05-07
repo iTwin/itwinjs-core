@@ -3,48 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
-import {
-  Range3d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  ElementAlignedBox3d,
-  TileProps,
-} from "@bentley/imodeljs-common";
-import { Tile, TileTree } from "./internal";
+import { ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { Tile } from "./internal";
 
 /**
  * Parameters used to construct a Tile.
- * @internal
+ * @beta
  */
 export interface TileParams {
-  readonly root: TileTree;
-  readonly contentId: string;
-  readonly range: ElementAlignedBox3d;
-  readonly maximumSize: number;
-  readonly isLeaf?: boolean;
-  readonly parent?: Tile;
-  readonly contentRange?: ElementAlignedBox3d;
-  readonly transformToRoot?: Transform;
-  readonly sizeMultiplier?: number;
-}
-
-/** @internal */
-export function tileParamsFromJSON(props: TileProps, root: TileTree, parent?: Tile): TileParams {
-  const contentRange = undefined !== props.contentRange ? Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange) : undefined;
-  const transformToRoot = undefined !== props.transformToRoot ? Transform.fromJSON(props.transformToRoot) : undefined;
-  return {
-    root,
-    contentId: props.contentId,
-    range: Range3d.fromJSON(props.range),
-    maximumSize: props.maximumSize,
-    isLeaf: props.isLeaf,
-    parent,
-    contentRange,
-    transformToRoot,
-    sizeMultiplier: props.sizeMultiplier,
-  };
+  /** This tile's parent tile, if any. */
+  parent?: Tile;
+  /** True if this tile has no child tiles. */
+  isLeaf?: boolean;
+  /** Uniquely identifies this tile's content. */
+  contentId: string;
+  /** The volume of space occupied by this tile. If the tile has a parent tile, this tile's volume must be fully enclosed by its parent tile's volume. */
+  range: ElementAlignedBox3d;
+  /** Optionally, a volume more tightly encompassing this tile's contents. Must be fully enclosed by [[range]]. */
+  contentRange?: ElementAlignedBox3d;
+  /** The size in pixels beyond which this tile is considered too low-resolution for display. If zero, the tile is considered undisplayable. */
+  maximumSize: number;
 }

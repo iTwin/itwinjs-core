@@ -6,15 +6,15 @@
  * @module WebGL
  */
 
-import { VariableType, FragmentShaderComponent, VariablePrecision } from "../ShaderBuilder";
-import { TextureUnit } from "../RenderFlags";
-import { ShaderProgram } from "../ShaderProgram";
-import { createViewportQuadBuilder } from "./ViewportQuad";
-import { assignFragColor, addWindowToTexCoords } from "./Fragment";
 import { BlurGeometry } from "../CachedGeometry";
+import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
+import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
-import { addViewport } from "./Viewport";
 import { decodeDepthRgb } from "./Decode";
+import { addWindowToTexCoords, assignFragColor } from "./Fragment";
+import { addViewport } from "./Viewport";
+import { createViewportQuadBuilder } from "./ViewportQuad";
 
 // This shader applies a Gaussian blur in one dimension.
 const computeBlur = `
@@ -85,6 +85,9 @@ export function createBlurProgram(context: WebGLRenderingContext | WebGL2Renderi
       uniform.setUniform3fv(hbaoSettings);
     });
   }, VariablePrecision.High);
+
+  builder.vert.headerComment = "//!V! Blur";
+  builder.frag.headerComment = "//!F! Blur";
 
   return builder.buildProgram(context);
 }

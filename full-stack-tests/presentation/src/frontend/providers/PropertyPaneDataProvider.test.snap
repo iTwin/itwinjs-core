@@ -3,7 +3,18 @@
 exports[`PropertyDataProvider creates empty result when properties requested for 0 instances 1`] = `
 Object {
   "categories": Array [],
-  "label": "",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {},
 }
 `;
@@ -263,59 +274,15 @@ Object {
     },
   ],
   "description": "Physical Object",
-  "label": "Physical Object [0-39]",
-  "labelDefinition": PropertyRecord {
+  "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
-      "name": "content_item_name",
-      "typename": "composite",
+      "name": "label",
+      "typename": "string",
     },
     "value": Object {
       "displayValue": "Physical Object [0-39]",
-      "value": Object {
-        "parts": Array [
-          Object {
-            "displayValue": "Physical Object",
-            "rawValue": "Physical Object",
-            "typeName": "string",
-          },
-          Object {
-            "displayValue": "[0-39]",
-            "rawValue": Object {
-              "parts": Array [
-                Object {
-                  "displayValue": "[",
-                  "rawValue": "[",
-                  "typeName": "string",
-                },
-                Object {
-                  "displayValue": "0",
-                  "rawValue": "0",
-                  "typeName": "string",
-                },
-                Object {
-                  "displayValue": "-",
-                  "rawValue": "-",
-                  "typeName": "string",
-                },
-                Object {
-                  "displayValue": "39",
-                  "rawValue": "39",
-                  "typeName": "string",
-                },
-                Object {
-                  "displayValue": "]",
-                  "rawValue": "]",
-                  "typeName": "string",
-                },
-              ],
-              "separator": "",
-            },
-            "typeName": "composite",
-          },
-        ],
-        "separator": " ",
-      },
+      "value": "Physical Object [0-39]",
       "valueFormat": 0,
     },
   },
@@ -1603,11 +1570,10 @@ Object {
     },
   ],
   "description": "Physical Model",
-  "label": "Properties_60InstancesWithUrl2",
-  "labelDefinition": PropertyRecord {
+  "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
-      "name": "content_item_name",
+      "name": "label",
       "typename": "string",
     },
     "value": Object {
@@ -1652,11 +1618,10 @@ Object {
     },
   ],
   "description": "Physical Model",
-  "label": "Properties_60InstancesWithUrl2",
-  "labelDefinition": PropertyRecord {
+  "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
-      "name": "content_item_name",
+      "name": "label",
       "typename": "string",
     },
     "value": Object {

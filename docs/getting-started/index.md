@@ -64,9 +64,8 @@ You have a few options:
 
 <div id="step4"></div>
 
-**[Register Project Here](/getting-started/registration-dashboard?tab=1)**
-
 <script>
+
   // LaunchDarkly script for turning off last li in step 4.
   $(document).ready(function () {
     var show = ldclient.variation(featureFlags.CreateBlankProject);
@@ -99,7 +98,7 @@ An example of an *interactive application* which demonstrates how to:
 [iModel Query Agent](https://github.com/imodeljs/imodeljs-samples/tree/master/agent-app/query-agent)<br/>
 An example of an *agent application* which demonstrates how to:
 
-- Listen to changes made to an iModel on the iModelHub.
+- Listen to changes made to an iModel in iModelHub.
 - Construct a 'Change Summary' of useful information.
 
 <br/>

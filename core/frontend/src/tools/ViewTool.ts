@@ -6,30 +6,38 @@
  * @module Tools
  */
 
-import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities, Geometry, Constant, Arc3d, AngleSweep, Plane3dByOriginAndUnitNormal, XAndY } from "@bentley/geometry-core";
-import { ColorDef, Frustum, Npc, NpcCenter, LinePixels } from "@bentley/imodeljs-common";
-import { BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
-import { TentativeOrAccuSnap } from "../AccuSnap";
-import { IModelApp } from "../IModelApp";
-import { GraphicType } from "../render/GraphicBuilder";
-import { DecorateContext } from "../ViewContext";
-import { CoordSystem, ScreenViewport, Viewport, Animator, DepthPointSource } from "../Viewport";
-import { ViewRect } from "../ViewRect";
-import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
-import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InteractiveTool, CoreTools, BeModifierKeys, InputSource } from "./Tool";
-import { ToolSettings } from "./ToolSettings";
+import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import {
+  Angle, AngleSweep, Arc3d, ClipUtilities, Constant, Geometry, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range3d, Transform, Vector2d,
+  Vector3d, XAndY, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import { Cartographic, ColorDef, Frustum, LinePixels, Npc, NpcCenter } from "@bentley/imodeljs-common";
+import {
+  DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
+} from "@bentley/ui-abstract";
 import { AccuDraw } from "../AccuDraw";
+import { TentativeOrAccuSnap } from "../AccuSnap";
+import { BingLocationProvider } from "../BingLocation";
+import { IModelApp } from "../IModelApp";
+import { LengthDescription } from "../properties/LengthDescription";
+import { GraphicType } from "../render/GraphicBuilder";
 import { StandardViewId } from "../StandardView";
+import { DecorateContext } from "../ViewContext";
+import {
+  eyeToCartographicOnGlobe, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation, ViewGlobalLocationConstants,
+} from "../ViewGlobalLocation";
+import { Animator, CoordSystem, DepthPointSource, ScreenViewport, ViewChangeOptions, Viewport } from "../Viewport";
+import { ViewRect } from "../ViewRect";
+import { ViewState3d, ViewStatus } from "../ViewState";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { PropertyDescription } from "../properties/Description";
-import { PropertyEditorParamTypes, SuppressLabelEditorParams } from "../properties/EditorParams";
-import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
-import { LengthDescription } from "../properties/LengthDescription";
-import { PrimitiveValue } from "../properties/Value";
-import { ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "./ToolAssistance";
+import {
+  BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, CoreTools, EventHandled, InputSource, InteractiveTool,
+} from "./Tool";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { ToolSettings } from "./ToolSettings";
 
-// cSpell:ignore wasd arrowright arrowleft pagedown pageup arrowup arrowdown
+// cspell:ignore wasd, arrowright, arrowleft, pagedown, pageup, arrowup, arrowdown
 
 /** @internal */
 const enum ViewHandleWeight {
@@ -41,7 +49,7 @@ const enum ViewHandleWeight {
 }
 
 /** @internal */
-export const enum ViewHandleType {  // tslint:disable-line:no-const-enum
+export enum ViewHandleType {
   None = 0,
   Rotate = 1,
   TargetCenter = 1 << 1,
@@ -314,7 +322,7 @@ export abstract class ViewManip extends ViewTool {
       return;
 
     let origin = this._depthPreview.plane.getOriginRef();
-    let normal = (DepthPointSource.Model === this._depthPreview.source ? Vector3d.unitZ() : this._depthPreview.plane.getNormalRef());
+    let normal = this._depthPreview.plane.getNormalRef();
 
     if (this._depthPreview.isDefaultDepth) {
       origin = cursorVp.worldToView(origin); origin.z = 0.0; cursorVp.viewToWorld(origin, origin); // Avoid getting clipped out in z...
@@ -326,8 +334,8 @@ export abstract class ViewManip extends ViewTool {
     const rMatrix = Matrix3d.createRigidHeadsUp(normal);
     const ellipse = Arc3d.createScaledXYColumns(origin, rMatrix, radius, radius, AngleSweep.create360());
     const colorBase = (this._depthPreview.isDefaultDepth ? ColorDef.red : (DepthPointSource.Geometry === this._depthPreview.source ? ColorDef.green : context.viewport.hilite.color));
-    const colorLine = colorBase.adjustForContrast(cursorVp.view.backgroundColor); colorLine.setTransparency(50);
-    const colorFill = colorLine.clone(); colorFill.setTransparency(200);
+    const colorLine = colorBase.adjustedForContrast(cursorVp.view.backgroundColor).withTransparency(50);
+    const colorFill = colorLine.withTransparency(200);
 
     const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
     builder.setSymbology(colorLine, colorFill, 1, this._depthPreview.isDefaultDepth ? LinePixels.Code2 : LinePixels.Solid);
@@ -755,26 +763,51 @@ export abstract class ViewManip extends ViewTool {
     return (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
   }
 
-  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, marginPercent?: MarginPercent) {
+  /** @internal */
+  public static computeFitRange(viewport: ScreenViewport): Range3d {
     const range = viewport.computeViewRange();
-    const aspect = viewport.viewRect.aspect;
-
     const clip = (viewport.viewFlags.clipVolume ? viewport.view.getViewClip() : undefined);
     if (undefined !== clip) {
       const clipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clip, range);
       if (!clipRange.isNull)
         range.setFrom(clipRange);
     }
+    return range;
+  }
 
-    viewport.view.lookAtVolume(range, aspect, marginPercent);
+  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
+    const range = this.computeFitRange(viewport);
+    const aspect = viewport.viewRect.aspect;
+    viewport.view.lookAtVolume(range, aspect, options);
     viewport.synchWithView({ animateFrustumChange });
     viewport.viewCmdTargetCenter = undefined;
   }
 
-  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, animateFrustumChange: boolean, marginPercent?: MarginPercent): Promise<boolean> {
+  /** @internal */
+  public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
+    const range = this.computeFitRange(viewport);
+
+    if (animateFrustumChange && viewport.isCameraOn && viewport.viewingGlobe) {
+      const view3d = viewport.view as ViewState3d;
+      const cartographicCenter = view3d.rootToCartographic(range.center);
+      if (undefined !== cartographicCenter) {
+        const cartographicArea = rangeToCartographicArea(view3d, range);
+        viewport.animateFlyoverToGlobalLocation({ center: cartographicCenter, area: cartographicArea }); // NOTE: Turns on camera...which is why we checked that it was already on...
+        viewport.viewCmdTargetCenter = undefined;
+        return;
+      }
+    }
+
+    const aspect = viewport.viewRect.aspect;
+    viewport.view.lookAtVolume(range, aspect, options);
+    viewport.synchWithView({ animateFrustumChange });
+    viewport.viewCmdTargetCenter = undefined;
+  }
+
+  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, options?: ViewChangeOptions): Promise<boolean> {
     if (!viewport.isAlwaysDrawnExclusive || undefined === viewport.alwaysDrawn || 0 === viewport.alwaysDrawn.size)
       return false;
-    await viewport.zoomToElements(viewport.alwaysDrawn, { animateFrustumChange, marginPercent });
+    await viewport.zoomToElements(viewport.alwaysDrawn, options);
     return true;
   }
 
@@ -1095,7 +1128,7 @@ class ViewRotate extends HandleWithInertia {
     vp.worldToNpc(ev.rawPoint, this._anchorPtNpc);
     this._lastPtNpc.setFrom(this._anchorPtNpc);
 
-    vp.getWorldFrustum(this._activeFrustum);
+    vp.getFrustum(CoordSystem.World, false, this._activeFrustum);
     this._frustum.setFrom(this._activeFrustum);
 
     tool.beginDynamicUpdate();
@@ -1110,7 +1143,7 @@ class ViewRotate extends HandleWithInertia {
     if (this._anchorPtNpc.isAlmostEqual(ptNpc, 1.0e-2)) // too close to anchor pt
       ptNpc.setFrom(this._anchorPtNpc);
 
-    const currentFrustum = vp.getWorldFrustum();
+    const currentFrustum = vp.getFrustum(CoordSystem.World, false);
     const frustumChange = !currentFrustum.equals(this._activeFrustum);
     if (frustumChange)
       this._frustum.setFrom(currentFrustum);
@@ -1144,7 +1177,7 @@ class ViewRotate extends HandleWithInertia {
       const yDelta = (currPt.y - firstPt.y);
 
       // Movement in screen x == rotation about drawing Z (preserve up) or rotation about screen  Y...
-      const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotation.getRow(1);
+      const xAxis = ToolSettings.preserveWorldUp && !vp.viewingGlobe ? (undefined !== this._depthPoint ? vp.view.getUpVector(this._depthPoint) : Vector3d.unitZ()) : vp.rotation.getRow(1);
 
       // Movement in screen y == rotation about screen X...
       const yAxis = vp.rotation.getRow(0);
@@ -1188,6 +1221,11 @@ class ViewRotate extends HandleWithInertia {
 
   /** @internal */
   public adjustDepthPoint(isValid: boolean, vp: Viewport, plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean {
+    if (vp.viewingGlobe && this.viewTool.isPointVisible(vp.iModel.ecefLocation!.earthCenter)) {
+      plane.getOriginRef().setFrom(vp.iModel.ecefLocation!.earthCenter);
+      plane.getNormalRef().setFrom(vp.view.getZVector());
+      return true;
+    }
     if (super.adjustDepthPoint(isValid, vp, plane, source))
       return true;
     plane.getOriginRef().setFrom(this.viewTool.targetCenterWorld);
@@ -2608,11 +2646,231 @@ export class FitViewTool extends ViewTool {
   }
 
   public async doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, isolatedOnly = true): Promise<boolean> {
-    if (!isolatedOnly || !await ViewManip.zoomToAlwaysDrawnExclusive(viewport, doAnimate))
-      ViewManip.fitView(viewport, doAnimate);
+    if (!isolatedOnly || !await ViewManip.zoomToAlwaysDrawnExclusive(viewport, { animateFrustumChange: doAnimate }))
+      ViewManip.fitViewWithGlobeAnimation(viewport, doAnimate);
     if (oneShot)
       this.exitTool();
     return oneShot;
+  }
+}
+
+/** A tool that views a location on the background map from a satellite's perspective; the viewed location is derived from the position of the current camera's eye above the background map. Operates on the selected view.
+ * @beta
+ */
+export class ViewGlobeSatelliteTool extends ViewTool {
+  public static toolId = "View.GlobeSatellite";
+  // public static iconSpec = "icon-view-globe-satellite"; // ###TODO: need icon for this
+  public oneShot: boolean;
+  public doAnimate: boolean;
+  constructor(viewport: ScreenViewport, oneShot = true, doAnimate = true) {
+    super(viewport);
+    this.viewport = viewport;
+    this.oneShot = oneShot;
+    this.doAnimate = doAnimate;
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (ev.viewport)
+      return this._beginSatelliteView(ev.viewport, this.oneShot, this.doAnimate) ? EventHandled.Yes : EventHandled.No;
+
+    return EventHandled.No;
+  }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
+    if (viewport)
+      this._beginSatelliteView(viewport, this.oneShot, this.doAnimate);
+  }
+
+  private _beginSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
+    const carto = eyeToCartographicOnGlobe(viewport);
+    if (carto !== undefined) {
+      (async () => {
+        let elevationOffset = 0;
+        const elevation = await queryTerrainElevationOffset(viewport, carto);
+        if (elevation !== undefined)
+          elevationOffset = elevation;
+        return this._doSatelliteView(viewport, oneShot, doAnimate, elevationOffset);
+      })().catch();
+    }
+    return true;
+  }
+
+  private _doSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, elevationOffset = 0): boolean {
+    viewGlobalLocation(viewport, doAnimate, ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters + elevationOffset);
+    if (oneShot)
+      this.exitTool();
+    return oneShot;
+  }
+}
+
+/** A tool that views a location on the background map from a bird's eye perspective; the viewed location is derived from the position of the current camera's eye above the background map. Operates on the selected view.
+ * @beta
+ */
+export class ViewGlobeBirdTool extends ViewTool {
+  public static toolId = "View.GlobeBird";
+  // public static iconSpec = "icon-view-globe-bird"; // ###TODO: need icon for this
+  public oneShot: boolean;
+  public doAnimate: boolean;
+  constructor(viewport: ScreenViewport, oneShot = true, doAnimate = true) {
+    super(viewport);
+    this.viewport = viewport;
+    this.oneShot = oneShot;
+    this.doAnimate = doAnimate;
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (ev.viewport)
+      return this._beginDoBirdView(ev.viewport, this.oneShot, this.doAnimate) ? EventHandled.Yes : EventHandled.No;
+
+    return EventHandled.No;
+  }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
+    if (viewport)
+      this._beginDoBirdView(viewport, this.oneShot, this.doAnimate);
+  }
+
+  private _beginDoBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
+    const carto = eyeToCartographicOnGlobe(viewport);
+    if (carto !== undefined) {
+      (async () => {
+        let elevationOffset = 0;
+        const elevation = await queryTerrainElevationOffset(viewport, carto);
+        if (elevation !== undefined)
+          elevationOffset = elevation;
+        return this._doBirdView(viewport, oneShot, doAnimate, elevationOffset);
+      })().catch();
+    }
+    return true;
+  }
+
+  private _doBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, elevationOffset = 0): boolean {
+    viewGlobalLocation(viewport, doAnimate, ViewGlobalLocationConstants.birdHeightAboveEarthInMeters + elevationOffset, ViewGlobalLocationConstants.birdPitchAngleRadians);
+    if (oneShot)
+      this.exitTool();
+    return oneShot;
+  }
+}
+
+/** A tool that views a location on the background map corresponding to a specified string.
+ * This will either look down at the location using a bird's eye height, or, if a range is available, the entire range corresponding to the location will be viewed.
+ * Operates on the selected view.
+ * @beta
+ */
+export class ViewGlobeLocationTool extends ViewTool {
+  private _globalLocation?: GlobalLocation;
+
+  public static toolId = "View.GlobeLocation";
+  // public static iconSpec = "icon-view-globe-location"; // ###TODO: need icon for this
+  public oneShot: boolean;
+  public doAnimate: boolean;
+  constructor(viewport: ScreenViewport, oneShot = true, doAnimate = true) {
+    super(viewport);
+    this.viewport = viewport;
+    this.oneShot = oneShot;
+    this.doAnimate = doAnimate;
+  }
+
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return undefined; }
+
+  // arguments: latitude longitude | string
+  // the latitude and longitude arguments are specified in degrees
+  public parseAndRun(...args: string[]): boolean {
+    if (2 === args.length) { // try to parse latitude and longitude
+      const latitude = parseFloat(args[0]);
+      const longitude = parseFloat(args[1]);
+      if (!Number.isNaN(latitude) || !Number.isNaN(longitude)) {
+        const center = Cartographic.fromRadians(Angle.degreesToRadians(longitude), Angle.degreesToRadians(latitude));
+        this._globalLocation = { center };
+      }
+    }
+
+    if (this._globalLocation === undefined) {
+      const locationString = args.join(" ");
+      const bingLocationProvider = new BingLocationProvider();
+      (async () => {
+        this._globalLocation = await bingLocationProvider.getLocation(locationString);
+        if (this._globalLocation !== undefined) {
+          const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
+          if (viewport !== undefined) {
+            const elevationOffset = await queryTerrainElevationOffset(viewport, this._globalLocation.center);
+            if (elevationOffset !== undefined)
+              this._globalLocation.center.height = elevationOffset;
+          }
+          this._doLocationView();
+        }
+      })().catch();
+    }
+
+    if (this._globalLocation !== undefined)
+      return this.run();
+    return true;
+  }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    this._doLocationView();
+  }
+
+  private _doLocationView(): boolean {
+    const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
+    if (viewport) {
+      if (undefined !== this._globalLocation)
+        viewport.animateFlyoverToGlobalLocation(this._globalLocation);
+    }
+    if (this.oneShot)
+      this.exitTool();
+    return this.oneShot;
+  }
+}
+
+/** A tool that views the current iModel on the background map so that the extent of the project is visible. Operates on the selected view.
+ * @beta
+ */
+export class ViewGlobeIModelTool extends ViewTool {
+  public static toolId = "View.GlobeIModel";
+  // public static iconSpec = "icon-view-globe-imodel"; // ###TODO: need icon for this
+  public oneShot: boolean;
+  public doAnimate: boolean;
+  constructor(viewport: ScreenViewport, oneShot = true, doAnimate = true) {
+    super(viewport);
+    this.viewport = viewport;
+    this.oneShot = oneShot;
+    this.doAnimate = doAnimate;
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (ev.viewport)
+      return this._doIModelView() ? EventHandled.Yes : EventHandled.No;
+
+    return EventHandled.No;
+  }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    this._doIModelView();
+  }
+
+  private _doIModelView(): boolean {
+    const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
+    if (viewport && (viewport.view instanceof ViewState3d)) {
+      const extents = viewport.view.iModel.projectExtents;
+      const center = viewport.view.iModel.projectExtents.center;
+      const view3d = viewport.view as ViewState3d;
+      const cartographicCenter = view3d.rootToCartographic(center);
+      if (cartographicCenter !== undefined) {
+        const cartographicArea = rangeToCartographicArea(view3d, extents);
+        viewport.animateFlyoverToGlobalLocation({ center: cartographicCenter, area: cartographicArea });
+      }
+    }
+    if (this.oneShot)
+      this.exitTool();
+    return this.oneShot;
   }
 }
 
@@ -2832,6 +3090,10 @@ export class WindowAreaTool extends ViewTool {
     const view = vp.view;
     vp.viewToWorldArray(corners);
 
+    const opts: ViewChangeOptions = {
+      onExtentsError: (stat) => view.outputStatusMessage(stat),
+    };
+
     if (view.isCameraEnabled()) {
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
       vp.worldToViewArray(windowArray);
@@ -2859,24 +3121,26 @@ export class WindowAreaTool extends ViewTool {
       const newTarget = corners[0].interpolate(.5, corners[1]);
       const newEye = newTarget.plusScaled(view.getZVector(), focusDist);
 
-      if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle))
+      if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle, undefined, undefined, opts))
         return;
     } else {
-      vp.rotation.multiplyVectorArrayInPlace(corners);
+      const rot = vp.rotation;
+      rot.multiplyVectorArrayInPlace(corners);
 
       const range = Range3d.createArray(corners);
       delta = Vector3d.createStartEnd(range.low, range.high);
       // get the view extents
       delta.z = view.getExtents().z;
 
+      const originVec = rot.multiplyTransposeXYZ(range.low.x, range.low.y, range.low.z);
+
       // make sure its not too big or too small
-      if (ViewStatus.Success !== view.validateViewDelta(delta, true))
+      const stat = view.adjustViewDelta(delta, originVec, rot, vp.viewRect.aspect, opts);
+      if (stat !== ViewStatus.Success)
         return;
 
       view.setExtents(delta);
-
-      const originVec = vp.rotation.multiplyTransposeXYZ(range.low.x, range.low.y, range.low.z);
-      view.setOrigin(Point3d.createFrom(originVec));
+      view.setOrigin(originVec);
     }
 
     vp.synchWithView({ animateFrustumChange: true });
@@ -2898,6 +3162,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   private _duration!: BeDuration;
   private _end!: BeTimePoint;
   private _hasZoom = false;
+  private _rotate2dDisabled = false;
+  private _rotate2dThreshold?: Angle;
 
   /** Move this handle during the inertia duration */
   public animate(): boolean {
@@ -2942,6 +3208,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
       this._startPtView.z = vp.worldToView(ViewManip.getDefaultTargetPointWorld(vp)).z;
       vp.viewToWorld(this._startPtView, this._startPtWorld);
     }
+    this._rotate2dDisabled = false;
+    this._rotate2dThreshold = undefined;
     this._lastPtView.setFrom(this._startPtView);
     this._startTouchCount = ev.touchCount;
     this._startDirection = (2 <= ev.touchCount ? Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp)) : Vector2d.createZero());
@@ -2966,26 +3234,31 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   }
 
   private computeRotation(ev?: BeTouchEvent): Angle {
-    if (undefined === ev || ev.touchCount < 2)
+    if (undefined === ev || ev.touchCount < 2 || this._rotate2dDisabled)
       return Angle.createDegrees(0.0);
 
     const vp = this.viewport!;
     const direction = Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp));
     const rotation = this._startDirection.angleTo(direction);
-    const threshold = Angle.createDegrees(5.0);
 
-    if (Math.abs(rotation.radians) < threshold.radians)
-      return Angle.createDegrees(0.0);
+    if (undefined === this._rotate2dThreshold) {
+      if (Math.abs(rotation.radians) < Angle.createDegrees(5.0).radians)
+        return Angle.createDegrees(0.0); // Check against threshold until sufficient rotation is detected...
 
-    const angularDistance = Math.abs(direction.magnitude() / 2.0 * Math.sin(Math.abs(rotation.radians)));
-    const zoomDistance = Math.abs(direction.magnitude() - this._startDirection.magnitude());
-    const panDistance = this._startPtView.distanceXY(this._lastPtView);
+      const angularDistance = Math.abs(direction.magnitude() / 2.0 * Math.sin(Math.abs(rotation.radians)));
+      const zoomDistance = Math.abs(direction.magnitude() - this._startDirection.magnitude());
+      const panDistance = this._startPtView.distanceXY(this._lastPtView);
 
-    // NOTE: The * 0.75 below is because it's easy to confuse an attempted rotate for an attempted pan, and this tries to balance that without having a false positive in the opposite direction.
-    if (angularDistance > zoomDistance && angularDistance > (panDistance * 0.75))
-      return Angle.createRadians(rotation.radians > 0 ? rotation.radians - threshold.radians : rotation.radians + threshold.radians); // Avoid jump when starting rotation...
+      // NOTE: The * 0.75 below is because it's easy to confuse an attempted rotate for an attempted pan or zoom, and this tries to balance that without having a false positive in the opposite direction.
+      if (angularDistance < (zoomDistance * 0.75) || angularDistance < (panDistance * 0.75)) {
+        this._rotate2dDisabled = true; // Restrict subsequent view changes to pan and zoom only...
+        return Angle.createDegrees(0.0);
+      }
 
-    return Angle.createDegrees(0.0);
+      this._rotate2dThreshold = Angle.createRadians(-rotation.radians);
+    }
+
+    return Angle.createRadians(rotation.radians + this._rotate2dThreshold.radians); // Avoid jump when starting rotation...
   }
 
   private handle2dPan() {
@@ -3184,7 +3457,7 @@ export class ViewToggleCameraTool extends ViewTool {
   }
 }
 
-/** A tool that sets the view camera by two points. This is a PrimitiveTool and not a ViewTool to allow the view to panned, zoomed, and rotated while defining the points.
+/** A tool that sets the view camera by two points. This is a PrimitiveTool and not a ViewTool to allow the view to be panned, zoomed, and rotated while defining the points.
  * To show tool settings for specifying camera and target heights above the snap point, make sure formatting and parsing data are cached before the tool starts
  * by calling QuantityFormatter.onInitialized at app startup.
  * @alpha
@@ -3333,7 +3606,7 @@ export class SetupCameraTool extends PrimitiveTool {
     context.addDecorationFromBuilder(builderHid);
 
     const backColor = ColorDef.from(0, 0, 255, 200);
-    const sideColor = context.viewport.hilite.color.clone(); sideColor.setAlpha(25);
+    const sideColor = context.viewport.hilite.color.withAlpha(25);
     const builderVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
 
     builderVis.setSymbology(color, color, ViewHandleWeight.Normal);
@@ -3375,7 +3648,7 @@ export class SetupCameraTool extends PrimitiveTool {
     vp.synchWithView();
   }
 
-  private _useCameraHeightValue = new ToolSettingsValue(false);
+  private _useCameraHeightValue: DialogItemValue = { value: false };
   public get useCameraHeight(): boolean { return this._useCameraHeightValue.value as boolean; }
   public set useCameraHeight(option: boolean) { this._useCameraHeightValue.value = option; }
   private static _useCameraHeightName = "useCameraHeight";
@@ -3395,7 +3668,7 @@ export class SetupCameraTool extends PrimitiveTool {
     };
   }
 
-  private _useTargetHeightValue = new ToolSettingsValue(false);
+  private _useTargetHeightValue: DialogItemValue = { value: false };
   public get useTargetHeight(): boolean { return this._useTargetHeightValue.value as boolean; }
   public set useTargetHeight(option: boolean) { this._useTargetHeightValue.value = option; }
   private static _useTargetHeightName = "useTargetHeight";
@@ -3414,7 +3687,7 @@ export class SetupCameraTool extends PrimitiveTool {
     };
   }
 
-  private _cameraHeightValue = new ToolSettingsValue(0.0);
+  private _cameraHeightValue: DialogItemValue = { value: 0.0 };
   public get cameraHeight(): number { return this._cameraHeightValue.value as number; }
   public set cameraHeight(option: number) { this._cameraHeightValue.value = option; }
   private static _cameraHeightName = "cameraHeight";
@@ -3425,7 +3698,7 @@ export class SetupCameraTool extends PrimitiveTool {
     return SetupCameraTool._cameraHeightDescription;
   }
 
-  private _targetHeightValue = new ToolSettingsValue(0.0);
+  private _targetHeightValue: DialogItemValue = { value: 0.0 };
   public get targetHeight(): number { return this._targetHeightValue.value as number; }
   public set targetHeight(option: number) { this._targetHeightValue.value = option; }
   private static _targetHeightName = "targetHeight";
@@ -3437,20 +3710,18 @@ export class SetupCameraTool extends PrimitiveTool {
   }
 
   private syncCameraHeightState(): void {
-    const cameraHeightValue = new ToolSettingsValue(this.cameraHeight);
-    cameraHeightValue.displayValue = SetupCameraTool._cameraHeightDescription!.format(cameraHeightValue.value as number);
-    const syncItem: ToolSettingsPropertySyncItem = { value: cameraHeightValue, propertyName: SetupCameraTool._cameraHeightName, isDisabled: !this.useCameraHeight };
+    const cameraHeightValue = { value: this.cameraHeight, displayValue: SetupCameraTool._cameraHeightDescription!.format(this.cameraHeight) };
+    const syncItem: DialogPropertySyncItem = { value: cameraHeightValue, propertyName: SetupCameraTool._cameraHeightName, isDisabled: !this.useCameraHeight };
     this.syncToolSettingsProperties([syncItem]);
   }
 
   private syncTargetHeightState(): void {
-    const targetHeightValue = new ToolSettingsValue(this.targetHeight);
-    targetHeightValue.displayValue = SetupCameraTool._targetHeightDescription!.format(targetHeightValue.value as number);
-    const syncItem: ToolSettingsPropertySyncItem = { value: targetHeightValue, propertyName: SetupCameraTool._targetHeightName, isDisabled: !this.useTargetHeight };
+    const targetHeightValue = { value: this.targetHeight, displayValue: SetupCameraTool._cameraHeightDescription!.format(this.targetHeight) };
+    const syncItem: DialogPropertySyncItem = { value: targetHeightValue, propertyName: SetupCameraTool._targetHeightName, isDisabled: !this.useTargetHeight };
     this.syncToolSettingsProperties([syncItem]);
   }
 
-  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
     if (updatedValue.propertyName === SetupCameraTool._useCameraHeightName) {
       this.useCameraHeight = updatedValue.value.value as boolean;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SetupCameraTool._useCameraHeightName, value: this._useCameraHeightValue });
@@ -3469,7 +3740,7 @@ export class SetupCameraTool extends PrimitiveTool {
     return true;
   }
 
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+  public supplyToolSettingsProperties(): DialogItem[] | undefined {
     IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperties(this.toolId, [
       { propertyName: SetupCameraTool._useCameraHeightName, value: this._useCameraHeightValue },
       { propertyName: SetupCameraTool._cameraHeightName, value: this._cameraHeightValue },
@@ -3477,11 +3748,12 @@ export class SetupCameraTool extends PrimitiveTool {
       { propertyName: SetupCameraTool._targetHeightName, value: this._targetHeightValue },
     ]);
 
-    const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._useCameraHeightValue.clone() as PrimitiveValue, SetupCameraTool._getUseCameraHeightDescription(), { rowPriority: 1, columnIndex: 0 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._cameraHeightValue.clone() as PrimitiveValue, this._getCameraHeightDescription(), { rowPriority: 1, columnIndex: 2 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._useTargetHeightValue.clone() as PrimitiveValue, SetupCameraTool._getUseTargetHeightDescription(), { rowPriority: 2, columnIndex: 0 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._targetHeightValue.clone() as PrimitiveValue, this._getTargetHeightDescription(), { rowPriority: 2, columnIndex: 2 }));
+    const useCameraHeight = { value: this._useCameraHeightValue, property: SetupCameraTool._getUseCameraHeightDescription() };
+    const useTargetHeight = { value: this._useTargetHeightValue, property: SetupCameraTool._getUseTargetHeightDescription() };
+
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push({ value: this._cameraHeightValue, property: this._getCameraHeightDescription(), editorPosition: { rowPriority: 1, columnIndex: 2 }, lockProperty: useCameraHeight });
+    toolSettings.push({ value: this._targetHeightValue, property: this._getTargetHeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 2 }, lockProperty: useTargetHeight });
     return toolSettings;
   }
 }

@@ -50,6 +50,8 @@ PhysicalTypes are often used when a particular PhysicalElement can be ordered fr
 PhysicalTypes can provide geometry and properties to the PhysicalElements to which they are related.
 Each PhysicalElement can be related to a maximum of one PhysicalType.
 
+See [Type Definitions](./type-definitions.md).
+
 ## PhysicalModels
 
 Each PhysicalElement is contained in exactly one PhysicalModel. A PhysicalModel is a container of PhysicalElements (and potentially related Elements of other classes) that together model some real-world physical entity. For example, a PhysicalModel might model a campus, a building, a sewer system or a pipe rack.
@@ -88,5 +90,5 @@ As discussed in [Modeling with BIS](./modeling-with-bis.md), there are many enti
 -->
 
 ---
-| Next: [Functional Models and Elements](./functional-models-and-elements.md)
+| Next: [Type Definitions](./type-definitions.md)
 |:---

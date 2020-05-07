@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { HierarchyBuilder, ContentBuilder, ContentBuilderResult } from "@bentley/presentation-testing";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { initialize, terminate } from "../IntegrationTests";
 import * as ChaiJestSnapshot from "chai-jest-snapshot";
 import path from "path";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ChildNodeSpecificationTypes, ContentSpecificationTypes, RelationshipDirection, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { ContentBuilder, ContentBuilderResult, HierarchyBuilder } from "@bentley/presentation-testing";
+import { initialize, terminate } from "../IntegrationTests";
 
 function configureSnapshotLocation(test: Mocha.Runnable, subdirectory: string, instance: ContentBuilderResult) {
   let fileName = path.join(
@@ -30,34 +31,135 @@ describe("RulesetTesting", () => {
     await initialize();
   });
 
-  after(() => {
+  after(async () => {
     // terminate presentation-testing
-    terminate();
+    await terminate();
   });
 
   beforeEach(async () => {
     // set up for testing imodel presentation data
-    imodel = await IModelConnection.openSnapshot(imodelPath);
+    imodel = await SnapshotConnection.openFile(imodelPath);
   });
 
   afterEach(async () => {
-    await imodel.closeSnapshot();
+    await imodel.close();
   });
 
-  it("generates correct hierarchy for 'Items' ruleset", async () => {
-    const builder = new HierarchyBuilder(imodel);
+  it("generates correct hierarchy", async () => {
+    const ruleset: Ruleset = {
+      id: "test",
+      rules: [{
+        ruleType: RuleTypes.RootNodes,
+        autoExpand: true,
+        specifications: [{
+          specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+          classes: [{
+            schemaName: "BisCore",
+            classNames: ["Subject"],
+          }],
+          instanceFilter: "this.Parent = NULL",
+          arePolymorphic: false,
+          groupByClass: false,
+          groupByLabel: false,
+        }],
+      }, {
+        ruleType: RuleTypes.ChildNodes,
+        condition: "ParentNode.IsOfClass(\"Subject\", \"BisCore\")",
+        onlyIfNotHandled: true,
+        specifications: [{
+          specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
+          relationshipPaths: [{
+            relationship: {
+              schemaName: "BisCore",
+              className: "SubjectOwnsSubjects",
+            },
+            direction: RelationshipDirection.Forward,
+          }],
+          groupByClass: false,
+          groupByLabel: false,
+        }, {
+          specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+          classes: {
+            schemaName: "BisCore",
+            classNames: ["Model"],
+          },
+          arePolymorphic: true,
+          relatedInstances: [{
+            relationshipPath: {
+              relationship: {
+                schemaName: "BisCore",
+                className: "ModelModelsElement",
+              },
+              direction: RelationshipDirection.Forward,
+              targetClass: {
+                schemaName: "BisCore",
+                className: "InformationPartitionElement",
+              },
+            },
+            alias: "partition",
+            isRequired: true,
+          }],
+          instanceFilter: "partition.Parent.Id = parent.ECInstanceId AND NOT this.IsPrivate",
+          groupByClass: false,
+          groupByLabel: false,
+        }],
+      }, {
+        ruleType: RuleTypes.ChildNodes,
+        condition: "ParentNode.IsOfClass(\"Model\", \"BisCore\")",
+        onlyIfNotHandled: true,
+        specifications: [{
+          specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
+          relationshipPaths: [{
+            relationship: {
+              schemaName: "BisCore",
+              className: "ModelContainsElements",
+            },
+            direction: RelationshipDirection.Forward,
+          }],
+          instanceFilter: "this.Parent = NULL",
+          groupByClass: false,
+          groupByLabel: false,
+        }],
+      }, {
+        ruleType: RuleTypes.ChildNodes,
+        condition: "ParentNode.IsOfClass(\"Element\", \"BisCore\")",
+        onlyIfNotHandled: true,
+        specifications: [{
+          specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
+          relationshipPaths: [{
+            relationship: {
+              schemaName: "BisCore",
+              className: "ElementOwnsChildElements",
+            },
+            direction: RelationshipDirection.Forward,
+          }],
+          groupByClass: false,
+          groupByLabel: false,
+        }],
+      }],
+    };
+    const builder = new HierarchyBuilder({ imodel });
     // generate the hierarchy using a ruleset id
-    const hierarchy = await builder.createHierarchy("Items");
+    const hierarchy = await builder.createHierarchy(ruleset);
     // verify through snapshot
     expect(hierarchy).to.matchSnapshot();
   });
 
   // VSTS#156270
   // tslint:disable-next-line:only-arrow-functions
-  it.skip("generates correct content for 'Items' ruleset", async function () {
-    const builder = new ContentBuilder(imodel);
+  it.skip("generates correct content", async function () {
+    const ruleset: Ruleset = {
+      id: "test",
+      rules: [{
+        ruleType: RuleTypes.Content,
+        specifications: [{
+          specType: ContentSpecificationTypes.SelectedNodeInstances,
+        }],
+      }],
+    };
+    const builder = new ContentBuilder({ imodel });
     // generate content using ruleset id
-    const instances = await builder.createContentForInstancePerClass("Items");
+    const instances = await builder.createContentForInstancePerClass(ruleset);
 
     // verify through snapshot
     // we loop through each instance and create a separate snapshot file
@@ -68,16 +170,6 @@ describe("RulesetTesting", () => {
       configureSnapshotLocation(this.test!, "ruleset-testing-content-snaps", instance);
       expect(instance.records).to.matchSnapshot();
     }
-  });
-
-  it("generates correct hierarchy for 'default' ruleset", async () => {
-    const builder = new HierarchyBuilder(imodel);
-    // import ruleset from file
-    const ruleset = require("../../test-rulesets/Rulesets/default.json");
-    // generate the hierarchy
-    const hierarchy = await builder.createHierarchy(ruleset);
-    // verify through snapshot
-    expect(hierarchy).to.matchSnapshot();
   });
 
 });

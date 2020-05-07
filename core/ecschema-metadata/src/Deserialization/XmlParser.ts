@@ -4,23 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@bentley/bentleyjs-core";
-
-import { AbstractParser, CAProviderTuple } from "./AbstractParser";
-import {
-  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps,
-  MixinProps, NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps, PrimitivePropertyProps, PropertyCategoryProps,
-  PropertyProps, RelationshipClassProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructPropertyProps, UnitProps, SchemaItemProps, ClassProps, StructClassProps, EnumeratorProps,
-  UnitSystemProps,
-  RelationshipConstraintProps,
-} from "./JsonProps";
+import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { ECName } from "../SchemaKey";
+import { ECClass, StructClass } from "../Metadata/Class";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
-import { PrimitiveProperty, Property, StructArrayProperty } from "../Metadata/Property";
-import { PrimitiveType, primitiveTypeToString, parsePrimitiveType, StrengthDirection, strengthDirectionToString } from "../ECObjects";
-import { ECClass, StructClass } from "../Metadata/Class";
 import { Enumeration } from "../Metadata/Enumeration";
+import { PrimitiveProperty, Property, StructArrayProperty } from "../Metadata/Property";
+import { ECName } from "../SchemaKey";
+import { AbstractParser, CAProviderTuple } from "./AbstractParser";
+import {
+  ClassProps, ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, EnumeratorProps, FormatProps, InvertedUnitProps,
+  KindOfQuantityProps, MixinProps, NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,
+  PrimitivePropertyProps, PropertyCategoryProps, PropertyProps, RelationshipClassProps, RelationshipConstraintProps, SchemaItemProps, SchemaProps,
+  SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitProps, UnitSystemProps,
+} from "./JsonProps";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
 const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";
@@ -1094,10 +1092,8 @@ export class XmlParser extends AbstractParser<Element> {
     // for now.  Need to review with IModelJs.
     switch (primitiveType) {
       case PrimitiveType.String:
-      /** TODO - Currently treated as strings */
-      case PrimitiveType.Binary:
-      /** TODO - Currently treated as strings */
-      case PrimitiveType.IGeometry:
+      case PrimitiveType.Binary: /** TODO - Currently treated as strings */
+      case PrimitiveType.IGeometry: /** TODO - Currently treated as strings */
         return propElement.textContent;
       case PrimitiveType.DateTime:
         return this.getDatePropertyValue(propElement.textContent, propElement.tagName);

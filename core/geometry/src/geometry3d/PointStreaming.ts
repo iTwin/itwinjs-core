@@ -7,12 +7,13 @@
  * @module CartesianGeometry
  */
 
+import { LineStringDataVariant, MultiLineStringDataVariant } from "../topology/Triangulation";
+import { GrowableXYZArray } from "./GrowableXYZArray";
+import { IndexedXYZCollection } from "./IndexedXYZCollection";
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { Point3d } from "./Point3dVector3d";
-import { MultiLineStringDataVariant, LineStringDataVariant } from "../topology/Triangulation";
-import { IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Range3d } from "./Range";
-import { GrowableXYZArray } from "./GrowableXYZArray";
+
 //
 // remarks: point array variants . . .
 //  * [[x,y,z], ...]

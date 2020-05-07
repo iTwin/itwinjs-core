@@ -1,18 +1,28 @@
 {
   "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
   "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
     "skipLibCheck": true,
+    "outDir": "./lib",
+    "jsx": "react",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "esnext",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "baseUrl": "./node_modules",
-    "outDir": "./lib"
+    "isolatedModules": true,
+    "noEmit": true,
+    "types": [
+      "@bentley/react-scripts"
+    ]
   },
   "include": [
-    "./**/*.ts",
-    "./**/*.tsx"
+    "./src/**/*.ts",
+    "./src/**/*.tsx"
   ],
   "exclude": [
-    "lib",
-    "node_modules",
-    "test"
+    "./src/backend/**/*.ts"
   ]
 }

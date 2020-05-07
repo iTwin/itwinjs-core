@@ -7,35 +7,16 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Range3d, Point2d } from "@bentley/geometry-core";
+import { Point2d, Range3d } from "@bentley/geometry-core";
 import {
-  QPoint3dList,
-  MeshPolyline,
-  MeshEdges,
-  QParams3d,
-  Feature,
-  FeatureTable,
-  FeatureIndex,
-  FeatureIndexType,
-  OctEncodedNormal,
-  MeshPolylineList,
-  PolylineFlags,
-  LinePixels,
-  ColorIndex,
-  PolylineData,
-  SilhouetteEdgeArgs,
-  RenderTexture,
-  RenderMaterial,
-  EdgeArgs,
-  PolylineEdgeArgs,
-  FillFlags,
-  // QPoint3d,
+  ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
+  OctEncodedNormal, PolylineData, PolylineEdgeArgs, PolylineFlags, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SilhouetteEdgeArgs,
 } from "@bentley/imodeljs-common";
-import { DisplayParams } from "../DisplayParams";
-import { ColorMap } from "../ColorMap";
 import { InstancedGraphicParams } from "../../InstancedGraphicParams";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
+import { ColorMap } from "../ColorMap";
+import { DisplayParams } from "../DisplayParams";
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
 
@@ -321,7 +302,7 @@ export class Mesh {
 
 /** @internal */
 export namespace Mesh {
-  export const enum PrimitiveType { // tslint:disable-line:no-const-enum
+  export enum PrimitiveType {
     Mesh,
     Polyline,
     Point,

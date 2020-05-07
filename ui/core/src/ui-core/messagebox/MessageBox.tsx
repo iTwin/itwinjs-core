@@ -6,10 +6,9 @@
  * @module Dialog
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-
 import "./MessageBox.scss";
+import classnames from "classnames";
+import * as React from "react";
 import { Dialog, DialogButtonDef } from "../dialog/Dialog";
 import { CommonProps } from "../utils/Props";
 
@@ -125,7 +124,7 @@ export class MessageContainer extends React.PureComponent<MessageContainerProps>
         iconClassName = hollow ? "icon-status-error-hollow" : "icon-status-error" + " core-message-box-error";
         break;
       case MessageSeverity.Fatal:
-        iconClassName = hollow ? "icon-status-rejected-hollow" : "icon-status-rejected" + " core-message-box-fatal";
+        iconClassName = hollow ? "icon-status-rejected" : "icon-status-rejected" + " core-message-box-fatal";
         break;
     }
 

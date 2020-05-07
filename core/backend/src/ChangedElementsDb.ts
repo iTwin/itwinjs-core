@@ -6,13 +6,17 @@
  * @module ChangedElementsDb
  */
 
+import * as path from "path";
 import { DbResult, GuidString, IDisposable, OpenMode } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ChangeSet, ChangesType } from "@bentley/imodeljs-clients";
+import { ChangeSet } from "@bentley/imodelhub-client";
 import { ChangeData, ChangedElements, ChangedModels, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import * as path from "path";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { BriefcaseManager, ChangeSetToken } from "./BriefcaseManager";
+import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
+import { ECDbOpenMode } from "./ECDb";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
-import { BriefcaseManager, ChangeSetToken, ChangeSummaryExtractContext, ChangeSummaryManager, ECDbOpenMode, IModelDb } from "./imodeljs-backend";
 
 /** An ChangedElementsDb file
  * @internal
@@ -37,7 +41,7 @@ export class ChangedElementsDb implements IDisposable {
     const changeSetTokens = new Array<ChangeSetToken>();
     changeSets.forEach((changeSet: ChangeSet) => {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
-      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType === ChangesType.Schema, changeSet.pushDate));
+      changeSetTokens.push(new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!, changeSet.pushDate));
     });
     return changeSetTokens;
   }
@@ -96,12 +100,12 @@ export class ChangedElementsDb implements IDisposable {
    * @param rulesetDir [optional] Directories string for ruleset directory locater
    * @param tempDir [optional] Directory to use to store temporary Db used to do processing. This Db is cleaned up automatically unless the process crashes.
    */
-  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult> {
+  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult> {
     requestContext.enter();
     const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
     const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, startChangesetId, endChangesetId);
     requestContext.enter();
-    const tokens = ChangedElementsDb.buildChangeSetTokens(changesets, BriefcaseManager.getChangeSetsPath(briefcase.iModelToken.iModelId!));
+    const tokens = ChangedElementsDb.buildChangeSetTokens(changesets, BriefcaseManager.getChangeSetsPath(briefcase.iModelId));
     // ChangeSets need to be processed from newest to oldest
     tokens.reverse();
     const status: DbResult = this.nativeDb.processChangesets(briefcase.nativeDb, JSON.stringify(tokens), rulesetId, !!filterSpatial ? filterSpatial : false, rulesetDir, tempDir);

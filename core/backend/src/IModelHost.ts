@@ -6,13 +6,14 @@
  * @module IModelHost
  */
 
-import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Guid, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext, Config, IAuthorizationClient, IModelClient, UrlDiscoveryClient, UserInfo } from "@bentley/imodeljs-clients";
-import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
+import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { IModelClient } from "@bentley/imodelhub-client";
+import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BackendRequestContext } from "./BackendRequestContext";
@@ -22,18 +23,21 @@ import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, 
 import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
+import { IElementEditor } from "./ElementEditor";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
+import { Editor3dRpcImpl } from "./rpc-impl/EditorRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
-import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { NativeAppRpcImpl } from "./rpc-impl/NativeAppRpcImpl";
+import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
-import { IElementEditor } from "./ElementEditor";
-import { Editor3dRpcImpl } from "./rpc-impl/EditorRpcImpl";
+
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
+
+// cspell:ignore nodereport fatalerror apicall alicloud rpcs
 
 /** @alpha */
 export interface CrashReportingConfigNameValuePair {
@@ -82,6 +86,7 @@ export interface EventSinkOptions {
 export enum ApplicationType {
   WebAgent,
   WebApplicationBackend,
+  NativeApp,
 }
 
 /** Configuration of imodeljs-backend.
@@ -91,13 +96,30 @@ export class IModelHostConfiguration {
   /** The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically. */
   public nativePlatform?: any;
 
-  private _briefcaseCacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"));
-
-  /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/iModels/")`
-   * If overriding this, ensure it's set to a folder with complete access - it may have to be deleted and recreated.
+  /**
+   * Root of the directory holding all the files that iModel.js caches
+   * - If not specified at startup a platform specific default is used -
+   *   - Windows: $(HOMEDIR)/AppData/Local/iModelJs/
+   *   - Mac/iOS: $(HOMEDIR)/Library/Caches/iModelJs/
+   *   - Linux:   $(HOMEDIR)/.cache/iModelJs/
+   *   where $(HOMEDIR) is documented [here](https://nodejs.org/api/os.html#os_os_homedir)
+   * - if specified, ensure it is set to a folder with read/write access.
+   * - Sub-folders within this folder organize various caches -
+   *   - bc/ -> Briefcases
+   *   - appSettings/ -> Offline application settings (only relevant in native applications)
+   *   - etc.
+   * @see [[IModelHost.cacheDir]] for the value it's set to after startup
    */
-  public get briefcaseCacheDir(): string { return this._briefcaseCacheDir; }
-  public set briefcaseCacheDir(cacheDir: string) { this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep)); }
+  public cacheDir?: string;
+
+  /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/iModelJs/cache/")`
+   * If overriding this, ensure it's set to a folder with complete access - it may have to be deleted and recreated.
+   * @deprecated Use [[IModelHostConfiguration.cacheDir]] instead to specify the root of all caches.
+   * - Using this new option will cause a new cache structure and invalidate existing caches - i.e., the cache will be
+   *   re-created in a new location on disk, and the existing cache may have to be manually cleaned out.
+   * - If [[IModelHostConfiguration.cacheDir]] is also specified, this setting will take precedence for the briefcase cache
+   */
+  public briefcaseCacheDir?: string;
 
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
@@ -171,7 +193,7 @@ export class IModelHostConfiguration {
     useUncommittedRead: false,
     quota: {
       maxTimeAllowed: 60, // 1 Minute
-      maxMemoryAllowed: 2 * 1024 * 1024, // 2 Mbytes
+      maxMemoryAllowed: 2 * 1024 * 1024, // 2 MB
     },
   };
 
@@ -187,11 +209,17 @@ export class IModelHostConfiguration {
  * @public
  */
 export class IModelHost {
-  private static _authorizationClient?: IAuthorizationClient;
+  private static _authorizationClient?: AuthorizationClient;
+  private static _nativeAppBackend: boolean;
   public static backendVersion = "";
+  private static _cacheDir = "";
+
   private static _platform?: typeof IModelJsNative;
   /** @internal */
   public static get platform(): typeof IModelJsNative { return this._platform!; }
+
+  /** @internal */
+  public static get isNativeAppBackend(): boolean { return IModelHost._nativeAppBackend; }
 
   public static configuration?: IModelHostConfiguration;
   /** Event raised just after the backend IModelHost was started */
@@ -209,16 +237,21 @@ export class IModelHost {
   /** The version of this backend application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
   public static applicationVersion: string;
 
-  /**
-   * Active element editors. Each editor is identified by a GUID.
+  /** Root of the directory holding all the files that iModel.js caches */
+  public static get cacheDir(): string { return this._cacheDir; }
+
+  /** Active element editors. Each editor is identified by a GUID.
    * @internal
    */
   public static elementEditors = new Map<GuidString, IElementEditor>();
 
-  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
-  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
-  public static get authorizationClient(): IAuthorizationClient | undefined { return IModelHost._authorizationClient; }
-  public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
+  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
+  public static snapshotFileNameResolver?: FileNameResolver;
+
+  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for backend applications */
+  /** Implementation of [AuthorizationClient]($itwin-client) to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
+  public static get authorizationClient(): AuthorizationClient | undefined { return IModelHost._authorizationClient; }
+  public static set authorizationClient(authorizationClient: AuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
 
   /** Get the active authorization/access token for use with various services
    * @throws [[BentleyError]] if the access token cannot be obtained
@@ -227,8 +260,6 @@ export class IModelHost {
     requestContext.enter();
     if (!this.authorizationClient)
       throw new BentleyError(AuthStatus.Error, "No AuthorizationClient has been supplied to IModelHost", Logger.logError, loggerCategory);
-    if (!this.authorizationClient.hasSignedIn)
-      throw new BentleyError(AuthStatus.Error, "AuthorizationClient has not been used to sign in", Logger.logError, loggerCategory);
     return this.authorizationClient.getAccessToken(requestContext);
   }
 
@@ -309,11 +340,14 @@ export class IModelHost {
    * Raises [[onAfterStartup]].
    * @see [[shutdown]].
    */
-  public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
+  public static async startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()): Promise<void> {
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggerCategory, () => (configuration));
 
     IModelHost.sessionId = Guid.createValue();
+    if (configuration.applicationType && configuration.applicationType === ApplicationType.NativeApp) {
+      this._nativeAppBackend = true;
+    }
 
     // Setup a current context for all requests that originate from this backend
     const requestContext = new BackendRequestContext();
@@ -356,21 +390,29 @@ export class IModelHost {
       }
     }
 
-    BriefcaseManager.initialize(configuration.briefcaseCacheDir, configuration.imodelClient);
+    this.setupCacheDirs(configuration);
+    BriefcaseManager.initialize(this._briefcaseCacheDir, configuration.imodelClient);
 
     IModelHost.setupRpcRequestContext();
 
-    IModelReadRpcImpl.register();
-    IModelTileRpcImpl.register();
-    IModelWriteRpcImpl.register();
-    SnapshotIModelRpcImpl.register();
-    WipRpcImpl.register();
-    DevToolsRpcImpl.register();
-    Editor3dRpcImpl.register();
-    NativeAppRpcImpl.register();
-    BisCoreSchema.registerSchema();
-    GenericSchema.registerSchema();
-    FunctionalSchema.registerSchema();
+    const rpcs = [
+      IModelReadRpcImpl,
+      IModelTileRpcImpl,
+      IModelWriteRpcImpl,
+      SnapshotIModelRpcImpl,
+      WipRpcImpl,
+      DevToolsRpcImpl,
+      Editor3dRpcImpl,
+      NativeAppRpcImpl,
+    ];
+    const schemas = [
+      BisCoreSchema,
+      GenericSchema,
+      FunctionalSchema,
+    ];
+
+    rpcs.forEach((rpc) => rpc.register()); // register all of the RPC implementations
+    schemas.forEach((schema) => schema.registerSchema()); // register all of the schemas
 
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
@@ -384,12 +426,47 @@ export class IModelHost {
     IModelHost.onAfterStartup.raiseEvent();
   }
 
+  private static _briefcaseCacheDir: string;
+
+  // Get a platform specific default cache dir
+  private static getDefaultCacheDir(): string {
+    let baseDir: string;
+    const homedir = os.homedir();
+    const platform = os.platform() as string;
+    switch (platform) {
+      case "win32":
+        baseDir = path.join(homedir, "AppData", "Local");
+        break;
+      case "darwin":
+      case "ios":
+        baseDir = path.join(homedir, "Library", "Caches");
+        break;
+      case "linux":
+        baseDir = path.join(homedir, ".cache");
+        break;
+      default:
+        throw new BentleyError(BentleyStatus.ERROR, "Unknown platform that does not support iModel.js backends", () => ({ platform }));
+    }
+    return path.join(baseDir, "iModelJs");
+  }
+
+  private static setupCacheDirs(configuration: IModelHostConfiguration) {
+    this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : this.getDefaultCacheDir();
+
+    // Setup the briefcaseCacheDir, defaulting to the the legacy/deprecated value
+    if (configuration.briefcaseCacheDir) // tslint:disable-line:deprecation
+      this._briefcaseCacheDir = path.normalize(configuration.briefcaseCacheDir); // tslint:disable-line:deprecation
+    else
+      this._briefcaseCacheDir = path.join(this._cacheDir, "bc");
+  }
+
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
-  public static shutdown() {
+  public static async shutdown(): Promise<void> {
     if (!IModelHost.configuration)
       return;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.configuration = undefined;
+    IModelHost._nativeAppBackend = false;
   }
 
   /** The directory where application assets may be found */
@@ -509,5 +586,47 @@ export class KnownLocations {
   public static get tmpdir(): string {
     const imodeljsMobile = Platform.imodeljsMobile;
     return imodeljsMobile !== undefined ? imodeljsMobile.knownLocations.tempDir : os.tmpdir();
+  }
+}
+
+/** Extend this class to provide custom file name resolution behavior.
+ * @note Only `tryResolveKey` and/or `tryResolveFileName` need to be overridden as the implementations of `resolveKey` and `resolveFileName` work for most purposes.
+ * @see [[IModelHost.snapshotFileNameResolver]]
+ * @public
+ */
+export abstract class FileNameResolver {
+  /** Resolve a file name from the specified key.
+   * @param _fileKey The key that identifies the file name in a `Map` or other similar data structure.
+   * @returns The resolved file name or `undefined` if not found.
+   */
+  public tryResolveKey(_fileKey: string): string | undefined { return undefined; }
+  /** Resolve a file name from the specified key.
+   * @param fileKey The key that identifies the file name in a `Map` or other similar data structure.
+   * @returns The resolved file name.
+   * @throws [[IModelError]] if not found.
+   */
+  public resolveKey(fileKey: string): string {
+    const resolvedFileName: string | undefined = this.tryResolveKey(fileKey);
+    if (undefined === resolvedFileName) {
+      throw new IModelError(IModelStatus.NotFound, `${fileKey} not resolved`, Logger.logWarning, loggerCategory);
+    }
+    return resolvedFileName;
+  }
+  /** Resolve the input file name, which may be a partial name, into a full path file name.
+   * @param inFileName The partial file name.
+   * @returns The resolved full path file name or `undefined` if not found.
+   */
+  public tryResolveFileName(inFileName: string): string | undefined { return inFileName; }
+  /** Resolve the input file name, which may be a partial name, into a full path file name.
+   * @param inFileName The partial file name.
+   * @returns The resolved full path file name.
+   * @throws [[IModelError]] if not found.
+   */
+  public resolveFileName(inFileName: string): string {
+    const resolvedFileName: string | undefined = this.tryResolveFileName(inFileName);
+    if (undefined === resolvedFileName) {
+      throw new IModelError(IModelStatus.NotFound, `${inFileName} not resolved`, Logger.logWarning, loggerCategory);
+    }
+    return resolvedFileName;
   }
 }

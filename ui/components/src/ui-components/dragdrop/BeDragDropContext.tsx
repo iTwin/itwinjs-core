@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
+import { ContextComponent, DragDropContext } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
-import { DragDropContext, ContextComponent } from "react-dnd";
 
 /**
  * React component for DragDrop API.

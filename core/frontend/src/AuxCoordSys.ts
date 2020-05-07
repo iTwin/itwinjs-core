@@ -6,15 +6,17 @@
  * @module Views
  */
 
-import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel, Npc, ColorDef, LinePixels } from "@bentley/imodeljs-common";
-import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, Matrix3d, Transform, Arc3d, AngleSweep } from "@bentley/geometry-core";
 import { JsonUtils } from "@bentley/bentleyjs-core";
+import { Angle, AngleSweep, Arc3d, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, YawPitchRollAngles } from "@bentley/geometry-core";
+import {
+  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Code, ColorDef, IModel, LinePixels, Npc,
+} from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { ViewState } from "./ViewState";
-import { DecorateContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { Viewport, CoordSystem } from "./Viewport";
+import { DecorateContext } from "./ViewContext";
+import { CoordSystem, Viewport } from "./Viewport";
+import { ViewState } from "./ViewState";
 
 /** @public */
 export enum ACSType {
@@ -149,25 +151,21 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   }
 
   private getAdjustedColor(inColor: ColorDef, isFill: boolean, viewport: Viewport, options: ACSDisplayOptions): ColorDef {
-    const color = new ColorDef();
-
+    let color;
     if ((options & ACSDisplayOptions.Hilite) !== ACSDisplayOptions.None) {
-      color.setFrom(viewport.hilite.color);
+      color = viewport.hilite.color;
     } else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None) {
-      color.setFrom(inColor.equals(ColorDef.white) ? viewport.getContrastToBackgroundColor() : inColor);
+      color = inColor.equals(ColorDef.white) ? viewport.getContrastToBackgroundColor() : inColor;
     } else {
-      color.colors.r = 150;
-      color.colors.g = 150;
-      color.colors.b = 150;
-      color.colors.t = 0;
+      color = ColorDef.from(150, 150, 150, 0);
     }
 
-    color.adjustForContrast(viewport.view.backgroundColor);
+    color = color.adjustedForContrast(viewport.view.backgroundColor);
 
     if (isFill)
-      color.setTransparency((options & (ACSDisplayOptions.Deemphasized | ACSDisplayOptions.Dynamics)) !== ACSDisplayOptions.None ? 225 : 200);
+      color = color.withTransparency((options & (ACSDisplayOptions.Deemphasized | ACSDisplayOptions.Dynamics)) !== ACSDisplayOptions.None ? 225 : 200);
     else
-      color.setTransparency((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None ? 150 : 75);
+      color = color.withTransparency((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None ? 150 : 75);
 
     return color;
   }

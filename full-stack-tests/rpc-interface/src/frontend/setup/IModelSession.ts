@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Config } from "@bentley/imodeljs-clients";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Config } from "@bentley/bentleyjs-core";
+import { IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 
 // tslint:disable:ter-indent
 
@@ -29,7 +29,7 @@ export class IModelSession {
       const env = Config.App.get("imjs_buddi_resolve_url_using_region");
       // tslint:disable-next-line:no-console
       console.log("Environment: " + env);
-      this._iModel = await IModelConnection.open(this.contextId, this.iModelId);
+      this._iModel = await RemoteBriefcaseConnection.open(this.contextId, this.iModelId);
       expect(this._iModel).to.exist;
     } catch (e) {
       throw new Error(`Failed to open test iModel. Error: ${e.message}`);

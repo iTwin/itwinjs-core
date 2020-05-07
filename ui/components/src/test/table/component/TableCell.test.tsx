@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { expect } from "chai";
-import { render, fireEvent, waitForElement } from "@testing-library/react";
-import { TableIconCellContent, TableCell, TableCellContent } from "../../../ui-components/table/component/TableCell";
+import { fireEvent, render, waitForElement } from "@testing-library/react";
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
+import { TableCell, TableCellContent, TableIconCellContent } from "../../../ui-components/table/component/TableCell";
 import { CellItem } from "../../../ui-components/table/TableDataProvider";
 import TestUtils from "../../TestUtils";
 

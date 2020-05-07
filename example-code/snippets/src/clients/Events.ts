@@ -3,33 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  IModelHubClient, AccessToken, EventSubscription,
-  ImsActiveSecureTokenClient, IModelHubEvent, EventSAS, AuthorizationToken,
-  AuthorizedClientRequestContext, ImsUserCredentials,
-} from "@bentley/imodeljs-clients";
-
-import { GuidString, Guid, Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
+import { ClientRequestContext, Config, Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { EventSAS, EventSubscription, IModelHubClient, IModelHubEvent } from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 class MockAccessToken extends AccessToken {
-  public constructor() { super(); this._samlAssertion = ""; }
+  public constructor() { super(""); }
   public toTokenString() { return ""; }
 }
 
-const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
+const clientConfig: BackendAuthorizationClientConfiguration = {
+  clientId: Config.App.get("imjs_agent_test_client_id"),
+  clientSecret: Config.App.get("imjs_agent_test_client_secret"),
+  scope: Config.App.get("imjs_oidc_browser_test_scopes"),
+};
+
+const authorizationClient = new AgentAuthorizationClient(clientConfig);
 const imodelHubClient: IModelHubClient = new IModelHubClient();
 const imodelId: GuidString = Guid.createValue();
-const userCredentials: ImsUserCredentials = {
-  email: "",
-  password: "",
-};
 
 // __PUBLISH_EXTRACT_START__ EventHandler.createListener.authenticate.example-code
 async function authenticate(): Promise<AccessToken> {
   const requestContext = new ClientRequestContext();
-  const authorizationToken: AuthorizationToken = await authorizationClient
-    .getToken(requestContext, userCredentials);
-  return imodelHubClient.getAccessToken(requestContext, authorizationToken);
+  return authorizationClient.getAccessToken(requestContext);
 }
 // __PUBLISH_EXTRACT_END__
 

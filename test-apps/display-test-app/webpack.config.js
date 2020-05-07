@@ -40,7 +40,7 @@ module.exports = {
     '@bentley/bentleyjs-core': 'bentleyjs_core',
     '@bentley/geometry-core': 'geometry_core',
     '@bentley/imodeljs-i18n': 'imodeljs_i18n',
-    '@bentley/imodeljs-clients': 'imodeljs_clients',
+    '@bentley/itwin-client': 'itwin_client',
     '@bentley/imodeljs-common': 'imodeljs_common',
     '@bentley/imodeljs-frontend': 'imodeljs_frontend',
   },

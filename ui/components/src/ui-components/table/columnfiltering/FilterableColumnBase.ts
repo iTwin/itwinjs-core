@@ -6,10 +6,8 @@
  * @module Table
  */
 
-import {
-  FilterableColumn, FilterOperator, DistinctValueCollection, FilterableTable, ColumnFilterDescriptor,
-} from "./ColumnFiltering";
 import { ColumnDescription } from "../TableDataProvider";
+import { ColumnFilterDescriptor, DistinctValueCollection, FilterableColumn, FilterableTable, FilterOperator } from "./ColumnFiltering";
 import { TableColumnFilterDescriptor } from "./TableColumnFilterDescriptor";
 import { TableFilterDescriptor } from "./TableFilterDescriptor";
 

@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { TextureUnit } from "../RenderFlags";
-import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
 import { SingleTexturedViewportQuadGeometry } from "../CachedGeometry";
+import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
+import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
@@ -31,6 +31,10 @@ export function createCopyColorProgram(context: WebGLRenderingContext | WebGL2Re
       Texture2DHandle.bindSampler(uniform, geom.texture, TextureUnit.Zero);
     });
   });
+
+  const flagString = (copyAlpha ? "-CopyAlpha" : "-NoAlpha");
+  builder.vert.headerComment = "//!V! CopyColor" + flagString;
+  builder.frag.headerComment = "//!F! CopyColor" + flagString;
 
   return builder.buildProgram(context);
 }

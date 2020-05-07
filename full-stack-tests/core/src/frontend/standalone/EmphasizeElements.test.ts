@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection, MockRender, ScreenViewport, SpatialViewState, StandardViewId, EmphasizeElements, FeatureOverrideType, FeatureSymbology } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
-import * as path from "path";
 import { ColorDef, Feature, LinePixels, RgbColor } from "@bentley/imodeljs-common";
-
-const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets");
+import {
+  EmphasizeElements, FeatureOverrideType, FeatureSymbology, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState,
+  StandardViewId,
+} from "@bentley/imodeljs-frontend";
 
 describe("EmphasizeElements tests", () => {
   let imodel: IModelConnection;
@@ -19,15 +19,15 @@ describe("EmphasizeElements tests", () => {
   document.body.appendChild(viewDiv!);
 
   before(async () => {
-    MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(path.join(iModelDir, "test.bim"));
+    await MockRender.App.startup();
+    imodel = await SnapshotConnection.openFile("test.bim");
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    MockRender.App.shutdown();
+    if (imodel) await imodel.close();
+    await MockRender.App.shutdown();
   });
 
   it("Emphasize add/replace/clear", async () => {
@@ -232,8 +232,7 @@ describe("EmphasizeElements tests", () => {
     expectAppearance(ColorDef.red, FeatureOverrideType.AlphaOnly, { rgb: black, transparency: 0 }); // EE does not permit overriding only transparency to opaque...
     expectAppearance(ColorDef.red, FeatureOverrideType.ColorAndAlpha, { rgb, transparency: 0 });
 
-    const red = ColorDef.red.clone();
-    red.setTransparency(184);
+    const red = ColorDef.red.withTransparency(184);
     const transparency = 184 / 255;
 
     expectAppearance(red, FeatureOverrideType.ColorOnly, { rgb });
@@ -252,11 +251,10 @@ describe("EmphasizeElements tests", () => {
     overrides.push({ color: ColorDef.from(200, 150, 100, 50), overrideType: FeatureOverrideType.AlphaOnly });
     overrides.push({ color: ColorDef.from(200, 150, 100, 50), overrideType: FeatureOverrideType.ColorAndAlpha });
 
-    const color = new ColorDef();
     for (const entry of overrides) {
       const key = emph.createOverrideKey(entry.color, entry.overrideType);
       assert(undefined !== key);
-      const overrideType = emph.getOverrideFromKey(key!, color);
+      const { overrideType, color } = { ...emph.getOverrideFromKey(key!) };
       assert(overrideType === entry.overrideType);
       switch (overrideType) {
         case FeatureOverrideType.ColorOnly:
@@ -324,12 +322,10 @@ describe("EmphasizeElements tests", () => {
         for (const key of aOvr.keys()) {
           expectEqualSets(after.getOverriddenElementsByKey(key), before.getOverriddenElementsByKey(key));
 
-          const aColor = new ColorDef();
-          const bColor = new ColorDef();
-          const aOvrType = after.getOverrideFromKey(key, aColor);
-          const bOvrType = before.getOverrideFromKey(key, bColor);
-          expect(aOvrType).to.equal(bOvrType);
-          expect(aColor.tbgr).to.equal(bColor.tbgr);
+          const aOvrs = after.getOverrideFromKey(key);
+          const bOvrs = before.getOverrideFromKey(key);
+          expect(aOvrs.overrideType).to.equal(bOvrs.overrideType);
+          expect(aOvrs.color.tbgr).to.equal(bOvrs.color.tbgr);
         }
       }
 

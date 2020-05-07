@@ -29,14 +29,22 @@ export class ColorIndex {
   public get isUniform() { return this._color instanceof ColorDef; }
   public get numColors(): number { return this.isUniform ? 1 : this.nonUniform!.colors.length; }
 
-  public constructor() { this._color = ColorDef.white.clone(); }
+  public constructor() { this._color = ColorDef.white; }
 
-  public reset() { this._color = ColorDef.white.clone(); }
+  public reset() { this._color = ColorDef.white; }
 
-  public get uniform(): ColorDef | undefined { return this.isUniform ? this._color as ColorDef : undefined; }
-  public initUniform(color: ColorDef | number) { this._color = ("number" === typeof color) ? new ColorDef(color) : (color as ColorDef).clone(); }
+  public get uniform(): ColorDef | undefined {
+    return this.isUniform ? this._color as ColorDef : undefined;
+  }
 
-  public get nonUniform(): NonUniformColor | undefined { return !this.isUniform ? this._color as NonUniformColor : undefined; }
+  public initUniform(color: ColorDef | number) {
+    this._color = typeof color === "number" ? ColorDef.fromJSON(color) : color;
+  }
+
+  public get nonUniform(): NonUniformColor | undefined {
+    return !this.isUniform ? this._color as NonUniformColor : undefined;
+  }
+
   public initNonUniform(colors: Uint32Array, indices: number[], hasAlpha: boolean) {
     this._color = new NonUniformColor(colors, indices, hasAlpha);
   }

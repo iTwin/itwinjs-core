@@ -2,9 +2,11 @@
 *
 # then add back only the files we want
 !lib/**/*.d.ts
+!lib/**/*.d.ts.map
 !lib/**/*.js
+!lib/**/*.js.map
 !lib/assets/**/*
-!lib/module/dev/presentation-common.js.map
+!lib/public/**/*
 !Ruleset.schema.json
 !*.md
 # then ignore some stuff again

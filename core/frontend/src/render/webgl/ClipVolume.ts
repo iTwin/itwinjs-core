@@ -6,22 +6,26 @@
  * @module WebGL
  */
 
-import { dispose, assert } from "@bentley/bentleyjs-core";
-import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, IndexedPolyfaceVisitor, UnionOfConvexClipPlaneSets, Vector3d, StrokeOptions, Transform } from "@bentley/geometry-core";
-import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common";
-import { ShaderProgramExecutor } from "./ShaderProgram";
-import { Target } from "./Target";
-import { RenderClipVolume, ClippingType } from "../RenderClipVolume";
-import { RenderMemory } from "../RenderSystem";
-import { ClipMaskGeometry } from "./CachedGeometry";
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import {
+  ClipUtilities, ClipVector, IndexedPolyfaceVisitor, Point3d, PolyfaceBuilder, StrokeOptions, Transform, Triangulator, UnionOfConvexClipPlaneSets,
+  Vector3d,
+} from "@bentley/geometry-core";
+import { ColorDef, Frustum, QParams3d, QPoint3dList } from "@bentley/imodeljs-common";
 import { ViewRect } from "../../ViewRect";
-import { FrameBuffer } from "./FrameBuffer";
-import { TextureHandle, Texture2DData, Texture2DHandle } from "./Texture";
-import { GL } from "./GL";
-import { System } from "./System";
-import { RenderState } from "./RenderState";
-import { DrawParams } from "./DrawCommand";
+import { ClippingType, RenderClipVolume } from "../RenderClipVolume";
+import { RenderMemory } from "../RenderMemory";
+import { ClipMaskGeometry } from "./CachedGeometry";
 import { WebGLDisposable } from "./Disposable";
+import { DrawParams } from "./DrawCommand";
+import { FloatRgba } from "./FloatRGBA";
+import { FrameBuffer } from "./FrameBuffer";
+import { GL } from "./GL";
+import { RenderState } from "./RenderState";
+import { ShaderProgramExecutor } from "./ShaderProgram";
+import { System } from "./System";
+import { Target } from "./Target";
+import { Texture2DData, Texture2DHandle, TextureHandle } from "./Texture";
 
 /** @internal */
 interface ClipPlaneSets {
@@ -194,6 +198,8 @@ class PackedPlanes extends ClippingPlanes {
  */
 export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.Consumer, WebGLDisposable {
   private _planes?: ClippingPlanes; // not read-only because dispose()...
+  private _outsideRgba: FloatRgba = FloatRgba.from(0.0, 0.0, 0.0, 0.0); // 0 alpha means disabled
+  private _insideRgba: FloatRgba = FloatRgba.from(0.0, 0.0, 0.0, 0.0); // 0 alpha means disabled
 
   private constructor(clip: ClipVector, planes?: ClippingPlanes) {
     super(clip);
@@ -244,11 +250,29 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
     this._planes = dispose(this._planes);
   }
 
+  public setClipColors(outsideColor: ColorDef | undefined, insideColor: ColorDef | undefined) {
+    if (outsideColor !== undefined) {
+      this._outsideRgba = FloatRgba.fromColorDef(outsideColor);
+      this._outsideRgba.alpha = 1.0;
+    } else
+      this._outsideRgba.alpha = 0.0;
+
+    if (insideColor !== undefined) {
+      this._insideRgba = FloatRgba.fromColorDef(insideColor);
+      this._insideRgba.alpha = 1.0;
+    } else
+      this._insideRgba.alpha = 0.0;
+  }
+
+  public get hasOutsideClipColor(): boolean {
+    return 0.0 !== this._outsideRgba.alpha;
+  }
+
   /** Push this ClipPlanesVolume clipping onto a target. */
   public pushToTarget(target: Target) {
     if (undefined !== this._planes) {
       const texture = this._planes.getTexture(target.uniforms.frustum.viewMatrix);
-      target.clips.set(texture.height, texture);
+      target.clips.set(texture.height, texture, this._outsideRgba, this._insideRgba);
     }
   }
 
@@ -359,6 +383,9 @@ export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Con
     this._texture = dispose(this._texture);
     this._fbo = dispose(this._fbo);
   }
+
+  public setClipColors(_outsideColor: ColorDef | undefined, _insideColor: ColorDef | undefined) { }
+  public get hasOutsideClipColor() { return false; }
 
   /** Push this ClipMaskVolume clipping onto a target. */
   public pushToTarget(_target: Target) { assert(false); }

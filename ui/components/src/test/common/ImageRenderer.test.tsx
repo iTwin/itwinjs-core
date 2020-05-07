@@ -3,12 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
 import { expect } from "chai";
-import { render } from "@testing-library/react";
-
+import * as React from "react";
 import { UiError } from "@bentley/ui-abstract";
-
+import { render } from "@testing-library/react";
 import { LoadedBinaryImage } from "../../ui-components/common/IImageLoader";
 import { ImageRenderer } from "../../ui-components/common/ImageRenderer";
 
@@ -61,12 +59,95 @@ describe("ImageRenderer", () => {
 
       const imageRender = render(<>{image}</>);
 
+      expect(imageRender.container.querySelector(".bui-webfont-icon")).to.not.be.null;
       expect(imageRender.container.querySelector(".icon-placeholder")).to.not.be.null;
     });
+
+    const coreIconsInWebfontFormatTestData = [
+      {
+        iconName: "fa:fa-anchor",
+        expectedIconNameSelector: ".fa\\:fa-anchor",
+      },
+      {
+        iconName: "fas:fa-archway",
+        expectedIconNameSelector: ".fas\\:fa-archway",
+      },
+      {
+        iconName: "bui-webfont-icon:icon-placeholder",
+        expectedIconNameSelector: ".bui-webfont-icon\\:icon-placeholder",
+      },
+    ];
+
+    for (const iconTest of coreIconsInWebfontFormatTestData) {
+      it(`renders core-icon when {className}:{iconName} format value given: ${iconTest.iconName}`, () => {
+        const image = imageRenderer.render({ sourceType: "core-icon", value: iconTest.iconName });
+
+        const imageRender = render(<>{image}</>);
+
+        expect(imageRender.container.querySelector(".bui-webfont-icon")).to.not.be.null;
+        expect(imageRender.container.querySelector(iconTest.expectedIconNameSelector)).to.not.be.null;
+      });
+    }
+
+    const webfontIconsTestData = [
+      {
+        iconName: "fa:fa-anchor",
+        expectedIconClassSelector: ".fa",
+        expectedIconNameSelector: ".fa-anchor",
+      },
+      {
+        iconName: "fas:fa-archway",
+        expectedIconClassSelector: ".fas",
+        expectedIconNameSelector: ".fa-archway",
+      },
+      {
+        iconName: "fas\\:test\\:escaped\\:className:fa-address-card",
+        expectedIconClassSelector: ".fas\\:test\\:escaped\\:className",
+        expectedIconNameSelector: ".fa-address-card",
+      },
+      {
+        iconName: "fas:fa-test\\:escaped\\:icon\\:name",
+        expectedIconClassSelector: ".fas",
+        expectedIconNameSelector: ".fa-test\\:escaped\\:icon\\:name",
+      },
+      {
+        iconName: "fas\\:test\\:escaped:fa-test\\:escaped\\:icon\\:name",
+        expectedIconClassSelector: ".fas\\:test\\:escaped",
+        expectedIconNameSelector: ".fa-test\\:escaped\\:icon\\:name",
+      },
+    ];
+
+    for (const iconTest of webfontIconsTestData) {
+      it(`renders webfont-icon with expected icon class and name when given icon name ${iconTest.iconName}`, () => {
+        const image = imageRenderer.render({ sourceType: "webfont-icon", value: iconTest.iconName });
+
+        const imageRender = render(<>{image}</>);
+
+        expect(imageRender.container.querySelector(iconTest.expectedIconClassSelector)).to.not.be.null;
+        expect(imageRender.container.querySelector(iconTest.expectedIconNameSelector)).to.not.be.null;
+      });
+    }
+
+    const badlyFormedWebfontIconsTestData = [
+      { iconName: "icon-placeholder", expectedIconNameSelector: ".icon-placeholder" },
+      { iconName: "fa:fa-anchor:fa", expectedIconNameSelector: ".fa\\:fa-anchor\\:fa" },
+      { iconName: "fas:fa-archway:fa-anchor", expectedIconNameSelector: ".fas\\:fa-archway\\:fa-anchor" },
+      { iconName: "a:b:c:d:e:f", expectedIconNameSelector: ".a\\:b\\:c\\:d\\:e\\:f" },
+    ];
+
+    for (const iconTest of badlyFormedWebfontIconsTestData) {
+      it(`renders webfont-icon as core-icon when given icon name ${iconTest.iconName}`, () => {
+        const image = imageRenderer.render({ sourceType: "webfont-icon", value: iconTest.iconName });
+
+        const imageRender = render(<>{image}</>);
+
+        expect(imageRender.container.querySelector(".bui-webfont-icon")).to.not.be.null;
+        expect(imageRender.container.querySelector(iconTest.expectedIconNameSelector)).to.not.be.null;
+      });
+    }
 
     it("throws when provided image source is not supported", () => {
       expect(() => imageRenderer.render({ sourceType: "random-type" } as any)).to.throw(UiError);
     });
   });
-
 });

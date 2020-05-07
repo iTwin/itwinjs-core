@@ -6,10 +6,11 @@
  * @module Footer
  */
 
-import * as classnames from "classnames";
-import * as React from "react";
-import { CommonProps, Popup, Position } from "@bentley/ui-core";
 import "./Popup.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { CommonProps, Popup } from "@bentley/ui-core";
 
 /** Available footer popup content types.
  * @beta
@@ -63,7 +64,7 @@ export class FooterPopup extends React.PureComponent<FooterPopupProps> {
           contentType,
           className,
         )}
-        position={Position.Top}
+        position={RelativePosition.Top}
         showArrow
         showShadow={false}
         {...props}

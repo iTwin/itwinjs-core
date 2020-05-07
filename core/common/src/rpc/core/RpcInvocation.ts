@@ -7,8 +7,9 @@
  */
 
 import { BentleyStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
-import { IModelError } from "../../IModelError";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { IModelRpcProps } from "../../IModel";
+import { IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
@@ -17,7 +18,6 @@ import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
-import { IModelTokenProps } from "../../IModel";
 
 /** Notification callback for an RPC invocation.
  * @public
@@ -145,16 +145,16 @@ export class RpcInvocation {
 
         if (!RpcInvocation.compareTokens(parameter, inflated)) {
           if (RpcConfiguration.throwOnTokenMismatch) {
-            throw new IModelError(BentleyStatus.ERROR, "IModelToken mismatch detected for this request.");
+            throw new IModelError(BentleyStatus.ERROR, "IModelRpcProps mismatch detected for this request.");
           } else {
-            Logger.logWarning(CommonLoggerCategory.RpcInterfaceBackend, "IModelToken mismatch detected for this request.");
+            Logger.logWarning(CommonLoggerCategory.RpcInterfaceBackend, "IModelRpcProps mismatch detected for this request.");
           }
         }
       }
     }
   }
 
-  private static compareTokens(a: IModelTokenProps, b: IModelTokenProps): boolean {
+  private static compareTokens(a: IModelRpcProps, b: IModelRpcProps): boolean {
     return a.key === b.key &&
       a.contextId === b.contextId &&
       a.iModelId === b.iModelId &&

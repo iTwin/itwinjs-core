@@ -2,44 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow } from "enzyme";
-import * as sinon from "sinon";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
+import * as sinon from "sinon";
 import * as moq from "typemoq";
-import TestUtils from "../TestUtils";
-import { BadgeType } from "@bentley/ui-abstract";
+import { BadgeType, WidgetState } from "@bentley/ui-abstract";
+import { HorizontalAnchor, ResizeHandle, Stacked as NZ_WidgetStack, Tab as NZ_Tab, TabMode, VerticalAnchor } from "@bentley/ui-ninezone";
 import {
-  HorizontalAnchor,
-  TabMode,
-  VerticalAnchor,
-  Tab as NZ_Tab,
-  Stacked as NZ_WidgetStack,
-  ResizeHandle,
-} from "@bentley/ui-ninezone";
-import {
-  ZoneState,
-  WidgetState,
-  ConfigurableUiManager,
-  WidgetControl,
-  ConfigurableCreateInfo,
-  FrontstageManager,
-  FrontstageComposer,
-  ContentGroup,
-  ContentLayoutDef,
-  FrontstageProvider,
-  FrontstageProps,
-  Frontstage,
-  Zone,
-  Widget,
-  CoreTools,
-  WidgetStackTab,
-  WidgetStack,
-  WidgetStackProps,
-  WidgetStackTabs,
-  WidgetStackTabGroup,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageComposer, FrontstageManager,
+  FrontstageProps, FrontstageProvider, Widget, WidgetControl, WidgetStack, WidgetStackProps, WidgetStackTab, WidgetStackTabGroup, WidgetStackTabs,
+  Zone, ZoneState,
 } from "../../ui-framework";
 import { WidgetStackTabGroupProps } from "../../ui-framework/widgets/WidgetStack";
+import TestUtils from "../TestUtils";
 
 const defaultWidgetTabs = {
   [1]: [],
@@ -70,7 +46,7 @@ describe("WidgetStack", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = (
+      this.reactNode = (
         <div>
           <span>This is the Test Widget 1</span>
         </div>
@@ -82,7 +58,7 @@ describe("WidgetStack", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = (
+      this.reactNode = (
         <div>
           <span>This is the Test Widget 2</span>
         </div>

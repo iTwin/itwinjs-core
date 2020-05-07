@@ -9,23 +9,23 @@
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
-// import { Point3d, Vector3d, Point2d } from "./PointVector";
-import { Polyface, PolyfaceVisitor, IndexedPolyface } from "./Polyface";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
-import { PolyfaceBuilder } from "./PolyfaceBuilder";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { ChainMergeContext } from "../topology/ChainMerge";
-import { LineString3d } from "../curve/LineString3d";
-import { SweepContour } from "../solid/SweepContour";
-import { PolygonOps, IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
-import { Range3d, Range2d, Range1d } from "../geometry3d/Range";
-import { PolyfaceQuery } from "./PolyfaceQuery";
-import { RangeSearch } from "./multiclip/RangeSearch";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
+import { LineString3d } from "../curve/LineString3d";
 import { PlaneAltitudeEvaluator } from "../Geometry";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../geometry3d/PolygonOps";
+import { Range1d, Range2d, Range3d } from "../geometry3d/Range";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
+import { SweepContour } from "../solid/SweepContour";
+import { ChainMergeContext } from "../topology/ChainMerge";
+import { RangeSearch } from "./multiclip/RangeSearch";
+// import { Point3d, Vector3d, Point2d } from "./PointVector";
+import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
+import { PolyfaceBuilder } from "./PolyfaceBuilder";
+import { PolyfaceQuery } from "./PolyfaceQuery";
 
 /**
  * A pair of PolyfaceBuilder objects, for use by clippers that emit inside and outside parts.

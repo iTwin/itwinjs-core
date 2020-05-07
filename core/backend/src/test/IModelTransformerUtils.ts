@@ -2,24 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import {
-  AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
-  GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps,
-  ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, Placement3d, PlanProjectionSettings, RelatedElement,
-  SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, TextureFlags,
-} from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
+import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
-  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
-  ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
-  FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
-  InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
-  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SpatialLocationModel, SubCategory, Subject, Texture, ViewDefinition,
+  Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
+  FontType, GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator,
+  GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, Placement3d, PlanProjectionSettings, RelatedElement,
+  SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, TextureFlags,
+} from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import {
+  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d,
+  DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element,
+  ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
+  ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb,
+  IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, Model,
+  ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship,
+  RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SubCategory, Subject, TemplateRecipe3d, Texture,
+  ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -82,7 +86,7 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
     const sourcePhysicalCategoryId = insertSpatialCategory(sourceDb, definitionModelId, "SourcePhysicalCategory", ColorDef.blue);
     assert.isTrue(Id64.isValidId64(sourcePhysicalCategoryId));
-    const subCategoryId = SubCategory.insert(sourceDb, spatialCategoryId, "SubCategory", { color: ColorDef.blue });
+    const subCategoryId = SubCategory.insert(sourceDb, spatialCategoryId, "SubCategory", { color: ColorDef.blue.toJSON() });
     assert.isTrue(Id64.isValidId64(subCategoryId));
     const drawingCategoryId = DrawingCategory.insert(sourceDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
     assert.isTrue(Id64.isValidId64(drawingCategoryId));
@@ -299,7 +303,7 @@ export namespace IModelTransformerUtils {
     const displayStyle2dId: Id64String = DisplayStyle2d.insert(sourceDb, definitionModelId, "DisplayStyle2d");
     assert.isTrue(Id64.isValidId64(displayStyle2dId));
     const displayStyle3d: DisplayStyle3d = DisplayStyle3d.create(sourceDb, definitionModelId, "DisplayStyle3d");
-    const subCategoryOverride: SubCategoryOverride = SubCategoryOverride.fromJSON({ color: ColorDef.from(1, 2, 3) });
+    const subCategoryOverride: SubCategoryOverride = SubCategoryOverride.fromJSON({ color: ColorDef.from(1, 2, 3).toJSON() });
     displayStyle3d.settings.overrideSubCategory(subCategoryId, subCategoryOverride);
     displayStyle3d.settings.addExcludedElements(physicalObjectId1);
     displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, new PlanProjectionSettings({ elevation: 10.0 }));
@@ -539,16 +543,15 @@ export namespace IModelTransformerUtils {
     let itIndex = 0;
     for (const entry of it) {
       if (0 === itIndex) {
-        assert.isDefined(entry.geometryQuery);
         assert.equal(entry.primitive.type, "geometryQuery");
         assert.equal(entry.geomParams.subCategoryId, subCategoryId);
         assert.equal(entry.geomParams.materialId, renderMaterialId);
       } else if (1 === itIndex) {
-        assert.isUndefined(entry.geometryQuery);
         assert.equal(entry.primitive.type, "partReference");
         assert.equal(entry.geomParams.subCategoryId, subCategoryId);
         assert.equal(entry.geomParams.materialId, renderMaterialId);
-        assert.equal(entry.partId, geometryPartId);
+        if (entry.primitive.type === "partReference")
+          assert.equal(entry.primitive.part.id, geometryPartId);
       } else {
         assert.fail(undefined, undefined, "Only expected 2 entries");
       }
@@ -747,12 +750,12 @@ export namespace IModelTransformerUtils {
     assert.equal(targetRelationship.id, json.targetRelInstanceId);
   }
 
-  export function createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): IModelDb {
+  export function createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): SnapshotDb {
     const teamFile: string = path.join(outputDir, `Team${teamName}.bim`);
     if (IModelJsFs.existsSync(teamFile)) {
       IModelJsFs.removeSync(teamFile);
     }
-    const iModelDb: IModelDb = IModelDb.createSnapshot(teamFile, { rootSubject: { name: teamName } });
+    const iModelDb: SnapshotDb = SnapshotDb.createEmpty(teamFile, { rootSubject: { name: teamName }, createClassViews: true });
     assert.exists(iModelDb);
     populateTeamIModel(iModelDb, teamName, teamOrigin, teamColor);
     iModelDb.saveChanges();
@@ -802,13 +805,13 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(physicalObjectId2));
   }
 
-  export function createSharedIModel(outputDir: string, teamNames: string[]): IModelDb {
+  export function createSharedIModel(outputDir: string, teamNames: string[]): SnapshotDb {
     const iModelName: string = `Shared${teamNames.join("")}`;
     const iModelFile: string = path.join(outputDir, `${iModelName}.bim`);
     if (IModelJsFs.existsSync(iModelFile)) {
       IModelJsFs.removeSync(iModelFile);
     }
-    const iModelDb: IModelDb = IModelDb.createSnapshot(iModelFile, { rootSubject: { name: iModelName } });
+    const iModelDb: SnapshotDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: iModelName } });
     assert.exists(iModelDb);
     teamNames.forEach((teamName: string) => {
       const subjectId: Id64String = Subject.insert(iModelDb, IModel.rootSubjectId, teamName);
@@ -858,6 +861,55 @@ export namespace IModelTransformerUtils {
     });
   }
 
+  export function createComponentLibrary(outputDir: string): SnapshotDb {
+    const iModelName: string = "ComponentLibrary";
+    const iModelFile: string = path.join(outputDir, `${iModelName}.bim`);
+    if (IModelJsFs.existsSync(iModelFile)) {
+      IModelJsFs.removeSync(iModelFile);
+    }
+    const iModelDb: SnapshotDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: iModelName }, createClassViews: true });
+    const componentCategoryId = insertSpatialCategory(iModelDb, IModel.dictionaryId, "Components", ColorDef.green);
+    const definitionModelId: Id64String = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, "Components");
+    // Cylinder component
+    const cylinderTemplateId: Id64String = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Cylinder");
+    assert.exists(iModelDb.models.getModel<PhysicalModel>(cylinderTemplateId));
+    const cylinderProps: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: cylinderTemplateId,
+      category: componentCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "Cylinder",
+      placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
+      geom: createCylinder(1),
+    };
+    iModelDb.elements.insertElement(cylinderProps);
+    // Assembly component
+    const assemblyTemplateId: Id64String = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Assembly");
+    assert.exists(iModelDb.models.getModel<PhysicalModel>(assemblyTemplateId));
+    const assemblyHeadProps: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: assemblyTemplateId,
+      category: componentCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "Assembly Head",
+      placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
+      geom: createCylinder(1),
+    };
+    const assemblyHeadId: Id64String = iModelDb.elements.insertElement(assemblyHeadProps);
+    const childBoxProps: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: assemblyTemplateId,
+      category: componentCategoryId,
+      parent: new ElementOwnsChildElements(assemblyHeadId),
+      code: Code.createEmpty(),
+      userLabel: "Child",
+      placement: { origin: Point3d.create(2, 0, 0), angles: { yaw: 0, pitch: 0, roll: 0 } },
+      geom: createBox(Point3d.create(1, 1, 1)),
+    };
+    iModelDb.elements.insertElement(childBoxProps);
+    return iModelDb;
+  }
+
   export function querySubjectId(iModelDb: IModelDb, subjectCodeValue: string): Id64String {
     const subjectId: Id64String = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, subjectCodeValue))!;
     assert.isTrue(Id64.isValidId64(subjectId));
@@ -894,12 +946,12 @@ export namespace IModelTransformerUtils {
     return elementId;
   }
 
-  export function createConsolidatedIModel(outputDir: string, consolidatedName: string): IModelDb {
+  export function createConsolidatedIModel(outputDir: string, consolidatedName: string): SnapshotDb {
     const consolidatedFile: string = path.join(outputDir, `${consolidatedName}.bim`);
     if (IModelJsFs.existsSync(consolidatedFile)) {
       IModelJsFs.removeSync(consolidatedFile);
     }
-    const consolidatedDb: IModelDb = IModelDb.createSnapshot(consolidatedFile, { rootSubject: { name: `${consolidatedName}` } });
+    const consolidatedDb: SnapshotDb = SnapshotDb.createEmpty(consolidatedFile, { rootSubject: { name: `${consolidatedName}` } });
     assert.exists(consolidatedDb);
     const definitionModelId = DefinitionModel.insert(consolidatedDb, IModel.rootSubjectId, `Definition${consolidatedName}`);
     assert.isTrue(Id64.isValidId64(definitionModelId));
@@ -928,7 +980,7 @@ export namespace IModelTransformerUtils {
 
   function insertSpatialCategory(iModelDb: IModelDb, modelId: Id64String, categoryName: string, color: ColorDef): Id64String {
     const appearance: SubCategoryAppearance.Props = {
-      color,
+      color: color.toJSON(),
       transp: 0,
       invisible: false,
     };
@@ -952,6 +1004,15 @@ export namespace IModelTransformerUtils {
     if (undefined !== geometryPartId) {
       geometryStreamBuilder.appendGeometryPart3d(geometryPartId);
     }
+    return geometryStreamBuilder.geometryStream;
+  }
+
+  function createCylinder(radius: number): GeometryStreamProps {
+    const pointA = Point3d.create(0, 0, 0);
+    const pointB = Point3d.create(0, 0, 2 * radius);
+    const cylinder = Cone.createBaseAndTarget(pointA, pointB, Vector3d.unitX(), Vector3d.unitY(), radius, radius, true);
+    const geometryStreamBuilder = new GeometryStreamBuilder();
+    geometryStreamBuilder.appendGeometry(cylinder);
     return geometryStreamBuilder.geometryStream;
   }
 
@@ -984,11 +1045,11 @@ export namespace IModelTransformerUtils {
   }
 
   export function dumpIModelInfo(iModelDb: IModelDb): void {
-    const outputFileName: string = iModelDb.briefcase.pathname + ".info.txt";
+    const outputFileName: string = iModelDb.nativeDb.getFilePath() + ".info.txt";
     if (IModelJsFs.existsSync(outputFileName)) {
       IModelJsFs.removeSync(outputFileName);
     }
-    IModelJsFs.appendFileSync(outputFileName, `${iModelDb.briefcase.pathname}\n`);
+    IModelJsFs.appendFileSync(outputFileName, `${iModelDb.nativeDb.getFilePath()}\n`);
     IModelJsFs.appendFileSync(outputFileName, "\n=== CodeSpecs ===\n");
     iModelDb.withPreparedStatement(`SELECT ECInstanceId,Name FROM BisCore:CodeSpec ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {

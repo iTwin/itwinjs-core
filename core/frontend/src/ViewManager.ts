@@ -5,16 +5,16 @@
 /** @packageDocumentation
  * @module Views
  */
-import { BentleyStatus, BeEvent, BeTimePoint, BeUiEvent, Id64Arg } from "@bentley/bentleyjs-core";
+import { BeEvent, BentleyStatus, BeTimePoint, BeUiEvent, Id64Arg } from "@bentley/bentleyjs-core";
 import { GeometryStreamProps } from "@bentley/imodeljs-common";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { TileTree, TileTreeSet } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { TileTree, TileTreeSet } from "./tile/internal";
 
 /** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
  * Decorators generate [[Decorations]].
@@ -86,8 +86,21 @@ export class ViewManager {
   private _selectedView?: ScreenViewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
+  private _doIdleWork = false;
+  private _removeTileAdminEventListeners?: () => void;
+
   /** @internal */
   public readonly toolTipProviders: ToolTipProvider[] = [];
+
+  private _beginIdleWork() {
+    const idleWork = () => {
+      if (this._viewports.length > 0)
+        return;
+      if (IModelApp.renderSystem.doIdleWork())
+        setTimeout(idleWork, 1);
+    };
+    setTimeout(idleWork, 1);
+  }
 
   /** @internal */
   public onInitialized() {
@@ -96,6 +109,16 @@ export class ViewManager {
     this.addDecorator(IModelApp.accuDraw);
     this.addDecorator(IModelApp.toolAdmin);
     this.cursor = "default";
+
+    const removeTileLoad = IModelApp.tileAdmin.onTileLoad.addListener((_) => this.invalidateScenes());
+    const removeTreeLoad = IModelApp.tileAdmin.onTileTreeLoad.addListener((_) => this.invalidateScenes());
+    const removeChildLoad = IModelApp.tileAdmin.onTileTreeLoad.addListener((_) => this.invalidateScenes());
+    this._removeTileAdminEventListeners = () => { removeTileLoad(); removeTreeLoad(); removeChildLoad(); };
+
+    const options = IModelApp.renderSystem.options;
+    this._doIdleWork = true === options.doIdleWork;
+    if (this._doIdleWork)
+      this._beginIdleWork();
   }
 
   /** @internal */
@@ -104,6 +127,11 @@ export class ViewManager {
     this.decorators.length = 0;
     this.toolTipProviders.length = 0;
     this._selectedView = undefined;
+
+    if (this._removeTileAdminEventListeners) {
+      this._removeTileAdminEventListeners();
+      this._removeTileAdminEventListeners = undefined;
+    }
   }
 
   /** Called after the selected view changes.
@@ -271,6 +299,9 @@ export class ViewManager {
     if (disposeOfViewport)
       vp.dispose();
 
+    if (this._doIdleWork && this._viewports.length === 0)
+      this._beginIdleWork();
+
     return BentleyStatus.SUCCESS;
   }
 
@@ -293,8 +324,6 @@ export class ViewManager {
   }
   /** @internal */
   public get sceneInvalidated(): boolean { return this._invalidateScenes; }
-  /** @internal */
-  public onNewTilesReady(): void { this.invalidateScenes(); }
 
   /** Invoked by ToolAdmin event loop.
    * @internal
@@ -318,6 +347,7 @@ export class ViewManager {
   }
 
   /** Purge TileTrees that haven't been drawn since the specified time point and are not currently in use by any ScreenViewport.
+   * Intended strictly for debugging purposes - TileAdmin takes care of properly purging.
    * @internal
    */
   public purgeTileTrees(olderThan: BeTimePoint): void {

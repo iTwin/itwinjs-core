@@ -6,10 +6,10 @@
  * @module ToolSettings
  */
 
-import * as classnames from "classnames";
+import "./Panel.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { ToolSettingProps } from "./Setting";
-import "./Panel.scss";
 
 /** Properties of [[ToolSettingsOverflowPanel]] component.
  * @internal

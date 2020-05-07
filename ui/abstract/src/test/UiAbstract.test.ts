@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import TestUtils from "./TestUtils";
+import * as sinon from "sinon";
+import { Logger } from "@bentley/bentleyjs-core";
 import { UiAbstract } from "../ui-abstract/UiAbstract";
+import TestUtils from "./TestUtils";
 
 describe("UiAbstract", () => {
 
@@ -36,6 +38,16 @@ describe("UiAbstract", () => {
 
   it("loggerCategory passed null should return 'ui-abstract'", () => {
     expect(UiAbstract.loggerCategory(null)).to.eq("ui-abstract");
+  });
+
+  it("calling initialize twice should log", async () => {
+    const spyLogger = sinon.spy(Logger, "logInfo");
+    expect(UiAbstract.initialized).to.be.false;
+    await UiAbstract.initialize(TestUtils.i18n);
+    expect(UiAbstract.initialized).to.be.true;
+    await UiAbstract.initialize(TestUtils.i18n);
+    spyLogger.calledOnce.should.true;
+    (Logger.logInfo as any).restore();
   });
 
 });

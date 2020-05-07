@@ -4,16 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import {
-  CategoryDescription, TypeDescription, EditorDescription, Field,
-  PrimitiveTypeDescription, Descriptor, Content, PropertyValueFormat, StructTypeDescription,
+  CategoryDescription, Content, Descriptor, EditorDescription, Field, NestedContentField, PrimitiveTypeDescription, PropertiesField,
+  PropertyValueFormat, StructTypeDescription, TypeDescription,
 } from "../../../presentation-common";
-import { PropertyJSON } from "../../../content/Property";
-import {
-  NestedContentFieldJSON, BaseFieldJSON, PropertiesFieldJSON,
-  NestedContentField, PropertiesField,
-} from "../../../content/Fields";
-import { SelectClassInfoJSON } from "../../../content/Descriptor";
-import { createRandomRelationshipPathJSON, createRandomECClassInfoJSON, createRandomRelatedClassInfoJSON, createRandomPropertyInfoJSON } from "./EC";
+import { SelectClassInfoJSON } from "../../../presentation-common/content/Descriptor";
+import { BaseFieldJSON, NestedContentFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
+import { PropertyJSON } from "../../../presentation-common/content/Property";
+import { createRandomECClassInfoJSON, createRandomPropertyInfoJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON } from "./EC";
 import { nullable } from "./Misc";
 
 const createRandomSelectClassInfoJSON = (): SelectClassInfoJSON => {
@@ -75,13 +72,13 @@ export const createRandomPropertyJSON = (): PropertyJSON => ({
   relatedClassPath: createRandomRelationshipPathJSON(1),
 });
 
-export const createRandomPropertiesFieldJSON = (category: CategoryDescription | boolean = true): PropertiesFieldJSON => ({
+export const createRandomPropertiesFieldJSON = (category: CategoryDescription | boolean = true, propertiesCount: number = 1): PropertiesFieldJSON => ({
   ...createRandomPrimitiveFieldJSON(category),
-  properties: [createRandomPropertyJSON()],
+  properties: [...Array(propertiesCount).keys()].map(() => createRandomPropertyJSON()),
 });
 
-export const createRandomPropertiesField = (category: CategoryDescription | boolean = true): PropertiesField => {
-  return PropertiesField.fromJSON(createRandomPropertiesFieldJSON(category))!;
+export const createRandomPropertiesField = (category: CategoryDescription | boolean = true, propertiesCount: number = 1): PropertiesField => {
+  return PropertiesField.fromJSON(createRandomPropertiesFieldJSON(category, propertiesCount))!;
 };
 
 export const createRandomNestedFieldJSON = (category: CategoryDescription | boolean = true): NestedContentFieldJSON => ({

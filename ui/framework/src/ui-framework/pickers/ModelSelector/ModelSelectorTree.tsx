@@ -6,39 +6,19 @@
  * @module Picker
  */
 
-import * as React from "react";
 import classnames from "classnames";
-import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
-import {
-  SpatialViewState,
-  SpatialModelState,
-} from "@bentley/imodeljs-frontend";
+import * as React from "react";
+import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
+import { SpatialModelState, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
-import { treeWithFilteringSupport } from "@bentley/presentation-components";
+import { DEPRECATED_treeWithFilteringSupport } from "@bentley/presentation-components";
+import { DEPRECATED_Tree, FilteringInput, SelectionMode, TreeNodeItem } from "@bentley/ui-components";
 import {
-  Tree,
-  TreeNodeItem,
-  FilteringInput,
-  SelectionMode,
-} from "@bentley/ui-components";
-import {
-  CheckBoxInfo,
-  CheckBoxState,
-  isPromiseLike,
-  NodeCheckboxRenderProps,
-  ImageCheckBox,
-  LoadingSpinner,
-  SpinnerSize,
-  GlobalContextMenu,
-  ContextMenuItem,
+  CheckBoxInfo, CheckBoxState, ContextMenuItem, GlobalContextMenu, ImageCheckBox, isPromiseLike, LoadingSpinner, NodeCheckboxRenderProps, SpinnerSize,
 } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ListItem, ListItemType } from "../ListPicker";
-import {
-  CategoryModelTreeProps,
-  CategoryModelTreeState,
-  Groups,
-} from "./ModelSelectorDefinitions";
+import { CategoryModelTreeProps, CategoryModelTreeState, Groups } from "./ModelSelectorDefinitions";
 
 /**
  * Tree which displays and manages models or categories contained in an iModel.
@@ -134,7 +114,7 @@ export class CategoryModelTree extends React.Component<
     node: TreeNodeItem,
   ): CheckBoxInfo | Promise<CheckBoxInfo> {
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-    const nodeId = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
+    const nodeId = NodeKey.isInstancesNodeKey(key) ? key.instanceKeys[0].id : "";
     const item = this._getItem(nodeId);
     if (item && this.props.activeView) {
       const view = this.props.activeView.view as SpatialViewState;
@@ -514,7 +494,7 @@ export class CategoryModelTree extends React.Component<
   private async _onNodeExpanded(node: TreeNodeItem) {
     const categories: ListItem[] = this.state.activeGroup.items;
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-    const nodeId = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
+    const nodeId = NodeKey.isInstancesNodeKey(key) ? key.instanceKeys[0].id : "";
     const ecsql =
       "SELECT ECInstanceId as id FROM BisCore.SubCategory WHERE Parent.Id=" +
       nodeId;
@@ -567,7 +547,7 @@ export class CategoryModelTree extends React.Component<
     const nodeIds: string[] = [];
     nodes.forEach((node) => {
       const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-      const id = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
+      const id = NodeKey.isInstancesNodeKey(key) ? key.instanceKeys[0].id : "";
       nodeIds.push(id);
     });
     return nodeIds;
@@ -650,4 +630,4 @@ export class CategoryModelTree extends React.Component<
  * Tree component with support for filtering
  * @internal
  */
-const CategoryModelFilterTree = treeWithFilteringSupport(Tree); // tslint:disable-line:variable-name
+const CategoryModelFilterTree = DEPRECATED_treeWithFilteringSupport(DEPRECATED_Tree); // tslint:disable-line:variable-name

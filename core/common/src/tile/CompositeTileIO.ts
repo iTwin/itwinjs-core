@@ -7,10 +7,7 @@
  */
 
 import { ByteStream } from "@bentley/bentleyjs-core";
-import {
-  TileFormat,
-  TileHeader,
-} from "./TileIO";
+import { TileFormat, TileHeader } from "./TileIO";
 
 /** Header preceding tile content in [composite](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/Composite) format, containing any number of tiles in other standard 3D tile formats.
  * @internal

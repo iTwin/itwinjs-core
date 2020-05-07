@@ -14,4 +14,9 @@ describe("<ToolbarButton  />", () => {
   it("renders correctly", () => {
     shallow(<ToolbarButton />).should.matchSnapshot();
   });
+
+  it("renders correctly with mouseProximity & small", () => {
+    shallow(<ToolbarButton mouseProximity={0.50} small={true} />).should.matchSnapshot();
+  });
+
 });

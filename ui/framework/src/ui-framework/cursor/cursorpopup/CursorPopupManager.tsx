@@ -7,15 +7,14 @@
  */
 
 import * as React from "react";
-
-import { UiEvent, Point, PointProps, Size, SizeProps, RectangleProps } from "@bentley/ui-core";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { CursorPopup } from "./CursorPopup";
 import { Logger } from "@bentley/bentleyjs-core";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Point, PointProps, RectangleProps, Size, SizeProps, UiEvent } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
+import { CursorPopup } from "./CursorPopup";
 
 /** Options for the [[CursorPopupManager]] open method
- * @beta
+ * @public
  */
 export interface CursorPopupOptions {
   /** Title of the popup */
@@ -73,7 +72,7 @@ interface CursorPopupInfo {
 class CursorPopupsChangedEvent extends UiEvent<{}> { }
 
 /** CursorPopup component
- * @beta
+ * @public
  */
 export class CursorPopupManager {
   private static _popups: CursorPopupInfo[] = new Array<CursorPopupInfo>();
@@ -288,7 +287,7 @@ interface CursorPopupRendererState {
 }
 
 /** CursorPopupRenderer React component.
- * @beta
+ * @public
  */
 export class CursorPopupRenderer extends React.Component<any, CursorPopupRendererState> {
 

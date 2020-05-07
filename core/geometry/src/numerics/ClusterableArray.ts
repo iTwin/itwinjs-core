@@ -8,10 +8,11 @@
  */
 
 import { Geometry } from "../Geometry";
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
 import { GrowableBlockedArray } from "../geometry3d/GrowableBlockedArray";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+
 /**
  * Blocked array with operations to sort and cluster with a tolerance.
  * * Primary sorting is along an "arbitrary" sort vector.

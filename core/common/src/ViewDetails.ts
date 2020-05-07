@@ -6,16 +6,8 @@
  * @module Views
  */
 
-import {
-  Id64,
-  Id64String,
-  JsonUtils,
-} from "@bentley/bentleyjs-core";
-import {
-  ClipVector,
-  Geometry,
-  XAndY,
-} from "@bentley/geometry-core";
+import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { ClipVector, Geometry, XAndY } from "@bentley/geometry-core";
 
 /** @internal */
 export interface ViewDetailsProps {
@@ -67,7 +59,7 @@ export class ViewDetails {
 
   /** @internal */
   public constructor(jsonProperties: { viewDetails?: ViewDetailsProps }) {
-    if (undefined === jsonProperties.viewDetails)
+    if (!jsonProperties.viewDetails)
       jsonProperties.viewDetails = { };
 
     this._json = jsonProperties.viewDetails;

@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { IModelDb, BackendRequestContext } from "../../imodeljs-backend";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelError } from "@bentley/imodeljs-common";
+import { BackendRequestContext, SnapshotDb } from "../../imodeljs-backend";
 import { IModelSchemaLoader } from "../../IModelSchemaLoader";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelError } from "@bentley/imodeljs-common";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("IModelSchemaLoader", () => {
-  let imodel: IModelDb;
+  let imodel: SnapshotDb;
   const requestContext = new BackendRequestContext();
 
   before(async () => {
@@ -23,7 +23,7 @@ describe("IModelSchemaLoader", () => {
   });
 
   after(() => {
-    imodel.closeSnapshot();
+    imodel.close();
   });
 
   it("should load a known EC Schema by name from an existing iModel", () => {

@@ -6,11 +6,11 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { PointProps } from "@bentley/ui-core";
-import { createBoundingClientRect, createPointerEvent } from "../../../Utils";
 import { HorizontalAnchor, Tab, TabMode, TabModeHelpers } from "../../../../ui-ninezone";
+import { DragHandle } from "../../../../ui-ninezone/base/DragHandle";
 import { PointerCaptor } from "../../../../ui-ninezone/base/PointerCaptor";
 import { VerticalAnchor } from "../../../../ui-ninezone/widget/Stacked";
-import { DragHandle } from "../../../../ui-ninezone/base/DragHandle";
+import { createBoundingClientRect, createPointerEvent } from "../../../Utils";
 
 describe("<Tab />", () => {
   const sandbox = sinon.createSandbox();

@@ -6,17 +6,17 @@
  * @module Bspline
  */
 
+import { LineString3d } from "../curve/LineString3d";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Point4d } from "../geometry4d/Point4d";
-import { Transform } from "../geometry3d/Transform";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { LineString3d } from "../curve/LineString3d";
-import { BezierCurveBase } from "./BezierCurveBase";
-import { BezierPolynomialAlgebra } from "../numerics/BezierPolynomials";
 import { Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Transform } from "../geometry3d/Transform";
+import { Point4d } from "../geometry4d/Point4d";
+import { BezierPolynomialAlgebra } from "../numerics/BezierPolynomials";
+import { BezierCurveBase } from "./BezierCurveBase";
 
 // ================================================================================================================
 // ================================================================================================================

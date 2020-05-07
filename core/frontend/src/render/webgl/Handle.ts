@@ -7,13 +7,13 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { GL } from "./GL";
-import { QParams3d, QParams2d } from "@bentley/imodeljs-common";
-import { Matrix3, Matrix4 } from "./Matrix";
-import { System } from "./System";
 import { Point3d } from "@bentley/geometry-core";
+import { QParams2d, QParams3d } from "@bentley/imodeljs-common";
 import { WebGLDisposable } from "./Disposable";
+import { GL } from "./GL";
+import { Matrix3, Matrix4 } from "./Matrix";
 import { SyncToken } from "./Sync";
+import { System } from "./System";
 
 /** @internal */
 export type BufferData = number | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer;
@@ -504,7 +504,7 @@ export class QBufferHandle3d extends BufferHandle {
     this.scale = qscale3dToArray(qParams.scale);
   }
 
-  public static create(qParams: QParams3d, data: Uint16Array): QBufferHandle3d | undefined {
+  public static create(qParams: QParams3d, data: Uint16Array | Uint8Array): QBufferHandle3d | undefined {
     const handle = new QBufferHandle3d(qParams);
     if (handle.isDisposed) {
       return undefined;
@@ -525,6 +525,8 @@ const enum DataType {
   Vec3,
   Vec4,
   Int,
+  IntArray,
+  Uint,
 }
 
 /** A handle to the location of a uniform within a shader program
@@ -546,8 +548,8 @@ export class UniformHandle {
     return new UniformHandle(location);
   }
 
-  private updateData(type: DataType, data: Float32Array | number[]): boolean {
-    assert(DataType.Undefined !== type && DataType.Int !== type && DataType.Float !== type);
+  private updateData(type: DataType, data: Float32Array | Int32Array | number[]): boolean {
+    assert(DataType.Undefined !== type && DataType.Int !== type && DataType.Float !== type && DataType.Uint !== type);
 
     let updated = this._type !== type;
     if (updated) {
@@ -566,7 +568,7 @@ export class UniformHandle {
   }
 
   private updateDatum(type: DataType, datum: number): boolean {
-    assert(DataType.Int === type || DataType.Float === type);
+    assert(DataType.Int === type || DataType.Uint === type || DataType.Float === type);
 
     // NB: Yes, calling data.length without actually changing the length shows up as a significant performance bottleneck...
     if (this._data.length !== 1)
@@ -587,6 +589,11 @@ export class UniformHandle {
   public setMatrix4(mat: Matrix4) {
     if (this.updateData(DataType.Mat4, mat.data))
       System.instance.context.uniformMatrix4fv(this._location, false, mat.data);
+  }
+
+  public setUniform1iv(data: Int32Array | number[]) {
+    if (this.updateData(DataType.IntArray, data))
+      System.instance.context.uniform1iv(this._location, data);
   }
 
   public setUniform1fv(data: Float32Array | number[]) {
@@ -617,5 +624,17 @@ export class UniformHandle {
   public setUniform1f(data: number) {
     if (this.updateDatum(DataType.Float, data))
       System.instance.context.uniform1f(this._location, data);
+  }
+
+  public setUniform1ui(data: number) {
+    if (this.updateDatum(DataType.Uint, data))
+      (System.instance.context as WebGL2RenderingContext).uniform1ui(this._location, data);
+  }
+
+  public setUniformBitflags(data: number) {
+    if (System.instance.capabilities.isWebGL2)
+      this.setUniform1ui(data);
+    else
+      this.setUniform1f(data);
   }
 }

@@ -44,6 +44,8 @@ export class WebpackDevServerElectronManager extends StandardElectronManager {
     };
     // (undocumented)
     frontendURL: string;
+    // (undocumented)
+    initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
 }
 
 

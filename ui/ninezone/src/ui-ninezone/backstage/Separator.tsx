@@ -6,10 +6,10 @@
  * @module Backstage
  */
 
-import * as classnames from "classnames";
+import "./Separator.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Separator.scss";
 
 /** Item separator in the [[Backstage]] component.
  * @beta

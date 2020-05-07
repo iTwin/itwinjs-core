@@ -9,7 +9,9 @@ export * from "./Camera";
 export * from "./ChangedElements";
 export * from "./CloudStorage";
 export * from "./CloudStorageTileCache";
+export * from "./CreatePolyfaceFromElement";
 export * from "./Code";
+export * from "./ColorByName";
 export * from "./ColorDef";
 export * from "./CommonLoggerCategory";
 export * from "./DisplayStyleSettings";
@@ -29,11 +31,13 @@ export * from "./GraphicParams";
 export * from "./GroundPlane";
 export * from "./HiddenLine";
 export * from "./Hilite";
+export * from "./HSLColor";
+export * from "./HSVColor";
 export * from "./IModel";
 export * from "./IModelError";
 export * from "./IModelVersion";
 export * from "./Image";
-export * from "./Lighting";
+export * from "./LightSettings";
 export * from "./LinePixels";
 export * from "./MassProperties";
 export * from "./MaterialProps";
@@ -46,10 +50,12 @@ export * from "./Render";
 export * from "./RenderMaterial";
 export * from "./RenderTexture";
 export * from "./RenderSchedule";
+export * from "./RgbColor";
 export * from "./RpcInterface";
 export * from "./RpcManager";
 export * from "./SkyBox";
 export * from "./Snapping";
+export * from "./SolarCalculate";
 export * from "./SolarShadows";
 export * from "./SpatialClassificationProps";
 export * from "./SubCategoryAppearance";
@@ -57,6 +63,7 @@ export * from "./SubCategoryOverride";
 export * from "./TerrainSettings";
 export * from "./TextureMapping";
 export * from "./TextureProps";
+export * from "./ThematicDisplay";
 export * from "./Thumbnail";
 export * from "./TileProps";
 export * from "./Tween";
@@ -76,7 +83,7 @@ export * from "./geometry/ImageGraphic";
 export * from "./geometry/LineStyle";
 export * from "./geometry/Placement";
 export * from "./geometry/TextString";
-export * from "./oidc/OidcDesktopClientConfiguration";
+export * from "./oidc/DesktopAuthorizationClientConfiguration";
 export * from "./rpc/DevToolsRpcInterface";
 export * from "./rpc/EditorRpcInterface";
 export * from "./rpc/IModelReadRpcInterface";
@@ -118,14 +125,6 @@ export * from "./tile/IModelTileIO";
 export * from "./tile/PntsTileIO";
 export * from "./tile/TileIO";
 export * from "./tile/TileMetadata";
-
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("imodeljs-common", BUILD_SEMVER);
-}
 
 /** @docs-package-description
  * The imodeljs-common package contains classes for working with iModels that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
@@ -185,4 +184,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Tile
  * Types for working with 3d tile formats.
+ */
+/**
+ * @docs-group-description Utils
+ * Miscellaneous utility classes.
  */

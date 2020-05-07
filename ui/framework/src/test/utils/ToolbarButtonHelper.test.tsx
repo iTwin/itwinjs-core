@@ -2,18 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { render, cleanup, prettyDOM } from "@testing-library/react";
 import { expect } from "chai";
+import * as React from "react";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import { cleanup, prettyDOM, render } from "@testing-library/react";
+import { CommandItemDef, GroupButton, ToolbarButtonHelper, ToolButton, ToolWidget } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import {
-  ToolButton,
-  GroupButton,
-  ToolWidget,
-  CommandItemDef,
-  ToolbarButtonHelper,
-} from "../../ui-framework";
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
 describe("Locate Toolbar items", () => {
   const tool1 = new CommandItemDef({
@@ -77,7 +71,7 @@ describe("Locate Toolbar items", () => {
 
   it("Find item in horizontal and vertical toolbars.", () => {
     const component = render(
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         appButton={backstageToggleCommand}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}

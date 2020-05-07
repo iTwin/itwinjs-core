@@ -6,8 +6,8 @@
  * @module Breadcrumb
  */
 
-import { TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
 import { UiEvent } from "@bentley/ui-core";
+import { TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
 
 /** BreadcrumbChangeEvent Event Args class.
  * @beta

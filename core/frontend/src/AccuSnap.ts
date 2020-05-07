@@ -6,18 +6,18 @@
  * @module LocatingElements
  */
 
-import { Point3d, Point2d, XAndY, Vector3d, CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson } from "@bentley/geometry-core";
-import { Viewport, ScreenViewport } from "./Viewport";
-import { BeButtonEvent, BeTouchEvent, BeButton, InputSource } from "./tools/Tool";
-import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager, LocateFilterStatus } from "./ElementLocateManager";
-import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
-import { DecorateContext } from "./ViewContext";
-import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, HitPriority, IntersectDetail, SnapHeat, HitGeomType } from "./HitDetail";
-import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { Decorator } from "./ViewManager";
+import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Vector3d, XAndY } from "@bentley/geometry-core";
 import { SnapRequestProps } from "@bentley/imodeljs-common";
+import { ElementLocateManager, HitListHolder, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
+import { HitDetail, HitDetailType, HitGeomType, HitList, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
+import { IModelApp } from "./IModelApp";
 import { CanvasDecoration } from "./render/CanvasDecoration";
+import { IconSprites, Sprite, SpriteLocation } from "./Sprites";
+import { BeButton, BeButtonEvent, BeTouchEvent, InputSource } from "./tools/Tool";
+import { DecorateContext } from "./ViewContext";
+import { Decorator } from "./ViewManager";
+import { ScreenViewport, Viewport } from "./Viewport";
 
 // cspell:ignore dont primitivetools
 
@@ -585,17 +585,17 @@ export class AccuSnap implements Decorator {
       return undefined;
 
     const worldToView = second.viewport.worldToViewMap.transform0;
-    const detail = CurveCurve.intersectionProjectedXY(worldToView, tpSegment, true, segment, true);
-    if (0 === detail.dataA.length)
+    const detail = CurveCurve.intersectionProjectedXYPairs(worldToView, tpSegment, true, segment, true);
+    if (0 === detail.length)
       return undefined;
 
     let closeIndex = 0;
-    if (detail.dataA.length > 1) {
+    if (detail.length > 1) {
       const snapPt = worldToView.multiplyPoint3d(HitGeomType.Point === tpSnap.geomType && HitGeomType.Point !== second.geomType ? second.getPoint() : tpSnap.getPoint(), 1); // Don't check distance from arc centers...
       let lastDist: number | undefined;
 
-      for (let i = 0; i < detail.dataA.length; i++) {
-        const testPt = worldToView.multiplyPoint3d(detail.dataA[i].point, 1);
+      for (let i = 0; i < detail.length; i++) {
+        const testPt = worldToView.multiplyPoint3d(detail[i].detailA.point, 1);
         const testDist = snapPt.realDistanceXY(testPt);
 
         if (undefined !== testDist && (undefined === lastDist || testDist < lastDist)) {
@@ -605,7 +605,7 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const intersect = new IntersectDetail(tpSnap, SnapHeat.InRange, detail.dataA[closeIndex].point, segment, second.sourceId); // Should be ok to share hit detail with tentative...
+    const intersect = new IntersectDetail(tpSnap, SnapHeat.InRange, detail[closeIndex].detailA.point, segment, second.sourceId); // Should be ok to share hit detail with tentative...
     intersect.primitive = tpSegment; // Just save single segment that was intersected for line strings/shapes...
 
     return intersect;
@@ -617,12 +617,15 @@ export class AccuSnap implements Decorator {
       if (snapModes.includes(SnapMode.Nearest)) {
         if (out) out.snapStatus = SnapStatus.Success;
         return new SnapDetail(thisHit, SnapMode.Nearest, SnapHeat.InRange);
+      } else if (1 === snapModes.length && snapModes.includes(SnapMode.Intersection)) {
+        if (out) out.snapStatus = SnapStatus.NoSnapPossible;
+        return undefined;
+      } else {
+        if (out) out.snapStatus = SnapStatus.Success;
+        const realitySnap = new SnapDetail(thisHit, SnapMode.Nearest, SnapHeat.None);
+        realitySnap.sprite = undefined; // Don't show a snap mode that isn't applicable, but still accept hit point...
+        return realitySnap;
       }
-      if (out) {
-        out.snapStatus = (1 === snapModes.length && snapModes.includes(SnapMode.Intersection) ? SnapStatus.NoSnapPossible : SnapStatus.NotSnappable);
-        out.explanation = IModelApp.i18n.translate(ElementLocateManager.getFailureMessageKey("RealityModelSnapMode"));
-      }
-      return undefined;
     }
 
     if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {

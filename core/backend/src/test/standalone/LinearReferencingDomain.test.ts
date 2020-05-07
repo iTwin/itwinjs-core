@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  CategoryProps, Code, IModel, ILinearElementProps, InformationPartitionElementProps, GeometricElement3dProps,
-  LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps,
+  CategoryProps, Code, GeometricElement3dProps, ILinearElementProps, IModel, InformationPartitionElementProps, LinearlyLocatedAttributionProps,
+  LinearlyReferencedFromToLocationProps,
 } from "@bentley/imodeljs-common";
+import { LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo } from "../../domains/LinearReferencingElements";
 import {
-  BackendRequestContext, LinearReferencingSchema,
-  PhysicalModel, IModelDb, SpatialCategory, PhysicalPartition, SubjectOwnsPartitionElements, LinearlyReferencedFromToLocation, Schema, Schemas, ClassRegistry,
+  BackendRequestContext, ClassRegistry, IModelDb, LinearlyReferencedFromToLocation, LinearReferencingSchema, PhysicalModel, PhysicalPartition, Schema,
+  Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo } from "../../domains/LinearReferencingElements";
 
 class TestLinearReferencingSchema extends Schema {
   public static get schemaName(): string { return "TestLinearReferencing"; }
@@ -66,7 +66,7 @@ describe("LinearReferencing Domain", () => {
   const requestContext = new BackendRequestContext();
 
   it("should create elements exercising the LinearReferencing domain", async () => {
-    const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("LinearReferencingDomain", "LinearReferencingTest.bim"), {
+    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("LinearReferencingDomain", "LinearReferencingTest.bim"), {
       rootSubject: { name: "LinearReferencingTest", description: "Test of the LinearReferencing domain schema." },
       client: "LinearReferencing",
       globalOrigin: { x: 0, y: 0 },
@@ -213,6 +213,6 @@ describe("LinearReferencing Domain", () => {
 
     iModelDb.saveChanges("Insert Test LinearReferencing elements");
 
-    iModelDb.closeSnapshot();
+    iModelDb.close();
   });
 });

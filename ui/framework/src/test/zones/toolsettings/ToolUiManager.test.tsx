@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
-import TestUtils from "../../TestUtils";
-import { ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../../../ui-framework";
+import * as sinon from "sinon";
+import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import {
-  ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, PropertyDescription, PropertyEditorParamTypes,
-  SuppressLabelEditorParams, ToolSettingsPropertySyncItem,
-} from "@bentley/imodeljs-frontend";
+  DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
+} from "@bentley/ui-abstract";
+import { SyncToolSettingsPropertiesEventArgs, SyncUiEventDispatcher, ToolUiManager } from "../../../ui-framework";
+import TestUtils from "../../TestUtils";
 
 // cSpell:Ignore USELENGTH
 
@@ -51,10 +51,12 @@ describe("ToolUiManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    await NoRenderApp.startup();
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
+    await IModelApp.shutdown();
   });
 
   it("check initial values", () => {
@@ -63,14 +65,14 @@ describe("ToolUiManager", () => {
   });
 
   it("simulate a tool starting", () => {
-    const toolSettingsProperties: ToolSettingsPropertyRecord[] = [];
-    const useLengthValue = new ToolSettingsValue(false);
-    const lengthValue = new ToolSettingsValue(1.2345, "1.2345");
-    const enumValue = new ToolSettingsValue("1");
+    const toolSettingsProperties: DialogItem[] = [];
+    const useLengthValue: DialogItemValue = { value: false };
+    const lengthValue: DialogItemValue = { value: 1.2345, displayValue: "1.2345" };
+    const enumValue: DialogItemValue = { value: "1" };
 
-    toolSettingsProperties.push(new ToolSettingsPropertyRecord(useLengthValue.clone() as PrimitiveValue, useLengthDescription, { rowPriority: 0, columnIndex: 1 }));
-    toolSettingsProperties.push(new ToolSettingsPropertyRecord(lengthValue.clone() as PrimitiveValue, lengthDescription, { rowPriority: 0, columnIndex: 3 }));
-    toolSettingsProperties.push(new ToolSettingsPropertyRecord(enumValue.clone() as PrimitiveValue, enumDescription, { rowPriority: 1, columnIndex: 3 }));
+    toolSettingsProperties.push({ value: useLengthValue, property: useLengthDescription, editorPosition: { rowPriority: 0, columnIndex: 1 } });
+    toolSettingsProperties.push({ value: lengthValue, property: lengthDescription, editorPosition: { rowPriority: 0, columnIndex: 3 } });
+    toolSettingsProperties.push({ value: enumValue, property: enumDescription, editorPosition: { rowPriority: 1, columnIndex: 3 } });
     ToolUiManager.initializeToolSettingsData(toolSettingsProperties, testToolId, testToolLabel, testToolDescription);
 
     // override the property getter to return the properties needed for the test
@@ -95,7 +97,7 @@ describe("ToolUiManager", () => {
   });
 
   it("should handle no tool settings", () => {
-    const toolSettingsProperties: ToolSettingsPropertyRecord[] = [];
+    const toolSettingsProperties: DialogItem[] = [];
     const result = ToolUiManager.initializeToolSettingsData(toolSettingsProperties);
     expect(result).to.be.false;
   });
@@ -108,9 +110,9 @@ describe("ToolUiManager", () => {
 
   it("handleSyncToolSettingsPropertiesEvent", () => {
     let eventCalled = false;
-    const useLengthValue = new ToolSettingsValue(false);
+    const useLengthValue: DialogItemValue = { value: false };
 
-    const syncItem = new ToolSettingsPropertySyncItem(useLengthValue, useLengthName, false);
+    const syncItem: DialogPropertySyncItem = { value: useLengthValue, propertyName: useLengthName, isDisabled: false };
 
     const handleSyncToolSettingsPropertiesEvent = (args: SyncToolSettingsPropertiesEventArgs): void => {
       eventCalled = true;
@@ -130,4 +132,15 @@ describe("ToolUiManager", () => {
     expect(eventCalled).to.be.false;
   });
 
+  it("handleDispatchSyncUiEvent", () => {
+    ToolUiManager.initialize();
+    const immediateStub = sinon.stub(SyncUiEventDispatcher, "dispatchImmediateSyncUiEvent");
+    const timerStub = sinon.stub(SyncUiEventDispatcher, "dispatchSyncUiEvent");
+    IModelApp.toolAdmin.dispatchUiSyncEvent("test1");
+    timerStub.calledOnce.should.be.true;
+
+    IModelApp.toolAdmin.dispatchImmediateUiSyncEvent("test2");
+    immediateStub.calledOnce.should.be.true;
+    sinon.restore();
+  });
 });

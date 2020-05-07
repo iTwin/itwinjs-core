@@ -2,12 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, SpatialViewDefinition, GeometricElement3d, DisplayStyle3d } from "@bentley/imodeljs-backend";
-import { OpenMode, DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { Placement3d, RenderMode, ViewFlags, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
-import { YawPitchRollAngles, Point3d, Vector3d, Range3d, StandardViewIndex } from "@bentley/geometry-core";
+import { readFileSync, unlinkSync, writeFileSync } from "fs";
 import * as Yargs from "yargs";
-import { readFileSync, writeFileSync, unlinkSync } from "fs";
+import { DbResult, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Point3d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import {
+  DisplayStyle3d, ECSqlStatement, GeometricElement3d, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, SpatialViewDefinition, StandaloneDb,
+  ViewDefinition,
+} from "@bentley/imodeljs-backend";
+import { ColorDef, ElementAlignedBox3d, Placement3d, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 
 interface ImportInputArgs {
   input: string;
@@ -216,7 +219,7 @@ function doAddAnimationScript(iModel: IModelDb, animationScript: string, createS
     const vf = new ViewFlags();
     vf.renderMode = RenderMode.SmoothShade;
     vf.cameraLights = true;
-    const bgColor = new ColorDef("rgb(127, 127, 127)");
+    const bgColor = ColorDef.create("rgb(127, 127, 127)");
 
     const displayStyleId = DisplayStyle3d.insert(iModel, view.model, "Schedule View Style", { viewFlags: vf, backgroundColor: bgColor, scheduleScript: script });
     iModel.views.setDefaultViewId(SpatialViewDefinition.insertWithCamera(iModel, view.model, "Schedule View", view.modelSelectorId, view.categorySelectorId, displayStyleId, iModel.projectExtents, StandardViewIndex.Iso));
@@ -226,10 +229,10 @@ function doAddAnimationScript(iModel: IModelDb, animationScript: string, createS
 }
 
 function doImport(inputArgs: Yargs.Arguments<ImportInputArgs>) {
-  let originalIModel: IModelDb;
+  let originalIModel: StandaloneDb;
 
   try {
-    originalIModel = IModelDb.openStandalone(inputArgs.input as string, inputArgs.createDuplicateIbim ? OpenMode.Readonly : OpenMode.ReadWrite); // could throw Error
+    originalIModel = StandaloneDb.openFile(inputArgs.input as string, inputArgs.createDuplicateIbim ? OpenMode.Readonly : OpenMode.ReadWrite); // could throw Error
   } catch (error) {
     process.stdout.write("Unable to open: " + inputArgs.input + "\n");
     return false;
@@ -240,7 +243,7 @@ function doImport(inputArgs: Yargs.Arguments<ImportInputArgs>) {
   if (inputArgs.createDuplicateIbim) {
     outputFileName = inputArgs.input + ".animated.ibim";
     IModelJsFs.copySync(inputArgs.input as string, outputFileName);
-    outputIModel = IModelDb.openStandalone(outputFileName, OpenMode.ReadWrite);
+    outputIModel = StandaloneDb.openFile(outputFileName, OpenMode.ReadWrite);
   }
   try { unlinkSync(outputFileName + ".tiles"); } catch (error) { }
   if (inputArgs.fixRange)
@@ -257,9 +260,9 @@ function doImport(inputArgs: Yargs.Arguments<ImportInputArgs>) {
     process.stdout.write("Unable to save changes to: " + outputFileName + "\n");
   }
 
-  originalIModel.closeStandalone();
+  originalIModel.close();
   if (inputArgs.duplicateIbim)
-    outputIModel.closeStandalone();
+    outputIModel.close();
 
   return true;
 }
@@ -272,6 +275,7 @@ Yargs.default("createDuplicateIbim", true, "Create a duplicate IBIM with the imp
 Yargs.required("script", "Animation script JSON file");
 Yargs.string("script");
 const args = Yargs.parse() as Yargs.Arguments<ImportInputArgs>;
-
-IModelHost.startup(new IModelHostConfiguration());
-doImport(args);
+(async () => {
+  await IModelHost.startup(new IModelHostConfiguration());
+  doImport(args);
+})(); // tslint:disable-line:no-floating-promises

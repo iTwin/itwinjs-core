@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup, fireEvent, act } from "@testing-library/react";
 import { expect } from "chai";
+import React from "react";
 import * as sinon from "sinon";
-import { TimelineComponent } from "../../ui-components/timeline/TimelineComponent";
+import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { BaseTimelineDataProvider } from "../../ui-components/timeline/BaseTimelineDataProvider";
-import { PlaybackSettings, Milestone } from "../../ui-components/timeline/interfaces";
+import { Milestone, PlaybackSettings } from "../../ui-components/timeline/interfaces";
+import { TimelineComponent } from "../../ui-components/timeline/TimelineComponent";
 import TestUtils from "../TestUtils";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {

@@ -6,21 +6,21 @@
  * @module Form
  */
 
+import "./Form.scss";
 import * as React from "react";
+import { Button, ButtonType } from "../button/Button";
 import { UiCore } from "../UiCore";
 import { Field } from "./Field";
-import { Button, ButtonType } from "../button/Button";
-import "./Form.scss";
 
 // cSpell:ignore multilinetextbox
 
 /** The available editors for the fields in a [[Form]].
- * @alpha
+ * @beta
  */
 export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
 
 /** Interface used to define each [[Field]] in a [[Form]]
- * @alpha
+ * @beta
  */
 export interface FieldDef {
   /* The label text for the field */
@@ -37,14 +37,14 @@ export interface FieldDef {
 }
 
 /** Key/value pairs for all the field values with key being the field HTML Id.
- * @alpha
+ * @beta
  */
 export interface FieldValues {
   [key: string]: any;
 }
 
 /** The state data used by [[Form]] to hold state of each [[Field]] and the result of submit button processing.
- * @alpha
+ * @beta
  */
 interface FormState {
   /* The field values */
@@ -59,30 +59,30 @@ interface FormState {
 
 /**
  * FormContextState combines the Form's state data with the callbacks used to update the value of the state data.
- * @alpha
+ * @beta
  */
 export interface FormContextState extends FormState {
   setValues: (values: FieldValues) => void;
 }
 
 /** React context used by Form as a Provider and by the Fields as Consumers and updaters.
- * @alpha
+ * @beta
  */
 // tslint:disable-next-line: variable-name
 export const FormContext = React.createContext<FormContextState | undefined>(undefined);
 FormContext.displayName = "ui-core:FormContext";
 
 /** Key/value pairs for all the field definitions to be displayed in a [[Form]].
- * @alpha
+ * @beta
  */
 export interface FieldDefinitions {
   [key: string]: FieldDef;
 }
 
 /** Properties that define [[Form]] including the callback to be called when the Submit button is pressed.
- * @alpha
+ * @beta
  */
-interface IFormProps {
+export interface FormProps {
   /** Required async callback the processes the Form data and throws and Error if the data cannot be processed.  */
   handleFormSubmit: (values: FieldValues) => Promise<void>;
   /** Definition used to create each Field in the Form. */
@@ -143,14 +143,14 @@ interface IFormProps {
  *     </div >
  *   );
  * }
- * @alpha
+ * @beta
  */
-export class Form extends React.Component<IFormProps, FormState> {
+export class Form extends React.Component<FormProps, FormState> {
   private _submitButtonLabel = UiCore.translate("form.submitButtonLabel");
   private _errorPrefix = UiCore.translate("form.errorPrefix");
   private _errorSuffix = UiCore.translate("form.errorSuffix");
 
-  constructor(props: IFormProps) {
+  constructor(props: FormProps) {
     super(props);
 
     // set initial values for field values

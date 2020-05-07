@@ -6,10 +6,11 @@
  * @module WebGL
  */
 import { assert } from "@bentley/bentleyjs-core";
-import { VariableType, ProgramBuilder, FragmentShaderBuilder, FragmentShaderComponent } from "../ShaderBuilder";
+import { RenderType } from "@bentley/webgl-compatibility";
 import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder";
+import { System } from "../System";
 import { addInstancedRtcMatrix } from "./Vertex";
-import { RenderType, System } from "../System";
 
 const computeShadowPos = `
   vec4 shadowProj = u_shadowProj * rawPosition;
@@ -67,10 +68,18 @@ float shadowMapEVSM(vec3 shadowPos) {
 const applySolarShadowMap = `
   if (v_shadowPos.x < 0.0 || v_shadowPos.x > 1.0 || v_shadowPos.y < 0.0 || v_shadowPos.y > 1.0 || v_shadowPos.z < 0.0 || v_shadowPos.z > 1.0)
     return baseColor;
-  vec3 toEye = mix(vec3(0.0, 0.0, -1.0), normalize(v_eyeSpace), float(kFrustumType_Perspective == u_frustum.z));
+  vec3 toEye = kFrustumType_Perspective == u_frustum.z ? normalize(v_eyeSpace) : vec3(0.0, 0.0, -1.0);
   vec3 normal = normalize(v_n);
   normal = (dot(normal, toEye) > 0.0) ? -normal : normal;
-  float visible = (isSurfaceBitSet(kSurfaceBit_HasNormals) && (dot(normal, u_sunDir) < 0.0)) ? 0.0 : shadowMapEVSM(v_shadowPos);
+  float visible = (u_surfaceFlags[kSurfaceBitIndex_HasNormals] && (dot(normal, u_sunDir) < 0.0)) ? 0.0 : shadowMapEVSM(v_shadowPos);
+  return vec4(baseColor.rgb * mix(u_shadowParams.rgb, vec3(1.0), visible), baseColor.a);
+  `;
+
+const applySolarShadowMapTerrain = `
+  if (v_shadowPos.x < 0.0 || v_shadowPos.x > 1.0 || v_shadowPos.y < 0.0 || v_shadowPos.y > 1.0 || v_shadowPos.z < 0.0 || v_shadowPos.z > 1.0)
+    return baseColor;
+
+  float visible = shadowMapEVSM(v_shadowPos);
   return vec4(baseColor.rgb * mix(u_shadowParams.rgb, vec3(1.0), visible), baseColor.a);
   `;
 
@@ -84,7 +93,7 @@ export function addEvsmExponent(frag: FragmentShaderBuilder): void {
 }
 
 /** @internal */
-export function addSolarShadowMap(builder: ProgramBuilder) {
+export function addSolarShadowMap(builder: ProgramBuilder, toTerrain = false) {
   const frag = builder.frag;
   const vert = builder.vert;
 
@@ -102,11 +111,13 @@ export function addSolarShadowMap(builder: ProgramBuilder) {
     });
   });
 
-  frag.addUniform("u_sunDir", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_sunDir", (uniform, params) => {
-      params.target.uniforms.shadow.bindSunDirection(uniform);
+  if (!toTerrain) {
+    frag.addUniform("u_sunDir", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_sunDir", (uniform, params) => {
+        params.target.uniforms.bindSunDirection(uniform);
+      });
     });
-  });
+  }
 
   vert.addUniform("u_shadowProj", VariableType.Mat4, (prog) => {
     prog.addGraphicUniform("u_shadowProj", (uniform, params) => {
@@ -128,5 +139,5 @@ export function addSolarShadowMap(builder: ProgramBuilder) {
   frag.addFunction(warpDepth);
   frag.addFunction(chebyshevUpperBound);
   frag.addFunction(shadowMapEVSM);
-  frag.set(FragmentShaderComponent.ApplySolarShadowMap, applySolarShadowMap);
+  frag.set(FragmentShaderComponent.ApplySolarShadowMap, toTerrain ? applySolarShadowMapTerrain : applySolarShadowMap);
 }

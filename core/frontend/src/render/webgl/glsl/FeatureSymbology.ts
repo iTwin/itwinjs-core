@@ -6,25 +6,20 @@
  * @module WebGL
  */
 
+import { assert } from "@bentley/bentleyjs-core";
+import { OvrFlags, RenderOrder, TextureUnit } from "../RenderFlags";
 import {
-  ProgramBuilder,
-  ShaderBuilder,
-  VertexShaderBuilder,
-  FragmentShaderBuilder,
-  VariableType,
+  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
   VertexShaderComponent,
-  VariablePrecision,
-  FragmentShaderComponent,
 } from "../ShaderBuilder";
-import { TextureUnit } from "../RenderFlags";
+import { System } from "../System";
 import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
-import { addFeatureAndMaterialLookup, addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
-import { assignFragColor, computeLinearDepth, addWindowToTexCoords } from "./Fragment";
-import { extractNthBit, addEyeSpace, addUInt32s } from "./Common";
+import { addExtractNthBit, addEyeSpace, addUInt32s } from "./Common";
 import { decodeDepthRgb } from "./Decode";
+import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
-import { assert } from "@bentley/bentleyjs-core";
+import { addAlpha, addFeatureAndMaterialLookup, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
 
 // tslint:disable:no-const-enum
 
@@ -45,18 +40,18 @@ export const enum FeatureSymbologyOptions {
 /** @internal */
 export function addOvrFlagConstants(builder: ShaderBuilder): void {
   // NB: These are the bit positions of each flag in OvrFlags enum - not the flag values
-  builder.addConstant("kOvrBit_Visibility", VariableType.Float, "0.0");
-  builder.addConstant("kOvrBit_Rgb", VariableType.Float, "1.0");
-  builder.addConstant("kOvrBit_Alpha", VariableType.Float, "2.0");
-  builder.addConstant("kOvrBit_IgnoreMaterial", VariableType.Float, "3.0");
-  builder.addConstant("kOvrBit_Flashed", VariableType.Float, "4.0");
-  builder.addConstant("kOvrBit_NonLocatable", VariableType.Float, "5.0");
-  builder.addConstant("kOvrBit_LineCode", VariableType.Float, "6.0");
-  builder.addConstant("kOvrBit_Weight", VariableType.Float, "7.0");
+  builder.addBitFlagConstant("kOvrBit_Visibility", 0);
+  builder.addBitFlagConstant("kOvrBit_Rgb", 1);
+  builder.addBitFlagConstant("kOvrBit_Alpha", 2);
+  builder.addBitFlagConstant("kOvrBit_IgnoreMaterial", 3);
+  builder.addBitFlagConstant("kOvrBit_Flashed", 4);
+  builder.addBitFlagConstant("kOvrBit_NonLocatable", 5);
+  builder.addBitFlagConstant("kOvrBit_LineCode", 6);
+  builder.addBitFlagConstant("kOvrBit_Weight", 7);
 
   // NB: We treat the 16-bit flags as 2 bytes - so subtract 8 from each of these bit indices.
-  builder.addConstant("kOvrBit_Hilited", VariableType.Float, "0.0");
-  builder.addConstant("kOvrBit_Emphasized", VariableType.Float, "1.0");
+  builder.addBitFlagConstant("kOvrBit_Hilited", 0);
+  builder.addBitFlagConstant("kOvrBit_Emphasized", 1);
 }
 
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
@@ -72,10 +67,27 @@ function getFeatureIndex(instanced: boolean): string {
   }`;
 }
 
+// Returns true if the specified flag is not globally overridden and is set in flags
+const nthFeatureBitSet = `
+bool nthFeatureBitSet(float flags, float n) {
+  return !nthBitSet(u_globalOvrFlags, n) && nthBitSet(flags, n);
+}
+`;
+const nthFeatureBitSet2 = `
+bool nthFeatureBitSet(float flags, uint n) {
+  return 0u == (u_globalOvrFlags & n) && nthBitSet(flags, n);
+}
+`;
+
 // Returns 1.0 if the specified flag is not globally overridden and is set in flags
 const extractNthFeatureBit = `
 float extractNthFeatureBit(float flags, float n) {
-  return (1.0 - extractNthBit(u_globalOvrFlags, n)) * extractNthBit(flags, n);
+  return !nthBitSet(u_globalOvrFlags, n) && nthBitSet(flags, n) ? 1.0 : 0.0;
+}
+`;
+const extractNthFeatureBit2 = `
+float extractNthFeatureBit(float flags, uint n) {
+  return 0u == (u_globalOvrFlags & n) && nthBitSet(flags, n) ? 1.0 : 0.0;
 }
 `;
 
@@ -100,13 +112,13 @@ vec4 getSecondFeatureRgba() {
 
 const computeLineWeight = `
 float computeLineWeight() {
-  return mix(g_lineWeight, linear_feature_overrides.y, linear_feature_overrides.x);
+  return linear_feature_overrides.x > 0.5 ? linear_feature_overrides.y : g_lineWeight;
 }
 `;
 
 const computeLineCode = `
 float computeLineCode() {
-  return mix(g_lineCode, linear_feature_overrides.w, linear_feature_overrides.z);
+  return linear_feature_overrides.z > 0.5 ? linear_feature_overrides.w : g_lineCode;
 }
 `;
 
@@ -129,10 +141,15 @@ const checkVertexDiscard = `
     hasAlpha = feature_alpha <= s_maxAlpha;
 
   bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
-  if (isOpaquePass && !u_discardTranslucentDuringOpaquePass)
+  bool discardTranslucentDuringOpaquePass = 1 == u_transparencyDiscardFlags || 3 == u_transparencyDiscardFlags;
+  if (isOpaquePass && !discardTranslucentDuringOpaquePass)
     return false;
 
   bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
+  bool discardOpaqueDuringTranslucentPass = 2 == u_transparencyDiscardFlags || 3 == u_transparencyDiscardFlags;
+  if (isTranslucentPass &&!discardOpaqueDuringTranslucentPass)
+    return false;
+
   return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
 `;
 
@@ -158,7 +175,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   const wantAlpha = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Alpha);
   assert(wantColor || !wantAlpha);
 
-  vert.addFunction(extractNthBit);
+  addExtractNthBit(vert);
   addOvrFlagConstants(vert);
 
   vert.addGlobal("linear_feature_overrides", VariableType.Vec4, "vec4(0.0)");
@@ -174,8 +191,17 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   }
 
   if (wantGlobalOvrFlags) {
-    vert.addFunction(extractNthFeatureBit);
-    vert.addUniform("u_globalOvrFlags", VariableType.Float, (prog) => {
+    let bitmapType;
+    if (System.instance.capabilities.isWebGL2) {
+      vert.addFunction(nthFeatureBitSet2);
+      vert.addFunction(extractNthFeatureBit2);
+      bitmapType = VariableType.Uint;
+    } else {
+      vert.addFunction(nthFeatureBitSet);
+      vert.addFunction(extractNthFeatureBit);
+      bitmapType = VariableType.Float;
+    }
+    vert.addUniform("u_globalOvrFlags", bitmapType, (prog) => {
       prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
         let flags = 0.0;
         if (params.geometry.isEdge) {
@@ -184,7 +210,10 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
             flags = edgeOvrs.computeOvrFlags();
         }
 
-        uniform.setUniform1f(flags);
+        if (!params.geometry.allowColorOverride)
+          flags |= OvrFlags.Rgba;
+
+        uniform.setUniformBitflags(flags);
       });
     });
   }
@@ -215,10 +244,17 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       // Even when transparency view flag is off, we need to allow features to override transparency, because it
       // is used when applying transparency threshold. However, we need to ensure we don't DISCARD transparent stuff during
       // opaque pass if transparency is off (see checkVertexDiscard). Especially important for transparency threshold and readPixels().
-      vert.addUniform("u_discardTranslucentDuringOpaquePass", VariableType.Boolean, (prog) => {
-        prog.addGraphicUniform("u_discardTranslucentDuringOpaquePass", (uniform, params) => {
-          // ###TODO Handle raster text if necessary
-          uniform.setUniform1i(params.target.currentViewFlags.transparency ? 1 : 0);
+      // Also, if we override raster text to be opaque we must still draw it in the translucent pass.
+      // 1: discard translucent during opaque.
+      // 2: discard opaque during translucent.
+      // 3: both
+      vert.addUniform("u_transparencyDiscardFlags", VariableType.Int, (prog) => {
+        prog.addGraphicUniform("u_transparencyDiscardFlags", (uniform, params) => {
+          let flags = params.target.currentViewFlags.transparency ? 1 : 0;
+          if (!params.geometry.alwaysRenderTranslucent)
+            flags += 2;
+
+          uniform.setUniform1i(flags);
         });
       });
 
@@ -237,9 +273,9 @@ export function addMaxAlpha(builder: ShaderBuilder): void {
 
 /** @internal */
 function addEmphasisFlags(builder: ShaderBuilder): void {
-  builder.addConstant("kEmphBit_Hilite", VariableType.Float, "0.0");
-  builder.addConstant("kEmphBit_Emphasize", VariableType.Float, "1.0");
-  builder.addConstant("kEmphBit_Flash", VariableType.Float, "2.0");
+  builder.addBitFlagConstant("kEmphBit_Hilite", 0);
+  builder.addBitFlagConstant("kEmphBit_Emphasize", 1);
+  builder.addBitFlagConstant("kEmphBit_Flash", 2);
   builder.addConstant("kEmphFlag_Hilite", VariableType.Float, "1.0");
   builder.addConstant("kEmphFlag_Emphasize", VariableType.Float, "2.0");
   builder.addConstant("kEmphFlag_Flash", VariableType.Float, "4.0");
@@ -284,9 +320,9 @@ const computeHiliteOverrides = `
 `;
 
 const computeHiliteOverridesWithWeight = computeHiliteOverrides + `
-  linear_feature_overrides = vec4(1.0 == extractNthFeatureBit(flags, kOvrBit_Weight),
+  linear_feature_overrides = vec4(nthFeatureBitSet(flags, kOvrBit_Weight),
   value.a * 256.0,
-  1.0 == extractNthFeatureBit(flags, kOvrBit_LineCode),
+  nthFeatureBitSet(flags, kOvrBit_LineCode),
   value.b * 256.0);
 `;
 
@@ -312,7 +348,7 @@ export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false)
   builder.vert.set(VertexShaderComponent.CheckForDiscard, checkVertexHiliteDiscard);
 
   addEmphasisFlags(builder.frag);
-  builder.frag.addFunction(extractNthBit);
+  addExtractNthBit(builder.frag);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeHiliteColor);
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 }
@@ -348,6 +384,10 @@ const checkForEarlySurfaceDiscard = `
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
   vec2 depthAndOrder = readDepthAndOrder(tc);
+
+  if (kRenderOrder_Background == u_renderOrder && depthAndOrder.x > 0.0)
+    return true;
+
   float surfaceDepth = computeLinearDepth(v_eyeSpace.z);
   term += float(depthAndOrder.x > u_renderOrder && abs(depthAndOrder.y - surfaceDepth) < 4.0e-5);
   return factor * term > 0.0;
@@ -355,11 +395,16 @@ const checkForEarlySurfaceDiscard = `
 
 const checkForEarlySurfaceDiscardWithFeatureID = `
   // No normals => unlt => reality model => no edges.
-  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers || !isSurfaceBitSet(kSurfaceBit_HasNormals))
+  bool isBackgroundMap = kRenderOrder_Background == u_renderOrder;
+  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers || (!isBackgroundMap && !u_surfaceFlags[kSurfaceBitIndex_HasNormals]))
     return false;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
   vec2 depthAndOrder = readDepthAndOrder(tc);
+
+  if (isBackgroundMap && depthAndOrder.x > 0.0)
+    return true;
+
   if (depthAndOrder.x <= u_renderOrder)
     return false;
 
@@ -410,19 +455,23 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
 
 // This only adds the constants that are actually used in shader code.
 export function addRenderOrderConstants(builder: ShaderBuilder) {
-  builder.addConstant("kRenderOrder_Linear", VariableType.Float, "4.0");
-  builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, "6.0");
-  builder.addConstant("kRenderOrder_LitSurface", VariableType.Float, "3.0");
-  builder.addConstant("kRenderOrder_PlanarUnlitSurface", VariableType.Float, "10.0");
-  builder.addConstant("kRenderOrder_PlanarLitSurface", VariableType.Float, "11.0");
-  builder.addConstant("kRenderOrder_PlanarBit", VariableType.Float, "8.0");
+  builder.addConstant("kRenderOrder_BlankingRegion", VariableType.Float, RenderOrder.BlankingRegion.toFixed(1));
+  builder.addConstant("kRenderOrder_Linear", VariableType.Float, RenderOrder.Linear.toFixed(1));
+  builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, RenderOrder.Silhouette.toFixed(1));
+  builder.addConstant("kRenderOrder_UnlitSurface", VariableType.Float, RenderOrder.UnlitSurface.toFixed(1));
+  builder.addConstant("kRenderOrder_LitSurface", VariableType.Float, RenderOrder.LitSurface.toFixed(1));
+  builder.addConstant("kRenderOrder_PlanarUnlitSurface", VariableType.Float, RenderOrder.PlanarUnlitSurface.toFixed(1));
+  builder.addConstant("kRenderOrder_PlanarLitSurface", VariableType.Float, RenderOrder.PlanarLitSurface.toFixed(1));
+  builder.addConstant("kRenderOrder_PlanarBit", VariableType.Float, RenderOrder.PlanarBit.toFixed(1));
+  builder.addConstant("kRenderOrder_Background", VariableType.Float, RenderOrder.Background.toFixed(1));
 }
 
 /** @internal */
 export function addRenderOrder(builder: ShaderBuilder) {
   builder.addUniform("u_renderOrder", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_renderOrder", (uniform, params) => {
-      uniform.setUniform1f(params.geometry.renderOrder);
+      const order = params.target.drawingBackgroundForReadPixels ? RenderOrder.Background : params.geometry.renderOrder;
+      uniform.setUniform1f(order);
     });
   });
 }
@@ -472,7 +521,7 @@ export function addFeatureId(builder: ProgramBuilder, computeInFrag: boolean) {
 //  - Solid Fill or Hidden Line mode; or
 //  - Shaded mode and generating shadow map (sufficiently transparent surfaces receive but do not cast shadows).
 const isBelowTransparencyThreshold = `
-  return v_color.a < u_transparencyThreshold && isSurfaceBitSet(kSurfaceBit_TransparencyThreshold);
+  return v_color.a < u_transparencyThreshold && u_surfaceFlags[kSurfaceBitIndex_TransparencyThreshold];
 `;
 
 /** @internal */
@@ -549,14 +598,14 @@ const computeFeatureOverrides = `
   if (0.0 == flags)
     return; // nothing overridden for this feature
 
-  float nonLocatable = extractNthFeatureBit(flags, kOvrBit_NonLocatable) * extractShaderBit(kShaderBit_IgnoreNonLocatable);
-  float invisible = extractNthFeatureBit(flags, kOvrBit_Visibility);
-  feature_invisible = 0.0 != (invisible + nonLocatable);
+  bool nonLocatable = (u_shaderFlags[kShaderBit_IgnoreNonLocatable] ? nthFeatureBitSet(flags, kOvrBit_NonLocatable) : false);
+  bool invisible = nthFeatureBitSet(flags, kOvrBit_Visibility);
+  feature_invisible = invisible || nonLocatable;
   if (feature_invisible)
     return;
 
-  bool rgbOverridden = extractNthFeatureBit(flags, kOvrBit_Rgb) > 0.0;
-  bool alphaOverridden = extractNthFeatureBit(flags, kOvrBit_Alpha) > 0.0;
+  bool rgbOverridden = nthFeatureBitSet(flags, kOvrBit_Rgb);
+  bool alphaOverridden = nthFeatureBitSet(flags, kOvrBit_Alpha);
   if (alphaOverridden || rgbOverridden) {
     vec4 rgba = getSecondFeatureRgba();
     if (rgbOverridden)
@@ -566,13 +615,13 @@ const computeFeatureOverrides = `
       feature_alpha = rgba.a;
     }
 
-  linear_feature_overrides = vec4(1.0 == extractNthFeatureBit(flags, kOvrBit_Weight),
+  linear_feature_overrides = vec4(nthFeatureBitSet(flags, kOvrBit_Weight),
                                   value.w * 256.0,
-                                  1.0 == extractNthFeatureBit(flags, kOvrBit_LineCode),
+                                  nthFeatureBitSet(flags, kOvrBit_LineCode),
                                   value.z * 256.0);
 
-  feature_ignore_material = 0.0 != extractNthFeatureBit(flags, kOvrBit_IgnoreMaterial);
-  use_material = !feature_ignore_material;
+  feature_ignore_material = nthFeatureBitSet(flags, kOvrBit_IgnoreMaterial);
+  use_material = use_material && !feature_ignore_material;
 
   v_feature_emphasis += kEmphFlag_Flash * extractNthFeatureBit(flags, kOvrBit_Flashed);
 `;
@@ -592,21 +641,21 @@ const applyFlash = `
 
 const doApplyFlash = `
 vec4 doApplyFlash(float flags, vec4 baseColor) {
-  float isFlashed = extractNthBit(flags, kEmphBit_Flash);
-  float isHilited = extractNthBit(flags, kEmphBit_Hilite);
-  float isEmphasized = (1.0 - isHilited) * extractNthBit(flags, kEmphBit_Emphasize);
-  vec3 hiliteRgb = mix(u_hilite_settings[0], u_hilite_settings[1], isEmphasized);
+  bool isFlashed = nthBitSet(flags, kEmphBit_Flash);
+  bool isHilited = nthBitSet(flags, kEmphBit_Hilite);
+  bool isEmphasized = !isHilited && nthBitSet(flags, kEmphBit_Emphasize);
+  vec3 hiliteRgb = isEmphasized ? u_hilite_settings[1] : u_hilite_settings[0];
 
-  isHilited = max(isEmphasized, isHilited);
-  float hiliteRatio = isHilited * mix(u_hilite_settings[2][0], u_hilite_settings[2][1], isEmphasized);
+  isHilited = isEmphasized || isHilited;
+  float hiliteRatio = isHilited ? (isEmphasized ? u_hilite_settings[2][1] : u_hilite_settings[2][0]) : 0.0;
   baseColor.rgb = mix(baseColor.rgb, hiliteRgb, hiliteRatio);
 
   const float maxBrighten = 0.2;
-  float brighten = u_flash_intensity * maxBrighten;
-  vec3 brightRgb = baseColor.rgb + isFlashed * brighten;
+  float brighten = isFlashed ? u_flash_intensity * maxBrighten : 0.0;
+  vec3 brightRgb = baseColor.rgb + brighten;
 
   const float maxTween = 0.75;
-  float hiliteFraction = u_flash_intensity * isFlashed * maxTween;
+  float hiliteFraction = isFlashed ? u_flash_intensity * maxTween : 0.0;
   vec3 tweenRgb = baseColor.rgb * (1.0 - hiliteFraction);
   tweenRgb += u_hilite_settings[0] * hiliteFraction;
 
@@ -642,7 +691,7 @@ function addApplyFlash(frag: FragmentShaderBuilder) {
   addHiliteSettings(frag, true);
   addEmphasisFlags(frag);
 
-  frag.addFunction(extractNthBit);
+  addExtractNthBit(frag);
   frag.addFunction(doApplyFlash);
   frag.set(FragmentShaderComponent.ApplyFlash, applyFlash);
   addFlashIntensity(frag);

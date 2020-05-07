@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop uiadmin
+// cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop uiadmin itemsarbiter
 
 export * from "./ui-framework/UiFramework";  // Please ensure that this line comes before all other exports.
 
@@ -26,6 +26,7 @@ export * from "./ui-framework/backstage/BackstageManager";
 export * from "./ui-framework/backstage/CommandLaunch";
 export * from "./ui-framework/backstage/FrontstageLaunch";
 export * from "./ui-framework/backstage/Separator";
+export * from "./ui-framework/backstage/useDefaultBackstageItems";
 export * from "./ui-framework/backstage/TaskLaunch";
 export * from "./ui-framework/backstage/UserProfile";
 
@@ -77,13 +78,14 @@ export * from "./ui-framework/frontstage/ModalFrontstage";
 
 export * from "./ui-framework/hooks/useActiveIModelConnection";
 export * from "./ui-framework/hooks/useActiveViewport";
-export * from "./ui-framework/hooks/useAvailablePluginUiProviders";
-export * from "./ui-framework/backstage/useBackstageItems";
+export * from "./ui-framework/hooks/useAvailableUiItemsProviders";
+export * from "./ui-framework/hooks/useFrameworkVersion";
 
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
-export * from "./ui-framework/imodel-components/visibility-tree/VisibilityTree";
-export * from "./ui-framework/imodel-components/visibility-tree/ModelsTree";
+export * from "./ui-framework/imodel-components/models-tree/ModelsTree";
+export * from "./ui-framework/imodel-components/VisibilityTreeEventHandler";
+export * from "./ui-framework/imodel-components/VisibilityTreeRenderer";
 
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
@@ -93,11 +95,12 @@ export * from "./ui-framework/messages/AppNotificationManager";
 export * from "./ui-framework/messages/MessageManager";
 export * from "./ui-framework/messages/InputField";
 export * from "./ui-framework/messages/Pointer";
+export * from "./ui-framework/messages/ReactNotifyMessageDetails";
 
+export * from "./ui-framework/navigationaids/CubeNavigationAidControl";
+export * from "./ui-framework/navigationaids/DrawingNavigationAidControl";
 export * from "./ui-framework/navigationaids/NavigationAidControl";
-export * from "./ui-framework/navigationaids/CubeNavigationAid";
 export * from "./ui-framework/navigationaids/SheetNavigationAid";
-export * from "./ui-framework/navigationaids/DrawingNavigationAid";
 export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
 
@@ -115,8 +118,11 @@ export * from "./ui-framework/popup/PositionPopup";
 export * from "./ui-framework/popup/ToolbarPopup";
 
 export * from "./ui-framework/redux/SessionState";
+export * from "./ui-framework/redux/StateManager";
 export * from "./ui-framework/redux/FrameworkState";
 export * from "./ui-framework/redux/connectIModel";
+export * from "./ui-framework/redux/ReducerRegistry";
+export * from "./ui-framework/redux/redux-ts";
 
 export * from "./ui-framework/safearea/SafeAreaContext";
 
@@ -127,12 +133,9 @@ export * from "./ui-framework/selection/ClearEmphasisStatusField";
 export * from "./ui-framework/shared/ActionButtonItemDef";
 export * from "./ui-framework/shared/AnyItemDef";
 export * from "./ui-framework/shared/CommandItemDef";
-export * from "./ui-framework/shared/ConditionalItemDef";
-export * from "./ui-framework/shared/ConditionalItemProps";
 export * from "./ui-framework/shared/CustomItemDef";
 export * from "./ui-framework/shared/CustomItemProps";
 export * from "./ui-framework/shared/GroupItemProps";
-export * from "./ui-framework/shared/IconComponent";
 export * from "./ui-framework/shared/ItemDefBase";
 export * from "./ui-framework/shared/ItemMap";
 export * from "./ui-framework/shared/ItemProps";
@@ -143,6 +146,7 @@ export * from "./ui-framework/stagepanels/FrameworkStagePanel";
 export * from "./ui-framework/stagepanels/StagePanel";
 export * from "./ui-framework/stagepanels/StagePanelDef";
 export * from "./ui-framework/stagepanels/StagePanelHeader";
+export * from "./ui-framework/stagepanels/StagePanelEnums";
 
 export * from "./ui-framework/statusbar/StatusBar";
 export * from "./ui-framework/statusbar/StatusBarWidgetControl";
@@ -151,10 +155,9 @@ export * from "./ui-framework/statusbar/StatusBarItem";
 export * from "./ui-framework/statusbar/StatusBarItemsManager";
 export * from "./ui-framework/statusbar/StatusBarItemUtilities";
 export * from "./ui-framework/statusbar/StatusBarComposer";
-export * from "./ui-framework/statusbar/StatusBarManager";
 export * from "./ui-framework/statusbar/withMessageCenterFieldProps";
-export * from "./ui-framework/statusbar/usePluginStatusBarItems";
-export * from "./ui-framework/statusbar/useStageStatusBarItems";
+export * from "./ui-framework/statusbar/useUiItemsProviderStatusBarItems";
+export * from "./ui-framework/statusbar/useDefaultStatusBarItems";
 export * from "./ui-framework/statusbar/withStatusFieldProps";
 
 export * from "./ui-framework/statusfields/tileloading/TileLoadingIndicator";
@@ -181,33 +184,56 @@ export * from "./ui-framework/timeline/ScheduleAnimationProvider";
 export * from "./ui-framework/timeline/AnalysisAnimationProvider";
 export * from "./ui-framework/timeline/SolarTimelineDataProvider";
 
+export * from "./ui-framework/toolbar/ActionButtonItem";
 export * from "./ui-framework/toolbar/ActionItemButton";
 export * from "./ui-framework/toolbar/DragInteraction";
+export * from "./ui-framework/toolbar/ToolbarComposer";
+export * from "./ui-framework/toolbar/GroupButtonItem";
 export * from "./ui-framework/toolbar/GroupItem";
 export * from "./ui-framework/toolbar/PopupButton";
 export * from "./ui-framework/toolbar/Toolbar";
+export * from "./ui-framework/toolbar/ToolbarHelper";
 export * from "./ui-framework/toolbar/ToolButton";
+export * from "./ui-framework/toolbar/useUiItemsProviderToolbarItems";
+export * from "./ui-framework/toolbar/useDefaultToolbarItems";
 
 export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 
+export * from "./ui-framework/uiprovider/DefaultDialogGridContainer";
+
+export * from "./ui-framework/uisettings/IModelAppUiSettings";
+export * from "./ui-framework/uisettings/useUiSettings";
+
 export * from "./ui-framework/utils/ViewUtilities";
-export * from "./ui-framework/utils/redux-ts";
 export * from "./ui-framework/utils/PropsHelper";
 export * from "./ui-framework/utils/UiShowHideManager";
 export * from "./ui-framework/utils/ToolbarButtonHelper";
 
+export * from "./ui-framework/widget-panels/Content";
+export * from "./ui-framework/widget-panels/Frontstage";
+export * from "./ui-framework/widget-panels/FrontstageContent";
+export * from "./ui-framework/widget-panels/StatusBar";
+export * from "./ui-framework/widget-panels/Toolbars";
+export * from "./ui-framework/widget-panels/ToolSettings";
+
+export * from "./ui-framework/widgets/BasicNavigationWidget";
+export * from "./ui-framework/widgets/BasicToolWidget";
+export * from "./ui-framework/widgets/DefaultNavigationWidget";
 export * from "./ui-framework/widgets/NavigationWidget";
+export * from "./ui-framework/widgets/NavigationWidgetComposer";
+export * from "./ui-framework/widgets/ReviewToolWidget";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";
 export * from "./ui-framework/widgets/ToolWidget";
+export * from "./ui-framework/widgets/ToolWidgetComposer";
 export * from "./ui-framework/widgets/Widget";
 export * from "./ui-framework/widgets/WidgetControl";
 export * from "./ui-framework/widgets/WidgetDef";
 export * from "./ui-framework/widgets/WidgetHost";
+export * from "./ui-framework/widgets/WidgetManager";
+export * from "./ui-framework/widgets/WidgetProps";
 export * from "./ui-framework/widgets/WidgetStack";
-export * from "./ui-framework/widgets/realitydata/RealityDataPicker";
+export * from "./ui-framework/widgets/WidgetState";
 export * from "./ui-framework/widgets/VisibilityWidget";
-export * from "./ui-framework/widgets/DefaultNavigationWidget";
-export * from "./ui-framework/widgets/ReviewToolWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
@@ -221,15 +247,6 @@ export * from "./ui-framework/zones/toolsettings/ToolUiProvider";
 export * from "./ui-framework/zones/toolsettings/DefaultToolSettingsProvider";
 export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
-
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-// istanbul ignore next
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("ui-framework", BUILD_SEMVER);
-}
 
 /** @docs-package-description
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
@@ -312,10 +329,13 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * @docs-group-description SyncUi
  * Classes for informing UI components to sync/refresh their display
  */
-
 /**
  * @docs-group-description WorkflowTask
  * Classes for working a Workflow or Task
+ */
+/**
+ * @docs-group-description Toolbar
+ * Classes used to construct a Toolbar
  */
 /**
  * @docs-group-description Tools
@@ -324,6 +344,14 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description ToolSettings
  * Classes for working Tool Settings
+ */
+/**
+ * @docs-group-description UiProvider
+ * Interfaces and classes for specifying UI items to be inserted at runtime.
+ */
+/**
+ * @docs-group-description UiSettings
+ * Interfaces and classes for persisting UI settings.
  */
 /**
  * @docs-group-description Utilities

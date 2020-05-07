@@ -2,40 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow } from "enzyme";
 import { expect } from "chai";
-import * as moq from "typemoq";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
-import TestUtils from "../TestUtils";
+import * as moq from "typemoq";
+import { StagePanelLocation } from "@bentley/ui-abstract";
 import { SplitterPaneTarget as NZ_SplitterPaneTarget } from "@bentley/ui-ninezone";
 import {
-  StagePanel,
-  Frontstage,
-  CoreTools,
-  ConfigurableUiManager,
-  FrontstageProvider,
-  FrontstageProps,
-  Widget,
-  FrontstageComposer,
-  FrontstageManager,
-  WidgetControl,
-  ConfigurableCreateInfo,
-  SplitterPaneTarget,
-  FrameworkStagePanel,
+  ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, FrameworkStagePanel, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps,
+  FrontstageProvider, SplitterPaneTarget, StagePanel, Widget, WidgetControl,
 } from "../../ui-framework";
-import { StagePanelState, StagePanelDef } from "../../ui-framework/stagepanels/StagePanelDef";
+import { StagePanelRuntimeProps } from "../../ui-framework/stagepanels/StagePanel";
+import { StagePanelDef, StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
 import { UiFramework } from "../../ui-framework/UiFramework";
 import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
-import { StagePanelLocation, StagePanelRuntimeProps } from "../../ui-framework/stagepanels/StagePanel";
+import TestUtils from "../TestUtils";
 
 describe("StagePanel", () => {
   class TestWidget extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div />;
+      this.reactNode = <div />;
     }
   }
 

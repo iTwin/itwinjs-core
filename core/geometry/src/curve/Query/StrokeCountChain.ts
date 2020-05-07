@@ -6,17 +6,17 @@
  * @module Curve
  */
 
-import { StrokeCountMap } from "./StrokeCountMap";
-import { CurveCollection, CurveChain } from "../CurveCollection";
+import { Geometry } from "../../Geometry";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range1d } from "../../geometry3d/Range";
+import { AnyCurve } from "../CurveChain";
+import { CurveChain, CurveCollection } from "../CurveCollection";
+import { LineString3d } from "../LineString3d";
+import { Loop } from "../Loop";
 import { ParityRegion } from "../ParityRegion";
 import { StrokeOptions } from "../StrokeOptions";
-import { LineString3d } from "../LineString3d";
-import { AnyCurve } from "../CurveChain";
+import { StrokeCountMap } from "./StrokeCountMap";
 
-import { Loop } from "../Loop";
-import { Range1d } from "../../geometry3d/Range";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Geometry } from "../../Geometry";
 // cspell:word remapa
 /**
  * abstract methods for callbacks during sweeps of collections of StrokeCount Structures.

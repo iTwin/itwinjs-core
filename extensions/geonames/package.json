@@ -1,0 +1,47 @@
+{
+  "name": "@bentley/geonames-extension",
+  "version": "2.0.0",
+  "description": "Geolocation Extension",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "extension-webpack-tools build -s ./src/geoNames.ts -o ./lib/extension",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "copy:assets": "cpx \"./src/public/**/*\" ./lib/extension/",
+    "cover": "",
+    "docs": "",
+    "lint": "tslint -p . 1>&2",
+    "test": ""
+  },
+  "keywords": [
+    "iModel",
+    "BIM",
+    "extension",
+    "Geolocation"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "devDependencies": {
+    "@bentley/build-tools": "2.0.0",
+    "@bentley/config-loader": "2.0.0",
+    "@bentley/extension-webpack-tools": "2.0.0",
+    "@types/node": "10.14.1",
+    "cpx": "^1.5.0",
+    "rimraf": "^3.0.2",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.7.4"
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "2.0.0",
+    "@bentley/geometry-core": "2.0.0",
+    "@bentley/itwin-client": "2.0.0",
+    "@bentley/imodeljs-common": "2.0.0",
+    "@bentley/imodeljs-i18n": "2.0.0",
+    "@bentley/imodeljs-frontend": "2.0.0",
+    "@bentley/imodeljs-quantity": "2.0.0",
+    "svg-sprite-loader": "4.2.1"
+  }
+}

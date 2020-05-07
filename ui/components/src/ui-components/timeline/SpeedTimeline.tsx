@@ -6,11 +6,11 @@
  * @module Timeline
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { CommonProps } from "@bentley/ui-core";
-import { Slider, Rail, Handles, SliderItem, GetHandleProps, GetRailProps } from "react-compound-slider";
 import "./SpeedTimeline.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { GetHandleProps, GetRailProps, Handles, Rail, Slider, SliderItem } from "react-compound-slider";
+import { CommonProps } from "@bentley/ui-core";
 
 // component is in alpha state - it may change after usability testing - test coverage not complete
 
@@ -23,8 +23,7 @@ interface HandleProps {
   getHandleProps: GetHandleProps;
 }
 
-// tslint:disable-next-line: variable-name
-const Handle: React.FunctionComponent<HandleProps> = (props) => {
+function Handle(props: HandleProps) {
   const {
     domain: [min, max],
     handle: { id, value, percent },
@@ -34,7 +33,7 @@ const Handle: React.FunctionComponent<HandleProps> = (props) => {
   return <div className="scrubberHandle" role="slider" aria-valuemin={min}
     aria-valuemax={max} aria-valuenow={value} style={{ left: `${percent}%` }}
     {...getHandleProps(id)} />;
-};
+}
 
 // *******************************************************
 // RAIL COMPONENT
@@ -43,8 +42,7 @@ interface RailProps {
   getRailProps: GetRailProps;
 }
 
-// tslint:disable-next-line: variable-name
-const Rails: React.FunctionComponent<RailProps> = (props) => {
+function Rails(props: RailProps) {
   const { getRailProps } = props;
 
   return (
@@ -53,7 +51,7 @@ const Rails: React.FunctionComponent<RailProps> = (props) => {
       <div className="railInner" />
     </>
   );
-};
+}
 
 interface SpeedProps extends CommonProps {
   speed: number;
@@ -61,10 +59,10 @@ interface SpeedProps extends CommonProps {
 }
 
 /** Speed Timeline used in Solar Timeline component
- * @alpha
+ * @internal
  */
 // tslint:disable-next-line: variable-name
-export const SpeedTimeline: React.FunctionComponent<SpeedProps> = (props) => {
+export function SpeedTimeline(props: SpeedProps) {
   // istanbul ignore next - WIP
   const onChange = (values: ReadonlyArray<number>) => {
     const value = values[0];
@@ -101,4 +99,4 @@ export const SpeedTimeline: React.FunctionComponent<SpeedProps> = (props) => {
       </Slider>
     </div>
   );
-};
+}

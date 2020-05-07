@@ -6,20 +6,20 @@
  * @module Notification
  */
 
-import * as React from "react";
 import classnames from "classnames";
-
-import { Status, MessageLayout, MessageProgress } from "@bentley/ui-ninezone";
-import { MessageManager, ActivityMessageEventArgs } from "../messages/MessageManager";
+import * as React from "react";
+import { Centered } from "@bentley/ui-core";
+import { MessageLayout, MessageProgress, Status } from "@bentley/ui-ninezone";
+import { ActivityMessageEventArgs, MessageManager } from "../messages/MessageManager";
+import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
 import { UiFramework } from "../UiFramework";
 import { StatusFieldProps } from "./StatusFieldProps";
-import { Centered } from "@bentley/ui-core";
 
 /** State for the [[ActivityCenterField]] component
  * @internal
  */
 interface ActivityCenterState {
-  message: HTMLElement | string;
+  message: NotifyMessageType;
   percentage: number;
   isActivityMessageVisible: boolean;
 }

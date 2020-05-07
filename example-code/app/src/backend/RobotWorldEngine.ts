@@ -2,17 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, Code, TestRpcManager, FeatureGates } from "@bentley/imodeljs-common";
-import { IModelDb, IModelHost, Element, ECSqlStatement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
-import { DbResult, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Point3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { RobotWorld } from "./RobotWorldSchema";
-import { Robot } from "./RobotElement";
 import * as path from "path";
+import { ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { Angle, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import {
+  BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost, IModelHostConfiguration, KnownLocations, Platform,
+} from "@bentley/imodeljs-backend";
+import {
+  Code, FeatureGates, IModelReadRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
+} from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Barrier } from "./BarrierElement";
-import { RobotWorldWriteRpcInterface, RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
-import { RobotWorldWriteRpcImpl, RobotWorldReadRpcImpl } from "./RobotWorldRpcImpl";
+import { Robot } from "./RobotElement";
+import { RobotWorldReadRpcImpl, RobotWorldWriteRpcImpl } from "./RobotWorldRpcImpl";
+import { RobotWorld } from "./RobotWorldSchema";
 
 // An example of how to implement a service.
 // This example manages a fictional domain called "robot world",
@@ -115,13 +119,13 @@ export class RobotWorldEngine {
     return iModelDb.elements.insertElement(props);
   }
 
-  public static initialize(_requestContext: ClientRequestContext) {
+  public static async initialize(_requestContext: ClientRequestContext): Promise<void> {
     const config = new IModelHostConfiguration();
     if (Platform.isNodeJs)
       config.appAssetsDir = path.join(__dirname, "assets");
     else
       config.appAssetsDir = KnownLocations.packageAssetsDir;
-    IModelHost.startup(config);
+    await IModelHost.startup(config);
 
     // Can't to this, as our logging config uses Bunyan/Seq, and we don't really want to do that here.
     // initializeLogging();
@@ -129,7 +133,7 @@ export class RobotWorldEngine {
     RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl); // register impls that we don't want in the doc example
     this.registerImpls();
     const interfaces = this.chooseInterfacesToExpose();
-    if (this._features.check("robot.imodel.readwrite"))  // choose add'l interfaces that we don't want in the doc example
+    if (this._features.check("robot.imodel.readwrite"))  // choose additional interfaces that we don't want in the doc example
       interfaces.push(IModelWriteRpcInterface);
     TestRpcManager.initialize(interfaces);
 
@@ -140,7 +144,7 @@ export class RobotWorldEngine {
 
     // __PUBLISH_EXTRACT_START__ Schema.importSchema
     // Make sure the RobotWorld schema is in the iModel.
-    IModelDb.onOpened.addListener((requestContext: AuthorizedClientRequestContext, iModel: IModelDb) => {
+    BriefcaseDb.onOpened.addListener((requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModel: IModelDb) => {
       RobotWorld.importSchema(requestContext, iModel); // tslint:disable-line:no-floating-promises
     });
     // __PUBLISH_EXTRACT_END__
@@ -164,7 +168,7 @@ export class RobotWorldEngine {
   }
   // __PUBLISH_EXTRACT_END__
 
-  public static shutdown() {
-    IModelHost.shutdown();
+  public static async shutdown(): Promise<void> {
+    await IModelHost.shutdown();
   }
 }

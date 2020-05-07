@@ -6,55 +6,43 @@
  * @module Table
  */
 
+import "./Table.scss";
+import "../columnfiltering/ColumnFiltering.scss";
+import classnames from "classnames";
 import { memoize } from "lodash";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-import classnames from "classnames";
+import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
+import { PrimitiveValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { CommonProps, Dialog, LocalUiSettings, SortDirection, UiSettings, UiSettingsStatus } from "@bentley/ui-core";
+import {
+  MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
+} from "../../common/selection/SelectionHandler";
+import { SelectionMode } from "../../common/selection/SelectionModes";
+import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
+import { TypeConverterManager } from "../../converters/TypeConverterManager";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { TableRowStyleProvider } from "../../properties/ItemStyle";
+import { PropertyDialogState, PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import { CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator } from "../columnfiltering/ColumnFiltering";
+import { MultiSelectFilter } from "../columnfiltering/data-grid-addons/MultiSelectFilter";
+import { NumericFilter } from "../columnfiltering/data-grid-addons/NumericFilter";
+import { SingleSelectFilter } from "../columnfiltering/data-grid-addons/SingleSelectFilter";
+import { DataGridFilterParser, ReactDataGridFilter } from "../columnfiltering/DataGridFilterParser";
+import { TableFilterDescriptorCollection } from "../columnfiltering/TableFilterDescriptorCollection";
+import { CellItem, ColumnDescription, FilterRenderer, RowItem, TableDataProvider } from "../TableDataProvider";
+import { DragDropHeaderCell } from "./DragDropHeaderCell";
+import { TableCell, TableCellContent, TableIconCellContent } from "./TableCell";
+import { ReactDataGridColumn, TableColumn } from "./TableColumn";
 
 // Matches how react-data-grid is exported
 // https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
 import ReactDataGrid = require("react-data-grid");
-import ReactDataGridAddons = require("react-data-grid-addons");
-
-import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
-import {
-  SortDirection, Dialog,
-  LocalUiSettings, UiSettings, UiSettingsStatus, CommonProps,
-} from "@bentley/ui-core";
-
-import { TableDataProvider, ColumnDescription, RowItem, CellItem, FilterRenderer } from "../TableDataProvider";
-import { SelectionMode } from "../../common/selection/SelectionModes";
-import {
-  SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
-  OnItemsSelectedCallback, OnItemsDeselectedCallback,
-} from "../../common/selection/SelectionHandler";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PropertyValueRendererManager, PropertyDialogState } from "../../properties/ValueRendererManager";
-import { TypeConverterManager } from "../../converters/TypeConverterManager";
-import { DragDropHeaderCell } from "./DragDropHeaderCell";
-import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
-import { TableIconCellContent, TableCellContent, TableCell } from "./TableCell";
-import { TableRowStyleProvider } from "../../properties/ItemStyle";
-
-import { ReactDataGridColumn, TableColumn } from "./TableColumn";
-import { CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator } from "../columnfiltering/ColumnFiltering";
-import { ReactDataGridFilter, DataGridFilterParser } from "../columnfiltering/DataGridFilterParser";
-import { TableFilterDescriptorCollection } from "../columnfiltering/TableFilterDescriptorCollection";
-
-import "./Table.scss";
-import "../columnfiltering/ColumnFiltering.scss";
 
 // cspell:ignore Overscan
 
 const TABLE_ROW_HEIGHT = 27;
 const TABLE_FILTER_ROW_HEIGHT = 32;
-
-const {
-  NumericFilter,
-  MultiSelectFilter,
-  SingleSelectFilter,
-} = ReactDataGridAddons.Filters;
 
 /**
  * Specifies table selection target.
@@ -74,7 +62,7 @@ enum SCROLL_DIRECTION {
   NONE = "none",
 }
 
-/** Scroll ScrollState  */
+/** Scroll State  */
 interface ScrollState {
   height: number;
   scrollTop: number;
@@ -98,7 +86,7 @@ interface ScrollState {
 export interface TableProps extends CommonProps {
   /** Data provider for the Table */
   dataProvider: TableDataProvider;
-  /** Amount of rows per page */
+  /** Amount of rows per page. The default is 100. */
   pageAmount?: number;
 
   /** Called when rows are loaded */
@@ -118,9 +106,9 @@ export interface TableProps extends CommonProps {
   /** Callback for when cells are deselected */
   onCellsDeselected?: (cellIterator: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>;
 
-  /** Specifies the selection target. */
+  /** Specifies the selection target. The default is Row. */
   tableSelectionTarget?: TableSelectionTarget;
-  /** Specifies the selection mode. */
+  /** Specifies the selection mode. The default is Single. */
   selectionMode?: SelectionMode;
 
   /** Callback for when properties are being edited @beta */
@@ -282,7 +270,7 @@ const enum UpdateStatus {
 }
 
 /**
- * Table React component
+ * Table React component that displays rows and columns in a grid along with a header
  * @public
  */
 export class Table extends React.Component<TableProps, TableState> {
@@ -487,16 +475,16 @@ export class Table extends React.Component<TableProps, TableState> {
     let dataGridColumns = columnDescriptions.map(this._columnDescriptionToReactDataGridColumn);
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
-      const reorderResult = uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
+      const reorderResult = await uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
       if (reorderResult.status === UiSettingsStatus.Success) {
         const setting = reorderResult.setting as string[];
         // map columns according to the keys in columns, in the order of the loaded array of keys
         dataGridColumns = setting.map((key) => dataGridColumns.filter((col) => col.key === key)[0]);
       } else if (reorderResult.status === UiSettingsStatus.NotFound) {
         const keys = columnDescriptions.map((col) => col.key);
-        uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
+        await uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
       }
-      const showhideResult = uiSettings.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
+      const showhideResult = await uiSettings.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
       if (showhideResult.status === UiSettingsStatus.Success) {
         const hiddenColumns = showhideResult.setting as string[];
         this.setState({ hiddenColumns });
@@ -861,9 +849,10 @@ export class Table extends React.Component<TableProps, TableState> {
         this.props.onRowsLoaded(index, index + loadResult.rows.length - 1);
 
       const showFilter = this._isShowFilterRow();
-      if (showFilter) {
-        await this.loadDistinctValues();
-        this.toggleFilterRow();
+      if (showFilter !== this._filterRowShown) {
+        if (showFilter)
+          await this.loadDistinctValues();
+        this.toggleFilterRow(showFilter);
       }
     });
   });
@@ -1176,7 +1165,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
       const keys = cols.map((col) => col.key);
-      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
+      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys); // tslint:disable-line: no-floating-promises
     }
     this.setState({ columns: [] }, () => { // fix react-data-grid update issues
       this.setState({ columns: cols });
@@ -1300,7 +1289,7 @@ export class Table extends React.Component<TableProps, TableState> {
     this.setState({ hiddenColumns: cols });
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
-      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols);
+      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols); // tslint:disable-line: no-floating-promises
     }
     return true;
   }
@@ -1313,20 +1302,17 @@ export class Table extends React.Component<TableProps, TableState> {
     return this.state.columns.some((tableColumn: TableColumn) => tableColumn.filterable);
   }
 
-  private toggleFilterRow(): void {
-    const showFilter = this._isShowFilterRow();
-
-    // Turn on filter row
-    if (showFilter && !this._filterRowShown) {
+  /** Turn on/off filter row */
+  private toggleFilterRow(showFilter: boolean): void {
+    // istanbul ignore else
+    if (this._gridRef.current) {
+      const grid = this._gridRef.current as any;
       // istanbul ignore else
-      if (this._gridRef.current) {
-        const grid = this._gridRef.current as any;
-        // istanbul ignore else
-        if (grid.onToggleFilter)
-          grid.onToggleFilter();
-      }
+      if (grid.onToggleFilter) {
+        grid.onToggleFilter();
 
-      this._filterRowShown = true;
+        this._filterRowShown = showFilter;
+      }
     }
   }
 
@@ -1365,17 +1351,12 @@ export class Table extends React.Component<TableProps, TableState> {
     // istanbul ignore else
     if (tableColumn) {
       setTimeout(async () => {
-        if (filter.filterTerm) {
-          await DataGridFilterParser.handleFilterChange(filter, tableColumn.columnFilterDescriptor, tableColumn.columnDescription, this._applyFilter);
-        } else {
-          tableColumn.columnFilterDescriptor.clear();
-          await this._applyFilter();
-        }
+        await DataGridFilterParser.handleFilterChange(filter, tableColumn.columnFilterDescriptor, tableColumn.columnDescription, this._applyFilter);
       });
     }
   }
 
-  private _handleOnClearFilters() {
+  private _handleOnClearFilters = () => {
     this.filterDescriptors.clear();
 
     this._applyFilter();  // tslint:disable-line:no-floating-promises
@@ -1439,8 +1420,8 @@ export class Table extends React.Component<TableProps, TableState> {
               onClose={this._hideContextMenu}
               onShowHideChange={this._handleShowHideChange} />
           }
-          <ReactResizeDetector handleWidth handleHeight >
-            {(width: number, height: number) =>
+          <ReactResizeDetector handleWidth handleHeight
+            render={({ width, height }) => (
               <ReactDataGrid
                 ref={this._gridRef}
                 columns={visibleColumns}
@@ -1462,8 +1443,9 @@ export class Table extends React.Component<TableProps, TableState> {
                 headerFiltersHeight={TABLE_FILTER_ROW_HEIGHT}
                 getValidFilterValues={this._getValidFilterValues}
                 onScroll={this._onScroll}
-              />}
-          </ReactResizeDetector>
+              />
+            )}
+          />
         </div>
         <div ref={this._tableRef}>
           {this.state.dialog

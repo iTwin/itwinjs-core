@@ -7,28 +7,17 @@
  * @module Tools
  */
 
+import { Map4d, Point3d } from "@bentley/geometry-core";
+import { ColorByName, ColorDef, Frustum, LinePixels, Npc } from "@bentley/imodeljs-common";
 import {
-  Point3d, Map4d,
-} from "@bentley/geometry-core";
-import {
-  ColorDef,
-  Frustum,
-  LinePixels,
-  Npc,
-} from "@bentley/imodeljs-common";
-import {
-  CoordSystem,
-  DecorateContext,
-  Decorator,
-  GraphicBuilder,
-  GraphicType,
-  IModelApp,
-  Tool,
-  Viewport,
-  ViewState3d,
-  ViewState,
+  CoordSystem, DecorateContext, Decorator, GraphicBuilder, GraphicType, IModelApp, Tool, Viewport, ViewState, ViewState3d,
 } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
+
+interface FrustumDecorationOptions {
+  showPreloadFrustum?: boolean;
+  showBackgroundIntersecctions?: boolean;
+}
 
 /**
  * Decorates the viewport with a graphical depiction of a Frustum.
@@ -40,15 +29,17 @@ import { parseToggle } from "./parseToggle";
 class FrustumDecoration {
   private readonly _worldFrustum: Frustum;
   private readonly _adjustedWorldFrustum: Frustum;
+  private readonly _preloadFrustum: Frustum;
   private readonly _npcFrustum: Frustum;
   private readonly _worldToNpcMap: Map4d;
   private readonly _eyePoint: Point3d;
   private readonly _focalPlane: number;
   private readonly _isCameraOn: boolean;
 
-  private constructor(vp: Viewport, view: ViewState3d) {
+  private constructor(vp: Viewport, view: ViewState3d, private readonly _options?: FrustumDecorationOptions) {
     this._worldFrustum = vp.getFrustum(CoordSystem.World, false);
     this._adjustedWorldFrustum = vp.getFrustum(CoordSystem.World, true);
+    this._preloadFrustum = vp.viewingSpace.getPreloadFrustum();
     this._npcFrustum = vp.getFrustum(CoordSystem.Npc, true);
     this._worldToNpcMap = vp.viewingSpace.worldToNpcMap.clone();
     this._eyePoint = view.camera.getEyePoint().clone();
@@ -56,9 +47,9 @@ class FrustumDecoration {
     this._isCameraOn = vp.isCameraOn;
   }
 
-  public static create(vp: Viewport): FrustumDecoration | undefined {
+  public static create(vp: Viewport, options?: FrustumDecorationOptions): FrustumDecoration | undefined {
     const view = vp.view.isSpatialView() ? vp.view : undefined;
-    return undefined !== view ? new FrustumDecoration(vp, view) : undefined;
+    return undefined !== view ? new FrustumDecoration(vp, view, options) : undefined;
   }
 
   public decorate(context: DecorateContext): void {
@@ -69,8 +60,24 @@ class FrustumDecoration {
 
     FrustumDecoration.drawFrustumBox(builder, this._worldFrustum, false, context.viewport); // show original frustum...
     FrustumDecoration.drawFrustumBox(builder, this._adjustedWorldFrustum, true, context.viewport); // show adjusted frustum...
+    const options = this._options;
+    if (options !== undefined) {
+      if (options.showPreloadFrustum)
+        FrustumDecoration.drawPreloadFrustum(builder, this._preloadFrustum);
 
+      if (options?.showBackgroundIntersecctions) {
+        const backgroundMapGeometry = context.viewport.view.displayStyle.getBackgroundMapGeometry();
+        if (backgroundMapGeometry)
+          backgroundMapGeometry.addFrustumDecorations(builder, this._adjustedWorldFrustum);
+      }
+    }
     context.addDecorationFromBuilder(builder);
+  }
+
+  public static drawPreloadFrustum(builder: GraphicBuilder, frustum: Frustum) {
+    const preloadColor = ColorDef.create(ColorByName.coral);
+    builder.setSymbology(preloadColor, preloadColor, 1, 2);
+    builder.addFrustum(frustum);
   }
 
   public static drawFrustumBox(builder: GraphicBuilder, frustum: Frustum, adjustedBox: boolean, vp: Viewport): void {
@@ -78,9 +85,9 @@ class FrustumDecoration {
     const frontPts = this.getPlanePts(frustum.points, true); // front plane
 
     const bgColor = vp.view.backgroundColor;
-    const backAndBottomColor = ColorDef.red.adjustForContrast(bgColor);
-    const frontAndTopLeftColor = ColorDef.blue.adjustForContrast(bgColor);
-    const frontAndTopRightColor = ColorDef.green.adjustForContrast(bgColor);
+    const backAndBottomColor = ColorDef.red.adjustedForContrast(bgColor);
+    const frontAndTopLeftColor = ColorDef.blue.adjustedForContrast(bgColor);
+    const frontAndTopRightColor = ColorDef.green.adjustedForContrast(bgColor);
     const edgeWeight = adjustedBox ? 2 : 1;
     const edgeStyle = adjustedBox ? LinePixels.Solid : LinePixels.Code2;
 
@@ -138,8 +145,8 @@ class FrustumDecoration {
     worldToNpcMap.transform1.multiplyPoint3dArrayQuietNormalize(focalPtsWorld);
 
     const bgColor = vp.view.backgroundColor;
-    const focalPlaneColor = ColorDef.green.adjustForContrast(bgColor);
-    const focalTransColor = focalPlaneColor.clone(); focalTransColor.setTransparency(100);
+    const focalPlaneColor = ColorDef.green.adjustedForContrast(bgColor);
+    const focalTransColor = focalPlaneColor.withTransparency(100);
     builder.setSymbology(focalPlaneColor, focalTransColor, 2);
     builder.addLineString(focalPtsWorld);
     builder.addShape(focalPtsWorld);
@@ -157,8 +164,8 @@ class FrustumDecoration {
 export class FrustumDecorator implements Decorator {
   private readonly _decoration?: FrustumDecoration;
 
-  private constructor(vp: Viewport) {
-    this._decoration = FrustumDecoration.create(vp);
+  private constructor(vp: Viewport, options?: FrustumDecorationOptions) {
+    this._decoration = FrustumDecoration.create(vp, options);
   }
 
   public decorate(context: DecorateContext): void {
@@ -169,9 +176,9 @@ export class FrustumDecorator implements Decorator {
   private static _instance?: FrustumDecorator;
 
   /** Add the decoration to the specified viewport. */
-  public static enable(vp: Viewport): void {
+  public static enable(vp: Viewport, options?: FrustumDecorationOptions): void {
     FrustumDecorator.disable();
-    FrustumDecorator._instance = new FrustumDecorator(vp);
+    FrustumDecorator._instance = new FrustumDecorator(vp, options);
     IModelApp.viewManager.addDecorator(FrustumDecorator._instance);
   }
 
@@ -193,9 +200,9 @@ export class FrustumDecorator implements Decorator {
 export class ToggleFrustumSnapshotTool extends Tool {
   public static toolId = "ToggleFrustumSnapshot";
   public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static get maxArgs() { return 2; }
 
-  public run(enable?: boolean): boolean {
+  public run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersecctions?: boolean): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -205,7 +212,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
 
     if (enable !== FrustumDecorator.isEnabled) {
       if (enable) {
-        FrustumDecorator.enable(vp);
+        FrustumDecorator.enable(vp, { showPreloadFrustum, showBackgroundIntersecctions });
         vp.onChangeView.addOnce(() => FrustumDecorator.disable());
       } else {
         FrustumDecorator.disable();
@@ -216,9 +223,18 @@ export class ToggleFrustumSnapshotTool extends Tool {
   }
 
   public parseAndRun(...args: string[]): boolean {
-    const enable = parseToggle(args[0]);
+    let showPreload, showBackgroundIntersections, enable;
+    for (const arg of args) {
+      if (arg === "preload")
+        showPreload = true;
+      else if (arg === "background")
+        showBackgroundIntersections = true;
+      else
+        enable = parseToggle(arg);
+    }
+
     if (typeof enable !== "string")
-      this.run(enable);
+      this.run(enable, showPreload, showBackgroundIntersections);
 
     return true;
   }
@@ -234,7 +250,7 @@ class SelectedViewFrustumDecoration {
   protected _removeDecorationListener?: () => void;
   protected _removeViewChangedListener?: () => void;
 
-  public constructor(vp: Viewport) {
+  public constructor(vp: Viewport, private _options?: FrustumDecorationOptions) {
     this._targetVp = vp;
     this._removeDecorationListener = IModelApp.viewManager.addDecorator(this);
     this._removeViewChangedListener = vp.onViewChanged.addListener(this.onViewChanged, this);
@@ -277,6 +293,8 @@ class SelectedViewFrustumDecoration {
 
     FrustumDecoration.drawFrustumBox(builder, worldFrustum, false, context.viewport); // show original frustum...
     FrustumDecoration.drawFrustumBox(builder, adjustedWorldFrustum, true, context.viewport); // show adjusted frustum...
+    if (this._options && this._options.showPreloadFrustum)
+      FrustumDecoration.drawPreloadFrustum(builder, context.viewport.viewingSpace.getPreloadFrustum());
 
     context.addDecorationFromBuilder(builder);
   }

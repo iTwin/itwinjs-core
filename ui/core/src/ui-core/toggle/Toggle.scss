@@ -58,14 +58,14 @@ $toggle-width-large:  $toggle-height-large * 2;
   position: absolute;
   background: #FFF;
   border-radius: 3px;
-  -webkit-transition: transform 0.2s ease-out;
-  -moz-transition: transform 0.2s ease-out;
-  -o-transition: transform 0.2s ease-out;
-  transition: transform 0.2s ease-out;
+
+  &.core-toggling {
+    transition: transform 0.2s ease-out;
+  }
 }
 
 /* Disabled toggle */
-.core-toggle.disabled {
+.core-toggle.uicore-disabled {
   opacity: .4;
   cursor: default;
 }
@@ -80,10 +80,10 @@ $toggle-width-large:  $toggle-height-large * 2;
   top: 50%;
   opacity: 0;
   transform: translateY(-50%);
-  -webkit-transition: left .2s ease-out;
-  -moz-transition: left .2s ease-out;
-  -o-transition: left .2s ease-out;
-  transition: left .2s ease-out;
+
+  &.core-toggling {
+    transition: left .2s ease-out;
+  }
 }
 
 .core-toggle-input:checked~.core-toggle-checkmark.visible {

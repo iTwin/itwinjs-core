@@ -7,14 +7,12 @@
  */
 
 import * as React from "react";
-
-import { BadgeType } from "@bentley/ui-abstract";
-import { CommonProps, PointProps, RectangleProps, Rectangle, Icon, BadgeUtilities } from "@bentley/ui-core";
+import { BadgeType, ConditionalStringValue } from "@bentley/ui-abstract";
+import { BadgeUtilities, CommonProps, IconHelper, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import {
-  Stacked as NZ_WidgetStack, HorizontalAnchor, VerticalAnchor, ResizeHandle, Tab, TabGroup, TabSeparator,
-  WidgetZoneId, TabMode, HandleMode, DraggedWidgetManagerProps, VerticalAnchorHelpers, DisabledResizeHandles,
+  DisabledResizeHandles, DraggedWidgetManagerProps, HandleMode, HorizontalAnchor, ResizeHandle, Stacked as NZ_WidgetStack, Tab, TabGroup, TabMode,
+  TabSeparator, VerticalAnchor, VerticalAnchorHelpers, WidgetZoneId,
 } from "@bentley/ui-ninezone";
-
 import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 
@@ -24,7 +22,7 @@ import { UiShowHideManager } from "../utils/UiShowHideManager";
  * @internal
  */
 export interface WidgetTab {
-  readonly iconSpec?: string | React.ReactNode;
+  readonly iconSpec?: string | ConditionalStringValue | React.ReactNode;
   readonly title: string;
   readonly badgeType?: BadgeType;
 }
@@ -292,7 +290,7 @@ export class WidgetStackTabGroup extends React.PureComponent<WidgetStackTabGroup
  */
 export interface WidgetStackTabProps {
   horizontalAnchor: HorizontalAnchor;
-  iconSpec?: string | React.ReactNode;
+  iconSpec?: string | ConditionalStringValue | React.ReactNode;
   index: number;
   badgeType?: BadgeType;
   isCollapsed: boolean;
@@ -329,7 +327,7 @@ export class WidgetStackTab extends React.PureComponent<WidgetStackTabProps> {
         title={this.props.title}
         verticalAnchor={this.props.verticalAnchor}
       >
-        <Icon iconSpec={this.props.iconSpec} />
+        {IconHelper.getIconReactNode(this.props.iconSpec)}
       </Tab>
     );
   }

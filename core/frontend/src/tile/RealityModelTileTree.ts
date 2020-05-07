@@ -6,42 +6,25 @@
  * @module Utils
  */
 
-import { IModelError, TileTreeProps, TileProps, ViewFlag, ViewFlags, RenderMode, Cartographic } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../IModelConnection";
-import {
-  assert,
-  BentleyStatus,
-  compareNumbers,
-  compareStrings,
-  compareStringsOrUndefined,
-  Guid,
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import { Point3d, TransformProps, Range3dProps, Range3d, Transform, Vector3d, Matrix3d, XYZ, YawPitchRollAngles } from "@bentley/geometry-core";
-import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson, RealityData } from "@bentley/imodeljs-clients";
-import {
-  BatchedTileIdMap,
-  ContextTileLoader,
-  Tile,
-  TileLoadPriority,
-  TileParams,
-  TileRequest,
-  TileTree,
-  TileTreeOwner,
-  TileTreeReference,
-  TileTreeSet,
-  TileTreeSupplier,
-  tileTreeParamsFromJSON,
-} from "./internal";
-import { IModelApp } from "../IModelApp";
+import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
+import { Matrix3d, Point3d, Range3d, Transform, TransformProps, Vector3d, XYZ, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Cartographic, IModelError } from "@bentley/imodeljs-common";
+import { AccessToken, getArrayBuffer, getJson } from "@bentley/itwin-client";
+import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
+import { DisplayStyleState } from "../DisplayStyleState";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
+import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { RenderMemory } from "../render/RenderMemory";
 import { SpatialClassifiers } from "../SpatialClassifiers";
-import { SpatialClassifierTileTreeReference, createClassifierTileTreeReference } from "./ClassifierTileTree";
 import { SceneContext } from "../ViewContext";
-import { RenderMemory } from "../render/RenderSystem";
 import { ViewState } from "../ViewState";
-import { DisplayStyleState } from "../DisplayStyleState";
+import {
+  BatchedTileIdMap, createClassifierTileTreeReference, createDefaultViewFlagOverrides, RealityTile, RealityTileLoader, RealityTileParams,
+  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
+  TileTreeReference, TileTreeSet, TileTreeSupplier,
+} from "./internal";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -75,6 +58,8 @@ function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
 }
 
 class RealityTreeSupplier implements TileTreeSupplier {
+  public readonly isEcefDependent = true;
+
   public getOwner(treeId: RealityTreeId, iModel: IModelConnection): TileTreeOwner {
     return iModel.tiles.getTileTreeOwner(treeId, this);
   }
@@ -157,51 +142,63 @@ enum SMTextureType {
 }
 
 /** @internal */
-class RealityModelTileTreeProps implements TileTreeProps {
-  private _featureMap = new Map<string, { id: Id64String, properties: any }>();
-  public id: string = "";
-  public rootTile: TileProps;
-  public location: TransformProps;
+class RealityModelTileTreeProps {
+  public location: Transform;
   public tilesetJson: object;
-  public yAxisUp: boolean = false;
   public doDrapeBackgroundMap: boolean = false;
-  constructor(json: any, public client: RealityModelTileClient, tilesetTransform: Transform) {
+  public client: RealityModelTileClient;
+  public yAxisUp = false;
+
+  constructor(json: any, client: RealityModelTileClient, tilesetTransform: Transform) {
     this.tilesetJson = json.root;
-    this.rootTile = new RealityModelTileProps(json.root, "");
-    this.location = tilesetTransform.toJSON();
+    this.client = client;
+    this.location = tilesetTransform;
     this.doDrapeBackgroundMap = (json.root && json.root.SMMasterHeader && SMTextureType.Streaming === json.root.SMMasterHeader.IsTextured);
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y")
       this.yAxisUp = true;
   }
-  public getBatchId(properties: any, iModel: IModelConnection): Id64String | undefined {
-    const keyString = JSON.stringify(properties);
-    const found = this._featureMap.get(keyString);
-    if (found)
-      return found.id;
+}
 
-    const id = iModel.transientIds.next;
-    this._featureMap.set(keyString, { id, properties });
-    return id;
+class RealityModelTileTreeParams implements RealityTileTreeParams {
+  public id: string;
+  public modelId: string;
+  public iModel: IModelConnection;
+  public is3d = true;
+  public loader: RealityModelTileLoader;
+  public rootTile: RealityTileParams;
+
+  public get location() { return this.loader.tree.location; }
+  public get yAxisUp() { return this.loader.tree.yAxisUp; }
+  public get priority() { return this.loader.priority; }
+
+  public constructor(url: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader) {
+    this.loader = loader;
+    this.id = url;
+    this.modelId = modelId;
+    this.iModel = iModel;
+    this.rootTile = new RealityModelTileProps(loader.tree.tilesetJson, undefined, "");
   }
 }
 
 /** @internal */
-class RealityModelTileProps implements TileProps {
+class RealityModelTileProps implements RealityTileParams {
   public readonly contentId: string;
-  public readonly range: Range3dProps;
-  public readonly contentRange?: Range3dProps;
+  public readonly range: Range3d;
+  public readonly contentRange?: Range3d;
   public readonly maximumSize: number;
   public readonly isLeaf: boolean;
-  public readonly transformToRoot?: TransformProps;
-  public geometry?: string | ArrayBuffer;
-  public hasContents: boolean;
-  constructor(json: any, thisId: string, transformToRoot?: Transform) {
+  public readonly transformToRoot?: Transform;
+  public readonly parent?: RealityTile;
+
+  constructor(json: any, parent: RealityTile | undefined, thisId: string, transformToRoot?: Transform) {
     this.contentId = thisId;
+    this.parent = parent;
     this.range = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume)!;
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
-    this.hasContents = undefined !== getUrl(json.content);
     this.transformToRoot = transformToRoot;
-    if (this.hasContents) {
+
+    const hasContents = undefined !== getUrl(json.content);
+    if (hasContents) {
       this.contentRange = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume);
       this.maximumSize = RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
     } else {
@@ -215,52 +212,67 @@ class FindChildResult {
   constructor(public id: string, public json: any, public transformToRoot?: Transform) { }
 }
 
-const realityModelViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({ renderMode: RenderMode.SmoothShade }));
-realityModelViewFlagOverrides.clearClipVolume();
+// Smooth shade, no lighting; clip volume and shadows if enabled for view.
+const realityModelViewFlagOverrides = createDefaultViewFlagOverrides({ lighting: false });
 
 /** @internal */
-class RealityModelTileLoader extends ContextTileLoader {
-  private readonly _tree: RealityModelTileTreeProps;
+class RealityModelTileLoader extends RealityTileLoader {
+  public readonly tree: RealityModelTileTreeProps;
   private readonly _batchedIdMap?: BatchedTileIdMap;
-  public get drawAsRealityTiles(): boolean { return true; }
 
   public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap) {
     super();
-    this._tree = tree;
+    this.tree = tree;
     this._batchedIdMap = batchedIdMap;
   }
 
-  public get doDrapeBackgroundMap(): boolean { return this._tree.doDrapeBackgroundMap; }
+  public get doDrapeBackgroundMap(): boolean { return this.tree.doDrapeBackgroundMap; }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public get priority(): TileLoadPriority { return TileLoadPriority.Context; }
-  public tileRequiresLoading(params: TileParams): boolean { return 0.0 !== params.maximumSize; }
   public get viewFlagOverrides() { return realityModelViewFlagOverrides; }
   public getBatchIdMap(): BatchedTileIdMap | undefined { return this._batchedIdMap; }
   public get clipLowResolutionTiles(): boolean { return true; }
 
-  public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
+  public async loadChildren(tile: RealityTile): Promise<Tile[] | undefined> {
+    const props = await this.getChildrenProps(tile);
+    if (undefined === props)
+      return undefined;
+
+    const children = [];
+    const parentRange = (tile.hasContentRange || undefined !== tile.tree.contentRange) ? undefined : new Range3d();
+    for (const prop of props) {
+      const child = tile.realityRoot.createTile(prop);
+      children.push(child);
+      if (undefined !== parentRange && !child.isEmpty)
+        parentRange.extendRange(child.contentRange);
+    }
+
+    return children;
+  }
+
+  public async getChildrenProps(parent: RealityTile): Promise<RealityTileParams[]> {
     const props: RealityModelTileProps[] = [];
     const thisId = parent.contentId;
     const prefix = thisId.length ? thisId + "_" : "";
-    const findResult = await this.findTileInJson(this._tree.tilesetJson, thisId, "", undefined, true);
+    const findResult = await this.findTileInJson(this.tree.tilesetJson, thisId, "", undefined, true);
     if (undefined !== findResult && Array.isArray(findResult.json.children)) {
       for (let i = 0; i < findResult.json.children.length; i++) {
         const childId = prefix + i;
-        const foundChild = await this.findTileInJson(this._tree.tilesetJson, childId, "", undefined, true);
+        const foundChild = await this.findTileInJson(this.tree.tilesetJson, childId, "", undefined, true);
         if (undefined !== foundChild)
-          props.push(new RealityModelTileProps(foundChild.json, foundChild.id, foundChild.transformToRoot));
+          props.push(new RealityModelTileProps(foundChild.json, parent, foundChild.id, foundChild.transformToRoot));
       }
     }
     return props;
   }
 
   public async requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
-    const foundChild = await this.findTileInJson(this._tree.tilesetJson, tile.contentId, "");
+    const foundChild = await this.findTileInJson(this.tree.tilesetJson, tile.contentId, "");
     if (undefined === foundChild || isCanceled())
       return undefined;
 
-    return this._tree.client.getTileContent(getUrl(foundChild.json.content));
+    return this.tree.client.getTileContent(getUrl(foundChild.json.content));
   }
 
   private addUrlPrefix(subTree: any, prefix: string) {
@@ -306,7 +318,7 @@ class RealityModelTileLoader extends ContextTileLoader {
 
     const childUrl = getUrl(foundChild.content);
     if (undefined !== childUrl && childUrl.endsWith("json")) {    // A child may contain a subTree...
-      const subTree = await this._tree.client.getTileJson(childUrl);
+      const subTree = await this.tree.client.getTileJson(childUrl);
       const prefixIndex = childUrl.lastIndexOf("/");
       if (prefixIndex > 0)
         this.addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
@@ -320,6 +332,18 @@ class RealityModelTileLoader extends ContextTileLoader {
 
 /** @internal */
 export type RealityModelSource = ViewState | DisplayStyleState;
+
+/** @internal */
+export class RealityModelTileTree extends RealityTileTree {
+  public constructor(params: RealityTileTreeParams) {
+    super(params);
+
+    if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
+      const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
+      this.iModel.expandDisplayedExtents(worldContentRange);
+    }
+  }
+}
 
 /** @internal */
 export namespace RealityModelTileTree {
@@ -340,8 +364,8 @@ export namespace RealityModelTileTree {
   export async function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb?: Transform): Promise<TileTree | undefined> {
     const props = await getTileTreeProps(url, tilesetToDb, iModel);
     const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel));
-    const params = tileTreeParamsFromJSON(props, iModel, true, loader, modelId);
-    return new TileTree(params);
+    const params = new RealityModelTileTreeParams(url, iModel, modelId, loader);
+    return new RealityModelTileTree(params);
   }
 
   async function getAccessToken(): Promise<AccessToken | undefined> {
@@ -360,7 +384,7 @@ export namespace RealityModelTileTree {
     if (!url)
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
     const accessToken = await getAccessToken();
-    const tileClient = new RealityModelTileClient(url, accessToken);
+    const tileClient = new RealityModelTileClient(url, accessToken, iModel.contextId);
     const json = await tileClient.getRootDocument(url);
     const ecefLocation = iModel.ecefLocation;
     let rootTransform = ecefLocation ? ecefLocation.getTransform().inverse()! : Transform.createIdentity();
@@ -417,6 +441,14 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
   }
 
+  public get castsShadows() {
+    return true;
+  }
+
+  protected get _isLoadingComplete(): boolean {
+    return !this._mapDrapeTree || this._mapDrapeTree.isLoadingComplete;
+  }
+
   public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
 
   public addToScene(context: SceneContext): void {
@@ -424,11 +456,11 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     if (undefined !== this._classifier)
       this._classifier.addToScene(context);
 
-    const tree = this.treeOwner.tileTree;
+    const tree = this.treeOwner.tileTree as RealityTileTree;
     if (undefined !== tree && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
       // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
-      this._mapDrapeTree = context.viewport.displayStyle.backgroundMap;
-      context.addBackgroundDrapedModel(this);
+      this._mapDrapeTree = context.viewport.displayStyle.backgroundDrapeMap;
+      context.addBackgroundDrapedModel(this, undefined);
     }
 
     super.addToScene(context);
@@ -449,7 +481,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     if (undefined === tree || hit.iModel !== tree.iModel)
       return undefined;
 
-    const map = tree.loader.getBatchIdMap();
+    const map = (tree as RealityTileTree).loader.getBatchIdMap();
     const batch = undefined !== map ? map.getBatchProperties(hit.sourceId) : undefined;
     if (undefined === batch && tree.modelId !== hit.sourceId)
       return undefined;
@@ -492,12 +524,14 @@ export class RealityModelTileClient {
   private _realityData?: RealityData;        // For reality data stored on PW Context Share only.
   private _baseUrl: string = "";             // For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container
   private readonly _token?: AccessToken;     // Only used for accessing PW Context Share.
-  private static _client = new RealityDataServicesClient();  // WSG Client for accessing Reality Data on PW Context Share
+  private static _client = new RealityDataClient();  // WSG Client for accessing Reality Data on PW Context Share
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
-  constructor(url: string, accessToken?: AccessToken) {
+  constructor(url: string, accessToken?: AccessToken, contextId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
+    if (contextId && this.rdsProps)
+      this.rdsProps!.projectId = contextId;
     this._token = accessToken;
   }
 

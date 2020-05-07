@@ -24,3 +24,4 @@ This package contains the following Loaders and Plugins:
 | CopyExternalsPlugin | Copies all npm packages containing an [external](https://webpack.js.org/configuration/externals/) module (and their direct dependencies) to a `node_modules` directory next to the webpack output. |
 | PrettyLoggingPlugin | Formats the output messages to print better when running within Azure DevOps Pipelines.  Flags any warnings as errors when running a CI build. |
 | WatchBackendPlugin | Reloads a _frontend_ anytime its corresponding backend changes. |
+| IModeljsLibraryExportsPlugin | Promotes all module exports to the global scope, under a "__IMODELJS_INTERNALS_DO_NOT_USE" variable, with an "imjsSharedLib" in the `package.json`. |

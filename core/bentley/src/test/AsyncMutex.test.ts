@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AsyncMutex } from "../AsyncMutex";
 import { assert } from "chai";
+import { AsyncMutex } from "../AsyncMutex";
 import { BeDuration } from "../Time";
 
 describe("AsyncMutex", () => {

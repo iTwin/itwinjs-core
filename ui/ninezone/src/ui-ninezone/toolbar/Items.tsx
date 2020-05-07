@@ -6,11 +6,11 @@
  * @module Toolbar
  */
 
-import * as classnames from "classnames";
+import "./Items.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { OrthogonalDirectionHelpers, OrthogonalDirection } from "../utilities/Direction";
-import "./Items.scss";
+import { OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
 
 /** Properties of [[Items]] component.
  * @alpha

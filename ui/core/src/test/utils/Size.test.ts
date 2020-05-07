@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Size } from "../../ui-core";
 import { expect } from "chai";
+import { Size } from "../../ui-core";
 
 describe("Size", () => {
   it("unspecified size should be 0", () => {

@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { mount, shallow } from "enzyme";
-
+import { render } from "@testing-library/react";
 import { ConfigurableUiContent } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import { render } from "@testing-library/react";
 
 describe("ConfigurableUiContent", () => {
   before(async () => {
@@ -33,12 +32,11 @@ describe("ConfigurableUiContent", () => {
   });
 
   it("key presses should be handled", () => {
-    const component = render(
-      <Provider store={TestUtils.store} >
-        <ConfigurableUiContent />
-      </Provider>);
+    render(<Provider store={TestUtils.store} >
+      <ConfigurableUiContent />
+    </Provider>);
 
-    const divContainer = component.getByTestId("uifw-configurableui-wrapper");
+    const divContainer = document.getElementById("uifw-configurableui-wrapper")!;
     divContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "a" }));
     divContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
   });

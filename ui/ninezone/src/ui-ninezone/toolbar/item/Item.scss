@@ -18,6 +18,9 @@
   height: $nz-desktop-item-height;
   width: $nz-desktop-item-width;
 
+  outline-style: solid;
+  outline-width: 0;
+
   > .nz-icon {
     font-size: $icon-size;
     width: 100%;

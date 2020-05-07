@@ -3,10 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import * as path from "path";
-import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
+import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 
 describe("ECSql Query", () => {
   let imodel1: IModelConnection;
@@ -16,21 +13,21 @@ describe("ECSql Query", () => {
   let imodel5: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
-    imodel1 = await IModelConnection.openSnapshot(iModelLocation + "test.bim");
-    imodel2 = await IModelConnection.openSnapshot(iModelLocation + "CompatibilityTestSeed.bim");
-    imodel3 = await IModelConnection.openSnapshot(iModelLocation + "GetSetAutoHandledStructProperties.bim");
-    imodel4 = await IModelConnection.openSnapshot(iModelLocation + "GetSetAutoHandledArrayProperties.bim");
-    imodel5 = await IModelConnection.openSnapshot(iModelLocation + "mirukuru.ibim");
+    await IModelApp.startup();
+    imodel1 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel2 = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel3 = await SnapshotConnection.openFile("GetSetAutoHandledStructProperties.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel4 = await SnapshotConnection.openFile("GetSetAutoHandledArrayProperties.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel5 = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
-    if (imodel1) await imodel1.closeSnapshot();
-    if (imodel2) await imodel2.closeSnapshot();
-    if (imodel3) await imodel3.closeSnapshot();
-    if (imodel4) await imodel4.closeSnapshot();
-    if (imodel5) await imodel5.closeSnapshot();
-    IModelApp.shutdown();
+    if (imodel1) await imodel1.close();
+    if (imodel2) await imodel2.close();
+    if (imodel3) await imodel3.close();
+    if (imodel4) await imodel4.close();
+    if (imodel5) await imodel5.close();
+    await IModelApp.shutdown();
   });
 
   it("Paging Results", async () => {

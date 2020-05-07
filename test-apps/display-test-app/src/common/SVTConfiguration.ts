@@ -22,6 +22,7 @@ export interface SVTConfiguration {
   useProjectExtents?: boolean; // default ON
   maxTilesToSkip?: number;
   tileTreeExpirationSeconds?: number;
+  tileExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
   filterMapTextures?: boolean;  // default OFF
   filterMapDrapeTextures?: boolean; // default ON (if extension supported)
@@ -30,4 +31,6 @@ export interface SVTConfiguration {
   cancelBackendTileRequests?: boolean; // default ON
   disableEdges?: boolean; // default OFF
   useWebGL2?: boolean; // default OFF
+  doIdleWork?: boolean; // default ON
+  debugShaders?: boolean; // default OFF
 }

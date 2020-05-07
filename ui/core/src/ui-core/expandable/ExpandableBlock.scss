@@ -2,7 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "../index.scss";
+@import "../style/themecolors";
+@import "../style/space";
+@import "../style/mixins";
+@import "../text/mixins";
 
 .uicore-expandable-blocks-block {
   background-color: $buic-background-control;
@@ -32,7 +35,7 @@
 
     > .caption {
       @include no-link;
-      @include uicore-text( small );
+      @include uicore-text(small);
       display: block;
       color: $buic-foreground-muted;
       white-space: nowrap;
@@ -42,7 +45,7 @@
 
     > .title {
       @include no-link;
-      @include uicore-text( subheading );
+      @include uicore-text(subheading);
       font-size: $uicore-font-size;
       line-height: 23px;
       display: block;

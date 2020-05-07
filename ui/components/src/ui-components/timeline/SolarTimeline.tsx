@@ -9,22 +9,22 @@
 // component is in alpha state - it may change after usability testing - test coverage not complete
 /* istanbul ignore file */
 
-import * as React from "react";
-import classnames from "classnames";
-import { PlayButton } from "./PlayerButton";
-import { Slider, Rail, Handles, Ticks, SliderItem, GetHandleProps } from "react-compound-slider";
-import ReactResizeDetector from "react-resize-detector";
-import { DayPicker } from "./DayPicker";
-import { Popup, Position, CommonProps } from "@bentley/ui-core";
-import { SolarDataProvider } from "./interfaces";
-import { SpeedTimeline } from "./SpeedTimeline";
-import { SaturationPicker } from "../color/SaturationPicker";
-import { HueSlider } from "../color/HueSlider";
-import { ColorSwatch } from "../color/Swatch";
-import { UiComponents } from "../../ui-components/UiComponents";
-import { HSVColor, ColorDef, ColorByName } from "@bentley/imodeljs-common";
-
 import "./SolarTimeline.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { GetHandleProps, Handles, Rail, Slider, SliderItem, Ticks } from "react-compound-slider";
+import ReactResizeDetector from "react-resize-detector";
+import { ColorByName, ColorDef, HSVColor } from "@bentley/imodeljs-common";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { CommonProps, Popup } from "@bentley/ui-core";
+import { UiComponents } from "../../ui-components/UiComponents";
+import { HueSlider } from "../color/HueSlider";
+import { SaturationPicker } from "../color/SaturationPicker";
+import { ColorSwatch } from "../color/Swatch";
+import { DayPicker } from "./DayPicker";
+import { SolarDataProvider } from "./interfaces";
+import { PlayButton } from "./PlayerButton";
+import { SpeedTimeline } from "./SpeedTimeline";
 
 // cSpell:ignore millisec
 const millisecPerMinute = 1000 * 60;
@@ -211,8 +211,8 @@ class Timeline extends React.PureComponent<TimelineProps> {
             <span className="solar-tooltip-text">{sunRiseFormat}</span>
           </div>
         </span>
-        <ReactResizeDetector handleWidth>
-          {(width: number) =>
+        <ReactResizeDetector handleWidth
+          render={({ width }) => (
             <Slider
               mode={(curr, next) => {
                 // hodgepodge way to get around type issue in react-compound-slider package
@@ -264,8 +264,8 @@ class Timeline extends React.PureComponent<TimelineProps> {
                 </Ticks>
               }
             </Slider>
-          }
-        </ReactResizeDetector>
+          )}
+        />
         <span className="sunset">
           &#x263D;
           <div className="sunrise-tip">
@@ -344,14 +344,14 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   private _amLabel = UiComponents.i18n.translate("UiComponents:time.am");
   private _pmLabel = UiComponents.i18n.translate("UiComponents:time.pm");
   private readonly _presetColors = [
-    new ColorDef(ColorByName.grey),
-    new ColorDef(ColorByName.lightGrey),
-    new ColorDef(ColorByName.darkGrey),
-    new ColorDef(ColorByName.lightBlue),
-    new ColorDef(ColorByName.lightGreen),
-    new ColorDef(ColorByName.darkGreen),
-    new ColorDef(ColorByName.tan),
-    new ColorDef(ColorByName.darkBrown),
+    ColorDef.create(ColorByName.grey),
+    ColorDef.create(ColorByName.lightGrey),
+    ColorDef.create(ColorByName.darkGrey),
+    ColorDef.create(ColorByName.lightBlue),
+    ColorDef.create(ColorByName.lightGreen),
+    ColorDef.create(ColorByName.darkGreen),
+    ColorDef.create(ColorByName.tan),
+    ColorDef.create(ColorByName.darkBrown),
   ];
 
   constructor(props: SolarTimelineComponentProps) {
@@ -616,7 +616,8 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
 
   private _handleHueOrSaturationChange = (hueOrSaturation: HSVColor) => {
     if (hueOrSaturation.s === 0)  // for a ColorDef to be created from hsv s can't be 0
-      hueOrSaturation.s = 0.5;
+      hueOrSaturation = hueOrSaturation.clone(undefined, 0.5);
+
     const shadowColor = hueOrSaturation.toColorDef();
     this.setState({ shadowColor }, () => this.props.dataProvider.shadowColor = shadowColor);
   }
@@ -653,7 +654,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
             <span>{formattedTime}</span>
             <span className="icon icon-calendar" />
           </button>
-          <Popup style={{ border: "none" }} offset={11} target={this._datePicker} isOpen={this.state.isDateOpened} onClose={this._onCloseDayPicker} position={Position.Top}>
+          <Popup style={{ border: "none" }} offset={11} target={this._datePicker} isOpen={this.state.isDateOpened} onClose={this._onCloseDayPicker} position={RelativePosition.Top}>
             <DayPicker active={this.props.dataProvider.day} hours={currentDate.getUTCHours()} minutes={currentDate.getUTCMinutes()}
               onTimeChange={this._onTimeChanged} onDayChange={this._onDayClick} />
           </Popup>
@@ -674,7 +675,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
           <button data-testid="shadow-settings-button" title={this._settingLabel} className="shadow-settings-button" ref={(element) => this._settings = element} onClick={this._onOpenSettingsPopup}>
             <span className="icon icon-settings" />
           </button>
-          <Popup className="shadow-settings-popup" target={this._settings} offset={11} isOpen={this.state.isSettingsOpened} onClose={this._onCloseSettingsPopup} position={Position.Top}>
+          <Popup className="shadow-settings-popup" target={this._settings} offset={11} isOpen={this.state.isSettingsOpened} onClose={this._onCloseSettingsPopup} position={RelativePosition.Top}>
             <div className="shadow-settings-popup-container" >
               <div className="shadow-settings-header">{this._settingsPopupTitle}</div>
               <div className="shadow-settings-color">

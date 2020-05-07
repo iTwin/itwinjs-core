@@ -6,10 +6,10 @@
  * @module Icon
  */
 
-import * as classnames from "classnames";
+import "./SvgSprite.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "../utils/Props";
-import "./SvgSprite.scss";
 
 /** Properties of [[SvgPath]] component.
  * @public

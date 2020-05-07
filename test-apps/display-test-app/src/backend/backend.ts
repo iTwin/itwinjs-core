@@ -2,23 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import {
-  IModelReadRpcInterface,
-  IModelTileRpcInterface,
-  MobileRpcConfiguration,
-  NativeAppRpcInterface,
-  RpcInterfaceDefinition,
-  SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
+import "./SVTRpcImpl"; // just to get the RPC implementation registered
 import * as fs from "fs";
 import * as path from "path";
+import { UrlFileHandler } from "@bentley/backend-itwin-client";
+import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelBankClient, Config } from "@bentley/imodeljs-clients";
-import { UrlFileHandler } from "@bentley/imodeljs-clients-backend";
+import { IModelBankClient } from "@bentley/imodelhub-client";
+import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import {
+  IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
+} from "@bentley/imodeljs-common";
 import { SVTConfiguration } from "../common/SVTConfiguration";
-import "./SVTRpcImpl"; // just to get the RPC implementation registered
 import SVTRpcInterface from "../common/SVTRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
 
@@ -63,14 +58,25 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
 
+  if (undefined !== process.env.SVT_DISABLE_IDLE_WORK)
+    configuration.doIdleWork = false;
+
+  if (undefined !== process.env.SVT_DEBUG_SHADERS)
+    configuration.debugShaders = true;
+
   configuration.useProjectExtents = undefined === process.env.SVT_NO_USE_PROJECT_EXTENTS;
-  const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
-  if (undefined !== treeExpiration)
-    try {
-      configuration.tileTreeExpirationSeconds = Number.parseInt(treeExpiration, 10);
-    } catch (_) {
-      //
-    }
+
+  const parseSeconds = (key: string) => {
+    const env = process.env[key];
+    if (!env)
+      return undefined;
+
+    const val = Number.parseInt(env, 10);
+    return Number.isNaN(val) ? undefined : val;
+  };
+
+  configuration.tileTreeExpirationSeconds = parseSeconds("SVT_TILETREE_EXPIRATION_SECONDS");
+  configuration.tileExpirationSeconds = parseSeconds("SVT_TILE_EXPIRATION_SECONDS");
 
   const maxToSkipVar = process.env.SVT_MAX_TILES_TO_SKIP;
   if (undefined !== maxToSkipVar) {
@@ -108,13 +114,13 @@ function setupStandaloneConfiguration(): SVTConfiguration {
 
   configuration.disableEdges = undefined !== process.env.SVT_DISABLE_EDGE_DISPLAY;
 
-  const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
+  const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
   fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
 
   return configuration;
 }
 
-export function initializeBackend() {
+export async function initializeBackend(): Promise<void> {
   const svtConfig = setupStandaloneConfiguration();
 
   const hostConfig = new IModelHostConfiguration();
@@ -136,7 +142,7 @@ export function initializeBackend() {
       logLevel = Logger.parseLogLevel(logLevelEnv);
   }
 
-  IModelHost.startup(hostConfig);
+  await IModelHost.startup(hostConfig);
 
   // Set up logging (by default, no logging is enabled)
   Logger.initializeToConsole();
@@ -144,5 +150,5 @@ export function initializeBackend() {
   Logger.setLevel("SVT", LogLevel.Trace);
 
   if (svtConfig.useFakeCloudStorageTileCache)
-    IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "../webresources", "tiles/")));
+    IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "..", "..", "build", "tiles")));
 }

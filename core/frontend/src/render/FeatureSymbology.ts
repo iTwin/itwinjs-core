@@ -6,17 +6,8 @@
  * @module Rendering
  */
 
-import {
-  BatchType,
-  ColorDef,
-  Feature,
-  GeometryClass,
-  LinePixels,
-  RgbColor,
-  RgbColorProps,
-  SubCategoryOverride,
-} from "@bentley/imodeljs-common";
-import { Id64, Id64String, Id64Set } from "@bentley/bentleyjs-core";
+import { Id64, Id64Set, Id64String } from "@bentley/bentleyjs-core";
+import { BatchType, ColorDef, Feature, GeometryClass, LinePixels, RgbColor, RgbColorProps, SubCategoryOverride } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 
@@ -27,6 +18,8 @@ function copyIdSetToUint32Set(dst: Id64.Uint32Set, src?: Set<string>): void {
       dst.addId(id);
   }
 }
+
+// cspell:ignore subcat subcats
 
 /** Contains types that enable an application to customize how [Feature]($common)s are drawn within a [[Viewport]].
  * @public
@@ -217,7 +210,7 @@ export namespace FeatureSymbology {
     public isAlwaysDrawnExclusive = false;
     /** If true, the always-drawn elements are drawn even if their subcategories are not visible.
      * @see [[setAlwaysDrawn]]
-     * @alpha
+     * @beta
      */
     public alwaysDrawnIgnoresSubCategory = true;
 
@@ -473,12 +466,12 @@ export namespace FeatureSymbology {
     /** Specify overrides for all geometry originating from the specified animation node.
      * @param id The Id of the animation node.
      * @param app The symbology overrides.
-     * @note These overides do not take precedence over element overrides.
+     * @note These overrides do not take precedence over element overrides.
      */
     public overrideAnimationNode(id: number, app: Appearance): void { this.animationNodeOverrides.set(id, app); }
 
     /** Defines a default Appearance to be applied to any [Feature]($common) *not* explicitly overridden.
-     * @param appearance The symbology overides.
+     * @param appearance The symbology overrides.
      * @param replaceExisting Specifies whether to replace the current default overrides if they are already defined.
      */
     public setDefaultOverrides(appearance: Appearance, replaceExisting: boolean = true): void {
@@ -513,9 +506,6 @@ export namespace FeatureSymbology {
 
       if (undefined !== viewport.alwaysDrawn)
         this.setAlwaysDrawnSet(viewport.alwaysDrawn, viewport.isAlwaysDrawnExclusive);
-
-      if (undefined !== view.scheduleScript)
-        view.scheduleScript.getSymbologyOverrides(this, viewport.scheduleTime);
 
       if (undefined !== viewport.featureOverrideProvider)
         viewport.featureOverrideProvider.addFeatureOverrides(this, viewport);
@@ -560,6 +550,11 @@ export namespace FeatureSymbology {
           }
         }
       }
+
+      const style = view.displayStyle;
+      const script = style.scheduleScript;
+      if (script)
+        script.getSymbologyOverrides(this, style.settings.timePoint ?? 0);
 
       if (!view.is3d())
         return;

@@ -10,6 +10,7 @@ import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcEndpoint, RpcMobilePlatform } from "../core/RpcConstants";
 import { interop, MobileRpcProtocol } from "./MobileRpcProtocol";
+
 /** Holds configuration for the RpcInterfaces used by the application.
  * @beta
  */

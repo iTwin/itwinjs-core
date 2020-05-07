@@ -6,15 +6,12 @@
  * @module Symbology
  */
 
-import {
-  Id64,
-  Id64String,
-} from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
-import { Gradient } from "./Gradient";
-import { IModel } from "./IModel";
 import { AreaPattern } from "./geometry/AreaPattern";
 import { LineStyle } from "./geometry/LineStyle";
+import { Gradient } from "./Gradient";
+import { IModel } from "./IModel";
 
 /** Whether a closed region should be drawn for wireframe display with its internal area filled or not.
  * @public
@@ -137,8 +134,8 @@ export class GeometryParams {
     retVal.materialId = this.materialId;
     retVal.elmPriority = this.elmPriority;
     retVal.weight = this.weight;
-    retVal.lineColor = this.lineColor ? this.lineColor.clone() : undefined;
-    retVal.fillColor = this.fillColor ? this.fillColor.clone() : undefined;
+    retVal.lineColor = this.lineColor;
+    retVal.fillColor = this.fillColor;
     retVal.backgroundFill = this.backgroundFill;
     retVal.fillDisplay = this.fillDisplay;
     retVal.elmTransparency = this.elmTransparency;

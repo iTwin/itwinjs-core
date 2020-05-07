@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, UserInfo, Project } from "@bentley/imodeljs-clients";
-import { IModelBankClient } from "@bentley/imodeljs-clients/lib/imodelbank/IModelBankClient";
-import { IModelBankFileSystemContextClient } from "@bentley/imodeljs-clients/lib/imodelbank/IModelBankFileSystemContextClient";
-import { IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { Project } from "@bentley/context-registry-client";
+import { IModelBankClient, IModelBankFileSystemContextClient } from "@bentley/imodelhub-client";
+import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
+import { AccessToken, UserInfo } from "@bentley/itwin-client";
 
 // A connection to a non-Connect-hosted project and iModel
 export async function initializeCustomCloudEnv(projectName: string | undefined, url: string): Promise<Project | undefined> {
@@ -16,12 +16,14 @@ export async function initializeCustomCloudEnv(projectName: string | undefined, 
   const featureTracking = { ultimateSite: "ultimateSite", usageCountryIso: "usageCountryIso" };
 
   const userInfo = new UserInfo(id, email, profile, organization, featureTracking);
-  const foreignAccessTokenWrapper: any = {};
-  foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userInfo };
-  const accessToken = AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper));
+  const foreignAccessTokenWrapper: any = {
+    ForeignProjectAccessToken: userInfo,
+  };
+  const accessToken = new AccessToken(JSON.stringify(foreignAccessTokenWrapper));
+  accessToken.setUserInfo(userInfo);
 
   if (undefined === projectName)
-    projectName = "iModelJsIntegrationTest";
+    projectName = "iModelJsTest";
 
   const bankContextClient = new IModelBankFileSystemContextClient(url);
   const requestContext = new AuthorizedFrontendRequestContext(accessToken!);

@@ -7,6 +7,7 @@
  * @module CartesianGeometry
  */
 import { Matrix3d } from "./Matrix3d";
+
 /**
  * interface for class with `x` and `y` as number properties.
  * @public

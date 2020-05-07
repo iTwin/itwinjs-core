@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Surface } from "./Surface";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { Surface } from "./Surface";
 
 class DragState {
   private _newX = 0;
@@ -148,6 +148,7 @@ class WindowHeader {
     this.hideCloseWidget(!this.window.isCloseable);
 
     this._resizerElement = IModelApp.makeHTMLElement("div", { className: "floating-window-header-resize", parent: this.element });
+    this.hideResizerWidget(!this.window.isResizable);
 
     // Left-drag => move
     new DragState(window, this.element);
@@ -205,7 +206,7 @@ class WindowHeader {
   }
 
   public applyDock(): void {
-    if (undefined === this._dockState)
+    if (undefined === this._dockState || !this.window.isResizable)
       return;
 
     const surf = this.window.surface;
@@ -323,6 +324,10 @@ class WindowHeader {
     this._closeElement.style.display = hide ? "none" : "block";
   }
 
+  public hideResizerWidget(hide: boolean) {
+    this._resizerElement.style.display = hide ? "none" : "block";
+  }
+
   public markAsPinned(isPinned: boolean) {
     if (isPinned)
       this._resizerElement.classList.add("window-pinned");
@@ -337,6 +342,7 @@ export interface WindowProps {
   left?: number;
   width?: number;
   height?: number;
+  scrollbars?: boolean;
 }
 
 export abstract class Window {
@@ -369,6 +375,8 @@ export abstract class Window {
 
     this._header = new WindowHeader(this, this.container, undefined !== props ? props.title : undefined);
     this.contentDiv = IModelApp.makeHTMLElement("div", { className: "floating-window", parent: this.container });
+    if (props && props.scrollbars)
+      this.contentDiv.classList.add("overflow-auto");
   }
 
   // Do not set directly - use Surface.togglePin(window)
@@ -408,6 +416,7 @@ export abstract class Window {
   public onClosing(): void { }
   public onClosed(): void { }
   public get isCloseable(): boolean { return true; }
+  public get isResizable(): boolean { return true; }
 
   public resizeContent(w: number, h: number): void {
     this._header.resizeContent(w, h);

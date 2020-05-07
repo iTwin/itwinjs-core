@@ -2,23 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// tslint:disable:import-within-package
 import { assert } from "chai";
 import * as path from "path";
-import { Id64String, Id64, DbResult, GuidString } from "@bentley/bentleyjs-core";
-import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common";
-import { HubIModel, IModelQuery, ChangeSetPostPushEvent, NamedVersionCreatedEvent, RequestGlobalOptions, RequestTimeoutOptions, Config } from "@bentley/imodeljs-clients";
+import { Config, DbResult, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { ChangeSetPostPushEvent, HubIModel, IModelQuery, NamedVersionCreatedEvent } from "@bentley/imodelhub-client";
+import { ChangedValueState, ChangeOpCode, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { RequestGlobalOptions, RequestTimeoutOptions } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import * as utils from "../../../../backend-itwin-client/lib/test/imodelhub/TestUtils";
+import { RequestType, ResponseBuilder, ScopeType } from "../../../../backend-itwin-client/lib/test/ResponseBuilder";
 import {
-  IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, AuthorizedBackendRequestContext,
-  ECSqlStatement, ChangeSummary, ConcurrencyControl, IModelJsFs,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, ECSqlStatement, IModelJsFs,
 } from "../../imodeljs-backend";
-import * as utils from "./../../../../clients-backend/lib/test/imodelhub/TestUtils";
-import { ResponseBuilder, RequestType, ScopeType } from "./../../../../clients-backend/lib/test/ResponseBuilder";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 import { createNewModelAndCategory } from "./IModelWrite.test";
 import { TestPushUtility } from "./TestPushUtility";
-import { KnownTestLocations } from "../KnownTestLocations";
 
 class TestConfig {
   public static get projectName(): string { return Config.App.get("imjs_test_project_name"); }
@@ -29,7 +30,7 @@ describe("PushRetry", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testProjectId: string;
   let testIModelId: GuidString;
-  let testIModel: IModelDb;
+  let testIModel: BriefcaseDb;
   const testPushUtility: TestPushUtility = new TestPushUtility();
   const iModelName = "PushRetryTest";
   const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -54,7 +55,7 @@ describe("PushRetry", () => {
   const extractChangeSummary = async (changeSetId: string) => {
     if (!testIModel) {
       // Open a new local briefcase of the iModel at the specified version
-      testIModel = await IModelDb.open(requestContext, testProjectId, testIModelId.toString(), OpenParams.pullAndPush(), IModelVersion.asOfChangeSet(changeSetId));
+      testIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, testIModelId.toString(), SyncMode.PullAndPush, IModelVersion.asOfChangeSet(changeSetId));
     } else {
       // Update the existing local briefcase of the iModel to the specified version
       await testIModel.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(changeSetId));
@@ -85,22 +86,22 @@ describe("PushRetry", () => {
         const instanceChange: any = ChangeSummaryManager.queryInstanceChange(testIModel, Id64.fromJSON(row.id));
         switch (instanceChange.opCode) {
           case ChangeOpCode.Insert: {
-            const rows: any[] = testIModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.AfterInsert));
+            const rows: any[] = IModelTestUtils.executeQuery(testIModel, ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.AfterInsert));
             assert.equal(rows.length, 1);
             instanceChange.after = rows[0];
             break;
           }
           case ChangeOpCode.Update: {
-            let rows: any[] = testIModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.BeforeUpdate));
+            let rows: any[] = IModelTestUtils.executeQuery(testIModel, ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.BeforeUpdate));
             assert.equal(rows.length, 1);
             instanceChange.before = rows[0];
-            rows = testIModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.AfterUpdate));
+            rows = IModelTestUtils.executeQuery(testIModel, ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.AfterUpdate));
             assert.equal(rows.length, 1);
             instanceChange.after = rows[0];
             break;
           }
           case ChangeOpCode.Delete: {
-            const rows: any[] = testIModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.BeforeDelete));
+            const rows: any[] = IModelTestUtils.executeQuery(testIModel, ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.BeforeDelete));
             assert.equal(rows.length, 1);
             instanceChange.before = rows[0];
             break;
@@ -173,10 +174,9 @@ describe("PushRetry", () => {
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, testProjectId, iModelTemp.id!);
     }
 
-    const pushRetryIModel: IModelDb = await IModelDb.create(requestContext, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
-    const pushRetryIModelId = pushRetryIModel.iModelToken.iModelId;
+    const pushRetryIModelId = await BriefcaseManager.create(requestContext, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     assert.isNotEmpty(pushRetryIModelId);
-
+    const pushRetryIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, pushRetryIModelId, SyncMode.PullAndPush);
     pushRetryIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
     const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, pushRetryIModel);
@@ -203,7 +203,7 @@ describe("PushRetry", () => {
       utils.createRequestUrl(ScopeType.iModel, pushRetryIModelId!, "ChangeSet", "?$top=1&$orderby=Index+desc"),
       responseFunction, 5, undefined, undefined, 409);
 
-    await pushRetryIModel.pushChanges(requestContext);
+    await pushRetryIModel.pushChanges(requestContext, "test");
     ResponseBuilder.clearMocks();
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, testProjectId, pushRetryIModelId!);
   });
@@ -214,9 +214,9 @@ describe("PushRetry", () => {
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, testProjectId, iModelTemp.id!);
     }
 
-    const pushRetryIModel: IModelDb = await IModelDb.create(requestContext, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
-    const pushRetryIModelId = pushRetryIModel.iModelToken.iModelId;
+    const pushRetryIModelId = await BriefcaseManager.create(requestContext, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     assert.isNotEmpty(pushRetryIModelId);
+    const pushRetryIModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, pushRetryIModelId, SyncMode.PullAndPush);
 
     const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, pushRetryIModel);
 
@@ -229,7 +229,7 @@ describe("PushRetry", () => {
       response, 5, undefined, undefined, 409);
 
     try {
-      await pushRetryIModel.pushChanges(requestContext);
+      await pushRetryIModel.pushChanges(requestContext, "test");
     } catch (error) {
       assert.exists(error);
       assert.equal(error.name, "UnknownPushError");

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { QParams3d, QPoint3d } from "../QPoint";
 import { Point3d, Range3d } from "@bentley/geometry-core";
+import { QParams3d, QPoint3d } from "../QPoint";
 
 function expectPointsEqual(lhs: Point3d, rhs: Point3d, tolerance: number) {
   expect(lhs.isAlmostEqual(rhs, tolerance)).to.equal(true);

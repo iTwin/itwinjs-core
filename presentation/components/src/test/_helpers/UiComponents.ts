@@ -5,17 +5,17 @@
 /* tslint:disable:no-direct-imports */
 
 import * as faker from "faker";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
-import { PropertyRecord, PrimitiveValue, PropertyDescription, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
-import { PRESENTATION_TREE_NODE_KEY } from "../../tree/Utils";
+import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
+import { PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/Utils";
 
 export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {
   const node = {
     id: faker.random.uuid(),
     parentId,
-    label: faker.random.word(),
+    label: PropertyRecord.fromString(faker.random.word()),
     description: faker.random.words(),
     hasChildren: faker.random.boolean(),
   };

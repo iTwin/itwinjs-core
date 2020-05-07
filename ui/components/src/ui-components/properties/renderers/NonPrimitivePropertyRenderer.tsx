@@ -6,17 +6,16 @@
  * @module Properties
  */
 
-import * as React from "react";
+import "./NonPrimitivePropertyRenderer.scss";
 import _ from "lodash";
+import * as React from "react";
+import { ArrayValue, PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
+import { Orientation } from "@bentley/ui-core";
+import { UiComponents } from "../../UiComponents";
 import { NonPrimitivePropertyLabelRenderer } from "./label/NonPrimitivePropertyLabelRenderer";
-import { PropertyView } from "./PropertyView";
 import { PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
 import { PropertyRenderer } from "./PropertyRenderer";
-import { UiComponents } from "../../UiComponents";
-import { Orientation } from "@bentley/ui-core";
-import { PropertyRecord, PropertyValueFormat, StructValue, ArrayValue } from "@bentley/imodeljs-frontend";
-
-import "./NonPrimitivePropertyRenderer.scss";
+import { PropertyView } from "./PropertyView";
 
 /** Properties of [[NonPrimitivePropertyRenderer]] React component
  * @public

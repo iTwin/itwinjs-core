@@ -3,17 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { KnownTestLocations } from "./KnownTestLocations";
-import { RobotWorldEngine } from "../RobotWorldEngine";
-import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
-import { Robot } from "../RobotElement";
-import { Barrier } from "../BarrierElement";
-import { HubIModel, Project, IModelHubClient, IModelQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
-import { BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
-import { ColorByName, ColorDef, IModel } from "@bentley/imodeljs-common";
+import { Project } from "@bentley/context-registry-client";
+import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
+import { HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
+import {
+  BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
+  OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,
+} from "@bentley/imodeljs-backend";
+import { BriefcaseProps, ColorByName, IModel, SyncMode } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { Barrier } from "../BarrierElement";
+import { Robot } from "../RobotElement";
+import { RobotWorldEngine } from "../RobotWorldEngine";
+import { KnownTestLocations } from "./KnownTestLocations";
+
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ Bridge.source-data.example-code
@@ -79,19 +85,25 @@ async function createIModel(requestContext: AuthorizedClientRequestContext, proj
 // __PUBLISH_EXTRACT_START__ Bridge.firstTime.example-code
 async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext, iModelId: string, projectId: string, assetsDir: string) {
   // Start the IModelHost
-  IModelHost.startup();
+  await IModelHost.startup();
 
-  const briefcase = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.pullAndPush());
+  requestContext.enter();
+
+  const briefcaseProps: BriefcaseProps = await BriefcaseManager.download(requestContext, projectId, iModelId, { syncMode: SyncMode.PullAndPush });
+  requestContext.enter();
+  const briefcase: BriefcaseDb = await BriefcaseDb.open(requestContext, briefcaseProps.key);
+  requestContext.enter();
+
   briefcase.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
   // I. Import the schema.
-  await briefcase.importSchema(requestContext, path.join(assetsDir, "RobotWorld.ecschema.xml"));
+  await briefcase.importSchemas(requestContext, [path.join(assetsDir, "RobotWorld.ecschema.xml")]);
   //    You must acquire all locks reserve all Codes used before saving or pushing.
   await briefcase.concurrencyControl.request(requestContext);
   //    You *must* push this to the iModel right now.
   briefcase.saveChanges();
   await briefcase.pullAndMergeChanges(requestContext);
-  await briefcase.pushChanges(requestContext);
+  await briefcase.pushChanges(requestContext, "bridge test");
 
   // II. Import data
 
@@ -103,8 +115,8 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   const defModelId = DefinitionModel.insert(briefcase, jobSubjectId, "definitions");
 
   //  Create the spatial categories that will be used by the Robots and Barriers that will be imported.
-  SpatialCategory.insert(briefcase, defModelId, Robot.classFullName, { color: new ColorDef(ColorByName.silver) });
-  SpatialCategory.insert(briefcase, defModelId, Barrier.classFullName, { color: new ColorDef(ColorByName.brown) });
+  SpatialCategory.insert(briefcase, defModelId, Robot.classFullName, { color: ColorByName.silver });
+  SpatialCategory.insert(briefcase, defModelId, Barrier.classFullName, { color: ColorByName.brown });
 
   // 2. Convert elements, aspects, etc.
 
@@ -145,7 +157,7 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   //    Note that you pull and merge first, in case another user has pushed.
   briefcase.saveChanges();
   await briefcase.pullAndMergeChanges(requestContext);
-  await briefcase.pushChanges(requestContext);
+  await briefcase.pushChanges(requestContext, "bridge test");
 }
 // __PUBLISH_EXTRACT_END__
 
@@ -157,16 +169,16 @@ describe.skip("Bridge", async () => {
   let imodelRepository: HubIModel;
 
   before(async () => {
-    IModelHost.startup();
+    await IModelHost.startup();
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     testProjectId = (await queryProjectIdByName(requestContext, "iModelJsIntegrationTest")).wsgId;
     seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
     imodelRepository = await createIModel(requestContext, testProjectId, "BridgeTest", seedPathname);
-    IModelHost.shutdown();
+    await IModelHost.shutdown();
   });
 
-  afterEach(() => {
-    IModelHost.shutdown();
+  afterEach(async () => {
+    await IModelHost.shutdown();
   });
 
   it("should run bridge the first time", async () => {

@@ -7,15 +7,9 @@
  * @module Widgets
  */
 
-import {
-  IModelApp,
-  RenderMemory,
-  TileTreeOwner,
-  TileTreeSet,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { createComboBox, ComboBoxEntry } from "../ui/ComboBox";
+import { IModelApp, RenderMemory, TileTreeOwner, TileTreeSet, Viewport } from "@bentley/imodeljs-frontend";
+import { ComboBoxEntry, createComboBox } from "../ui/ComboBox";
 
 function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTreeOwner): void {
   const tree = owner.tileTree;
@@ -203,7 +197,7 @@ export class MemoryTracker {
     table.appendChild(row1);
 
     this._textures = new MemoryPanel(cell00, "Textures", ["Surface Textures", "Vertex Tables", "Feature Tables", "Feature Overrides", "Clip Volumes", "Planar Classifiers", "Shadow Maps", "Texture Attachments"]);
-    this._buffers = new MemoryPanel(cell01, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Polylines", "Point Strings", "Point Clouds", "Instances"]);
+    this._buffers = new MemoryPanel(cell01, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Polylines", "Point Strings", "Point Clouds", "Instances", "Terrain"]);
     this._totalElem = this.addStatistics(cell10);
     this._totalTreesElem = this.addStatistics(cell11);
 

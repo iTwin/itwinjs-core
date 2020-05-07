@@ -8,6 +8,8 @@
 ---
 
 ### Versions
+- [2.0.0](./2.0.0.md)
+
 - [1.14.0](./1.14.0.md)
 
 - [1.13.0](./1.13.0.md)
@@ -57,7 +59,5 @@
 - [imodeljs-common](../reference/imodeljs-common/changelog)
 
 - [geometry-core](../reference/geometry-core/changelog)
-
-- [imodeljs-clients](../reference/imodeljs-clients/changelog)
 
 - [bentleyjs-core](../reference/bentleyjs-core/changelog)

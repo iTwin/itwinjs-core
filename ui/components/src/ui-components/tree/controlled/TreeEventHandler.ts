@@ -6,18 +6,18 @@
  * @module Tree
  */
 
-import { Subject } from "rxjs/internal/Subject";
 import { from } from "rxjs/internal/observable/from";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
-import {
-  TreeEvents, TreeNodeEvent, TreeCheckboxStateChangeEvent,
-  TreeSelectionModificationEvent, TreeSelectionReplacementEvent,
-} from "./TreeEvents";
+import { Subject } from "rxjs/internal/Subject";
+import { IDisposable } from "@bentley/bentleyjs-core";
 import { TreeModelMutator } from "./internal/TreeModelMutator";
 import { Subscription } from "./Observable";
-import { ITreeNodeLoader } from "./TreeNodeLoader";
-import { TreeModelSource } from "./TreeModelSource";
+import {
+  TreeCheckboxStateChangeEventArgs, TreeEvents, TreeNodeEventArgs, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
+} from "./TreeEvents";
 import { TreeModelNode } from "./TreeModel";
+import { TreeModelSource } from "./TreeModelSource";
+import { ITreeNodeLoader } from "./TreeNodeLoader";
 
 /**
  * Params used for tree node editing.
@@ -47,7 +47,7 @@ export interface TreeEventHandlerParams {
  * Default tree event handler.
  * @beta
  */
-export class TreeEventHandler implements TreeEvents {
+export class TreeEventHandler implements TreeEvents, IDisposable {
   private _modelMutator: TreeModelMutator;
   private _editingParams?: TreeEditingParams;
 
@@ -64,18 +64,20 @@ export class TreeEventHandler implements TreeEvents {
     this._disposed.next();
   }
 
+  public get modelSource() { return this._modelMutator.modelSource; }
+
   /** Expands node and starts loading children. */
-  public onNodeExpanded({ nodeId }: TreeNodeEvent) {
+  public onNodeExpanded({ nodeId }: TreeNodeEventArgs) {
     from(this._modelMutator.expandNode(nodeId)).pipe(takeUntil(this._disposed)).subscribe();
   }
 
   /** Collapses node */
-  public onNodeCollapsed({ nodeId }: TreeNodeEvent) {
+  public onNodeCollapsed({ nodeId }: TreeNodeEventArgs) {
     this._modelMutator.collapseNode(nodeId);
   }
 
   /** Selects and deselects nodes until event is handled, handler is disposed or selection replaced event occurs. */
-  public onSelectionModified({ modifications }: TreeSelectionModificationEvent): Subscription | undefined {
+  public onSelectionModified({ modifications }: TreeSelectionModificationEventArgs): Subscription | undefined {
     return from(modifications)
       .pipe(
         takeUntil(this._disposed),
@@ -89,7 +91,7 @@ export class TreeEventHandler implements TreeEvents {
   }
 
   /** Replaces currently selected nodes until event is handled, handler is disposed or another selection replaced event occurs. */
-  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEvent): Subscription | undefined {
+  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs): Subscription | undefined {
     this._selectionReplaced.next();
 
     let firstEmission = true;
@@ -111,12 +113,12 @@ export class TreeEventHandler implements TreeEvents {
   }
 
   /** Changes nodes checkbox states. */
-  public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEvent): Subscription | undefined {
+  public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs): Subscription | undefined {
     return stateChanges.subscribe((changes) => this._modelMutator.setCheckboxStates(changes));
   }
 
   /** Activates node editing if editing parameters is supplied and node is editable. */
-  public onDelayedNodeClick({ nodeId }: TreeNodeEvent) {
+  public onDelayedNodeClick({ nodeId }: TreeNodeEventArgs) {
     if (this._editingParams === undefined)
       return;
 

@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
 import { SchemaContext } from "../../src/Context";
 import { SchemaItemType, schemaItemTypeToString } from "../../src/ECObjects";
 import { Schema } from "../../src/Metadata/Schema";
@@ -34,7 +33,7 @@ describe("UnitSystem tests", () => {
         name: "IMPERIAL",
         label: "Imperial",
       };
-      await testUnitSystem.deserialize(json);
+      await testUnitSystem.fromJSON(json);
       expect(testUnitSystem.label).to.equal("Imperial");
       expect(testUnitSystem.description).to.be.undefined;
     });
@@ -51,7 +50,7 @@ describe("UnitSystem tests", () => {
           name: "IMPERIAL",
           label: "Imperial",
         };
-        testUnitSystem.deserializeSync(json);
+        testUnitSystem.fromJSONSync(json);
         expect(testUnitSystem.label).to.equal("Imperial");
         expect(testUnitSystem.description).to.be.undefined;
       });

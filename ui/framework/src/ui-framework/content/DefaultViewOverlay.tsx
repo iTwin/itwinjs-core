@@ -6,17 +6,15 @@
  * @module ContentView
  */
 
+import "./DefaultViewOverlay.scss";
 import * as React from "react";
-
-import { TimelineDataProvider, TimelineComponent, SolarTimeline, SolarDataProvider } from "@bentley/ui-components";
 import { IModelApp, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
-import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { ScheduleAnimationTimelineDataProvider } from "../timeline/ScheduleAnimationProvider";
+import { SolarDataProvider, SolarTimeline, TimelineComponent, TimelineDataProvider } from "@bentley/ui-components";
+import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { AnalysisAnimationTimelineDataProvider } from "../timeline/AnalysisAnimationProvider";
+import { ScheduleAnimationTimelineDataProvider } from "../timeline/ScheduleAnimationProvider";
 import { SolarTimelineDataProvider } from "../timeline/SolarTimelineDataProvider";
 import { ContentViewManager } from "./ContentViewManager";
-
-import "./DefaultViewOverlay.scss";
 
 /** Props of Viewport Overlay Control that show timelines
  */
@@ -52,8 +50,10 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
         if (this.state.dataProvider.onAnimationFractionChanged)
           this.state.dataProvider.onAnimationFractionChanged(0);
 
-        if (this.props.viewport)
-          this.props.viewport.scheduleScriptFraction = 0;
+        if (this.props.viewport) {
+          this.props.viewport.timePoint = undefined;
+          this.props.viewport.analysisFraction = 0;
+        }
       }
       this._setTimelineDataProvider(this.props.viewport as ScreenViewport);
     });
@@ -99,7 +99,8 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
 
     const activeContentControl = ContentViewManager.getActiveContentControl();
     if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.scheduleScriptFraction = 0;
+      activeContentControl.viewport.analysisFraction = 0;
+      activeContentControl.viewport.timePoint = undefined;
     }
     if (this._removeListener)
       this._removeListener();

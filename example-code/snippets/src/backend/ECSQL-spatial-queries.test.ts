@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Element, IModelDb, GeometricElement3d, ECSqlStatement, PhysicalPartition } from "@bentley/imodeljs-backend";
+import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Range3d, Range3dProps } from "@bentley/geometry-core";
+import { ECSqlStatement, Element, GeometricElement3d, PhysicalPartition, SnapshotDb } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { Id64String, Id64, DbResult } from "@bentley/bentleyjs-core";
-import { Range3dProps, Range3d } from "@bentley/geometry-core";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Useful ECSQL spatial queries", () => {
-  let iModel: IModelDb;
+  let iModel: SnapshotDb;
 
   before(async () => {
-    iModel = IModelTestUtils.openIModel("test.bim");
+    iModel = IModelTestUtils.openSnapshotFromSeed("test.bim");
   });
 
   after(() => {
-    iModel.closeStandalone();
+    iModel.close();
   });
 
   it("should execute spatial queries", () => {

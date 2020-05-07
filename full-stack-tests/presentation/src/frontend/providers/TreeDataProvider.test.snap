@@ -5,16 +5,15 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "pathFromRoot": Array [
-        "3da8ffb01a263e88441398a167bf117c",
-        "2033788ebe3f7658c6897097d06760fe",
+        "a519e12d6f387693d64a76be21366511",
+        "9a5a59bafe13e845197cce6298196fd0",
       ],
       "type": "child",
     },
     "description": "child description",
     "icon": "child image id",
-    "id": "2033788ebe3f7658c6897097d06760fe/3da8ffb01a263e88441398a167bf117c",
-    "label": "child label",
-    "labelDefinition": PropertyRecord {
+    "id": "9a5a59bafe13e845197cce6298196fd0/a519e12d6f387693d64a76be21366511",
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -26,7 +25,7 @@ Array [
         "valueFormat": 0,
       },
     },
-    "parentId": "3da8ffb01a263e88441398a167bf117c",
+    "parentId": "a519e12d6f387693d64a76be21366511",
   },
 ]
 `;
@@ -36,16 +35,15 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "pathFromRoot": Array [
-        "3da8ffb01a263e88441398a167bf117c",
-        "2033788ebe3f7658c6897097d06760fe",
+        "a519e12d6f387693d64a76be21366511",
+        "9a5a59bafe13e845197cce6298196fd0",
       ],
       "type": "child",
     },
     "description": "child description",
     "icon": "child image id",
-    "id": "2033788ebe3f7658c6897097d06760fe/3da8ffb01a263e88441398a167bf117c",
-    "label": "child label",
-    "labelDefinition": PropertyRecord {
+    "id": "9a5a59bafe13e845197cce6298196fd0/a519e12d6f387693d64a76be21366511",
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -57,7 +55,7 @@ Array [
         "valueFormat": 0,
       },
     },
-    "parentId": "3da8ffb01a263e88441398a167bf117c",
+    "parentId": "a519e12d6f387693d64a76be21366511",
   },
 ]
 `;
@@ -67,7 +65,7 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "pathFromRoot": Array [
-        "3da8ffb01a263e88441398a167bf117c",
+        "a519e12d6f387693d64a76be21366511",
       ],
       "type": "root",
     },
@@ -75,11 +73,10 @@ Array [
     "description": "root description",
     "hasChildren": true,
     "icon": "root image id",
-    "id": "3da8ffb01a263e88441398a167bf117c",
+    "id": "a519e12d6f387693d64a76be21366511",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "root label",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -108,7 +105,7 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "pathFromRoot": Array [
-        "3da8ffb01a263e88441398a167bf117c",
+        "a519e12d6f387693d64a76be21366511",
       ],
       "type": "root",
     },
@@ -116,11 +113,10 @@ Array [
     "description": "root description",
     "hasChildren": true,
     "icon": "root image id",
-    "id": "3da8ffb01a263e88441398a167bf117c",
+    "id": "a519e12d6f387693d64a76be21366511",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "root label",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",

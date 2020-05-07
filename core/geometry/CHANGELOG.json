@@ -2,6 +2,72 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/geometry-core_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "freeze methods return Readonly<this>"
+          },
+          {
+            "comment": "Show min/max window error for mouse wheel zoom."
+          },
+          {
+            "comment": "Show min/max window error for mouse wheel zoom."
+          },
+          {
+            "comment": "Methods to create mitered pipe sequences; improve chainCollector sort for full-chain reorder."
+          },
+          {
+            "comment": "handle simple wraparound in consolidateAdjacentPrimitives (for sandy Bugai)"
+          },
+          {
+            "comment": "Fix z bug in Arc3d cloneAtZ()"
+          },
+          {
+            "comment": "CurveFactory and RegionOps support for pipe construction and finding loops in unstructured curve sets"
+          },
+          {
+            "comment": "BUG 273249"
+          },
+          {
+            "comment": "PolyfaceClip for plane, convex, union clippers.  Prevent small fragment construction in curve clip."
+          },
+          {
+            "comment": "docs for PolyfaceClip.clipPolyfaceInsideOutside"
+          },
+          {
+            "comment": "modernize cubic root finder"
+          },
+          {
+            "comment": "geometry coverage.   Logic bugs in ChainCollectorContext.needBreakBetweenPrimitives"
+          },
+          {
+            "comment": "ChainCollector support for DesignReview; Bspline through points for futureOnBridge"
+          },
+          {
+            "comment": "In earcut triangulation, test for bowtie point."
+          },
+          {
+            "comment": "v2.0 API cleanup -- Ellipsoid use LongitudeLatitudeNumber instead of Point2d for angle return"
+          },
+          {
+            "comment": "imjs importer; move curve context classes to separate files"
+          },
+          {
+            "comment": "Remove deprecated APIs; see NextVersion.md for details."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/geometry-core_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
@@ -122,10 +188,10 @@
             "comment": "Great Circle extraction on Ellipsoid"
           },
           {
-            "comment": "Correct bug in z part of Vector3d spherical construction.   New method to split mesh by eyevector"
+            "comment": "Correct bug in z part of Vector3d spherical construction.  New method to split mesh by eyevector"
           },
           {
-            "comment": "BUG#220063 linearSystem3d z term"
+            "comment": "linearSystem3d z term"
           },
           {
             "comment": "Code cleanup from codeQL hits"
@@ -146,10 +212,10 @@
             "comment": "PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal "
           },
           {
-            "comment": "BUG#211602 Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections"
+            "comment": "Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections"
           },
           {
-            "comment": "Feature#211247 Intersect Ray with Sphere"
+            "comment": "Intersect Ray with Sphere"
           },
           {
             "comment": "Spherical patch range; optional result in range3d.corners()"
@@ -173,7 +239,7 @@
       "comments": {
         "none": [
           {
-            "comment": "#193588 bugs in PolygonOffsetContext"
+            "comment": "Fix bugs in PolygonOffsetContext"
           },
           {
             "comment": "Mesh support: TVertexFixup and ColinearEdgeFixup"
@@ -191,13 +257,10 @@
       "comments": {
         "none": [
           {
-            "comment": "BUG#184729 and BUG#185436"
+            "comment": "Triangulate between linestrings; consolidateAdjacentPrimitives; Test if points are a rectangle"
           },
           {
-            "comment": "(TASK#175760 Triangulate between linestrings) (TASK#184495 consolidateAdjacentPrimitives) (TASK#184489 Test if points are a rectangle)"
-          },
-          {
-            "comment": "BUG#184729 General matrix4d inverse"
+            "comment": "General matrix4d inverse"
           }
         ]
       }
@@ -212,12 +275,6 @@
             "comment": "Eliminate use of Math.hypot"
           },
           {
-            "comment": "add copyright headers to recent new files"
-          },
-          {
-            "comment": "Task#175760 and Task#175773"
-          },
-          {
             "comment": "Polyface mesh \"split to components\""
           },
           {
@@ -230,7 +287,7 @@
             "comment": "Explicit undefined initialization for HalfEdge"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -287,7 +344,7 @@
             "comment": "Correct point4d normalization to handle small w values (NPC)"
           },
           {
-            "comment": "#151464 Improved grid display performance."
+            "comment": "Improved grid display performance."
           }
         ]
       }
@@ -339,9 +396,6 @@
           },
           {
             "comment": "Priority queue sweep logic in HalfEdgeGraph"
-          },
-          {
-            "comment": "(imodeljs-markup merge)"
           },
           {
             "comment": "PolarData class for x-y-r-theta constraint solve.   CurvePathWithDistanceIndex expose path with getter."
@@ -413,9 +467,6 @@
             "comment": "Coverage; enable public/internal verification."
           },
           {
-            "comment": "y"
-          },
-          {
             "comment": "Add doc to many methods.  Modernize ray intersect clip plane logic and methods."
           },
           {
@@ -458,7 +509,7 @@
             "comment": "new method to check of clipper intersects range, with quick exit"
           },
           {
-            "comment": " ClipVector and ClipUtilities test and enhancements"
+            "comment": "ClipVector and ClipUtilities test and enhancements"
           },
           {
             "comment": "Triangulation bug (multiple holes not linked correctly)"
@@ -500,10 +551,10 @@
       "comments": {
         "none": [
           {
-            "comment": " geometry-core camel case"
+            "comment": "geometry-core camel case"
           },
           {
-            "comment": "allow subclasses of Range to use static methods"
+            "comment": "Allow subclasses of Range to use static methods"
           },
           {
             "comment": "Changes package.json to include api-extractor and adds api-extractor.json"
@@ -542,13 +593,13 @@
             "comment": "Improve polygon triangulations quality by early flipping behind the earcut front"
           },
           {
-            "comment": "added freeze methods to Angle and Point2d"
+            "comment": "Added freeze methods to Angle and Point2d"
           },
           {
-            "comment": "bug fixes in PolyfaceBuilder"
+            "comment": "Bug fixes in PolyfaceBuilder"
           },
           {
-            "comment": "update for geometry GrowableXYArray usage"
+            "comment": "Update for geometry GrowableXYArray usage"
           },
           {
             "comment": "New class SmoothTransformBetweenFrusta for smooth frustum animation"
@@ -560,7 +611,7 @@
             "comment": "add optional argument to SmoothTransformBetweenFrusta"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -596,7 +647,7 @@
       "comments": {
         "none": [
           {
-            "comment": "code coverage.  sphere and torus derivative errors. solids reject singular transforms."
+            "comment": "Code coverage.  sphere and torus derivative errors. solids reject singular transforms."
           },
           {
             "comment": "Add to quaternion tests"
@@ -704,13 +755,7 @@
       "version": "0.171.0",
       "tag": "@bentley/geometry-core_v0.171.0",
       "date": "Mon, 03 Dec 2018 18:52:58 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Geometry Coverage"
-          }
-        ]
-      }
+      "comments": {}
     },
     {
       "version": "0.170.0",
@@ -734,16 +779,7 @@
       "version": "0.167.0",
       "tag": "@bentley/geometry-core_v0.167.0",
       "date": "Fri, 16 Nov 2018 21:45:44 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Coverage"
-          },
-          {
-            "comment": "AnalyticRoots and Polynomial coverage"
-          }
-        ]
-      }
+      "comments": {}
     },
     {
       "version": "0.166.0",
@@ -758,7 +794,7 @@
       "comments": {
         "none": [
           {
-            "comment": "bspline docs.    Add bezier curve left and right subdivision methods\""
+            "comment": "bspline docs.  Add bezier curve left and right subdivision methods\""
           },
           {
             "comment": "Correct return value (undefined is right!) for LineString3d.pointAt (index)"
@@ -779,7 +815,7 @@
             "comment": "Add support for PolyfaceAuxData to PolyfaceVisitor"
           },
           {
-            "comment": "implement curve method \"moveSignedDistanceFromFraction\""
+            "comment": "Implement curve method \"moveSignedDistanceFromFraction\""
           },
           {
             "comment": "polyface.compress performance problem -- extraneous reallocations"
@@ -806,13 +842,13 @@
             "comment": "CurveChainWithDistanceIndex WIP"
           },
           {
-            "comment": "fromJSON tests.    Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance."
+            "comment": "fromJSON tests.  Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance."
           },
           {
             "comment": "Add tests for fromJSON methods (small classes)"
           },
           {
-            "comment": "Expand test coverage.    Use small absolute tolerance in Geometry.isAlmostEqualNumber.  \"w\" component of BezierCurve3d.getPolePoint4d."
+            "comment": "Expand test coverage.  Use small absolute tolerance in Geometry.isAlmostEqualNumber.  \"w\" component of BezierCurve3d.getPolePoint4d."
           }
         ]
       }
@@ -827,10 +863,10 @@
             "comment": "Merge"
           },
           {
-            "comment": "fromJSON tests.    Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance."
+            "comment": "fromJSON tests.  Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance."
           },
           {
-            "comment": "rename PNG files as png"
+            "comment": "Rename PNG files as png"
           }
         ]
       }

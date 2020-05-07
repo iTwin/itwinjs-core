@@ -1,33 +1,24 @@
 {
   "name": "@bentley/imodeljs-quantity",
-  "version": "1.14.1",
+  "version": "2.0.0",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
-  "license": "MIT",
   "main": "lib/imodeljs-quantity.js",
   "typings": "lib/imodeljs-quantity",
+  "imodeljsSharedLibrary": true,
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/quantity"
   },
   "scripts": {
-    "build": "buildIModelJsModule",
-    "clean": "rimraf lib .rush package-deps.json .nyc_output",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-quantity",
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush/temp/package-deps*.json .nyc_output",
+    "extract-api": "betools extract-api --entry=imodeljs-quantity",
     "lint": "tslint --project . 1>&2",
-    "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-quantity/file.json --tsIndexFile=./imodeljs-quantity.ts --onlyJson %TYPEDOC_THEME%",
+    "test": "betools test-tsnode --testDir=./test/",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-quantity/file.json --tsIndexFile=./imodeljs-quantity.ts --onlyJson",
     "cover": "nyc npm test",
     "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
-  },
-  "iModelJs": {
-    "buildModule": {
-      "type": "system",
-      "webpack": {
-        "dest": "./lib/module",
-        "entry": "./lib/imodeljs-quantity.js",
-        "bundleName": "imodeljs-quantity"
-      }
-    }
   },
   "keywords": [
     "Bentley",
@@ -39,21 +30,20 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.14.1",
-    "@bentley/build-tools": "1.14.1",
-    "@bentley/webpack-tools": "1.14.1",
+    "@bentley/bentleyjs-core": "2.0.0",
+    "@bentley/build-tools": "2.0.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
-    "@types/sinon": "^7.5.1",
+    "@types/sinon": "^9.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
-    "rimraf": "^2.6.2",
-    "sinon": "^7.5.0",
+    "rimraf": "^3.0.2",
+    "sinon": "^9.0.2",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
@@ -61,7 +51,7 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.14.1"
+    "@bentley/bentleyjs-core": "^2.0.0"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

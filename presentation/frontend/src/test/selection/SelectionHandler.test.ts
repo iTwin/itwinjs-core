@@ -9,8 +9,7 @@ import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import {
-  SelectionManager, SelectionHandler, SelectionChangeEvent,
-  SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider,
+  ISelectionProvider, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionManager,
 } from "../../presentation-frontend";
 
 describe("SelectionHandler", () => {
@@ -26,7 +25,12 @@ describe("SelectionHandler", () => {
     const selectionChangeEvent = new SelectionChangeEvent();
     selectionManagerMock.reset();
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => selectionChangeEvent);
-    selectionHandler = new SelectionHandler(selectionManagerMock.object, source, imodelMock.object, ruleset);
+    selectionHandler = new SelectionHandler({
+      manager: selectionManagerMock.object,
+      imodel: imodelMock.object,
+      rulesetId: ruleset,
+      name: source,
+    });
   });
 
   afterEach(() => {

@@ -8,8 +8,8 @@
  * @module Authentication
  */
 
-import { TokenResponse, TokenResponseJson } from "@openid/appauth";
 import * as OperatingSystemUserName from "username";
+import { TokenResponse, TokenResponseJson } from "@openid/appauth";
 import { IModelHost } from "../IModelHost";
 
 /**

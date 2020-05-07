@@ -7,12 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import {
-  BatchType,
-  Feature,
-  GeometryClass,
-  PackedFeatureTable,
-} from "@bentley/imodeljs-common";
+import { BatchType, Feature, GeometryClass, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].

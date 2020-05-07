@@ -6,29 +6,29 @@
  * @module Tools
  */
 
-import { BeEvent, AbandonedError, Logger, Id64String } from "@bentley/bentleyjs-core";
+import { AbandonedError, BeEvent, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
-import { GeometryStreamProps, NpcCenter, Easing } from "@bentley/imodeljs-common";
+import { Easing, GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
+import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { LocateOptions } from "../ElementLocateManager";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { ToolSettingsPropertySyncItem, ToolSettingsPropertyItem, ToolSettingsValue } from "../properties/ToolSettingsValue";
+import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { linePlaneIntersect, ScreenViewport, Viewport, ViewChangeOptions } from "../Viewport";
+import { linePlaneIntersect, ScreenViewport, ViewChangeOptions, Viewport } from "../Viewport";
 import { ViewStatus } from "../ViewState";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
-  BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled,
-  InputCollector, InputSource, InteractiveTool, Tool, CoordinateLockOverrides,
+  BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordinateLockOverrides, CoordSource, EventHandled,
+  InputCollector, InputSource, InteractiveTool, Tool,
 } from "./Tool";
 import { ToolSettings } from "./ToolSettings";
 import { ViewTool } from "./ViewTool";
-import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
 /** @public */
 export enum StartOrResume { Start = 1, Resume = 2 }
@@ -43,33 +43,32 @@ const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
  */
 export class ToolSettingsState {
   /** Initialize single tool settings value */
-  public initializeToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void {
+  public initializeToolSettingProperty(toolId: string, item: DialogPropertyItem): void {
     const key = `${toolId}:${item.propertyName}`;
     const savedValue = window.sessionStorage.getItem(key);
     if (null !== savedValue) {
-      const readValue = JSON.parse(savedValue) as ToolSettingsValue;
+      const readValue = JSON.parse(savedValue) as DialogItemValue;
       // set the primitive value to the saved value - note: tool settings only support primitive values.
-      item.value.value = readValue.value;
-      if (readValue.hasDisplayValue)
-        item.value.displayValue = readValue.displayValue;
+      const newItem = { value: readValue, propertyName: item.propertyName };
+      item = newItem;
     }
   }
 
   /** Initialize an array of tool settings values */
-  public initializeToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void {
-    tsProps.forEach((item: ToolSettingsPropertyItem) => this.initializeToolSettingProperty(toolId, item));
+  public initializeToolSettingProperties(toolId: string, tsProps: DialogPropertyItem[]): void {
+    tsProps.forEach((item: DialogPropertyItem) => this.initializeToolSettingProperty(toolId, item));
   }
 
   /** Save single tool settings value */
-  public saveToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void {
+  public saveToolSettingProperty(toolId: string, item: DialogPropertyItem): void {
     const key = `${toolId}:${item.propertyName}`;
     const objectAsString = JSON.stringify(item.value);
     window.sessionStorage.setItem(key, objectAsString);
   }
 
   /** Save an array of tool settings values */
-  public saveToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void {
-    tsProps.forEach((item: ToolSettingsPropertyItem) => this.saveToolSettingProperty(toolId, item));
+  public saveToolSettingProperties(toolId: string, tsProps: DialogPropertyItem[]): void {
+    tsProps.forEach((item: DialogPropertyItem) => this.saveToolSettingProperty(toolId, item));
   }
 }
 
@@ -385,17 +384,30 @@ export class ToolAdmin {
 
   private static readonly _removals: VoidFunction[] = [];
 
-  /** Handler that wants to process synching latest tool setting properties with UI.
+  /** The registered handler method that will update the UI with any property value changes.
    *  @internal
    */
-  private _toolSettingsChangeHandler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined = undefined;
+  private _toolSettingsChangeHandler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined = undefined;
 
-  /** Set by object that will be provide UI for tool settings properties.
+  /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool.
    * @internal
    */
   public get toolSettingsChangeHandler() { return this._toolSettingsChangeHandler; }
-  public set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined) {
+  public set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined) {
     this._toolSettingsChangeHandler = handler;
+  }
+
+  /** The registered handler method that will trigger UI Sync processing.
+   *  @internal
+   */
+  private _toolSyncUiEventDispatcher: ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined = undefined;
+
+  /** Returns the handler registered by the UI layer that will trigger UiSyncEvent processing that informs UI component to refresh their state.
+   * @internal
+   */
+  public get toolSyncUiEventDispatcher() { return this._toolSyncUiEventDispatcher; }
+  public set toolSyncUiEventDispatcher(handler: ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined) {
+    this._toolSyncUiEventDispatcher = handler;
   }
 
   /** Handler for keyboard events. */
@@ -1376,9 +1388,47 @@ export class ToolAdmin {
   /** Method used by interactive tools to send updated values to UI components, typically showing tool settings.
    * @beta
    */
-  public syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
+  public syncToolSettingsProperties(toolId: string, syncProperties: DialogPropertySyncItem[]): void {
     if (this.toolSettingsChangeHandler)
       this.toolSettingsChangeHandler(toolId, syncProperties);
+  }
+
+  /** Method used by interactive tools to inform one or more UI components to refresh. This is typically used to update labels or icons associated with a specific tool.
+   * This method should be used when the caller wants the UI layer to process the sync event immediately. Use dispatchUiSyncEvent when the event may be triggered while other
+   * more important user interaction processing is required.
+   * @param specificSyncEventId Optional sync event id. If not specified then "tool-admin-refresh-ui" is used.
+   * @param toolId Optional, will be used if specificSyncEventId is not specified. If used, the resulting sync event Id will be created using `tool-admin-refresh-ui-${toolId}`.toLowerCase()
+   * @beta
+   */
+  public dispatchImmediateUiSyncEvent(specificSyncEventId?: string, toolId?: string): void {
+    const defaultRefreshEventId = "tool-admin-refresh-ui";
+    if (this.toolSyncUiEventDispatcher) {
+      if (specificSyncEventId)
+        this.toolSyncUiEventDispatcher(specificSyncEventId.toLowerCase(), true);
+      else if (toolId)
+        this.toolSyncUiEventDispatcher(`${defaultRefreshEventId}-${toolId}`.toLowerCase(), true);
+      else
+        this.toolSyncUiEventDispatcher(defaultRefreshEventId, true);
+    }
+  }
+
+  /** Method used by interactive tools to inform one or more UI components to refresh. This is typically used to update labels or icons associated with a specific tool.
+   * This method should be used when the caller wants the UI layer to process the sync event on a timer, waiting a few 100 ms, allowing other events that may require a UI refresh
+   * to be processed together.
+   * @param specificSyncEventId Optional sync event id. If not specified then "tool-admin-refresh-ui" is used.
+   * @param toolId Optional, will be used if specificSyncEventId is not specified. If used, the resulting sync event Id will be created using `tool-admin-refresh-ui-${toolId}`.toLowerCase()
+   * @beta
+   */
+  public dispatchUiSyncEvent(specificSyncEventId?: string, toolId?: string): void {
+    const defaultRefreshEventId = "tool-admin-refresh-ui";
+    if (this.toolSyncUiEventDispatcher) {
+      if (specificSyncEventId)
+        this.toolSyncUiEventDispatcher(specificSyncEventId.toLowerCase());
+      else if (toolId)
+        this.toolSyncUiEventDispatcher(`${defaultRefreshEventId}-${toolId}`.toLowerCase());
+      else
+        this.toolSyncUiEventDispatcher(defaultRefreshEventId);
+    }
   }
 
   /**
@@ -1596,14 +1646,15 @@ export class WheelEventProcessor {
       target.setFrom(isSnapOrPrecision ? ev.point : ev.rawPoint);
     }
 
+    const view = vp.view;
     const animationOptions: ViewChangeOptions = {
       animateFrustumChange: true,
       cancelOnAbort: true,
       animationTime: ScreenViewport.animation.time.wheel.milliseconds,
       easingFunction: Easing.Cubic.Out,
+      onExtentsError: (err) => view.outputStatusMessage(err),
     };
 
-    const view = vp.view;
     const currentInputState = IModelApp.toolAdmin.currentInputState;
     let status: ViewStatus;
     const now = Date.now();
@@ -1644,16 +1695,15 @@ export class WheelEventProcessor {
       const zDir = view.getZVector();
       target.setFrom(newEye.plusScaled(zDir, zDir.dotProduct(newEye.vectorTo(target))));
 
-      status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens);
-      vp.synchWithView(animationOptions);
+      if (ViewStatus.Success === (status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens, undefined, undefined, animationOptions)))
+        vp.synchWithView(animationOptions);
     } else {
       const targetNpc = vp.worldToNpc(target);
       const trans = Transform.createFixedPointAndMatrix(targetNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1));
 
       const viewCenter = trans.multiplyPoint3d(Point3d.create(.5, .5, .5));
       vp.npcToWorld(viewCenter, viewCenter);
-      vp.zoom(viewCenter, zoomRatio, animationOptions);
-      status = ViewStatus.Success;
+      return vp.zoom(viewCenter, zoomRatio, animationOptions);
     }
 
     // if we scrolled out, we may have invalidated the current AccuSnap path

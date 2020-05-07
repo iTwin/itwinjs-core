@@ -8,13 +8,11 @@
 
 // cSpell:Ignore configurableui
 
-import * as React from "react";
-
-import { Icon } from "@bentley/ui-core";
-import { UiFramework, ContentViewManager, ToolUiProvider, ConfigurableCreateInfo } from "@bentley/ui-framework";
-import { Item, Direction, Toolbar } from "@bentley/ui-ninezone";
-
 import "./AnalysisAnimationToolSettings.scss";
+import * as React from "react";
+import { Icon } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, ContentViewManager, ToolUiProvider, UiFramework } from "@bentley/ui-framework";
+import { Direction, Item, Toolbar } from "@bentley/ui-ninezone";
 
 /** State for [[AnalysisAnimationToolSettings]] */
 interface AnimationState {
@@ -49,7 +47,7 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
   public componentWillUnmount() {
     const activeContentControl = ContentViewManager.getActiveContentControl();
     if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.scheduleScriptFraction = 0;
+      activeContentControl.viewport.analysisFraction = 0;
       window.cancelAnimationFrame(this._requestFrame);
     }
     this._unmounted = true;
@@ -66,19 +64,19 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
       const now = (new Date()).getTime();
       let elapsedTime = this.state.elapsedTime + (now - this._timeLastCycle);
       this._timeLastCycle = now;
-      activeContentControl.viewport.scheduleScriptFraction = elapsedTime / this.state.animationDuration;
+      activeContentControl.viewport.analysisFraction = elapsedTime / this.state.animationDuration;
       const userHitStop = !this.state.isAnimating;
 
       if (elapsedTime >= this.state.animationDuration || userHitStop) { // stop the animation!
         elapsedTime = 0;
-        activeContentControl.viewport.scheduleScriptFraction = 0;
+        activeContentControl.viewport.analysisFraction = 0;
 
         if (!userHitStop && this.state.isLooping) { // only loop if user did not hit stop (naturally finished animation)
           this._startAnimation();
           return;
         } else {
           this.setState({ elapsedTime, isAnimating: false, isAnimationPaused: false });
-          activeContentControl.viewport.scheduleScriptFraction = 0;
+          activeContentControl.viewport.analysisFraction = 0;
           window.cancelAnimationFrame(this._requestFrame);
 
           return;
@@ -117,7 +115,7 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
 
     const activeContentControl = ContentViewManager.getActiveContentControl();
     if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.scheduleScriptFraction = 0;
+      activeContentControl.viewport.analysisFraction = 0;
     }
     window.cancelAnimationFrame(this._requestFrame);
   }
@@ -132,7 +130,7 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
         return;
       }
 
-      activeContentControl.viewport.scheduleScriptFraction = elapsedTime / this.state.animationDuration;
+      activeContentControl.viewport.analysisFraction = elapsedTime / this.state.animationDuration;
       this.setState({ elapsedTime });
     }
   }

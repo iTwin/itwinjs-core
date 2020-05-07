@@ -2,24 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { expect } from "chai";
 import { render } from "@testing-library/react";
-import TestUtils from "../TestUtils";
-
 import {
-  ContentControl,
-  ConfigurableCreateInfo,
-  ContentGroup,
-  ContentLayoutDef,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, FrontstageManager, INACTIVITY_TIME_DEFAULT, UiFramework,
   UiShowHideManager,
-  UiFramework,
-  INACTIVITY_TIME_DEFAULT,
-  FrontstageManager,
-  ContentLayout,
 } from "../../ui-framework";
 import { TestFrontstage } from "../frontstage/FrontstageTestUtils";
+import TestUtils from "../TestUtils";
 
 describe("UiShowHideManager", () => {
 
@@ -82,6 +74,25 @@ describe("UiShowHideManager", () => {
       remove();
     });
 
+    it("useProximityOpacity should return default of true", () => {
+      expect(UiShowHideManager.useProximityOpacity).to.be.true;
+    });
+
+    it("useProximityOpacity should set & return correct value", () => {
+      const spyMethod = sinon.spy();
+      const remove = UiFramework.onUiVisibilityChanged.addListener(spyMethod);
+
+      UiShowHideManager.useProximityOpacity = false;
+      expect(UiShowHideManager.useProximityOpacity).to.be.false;
+      spyMethod.calledOnce.should.true;
+
+      UiShowHideManager.useProximityOpacity = true;
+      expect(UiShowHideManager.useProximityOpacity).to.be.true;
+      spyMethod.calledTwice.should.true;
+
+      remove();
+    });
+
     it("inactivityTime should return default", () => {
       expect(UiShowHideManager.inactivityTime).to.eq(INACTIVITY_TIME_DEFAULT);
     });
@@ -115,7 +126,7 @@ describe("UiShowHideManager", () => {
       constructor(info: ConfigurableCreateInfo, options: any) {
         super(info, options);
 
-        this.reactElement = <div>Test</div>;
+        this.reactNode = <div>Test</div>;
       }
     }
 

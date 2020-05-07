@@ -3,11 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex, Arc3d, Range3d } from "@bentley/geometry-core";
-import { Cartographic, Code, ColorDef, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, GeometryParams, AxisAlignedBox3d, EcefLocation, ViewFlags, IModel, BackgroundMapProps, BackgroundMapType, RenderMode } from "@bentley/imodeljs-common";
-import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SpatialModel, ViewDefinition } from "@bentley/imodeljs-backend";
-import { GeoJson } from "./GeoJson";
+import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@bentley/geometry-core";
+import {
+  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
+  SpatialModel, StandaloneDb, ViewDefinition,
+} from "@bentley/imodeljs-backend";
+import {
+  AxisAlignedBox3d, BackgroundMapProps, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
+  GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, RenderMode, ViewFlags,
+} from "@bentley/imodeljs-common";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
+import { GeoJson } from "./GeoJson";
 
 /** */
 export class GeoJsonImporter {
@@ -32,7 +38,7 @@ export class GeoJsonImporter {
    */
   public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, mapType?: string, mapGroundBias?: number,
     private _classifiedURL?: string, private _classifiedName?: string, private _classifiedOutside?: string, private _classifiedInside?: string) {
-    this.iModelDb = appendToExisting ? IModelDb.openStandalone(iModelFileName, OpenMode.ReadWrite) : IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: geoJson.title } });
+    this.iModelDb = appendToExisting ? StandaloneDb.openFile(iModelFileName, OpenMode.ReadWrite) : SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
     this._appendToExisting = appendToExisting;
     this._modelName = modelName;
@@ -80,7 +86,7 @@ export class GeoJsonImporter {
     } else {
       this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "GeoJSON Definitions");
       this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, modelName);
-      this.featureCategoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, categoryName, { color: ColorDef.white });
+      this.featureCategoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, categoryName, { color: ColorDef.white.tbgr });
       /** To geo-locate the project, we need to first scan the GeoJSon and extract range. This would not be required
        * if the bounding box was directly available.
        */
@@ -107,7 +113,7 @@ export class GeoJsonImporter {
     this.iModelDb.saveChanges();
   }
   private addCategoryToExistingDb(categoryName: string) {
-    const categoryId = SpatialCategory.insert(this.iModelDb, IModel.dictionaryId, categoryName, { color: ColorDef.white });
+    const categoryId = SpatialCategory.insert(this.iModelDb, IModel.dictionaryId, categoryName, { color: ColorDef.white.tbgr });
     this.iModelDb.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, ((view: ViewDefinition) => {
       const categorySelector = this.iModelDb.elements.getElement<CategorySelector>(view.categorySelectorId);
       categorySelector.categories.push(categoryId);
@@ -193,7 +199,7 @@ export class GeoJsonImporter {
     if (this._colorIndex !== undefined) {
       const colorValues = [ColorByName.blue, ColorByName.red, ColorByName.green, ColorByName.yellow, ColorByName.cyan, ColorByName.magenta, ColorByName.cornSilk, ColorByName.blueViolet, ColorByName.deepSkyBlue, ColorByName.indigo, ColorByName.fuchsia];
       const geomParams = new GeometryParams(this.featureCategoryId);
-      geomParams.lineColor = new ColorDef(colorValues[this._colorIndex++ % colorValues.length]);
+      geomParams.lineColor = ColorDef.create(colorValues[this._colorIndex++ % colorValues.length]);
       builder.appendGeometryParamsChange(geomParams);
     }
 

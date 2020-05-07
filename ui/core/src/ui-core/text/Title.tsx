@@ -7,12 +7,12 @@
  */
 
 import * as React from "react";
-import { TextProps } from "./TextProps";
 import { StyledText } from "./StyledText";
+import { TextProps } from "./TextProps";
 
 /** Styled title text React functional component
  * @public
  */
-export const Title: React.FunctionComponent<TextProps> = (props: TextProps) => {  // tslint:disable-line:variable-name
+export function Title(props: TextProps) {
   return <StyledText {...props} mainClassName="uicore-text-title" />;
-};
+}

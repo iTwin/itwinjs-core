@@ -7,22 +7,23 @@
  */
 
 import * as React from "react";
+import { WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
-  ZoneTargetType, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps, WidgetManagerProps, ToolSettingsWidgetManagerProps,
-  ToolSettingsWidgetMode, DisabledResizeHandles,
+  DisabledResizeHandles, DraggedWidgetManagerProps, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps, WidgetZoneId,
+  ZoneManagerProps, ZoneTargetType,
 } from "@bentley/ui-ninezone";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
+import { TargetChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
-import { WidgetProps } from "../widgets/Widget";
-import { WidgetDef, WidgetStateChangedEventArgs, WidgetState, WidgetType } from "../widgets/WidgetDef";
+import { WidgetDef, WidgetStateChangedEventArgs, WidgetType } from "../widgets/WidgetDef";
+import { WidgetProps } from "../widgets/WidgetProps";
 import { WidgetTabs } from "../widgets/WidgetStack";
 import { FrameworkZone } from "./FrameworkZone";
 import { StatusBarZone } from "./StatusBarZone";
-import { ZoneState, ZoneDef } from "./ZoneDef";
 import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { ZoneDef, ZoneState } from "./ZoneDef";
 
 /** Enum for [[Zone]] Location.
  * @public
@@ -92,15 +93,7 @@ export class Zone extends React.Component<ZoneProps> {
   }
 
   public static initializeZoneDef(zoneDef: ZoneDef, props: ZoneProps): void {
-    if (props.defaultState)
-      zoneDef.zoneState = props.defaultState;
-    if (props.allowsMerging !== undefined)
-      zoneDef.allowsMerging = props.allowsMerging;
-    if (props.applicationData !== undefined)
-      zoneDef.applicationData = props.applicationData;
-    if (props.mergeWithZone !== undefined)
-      zoneDef.mergeWithZone = props.mergeWithZone;
-    zoneDef.setInitialWidth(props.initialWidth);
+    zoneDef.initializeFromProps(props);
 
     // istanbul ignore else
     if (props.widgets) {
@@ -162,6 +155,7 @@ export class Zone extends React.Component<ZoneProps> {
           />
         );
       } else if (zoneDef.isStatusBar) {
+        // istanbul ignore next
         if (runtimeProps.zone.id !== 8)
           throw new TypeError();
 
@@ -195,7 +189,7 @@ export class Zone extends React.Component<ZoneProps> {
       } else if (zDef.widgetCount === 1 && zDef.widgetDefs[0].widgetType !== WidgetType.Rectangular) {
         /** Return free-form nzWidgetProps */
         const widgetDef = zDef.widgetDefs[0];
-        widgetElement = (widgetDef.isVisible) ? widgetDef.reactElement : null;
+        widgetElement = (widgetDef.isVisible) ? widgetDef.reactNode : null;
       }
     }
 

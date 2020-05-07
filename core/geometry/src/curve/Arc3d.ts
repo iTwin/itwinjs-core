@@ -7,28 +7,28 @@
  * @module Curve
  */
 
-import { Geometry, AxisOrder, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
-import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Clipper } from "../clipping/ClipUtils";
+import { AxisOrder, BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { TrigPolynomial, SmallSystem, SineCosinePolynomial } from "../numerics/Polynomials";
-import { XYAndZ } from "../geometry3d/XYZProps";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range3d, Range1d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
-import { VariantCurveExtendParameter, CurveExtendOptions, CurveExtendMode } from "./CurveExtendMode";
-import { GeometryQuery } from "./GeometryQuery";
-import { CurveLocationDetail, CurveSearchStatus, CurveIntervalRole } from "./CurveLocationDetail";
-import { StrokeOptions } from "./StrokeOptions";
-import { Clipper } from "../clipping/ClipUtils";
-import { LineString3d } from "./LineString3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range1d, Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Transform } from "../geometry3d/Transform";
+import { XYAndZ } from "../geometry3d/XYZProps";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
+import { SineCosinePolynomial, SmallSystem, TrigPolynomial } from "../numerics/Polynomials";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
+import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
+import { LineString3d } from "./LineString3d";
+import { StrokeOptions } from "./StrokeOptions";
 
 /* tslint:disable:variable-name no-empty*/
 /**
@@ -98,7 +98,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * read property for (clone of!) matrix of vector0, vector90, unit normal
    */
-  public get matrix(): Matrix3d { return this._matrix.clone(); }
+  public matrixClone(): Matrix3d { return this._matrix.clone(); }
   /**
    * read property for (reference to !!) matrix of vector0, vector90, unit normal
    */
@@ -222,8 +222,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       z = this._center.z;
     return Arc3d.createXYZXYZXYZ(
       this._center.x, this._center.y, this._center.z,
-      this._matrix.coffs[0], this._matrix.coffs[3], z,
-      this._matrix.coffs[1], this._matrix.coffs[4], z,
+      this._matrix.coffs[0], this._matrix.coffs[3], 0,
+      this._matrix.coffs[1], this._matrix.coffs[4], 0,
       this._sweep);
   }
 
@@ -862,7 +862,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const c = theta.cos();
     const s = theta.sin();
     const vector0 = this._matrix.multiplyXY(c, s);
-    const vector90 = this.matrix.multiplyXY(-s, c);
+    const vector90 = this._matrix.multiplyXY(-s, c);
 
     const newSweep = AngleSweep.createStartEndRadians(this._sweep.startRadians - theta.radians, this._sweep.endRadians - theta.radians);
     const arcB = Arc3d.create(this._center.clone(), vector0, vector90, newSweep);

@@ -88,19 +88,23 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Electron: Main (backend)",
-      "protocol": "inspector",
+      "name": "simple-editor-app Electron (backend)",
       "cwd": "${workspaceFolder}",
-      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
-      "windows": {
-        "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
-      },
       "env": {
+        "SVT_LOG_LEVEL": "TRACE",
         "BROWSER": "none",
         "imjs_buddi_resolve_url_using_region": "102"
       },
-      "args": [
-        "lib/backend/main.js"
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+      "runtimeArgs": [
+        "${workspaceFolder}/lib/backend/main.js",
+        "--remote-debugging-port=9223"
+      ],
+      "protocol": "inspector",
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/lib/{backend}/**/*.js",
+        "${workspaceRoot}/../../core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
       ]
     }
   ]

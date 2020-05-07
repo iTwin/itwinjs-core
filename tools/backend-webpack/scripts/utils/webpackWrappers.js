@@ -12,8 +12,6 @@ function filterWarnings(warnings) {
   return warnings.filter((w) => {
     if (/^.*keyv[\\\/]src[\\\/]index\.js.*\nCritical dependency: the request of a dependency is an expression/m.test(w))
       return false
-    if (/^.*@bentley[\\\/](imodeljs-common[\\\/]lib[\\\/]rpc[\\\/]electron[\\\/]ElectronIpcTransport\.js|bentleyjs-core[\\\/]lib[\\\/]ElectronUtils\.js).*\nCritical dependency: require function is used in a way in which dependencies cannot be statically extracted/m.test(w))
-      return false
     return true;
   });
 }

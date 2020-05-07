@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
 import { SchemaContext } from "../../../src/Context";
 import { RelationshipClass } from "../../../src/Metadata/RelationshipClass";
 import { Schema } from "../../../src/Metadata/Schema";

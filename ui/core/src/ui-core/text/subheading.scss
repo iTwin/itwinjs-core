@@ -6,6 +6,6 @@
 
 @mixin uicore-text-subheading {
 
-    @include uicore-text( subheading );
-    @include uicore-text-block-spacing;
+  @include uicore-text( subheading );
+  @include uicore-text-block-spacing;
 }

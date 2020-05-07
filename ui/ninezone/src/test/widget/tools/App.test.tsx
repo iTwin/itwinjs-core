@@ -14,4 +14,12 @@ describe("<AppButton  />", () => {
   it("renders correctly", () => {
     shallow(<AppButton />).should.matchSnapshot();
   });
+
+  it("Small AppButton should render", () => {
+    mount(<AppButton small />);
+  });
+
+  it("Small AppButton renders correctly", () => {
+    shallow(<AppButton small />).should.matchSnapshot();
+  });
 });

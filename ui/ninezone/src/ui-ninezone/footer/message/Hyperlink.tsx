@@ -6,10 +6,10 @@
  * @module Message
  */
 
-import * as classnames from "classnames";
+import "./Hyperlink.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Hyperlink.scss";
 
 /** Properties of [[MessageHyperlink]] component.
  * @beta

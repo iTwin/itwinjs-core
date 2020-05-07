@@ -6,10 +6,11 @@
  * @module Footer
  */
 
-import * as classnames from "classnames";
-import * as React from "react";
-import { CommonProps, Popup, Position } from "@bentley/ui-core";
 import "./Popup.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { CommonProps, Popup } from "@bentley/ui-core";
 
 /** Properties of [[ToolSettingsPopup]] component.
  * @beta
@@ -37,7 +38,7 @@ export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProp
           "nz-widget-toolSettings-popup",
           className,
         )}
-        position={Position.Bottom}
+        position={RelativePosition.Bottom}
         showArrow
         showShadow={false}
         {...props}

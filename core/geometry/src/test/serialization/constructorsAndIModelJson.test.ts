@@ -3,28 +3,28 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
-import { LineString3d } from "../../curve/LineString3d";
-import { Arc3d } from "../../curve/Arc3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Angle } from "../../geometry3d/Angle";
-import { ParityRegion } from "../../curve/ParityRegion";
+import { Arc3d } from "../../curve/Arc3d";
+import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
-import { Sphere } from "../../solid/Sphere";
-import { Cone } from "../../solid/Cone";
-import { Box } from "../../solid/Box";
-import { Transform } from "../../geometry3d/Transform";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { TorusPipe } from "../../solid/TorusPipe";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Box } from "../../solid/Box";
+import { Cone } from "../../solid/Cone";
 import { LinearSweep } from "../../solid/LinearSweep";
 import { RotationalSweep } from "../../solid/RotationalSweep";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Sphere } from "../../solid/Sphere";
+import { TorusPipe } from "../../solid/TorusPipe";
 
 /* tslint:disable:no-console */
 // This file emits (to console.log) text suitable for use as markdown content for examples of construtor call and json of results

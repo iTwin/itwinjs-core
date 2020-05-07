@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { EntityClassProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { ECClassModifier, parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedMixin } from "../Interfaces";
+import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
 import { Mixin } from "./Mixin";
 import { AnyProperty, NavigationProperty, Property } from "./Property";
-import { Schema } from "./Schema";
 import { RelationshipClass } from "./RelationshipClass";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { EntityClassProps } from "./../Deserialization/JsonProps";
-import { ECClassModifier, parseStrengthDirection, SchemaItemType, StrengthDirection } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedMixin } from "./../Interfaces";
-import { SchemaItemKey } from "./../SchemaKey";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { Schema } from "./Schema";
 
 /**
  * A Typescript class representation of an ECEntityClass.
@@ -162,8 +162,13 @@ export class EntityClass extends ECClass {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
-  public toJson(standalone: boolean, includeSchemaVersion: boolean): any | void {
-    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+  /**
+   * Save this EntityClass' properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): EntityClassProps {
+    const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     if (this.mixins.length > 0)
       schemaJson.mixins = this.mixins.map((mixin) => mixin.fullName);
     return schemaJson;
@@ -182,12 +187,12 @@ export class EntityClass extends ECClass {
     return itemElement;
   }
 
-  public async deserialize(entityClassProps: EntityClassProps) {
-    this.deserializeSync(entityClassProps);
+  public async fromJSON(entityClassProps: EntityClassProps) {
+    this.fromJSONSync(entityClassProps);
   }
 
-  public deserializeSync(entityClassProps: EntityClassProps) {
-    super.deserializeSync(entityClassProps);
+  public fromJSONSync(entityClassProps: EntityClassProps) {
+    super.fromJSONSync(entityClassProps);
 
     if (undefined !== entityClassProps.mixins) {
       if (!this._mixins)

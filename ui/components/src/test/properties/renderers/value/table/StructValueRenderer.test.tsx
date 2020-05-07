@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { render } from "@testing-library/react";
 import * as React from "react";
-import { TableStructValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/StructValueRenderer";
 import { Orientation } from "@bentley/ui-core";
+import { render } from "@testing-library/react";
+import { TableStructValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/StructValueRenderer";
 import TestUtils from "../../../../TestUtils";
 
 describe("StructValueRenderer", () => {

@@ -7,30 +7,14 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Range2d, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range2d, Vector3d } from "@bentley/geometry-core";
 import {
-  ColorDef,
-  ColorIndex,
-  FeatureIndex,
-  QPoint2d,
-  QPoint3dList,
-  QParams2d,
-  QParams3d,
-  FeatureIndexType,
-  FillFlags,
-  RenderTexture,
-  RenderMaterial,
-  LinePixels,
-  OctEncodedNormalPair,
-  PolylineData,
-  PolylineTypeFlags,
-  MeshEdge,
+  ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, LinePixels, MeshEdge, OctEncodedNormalPair, PolylineData, PolylineTypeFlags,
+  QParams2d, QParams3d, QPoint2d, QPoint3dList, RenderMaterial, RenderTexture,
 } from "@bentley/imodeljs-common";
-import { AuxChannelTable } from "./AuxChannelTable";
-import { PolylineArgs, MeshArgs } from "./mesh/MeshPrimitives";
 import { IModelApp } from "../../IModelApp";
-
-// tslint:disable:no-const-enum
+import { AuxChannelTable } from "./AuxChannelTable";
+import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";
 
 /**
  * Holds an array of indices into a VertexTable. Each index is a 24-bit unsigned integer.
@@ -104,8 +88,6 @@ function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: 
 
   return { width, height };
 }
-
-const scratchColorDef = new ColorDef();
 
 /** Describes a VertexTable.
  * @internal
@@ -446,7 +428,7 @@ class PolylineTesselator {
 }
 
 /** @internal */
-export const enum SurfaceType {
+export enum SurfaceType {
   Unlit,
   Lit,
   Textured,
@@ -798,9 +780,7 @@ export abstract class VertexTableBuilder {
   }
 
   private appendColor(tbgr: number) {
-    const colorDef = scratchColorDef;
-    colorDef.tbgr = tbgr;
-    const colors = colorDef.colors;
+    const colors = ColorDef.getColors(tbgr);
 
     // invert transparency => alpha
     colors.t = 255 - colors.t;

@@ -2,11 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, ClientRequestContextProps, GuidString, BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { RpcInterface, RpcManager, IModelTokenProps, IModelToken } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps, Config, IModelBankClient, IModelQuery } from "@bentley/imodeljs-clients";
-import { IModelDb, ChangeSummaryExtractOptions, ChangeSummaryManager, BriefcaseManager, IModelJsFs, IModelHost, EventSinkManager } from "@bentley/imodeljs-backend";
-import { TestRpcInterface, EventsTestRpcInterface, CloudEnvProps } from "../common/RpcInterfaces";
+import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, Config, GuidString } from "@bentley/bentleyjs-core";
+import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
+import {
+  BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, EventSinkManager, IModelDb, IModelHost, IModelJsFs,
+} from "@bentley/imodeljs-backend";
+import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
+import { CloudEnvProps, EventsTestRpcInterface, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
@@ -15,29 +18,26 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async restartIModelHost(): Promise<void> {
-    IModelHost.shutdown();
-    IModelHost.startup();
+    await IModelHost.shutdown();
+    await IModelHost.startup();
   }
 
-  public async extractChangeSummaries(tokenProps: IModelTokenProps, options: any): Promise<void> {
+  public async extractChangeSummaries(tokenProps: IModelRpcProps, options: any): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    await ChangeSummaryManager.extractChangeSummaries(requestContext, IModelDb.find(iModelToken), options as ChangeSummaryExtractOptions);
+    await ChangeSummaryManager.extractChangeSummaries(requestContext, BriefcaseDb.findByKey(tokenProps.key), options as ChangeSummaryExtractOptions);
   }
 
-  public async deleteChangeCache(tokenProps: IModelTokenProps): Promise<void> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    if (!iModelToken.iModelId)
+  public async deleteChangeCache(tokenProps: IModelRpcProps): Promise<void> {
+    if (!tokenProps.iModelId)
       throw new Error("iModelToken is invalid. Must not be a standalone iModel");
 
-    const changesPath: string = BriefcaseManager.getChangeCachePathName(iModelToken.iModelId);
+    const changesPath: string = BriefcaseManager.getChangeCachePathName(tokenProps.iModelId);
     if (IModelJsFs.existsSync(changesPath))
       IModelJsFs.unlinkSync(changesPath);
   }
 
-  public async executeTest(tokenProps: IModelTokenProps, testName: string, params: any): Promise<any> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    return JSON.parse(IModelDb.find(iModelToken).nativeDb.executeTest(testName, JSON.stringify(params)));
+  public async executeTest(tokenProps: IModelRpcProps, testName: string, params: any): Promise<any> {
+    return JSON.parse(IModelDb.findByKey(tokenProps.key).nativeDb.executeTest(testName, JSON.stringify(params)));
   }
 
   public async reportRequestContext(): Promise<ClientRequestContextProps> {
@@ -88,13 +88,14 @@ export class EventsTestRpcImpl extends RpcInterface implements EventsTestRpcInte
   public static register() { RpcManager.registerImpl(EventsTestRpcInterface, EventsTestRpcImpl); }
 
   // set event that will be send to the frontend
-  public async echo(tokenProps: IModelTokenProps, id: GuidString, message: string): Promise<void> {
+  public async echo(tokenProps: IModelRpcProps, id: GuidString, message: string): Promise<void> {
     if (EventSinkManager.GLOBAL === tokenProps.key) {
       EventSinkManager.global.emit(EventsTestRpcInterface.name, "echo", { id, message });
     } else {
-      const iModelToken = IModelToken.fromJSON(tokenProps);
-      const iModelDb = IModelDb.find(iModelToken);
-      iModelDb.eventSink!.emit(EventsTestRpcInterface.name, "echo", { id, message });
+      const iModelDb = IModelDb.findByKey(tokenProps.key);
+      if (iModelDb.isBriefcaseDb()) {
+        iModelDb.eventSink!.emit(EventsTestRpcInterface.name, "echo", { id, message });
+      }
     }
   }
 }

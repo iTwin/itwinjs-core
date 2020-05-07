@@ -5,10 +5,12 @@
 
 // tslint:disable:no-duplicate-imports
 import * as geometry from "../../geometry-core";
-import { YawPitchRollAngles, Matrix3d } from "../../geometry-core";
-import { Vector3d, Point3d } from "../../geometry3d/Point3dVector3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
+
 // import { LineSegment3d } from "../curve/LineSegment3d";
 // import { GeometryQuery } from "../curve/CurvePrimitive";
 // import { LineString3d } from "../curve/LineString3d";

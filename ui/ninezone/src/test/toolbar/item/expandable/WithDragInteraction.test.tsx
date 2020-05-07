@@ -5,10 +5,10 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { withDragInteraction } from "../../../../ui-ninezone";
-import { Direction } from "../../../../ui-ninezone/utilities/Direction";
-import { getDragDistance } from "../../../../ui-ninezone/toolbar/item/expandable/WithDragInteraction";
 import { Point } from "@bentley/ui-core";
+import { withDragInteraction } from "../../../../ui-ninezone";
+import { getDragDistance } from "../../../../ui-ninezone/toolbar/item/expandable/WithDragInteraction";
+import { Direction } from "../../../../ui-ninezone/utilities/Direction";
 
 // tslint:disable-next-line:variable-name
 const WithDragInteraction = withDragInteraction(() => <div></div>);

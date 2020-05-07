@@ -2,34 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect, assert } from "chai";
+import { assert, expect } from "chai";
 import { ByteStream } from "@bentley/bentleyjs-core";
+import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
+import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
 import {
-  Decorations,
-  GraphicList,
-  GraphicType,
-  ImdlReader,
-  IModelApp,
-  IModelConnection,
-  PlanarClassifierMap,
-  RenderMemory,
-  RenderPlanarClassifier,
-  RenderTextureDrape,
-  SceneContext,
-  ScreenViewport,
-  TextureDrapeMap,
-  TileTreeReference,
-  } from "@bentley/imodeljs-frontend";
-import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
-import * as path from "path";
+  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, PlanarClassifierMap, RenderMemory, RenderPlanarClassifier,
+  RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap, TileTreeReference,
+} from "@bentley/imodeljs-frontend";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { OnScreenTarget, Target, Batch, WorldDecorations, TextureHandle } from "@bentley/imodeljs-frontend/lib/webgl";
-import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
-import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
+import { Batch, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
 import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
-
-const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
-const iModelLocation = path.join(iModelDir, "test.bim");
+import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
 
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
@@ -77,7 +61,7 @@ function getImageBufferData(): Uint8Array {
   const buffer = new Uint8Array(4096);
   let currentBufferIdx = 0;
   const color = ColorDef.from(54, 117, 255);
-  for (let i = 0; i < 1024; i++ , currentBufferIdx += 4) {
+  for (let i = 0; i < 1024; i++, currentBufferIdx += 4) {
     buffer[currentBufferIdx] = color.colors.r; buffer[currentBufferIdx + 1] = color.colors.g; buffer[currentBufferIdx + 2] = color.colors.b; buffer[currentBufferIdx + 3] = color.getAlpha();
   }
   return buffer;
@@ -123,8 +107,8 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
         return false;
 
   } else if (disposable.dispose !== undefined) { // Low-level WebGL resource disposable
-    expect(typeof(disposable.dispose)).to.equal("function");
-    expect(typeof(disposable.isDisposed)).to.equal("boolean");
+    expect(typeof (disposable.dispose)).to.equal("function");
+    expect(typeof (disposable.isDisposed)).to.equal("boolean");
     return disposable.isDisposed;
   } else if (typeof disposable === "object") {  // High-level rendering object disposable
     for (const prop in disposable) {
@@ -143,13 +127,13 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
 describe("Disposal of System", () => {
   before(async () => {
-    IModelApp.startup();
-    imodel0 = await IModelConnection.openSnapshot(iModelLocation);
+    await IModelApp.startup();
+    imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
-    await imodel0.closeSnapshot();
-    IModelApp.shutdown();
+    await imodel0.close();
+    await IModelApp.shutdown();
   });
 
   it("expect rendersystem disposal to trigger disposal of textures cached in id-map", async () => {
@@ -188,16 +172,16 @@ describe("Disposal of System", () => {
 
 describe("Disposal of WebGL Resources", () => {
   before(async () => {
-    IModelApp.startup();
+    await IModelApp.startup();
 
-    imodel0 = await IModelConnection.openSnapshot(iModelLocation);
-    imodel1 = await IModelConnection.openSnapshot(path.join(iModelDir, "testImodel.bim"));
+    imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel1 = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
-    await imodel0.closeSnapshot();
-    await imodel1.closeSnapshot();
-    IModelApp.shutdown();
+    await imodel0.close();
+    await imodel1.close();
+    await IModelApp.shutdown();
   });
 
   // ###TODO: Update TileIO.data.ts for new tile format...

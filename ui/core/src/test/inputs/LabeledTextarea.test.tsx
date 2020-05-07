@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { LabeledTextarea, InputStatus } from "../../ui-core";
+import { InputStatus, LabeledTextarea } from "../../ui-core";
 
 describe("<LabeledTextarea />", () => {
   it("should render", () => {

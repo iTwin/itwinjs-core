@@ -4,16 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import {
-  createRandomECInstanceNodeKey,
-  createRandomECInstanceKey, createRandomECInstanceId,
-  createRandomEntityProps,
-  createRandomId,
-} from "./_helpers/random";
 import { Guid } from "@bentley/bentleyjs-core";
-import { KeySet, Key } from "../KeySet";
-import { InstanceKey } from "../EC";
-import { PresentationError } from "../Error";
+import { InstanceKey, Key, KeySet, PresentationError } from "../presentation-common";
+import {
+  createRandomECInstanceId, createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomEntityProps, createRandomId,
+} from "./_helpers/random";
 
 describe("KeySet", () => {
 
@@ -25,7 +20,7 @@ describe("KeySet", () => {
     });
 
     it("initializes from node keys", () => {
-      const keys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const keys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet(keys);
       expect(set.size).to.eq(2);
       expect(set.has(keys[0])).to.be.true;
@@ -55,7 +50,7 @@ describe("KeySet", () => {
         id: createRandomECInstanceId(),
       } as InstanceKey;
       const instanceKey2 = createRandomECInstanceKey();
-      const nodeKey = createRandomECInstanceNodeKey();
+      const nodeKey = createRandomECInstancesNodeKey();
       const source = new KeySet();
       source.add([instanceKey11, instanceKey12, instanceKey2]);
       source.add(nodeKey);
@@ -151,7 +146,7 @@ describe("KeySet", () => {
     });
 
     it("returns set with node keys", () => {
-      const set = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()]);
+      const set = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()]);
       const keys = set.nodeKeys;
       expect(keys).to.matchSnapshot();
     });
@@ -166,7 +161,7 @@ describe("KeySet", () => {
     });
 
     it("returns count of node keys", () => {
-      const set = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()]);
+      const set = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()]);
       expect(set.nodeKeysCount).to.eq(2);
     });
 
@@ -175,7 +170,7 @@ describe("KeySet", () => {
   describe("clear", () => {
 
     it("clears node keys", () => {
-      const keys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const keys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet(keys);
       expect(set.size).to.eq(2);
       const guidBefore = set.guid;
@@ -216,10 +211,10 @@ describe("KeySet", () => {
   describe("add", () => {
 
     it("adds a node key", () => {
-      const set = new KeySet([createRandomECInstanceNodeKey()]);
+      const set = new KeySet([createRandomECInstancesNodeKey()]);
       expect(set.size).to.eq(1);
       const guidBefore = set.guid;
-      const key = createRandomECInstanceNodeKey();
+      const key = createRandomECInstancesNodeKey();
       set.add(key);
       expect(set.size).to.eq(2);
       expect(set.nodeKeysCount).to.eq(2);
@@ -228,7 +223,7 @@ describe("KeySet", () => {
     });
 
     it("doesn't add the same node key", () => {
-      const key = createRandomECInstanceNodeKey();
+      const key = createRandomECInstancesNodeKey();
       const set = new KeySet([key]);
       expect(set.size).to.eq(1);
       const guidBefore = set.guid;
@@ -238,10 +233,10 @@ describe("KeySet", () => {
     });
 
     it("adds an array of node keys", () => {
-      const set = new KeySet([createRandomECInstanceNodeKey()]);
+      const set = new KeySet([createRandomECInstancesNodeKey()]);
       expect(set.size).to.eq(1);
       const guidBefore = set.guid;
-      const keys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const keys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       set.add(keys);
       expect(set.size).to.eq(3);
       expect(set.nodeKeysCount).to.eq(3);
@@ -253,7 +248,7 @@ describe("KeySet", () => {
     it("doesn't add node keys if predicate returns false", () => {
       const set = new KeySet();
       const guidBefore = set.guid;
-      const key = createRandomECInstanceNodeKey();
+      const key = createRandomECInstancesNodeKey();
       const pred = sinon.fake(() => false);
       set.add([key], pred);
       expect(pred).to.be.calledOnceWith(key);
@@ -262,7 +257,7 @@ describe("KeySet", () => {
     });
 
     it("doesn't add the same node keys", () => {
-      const keys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const keys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet(keys);
       expect(set.size).to.eq(2);
       const guidBefore = set.guid;
@@ -385,7 +380,7 @@ describe("KeySet", () => {
 
     it("adds a keyset", () => {
       const instanceKey1 = createRandomECInstanceKey();
-      const nodeKey1 = createRandomECInstanceNodeKey();
+      const nodeKey1 = createRandomECInstancesNodeKey();
       const set = new KeySet();
       set.add(instanceKey1).add(nodeKey1);
       expect(set.size).to.eq(2);
@@ -395,7 +390,7 @@ describe("KeySet", () => {
 
       const instanceKey2 = createRandomECInstanceKey();
       const instanceKey3 = { className: instanceKey1.className, id: createRandomECInstanceId() };
-      const nodeKey2 = createRandomECInstanceNodeKey();
+      const nodeKey2 = createRandomECInstancesNodeKey();
       const source = new KeySet();
       source.add([instanceKey2, instanceKey3]).add(nodeKey2);
 
@@ -413,7 +408,7 @@ describe("KeySet", () => {
       const set = new KeySet();
       const guidBefore = set.guid;
       const instanceKey = createRandomECInstanceKey();
-      const nodeKey = createRandomECInstanceNodeKey();
+      const nodeKey = createRandomECInstancesNodeKey();
       const keyset = (new KeySet()).add([instanceKey]).add(nodeKey);
       const pred = sinon.fake(() => false);
       set.add(keyset, pred);
@@ -426,7 +421,7 @@ describe("KeySet", () => {
 
     it("doesn't add the same keys from a keyset", () => {
       const instanceKey = createRandomECInstanceKey();
-      const nodeKey = createRandomECInstanceNodeKey();
+      const nodeKey = createRandomECInstancesNodeKey();
       const set = new KeySet();
       set.add(instanceKey).add(nodeKey);
       expect(set.size).to.eq(2);
@@ -459,7 +454,7 @@ describe("KeySet", () => {
   describe("delete", () => {
 
     it("deletes a node key", () => {
-      const keys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const keys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet(keys);
       expect(set.size).to.eq(3);
       const guidBefore = set.guid;
@@ -471,7 +466,7 @@ describe("KeySet", () => {
     });
 
     it("deletes an array of node keys", () => {
-      const keys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const keys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet(keys);
       expect(set.size).to.eq(3);
       const guidBefore = set.guid;
@@ -535,7 +530,7 @@ describe("KeySet", () => {
 
     it("deletes keys from a keyset", () => {
       const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
-      const nodeKeys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const nodeKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet();
       set.add(instanceKeys).add(nodeKeys);
       expect(set.size).to.eq(4);
@@ -577,16 +572,16 @@ describe("KeySet", () => {
     it("does nothing when trying to delete a node key from empty keyset", () => {
       const set = new KeySet();
       const guidBefore = set.guid;
-      set.delete(createRandomECInstanceNodeKey());
+      set.delete(createRandomECInstancesNodeKey());
       expect(set.size).to.eq(0);
       expect(set.guid).to.eq(guidBefore);
     });
 
     it("does nothing when trying to delete a non-existing node key", () => {
-      const set = new KeySet([createRandomECInstanceNodeKey()]);
+      const set = new KeySet([createRandomECInstancesNodeKey()]);
       expect(set.size).to.eq(1);
       const guidBefore = set.guid;
-      set.delete(createRandomECInstanceNodeKey());
+      set.delete(createRandomECInstancesNodeKey());
       expect(set.size).to.eq(1);
       expect(set.guid).to.eq(guidBefore);
     });
@@ -609,7 +604,7 @@ describe("KeySet", () => {
     });
 
     it("handles invalid values", () => {
-      const set = new KeySet([createRandomECInstanceNodeKey()]);
+      const set = new KeySet([createRandomECInstancesNodeKey()]);
       expect(() => (set as any).delete(undefined)).to.throw(PresentationError);
       expect(set.size).to.eq(1);
       expect(() => (set as any).delete(null)).to.throw(PresentationError);
@@ -623,7 +618,7 @@ describe("KeySet", () => {
   describe("has", () => {
 
     it("handles invalid values", () => {
-      const set = new KeySet([createRandomECInstanceNodeKey()]);
+      const set = new KeySet([createRandomECInstancesNodeKey()]);
       expect(() => (set as any).has(undefined)).to.throw(PresentationError);
       expect(() => (set as any).has(null)).to.throw(PresentationError);
       expect(() => (set as any).has({})).to.throw(PresentationError);
@@ -647,22 +642,22 @@ describe("KeySet", () => {
         it("returns true when KeySet has all values", () => {
           const instanceKey1 = createRandomECInstanceKey();
           const instanceKey2 = createRandomECInstanceKey();
-          const nodeKey1 = createRandomECInstanceNodeKey();
-          const nodeKey2 = createRandomECInstanceNodeKey();
+          const nodeKey1 = createRandomECInstancesNodeKey();
+          const nodeKey2 = createRandomECInstancesNodeKey();
           const set = new KeySet([instanceKey1, instanceKey2, nodeKey1, nodeKey2]);
           expect(set.hasAll(createKeys([instanceKey1, nodeKey1]))).to.be.true;
         });
 
         it("returns false when node keys count is smaller", () => {
-          const nodeKey1 = createRandomECInstanceNodeKey();
-          const nodeKey2 = createRandomECInstanceNodeKey();
+          const nodeKey1 = createRandomECInstancesNodeKey();
+          const nodeKey2 = createRandomECInstancesNodeKey();
           const set = new KeySet([nodeKey1]);
           expect(set.hasAll(createKeys([nodeKey1, nodeKey2]))).to.be.false;
         });
 
         it("returns false when node keys are different", () => {
-          const nodeKey1 = createRandomECInstanceNodeKey();
-          const nodeKey2 = createRandomECInstanceNodeKey();
+          const nodeKey1 = createRandomECInstancesNodeKey();
+          const nodeKey2 = createRandomECInstancesNodeKey();
           const set = new KeySet([nodeKey1]);
           expect(set.hasAll(createKeys([nodeKey2]))).to.be.false;
         });
@@ -716,8 +711,8 @@ describe("KeySet", () => {
         const createKeys = keyType.checkFactory;
 
         it("returns true when KeySet has any node key", () => {
-          const nodeKey1 = createRandomECInstanceNodeKey();
-          const nodeKey2 = createRandomECInstanceNodeKey();
+          const nodeKey1 = createRandomECInstancesNodeKey();
+          const nodeKey2 = createRandomECInstancesNodeKey();
           const set = new KeySet([nodeKey1, nodeKey2]);
           expect(set.hasAny(createKeys([nodeKey2]))).to.be.true;
         });
@@ -731,8 +726,8 @@ describe("KeySet", () => {
         });
 
         it("returns false when KeySet doesn't have any key", () => {
-          const set = new KeySet([createRandomECInstanceKey(), createRandomECInstanceNodeKey()]);
-          expect(set.hasAny(createKeys([createRandomECInstanceKey(), createRandomECInstanceNodeKey()]))).to.be.false;
+          const set = new KeySet([createRandomECInstanceKey(), createRandomECInstancesNodeKey()]);
+          expect(set.hasAny(createKeys([createRandomECInstanceKey(), createRandomECInstancesNodeKey()]))).to.be.false;
         });
 
       });
@@ -752,7 +747,7 @@ describe("KeySet", () => {
 
     it("calls callback for every key in set", () => {
       const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
-      const nodeKeys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const nodeKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet([...instanceKeys, ...nodeKeys]);
       const callback = sinon.spy();
       set.forEach(callback);
@@ -769,7 +764,7 @@ describe("KeySet", () => {
 
     it("calls callback with itself when batch size smaller than set size", () => {
       const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
-      const nodeKeys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const nodeKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet([...instanceKeys, ...nodeKeys]);
       const callback = sinon.spy();
       set.forEachBatch(5, callback);
@@ -779,7 +774,7 @@ describe("KeySet", () => {
 
     it("calls callback in batches", () => {
       const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
-      const nodeKeys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const nodeKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
       const set = new KeySet([...instanceKeys, ...nodeKeys]);
       const callback = sinon.spy();
       set.forEachBatch(3, callback);
@@ -801,7 +796,7 @@ describe("KeySet", () => {
         id: createRandomECInstanceId(),
       } as InstanceKey;
       const instanceKey2 = createRandomECInstanceKey();
-      const nodeKey = createRandomECInstanceNodeKey();
+      const nodeKey = createRandomECInstancesNodeKey();
 
       const source = new KeySet();
       source.add([instanceKey11, instanceKey12, instanceKey2]).add(nodeKey);

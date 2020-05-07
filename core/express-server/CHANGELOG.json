@@ -2,6 +2,24 @@
   "name": "@bentley/express-server",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/express-server_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove dependency on deprecated bodyParser."
+          },
+          {
+            "comment": "Update minimum Node version to 10.16.0"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/express-server_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
@@ -80,7 +98,7 @@
       "comments": {
         "none": [
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }

@@ -8,10 +8,11 @@
 
 import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 const loggerCategory = BackendLoggerCategory.Relationship;
 
@@ -66,11 +67,14 @@ export class Relationship extends Entity implements RelationshipProps {
 
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
 
-  /**
-   * Add a request for the locks that would be needed to carry out the specified operation.
+  /** Add a request for the locks that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the Relationship instance.
    */
-  public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForRelationship(this, opcode); }
+  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
+    if (this.iModel.isBriefcaseDb()) {
+      this.iModel.concurrencyControl.buildRequestForRelationship(this, opcode);
+    }
+  }
 }
 
 /**A Relationship where one Element refers to another Element
@@ -194,7 +198,7 @@ export class Relationships {
    * @throws [[IModelError]] if unable to insert the relationship instance.
    */
   public insertInstance(props: RelationshipProps): Id64String {
-    const val = this._iModel.briefcase.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
+    const val = this._iModel.nativeDb.insertLinkTableRelationship(JSON.stringify(props, BinaryPropertyTypeConverter.createReplacerCallback(false)));
     if (val.error)
       throw new IModelError(val.error.status, "Error inserting relationship instance", Logger.logWarning, loggerCategory);
 
@@ -207,7 +211,7 @@ export class Relationships {
    * @throws [[IModelError]] if unable to update the relationship instance.
    */
   public updateInstance(props: RelationshipProps): void {
-    const error = this._iModel.briefcase.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
+    const error = this._iModel.nativeDb.updateLinkTableRelationship(JSON.stringify(props, BinaryPropertyTypeConverter.createReplacerCallback(false)));
     if (error !== DbResult.BE_SQLITE_OK)
       throw new IModelError(error, "Error updating relationship instance", Logger.logWarning, loggerCategory);
   }
@@ -217,7 +221,7 @@ export class Relationships {
    * @throws [[IModelError]]
    */
   public deleteInstance(props: RelationshipProps): void {
-    const error = this._iModel.briefcase.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
+    const error = this._iModel.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_DONE)
       throw new IModelError(error, "", Logger.logWarning, loggerCategory);
   }

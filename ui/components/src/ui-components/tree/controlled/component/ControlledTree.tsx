@@ -7,20 +7,18 @@
  */
 
 import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useCallback, useEffect, useMemo } from "react";
 import { from } from "rxjs/internal/observable/from";
-import { CommonProps, Spinner, SpinnerSize } from "@bentley/ui-core";
-import { TreeModelNode, VisibleTreeNodes, isTreeModelNode, TreeModelNodePlaceholder } from "../TreeModel";
-import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
-import { TreeRenderer, TreeRendererProps } from "./TreeRenderer";
-import { ITreeNodeLoader } from "../TreeNodeLoader";
-import { UiComponents } from "../../../UiComponents";
-import { TreeEvents } from "../TreeEvents";
-import { TreeEventDispatcher } from "../TreeEventDispatcher";
+import { CommonProps, FillCentered, Spinner, SpinnerSize } from "@bentley/ui-core";
 import { SelectionMode } from "../../../common/selection/SelectionModes";
+import { UiComponents } from "../../../UiComponents";
 import { HighlightableTreeProps } from "../../HighlightingEngine";
 import { TreeImageLoader } from "../../ImageLoader";
+import { TreeEventDispatcher } from "../TreeEventDispatcher";
+import { TreeEvents } from "../TreeEvents";
+import { isTreeModelNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../TreeModel";
+import { ITreeNodeLoader } from "../TreeNodeLoader";
+import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
+import { TreeRenderer, TreeRendererProps } from "./TreeRenderer";
 
 /**
  * Properties for [[ControlledTree]]
@@ -59,11 +57,10 @@ export interface ControlledTreeProps extends CommonProps {
  * React tree component which rendering is fully controlled from outside.
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledTreeProps) => {
+export function ControlledTree(props: ControlledTreeProps) {
   const nodeHeight = useNodeHeight(!!props.descriptionsEnabled);
-  const imageLoader = useMemo(() => new TreeImageLoader(), []);
-  const nodeRenderer = useCallback((nodeProps: TreeNodeRendererProps) => (
+  const imageLoader = React.useMemo(() => new TreeImageLoader(), []);
+  const nodeRenderer = React.useCallback((nodeProps: TreeNodeRendererProps) => (
     <TreeNodeRenderer
       {...nodeProps}
       descriptionEnabled={props.descriptionsEnabled}
@@ -73,7 +70,7 @@ export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledT
 
   const eventDispatcher = useEventDispatcher(props.nodeLoader, props.treeEvents, props.selectionMode, props.visibleNodes);
 
-  const treeProps: TreeRendererProps = useMemo(() => ({
+  const treeProps: TreeRendererProps = React.useMemo(() => ({
     nodeRenderer,
     nodeHeight,
     treeActions: eventDispatcher,
@@ -89,10 +86,10 @@ export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledT
       {props.treeRenderer ? props.treeRenderer(treeProps) : <TreeRenderer {...treeProps} />}
     </Loader>
   );
-};
+}
 
 function useRootNodeLoader(visibleNodes: VisibleTreeNodes, nodeLoader: ITreeNodeLoader): boolean {
-  useEffect(() => {
+  React.useEffect(() => {
     if (visibleNodes.getNumRootNodes() === undefined) {
       const subscription = from(nodeLoader.loadNode(visibleNodes.getModel().getRootNode(), 0)).subscribe();
       return () => subscription.unsubscribe();
@@ -106,10 +103,10 @@ function useRootNodeLoader(visibleNodes: VisibleTreeNodes, nodeLoader: ITreeNode
 
 function useEventDispatcher(nodeLoader: ITreeNodeLoader, treeEvents: TreeEvents, selectionMode: SelectionMode, visibleNodes: VisibleTreeNodes) {
   /* istanbul ignore next */
-  const getVisibleNodes = useCallback(() => visibleNodes, [visibleNodes]);
-  const eventDispatcher = useMemo(() => new TreeEventDispatcher(treeEvents, nodeLoader, selectionMode), [treeEvents, nodeLoader, selectionMode]);
+  const getVisibleNodes = React.useCallback(() => visibleNodes, [visibleNodes]);
+  const eventDispatcher = React.useMemo(() => new TreeEventDispatcher(treeEvents, nodeLoader, selectionMode), [treeEvents, nodeLoader, selectionMode]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     eventDispatcher.setVisibleNodes(getVisibleNodes);
   }, [eventDispatcher, getVisibleNodes]);
 
@@ -124,8 +121,7 @@ interface LoaderProps {
   children: JSX.Element;
 }
 
-// tslint:disable-next-line: variable-name
-const Loader: React.FC<LoaderProps> = (props) => {
+function Loader(props: LoaderProps) {
   if (props.loading) {
     return props.spinnerRenderer
       ? props.spinnerRenderer()
@@ -139,19 +135,21 @@ const Loader: React.FC<LoaderProps> = (props) => {
     return props.noDataRenderer
       ? props.noDataRenderer()
       : (
-        <p className="components-tree-errormessage">
-          {UiComponents.translate("general.noData")}
-        </p>
+        <FillCentered>
+          <p className="components-controlledTree-errorMessage">
+            {UiComponents.translate("general.noData")}
+          </p>
+        </FillCentered>
       );
   }
 
   return props.children;
-};
+}
 
 function useNodeHeight(
   descriptionsEnabled: boolean,
 ): (node: TreeModelNode | TreeModelNodePlaceholder) => number {
-  return useCallback(
+  return React.useCallback(
     (node: TreeModelNode | TreeModelNodePlaceholder): number => {
       const contentHeight = (isTreeModelNode(node) && descriptionsEnabled && node && node.description) ? 43 : 24;
       const borderSize = 1;

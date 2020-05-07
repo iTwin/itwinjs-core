@@ -1,0 +1,201 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module iModelHubClient
+ */
+
+import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
+import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
+import { IModelBaseHandler } from "./BaseHandler";
+import { ArgumentCheck } from "./Errors";
+import { InstanceIdQuery } from "./HubQuery";
+import { ThumbnailSize } from "./Thumbnails";
+
+const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
+
+/**
+ * Named Version is a specific [[ChangeSet]] given a name to differentiate it from others. It can be used to represent some significant milestone for the iModel (e.g. a review version).
+ * @beta
+ */
+@ECJsonTypeMap.classToJson("wsg", "iModelScope.Version", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+export class Version extends WsgInstance {
+  @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
+  public id?: GuidString;
+
+  /** Description of the named Version. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
+  public description?: string;
+
+  /** Name of the named Version. Must be unique per iModel. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
+  public name?: string;
+
+  /** Id of the user that created the named Version. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.UserCreated")
+  public userCreated?: string;
+
+  /** Date when the named Version was created. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.CreatedDate")
+  public createdDate?: string;
+
+  /** Id of the [[ChangeSet]] that the named Version was created for. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ChangeSetId")
+  public changeSetId?: GuidString;
+
+  /** Id of the [[SmallThumbnail]] of the named Version. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId")
+  public smallThumbnailId?: GuidString;
+
+  /** Id of the [[LargeThumbnail]] of the named Version. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[LargeThumbnail].instanceId")
+  public largeThumbnailId?: GuidString;
+}
+
+/**
+ * Query object for getting [[Version]]s. You can use this to modify the [[VersionHandler.get]] results.
+ * @beta
+ */
+export class VersionQuery extends InstanceIdQuery {
+  /**
+   * Query [[Version]] by its name.
+   * @param name Name of the Version.
+   * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if name is undefined or empty.
+   */
+  public byName(name: string) {
+    ArgumentCheck.defined("name", name);
+    this.addFilter(`Name+eq+'${name}'`);
+    return this;
+  }
+
+  /**
+   * Query version by its [[ChangeSet]] id.
+   * @param changesetId Id of the ChangeSet. Empty ChangeSet id can be provided to query iModel's baseline version.
+   * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if changeSetId is undefined or not a valid [[ChangeSet.id]] format.
+   */
+  public byChangeSet(changeSetId: string) {
+    ArgumentCheck.validChangeSetId("changeSetId", changeSetId, true);
+    this.addFilter(`ChangeSetId+eq+'${changeSetId}'`);
+    return this;
+  }
+
+  /**
+   * Query will additionally select ids of [[Thumbnail]]s for given [[ThumbnailSize]]s.
+   * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if sizes array is undefined or empty.
+   * @beta
+   */
+  public selectThumbnailId(...sizes: ThumbnailSize[]): this {
+    ArgumentCheck.nonEmptyArray("sizes", sizes);
+    if (!this._query.$select)
+      this._query.$select = "*";
+
+    for (const size of sizes) {
+      this._query.$select += `,HasThumbnail-forward-${size}Thumbnail.*`;
+    }
+
+    return this;
+  }
+}
+
+/**
+ * Handler for managing [[Version]]s. Use [[IModelClient.Versions]] to get an instance of this class.
+ * @beta
+ */
+export class VersionHandler {
+  private _handler: IModelBaseHandler;
+  /**
+   * Constructor for VersionHandler.
+   * @param handler Handler for WSG requests.
+   * @internal
+   */
+  constructor(handler: IModelBaseHandler) {
+    this._handler = handler;
+  }
+
+  /** Get relative url for Version requests.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
+   * @param versionId Id of the version.
+   */
+  private getRelativeUrl(iModelId: GuidString, versionId?: GuidString) {
+    return `/Repositories/iModel--${iModelId}/iModelScope/Version/${versionId || ""}`;
+  }
+
+  /** Get the named [[Version]]s of an iModel. Returned Versions are ordered from the latest [[ChangeSet]] to the oldest.
+   * @param requestContext The client request context.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
+   * @param query Optional query object to filter the queried Versions or select different data from them.
+   * @returns Versions that match the query.
+   * @throws [WsgError]($itwin-client) with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[Version]] with the specified id could not be found.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   */
+  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: VersionQuery = new VersionQuery()): Promise<Version[]> {
+    requestContext.enter();
+    Logger.logInfo(loggerCategory, "Querying named versions for iModel", () => ({ iModelId }));
+    ArgumentCheck.defined("requestContext", requestContext);
+    ArgumentCheck.validGuid("iModelId", iModelId);
+
+    const versions = await this._handler.getInstances<Version>(requestContext, Version, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, "Queried named versions for iModel", () => ({ iModelId }));
+    return versions;
+  }
+
+  /** Create a named [[Version]] of an iModel.
+   * @param requestContext The client request context.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
+   * @param changeSetId Id of the [[ChangeSet]] to create a named Version for. Empty ChangeSet id can be provided to create iModel's baseline version.
+   * @param name Name of the new named Version.
+   * @param description Description of the new named Version.
+   * @returns Created Version instance.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have ManageVersions permission.
+   * @throws [[IModelHubError]] with [IModelHubStatus.ChangeSetDoesNotExist]($bentley) if the [[ChangeSet]] with specified changeSetId does not exist.
+   * @throws [[IModelHubError]] with [IModelHubStatus.VersionAlreadyExists]($bentley) if a named [[Version]] already exists with the specified name.
+   * @throws [[IModelHubError]] with [IModelHubStatus.ChangeSetAlreadyHasVersion]($bentley) if the [[ChangeSet]] with specified changeSetId already has a named [[Version]] associated with it.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   */
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string, name: string, description?: string): Promise<Version> {
+    requestContext.enter();
+    Logger.logInfo(loggerCategory, "Creating named version for iModel", () => ({ iModelId, changeSetId }));
+    ArgumentCheck.defined("requestContext", requestContext);
+    ArgumentCheck.validGuid("iModelId", iModelId);
+    ArgumentCheck.validChangeSetId("changeSetId", changeSetId, true);
+    ArgumentCheck.defined("name", name);
+
+    let version = new Version();
+    version.changeSetId = changeSetId;
+    version.name = name;
+    version.description = description;
+
+    version = await this._handler.postInstance<Version>(requestContext, Version, this.getRelativeUrl(iModelId), version);
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, "Created named version for iModel", () => ({ iModelId, changeSetId }));
+    return version;
+  }
+
+  /** Update the named [[Version]] of an iModel. Only the description can be changed when updating the named Version.
+   * @param requestContext The client request context.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
+   * @param version Named version to update.
+   * @returns Updated Version instance from iModelHub.
+   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have ManageVersions permission.
+   * @throws [[IModelHubError]] with [IModelHubStatus.VersionAlreadyExists]($bentley) if a named [[Version]] already exists with the specified name.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   */
+  public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, version: Version): Promise<Version> {
+    requestContext.enter();
+    Logger.logInfo(loggerCategory, "Updating named version for iModel", () => ({ iModelId, changeSetId: version.changeSetId }));
+    ArgumentCheck.defined("requestContext", requestContext);
+    ArgumentCheck.validGuid("iModelId", iModelId);
+    ArgumentCheck.validGuid("version.wsgId", version.wsgId);
+
+    const updatedVersion = await this._handler.postInstance<Version>(requestContext, Version, this.getRelativeUrl(iModelId, version.id), version);
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, "Updated named version for iModel", () => ({ iModelId, changeSetId: version.changeSetId }));
+    return updatedVersion;
+  }
+}

@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { SchemaItemProps } from "../Deserialization/JsonProps";
+import { SchemaItemType, schemaItemTypeToString, schemaItemTypeToXmlString } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECVersion, SchemaItemKey } from "../SchemaKey";
 import { Schema } from "./Schema";
-import { SchemaItemProps } from "./../Deserialization/JsonProps";
-import { SchemaItemType, schemaItemTypeToString, schemaItemTypeToXmlString } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { SchemaItemKey, ECVersion } from "./../SchemaKey";
 
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
 
@@ -37,7 +37,12 @@ export abstract class SchemaItem {
 
   get description() { return this._description; }
 
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+  /**
+   * Save this SchemaItem's properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false) {
     const itemJson: { [value: string]: any } = {};
     if (standalone) {
       itemJson.$schema = SCHEMAURL3_2; // $schema is required
@@ -51,7 +56,8 @@ export abstract class SchemaItem {
       itemJson.label = this.label;
     if (undefined !== this.description)
       itemJson.description = this.description;
-    return itemJson;
+
+    return itemJson as SchemaItemProps;
   }
 
   /** @internal */
@@ -69,7 +75,7 @@ export abstract class SchemaItem {
     return itemElement;
   }
 
-  public deserializeSync(schemaItemProps: SchemaItemProps) {
+  public fromJSONSync(schemaItemProps: SchemaItemProps) {
     if (undefined !== schemaItemProps.label)
       this._label = schemaItemProps.label;
 
@@ -86,7 +92,7 @@ export abstract class SchemaItem {
     }
   }
 
-  public async deserialize(schemaItemProps: SchemaItemProps) {
+  public async fromJSON(schemaItemProps: SchemaItemProps) {
     if (undefined !== schemaItemProps.label)
       this._label = schemaItemProps.label;
 

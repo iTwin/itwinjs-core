@@ -7,26 +7,23 @@
  */
 
 import * as React from "react";
-
-import { OnCancelFunc, OnNumberCommitFunc } from "@bentley/ui-abstract";
-import { DivWithOutsideClick, SizeProps, Size } from "@bentley/ui-core";
+import { OnCancelFunc, OnValueCommitFunc, Primitives, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "@bentley/ui-components";
-
-import { PositionPopup, PositionPopupContent } from "./PositionPopup";
+import { DivWithOutsideClick, Size, SizeProps } from "@bentley/ui-core";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PositionPopup, PositionPopupContent } from "./PositionPopup";
 
 /** @alpha */
 export class InputEditorCommitHandler {
   constructor(
-    public readonly onCommit: OnNumberCommitFunc,
+    public readonly onCommit: OnValueCommitFunc,
   ) { }
 
   public handleCommit = (args: PropertyUpdatedArgs) => {
-    let newValue = 0;
+    let newValue: Primitives.Value = 0;
     // istanbul ignore else
-    if (args.newValue.valueFormat === PropertyValueFormat.Primitive) {
-      newValue = args.newValue.value as number;
+    if (args.newValue.valueFormat === PropertyValueFormat.Primitive && args.newValue.value !== undefined) {
+      newValue = args.newValue.value;
     }
     this.onCommit(newValue);
   }

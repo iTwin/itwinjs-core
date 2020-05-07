@@ -4,16 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import { OpenMode } from "@bentley/bentleyjs-core";
+import { IModelApp, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestContext } from "../setup/TestContext";
+
 const expect = chai.expect;
 
-import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
-
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
-
-import { TestContext } from "../setup/TestContext";
-import { AuthorizationClient } from "../setup/AuthorizationClient";
 
 describe("Basic Scenarios", async () => {
   let testContext: TestContext;
@@ -21,11 +20,11 @@ describe("Basic Scenarios", async () => {
   before(async () => {
     testContext = await TestContext.instance();
     const accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as AuthorizationClient).setAccessToken(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
-  async function openIModelAndqueryPage(contextId: string, iModelId: string, openMode: OpenMode) {
-    const iModel = await IModelConnection.open(contextId, iModelId, openMode);
+  async function openIModelAndQueryPage(contextId: string, iModelId: string, openMode: OpenMode) {
+    const iModel = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode);
     expect(iModel).to.exist;
     expect(iModel.elements).to.exist;
 
@@ -40,7 +39,7 @@ describe("Basic Scenarios", async () => {
     const openMode = OpenMode.Readonly;
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    await openIModelAndqueryPage(contextId!, iModelId, openMode);
+    await openIModelAndQueryPage(contextId!, iModelId, openMode);
   });
 
   // imodeljs does not allow this -- changesetid must be non-empty for routing purposes.
@@ -49,7 +48,7 @@ describe("Basic Scenarios", async () => {
     const openMode = OpenMode.Readonly;
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    await openIModelAndqueryPage(contextId!, iModelId, openMode);
+    await openIModelAndQueryPage(contextId!, iModelId, openMode);
   });
 
   it("should open iModel and Execute Query TestCase:819343", async () => {

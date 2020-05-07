@@ -7,22 +7,9 @@
  */
 
 import { Id64Array } from "@bentley/bentleyjs-core";
+import { Angle, Constant, Point2d, Point3d, Range2d, Range3d } from "@bentley/geometry-core";
 import {
-  Angle,
-  Constant,
-  Point2d,
-  Point3d,
-  Range2d,
-  Range3d,
-} from "@bentley/geometry-core";
-import {
-  ColorDef,
-  Gradient,
-  GraphicParams,
-  SheetProps,
-  ViewAttachmentProps,
-  ViewDefinition2dProps,
-  ViewStateProps,
+  AxisAlignedBox3d, ColorDef, Gradient, GraphicParams, SheetProps, ViewAttachmentProps, ViewDefinition2dProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
@@ -30,15 +17,10 @@ import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { RenderGraphic } from "./render/RenderGraphic";
 import { RenderTarget } from "./render/RenderTarget";
+import { AttachmentList, AttachmentSceneState, createAttachment, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport } from "./Viewport";
 import { ViewState, ViewState2d } from "./ViewState";
-import {
-  AttachmentList,
-  AttachmentSceneState,
-  createAttachment,
-  TileTreeSet,
-} from "./tile/internal";
 
 // cSpell:ignore ovrs
 
@@ -116,7 +98,7 @@ export class SheetBorder {
     const fillColor = ColorDef.black;
 
     const params = new GraphicParams();
-    params.setFillColor(fillColor);
+    params.fillColor = fillColor;
     params.gradient = this._gradient;
 
     builder.activateGraphicParams(params);
@@ -131,6 +113,13 @@ export class SheetBorder {
  * @public
  */
 export class SheetViewState extends ViewState2d {
+  /** The width and height of the sheet in world coordinates. */
+  public readonly sheetSize: Point2d;
+  private _attachmentIds: Id64Array;
+  private _attachments: AttachmentList;
+  private _all3dAttachmentTilesLoaded: boolean = true;
+  private readonly _viewedExtents: AxisAlignedBox3d;
+
   /** @internal */
   public static get className() { return "SheetViewDefinition"; }
   public static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {
@@ -147,19 +136,19 @@ export class SheetViewState extends ViewState2d {
       this.sheetSize = categories.sheetSize.clone();
       this._attachmentIds = categories._attachmentIds;
       this._attachments = categories._attachments;
+      this._viewedExtents = categories._viewedExtents.clone();
     } else {
       this.sheetSize = Point2d.create(sheetProps.width, sheetProps.height);
       this._attachmentIds = [];
       attachments.forEach((idProp) => this._attachmentIds.push(idProp));
       this._attachments = new AttachmentList();
+
+      const extents = new Range3d(0, 0, 0, this.sheetSize.x, this.sheetSize.y, 0);
+      const margin = 1.1;
+      extents.scaleAboutCenterInPlace(margin);
+      this._viewedExtents = extents;
     }
   }
-
-  /** The width and height of the sheet in world coordinates. */
-  public readonly sheetSize: Point2d;
-  private _attachmentIds: Id64Array;
-  private _attachments: AttachmentList;
-  private _all3dAttachmentTilesLoaded: boolean = true;
 
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
@@ -175,7 +164,14 @@ export class SheetViewState extends ViewState2d {
   public get attachmentIds() { return this._attachmentIds; }
 
   /** @internal */
-  public get defaultExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
+  public get defaultExtentLimits() {
+    return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 };
+  }
+
+  /** @internal */
+  public getViewedExtents(): AxisAlignedBox3d {
+    return this._viewedExtents;
+  }
 
   /** Manually mark this SheetViewState as having to re-create its scene due to still-loading tiles for 3d attachments. This is called directly from the attachment tiles.
    * @internal

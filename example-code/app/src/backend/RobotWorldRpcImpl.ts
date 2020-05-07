@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.implementation
-import { RpcInterface, RpcInterfaceDefinition, IModelTokenProps, IModelToken } from "@bentley/imodeljs-common";
+import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { RobotWorldEngine } from "./RobotWorldEngine";
@@ -11,41 +11,40 @@ import { RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
 
 // Implement RobotWorldReadRpcInterface
 export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldReadRpcInterface {
-  public async countRobotsInArray(tokenProps: IModelTokenProps, elemIds: Id64String[]): Promise<number> {
-    const iModelDb: IModelDb = IModelDb.find(IModelToken.fromJSON(tokenProps));
+  public async countRobotsInArray(tokenProps: IModelRpcProps, elemIds: Id64String[]): Promise<number> {
+    const iModelDb: IModelDb = IModelDb.findByKey(tokenProps.key);
     return RobotWorldEngine.countRobotsInArray(iModelDb, elemIds);
   }
 
-  public async countRobots(tokenProps: IModelTokenProps): Promise<number> {
-    const iModelDb: IModelDb = IModelDb.find(IModelToken.fromJSON(tokenProps));
+  public async countRobots(tokenProps: IModelRpcProps): Promise<number> {
+    const iModelDb: IModelDb = IModelDb.findByKey(tokenProps.key);
     return RobotWorldEngine.countRobots(iModelDb);
   }
 
-  public async queryObstaclesHitByRobot(tokenProps: IModelTokenProps, rid: Id64String): Promise<Id64String[]> {
-    const iModelDb: IModelDb = IModelDb.find(IModelToken.fromJSON(tokenProps));
+  public async queryObstaclesHitByRobot(tokenProps: IModelRpcProps, rid: Id64String): Promise<Id64String[]> {
+    const iModelDb: IModelDb = IModelDb.findByKey(tokenProps.key);
     return RobotWorldEngine.queryObstaclesHitByRobot(iModelDb, rid);
   }
 }
 // __PUBLISH_EXTRACT_END__
 
 // tslint:disable:no-duplicate-imports - Disable this because it is intentionally separated.
-import { Point3d, Angle, XYZProps, AngleProps } from "@bentley/geometry-core";
+import { Angle, AngleProps, Point3d, XYZProps } from "@bentley/geometry-core";
 import { RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 
 // Implement RobotWorldWriteRpcInterface
 export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWriteRpcInterface {
-  public async insertRobot(tokenProps: IModelTokenProps, modelId: Id64String, name: string, location: XYZProps): Promise<Id64String> {
-    return RobotWorldEngine.insertRobot(IModelDb.find(IModelToken.fromJSON(tokenProps)), modelId, name, Point3d.fromJSON(location));
+  public async insertRobot(tokenProps: IModelRpcProps, modelId: Id64String, name: string, location: XYZProps): Promise<Id64String> {
+    return RobotWorldEngine.insertRobot(IModelDb.findByKey(tokenProps.key), modelId, name, Point3d.fromJSON(location));
   }
 
-  public async moveRobot(tokenProps: IModelTokenProps, id: Id64String, location: XYZProps): Promise<void> {
-    RobotWorldEngine.moveRobot(IModelDb.find(IModelToken.fromJSON(tokenProps)), id, Point3d.fromJSON(location));
+  public async moveRobot(tokenProps: IModelRpcProps, id: Id64String, location: XYZProps): Promise<void> {
+    RobotWorldEngine.moveRobot(IModelDb.findByKey(tokenProps.key), id, Point3d.fromJSON(location));
   }
 
-  public async insertBarrier(tokenProps: IModelTokenProps, modelId: Id64String, location: XYZProps, angle: AngleProps, length: number): Promise<Id64String> {
-    return RobotWorldEngine.insertBarrier(IModelDb.find(IModelToken.fromJSON(tokenProps)), modelId, Point3d.fromJSON(location), Angle.fromJSON(angle), length);
+  public async insertBarrier(tokenProps: IModelRpcProps, modelId: Id64String, location: XYZProps, angle: AngleProps, length: number): Promise<Id64String> {
+    return RobotWorldEngine.insertBarrier(IModelDb.findByKey(tokenProps.key), modelId, Point3d.fromJSON(location), Angle.fromJSON(angle), length);
   }
-
 }
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeImplBentleyCloud

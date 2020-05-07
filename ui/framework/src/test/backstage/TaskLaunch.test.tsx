@@ -2,39 +2,38 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow } from "enzyme";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-import {
-  TaskLaunchBackstageItem,
-  FrontstageManager,
-  FrontstageActivatedEventArgs,
-  ConfigurableUiManager,
-  TaskPropsList,
-  WorkflowPropsList,
-  FrontstageProvider,
-  Frontstage,
-  FrontstageProps,
-  BackstageItemState,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import { Logger } from "@bentley/bentleyjs-core";
+import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import {
+  BackstageItemState, ConfigurableUiManager, Frontstage, FrontstageActivatedEventArgs, FrontstageManager, FrontstageProps, FrontstageProvider,
+  TaskLaunchBackstageItem, TaskPropsList, WorkflowPropsList,
+} from "../../ui-framework";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 import { WorkflowManager } from "../../ui-framework/workflow/Workflow";
-import { Logger } from "@bentley/bentleyjs-core";
+import TestUtils from "../TestUtils";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    await NoRenderApp.startup();
 
     await FrontstageManager.setActiveFrontstageDef(undefined);
   });
 
-  describe("<TaskLaunchBackstageItem />", () => {
+  after(async () => {
+    TestUtils.terminateUiFramework();
+    await IModelApp.shutdown();
+  });
+
+  describe("<TaskLaunchBackstageItem />", async () => {
     it("TaskLaunchBackstageItem should render & execute", async () => {
       class Frontstage1 extends FrontstageProvider {
         public get frontstage(): React.ReactElement<FrontstageProps> {
@@ -79,9 +78,9 @@ describe("Backstage", () => {
       };
 
       let stateFuncRun = false;
-      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => {
+      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => { // tslint:disable-line:deprecation
         stateFuncRun = true;
-        return { ...state, isActive: true } as BackstageItemState;
+        return { ...state, isActive: true } as BackstageItemState; // tslint:disable-line:deprecation
       };
 
       ConfigurableUiManager.loadWorkflows(workflowPropsList);
@@ -130,7 +129,7 @@ describe("Backstage", () => {
       (Logger.logError as any).restore();
     });
 
-    it("TaskLaunchBackstageItem renders correctly when inactive", () => {
+    it("TaskLaunchBackstageItem renders correctly when inactive", async () => {
       WorkflowManager.setActiveWorkflow(undefined);
       const wrapper = shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
       wrapper.should.matchSnapshot();

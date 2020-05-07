@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { InvertedUnitProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedUnit, LazyLoadedUnitSystem } from "../Interfaces";
+import { SchemaItemKey } from "../SchemaKey";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { SchemaItemType } from "./../ECObjects";
-import { InvertedUnitProps } from "./../Deserialization/JsonProps";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedUnit, LazyLoadedUnitSystem } from "./../Interfaces";
-import { SchemaItemKey } from "./../SchemaKey";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * An InvertedUnit is a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.
@@ -32,8 +32,13 @@ export class InvertedUnit extends SchemaItem {
   get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
   get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
 
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+  /**
+   * Save this InvertedUnit's properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): InvertedUnitProps {
+    const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.invertsUnit = this.invertsUnit!.name;
     schemaJson.unitSystem = this.unitSystem!.name;
     return schemaJson;
@@ -58,8 +63,8 @@ export class InvertedUnit extends SchemaItem {
     return itemElement;
   }
 
-  public deserializeSync(invertedUnitProps: InvertedUnitProps) {
-    super.deserializeSync(invertedUnitProps);
+  public fromJSONSync(invertedUnitProps: InvertedUnitProps) {
+    super.fromJSONSync(invertedUnitProps);
     const unitSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.invertsUnit);
     this._invertsUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit>(unitSchemaItemKey,
       async () => {
@@ -81,7 +86,7 @@ export class InvertedUnit extends SchemaItem {
       });
   }
 
-  public async deserialize(invertedUnitProps: InvertedUnitProps) {
-    this.deserializeSync(invertedUnitProps);
+  public async fromJSON(invertedUnitProps: InvertedUnitProps) {
+    this.fromJSONSync(invertedUnitProps);
   }
 }

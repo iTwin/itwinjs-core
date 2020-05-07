@@ -6,12 +6,12 @@
  * @module Widget
  */
 
-import * as classnames from "classnames";
+import "./Stacked.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps, Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
-import { ResizeGrip, ResizeDirection, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
 import { DisabledResizeHandles, DisabledResizeHandlesHelpers } from "../utilities/DisabledResizeHandles";
-import "./Stacked.scss";
+import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
 
 /** Available [[Stacked]] widget horizontal anchors.
  * @beta

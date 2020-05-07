@@ -2,20 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
-import { Transform } from "../../geometry3d/Transform";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { LineString3d } from "../../curve/LineString3d";
-import { SmoothTransformBetweenFrusta } from "../../geometry3d/FrustumAnimation";
-
-import { Angle } from "../../geometry3d/Angle";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Angle } from "../../geometry3d/Angle";
+import { SmoothTransformBetweenFrusta } from "../../geometry3d/FrustumAnimation";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
+import { Transform } from "../../geometry3d/Transform";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 /* tslint:disable:no-console */
 /**
  * create a linestring that walks around all the edges (and some decoration) for a frustum defined by corners.

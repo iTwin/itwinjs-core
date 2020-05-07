@@ -6,9 +6,10 @@
  * @module Logging
  */
 
-import { Writable } from "stream";
-import * as domain from "domain";
 import * as bunyan from "bunyan";
+import * as domain from "domain";
+import { Writable } from "stream";
+
 // tslint:disable-next-line:no-var-requires
 const post = require("request-promise");
 

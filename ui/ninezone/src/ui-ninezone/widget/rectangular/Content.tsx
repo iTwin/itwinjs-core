@@ -6,16 +6,16 @@
  * @module Widget
  */
 
-import * as classnames from "classnames";
+import "./Content.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
 import { HorizontalAnchor, HorizontalAnchorHelpers } from "../Stacked";
-import "./Content.scss";
 
 /** Properties of [[WidgetContent]] component.
  * @alpha
  */
-export interface WidgetContentProps extends CommonProps, NoChildrenProps {
+export interface WidgetContentProps extends CommonProps, NoChildrenProps { // tslint:disable-line: class-name
   /** Describes to which side the widget of this content is anchored. */
   anchor: HorizontalAnchor;
   /** Content container ref. */

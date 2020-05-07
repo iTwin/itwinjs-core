@@ -2,14 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
+import { mount, ReactWrapper, shallow } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-import { mount, shallow, ReactWrapper } from "enzyme";
 import { BadgeType } from "@bentley/ui-abstract";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
-import { Direction, WithDragInteractionProps, GroupTool, GroupToolExpander, NestedGroup, Item } from "@bentley/ui-ninezone";
-import { GroupButton, CommandItemDef, GroupItemDef, KeyboardShortcutManager, BaseItemState, SyncUiEventDispatcher, GroupItem, getFirstItem, getFirstItemId, ToolGroupPanelContext, ToolbarDragInteractionContext } from "../../ui-framework";
+import { Direction, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@bentley/ui-ninezone";
+import {
+  BaseItemState, CommandItemDef, getFirstItem, getFirstItemId, GroupButton, GroupItem, GroupItemDef, KeyboardShortcutManager, SyncUiEventDispatcher,
+  ToolbarDragInteractionContext, ToolGroupPanelContext,
+} from "../../ui-framework";
 import * as GroupItemModule from "../../ui-framework/toolbar/GroupItem";
 import TestUtils from "../TestUtils";
 
@@ -30,7 +33,6 @@ const tool2 = new CommandItemDef({
   applicationData: { key: "value" },
   stateSyncIds: [toolItemEventId],
   stateFunc: toolItemStateFunc,
-  betaBadge: true,
 });
 
 const groupItemEventId = "test-button-state";

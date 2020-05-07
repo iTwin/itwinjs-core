@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { CurrentImdlVersion } from "@bentley/imodeljs-common";
-import { TileTestData, TileTestCase } from "./TileIO.data";
+import { TileTestCase, TileTestData } from "./TileIO.data";
 
 type TestCaseName = "rectangle" | "triangles" | "lineString" | "lineStrings" | "cylinder";
 

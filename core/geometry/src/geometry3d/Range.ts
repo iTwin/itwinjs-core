@@ -7,15 +7,16 @@
  * @module CartesianGeometry
  */
 
-import { BeJSONFunctions, Geometry, AxisIndex } from "../Geometry";
+import { AxisIndex, BeJSONFunctions, Geometry } from "../Geometry";
+import { MultiLineStringDataVariant } from "../topology/Triangulation";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Matrix3d } from "./Matrix3d";
 import { Point2d, Vector2d } from "./Point2dVector2d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
+import { PointStreamRangeCollector, VariantPointDataStream } from "./PointStreaming";
 import { Transform } from "./Transform";
 import { LowAndHighXY, LowAndHighXYZ, Range1dProps, Range2dProps, Range3dProps, XAndY, XYAndZ } from "./XYZProps";
-import { PointStreamRangeCollector, VariantPointDataStream } from "./PointStreaming";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
+
 /**
  * Base class for Range1d, Range2d, Range3d.
  * @public
@@ -95,8 +96,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     this.high.z = RangeBase._EXTREME_NEGATIVE;
   }
 
-  /** Freeze this instance (and its deep content) so it can be considered read-only */
-  public freeze() { Object.freeze(this); Object.freeze(this.low); Object.freeze(this.high); }
+  /** Freeze this instance (and its members) so it is read-only */
+  public freeze(): Readonly<this> { this.low.freeze(); this.high.freeze(); return Object.freeze(this); }
   /** Flatten the low and high coordinates of any json object with low.x .. high.z into an array of 6 doubles */
   public static toFloat64Array(val: LowAndHighXYZ): Float64Array { return Float64Array.of(val.low.x, val.low.y, val.low.z, val.high.x, val.high.y, val.high.z); }
   /** Flatten the low and high coordinates of this into an array of 6 doubles */
@@ -1226,8 +1227,8 @@ export class Range2d extends RangeBase implements LowAndHighXY {
       this.extendPoint(high);
     }
   }
-  /** Freeze this instance (and its deep content) so it can be considered read-only */
-  public freeze() { Object.freeze(this.low); Object.freeze(this.high); }
+  /** Freeze this instance (and its members) so it is read-only */
+  public freeze(): Readonly<this> { this.low.freeze(); this.high.freeze(); return Object.freeze(this); }
   /** return json array with two points as produced by `Point2d.toJSON` */
   public toJSON(): Range2dProps { return this.isNull ? [] : [this.low.toJSON(), this.high.toJSON()]; }
   /** Use `setFromJSON` to parse `json` into a new Range2d instance. */

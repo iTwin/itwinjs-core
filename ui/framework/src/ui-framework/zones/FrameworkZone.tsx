@@ -9,18 +9,12 @@
 import * as React from "react";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
-  ZoneTargetType,
-  Zone as NZ_Zone,
-  ZoneManagerProps,
-  WidgetZoneId,
-  DraggedWidgetManagerProps,
-  WidgetManagerProps,
-  DisabledResizeHandles,
+  DisabledResizeHandles, DraggedWidgetManagerProps, WidgetManagerProps, WidgetZoneId, Zone as NZ_Zone, ZoneManagerProps, ZoneTargetType,
 } from "@bentley/ui-ninezone";
-import { WidgetChangeHandler, TargetChangeHandler } from "../frontstage/FrontstageComposer";
-import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
+import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
+import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
 import { Outline } from "./Outline";
 
 /** Properties for the [[FrameworkZone]] component.

@@ -6,6 +6,11 @@
  * @module Inputs
  */
 
+/*---------------------------------------------------------------------------------------------
+* This code has been adapted from
+* [react-numeric-input](https://github.com/vlad-ignatov/react-numeric-input).
+*--------------------------------------------------------------------------------------------*/
+
 import * as React from "react";
 import { CommonProps } from "../../utils/Props";
 import { Omit } from "../../utils/typeUtils";
@@ -73,13 +78,17 @@ function access(object: any, prop: string, defaultValue: any, ...args: any): any
   return result === undefined ? defaultValue : result;
 }
 
-/** @alpha */
+/** Bounds function prototype for [[NumericInput]] component
+ * @beta
+ */
 export type BoundsFunctionProp = number | (() => number | undefined);
 
 /** @internal */
 export type ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined);
 
-/** @alpha */
+/** Base properties for the [[NumericInput]] component
+ * @beta
+ */
 export interface ReactNumericInputProps extends Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">,

@@ -6,11 +6,11 @@
  * @module Toolbar
  */
 
-import * as classnames from "classnames";
+import "./Overflow.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { ExpandableItem, ExpandableItemProps } from "./expandable/Expandable";
 import { Item } from "./Item";
-import "./Overflow.scss";
 
 /** Properties of [[Overflow]] component.
  * @beta

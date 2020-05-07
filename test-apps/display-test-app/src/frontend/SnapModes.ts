@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { createComboBox } from "@bentley/frontend-devtools";
 import { SnapMode } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
-import { createComboBox } from "@bentley/frontend-devtools";
 
 const multiSnapModes = [
   SnapMode.NearestKeypoint,

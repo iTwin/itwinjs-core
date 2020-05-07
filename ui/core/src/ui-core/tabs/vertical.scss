@@ -23,10 +23,13 @@
             background:             $buic-background-tab-inactive;
             border-width:           0;
 
+            $bar-size: 2px;
+
             &::after {
 
                 height:             100%;
-                width:              2px;
+                width:              $bar-size;
+                left:               $bar-size;
             }
         }
 

@@ -2,6 +2,48 @@
   "name": "@bentley/presentation-testing",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/presentation-testing_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "react to renaming of imodeljs-clients-backend to backend-itwin-client"
+          },
+          {
+            "comment": "react to changes in imodeljs-clients"
+          },
+          {
+            "comment": "update tests to utilize FrontendAuthorizationClient"
+          },
+          {
+            "comment": "Renamed OIDC constructs for consistency; Removed SAML support."
+          },
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Change argument lists to props object"
+          },
+          {
+            "comment": "Remove deprecated initialize"
+          },
+          {
+            "comment": "Separate tests from source"
+          },
+          {
+            "comment": "react to new clients packages from imodeljs-clients"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Moved Property classes and interfaces to ui-abstract package."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/presentation-testing_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
@@ -95,7 +137,7 @@
             "comment": "Add module descriptions"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -155,7 +197,7 @@
             "comment": "Fix tests initializer randomly failing with a file lock error"
           },
           {
-            "comment": "remove IModelApp subclasses"
+            "comment": "Remove IModelApp subclasses"
           },
           {
             "comment": "Upgrade TypeDoc dependency to 0.14.2"
@@ -185,7 +227,7 @@
             "comment": "Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }

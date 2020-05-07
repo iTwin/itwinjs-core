@@ -21,7 +21,7 @@ export interface Node {
  * @internal
  */
 export class SparseTree<T extends Node> {
-  public static [immerable] = true;
+  public [immerable] = true;
 
   private _rootNodes = new SparseArray<string>();
   private _parentToChildren: Record<string, SparseArray<string>> = {};
@@ -116,10 +116,10 @@ export class SparseTree<T extends Node> {
  * The main advantage of this class over the standard javascript array is that
  * this class does not need to check each index when iterating values that are
  * stored in the array.
- * @beta
+ * @public
  */
 export class SparseArray<T> implements Iterable<T | undefined> {
-  public static [immerable] = true;
+  public [immerable] = true;
 
   private _length = 0;
   private _array: Array<[T, number]> = [];

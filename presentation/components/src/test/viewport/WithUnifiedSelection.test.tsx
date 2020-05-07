@@ -5,42 +5,40 @@
 /* tslint:disable:no-direct-imports */
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-import * as React from "react";
 import { expect } from "chai";
-import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { ElementProps, Code } from "@bentley/imodeljs-common";
-import { IModelConnection, ViewState3d, NoRenderApp, HiliteSet as IModelHiliteSet, IModelApp, SelectionSet } from "@bentley/imodeljs-frontend";
+import * as React from "react";
+import * as sinon from "sinon";
+import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+import { Code, ElementProps } from "@bentley/imodeljs-common";
+import { HiliteSet as IModelHiliteSet, IModelApp, IModelConnection, NoRenderApp, SelectionSet, ViewState3d } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import {
-  Presentation, SelectionManager, SelectionChangeEvent,
-  SelectionChangeEventArgs, SelectionChangeType, HiliteSet, SelectionScopesManager,
+  HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager,
 } from "@bentley/presentation-frontend";
-import { HILITE_RULESET } from "@bentley/presentation-frontend/lib/selection/HiliteSetProvider";
 import { ViewportComponent } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
-import { viewWithUnifiedSelection, ViewportSelectionHandler } from "../../viewport/WithUnifiedSelection";
+import { IUnifiedSelectionComponent, viewWithUnifiedSelection } from "../../presentation-components";
+import { ViewportSelectionHandler } from "../../presentation-components/viewport/WithUnifiedSelection";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationViewport = viewWithUnifiedSelection(ViewportComponent);
 
 describe("Viewport withUnifiedSelection", () => {
 
-  before(() => {
+  before(async () => {
     if (IModelApp.initialized)
-      IModelApp.shutdown();
-    NoRenderApp.startup();
+      await IModelApp.shutdown();
+    await NoRenderApp.startup();
     classNameGenerator = () => faker.random.word();
   });
 
-  after(() => {
-    IModelApp.shutdown();
+  after(async () => {
+    await IModelApp.shutdown();
   });
 
   let viewDefinitionId: Id64String;
@@ -79,15 +77,6 @@ describe("Viewport withUnifiedSelection", () => {
     expect(component.imodel).to.equal(imodelMock.object);
   });
 
-  it("uses HILITE_RULESET id", () => {
-    const component = shallow(<PresentationViewport
-      imodel={imodelMock.object}
-      viewDefinitionId={viewDefinitionId}
-      selectionHandler={selectionHandlerMock.object}
-    />).instance() as any as IUnifiedSelectionComponent;
-    expect(component.rulesetId).to.equal(HILITE_RULESET.id);
-  });
-
   it("renders correctly", () => {
     expect(shallow(<PresentationViewport
       imodel={imodelMock.object}
@@ -101,7 +90,7 @@ describe("Viewport withUnifiedSelection", () => {
     it("creates default implementation when not provided through props", () => {
       const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
       selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
-      Presentation.selection = selectionManagerMock.object;
+      Presentation.setSelectionManager(selectionManagerMock.object);
 
       const viewport = shallow(<PresentationViewport
         imodel={imodelMock.object}
@@ -171,20 +160,20 @@ describe("ViewportSelectionHandler", () => {
   let handler: ViewportSelectionHandler;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
-  before(() => {
-    NoRenderApp.startup();
-    Presentation.selection = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
+  before(async () => {
+    await NoRenderApp.startup();
+    Presentation.setSelectionManager(new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object }));
     const defaultClassName = faker.random.word();
     classNameGenerator = () => defaultClassName;
   });
 
-  after(() => {
-    IModelApp.shutdown();
+  after(async () => {
+    await IModelApp.shutdown();
   });
 
   beforeEach(() => {
     mockIModel(imodelMock);
-    handler = new ViewportSelectionHandler(imodelMock.object);
+    handler = new ViewportSelectionHandler({ imodel: imodelMock.object });
   });
 
   afterEach(() => {
@@ -226,7 +215,7 @@ describe("ViewportSelectionHandler", () => {
       emptyAll: sinon.SinonSpy<[], void>;
       replace: sinon.SinonSpy<[Id64Arg], void>;
       onChanged: sinon.SinonSpy<any[], any>;
-    };
+    }
 
     let hiliteSpies: HiliteSpies;
     let selectionSetSpies: SelectionSetSpies;

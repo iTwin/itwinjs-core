@@ -5,10 +5,10 @@
 
 import { expect } from "chai";
 import { IModelApp } from "../IModelApp";
-import { ViewRect } from "../ViewRect";
+import { MockRender } from "../render/MockRender";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderTarget } from "../render/RenderTarget";
-import { MockRender } from "../render/MockRender";
+import { ViewRect } from "../ViewRect";
 
 class MyTarget extends MockRender.OffScreenTarget { }
 class MyList extends MockRender.List { }
@@ -18,12 +18,12 @@ class MySystem extends MockRender.System {
 }
 
 describe("MockRender", () => {
-  before(() => {
+  before(async () => {
     MockRender.App.systemFactory = () => new MySystem();
-    MockRender.App.startup();
+    await MockRender.App.startup();
   });
 
-  after(() => MockRender.App.shutdown());
+  after(async () => MockRender.App.shutdown());
 
   it("Should override mock render system", () => {
     expect(IModelApp.hasRenderSystem).to.be.true;

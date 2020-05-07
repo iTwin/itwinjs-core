@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { CompositeFlags } from "./RenderFlags";
 import { assert } from "@bentley/bentleyjs-core";
+import { CompositeFlags } from "./RenderFlags";
 
 // tslint:disable:no-const-enum
 
@@ -23,6 +23,7 @@ export const enum TechniqueId {
   PointString,
   Edge,
   SilhouetteEdge,
+  TerrainMesh,
 
   // Techniques with a single associated shader that operates on the entire image
   CompositeHilite,

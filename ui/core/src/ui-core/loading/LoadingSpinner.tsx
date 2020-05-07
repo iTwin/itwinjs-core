@@ -6,12 +6,12 @@
  * @module Loading
  */
 
-import * as React from "react";
 import "./LoadingSpinner.scss";
+import * as React from "react";
 import { Spinner, SpinnerProps } from "./Spinner";
 
 /** Properties for [[LoadingSpinner]] component
- * @beta
+ * @public
  */
 export interface LoadingSpinnerProps extends SpinnerProps {
   /** Message (text) displayed */
@@ -21,8 +21,8 @@ export interface LoadingSpinnerProps extends SpinnerProps {
 }
 
 /**
- * A loading spinner component.
- * @beta
+ * A loading spinner component that optionally shows a text message.
+ * @public
  */
 export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
   public static defaultProps: Partial<LoadingSpinnerProps> = {

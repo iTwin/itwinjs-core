@@ -3,23 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
-import {
-  PlanProjectionSettings,
-  PlanProjectionSettingsProps,
-  SubCategoryOverride,
-} from "@bentley/imodeljs-common";
-import {
-  DisplayStyle3dState,
-  IModelApp,
-  ModelState,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
+import { PlanProjectionSettings, PlanProjectionSettingsProps, SubCategoryOverride } from "@bentley/imodeljs-common";
+import { DisplayStyle3dState, IModelApp, ModelState, NotifyMessageDetails, OutputMessagePriority, Viewport } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { DisplayStyleTool } from "./DisplayStyleTools";
+import { parseArgs } from "./parseArgs";
 
 /** Dumps a JSON representation of the plan projection settings for the current viewport.
  * @alpha
@@ -123,35 +115,17 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
     return true;
   }
 
-  protected parse(args: string[]) {
-    if (!this.parseModels(args[0]))
+  protected parse(inputArgs: string[]) {
+    if (!this.parseModels(inputArgs[0]))
       return false;
 
+    const args = parseArgs(inputArgs.slice(1));
     const props: PlanProjectionSettingsProps = { };
-    for (let i = 1; i < args.length; i++) {
-      if (args[i].indexOf("=") < 0)
-        continue;
 
-      const parts = args[i].split("=");
-      const value = 2 === parts.length ? parseFloat(parts[1]) : undefined;
-      if (undefined !== value && Number.isNaN(value))
-        continue;
-
-      switch (parts[0][0].toLowerCase()) {
-        case "t":
-          props.transparency = value;
-          break;
-        case "o":
-          props.overlay = 0 !== value;
-          break;
-        case "p":
-          props.enforceDisplayPriority = 0 !== value;
-          break;
-        case "e":
-          props.elevation = value;
-          break;
-      }
-    }
+    props.transparency = args.getFloat("t");
+    props.overlay = args.getBoolean("o");
+    props.enforceDisplayPriority = args.getBoolean("p");
+    props.elevation = args.getFloat("e");
 
     this._settings = PlanProjectionSettings.fromJSON(props);
     return true;

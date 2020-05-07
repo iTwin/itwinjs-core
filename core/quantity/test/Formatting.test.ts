@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-
-import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { Format } from "../src/Formatter/Format";
 import { QuantityError } from "../src/Exception";
+import { Format } from "../src/Formatter/Format";
 import { FormatTraits } from "../src/Formatter/FormatEnums";
+import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
 process.on("unhandledRejection", (reason, p) => {
   console.log("Unhandled Rejection at:", p, "reason:", reason);

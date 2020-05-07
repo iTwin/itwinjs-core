@@ -2,14 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
-import * as sinon from "sinon";
 import { expect } from "chai";
-
-import TestUtils from "../TestUtils";
-import { StandardMessageBox, ModalDialogManager, DialogChangedEventArgs, ModalDialogRenderer } from "../../ui-framework";
+import { mount } from "enzyme";
+import * as React from "react";
+import * as sinon from "sinon";
 import { MessageBoxIconType, MessageBoxType } from "@bentley/imodeljs-frontend";
+import { DialogChangedEventArgs, ModalDialogManager, ModalDialogRenderer, StandardMessageBox } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("ModalDialogManager", () => {
 

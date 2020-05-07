@@ -2,14 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow, ReactWrapper } from "enzyme";
 import { expect } from "chai";
+import { mount, ReactWrapper, shallow } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
-import { Calculator } from "../../ui-framework/accudraw/Calculator";
-import { CalculatorOperator, CalculatorEngine } from "../../ui-framework/accudraw/CalculatorEngine";
 import { Icon } from "@bentley/ui-core";
+import { Calculator } from "../../ui-framework/accudraw/Calculator";
+import { CalculatorEngine, CalculatorOperator } from "../../ui-framework/accudraw/CalculatorEngine";
 
 describe("Calculator", () => {
 

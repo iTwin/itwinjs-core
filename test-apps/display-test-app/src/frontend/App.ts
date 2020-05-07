@@ -3,49 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import ToolTip from "tooltip.js";
+import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { XAndY } from "@bentley/geometry-core";
 import {
-  AccuSnap,
-  IModelApp,
-  IModelAppOptions,
-  MessageBoxIconType,
-  MessageBoxType,
-  MessageBoxValue,
-  NotificationManager,
-  NotifyMessageDetails,
-  SelectionTool,
-  SnapMode,
-  TileAdmin,
-  Tool,
-  ToolTipOptions,
+  AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager,
+  NotifyMessageDetails, SelectionTool, SnapMode, TileAdmin, Tool, ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
-import { FrontendDevTools, parseToggle } from "@bentley/frontend-devtools";
-import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { showError, showStatus } from "./Utils";
-import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
-import { VersionComparisonTool } from "./VersionComparison";
-import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
-import { ToggleFrustumIntersectionTool } from "./FrustumIntersectionDecoration";
-import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
-import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { RecordFpsTool } from "./FpsMonitor";
+import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
+import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
+import { OutputShadersTool } from "./OutputShadersTool";
+import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import {
-  CloneViewportTool,
-  CloseIModelTool,
-  CloseWindowTool,
-  CreateWindowTool,
-  DockWindowTool,
-  FocusWindowTool,
-  MaximizeWindowTool,
-  OpenIModelTool,
-  ReopenIModelTool,
-  ResizeWindowTool,
-  RestoreWindowTool,
-  Surface,
+  CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
+  ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
-
-declare var BUILD_SEMVER: string;
+import { showError, showStatus } from "./Utils";
+import { VersionComparisonTool } from "./VersionComparison";
+import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -199,30 +176,8 @@ class ShutDownTool extends Tool {
 
   public run(_args: any[]): boolean {
     DisplayTestApp.surface.closeAllViewers();
-    IModelApp.shutdown();
+    IModelApp.shutdown(); // tslint:disable-line:no-floating-promises
     debugger; // tslint:disable-line:no-debugger
-    return true;
-  }
-}
-
-class Toggle3dManipulationsTool extends Tool {
-  public static toolId = "Toggle3dManipulations";
-  public run(allow?: boolean): boolean {
-    const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp || !vp.view.is3d())
-      return false;
-    if (undefined === allow)
-      allow = !vp.view.allow3dManipulations();
-    if (allow !== vp.view.allow3dManipulations()) {
-      vp.view.setAllow3dManipulations(allow);
-      IModelApp.toolAdmin.startDefaultTool();
-    }
-    return true;
-  }
-  public parseAndRun(...args: string[]): boolean {
-    const enable = parseToggle(args[0]);
-    if (typeof enable !== "string")
-      this.run(enable);
     return true;
   }
 }
@@ -242,10 +197,13 @@ export class DisplayTestApp {
     opts.accuSnap = new DisplayTestAppAccuSnap();
     opts.notifications = new Notifications();
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
-    IModelApp.startup(opts);
+    await IModelApp.startup(opts);
+
+    // For testing local extensions only, should not be used in production.
+    IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
     IModelApp.applicationLogoCard =
-      () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing<br>" + BUILD_SEMVER });
+      () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     [
@@ -261,6 +219,7 @@ export class DisplayTestApp {
       MarkupTool,
       MaximizeWindowTool,
       OpenIModelTool,
+      OutputShadersTool,
       PurgeTileTreesTool,
       RecordFpsTool,
       RefreshTilesTool,
@@ -270,8 +229,6 @@ export class DisplayTestApp {
       SaveImageTool,
       ShutDownTool,
       SVTSelectionTool,
-      Toggle3dManipulationsTool,
-      ToggleFrustumIntersectionTool,
       ToggleShadowMapTilesTool,
       VersionComparisonTool,
       ZoomToSelectedElementsTool,

@@ -10,10 +10,10 @@ import * as React from "react";
 import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
-/** Centered React functional component
+/** Centered React functional component.
+ * Displays content centered vertically and horizontally.
  * @public
  */
-// tslint:disable-next-line:variable-name
-export const Centered: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function Centered(props: CommonDivProps) {
   return <Div {...props} mainClassName="uicore-centered" />;
-};
+}

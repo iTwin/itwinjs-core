@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { GlobalContextMenu, ContextMenuItem, UiEvent, ContextSubMenu, CommonProps } from "@bentley/ui-core";
+import { CommonProps, ContextMenuItem, ContextSubMenu, GlobalContextMenu, UiEvent } from "@bentley/ui-core";
 import { KeyboardShortcut } from "./KeyboardShortcut";
 
 /** State for a [[KeyboardShortcutMenuEvent]] and [[KeyboardShortcutMenu]] component

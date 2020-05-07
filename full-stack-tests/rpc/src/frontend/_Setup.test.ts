@@ -2,19 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { BentleyCloudRpcManager, ElectronRpcManager, IModelToken, RpcOperation, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, ElectronRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { rpcInterfaces } from "../common/TestRpcInterface";
+
+RpcConfiguration.disableRoutingValidation = true;
 
 function initializeCloud(protocol: string) {
   const config = BentleyCloudRpcManager.initializeClient({ info: { title: "rpc-full-stack-test", version: "v1.0" } }, rpcInterfaces);
   config.protocol.pathPrefix = `${protocol}://${window.location.hostname}:${Number(window.location.port) + 2000}`;
-
-  for (const definition of rpcInterfaces) {
-    RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
-  }
 }
 
 before(async () => {
@@ -24,7 +21,8 @@ before(async () => {
     case "electron": return ElectronRpcManager.initializeClient({}, rpcInterfaces);
     case "direct": {
       // (global as any).window = undefined;
-      require("../backend/CommonBackendSetup");
+      const { commonSetup } = require("../backend/CommonBackendSetup");
+      await commonSetup();
       const config = RpcConfiguration.obtain(RpcDefaultConfiguration);
       config.interfaces = () => rpcInterfaces as any;
       return RpcConfiguration.initializeInterfaces(config);

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import * as sinon from "sinon";
 import * as React from "react";
+import * as sinon from "sinon";
 import { Tree } from "../../ui-core/tree/Tree";
 
 // Note: Cannot instantiate DOMRect yet since it's experimental and not available in all browsers (Nov. 2019)

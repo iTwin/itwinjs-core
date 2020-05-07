@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { TestUtility } from "./TestUtility";
-import { TestUsers } from "./TestUsers";
+import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelAppOptions, IModelConnection, MockRender, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { IModelConnection, MockRender, IModelApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
+import { TestUtility } from "./TestUtility";
 
 const testProjectName = "iModelJsIntegrationTest";
 const testIModelName = "ReadWriteTest";
@@ -21,7 +21,7 @@ async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: 
 }
 
 describe("ChangeSummary (#integration)", () => {
-  let iModel: IModelConnection;
+  let iModel: RemoteBriefcaseConnection;
   let testProjectId: string;
   let testIModelId: string;
 
@@ -29,33 +29,33 @@ describe("ChangeSummary (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
 
     const options: IModelAppOptions = {
-      authorizationClient: TestUtility.imodelCloudEnv.authorization,
+      authorizationClient,
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
+      applicationVersion: "1.2.1.1",
     };
-    MockRender.App.startup(options);
+    await MockRender.App.startup(options);
 
-    assert(IModelApp.authorizationClient);
     assert(IModelApp.authorizationClient);
 
     testProjectId = await TestUtility.getTestProjectId(testProjectName);
     testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
-    iModel = await IModelConnection.open(testProjectId, testIModelId);
+    iModel = await RemoteBriefcaseConnection.open(testProjectId, testIModelId);
   });
 
   after(async () => {
     if (iModel)
       await iModel.close();
-    MockRender.App.shutdown();
+    await MockRender.App.shutdown();
   });
 
   // ###TODO AFFAN ???
   it.skip("Change cache file generation when attaching change cache", async () => {
     assert.exists(iModel);
-    await TestRpcInterface.getClient().deleteChangeCache(iModel.iModelToken.toJSON());
+    await TestRpcInterface.getClient().deleteChangeCache(iModel.getRpcProps());
     await iModel.attachChangeCache();
     const changeSummaryRows: any[] = await executeQuery(iModel, "SELECT count(*) cnt FROM change.ChangeSummary");
     assert.equal(changeSummaryRows.length, 1);
@@ -68,14 +68,13 @@ describe("ChangeSummary (#integration)", () => {
   // FIXME: This test has apparently been failing for a while now...
   it.skip("Change cache file generation during change summary extraction", async () => {
     assert.exists(iModel);
-    // for now, imodel must be open readwrite for changesummary extraction
+    // for now, imodel must be open read/write for changesummary extraction
     await iModel.close();
 
-    const testIModel: IModelConnection = await IModelConnection.open(testProjectId, testIModelId, OpenMode.ReadWrite);
+    const testIModel: RemoteBriefcaseConnection = await RemoteBriefcaseConnection.open(testProjectId, testIModelId, OpenMode.ReadWrite);
     try {
-
-      await TestRpcInterface.getClient().deleteChangeCache(testIModel.iModelToken.toJSON());
-      await TestRpcInterface.getClient().extractChangeSummaries(testIModel.iModelToken.toJSON(), { currentChangeSetOnly: true });
+      await TestRpcInterface.getClient().deleteChangeCache(testIModel.getRpcProps());
+      await TestRpcInterface.getClient().extractChangeSummaries(testIModel.getRpcProps(), { currentChangeSetOnly: true });
       await testIModel.attachChangeCache();
 
       const changeSummaryRows: any[] = await executeQuery(testIModel, "SELECT count(*) cnt FROM change.ChangeSummary");

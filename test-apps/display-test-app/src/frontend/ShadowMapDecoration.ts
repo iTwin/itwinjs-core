@@ -2,18 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  DecorateContext,
-  GraphicBranch,
-  GraphicType,
-  IModelApp,
-  RenderGraphic,
-  RenderGraphicOwner,
-  Target,
-  Tool,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
 import { parseToggle } from "@bentley/frontend-devtools";
+import {
+  DecorateContext, GraphicBranch, GraphicType, IModelApp, RenderGraphic, RenderGraphicOwner, Target, Tool, Viewport,
+} from "@bentley/imodeljs-frontend";
 
 class ShadowMapDecoration {
   private static _instance?: ShadowMapDecoration;

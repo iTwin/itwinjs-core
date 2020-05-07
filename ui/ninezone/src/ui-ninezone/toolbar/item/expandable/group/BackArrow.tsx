@@ -6,11 +6,10 @@
  * @module Toolbar
  */
 
-import * as classnames from "classnames";
-import * as React from "react";
-import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
-import { useTargeted } from "../../../../base/useTargeted";
 import "./BackArrow.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps, NoChildrenProps, useTargeted } from "@bentley/ui-core";
 
 /** Properties of [[BackArrow]] component.
  * @alpha

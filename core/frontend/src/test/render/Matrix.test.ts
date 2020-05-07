@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect, assert } from "chai";
-import { Vector3d, Point3d, Matrix3d, Transform, Matrix4d } from "@bentley/geometry-core";
-import { Matrix3, Matrix4, fromNormalizedCrossProduct, normalizedDifference } from "../../render/webgl/Matrix";
+import { assert, expect } from "chai";
+import { Matrix3d, Matrix4d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { fromNormalizedCrossProduct, Matrix3, Matrix4, normalizedDifference } from "../../render/webgl/Matrix";
 
 describe("Matrix3", () => {
   it("constructor works as expected", () => {

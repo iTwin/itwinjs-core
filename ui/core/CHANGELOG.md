@@ -1,6 +1,56 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- [For Dialog component, support dialogs that disable the default header and want to implement custom move logic by updating the x and y props. This was fixed by only handling the pointer move events when a resize or move operation starts instead of on mount. Also now we only update the relevant state in the pointer move event handler based on if we are moving or resizing]
+- Qualified .label & .message CSS classes. Removed .cell CSS class usage. Fixed cell editor sizes.
+- Removed @deprecated APIs from ui-framework & ui-core and updated NextVersion.md
+- Changes to WebFontIcon to support custom font-family icons.
+- Ensure ui-abstract is listed as peer dependency and not just a dev dependency.
+- Fix bug 292829 where toolbar border displayed when all items are hidden.
+- Convert FocusTrap to internal FunctionComponent and ensure no focus processing is done when the trap is not active.
+- Fixed ReactResizeDetector usage after upgrade. Converted Toggle component to function. Hover/pressed styling in 2.0 Toolbar.
+- Make resize-observer-polyfill a full dependency
+- Fixed Messages window blinking when you tap on it on iOS
+- Ui 2.0 - Blur the toolbar item background
+- Add a tolerance to check position between render cycles.
+- Made React functional component specifications consistent across UI packages
+- Slider component tooltipBelow prop & tooltip styling
+- Added API in MessageManager to display either a Toast or Sticky message using React components.
+-  Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead.
+- Revert back to using svg-sprite-loader and sprite resourceQuery.
+- Upgrade to Rush 5.23.2
+- Fixed Safari browser issues
+- Copied filter renderers from react-data-grid-addons to ui-components to prevent security error
+- Fixed several Tool Assistance issues
+- Ui 2.0 - Toolbar display changes
+- Updated Toolbar colors/opacity for Ui 2.0
+- Move common use hooks from ui-ninezone.
+- Learning docs for UiAdmin & UiItemsArbiter
+- Promoted some @beta to @public in Ui packages & ToolAssistance for 2.0 release.
+- Fixes to Toggle onBlur handling & ControlledTree error message position
+- In source documentation. Some learning docs & API changes.
+- Move react to peerDependencies.
+- Learning documentation for ui-core
+- TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
+- Fix popup position calculation.
+- Started ui-components Learning doc section
+- Make UiSettings asynchronous.
+- UI: Toggle Component - only use animation on value change
+- Add `useOptionalDisposable` hook
+- Update auto-generated dialog items to work with the Tool Settings Bar.
+- Moved Checkbox, Radio, Select, Toggle, Slider & AutoSuggest into their own category
+- Defaulting to IModelApp.i18n in UI packages and cascading initialize() calls
+- UI: Support for multiple Toast & Sticky messages
+- Added UiSetting. Saving/restoring settings in ui-test-app.
+- Remove support for the iModel.js module system by no longer delivering modules.
+- Update Select control to allow placeholder text to be re-displayed by setting value to undefined.
+- set z-index on toolsettings overflow panel
 
 ## 1.14.1
 Wed, 22 Apr 2020 19:04:00 GMT
@@ -104,7 +154,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Added hideHeader and header props and support for titleStyle prop
 - Added initial (default) value to Search Box.
 - Tool Assistance changes per UX Design
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -117,7 +167,7 @@ Tue, 10 Sep 2019 12:09:49 GMT
 - Addressed some warnings introduced with React 16.9
 - Listening for onSelectedViewportChanged to set active content view for viewports
 - Fixed new lint issue in getDisplayName
-- #165662. Allow an app to specify touch-specific instructions in tool assistance.
+- Allow an app to specify touch-specific instructions in tool assistance.
 - Add a `ScrollPositionMaintainer` helper to recursively save and restore scroll position
 - Added VerticalTabs component to ui-core
 
@@ -143,7 +193,7 @@ Wed, 24 Jul 2019 11:47:26 GMT
 
 - Checkbox: added theming
 - Remove flex-grow from dialog containers - not supported by Firefox
-- removed flex-grow from dialogs
+- Removed flex-grow from dialogs
 - Add missing space in scss files.
 - Update styles on Select and Input components.
 - Added CursorInformation and CursorPopup
@@ -158,15 +208,13 @@ Mon, 01 Jul 2019 19:04:29 GMT
 
 ### Updates
 
-- #137898 - It is not possible to turn on/off checkbox by clicking on label
+- It is not possible to turn on/off checkbox by clicking on label
 - Added prefixes to Dialog & ContextMenu to CSS classes for positioning
 - Copied source from react-numeric-input and converted to TypeScript for internal control
 - Modified regex for NumericInput
 - Allow CSS selector string to specify item in FocusTrap to receive focus.
 - Reverted ContextMenuDirection and DialogAlignment breaking changes
 - Update to TypeScript 3.5
-- ui-core unit tests
-- ui-core unit tests
 - ui-component unit tests. NumericInput strict=true default.
 
 ## 1.0.0
@@ -265,7 +313,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Add a way to specify custom Node checkbox renderer
 - Keyboard Shortcut keys in context menu. ui-core unit test branches.
 - Update to use newer generic-icons-webfont package.
-- upgrade to TypeScript 3.2.2
+- Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT
@@ -379,7 +427,6 @@ Mon, 03 Dec 2018 18:52:58 GMT
 - Renamed expandable block css class from core-property-block to core-expandable-block.
 - Added a way to put Popups in fixed position and cleand up the refs.
 - Added Omit type definition to Utils.
-- Unit tests
 - Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components
 - Add Placeholder that can be displayed instead of tree node while it's being loaded
 

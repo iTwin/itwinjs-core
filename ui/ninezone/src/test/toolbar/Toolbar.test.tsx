@@ -6,8 +6,17 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Direction, Toolbar, ToolbarPanelAlignment, PanelsProvider, ToolbarItem, ToolbarItemProps } from "../../ui-ninezone";
+import { Direction, PanelsProvider, Toolbar, ToolbarItem, ToolbarItemProps, ToolbarPanelAlignment } from "../../ui-ninezone";
 import { getToolbarItemProps } from "../../ui-ninezone/toolbar/Toolbar";
+
+class Item extends React.Component implements ToolbarItem {
+  public panel = document.createElement("div");
+  public history = document.createElement("div");
+
+  public render() {
+    return <div></div>;
+  }
+}
 
 describe("<Toolbar />", () => {
   it("should render", () => {
@@ -29,6 +38,19 @@ describe("<Toolbar />", () => {
     rendered.should.matchSnapshot();
   });
 
+  it("renders with item", () => {
+    const rendered = mount(
+      <Toolbar items={
+        <>
+          <Item />
+        </>
+      }
+        expandsTo={Direction.Right}
+      />,
+    );
+    rendered.should.matchSnapshot();
+  });
+
   it("renders with panelAlignment", () => {
     const sut = shallow(
       <Toolbar
@@ -40,15 +62,6 @@ describe("<Toolbar />", () => {
     rendered.should.matchSnapshot();
   });
 });
-
-class Item extends React.Component implements ToolbarItem {
-  public panel = document.createElement("div");
-  public history = document.createElement("div");
-
-  public render() {
-    return <div></div>;
-  }
-}
 
 class ExpandableItem extends React.Component<ToolbarItemProps<Item>> {
   public render() {
@@ -77,7 +90,6 @@ describe("<PanelsProvider />", () => {
     const appendChild = sinon.stub(panels, "appendChild").callsFake((newChild: Node) => newChild);
     mount(
       <PanelsProvider
-        histories={null}
         items={
           <>
             <ExpandableItem />
@@ -100,7 +112,6 @@ describe("<PanelsProvider />", () => {
     const removeChild = sinon.spy(panels, "removeChild");
     mount(
       <PanelsProvider
-        histories={null}
         items={
           <ExpandableItem />
         }
@@ -112,51 +123,10 @@ describe("<PanelsProvider />", () => {
     removeChild.calledTwice.should.true;
   });
 
-  it("should append histories", () => {
-    const histories = document.createElement("div");
-    const appendChild = sinon.stub(histories, "appendChild").callsFake((newChild: Node) => newChild);
-    mount(
-      <PanelsProvider
-        histories={histories}
-        items={
-          <>
-            <ExpandableItem />
-            <BadItem />
-            <ExpandableItem />
-          </>
-        }
-        panels={null}
-      >
-        {(items) => items}
-      </PanelsProvider>,
-    );
-    appendChild.calledTwice.should.true;
-  });
-
-  it("should remove existing histories", () => {
-    const histories = document.createElement("div");
-    histories.appendChild(document.createElement("div"));
-    histories.appendChild(document.createElement("div"));
-    const removeChild = sinon.spy(histories, "removeChild");
-    mount(
-      <PanelsProvider
-        histories={histories}
-        items={
-          <ExpandableItem />
-        }
-        panels={null}
-      >
-        {(items) => items}
-      </PanelsProvider>,
-    );
-    removeChild.calledTwice.should.true;
-  });
-
   it("should not clone if item is not a valid element", () => {
     const children = sinon.fake(() => null);
     mount(
       <PanelsProvider
-        histories={null}
         items={"!element"}
         panels={null}
       >
@@ -170,7 +140,6 @@ describe("<PanelsProvider />", () => {
   it("should force update", () => {
     const sut = mount(
       <PanelsProvider
-        histories={null}
         items={
           <>
             <ExpandableItem />

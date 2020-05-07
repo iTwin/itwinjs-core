@@ -2,17 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect, assert } from "chai";
-import { MockRender, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
-import { Range3d, Point3d, Point2d } from "@bentley/geometry-core";
-import * as path from "path";
+import { assert, expect } from "chai";
+import { Point2d, Point3d, Range3d } from "@bentley/geometry-core";
+import { ColorDef, MeshPolyline, OctEncodedNormal, QPoint3d } from "@bentley/imodeljs-common";
+import { IModelConnection, MockRender, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { DisplayParams, Mesh, Triangle } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { MeshPolyline, QPoint3d, ColorDef, OctEncodedNormal } from "@bentley/imodeljs-common";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, new ColorDef(), new ColorDef()); }
+  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
 }
 
 /**
@@ -29,15 +26,15 @@ describe("MeshPrimitive Tests", () => {
   document.body.appendChild(canvas!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    await MockRender.App.startup();
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    MockRender.App.shutdown();
+    if (imodel) await imodel.close();
+    await MockRender.App.shutdown();
   });
 
   it("constructor", () => {

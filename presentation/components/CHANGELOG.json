@@ -2,6 +2,54 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/presentation-components_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Change argument lists to props object"
+          },
+          {
+            "comment": "Make all IPresentationDataProviders extend IDisposable"
+          },
+          {
+            "comment": "Memoize just the last request instead of everything in presentation data providers"
+          },
+          {
+            "comment": "Register localization namespace during Presentation frontend initialization"
+          },
+          {
+            "comment": "PresentationPropertyDataProvider provides data having sorted favorite properties using FavoritePropertiesManager"
+          },
+          {
+            "comment": "Separate tests from source"
+          },
+          {
+            "comment": "Refatored UnifiedSelectionTreeEventHandler to use inheritance instead of composition"
+          },
+          {
+            "comment": "Apply unified selection for modified tree nodes"
+          },
+          {
+            "comment": "Made React functional component specifications consistent across UI packages"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Moved Property classes and interfaces to ui-abstract package."
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/presentation-components_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
@@ -104,9 +152,6 @@
             "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report"
           },
           {
-            "comment": "Update sinon version."
-          },
-          {
             "comment": "Changed ControlledTree specific hooks and HOCs release tags to beta"
           },
           {
@@ -191,7 +236,7 @@
             "comment": "Add module descriptions"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -239,7 +284,7 @@
             "comment": "Reorganize docs script output"
           },
           {
-            "comment": "include !lib/**/*.*css in .npmignore for presentation-components to includes css files in lib/module/prod"
+            "comment": "Include !lib/**/*.*css in .npmignore for presentation-components to includes css files in lib/module/prod"
           },
           {
             "comment": "`treeWithFilteringSupport` HOC now sends the filtered data provider as the second parameter to `onFilterApplied` prop callback"
@@ -350,7 +395,7 @@
             "comment": "Require React & React-dom 16.8"
           },
           {
-            "comment": "remove IModelApp subclasses"
+            "comment": "Remove IModelApp subclasses"
           },
           {
             "comment": "Temporarily disable hiliting model and category elements until a more performant way to do that exists"
@@ -422,7 +467,7 @@
             "comment": "Move property definitions to imodeljs-frontend so they could be used by tools to define properties for tool settings."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }

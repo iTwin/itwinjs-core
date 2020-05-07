@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { LinePixels, HiddenLine } from "@bentley/imodeljs-common";
+import { HiddenLine, LinePixels } from "@bentley/imodeljs-common";
 import { FloatRgba } from "./FloatRGBA";
 import { OvrFlags } from "./RenderFlags";
 

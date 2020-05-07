@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import * as classnames from "classnames";
 import "./Navigation.scss";
+import classnames from "classnames";
+import * as React from "react";
 
 /** Highlight style of the Navigation List. */
 export enum NavigationHighlightStyle {
@@ -26,11 +26,6 @@ export interface NavigationItemProps {
  * A single navigation item
  */
 export class NavigationItem extends React.Component<NavigationItemProps> {
-
-  constructor(props: NavigationItemProps, context?: any) {
-    super(props, context);
-  }
-
   public static defaultProps: Partial<NavigationItemProps> = {
     label: "",
     icon: "",

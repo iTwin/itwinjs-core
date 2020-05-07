@@ -96,14 +96,6 @@ Object {
 }
 `;
 
-exports[`LabelDefinition fromJSON creates valid Node from serialized JSON 1`] = `
-Object {
-  "displayValue": "Facilitator",
-  "rawValue": "Rhode Island",
-  "typeName": "string",
-}
-`;
-
 exports[`LabelDefinition fromLabelString creates valid LabelDefinition from label string 1`] = `
 Object {
   "displayValue": "Chief",

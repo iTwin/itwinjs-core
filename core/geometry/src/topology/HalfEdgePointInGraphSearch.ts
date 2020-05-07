@@ -7,12 +7,12 @@
  * @module Topology
  */
 
-import { HalfEdge } from "./Graph";
 import { Geometry } from "../Geometry";
-import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
-import { NodeXYZUV } from "./HalfEdgeNodeXYZUV";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
-import { Vector3d, Point3d } from "../geometry3d/Point3dVector3d";
+import { HalfEdge } from "./Graph";
+import { NodeXYZUV } from "./HalfEdgeNodeXYZUV";
+import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
 
 export enum RayClassification {
   RC_NoHits,

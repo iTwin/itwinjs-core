@@ -2,6 +2,48 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/presentation-common_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Use label definitions instead of plain string in Nodes and Content Items"
+          },
+          {
+            "comment": "Move some @beta APIs to @public"
+          },
+          {
+            "comment": "Added doNotHideOtherPropertiesOnDisplayOverride flag which controls display override behavior for hiding other properties"
+          },
+          {
+            "comment": "Make sure localization files are included in the package"
+          },
+          {
+            "comment": "Fix release tags of various JSON types"
+          },
+          {
+            "comment": "Separate tests from source"
+          },
+          {
+            "comment": "Add ability to set active units system for property values formatting"
+          },
+          {
+            "comment": "Add RPC interface for comparing hierarchies"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/presentation-common_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
@@ -152,7 +194,7 @@
             "comment": "Store navigation property classes separate from related property paths"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -350,7 +392,7 @@
             "comment": "Expose node key type guards through index"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }

@@ -6,10 +6,10 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { RulesetVariablesManagerImpl } from "../RulesetVariablesManager";
 import { VariableValueTypes } from "@bentley/presentation-common";
+import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 
 describe("RulesetVariablesManager", () => {
 

@@ -29,6 +29,7 @@ public;compareStrings(a: string, b: string): number
 public;compareStringsOrUndefined(lhs?: string, rhs?: string): number
 public;compareWithTolerance(a: number, b: number, tolerance?: number): number
 public;ComputePriorityFunction
+public;Config
 public;DbOpcode
 public;DbResult
 public;Dictionary
@@ -41,6 +42,7 @@ internal;electronRenderer: any
 public;Entry
 public;EntryContainer
 alpha;EnvMacroSubst
+beta;ExtensionStatus
 public;GetMetaDataFunction = () => any
 public;Guid
 public;GuidString = string
@@ -57,6 +59,7 @@ public;IModelStatus
 public;IndexedValue
 public;IndexMap
 internal;isElectronRenderer: boolean
+public;isIDisposable(obj: unknown): obj is IDisposable
 public;JsonUtils
 public;Listener = (...arg: any[]) => void
 public;LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void
@@ -74,6 +77,7 @@ public;OpenMode
 public;OrderedComparator
 public;PerfLogger 
 public;PriorityQueue
+public;ReadonlySortedArray
 beta;RepositoryStatus
 beta;RpcInterfaceStatus
 public;SerializedClientRequestContext

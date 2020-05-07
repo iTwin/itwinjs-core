@@ -8,12 +8,12 @@
  */
 
 // import { Point2d } from "./Geometry2d";
+import { AngleSweep } from "./geometry3d/AngleSweep";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
 import { Point2d, Vector2d, XY } from "./geometry3d/Point2dVector2d";
-import { XAndY } from "./geometry3d/XYZProps";
 import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
+import { XAndY } from "./geometry3d/XYZProps";
 import { Point4d } from "./geometry4d/Point4d";
-import { AngleSweep } from "./geometry3d/AngleSweep";
 
 /** Enumeration of the 6 possible orderings of XYZ axis order
  * @public
@@ -327,6 +327,15 @@ export class Geometry {
     const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
     return Math.abs(a - b) <= Geometry.smallAngleRadians * sumAbs;
   }
+  /** Toleranced equality test, using tolerance `smallAngleRadians * ( 1 + abs(a) + (abs(b)))`
+   * * Effectively an absolute tolerance of `smallAngleRadians`, with tolerance increasing for larger values of a and b.
+  */
+  public static isAlmostEqualXAndY(a: XAndY, b: XAndY): boolean {
+    const sumAbs = 1.0 + Math.abs(a.x) + Math.abs(b.x) + Math.abs(a.y) + Math.abs(b.y);
+    const tolerance = Geometry.smallAngleRadians * sumAbs;
+    return Math.abs(a.x - b.x) <= tolerance && Math.abs(a.y - b.y) <= tolerance;
+  }
+
   /** Toleranced equality test, using caller-supplied tolerance. */
   public static isDistanceWithinTol(distance: number, tol: number): boolean {
     return Math.abs(distance) <= Math.abs(tol);

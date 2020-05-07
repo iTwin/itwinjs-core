@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// tslint:disable:no-direct-imports
 import { expect } from "chai";
-import { initialize, terminate } from "../IntegrationTests";
+// tslint:disable:no-direct-imports
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import { createRandomTransientId, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/selection/SelectionManager";
 import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import { ViewportSelectionHandler } from "@bentley/presentation-components/lib/viewport/WithUnifiedSelection";
+import { createRandomId, createRandomTransientId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { ViewportSelectionHandler } from "@bentley/presentation-components/lib/presentation-components/viewport/WithUnifiedSelection";
+import { Presentation } from "@bentley/presentation-frontend";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/presentation-frontend/selection/SelectionManager";
+import { initialize, terminate } from "../IntegrationTests";
 
 describe("Unified Selection", () => {
 
@@ -21,13 +21,13 @@ describe("Unified Selection", () => {
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
 
   after(async () => {
-    await imodel.closeSnapshot();
-    terminate();
+    await imodel.close();
+    await terminate();
   });
 
   describe("Hiliting selection", () => {
@@ -44,7 +44,7 @@ describe("Unified Selection", () => {
         nestedModelIds: [], // WIP: no nested models... need a better imodel
       },
       category: {
-        key: { className: "BisCore:Category", id: Id64.fromLocalAndBriefcaseIds(23, 0) },
+        key: { className: "BisCore:SpatialCategory", id: Id64.fromLocalAndBriefcaseIds(23, 0) },
         subCategoryIds: [Id64.fromLocalAndBriefcaseIds(24, 0)],
       },
       subcategory: {
@@ -64,7 +64,7 @@ describe("Unified Selection", () => {
 
     beforeEach(() => {
       Presentation.selection.clearSelection("", imodel);
-      handler = new ViewportSelectionHandler(imodel);
+      handler = new ViewportSelectionHandler({ imodel });
 
       // add something to selection set so we can check later
       // if the contents changed

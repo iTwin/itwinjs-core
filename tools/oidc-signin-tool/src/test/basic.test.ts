@@ -3,22 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Config } from "@bentley/bentleyjs-core";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import { getTestAccessToken, TestBrowserAuthorizationClientConfiguration, TestUsers, TestUtility } from "../index";
+
 const assert = chai.assert;
 const expect = chai.expect;
-import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
-
-import { Config } from "@bentley/imodeljs-clients";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { getTestOidcToken } from "../TestOidcClient";
-import { TestUsers, TestOidcConfiguration } from "../TestUsers";
-import { TestUtility } from "../TestUtility";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 describe("Sign in (#integration)", () => {
-  let oidcConfig: TestOidcConfiguration;
+  let oidcConfig: TestBrowserAuthorizationClientConfiguration;
 
   before(() => {
     oidcConfig = {
@@ -30,28 +28,28 @@ describe("Sign in (#integration)", () => {
 
   it("success with valid user", async () => {
     const validUser = TestUsers.regular;
-    const token = await getTestOidcToken(oidcConfig, validUser);
+    const token = await getTestAccessToken(oidcConfig, validUser);
     assert.exists(token);
   });
 
-  it("failure with invalid Bentley federated user", async () => {
+  it.skip("failure with invalid Bentley federated user", async () => {
     const invalidUser = {
       email: "invalid@bentley.com",
       password: "invalid",
     };
 
-    await expect(getTestOidcToken(oidcConfig, invalidUser))
+    await expect(getTestAccessToken(oidcConfig, invalidUser))
       .to.be.rejectedWith(Error, `Failed OIDC signin for ${invalidUser.email}.\nError: Incorrect user ID or password. Type the correct user ID and password, and try again.`);
   });
 
-  it("failure with invalid user", async () => {
+  it.skip("failure with invalid user", async () => {
     const invalidUser = {
       email: "invalid@email.com",
       password: "invalid",
       scope: Config.App.getString("imjs_oidc_browser_test_scopes"),
     };
-    await expect(getTestOidcToken(oidcConfig, invalidUser))
-      .to.be.rejectedWith(Error, `Failed OIDC signin for ${invalidUser.email}.\nError: User name not found or incorrect password.`);
+    await expect(getTestAccessToken(oidcConfig, invalidUser))
+      .to.be.rejectedWith(Error, `Failed OIDC signin for ${invalidUser.email}.\nError: We didn't recognize the username or password you entered. Please try again.`);
   });
 });
 

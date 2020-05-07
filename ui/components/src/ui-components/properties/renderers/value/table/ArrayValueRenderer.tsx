@@ -7,9 +7,9 @@
  */
 
 import * as React from "react";
-import { TableNonPrimitiveValueRenderer as TableValueRenderer, TableSpecificValueRendererProps } from "./NonPrimitiveValueRenderer";
+import { ArrayValue } from "@bentley/ui-abstract";
 import { NonPrimitivePropertyRenderer } from "../../NonPrimitivePropertyRenderer";
-import { ArrayValue } from "@bentley/imodeljs-frontend";
+import { TableNonPrimitiveValueRenderer as TableValueRenderer, TableSpecificValueRendererProps } from "./NonPrimitiveValueRenderer";
 
 /** A react component which renders array property value as a button with text
  * @public

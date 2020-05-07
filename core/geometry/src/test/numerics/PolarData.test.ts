@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { PolarData, ConstraintState } from "../../numerics/PolarData";
-import { prettyPrint } from "../testFunctions";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { LineString3d } from "../../curve/LineString3d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { Angle } from "../../geometry3d/Angle";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { ConstraintState, PolarData } from "../../numerics/PolarData";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+
 /* tslint:disable:no-console */
 
 function verifyCompletePolarSinglePoint(ck: Checker, partialData: PolarData, data: PolarData | PolarData[] | undefined, expectGeometry: boolean) {

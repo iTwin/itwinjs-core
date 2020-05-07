@@ -7,199 +7,34 @@
  */
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { ClipVector, IndexedPolyface, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
 import {
-  ColorDef,
-  ElementAlignedBox3d,
-  FeatureIndexType,
-  Gradient,
-  ImageBuffer,
-  ImageSource,
-  ImageSourceFormat,
-  isValidImageSourceFormat,
-  PackedFeatureTable,
-  QParams3d,
-  QPoint3dList,
-  RenderMaterial,
-  RenderTexture,
-  TextureProps,
+  ColorDef, ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat,
+  PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps,
 } from "@bentley/imodeljs-common";
+import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { Viewport } from "../Viewport";
-import { ViewRect } from "../ViewRect";
-import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
-import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
-import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
 import { BackgroundMapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
-import { RenderTarget } from "./RenderTarget";
+import { Viewport } from "../Viewport";
+import { ViewRect } from "../ViewRect";
+import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
+import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
-import {
-  GraphicList,
-  RenderGraphic,
-  RenderGraphicOwner,
-} from "./RenderGraphic";
+import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
+import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
+import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
 import { RenderClipVolume } from "./RenderClipVolume";
-import {
-  GraphicBranch,
-  GraphicBranchOptions,
-} from "./GraphicBranch";
+import { GraphicList, RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
+import { RenderMemory } from "./RenderMemory";
+import { RenderTarget } from "./RenderTarget";
 
 // tslint:disable:no-const-enum
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
-
-/** Contains metadata about memory consumed by the render system or aspect thereof.
- * @internal
- */
-export namespace RenderMemory {
-  /** Describes memory consumed by a particular type of resource.
-   * @internal
-   */
-  export class Consumers {
-    public totalBytes = 0; // total number of bytes consumed by all consumers
-    public maxBytes = 0; // largest number of bytes consumed by a single consumer
-    public count = 0; // total number of consumers of this type
-
-    public addConsumer(numBytes: number): void {
-      this.totalBytes += numBytes;
-      this.maxBytes = Math.max(this.maxBytes, numBytes);
-      ++this.count;
-    }
-
-    public clear(): void {
-      this.totalBytes = this.maxBytes = this.count = 0;
-    }
-  }
-
-  /** @internal */
-  export const enum BufferType {
-    Surfaces = 0,
-    VisibleEdges,
-    SilhouetteEdges,
-    PolylineEdges,
-    Polylines,
-    PointStrings,
-    PointClouds,
-    Instances,
-
-    COUNT,
-  }
-
-  /** Describes memory consumed by GPU-allocated buffers.
-   * @internal
-   */
-  export class Buffers extends Consumers {
-    public readonly consumers: Consumers[];
-
-    public constructor() {
-      super();
-      this.consumers = [];
-      for (let i = 0; i < BufferType.COUNT; i++)
-        this.consumers[i] = new Consumers();
-    }
-
-    public get surfaces() { return this.consumers[BufferType.Surfaces]; }
-    public get visibleEdges() { return this.consumers[BufferType.VisibleEdges]; }
-    public get silhouetteEdges() { return this.consumers[BufferType.SilhouetteEdges]; }
-    public get polylineEdges() { return this.consumers[BufferType.PolylineEdges]; }
-    public get polylines() { return this.consumers[BufferType.Polylines]; }
-    public get pointStrings() { return this.consumers[BufferType.PointStrings]; }
-    public get pointClouds() { return this.consumers[BufferType.PointClouds]; }
-    public get instances() { return this.consumers[BufferType.Instances]; }
-
-    public clear(): void {
-      for (const consumer of this.consumers)
-        consumer.clear();
-
-      super.clear();
-    }
-
-    public addBuffer(type: BufferType, numBytes: number): void {
-      this.addConsumer(numBytes);
-      this.consumers[type].addConsumer(numBytes);
-    }
-  }
-
-  /** @internal */
-  export const enum ConsumerType {
-    Textures = 0,
-    VertexTables,
-    FeatureTables,
-    FeatureOverrides,
-    ClipVolumes,
-    PlanarClassifiers,
-    ShadowMaps,
-    TextureAttachments,
-    COUNT,
-  }
-
-  /** @internal */
-  export class Statistics {
-    private _totalBytes = 0;
-    public readonly consumers: Consumers[];
-    public readonly buffers = new Buffers();
-
-    public constructor() {
-      this.consumers = [];
-      for (let i = 0; i < ConsumerType.COUNT; i++)
-        this.consumers[i] = new Consumers();
-    }
-
-    public get totalBytes(): number { return this._totalBytes; }
-    public get textures() { return this.consumers[ConsumerType.Textures]; }
-    public get vertexTables() { return this.consumers[ConsumerType.VertexTables]; }
-    public get featureTables() { return this.consumers[ConsumerType.FeatureTables]; }
-    public get featureOverrides() { return this.consumers[ConsumerType.FeatureOverrides]; }
-    public get clipVolumes() { return this.consumers[ConsumerType.ClipVolumes]; }
-    public get planarClassifiers() { return this.consumers[ConsumerType.PlanarClassifiers]; }
-    public get shadowMaps() { return this.consumers[ConsumerType.ShadowMaps]; }
-    public get textureAttachments() { return this.consumers[ConsumerType.TextureAttachments]; }
-
-    public addBuffer(type: BufferType, numBytes: number): void {
-      this._totalBytes += numBytes;
-      this.buffers.addBuffer(type, numBytes);
-    }
-
-    public addConsumer(type: ConsumerType, numBytes: number): void {
-      this._totalBytes += numBytes;
-      this.consumers[type].addConsumer(numBytes);
-    }
-
-    public clear(): void {
-      this._totalBytes = 0;
-      this.buffers.clear();
-      for (const consumer of this.consumers)
-        consumer.clear();
-    }
-
-    public addTexture(numBytes: number) { this.addConsumer(ConsumerType.Textures, numBytes); }
-    public addVertexTable(numBytes: number) { this.addConsumer(ConsumerType.VertexTables, numBytes); }
-    public addFeatureTable(numBytes: number) { this.addConsumer(ConsumerType.FeatureTables, numBytes); }
-    public addFeatureOverrides(numBytes: number) { this.addConsumer(ConsumerType.FeatureOverrides, numBytes); }
-    public addClipVolume(numBytes: number) { this.addConsumer(ConsumerType.ClipVolumes, numBytes); }
-    public addPlanarClassifier(numBytes: number) { this.addConsumer(ConsumerType.PlanarClassifiers, numBytes); }
-    public addShadowMap(numBytes: number) { this.addConsumer(ConsumerType.ShadowMaps, numBytes); }
-    public addTextureAttachment(numBytes: number) { this.addConsumer(ConsumerType.TextureAttachments, numBytes); }
-
-    public addSurface(numBytes: number) { this.addBuffer(BufferType.Surfaces, numBytes); }
-    public addVisibleEdges(numBytes: number) { this.addBuffer(BufferType.VisibleEdges, numBytes); }
-    public addSilhouetteEdges(numBytes: number) { this.addBuffer(BufferType.SilhouetteEdges, numBytes); }
-    public addPolylineEdges(numBytes: number) { this.addBuffer(BufferType.PolylineEdges, numBytes); }
-    public addPolyline(numBytes: number) { this.addBuffer(BufferType.Polylines, numBytes); }
-    public addPointString(numBytes: number) { this.addBuffer(BufferType.PointStrings, numBytes); }
-    public addPointCloud(numBytes: number) { this.addBuffer(BufferType.PointClouds, numBytes); }
-    public addInstances(numBytes: number) { this.addBuffer(BufferType.Instances, numBytes); }
-  }
-
-  /** @internal */
-  export interface Consumer {
-    collectStatistics(stats: Statistics): void;
-  }
-}
 
 /** An opaque representation of a texture draped on geometry within a [[Viewport]].
  * @internal
@@ -211,6 +46,7 @@ export abstract class RenderTextureDrape implements IDisposable {
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
   public abstract collectGraphics(context: SceneContext): void;
 }
+
 /** @internal */
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
@@ -225,7 +61,7 @@ export interface TextureImage {
 }
 
 /** @internal */
-export const enum RenderDiagnostics {
+export enum RenderDiagnostics {
   /** No diagnostics enabled. */
   None = 0,
   /** Debugging output to browser console enabled. */
@@ -263,16 +99,20 @@ class GraphicOwner extends RenderGraphicOwner {
 export interface RenderSystemDebugControl {
   /** Destroy this system's webgl context. Returns false if this behavior is not supported. */
   loseContext(): boolean;
+
   /** Draw surfaces as "pseudo-wiremesh", using GL_LINES instead of GL_TRIANGLES. Useful for visualizing faces of a mesh. Not suitable for real wiremesh display. */
   drawSurfacesAsWiremesh: boolean;
+
   /** Record GPU profiling information for each frame drawn. Check isGLTimerSupported before using.
    * @internal
    */
   resultsCallback?: GLTimerResultCallback;
+
   /** Returns true if the browser supports GPU profiling queries.
    * @internal
    */
   readonly isGLTimerSupported: boolean;
+
   /** Attempts to compile all shader programs and returns true if all were successful. May throw exceptions on errors.
    * This is useful for debugging shader compilation on specific platforms - especially those which use neither ANGLE nor SwiftShader (e.g., linux, mac, iOS)
    * because our unit tests which also compile all shaders run in software mode and therefore may not catch some "errors" (especially uniforms that have no effect on
@@ -280,6 +120,29 @@ export interface RenderSystemDebugControl {
    * @internal
    */
   compileAllShaders(): boolean;
+
+  /** Obtain accumulated debug info collected during shader compilation. See `RenderSystem.Options.debugShaders`.
+   * @internal
+   */
+  debugShaderFiles?: DebugShaderFile[];
+}
+
+/** @internal */
+export abstract class RenderTerrainMeshGeometry implements IDisposable, RenderMemory.Consumer {
+  public abstract dispose(): void;
+  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
+}
+
+/** @internal */
+export class TerrainTexture {
+  public constructor(public readonly texture: RenderTexture, public readonly scale: Vector2d, public readonly translate: Vector2d, public readonly clipRectangle?: Range2d) {
+  }
+}
+
+/** @internal */
+export class DebugShaderFile {
+  public constructor(public readonly filename: string, public readonly src: string, public isVS: boolean, public isGL: boolean, public isUsed: boolean) {
+  }
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
@@ -322,6 +185,11 @@ export abstract class RenderSystem implements IDisposable {
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
   /** @internal */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
+
+  /** Perform a small unit of idle work and return true if more idle work remains to be done. This function is invoked on each tick of the javascript event loop as long as no viewports are registered with the ViewManager, until it returns false to indicate all idle work has been completed.
+   * @internal
+   */
+  public abstract doIdleWork(): boolean;
 
   /** Find a previously-created [RenderMaterial]($common) by its ID.
    * @param _key The unique ID of the material within the context of the IModelConnection. Typically an element ID.
@@ -372,6 +240,10 @@ export abstract class RenderSystem implements IDisposable {
   public createMesh(_params: MeshParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
+  /** @internal */
+  public createTerrainMeshGeometry(_terrainMesh: TerrainMeshPrimitive, _transform: Transform): RenderTerrainMeshGeometry | undefined { return undefined; }
+  /** @internal */
+  public createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
@@ -467,7 +339,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a graphic that can contain [[GraphicLayer]]s.
    * @internal
    */
-  public createGraphicLayerContainer(graphic: RenderGraphic, _drawAsOverlay: boolean, _transparency: number): RenderGraphic { return graphic; }
+  public createGraphicLayerContainer(graphic: RenderGraphic, _drawAsOverlay: boolean, _transparency: number, _elevation: number): RenderGraphic { return graphic; }
 
   /** Find a previously-created [[RenderTexture]] by its ID.
    * @param _key The unique ID of the texture within the context of the IModelConnection. Typically an element ID.
@@ -568,12 +440,6 @@ export abstract class RenderSystem implements IDisposable {
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
 }
 
-/** @internal */
-export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" |
-  "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" |
-  "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" |
-  "EXT_frag_depth" | "EXT_disjoint_timer_query" | "EXT_disjoint_timer_query_webgl2";
-
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
@@ -643,11 +509,6 @@ export namespace RenderSystem {
      */
     dpiAwareViewports?: boolean;
 
-    /** @internal
-     * @deprecated This setting no longer has any effect.
-     */
-    directScreenRendering?: boolean;
-
     /** If true will attempt to create a WebGL2 context.
      *
      * Default value: false
@@ -661,5 +522,29 @@ export namespace RenderSystem {
      * @internal
      */
     planProjections?: boolean;
+
+    /** By default, shader programs used by the [[RenderSystem]] are not compiled until the first time they are used. This can produce noticeable delays when the user interacts with a [[Viewport]].
+     * To prevent such delays, set this to `true` to allow the RenderSystem to precompile shader programs before any Viewport is opened.
+     * Applications should consider enabling this feature if they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and a view through the user interface.
+     * Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [[ViewManager]]).
+     *
+     * Default value: false
+     *
+     * @beta
+     */
+    doIdleWork?: boolean;
+
+    /** WebGL context attributes to explicitly set when initializing [[IModelApp.renderSystem]].
+     * Exposed chiefly for OpenCities Planner.
+     * @internal
+     */
+    contextAttributes?: WebGLContextAttributes;
+
+    /** If true, and the `WEBGL_debug_shaders` extension is available, accumulate debug information during shader compilation.
+     * This information can be accessed via `RenderSystemDebugControl.debugShaderFiles`.
+     * Default value: false
+     * @internal
+     */
+    debugShaders?: boolean;
   }
 }

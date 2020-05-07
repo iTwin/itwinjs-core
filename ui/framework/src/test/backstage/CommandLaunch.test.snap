@@ -3,12 +3,12 @@
 exports[`Backstage <CommandLaunchBackstageItem /> CommandLaunchBackstageItem renders correctly 1`] = `
 <WithSafeArea
   icon={
-    <Unknown
+    <Icon
       iconSpec="icon-placeholder"
     />
   }
   isActive={false}
-  isDisabled={false}
+  isDisabled={true}
   key="my-command-id"
   onClick={[Function]}
 >

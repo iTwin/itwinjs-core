@@ -6,18 +6,14 @@
  * @module AccuDraw
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-
-import { OnNumberCommitFunc, OnCancelFunc } from "@bentley/ui-abstract";
-import { CommonProps, Button, ButtonType, SvgSprite, Omit, Input, IconInput, Icon } from "@bentley/ui-core";
-
-import { SquareButton, SquareButtonProps } from "./SquareButton";
-import { CalculatorOperator, CalculatorEngine } from "./CalculatorEngine";
-
 import "./Calculator.scss";
-
-import backspaceIcon from "./backspace.svg";
+import classnames from "classnames";
+import * as React from "react";
+import { OnCancelFunc, OnNumberCommitFunc } from "@bentley/ui-abstract";
+import { Button, ButtonType, CommonProps, Icon, IconInput, Input, Omit, SvgSprite } from "@bentley/ui-core";
+import backspaceIcon from "./backspace.svg?sprite";
+import { CalculatorEngine, CalculatorOperator } from "./CalculatorEngine";
+import { SquareButton, SquareButtonProps } from "./SquareButton";
 
 // cSpell:ignore plusmn
 

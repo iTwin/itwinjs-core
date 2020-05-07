@@ -7,28 +7,13 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import {
-  Point3d,
-  Range3d,
-  Polyface,
-  PolyfaceVisitor,
-  Angle,
-  IndexedPolyface,
-  Point2d,
-} from "@bentley/geometry-core";
-import { VertexMap, VertexKey, VertexKeyProps } from "../VertexKey";
-import {
-  QPoint3d,
-  QPoint3dList,
-  MeshPolyline,
-  MeshEdges,
-  OctEncodedNormal,
-  TextureMapping,
-} from "@bentley/imodeljs-common";
+import { Angle, IndexedPolyface, Point2d, Point3d, Polyface, PolyfaceVisitor, Range3d } from "@bentley/geometry-core";
+import { MeshEdges, MeshPolyline, OctEncodedNormal, QPoint3d, QPoint3dList, TextureMapping } from "@bentley/imodeljs-common";
 import { DisplayParams } from "../DisplayParams";
 import { Triangle, TriangleKey, TriangleSet } from "../Primitives";
-import { Mesh } from "./MeshPrimitives";
 import { StrokesPrimitivePointLists } from "../Strokes";
+import { VertexKey, VertexKeyProps, VertexMap } from "../VertexKey";
+import { Mesh } from "./MeshPrimitives";
 
 /** @internal */
 export class MeshBuilder {
@@ -284,7 +269,7 @@ export class MeshEdgeCreationOptions {
 
 /** @internal */
 export namespace MeshEdgeCreationOptions {
-  export const enum Type {  // tslint:disable-line:no-const-enum
+  export enum Type {
     NoEdges = 0x0000,
     SheetEdges = 0x0001 << 0,
     CreaseEdges = 0x0001 << 1,

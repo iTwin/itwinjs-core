@@ -6,37 +6,18 @@
  * @module Views
  */
 
-import { assert } from "@bentley/bentleyjs-core";
 import {
-  AxisOrder,
-  Constant,
-  Map4d,
-  Matrix3d,
-  Plane3dByOriginAndUnitNormal,
-  Point3d,
-  Point4d,
-  Range3d,
-  Ray3d,
-  Transform,
-  Vector3d,
-  XYZ,
-  XYAndZ,
+  AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
-import {
-  Frustum,
-  Npc,
-  NpcCorners,
-} from "@bentley/imodeljs-common";
+import { Frustum, Npc, NpcCorners } from "@bentley/imodeljs-common";
+import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
+import { CoordSystem, Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
 import { ViewState } from "./ViewState";
-import {
-  CoordSystem,
-  Viewport,
-} from "./Viewport";
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's camera or volume changes.
- * @internal
+ * @beta
  */
 export class ViewingSpace {
   private static get frustumDepth2d() { return Constant.oneMeter; }
@@ -45,9 +26,13 @@ export class ViewingSpace {
 
   /** @internal */
   public frustFraction = 1.0;
-  /** Maximum ratio of frontplane to backplane distance for 24 bit non-logarithmic zbuffer */
+  /** Maximum ratio of frontplane to backplane distance for 24 bit non-logarithmic zbuffer
+   * @internal
+   */
   public static nearScaleNonLog24 = 0.0003;
-  /** Maximum fraction of frontplane to backplane distance for 24 bit logarithmic zbuffer */
+  /** Maximum fraction of frontplane to backplane distance for 24 bit logarithmic zbuffer
+   * @internal
+   */
   public static nearScaleLog24 = 1.0E-8;
   /** View origin, potentially expanded */
   public readonly viewOrigin = new Point3d();
@@ -65,6 +50,8 @@ export class ViewingSpace {
   public readonly worldToNpcMap = Map4d.createIdentity();
   /** @internal */
   public readonly zClipAdjusted: boolean = false;    // were the view z clip planes adjusted due to front/back clipping off?
+  /** Eye point - undefined if not 3D or parallel projection. */
+  public readonly eyePoint: Point3d | undefined;
 
   private _view: ViewState;
 
@@ -74,8 +61,6 @@ export class ViewingSpace {
 
   private readonly _clientWidth: number;
   private readonly _clientHeight: number;
-
-  private readonly _displayedPlanes: Plane3dByOriginAndUnitNormal[] = [];
 
   /** Get the rectangle of this Viewport in ViewCoordinates. */
   private get _viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
@@ -124,35 +109,82 @@ export class ViewingSpace {
     camera.setFocusDistance(focusDistance);
   }
 
+  /** @internal */
+  public getTerrainHeightRange(): Range1d | undefined {
+    const frustum = this.getFrustum()!;
+    const cartoRange = Range2d.createNull();
+    for (let i = 0; i < 8; i++) {
+      const corner = frustum.getCorner(i);
+      const carto = this.view.iModel.spatialToCartographicFromEcef(corner);
+      cartoRange.extendXY(carto.longitude, carto.latitude);
+    }
+
+    return ApproximateTerrainHeights.instance.getMinimumMaximumHeights(cartoRange);
+  }
+
+  private static _minDepth = 1; // Allowing very small depth will cause frustum calculations to fail.
+
   /** Adjust the front and back planes to encompass the entire viewed volume */
   private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
     const view = this.view;
     if (!view.is3d()) // only necessary for 3d views
       return;
 
-    let extents = view.getViewedExtents();
+    delta.z = Math.max(delta.z, ViewingSpace._minDepth);
 
-    this.extendRangeForDisplayedPlanes(extents);
+    const extents = view.getViewedExtents();
+    const frustum = new Frustum();
+    const worldToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOrigin, this.viewDelta, false).map as Map4d;
 
-    if (extents.isNull)
+    if (worldToNpc === undefined)
       return;
 
-    // convert viewed extents in world coordinates to min/max in view aligned coordinates
-    const viewTransform = Transform.createOriginAndMatrix(Point3d.createZero(), this.rotation);
-    const extFrust = Frustum.fromRange(extents);
-    extFrust.multiply(viewTransform);
-    extents = extFrust.toRange();
+    worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
+    const clipPlanes = frustum.getRangePlanes(false, false, 0);
+    const viewedExtentCorners = extents.corners();
+
+    // Only extend depth to include viewed geometry if it is within the frustum. (if viewing global locations).
+    if (clipPlanes.classifyPointContainment(viewedExtentCorners, false) === ClipPlaneContainment.StronglyOutside)
+      extents.setNull();
+
+    let depthRange;
+    const backgroundMapGeometry = this.view.displayStyle.getBackgroundMapGeometry();
+    if (undefined !== backgroundMapGeometry) {
+      const viewZ = this.rotation.getRow(2);
+      const eyeDepth = this.eyePoint ? viewZ.dotProduct(this.eyePoint) : undefined;
+      const heightRange = this.view.displayStyle.displayTerrain ? ApproximateTerrainHeights.instance.globalHeightRange : Range1d.createXX(-1, 1);
+      depthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(frustum, heightRange, this.view.maxGlobalScopeFactor > 1);
+
+      if (eyeDepth !== undefined) {
+        const maxBackgroundFrontBackRatio = 1.0E6;
+        const frontDist = Math.max(.1, eyeDepth - depthRange.high);
+        const backDist = eyeDepth - depthRange.low;
+        if (backDist / frontDist > maxBackgroundFrontBackRatio)
+          depthRange.high = eyeDepth - backDist / maxBackgroundFrontBackRatio;
+      }
+    } else
+      depthRange = Range1d.createNull();
+
+    if (!extents.isNull) {
+      const viewZ = this.rotation.getRow(2);
+      const corners = extents.corners();
+      for (const corner of corners)
+        depthRange.extendX(viewZ.dotProduct(corner));
+    }
+
+    if (depthRange.isNull)
+      return;
 
     this.rotation.multiplyVectorInPlace(origin);       // put origin in view coordinates
-    origin.z = extents.low.z;           // set origin to back of viewed extents
-    delta.z = extents.high.z - origin.z; // and delta to front of viewed extents
+    origin.z = depthRange.low;                          // set origin to back of viewed extents
+    delta.z = Math.max(depthRange.high - depthRange.low, ViewingSpace._minDepth); // and delta to front of viewed extents
     this.rotation.multiplyTransposeVectorInPlace(origin);
 
     if (!view.isCameraOn)
       return;
 
     // if the camera is on, we need to make sure that the viewed volume is not behind the eye
-    const eyeOrg = view.camera.getEyePoint().minus(origin);
+    const eyeOrg = this.eyePoint!.minus(origin);
     this.rotation.multiplyVectorInPlace(eyeOrg);
 
     // if the distance from the eye to origin in less than 1 meter, move the origin away from the eye. Usually, this means
@@ -170,58 +202,14 @@ export class ViewingSpace {
       delta.z = eyeOrg.z;
   }
 
-  private extendRangeForDisplayedPlanes(extents: Range3d) {
-    const view = this.view;
-    if (!view.is3d()) // only necessary for 3d views
-      return;
-
-    for (const displayedPlane of this._displayedPlanes) {
-      const planeNormal = displayedPlane.getNormalRef();
-      const viewZ = this.rotation.getRow(2);
-      const onPlane = viewZ.crossProduct(planeNormal);   // vector on display plane.
-      if (onPlane.magnitude() > 1.0E-8) {
-        const intersect = new Point3d();
-        const frustum = new Frustum();
-        let includeHorizon = false;
-        const worldToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOrigin, this.viewDelta, false /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */).map as Map4d;
-
-        if (worldToNpc === undefined)
-          return;
-
-        worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
-
-        for (let i = 0; i < 4; i++) {
-          const frustumRay = Ray3d.createStartEnd(frustum.points[i + 4], frustum.points[i]);
-          const intersectDistance = frustumRay.intersectionWithPlane(displayedPlane, intersect);
-          if (intersectDistance !== undefined && (!view.isCameraOn || intersectDistance > 0.0))
-            extents.extend(intersect);
-          else includeHorizon = true;
-        }
-        if (includeHorizon) {
-          let horizonDistance = 10000;
-          const eyePoint = view.getEyePoint();
-          const eyeHeight = eyePoint.z;
-          if (eyeHeight > 0.0)          // Assume zero is ground level and increase horizon based on earth's curvature.
-            horizonDistance = Math.max(horizonDistance, Math.sqrt(eyeHeight * eyeHeight + 2 * eyeHeight * Constant.earthRadiusWGS84.equator));
-
-          extents.extend(eyePoint.plusScaled(viewZ, -horizonDistance));
-        }
-        if (view.isCameraOn) {
-          const minimumEyeDistance = 10.0;
-          extents.extend(view.getEyePoint().plusScaled(viewZ, -minimumEyeDistance));
-        }
-
-      } else {
-        // display plane parallel to view....
-        extents.extend(displayedPlane.getOriginRef().plusScaled(planeNormal, -1.0));
-        extents.extend(displayedPlane.getOriginRef().plusScaled(planeNormal, 1.0));
-      }
-    }
-  }
-  private calcNpcToView(): Map4d {
+  /* get the mapping from NPC to view
+   * @internal
+   */
+  public calcNpcToView(): Map4d {
     const corners = this.getViewCorners();
     const map = Map4d.createBoxMap(NpcCorners[Npc._000], NpcCorners[Npc._111], corners.low, corners.high);
-    assert(undefined !== map, "undefined npcToViewMap");
+
+    // The map may be undefined if the view rect's width or height is zero.
     return undefined === map ? Map4d.createIdentity() : map;
   }
 
@@ -238,13 +226,11 @@ export class ViewingSpace {
     return corners;
   }
 
-  private constructor(vp: Viewport, displayedPlanes: Plane3dByOriginAndUnitNormal[]) {
+  private constructor(vp: Viewport) {
     const view = this._view = vp.view;
     const viewRect = vp.viewRect;
     this._clientWidth = viewRect.width;
     this._clientHeight = viewRect.height;
-    this._displayedPlanes = displayedPlanes;
-
     const origin = view.getOrigin().clone();
     const delta = view.getExtents().clone();
     this.rotation.setFrom(view.getRotation());
@@ -254,16 +240,12 @@ export class ViewingSpace {
     delta.y = Math.abs(delta.y);
     delta.z = Math.abs(delta.z);
 
-    const limits = view.extentLimits;
-    const clampRange = (val: number) => Math.min(Math.max(limits.min, val), limits.max);
-    delta.x = clampRange(delta.x);
-    delta.y = clampRange(delta.y);
-
     this.viewOriginUnexpanded.setFrom(origin);
     this.viewDeltaUnexpanded.setFrom(delta);
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
     this.zClipAdjusted = false;
+    this.eyePoint = undefined;
 
     if (view.is3d()) {
       if (!view.allow3dManipulations()) {
@@ -284,11 +266,14 @@ export class ViewingSpace {
         if (view.isCameraOn)
           this.validateCamera();
 
+        if (view.isCameraOn)
+          this.eyePoint = view.camera.getEyePoint().clone();
+
         this.adjustZPlanes(origin, delta); // make sure view volume includes entire volume of view
 
         // if the camera is on, don't allow front plane behind camera
-        if (view.isCameraOn) {
-          const eyeOrg = view.camera.getEyePoint().minus(origin); // vector from eye to origin
+        if (this.eyePoint) {
+          const eyeOrg = this.eyePoint!.minus(origin); // vector from eye to origin
           this.toViewOrientation(eyeOrg);
 
           const frontDist = eyeOrg.z - delta.z; // front distance is backDist - delta.z
@@ -316,7 +301,7 @@ export class ViewingSpace {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const newRootToNpc = view.computeWorldToNpc(this.rotation, origin, delta, 0 === displayedPlanes.length /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */);
+    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta, undefined === this.view.displayStyle.getBackgroundMapGeometry() /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */);
     if (newRootToNpc.map === undefined) {
       this.frustFraction = 0; // invalid frustum
       return;
@@ -329,15 +314,7 @@ export class ViewingSpace {
 
   /** @internal */
   public static createFromViewport(vp: Viewport): ViewingSpace | undefined {
-    return new ViewingSpace(vp, vp.getDisplayedPlanes());
-  }
-
-  /** @internal */
-  public static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewingSpace | undefined {
-    const planes = vp.getDisplayedPlanes();
-    planes.push(plane);
-    const vf = new ViewingSpace(vp, planes);
-    return 0 === vf.frustFraction ? undefined : vf;
+    return new ViewingSpace(vp);
   }
 
   /** Convert an array of points from CoordSystem.View to CoordSystem.Npc */
@@ -347,12 +324,14 @@ export class ViewingSpace {
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
     scrToNpcTran.multiplyPoint3dArrayInPlace(pts);
   }
+
   /** Convert an array of points from CoordSystem.Npc to CoordSystem.View */
   public npcToViewArray(pts: Point3d[]): void {
     const corners = this.getViewCorners();
     for (const p of pts)
       corners.fractionToPoint(p.x, p.y, p.z, p);
   }
+
   /** Convert a point from CoordSystem.View to CoordSystem.Npc
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
@@ -363,6 +342,7 @@ export class ViewingSpace {
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
     return scrToNpcTran.multiplyPoint3d(pt, out);
   }
+
   /** Convert a point from CoordSystem.Npc to CoordSystem.View
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
@@ -371,6 +351,7 @@ export class ViewingSpace {
     const corners = this.getViewCorners();
     return corners.fractionToPoint(pt.x, pt.y, pt.z, out);
   }
+
   /** Convert an array of points from CoordSystem.World to CoordSystem.Npc */
   public worldToNpcArray(pts: Point3d[]): void { this.worldToNpcMap.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
   /** Convert an array of points from CoordSystem.Npc to CoordSystem.World */
@@ -383,6 +364,7 @@ export class ViewingSpace {
   public viewToWorldArray(pts: Point3d[]) { this.worldToViewMap.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
   /** Convert an array of points from CoordSystem.View as Point4ds to CoordSystem.World */
   public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this.worldToViewMap.transform1.multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts); }
+
   /**
    * Convert a point from CoordSystem.World to CoordSystem.Npc
    * @param pt the point to convert
@@ -466,9 +448,24 @@ export class ViewingSpace {
     return box;
   }
 
+  /** @internal */
   public getPixelSizeAtPoint(inPoint?: Point3d) {
     const viewPt = !!inPoint ? this.worldToView(inPoint) : this.npcToView(new Point3d(0.5, 0.5, 0.5));
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
     return this.viewToWorld(viewPt).distance(this.viewToWorld(viewPt2));
+  }
+
+  /** @internal */
+  public getPreloadFrustum(transformOrScale?: Transform | number, result?: Frustum) {
+    const viewFrustum = this.getFrustum(CoordSystem.World, true);
+
+    if (transformOrScale && transformOrScale instanceof Transform) {
+      return viewFrustum.transformBy(transformOrScale, result);
+    } else {
+      const scale = transformOrScale === undefined ? 2 : transformOrScale;
+      const expandedFrustum = viewFrustum.clone(result);
+      expandedFrustum.scaleXYAboutCenter(scale);
+      return expandedFrustum;
+    }
   }
 }

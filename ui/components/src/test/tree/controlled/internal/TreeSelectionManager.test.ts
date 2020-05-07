@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import * as faker from "faker";
-import { TreeSelectionManager, RangeSelection, isRangeSelection, IndividualSelection } from "../../../../ui-components/tree/controlled/internal/TreeSelectionManager";
-import { SelectionMode } from "../../../../ui-components/common/selection/SelectionModes";
-import { VisibleTreeNodes, MutableTreeModelNode, TreeModel } from "../../../../ui-components/tree/controlled/TreeModel";
 import { SelectionHandler } from "../../../../ui-components/common/selection/SelectionHandler";
+import { SelectionMode } from "../../../../ui-components/common/selection/SelectionModes";
+import {
+  IndividualSelection, isRangeSelection, RangeSelection, TreeSelectionManager,
+} from "../../../../ui-components/tree/controlled/internal/TreeSelectionManager";
+import { MutableTreeModelNode, TreeModel, VisibleTreeNodes } from "../../../../ui-components/tree/controlled/TreeModel";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 
 type Selection = string | RangeSelection;

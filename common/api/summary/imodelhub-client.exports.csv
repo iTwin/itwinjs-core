@@ -1,0 +1,107 @@
+sep=;
+Release Tag;API Item
+internal;addSelectApplicationData(query: RequestQueryOptions): void
+internal;addSelectFileAccessKey(query: RequestQueryOptions): void
+internal;AggregateResponseError 
+alpha;AllCodesDeletedEvent 
+alpha;AllLocksDeletedEvent 
+internal;ArgumentCheck
+internal;Briefcase 
+internal;BriefcaseAccessMode
+internal;BriefcaseDeletedEvent 
+beta;class BriefcaseEvent 
+internal;BriefcaseHandler
+internal;BriefcaseQuery 
+beta;ChangeSet 
+internal;ChangeSetCreatedEvent 
+beta;ChangeSetHandler
+beta;ChangeSetPostPushEvent 
+beta;ChangeSetPrePushEvent 
+beta;ChangeSetQuery 
+beta;ChangesType
+alpha;Checkpoint 
+alpha;CheckpointHandler
+alpha;CheckpointQuery 
+beta;CloneIModelTemplate
+alpha;CodeBase 
+alpha;CodeEvent 
+alpha;CodeHandler
+alpha;CodeQuery 
+alpha;CodeSequence 
+alpha;CodeSequenceHandler
+alpha;CodeSequenceType
+alpha;CodeState
+alpha;CodeUpdateOptions
+alpha;ConflictingCodesError 
+alpha;ConflictingLocksError 
+internal;ContextManagerClient
+internal;DefaultCodeUpdateOptionsProvider
+internal;DefaultIModelCreateOptionsProvider
+internal;DefaultLockUpdateOptionsProvider
+beta;EmptyIModelTemplate = "Empty"
+beta;EventHandler 
+beta;EventSAS 
+beta;EventSubscription 
+beta;EventSubscriptionHandler
+internal;GetEventOperationType
+internal;GlobalEventHandler 
+internal;GlobalEventSAS 
+internal;GlobalEventSubscription 
+internal;GlobalEventSubscriptionHandler
+internal;HardiModelDeleteEvent 
+alpha;HubCode 
+beta;HubIModel 
+alpha;HubUserInfo 
+internal;IModelBankClient 
+internal;IModelBankFileSystemContextClient 
+beta;IModelBankHandler 
+beta;IModelBaseHandler 
+beta;class IModelClient
+internal;IModelCloudEnvironment
+internal;IModelCreatedEvent 
+beta;IModelCreateOptions
+beta;IModelDeletedEvent 
+internal;IModelFileSystemContextProps
+beta;IModelHandler
+beta;IModelHubClient 
+beta;IModelHubClientError 
+beta;IModelHubClientLoggerCategory
+beta;IModelHubError 
+beta;class IModelHubEvent 
+internal;class IModelHubGlobalEvent 
+beta;IModelQuery 
+beta;IModelsHandler
+beta;InitializationState
+beta;InstanceIdQuery 
+alpha;LargeThumbnail 
+alpha;Lock 
+alpha;LockBase 
+alpha;LockEvent 
+alpha;LockHandler
+alpha;LockLevel
+alpha;LockQuery 
+alpha;LockType
+alpha;LockUpdateOptions
+internal;MultiCode 
+alpha;MultiLock 
+internal;NamedVersionCreatedEvent 
+internal;ParseEvent(response: Response): IModelHubEvent
+internal;ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent
+internal;SeedFile 
+alpha;SmallThumbnail 
+internal;SoftiModelDeleteEvent 
+beta;StringIdQuery 
+alpha;class Thumbnail 
+alpha;ThumbnailHandler
+alpha;ThumbnailQuery 
+beta;ThumbnailSize = "Small" | "Large"
+alpha;TipThumbnail
+alpha;UserInfoHandler
+alpha;UserInfoQuery 
+alpha;UserStatistics 
+alpha;UserStatisticsHandler
+alpha;UserStatisticsQuery 
+beta;Version 
+beta;VersionEvent 
+beta;VersionHandler
+beta;VersionQuery 

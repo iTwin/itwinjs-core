@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { AccuDraw } from "../AccuDraw";
-import { Tool } from "../tools/Tool";
+import { IModelApp, IModelAppOptions } from "../IModelApp";
+import { MockRender } from "../render/MockRender";
 import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
-import { RotateViewTool, PanViewTool } from "../tools/ViewTool";
-import { MockRender } from "../render/MockRender";
-import { IModelApp, IModelAppOptions } from "../IModelApp";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { Tool } from "../tools/Tool";
+import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -45,11 +45,11 @@ class TestSelectTool extends SelectionTool { }
 class TestApp extends MockRender.App {
   public static testNamespace?: I18NNamespace;
 
-  public static startup(opts?: IModelAppOptions) {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.accuDraw = new TestAccuDraw();
     opts.i18n = this.supplyI18NOptions();
-    MockRender.App.startup(opts);
+    await MockRender.App.startup(opts);
 
     this.testNamespace = IModelApp.i18n.registerNamespace("TestApp");
     TestImmediate.register(this.testNamespace);
@@ -70,7 +70,7 @@ class TestApp extends MockRender.App {
 }
 
 describe("IModelApp", () => {
-  before(() => TestApp.startup());
+  before(async () => TestApp.startup());
   after(() => TestApp.shutdown());
 
   it("TestApp should override correctly", () => {

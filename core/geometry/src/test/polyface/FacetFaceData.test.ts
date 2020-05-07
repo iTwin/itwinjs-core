@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { FacetFaceData } from "../../polyface/FacetFaceData";
 import { Sample } from "../../serialization/GeometrySamples";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Checker } from "../Checker";
-import { expect } from "chai";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
 
 /* tslint:disable:no-console */
 

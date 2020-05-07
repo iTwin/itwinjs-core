@@ -4,10 +4,46 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { initialize, terminate } from "../../IntegrationTests";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
+import { initialize, terminate } from "../../IntegrationTests";
+
+const RULESET: Ruleset = {
+  id: "SimpleHierarchy",
+  supportedSchemas: { schemaNames: ["Generic", "BisCore"] },
+  rules: [{
+    ruleType: RuleTypes.RootNodes,
+    specifications: [{
+      specType: ChildNodeSpecificationTypes.CustomNode,
+      type: "root",
+      label: "root label",
+      description: "root description",
+      imageId: "root image id",
+    }],
+    customizationRules: [{
+      ruleType: RuleTypes.CheckBox,
+      defaultValue: true,
+      isEnabled: false,
+    }, {
+      ruleType: RuleTypes.StyleOverride,
+      foreColor: "\"Red\"",
+      backColor: "\"Green\"",
+      fontStyle: "\"Italic Bold\"",
+    }],
+  }, {
+    ruleType: RuleTypes.ChildNodes,
+    condition: "ParentNode.Type = \"root\"",
+    specifications: [{
+      specType: ChildNodeSpecificationTypes.CustomNode,
+      type: "child",
+      label: "child label",
+      description: "child description",
+      imageId: "child image id",
+    }],
+  }],
+};
 
 describe("TreeDataProvider", async () => {
 
@@ -17,14 +53,14 @@ describe("TreeDataProvider", async () => {
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
-    provider = new PresentationTreeDataProvider(imodel, "SimpleHierarchy");
+    provider = new PresentationTreeDataProvider({ imodel, ruleset: RULESET });
   });
 
   after(async () => {
-    await imodel.closeSnapshot();
-    terminate();
+    await imodel.close();
+    await terminate();
   });
 
   it("returns root nodes count", async () => {
@@ -87,7 +123,7 @@ describe("TreeDataProvider", async () => {
 
     expect(count).to.not.eq(0);
     expect(nodes).to.not.be.undefined;
-    expect(getNodesSpy.calledOnce).to.be.true;
+    expect(getNodesSpy).to.be.calledOnce;
   });
 
 });

@@ -2,22 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { BezierCurve3d } from "../../bspline/BezierCurve3d";
-import { Point4d } from "../../geometry4d/Point4d";
-import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { Bezier1dNd } from "../../bspline/Bezier1dNd";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { KnotVector, BSplineWrapMode } from "../../bspline/KnotVector";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { LineString3d } from "../../curve/LineString3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { BezierCurve3d } from "../../bspline/BezierCurve3d";
+import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSpline1dNd } from "../../bspline/BSpline1dNd";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point4d } from "../../geometry4d/Point4d";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function exercise1dNdBase(ck: Checker, curve: Bezier1dNd) {
   ck.testLE(1, curve.order, "Bezier1dNd has nontrivial order");
@@ -120,6 +120,21 @@ describe("BsplineCurve", () => {
     ck.testExactNumber(1.0, basis[0]);
     ck.testExactNumber(0.0, basis1[0]);
     ck.testFalse(knotVector1.isIndexOfRealSpan(-1));
+    const base2A = Bezier1dNd.create([Point2d.create(1, 2), Point2d.create(2, 2), Point2d.create(3, 1)])!;
+    const base2B = Bezier1dNd.create([Point2d.create(1, 2), Point2d.create(2, 2), Point2d.create(3, 1)])!;
+    ck.testTrue(base2A.subdivideToIntervalInPlace(0.25, 0.5));
+    ck.testTrue(base2B.subdivideToIntervalInPlace(0.5, 0.25));
+    for (const f of [0, 0.1, 0.4, 0.3]) {
+      const valueA = base2A.evaluate(f);
+      const valueB = base2B.evaluate(1 - f);
+      ck.testFalse(base2A.isAlmostEqual(base2B));
+      for (let i = 0; i < 2; i++) {
+        ck.testCoordinate(valueA[i], valueB[i]);
+      }
+    }
+    ck.testFalse(base2A.subdivideToIntervalInPlace(0.25, 0.25));
+    ck.testFalse(base2A.subdivideInPlaceKeepLeft(0.0));
+    ck.testFalse(base2A.subdivideInPlaceKeepRight(1.0));
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -264,7 +279,7 @@ describe("BsplineCurve", () => {
       // these exercise obscure code .. no test for values ...
       bspline.evaluateBasisFunctionsInSpan(-1, 0.5, f);
       bspline.evaluateBasisFunctionsInSpan(29, 0.5, f);
-      ck.testFalse (bspline.testCloseablePolygon ());
+      ck.testFalse(bspline.testCloseablePolygon());
     }
     expect(ck.getNumErrors()).equals(0);
   });

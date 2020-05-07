@@ -2,11 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, CloudStorageTileCache, IModelError, IModelToken, IModelTokenProps, TileContentIdentifier } from "@bentley/imodeljs-common";
-import * as Azure from "@azure/storage-blob";
-import { Logger, PerfLogger } from "@bentley/bentleyjs-core";
 import { PassThrough, Readable } from "stream";
 import * as zlib from "zlib";
+import * as Azure from "@azure/storage-blob";
+import { Logger, PerfLogger } from "@bentley/bentleyjs-core";
+import {
+  BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, CloudStorageTileCache, IModelError, IModelRpcProps,
+  TileContentIdentifier,
+} from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
@@ -165,8 +168,7 @@ export class CloudStorageTileUploader {
         options.contentEncoding = "gzip";
       }
 
-      const { iModelToken, treeId, contentId } = id;
-      const perfInfo = { ...iModelToken, treeId, contentId, size: content.byteLength, compress: IModelHost.compressCachedTiles };
+      const perfInfo = { ...id.tokenProps, treeId: id.treeId, contentId: id.contentId, size: content.byteLength, compress: IModelHost.compressCachedTiles };
       const perfLogger = new PerfLogger("Uploading tile to external tile cache", () => perfInfo);
       await IModelHost.tileCacheService.upload(containerKey, resourceKey, content, options);
       perfLogger.dispose();
@@ -177,9 +179,8 @@ export class CloudStorageTileUploader {
     this._activeUploads.delete(containerKey + resourceKey);
   }
 
-  public cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined) {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const id: TileContentIdentifier = { iModelToken, treeId, contentId, guid };
+  public cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined) {
+    const id: TileContentIdentifier = { tokenProps, treeId, contentId, guid };
 
     const cache = CloudStorageTileCache.getCache();
     const containerKey = cache.formContainerName(id);

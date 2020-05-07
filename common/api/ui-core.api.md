@@ -6,12 +6,13 @@
 
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import { ConditionalStringValue } from '@bentley/ui-abstract';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
-import { TranslationOptions } from '@bentley/imodeljs-i18n';
-import { UiError as UiError_2 } from '@bentley/ui-abstract';
+import { RelativePosition } from '@bentley/ui-abstract';
+import { SliderModeFunction } from 'react-compound-slider';
 
 // @internal
 export class AnnularSector {
@@ -49,7 +50,7 @@ export class Annulus {
     outer: Circle;
 }
 
-// @alpha
+// @beta
 export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSuggestState> {
     constructor(props: AutoSuggestProps);
     // (undocumented)
@@ -58,7 +59,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     render(): JSX.Element;
     }
 
-// @alpha
+// @beta
 export interface AutoSuggestData {
     // (undocumented)
     label: string;
@@ -66,7 +67,7 @@ export interface AutoSuggestData {
     value: string;
 }
 
-// @alpha
+// @beta
 export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
     // @internal (undocumented)
     alwaysRenderSuggestions?: boolean;
@@ -95,21 +96,19 @@ export interface BadgeProps extends CommonProps {
 
 // @internal
 export class BadgeUtilities {
-    static determineBadgeType(badgeType?: BadgeType, betaBadge?: boolean): BadgeType;
-    static getComponentForBadge(badgeType?: BadgeType, betaBadge?: boolean): React.ReactNode;
     static getComponentForBadgeType(badgeType?: BadgeType): React.ReactNode;
 }
 
 // @internal
-export const BetaBadge: React.FunctionComponent<CommonProps>;
+export function BetaBadge(props: CommonProps): JSX.Element;
 
 // @public
-export const BlockText: React.FunctionComponent<TextProps>;
+export function BlockText(props: TextProps): JSX.Element;
 
 // @public
-export const BodyText: React.FunctionComponent<TextProps>;
+export function BodyText(props: TextProps): JSX.Element;
 
-// @alpha (undocumented)
+// @beta
 export type BoundsFunctionProp = number | (() => number | undefined);
 
 // @public
@@ -146,8 +145,20 @@ export enum ButtonType {
     Primary = "primary"
 }
 
+// @internal
+export const calculateBackdropFilterBlur: (proximityScale: number) => number;
+
+// @internal
+export const calculateBoxShadowOpacity: (proximityScale: number) => number;
+
+// @internal
+export const calculateProximityScale: (proximity: number, threshold?: number) => number;
+
+// @internal
+export const calculateToolbarOpacity: (proximityScale: number) => number;
+
 // @public
-export const Centered: React.FunctionComponent<CommonDivProps>;
+export function Centered(props: CommonDivProps): JSX.Element;
 
 // @public
 export class Checkbox extends React.PureComponent<CheckboxProps> {
@@ -170,12 +181,13 @@ export interface CheckBoxInfo {
 }
 
 // @public
-export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick">, CommonProps {
+export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
     inputClassName?: string;
     inputStyle?: React.CSSProperties;
     label?: string;
     labelClassName?: string;
     labelStyle?: React.CSSProperties;
+    onBlur?: (e: React.FocusEvent) => void;
     onClick?: (e: React.MouseEvent) => void;
     setFocus?: boolean;
     status?: InputStatus;
@@ -191,19 +203,19 @@ export enum CheckBoxState {
     Partial = 2
 }
 
-// @beta
+// @public
 export class CheckListBox extends React.PureComponent<CommonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface CheckListBoxItemProps extends CommonProps {
     checked?: boolean;
     disabled?: boolean;
@@ -211,8 +223,8 @@ export interface CheckListBoxItemProps extends CommonProps {
     onClick?: () => any;
 }
 
-// @beta
-export const CheckListBoxSeparator: React.FunctionComponent;
+// @public
+export function CheckListBoxSeparator(): JSX.Element;
 
 // @internal
 export class Circle {
@@ -386,7 +398,7 @@ export enum Corner {
     TopRight = 1
 }
 
-// @beta
+// @public
 export class Cube extends React.PureComponent<CubeProps> {
     // (undocumented)
     render(): React.ReactNode;
@@ -406,7 +418,7 @@ export interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
     rotMatrix: Matrix3d;
 }
 
-// @beta
+// @public
 export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
     // (undocumented)
     faces?: {
@@ -538,18 +550,18 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     y?: number;
 }
 
-// @internal
-export class Div extends React.PureComponent<DivProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+// @public
+export function DisabledText(props: TextProps): JSX.Element;
 
-// @internal
+// @public
+export function Div(props: DivProps): JSX.Element;
+
+// @public
 export interface DivProps extends CommonDivProps {
     mainClassName: string;
 }
 
-// @beta
+// @public
 export const DivWithOutsideClick: {
     new (props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>): {
         ref: React.RefObject<HTMLDivElement>;
@@ -682,7 +694,7 @@ export interface ExpansionToggleProps extends CommonProps {
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-// @beta
+// @public
 export enum Face {
     // (undocumented)
     Back = "back",
@@ -700,17 +712,17 @@ export enum Face {
     Top = "top"
 }
 
-// @alpha (undocumented)
-export const FeaturedTile: React.FunctionComponent<TileProps>;
+// @beta
+export function FeaturedTile(props: TileProps): JSX.Element;
 
-// @alpha
-export class Field extends React.Component<IFieldProps> {
-    constructor(props: IFieldProps);
+// @beta
+export class Field extends React.Component<FieldProps> {
+    constructor(props: FieldProps);
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @beta
 export interface FieldDef {
     // (undocumented)
     editor?: FieldEditor;
@@ -724,64 +736,73 @@ export interface FieldDef {
     value?: any;
 }
 
-// @alpha
+// @beta
 export interface FieldDefinitions {
     // (undocumented)
     [key: string]: FieldDef;
 }
 
-// @alpha
+// @beta
 export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
 
-// @alpha
+// @beta
+export interface FieldProps extends FieldDef {
+    // (undocumented)
+    id: string;
+}
+
+// @beta
 export interface FieldValues {
     // (undocumented)
     [key: string]: any;
 }
 
 // @public
-export const FillCentered: React.FunctionComponent<CommonDivProps>;
+export function FillCentered(props: CommonDivProps): JSX.Element;
 
 // @internal
 export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
 
 // @public
-export const FlexWrapContainer: React.FunctionComponent<CommonDivProps>;
+export function FlexWrapContainer(props: CommonDivProps): JSX.Element;
+
+// @internal
+export function FocusTrap(props: Props): JSX.Element | null;
 
 // @beta
-export class FocusTrap extends React.Component<Props, State> {
-    constructor(props: Props);
-    // (undocumented)
-    componentDidUpdate(prevProps: Props, prevState: State): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    isFocusable(element: HTMLElement): boolean;
-    // (undocumented)
-    render(): JSX.Element | null;
-    }
-
-// @alpha
-export class Form extends React.Component<IFormProps, FormState> {
-    constructor(props: IFormProps);
+export class Form extends React.Component<FormProps, FormState> {
+    constructor(props: FormProps);
     // (undocumented)
     render(): JSX.Element;
     }
 
-// @alpha
+// @beta
 export const FormContext: React.Context<FormContextState | undefined>;
 
-// @alpha
+// @beta
 export interface FormContextState extends FormState {
     // (undocumented)
     setValues: (values: FieldValues) => void;
 }
 
-// @internal @deprecated
-export const getClassName: (obj: any) => string;
+// @beta
+export interface FormProps {
+    fields: FieldDefinitions;
+    handleFormSubmit: (values: FieldValues) => Promise<void>;
+    submitButtonLabel?: string;
+}
 
 // @internal
 export const getDisplayName: (component: React.ComponentType<any>) => string;
+
+// @internal
+export const getToolbarBackdropFilter: (filterBlur: number) => string;
+
+// @internal
+export const getToolbarBackgroundColor: (opacity: number) => string;
+
+// @internal
+export const getToolbarBoxShadow: (opacity: number) => string;
 
 // @internal
 export function getUserColor(email: string): string;
@@ -819,36 +840,44 @@ export interface GlobalDialogProps extends DialogProps {
 }
 
 // @public
-export const Headline: React.FunctionComponent<TextProps>;
+export function Headline(props: TextProps): JSX.Element;
 
 // @public
 export enum HorizontalAlignment {
     // (undocumented)
-    Center = 2,
+    Center = "center",
     // (undocumented)
-    Justify = 4,
+    Justify = "justify",
     // (undocumented)
-    Left = 1,
+    Left = "left",
     // (undocumented)
-    Right = 3
+    Right = "right"
 }
 
-// @beta
+// @public
 export class HorizontalTabs extends React.PureComponent<TabsProps> {
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
 }
 
 // @public
-export const Icon: React.FunctionComponent<IconProps>;
+export function Icon(props: IconProps): JSX.Element | null;
 
-// @alpha
+// @public
+export class IconHelper {
+    static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue;
+    static getIconReactNode(icon: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): React.ReactNode;
+    // (undocumented)
+    static get reactIconKey(): string;
+}
+
+// @public
 export class IconInput extends React.PureComponent<IconInputProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @public
 export interface IconInputProps extends InputProps {
     containerClassName?: string;
     icon: React.ReactNode;
@@ -860,20 +889,20 @@ export interface IconProps {
 }
 
 // @public
-export type IconSpec = string | React.ReactNode;
+export type IconSpec = string | ConditionalStringValue | React.ReactNode;
 
-// @beta
+// @public
 export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
     // @internal (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface ImageCheckBoxProps extends CommonProps {
     checked?: boolean;
     disabled?: boolean;
-    imageOff: string;
-    imageOn: string;
+    imageOff: string | React.ReactNode;
+    imageOn: string | React.ReactNode;
     inputClassName?: string;
     inputStyle?: React.CSSProperties;
     onClick?: (checked: boolean) => any;
@@ -972,10 +1001,10 @@ export interface LabeledToggleProps extends ToggleProps {
 }
 
 // @public
-export const LeadingText: React.FunctionComponent<TextProps>;
+export function LeadingText(props: TextProps): JSX.Element;
 
 // @public
-export const LeadingText2: React.FunctionComponent<TextProps>;
+export function LeadingText2(props: TextProps): JSX.Element;
 
 // @internal
 export class Line {
@@ -987,7 +1016,7 @@ export class Line {
     p2: Point;
 }
 
-// @beta
+// @public
 export class LoadingBar extends React.PureComponent<LoadingBarProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingBarProps>;
@@ -995,14 +1024,14 @@ export class LoadingBar extends React.PureComponent<LoadingBarProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LoadingBarProps extends CommonProps {
     barHeight: number;
     percent: number;
     showPercentage?: boolean;
 }
 
-// @beta
+// @public
 export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingPromptProps>;
@@ -1010,8 +1039,10 @@ export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LoadingPromptProps {
+    isDeterminate: boolean;
+    // @deprecated
     isDeterministic: boolean;
     message?: string;
     onCancel?: () => void;
@@ -1023,7 +1054,7 @@ export interface LoadingPromptProps {
     title: string;
 }
 
-// @beta
+// @public
 export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingSpinnerProps>;
@@ -1031,13 +1062,13 @@ export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LoadingSpinnerProps extends SpinnerProps {
     message?: string;
     messageOnTop?: boolean;
 }
 
-// @beta
+// @public
 export class LoadingStatus extends React.PureComponent<LoadingStatusProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingStatusProps>;
@@ -1045,7 +1076,7 @@ export class LoadingStatus extends React.PureComponent<LoadingStatusProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LoadingStatusProps extends CommonProps {
     message: string;
     percent: number;
@@ -1055,16 +1086,16 @@ export interface LoadingStatusProps extends CommonProps {
 export class LocalUiSettings implements UiSettings {
     constructor(w?: Window);
     // (undocumented)
-    deleteSetting: (settingNamespace: string, settingName: string) => UiSettingsResult;
+    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
-    getSetting: (settingNamespace: string, settingName: string) => UiSettingsResult;
+    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
-    saveSetting: (settingNamespace: string, settingName: string, setting: any) => UiSettingsResult;
+    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
     // (undocumented)
     w: Window;
 }
 
-// @beta
+// @public
 export interface MainTabsProps extends TabsProps {
     mainClassName: string;
 }
@@ -1131,19 +1162,19 @@ export enum MessageSeverity {
     Warning = 3
 }
 
-// @alpha (undocumented)
-export const MinimalFeaturedTile: React.FunctionComponent<TileProps>;
-
-// @alpha (undocumented)
-export const MinimalTile: React.FunctionComponent<TileProps>;
-
-// @public
-export const MutedText: React.FunctionComponent<TextProps>;
-
-// @internal
-export const NewBadge: React.FunctionComponent<CommonProps>;
+// @beta
+export function MinimalFeaturedTile(props: TileProps): JSX.Element;
 
 // @beta
+export function MinimalTile(props: TileProps): JSX.Element;
+
+// @public
+export function MutedText(props: TextProps): JSX.Element;
+
+// @internal
+export function NewBadge(props: CommonProps): JSX.Element;
+
+// @public
 export interface NoChildrenProps {
     // (undocumented)
     children?: undefined;
@@ -1166,7 +1197,7 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
     onClick: (e: React.MouseEvent) => void;
 };
 
-// @alpha (undocumented)
+// @beta
 export class NumericInput extends React.Component<NumericInputProps> {
     // @internal (undocumented)
     static readonly defaultProps: NumericInputDefaultProps;
@@ -1174,10 +1205,10 @@ export class NumericInput extends React.Component<NumericInputProps> {
     render(): JSX.Element;
     }
 
-// @alpha
+// @internal
 export type NumericInputDefaultProps = Pick<NumericInputProps, "strict">;
 
-// @alpha (undocumented)
+// @beta
 export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">, CommonProps {
     // (undocumented)
     step?: StepFunctionProp;
@@ -1186,7 +1217,7 @@ export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">,
 // @public
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
-// @beta
+// @public
 export type OmitChildrenProp<T extends {
     children?: React.ReactNode;
 }> = Omit<T, "children">;
@@ -1226,7 +1257,7 @@ export class Point implements PointProps {
     readonly y: number;
 }
 
-// @beta
+// @public
 export interface PointProps {
     // (undocumented)
     readonly x: number;
@@ -1234,7 +1265,7 @@ export interface PointProps {
     readonly y: number;
 }
 
-// @beta
+// @public
 export class Popup extends React.Component<PopupProps, PopupState> {
     constructor(props: PopupProps);
     // (undocumented)
@@ -1249,7 +1280,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     render(): React.ReactPortal | null;
     }
 
-// @beta
+// @public
 export interface PopupProps extends CommonProps {
     ariaLabel?: string;
     focusTarget?: React.RefObject<HTMLElement> | string;
@@ -1257,12 +1288,11 @@ export interface PopupProps extends CommonProps {
     isPinned?: boolean;
     left: number;
     moveFocus?: boolean;
-    // (undocumented)
     offset: number;
     onClose?: () => void;
     onOpen?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
-    position: Position;
+    position: RelativePosition;
     role?: "dialog" | "alert" | "alertdialog";
     showArrow: boolean;
     showShadow: boolean;
@@ -1270,25 +1300,8 @@ export interface PopupProps extends CommonProps {
     top: number;
 }
 
-// @beta
-export enum Position {
-    // (undocumented)
-    Bottom = 5,
-    // (undocumented)
-    BottomLeft = 2,
-    // (undocumented)
-    BottomRight = 3,
-    // (undocumented)
-    Left = 6,
-    // (undocumented)
-    Right = 7,
-    // (undocumented)
-    Top = 4,
-    // (undocumented)
-    TopLeft = 0,
-    // (undocumented)
-    TopRight = 1
-}
+// @internal
+export const PROXIMITY_THRESHOLD_DEFAULT = 100;
 
 // @beta
 export class RadialButton extends React.Component<RadialButtonProps, RadialButtonState> {
@@ -1304,7 +1317,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
 export interface RadialButtonProps extends CommonProps {
     // @internal (undocumented)
     annularSector?: AnnularSector;
-    icon?: string;
+    icon?: IconSpec;
     labelRotate?: boolean;
     onSelect?: (e: any) => any;
     selected?: boolean;
@@ -1382,7 +1395,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     UNSAFE_componentWillUpdate(): void;
     }
 
-// @alpha (undocumented)
+// @beta
 export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">, CommonProps {
     // (undocumented)
     componentClass?: string;
@@ -1459,6 +1472,7 @@ export class Rectangle implements RectangleProps {
     // (undocumented)
     getHeight(): number;
     getHorizontalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle;
+    getShortestDistanceToPoint(point: PointProps): number;
     // (undocumented)
     getSize(): Size;
     getVerticalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle;
@@ -1487,7 +1501,7 @@ export class Rectangle implements RectangleProps {
     toProps(): RectangleProps;
 }
 
-// @beta
+// @public
 export interface RectangleProps {
     // (undocumented)
     readonly bottom: number;
@@ -1499,6 +1513,12 @@ export interface RectangleProps {
     readonly top: number;
 }
 
+// @internal (undocumented)
+export const ResizeObserver: ResizeObserverType;
+
+// @internal (undocumented)
+export type ResizeObserverType = typeof import("resize-observer-polyfill").default;
+
 // @alpha
 export class ScrollPositionMaintainer implements IDisposable {
     constructor(el: Element);
@@ -1507,7 +1527,7 @@ export class ScrollPositionMaintainer implements IDisposable {
     }
 
 // @public
-export const ScrollView: React.FunctionComponent<CommonDivProps>;
+export function ScrollView(props: CommonDivProps): JSX.Element;
 
 // @public
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
@@ -1534,12 +1554,7 @@ export interface SearchBoxProps extends CommonProps {
 }
 
 // @public
-export class Select extends React.PureComponent<SelectProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function Select(props: SelectProps): JSX.Element;
 
 // @public
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
@@ -1553,11 +1568,11 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 export class SessionUiSettings implements UiSettings {
     constructor(w?: Window);
     // (undocumented)
-    deleteSetting: (settingNamespace: string, settingName: string) => UiSettingsResult;
+    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
-    getSetting: (settingNamespace: string, settingName: string) => UiSettingsResult;
+    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
-    saveSetting: (settingNamespace: string, settingName: string, setting: any) => UiSettingsResult;
+    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
     // (undocumented)
     w: Window;
 }
@@ -1580,7 +1595,7 @@ export class Size implements SizeProps {
     readonly width: number;
 }
 
-// @beta
+// @public
 export interface SizeProps {
     // (undocumented)
     readonly height: number;
@@ -1589,7 +1604,37 @@ export interface SizeProps {
 }
 
 // @public
-export const SmallText: React.FunctionComponent<TextProps>;
+export function Slider(props: SliderProps): JSX.Element;
+
+// @public
+export interface SliderProps extends CommonProps {
+    disabled?: boolean;
+    formatTick?: (tick: number) => string;
+    formatTooltip?: (value: number) => string;
+    getTickCount?: () => number;
+    getTickValues?: () => number[];
+    includeTicksInWidth?: boolean;
+    max: number;
+    maxImage?: React.ReactNode;
+    min: number;
+    minImage?: React.ReactNode;
+    mode?: number | SliderModeFunction;
+    onChange?: (values: ReadonlyArray<number>) => void;
+    onSlideEnd?: (values: ReadonlyArray<number>) => void;
+    onSlideStart?: (values: ReadonlyArray<number>) => void;
+    onUpdate?: (values: ReadonlyArray<number>) => void;
+    reversed?: boolean;
+    showMinMax?: boolean;
+    showTickLabels?: boolean;
+    showTicks?: boolean;
+    showTooltip?: boolean;
+    step?: number;
+    tooltipBelow?: boolean;
+    values: number[];
+}
+
+// @public
+export function SmallText(props: TextProps): JSX.Element;
 
 // @public
 export enum SortDirection {
@@ -1625,7 +1670,7 @@ export enum SpinnerSize {
     XLarge = 3
 }
 
-// @beta
+// @public
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
     constructor(props: SplitButtonProps);
     // (undocumented)
@@ -1642,32 +1687,30 @@ export enum SplitButtonActionType {
     List = 1
 }
 
-// @beta
+// @public
 export interface SplitButtonProps extends CommonProps {
-    icon?: string;
+    drawBorder?: boolean;
+    icon?: IconSpec;
     label: string | React.ReactNode;
     onClick?: (event: any) => any;
 }
 
-// @alpha (undocumented)
+// @beta
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
-// @internal
-export class StyledText extends React.PureComponent<StyledTextProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+// @public
+export function StyledText(props: StyledTextProps): JSX.Element;
 
-// @internal
+// @public
 export interface StyledTextProps extends TextProps {
     mainClassName: string;
 }
 
 // @public
-export const Subheading: React.FunctionComponent<TextProps>;
+export function Subheading(props: TextProps): JSX.Element;
 
 // @public
-export const Subheading2: React.FunctionComponent<TextProps>;
+export function Subheading2(props: TextProps): JSX.Element;
 
 // @public
 export class SvgPath extends React.PureComponent<SvgPathProps> {
@@ -1693,13 +1736,13 @@ export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
 
-// @beta
+// @public
 export class Tabs extends React.PureComponent<MainTabsProps> {
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
     activeIndex?: number;
     green?: boolean;
@@ -1732,7 +1775,7 @@ export class TildeFinder {
     };
 }
 
-// @alpha (undocumented)
+// @beta
 export class Tile extends React.Component<TileProps> {
     // @internal (undocumented)
     static readonly defaultProps: TileDefaultProps;
@@ -1743,14 +1786,14 @@ export class Tile extends React.Component<TileProps> {
 // @internal (undocumented)
 export type TileDefaultProps = Pick<TileProps, "stepNum">;
 
-// @alpha (undocumented)
+// @beta
 export interface TileProps extends CommonDivProps {
     // (undocumented)
     featured?: boolean;
     // (undocumented)
     href?: string;
     // (undocumented)
-    icon?: React.ReactNode;
+    icon?: string | React.ReactNode;
     // (undocumented)
     minimal?: boolean;
     // (undocumented)
@@ -1785,23 +1828,13 @@ export class Timer {
     }
 
 // @public
-export const Title: React.FunctionComponent<TextProps>;
+export function Title(props: TextProps): JSX.Element;
 
 // @public
-export const Title2: React.FunctionComponent<TextProps>;
+export function Title2(props: TextProps): JSX.Element;
 
 // @public
-export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
-    constructor(props: ToggleProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentDidUpdate(prevProps: ToggleProps): void;
-    // (undocumented)
-    static defaultProps: Partial<ToggleProps>;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function Toggle(props: ToggleProps): JSX.Element;
 
 // @public
 export enum ToggleButtonType {
@@ -1821,6 +1854,15 @@ export interface ToggleProps extends CommonProps {
     setFocus?: boolean;
     showCheckmark?: boolean;
 }
+
+// @internal
+export const TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10;
+
+// @internal
+export const TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35;
+
+// @internal
+export const TOOLBAR_OPACITY_DEFAULT = 0.5;
 
 // @public
 export class Tree extends React.PureComponent<TreeProps> {
@@ -1926,30 +1968,45 @@ export class UiCore {
     static get i18n(): I18N;
     static get i18nNamespace(): string;
     static initialize(i18n: I18N): Promise<void>;
+    static get initialized(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)
     static get packageName(): string;
     static terminate(): void;
     // @internal
-    static translate(key: string | string[], options?: TranslationOptions): string;
+    static translate(key: string | string[]): string;
 }
-
-// @public @deprecated
-export const UiError: typeof UiError_2;
 
 // @public
 export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
 }
 
 // @beta
+export class UiSetting<T> {
+    constructor(settingNamespace: string, settingName: string, getValue: () => T, applyValue?: ((v: T) => void) | undefined);
+    // (undocumented)
+    applyValue?: ((v: T) => void) | undefined;
+    deleteSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    getSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    getSettingAndApplyValue(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    // (undocumented)
+    getValue: () => T;
+    saveSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    // (undocumented)
+    settingName: string;
+    // (undocumented)
+    settingNamespace: string;
+}
+
+// @beta
 export interface UiSettings {
     // (undocumented)
-    deleteSetting(settingNamespace: string, settingName: string): UiSettingsResult;
+    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
-    getSetting(settingNamespace: string, settingName: string): UiSettingsResult;
+    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
-    saveSetting(settingNamespace: string, settingName: string, setting: any): UiSettingsResult;
+    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
 }
 
 // @beta
@@ -1967,6 +2024,8 @@ export enum UiSettingsStatus {
     // (undocumented)
     Success = 0,
     // (undocumented)
+    Uninitialized = 3,
+    // (undocumented)
     UnknownError = 2
 }
 
@@ -1981,11 +2040,33 @@ export interface UnderlinedButtonProps {
     title?: string;
 }
 
-// @beta
+// @public
 export function useDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable): TDisposable;
 
-// @alpha
+// @public
 export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
+
+// @internal
+export function useOnOutsideClick<T extends Element>(onOutsideClick?: () => void,
+outsideEventPredicate?: (e: PointerEvent) => boolean): React.MutableRefObject<T | null>;
+
+// @public
+export function useOptionalDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable | undefined): TDisposable | undefined;
+
+// @internal
+export const useProximityToMouse: (elementRef: React.RefObject<Element>) => number;
+
+// @internal
+export function useRefEffect<T>(callback: (instance: T | null) => (void | (() => void)), deps: ReadonlyArray<any>): (instance: T | null) => void;
+
+// @internal
+export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
+
+// @internal
+export function useResizeObserver<T extends Element>(onResize?: (width: number) => void, useHeight?: boolean): (instance: T | null) => void;
+
+// @internal
+export const useTargeted: (elementRef: React.RefObject<Element>) => boolean;
 
 // @public
 export enum VerticalAlignment {
@@ -1997,17 +2078,18 @@ export enum VerticalAlignment {
     Top = 1
 }
 
-// @beta
+// @public
 export class VerticalTabs extends React.PureComponent<TabsProps> {
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
 }
 
 // @public
-export const WebFontIcon: React.FunctionComponent<WebFontIconProps>;
+export function WebFontIcon(props: WebFontIconProps): JSX.Element;
 
 // @public
 export interface WebFontIconProps extends CommonProps {
+    iconClassName?: string;
     iconName: string;
     iconSize?: "small" | "medium" | "large" | "x-large";
     onClick?: React.MouseEventHandler<HTMLSpanElement>;

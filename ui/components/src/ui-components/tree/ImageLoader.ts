@@ -7,8 +7,12 @@
  */
 
 import { IImageLoader, LoadedImage } from "../common/IImageLoader";
+import { BeInspireTreeNodeITree } from "./deprecated/component/BeInspireTree";
 import { TreeNodeItem } from "./TreeDataProvider";
-import { BeInspireTreeNodeITree } from "./component/BeInspireTree";
+
+// tslint:disable:deprecation
+
+// tslint:disable:deprecation
 
 /** Interface for a tree image loader
  * @public
@@ -27,7 +31,7 @@ export class TreeImageLoader implements ITreeImageLoader {
       return undefined;
 
     return {
-      sourceType: "core-icon",
+      sourceType: "webfont-icon",
       value: item.icon,
     };
   }

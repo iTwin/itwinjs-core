@@ -2,16 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { ColorDef, IModel, IModelVersion } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
 import * as semver from "semver";
+import { DbResult, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Point3d } from "@bentley/geometry-core";
+import { ColorDef, IModel, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
-  AuthorizedBackendRequestContext, BackendLoggerCategory, BisCoreSchema, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect,
-  GenericSchema, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, KeepBriefcase, NativeLoggerCategory, OpenParams,
+  AuthorizedBackendRequestContext, BackendLoggerCategory, BisCoreSchema, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element,
+  ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, NativeLoggerCategory,
+  SnapshotDb,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
@@ -46,10 +47,10 @@ describe("IModelTransformerHub (#integration)", () => {
     if (IModelJsFs.existsSync(sourceSeedFileName)) {
       IModelJsFs.removeSync(sourceSeedFileName);
     }
-    const sourceSeedDb: IModelDb = IModelDb.createSnapshot(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
+    const sourceSeedDb = SnapshotDb.createEmpty(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
     await IModelTransformerUtils.prepareSourceDb(sourceSeedDb);
-    sourceSeedDb.closeSnapshot();
+    sourceSeedDb.close();
     const sourceIModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, sourceSeedFileName);
     assert.isTrue(Guid.isGuid(sourceIModelId));
 
@@ -59,18 +60,20 @@ describe("IModelTransformerHub (#integration)", () => {
     if (IModelJsFs.existsSync(targetSeedFileName)) {
       IModelJsFs.removeSync(targetSeedFileName);
     }
-    const targetSeedDb: IModelDb = IModelDb.createSnapshot(targetSeedFileName, { rootSubject: { name: "TransformerTarget" } });
+    const targetSeedDb = SnapshotDb.createEmpty(targetSeedFileName, { rootSubject: { name: "TransformerTarget" } });
     assert.isTrue(IModelJsFs.existsSync(targetSeedFileName));
     await IModelTransformerUtils.prepareTargetDb(targetSeedDb);
-    targetSeedDb.closeSnapshot();
+    targetSeedDb.close();
     const targetIModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, targetSeedFileName);
     assert.isTrue(Guid.isGuid(targetIModelId));
 
     try {
-      const sourceDb: IModelDb = await IModelDb.open(requestContext, projectId, sourceIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
-      const targetDb: IModelDb = await IModelDb.open(requestContext, projectId, targetIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
-      assert.exists(sourceDb);
-      assert.exists(targetDb);
+      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, sourceIModelId, SyncMode.PullAndPush, IModelVersion.latest());
+      const targetDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, targetIModelId, SyncMode.PullAndPush, IModelVersion.latest());
+      assert.isTrue(sourceDb.isBriefcaseDb());
+      assert.exists(targetDb.isBriefcaseDb());
+      assert.isFalse(sourceDb.isSnapshot);
+      assert.isFalse(targetDb.isSnapshot);
       sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
       targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
 
@@ -78,7 +81,7 @@ describe("IModelTransformerHub (#integration)", () => {
         IModelTransformerUtils.populateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
-        await sourceDb.pushChanges(requestContext, () => "Populate source");
+        await sourceDb.pushChanges(requestContext, "Populate source");
 
         // Use IModelExporter.exportChanges to verify the changes to the sourceDb
         const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-1.txt");
@@ -112,7 +115,7 @@ describe("IModelTransformerHub (#integration)", () => {
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
-        await targetDb.pushChanges(requestContext, () => "Import #1");
+        await targetDb.pushChanges(requestContext, "Import #1");
         IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
@@ -165,15 +168,15 @@ describe("IModelTransformerHub (#integration)", () => {
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
-        assert.isFalse(targetDb.briefcase.nativeDb.hasSavedChanges());
-        await targetDb.pushChanges(requestContext, () => "Should not actually push because there are no changes");
+        assert.isFalse(targetDb.briefcase.nativeDb.hasPendingTxns());
+        await targetDb.pushChanges(requestContext, "Should not actually push because there are no changes");
       }
 
       if (true) { // update source db, then import again
         IModelTransformerUtils.updateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
-        await sourceDb.pushChanges(requestContext, () => "Update source");
+        await sourceDb.pushChanges(requestContext, "Update source");
 
         // Use IModelExporter.exportChanges to verify the changes to the sourceDb
         const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-2.txt");
@@ -208,7 +211,7 @@ describe("IModelTransformerHub (#integration)", () => {
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
-        await targetDb.pushChanges(requestContext, () => "Import #2");
+        await targetDb.pushChanges(requestContext, "Import #2");
         IModelTransformerUtils.assertUpdatesInTargetDb(targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
@@ -240,8 +243,9 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(targetDbChanges.model.deleteIds.size, 0);
       }
 
-      await sourceDb.close(requestContext, KeepBriefcase.No);
-      await targetDb.close(requestContext, KeepBriefcase.No);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, sourceDb);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
+
     } finally {
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, sourceIModelId);
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, targetIModelId);
@@ -260,31 +264,33 @@ describe("IModelTransformerHub (#integration)", () => {
 
     try {
       // open/upgrade sourceDb
-      const sourceDb: IModelDb = await IModelDb.open(requestContext, projectId, sourceIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
-      assert.isTrue(semver.satisfies(sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!, ">= 1.0.1"));
-      assert.isFalse(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect iModelHub to be using an old version of BisCore before ExternalSourceAspect was introduced");
+      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, sourceIModelId, SyncMode.PullAndPush, IModelVersion.latest());
+      const seedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
+      assert.isTrue(semver.satisfies(seedBisCoreVersion, ">= 1.0.1"));
       sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
       assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
       await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(sourceDb.concurrencyControl.hasSchemaLock);
-      assert.isTrue(semver.satisfies(sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!, ">= 1.0.8"));
+      const updatedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
+      assert.isTrue(semver.satisfies(updatedBisCoreVersion, ">= 1.0.10"));
       assert.isTrue(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
+      const expectedHasPendingTxns: boolean = seedBisCoreVersion !== updatedBisCoreVersion;
 
       // push sourceDb schema changes
       await sourceDb.concurrencyControl.request(requestContext);
-      assert.isTrue(sourceDb.nativeDb.hasSavedChanges(), "Expect importSchemas to have saved changes");
+      assert.equal(sourceDb.nativeDb.hasPendingTxns(), expectedHasPendingTxns, "Expect importSchemas to have saved changes");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
-      await sourceDb.pushChanges(requestContext, () => "Import schemas to upgrade BisCore"); // should actually push schema changes
-      assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
+      await sourceDb.pushChanges(requestContext, "Import schemas to upgrade BisCore"); // may push schema changes
+      assert.equal(sourceDb.concurrencyControl.hasSchemaLock, !expectedHasPendingTxns); // NOTE - pushChanges does not currently release locks if there are no changes to push. It probably should.
 
       // import schemas again to test common scenario of not knowing whether schemas are up-to-date or not..
       await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(sourceDb.concurrencyControl.hasSchemaLock);
       assert.isTrue(sourceDb.concurrencyControl.hasSchemaLock);
-      assert.isFalse(sourceDb.nativeDb.hasSavedChanges(), "Expect importSchemas to be a no-op");
+      assert.isFalse(sourceDb.nativeDb.hasPendingTxns(), "Expect importSchemas to be a no-op");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect importSchemas to be a no-op");
       sourceDb.saveChanges(); // will be no changes to save in this case
-      await sourceDb.pushChanges(requestContext, () => "Import schemas again"); // will be no changes to push in this case
+      await sourceDb.pushChanges(requestContext, "Import schemas again"); // will be no changes to push in this case
       assert.isTrue(sourceDb.concurrencyControl.hasSchemaLock); // NOTE - pushChanges does not currently release locks if there are no changes to push. It probably should.
 
       // populate sourceDb
@@ -292,12 +298,11 @@ describe("IModelTransformerHub (#integration)", () => {
       IModelTransformerUtils.assertTeamIModelContents(sourceDb, "Test");
       await sourceDb.concurrencyControl.request(requestContext);
       sourceDb.saveChanges();
-      await sourceDb.pushChanges(requestContext, () => "Populate Source");
+      await sourceDb.pushChanges(requestContext, "Populate Source");
       assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
 
       // open/upgrade targetDb
-      const targetDb: IModelDb = await IModelDb.open(requestContext, projectId, targetIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
-      assert.isFalse(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect iModelHub to be using an old version of BisCore before ExternalSourceAspect was introduced");
+      const targetDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, targetIModelId, SyncMode.PullAndPush, IModelVersion.latest());
       targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
       await targetDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
@@ -305,7 +310,7 @@ describe("IModelTransformerHub (#integration)", () => {
       // push targetDb schema changes
       await targetDb.concurrencyControl.request(requestContext);
       targetDb.saveChanges();
-      await targetDb.pushChanges(requestContext, () => "Upgrade BisCore");
+      await targetDb.pushChanges(requestContext, "Upgrade BisCore");
 
       // import sourceDb changes into targetDb
       const transformer = new IModelTransformer(new IModelExporter(sourceDb), targetDb);
@@ -314,11 +319,11 @@ describe("IModelTransformerHub (#integration)", () => {
       IModelTransformerUtils.assertTeamIModelContents(targetDb, "Test");
       await targetDb.concurrencyControl.request(requestContext);
       targetDb.saveChanges();
-      await targetDb.pushChanges(requestContext, () => "Import changes from sourceDb");
+      await targetDb.pushChanges(requestContext, "Import changes from sourceDb");
 
       // close iModel briefcases
-      await sourceDb.close(requestContext, KeepBriefcase.No);
-      await targetDb.close(requestContext, KeepBriefcase.No);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, sourceDb);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
     } finally {
       // delete iModel briefcases
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, sourceIModelId);

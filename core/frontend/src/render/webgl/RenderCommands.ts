@@ -7,58 +7,23 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import {
-  Range3d,
-} from "@bentley/geometry-core";
-import {
-  Frustum,
-  FrustumPlanes,
-  RenderMode,
-  ViewFlags,
-} from "@bentley/imodeljs-common";
-import {
-  GraphicList,
-  RenderGraphic,
-} from "../RenderGraphic";
+import { Range3d } from "@bentley/geometry-core";
+import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { Decorations } from "../Decorations";
 import { SurfaceType } from "../primitives/VertexTable";
+import { GraphicList, RenderGraphic } from "../RenderGraphic";
+import { BatchState, BranchStack, BranchState } from "./BranchState";
 import {
-  DrawCommand,
-  DrawCommands,
-  getAnimationBranchState,
-  PopBatchCommand,
-  PopBranchCommand,
-  PopCommand,
-  PrimitiveCommand,
-  PushBatchCommand,
-  PushBranchCommand,
-  PushStateCommand,
-  PushCommand,
+  DrawCommand, DrawCommands, getAnimationBranchState, PopBatchCommand, PopBranchCommand, PopCommand, PrimitiveCommand, PushBatchCommand,
+  PushBranchCommand, PushCommand, PushStateCommand,
 } from "./DrawCommand";
-import {
-  BatchState,
-  BranchStack,
-  BranchState,
-} from "./BranchState";
-import { Target } from "./Target";
-import {
-  CompositeFlags,
-  RenderOrder,
-  RenderPass,
-} from "./RenderFlags";
-import {
-  Batch,
-  Branch,
-  Graphic,
-  GraphicsArray,
-} from "./Graphic";
-import { Primitive } from "./Primitive";
+import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
+import { Layer, LayerContainer } from "./Layer";
+import { LayerCommandLists } from "./LayerCommands";
 import { MeshGraphic } from "./Mesh";
-import {
-  Layer,
-  LayerCommandLists,
-  LayerContainer,
-} from "./Layer";
+import { Primitive } from "./Primitive";
+import { CompositeFlags, RenderOrder, RenderPass } from "./RenderFlags";
+import { Target } from "./Target";
 
 /** A list of DrawCommands to be rendered, ordered by render pass.
  * @internal
@@ -249,7 +214,7 @@ export class RenderCommands {
     switch (pass) {
       // If this command ordinarily renders translucent, but some features have been overridden to be opaque, must draw in both passes
       case RenderPass.Translucent:
-        if (this._opaqueOverrides && haveFeatureOverrides) {
+        if (this._opaqueOverrides && haveFeatureOverrides && !command.primitive.cachedGeometry.alwaysRenderTranslucent) {
           let opaquePass: RenderPass;
           switch (command.renderOrder) {
             case RenderOrder.PlanarLitSurface:
@@ -408,7 +373,7 @@ export class RenderCommands {
         if (0 < cmds.length && cmds[cmds.length - 1] === push)
           cmds.pop();
         else
-        cmds.push(pop);
+          cmds.push(pop);
       }
     } else {
       assert(0 < this._commands[this._forcedRenderPass].length);
@@ -466,15 +431,13 @@ export class RenderCommands {
       (sceneGf as Graphic).addCommands(this);
 
     if (undefined !== overlayDecorations) {
-      this._stack.pushState(this.target.decorationsState);
-
-      for (const overlay of overlayDecorations) {
-        const gf = overlay as Graphic;
-        if (gf.isPickable)
-          gf.addCommands(this);
-      }
-
-      this._stack.pop();
+      this.pushAndPopState(this.target.decorationsState, () => {
+        for (const overlay of overlayDecorations) {
+          const gf = overlay as Graphic;
+          if (gf.isPickable)
+            gf.addCommands(this);
+        }
+      });
     }
 
     this._addTranslucentAsOpaque = false;
@@ -492,6 +455,9 @@ export class RenderCommands {
       // Also add any pickable decorations.
       if (undefined !== dec)
         this.addPickableDecorations(dec);
+
+      // Also background map is pickable
+      this.addBackgroundMapGraphics(backgroundMap);
 
       this._addTranslucentAsOpaque = false;
       this.setupClassificationByVolume();
@@ -583,6 +549,13 @@ export class RenderCommands {
         const mg = ga.graphics[0] as MeshGraphic;
         if (SurfaceType.VolumeClassifier === mg.surfaceType)
           pass = RenderPass.HiliteClassification;
+      } else if (ga.graphics[0] instanceof Branch) {
+        const b = ga.graphics[0] as Branch;
+        if (b.branch.entries.length > 0 && b.branch.entries[0] instanceof MeshGraphic) {
+          const mg = b.branch.entries[0] as MeshGraphic;
+          if (SurfaceType.VolumeClassifier === mg.surfaceType)
+            pass = RenderPass.HiliteClassification;
+        }
       }
     }
     return pass;
@@ -660,43 +633,35 @@ export class RenderCommands {
   public clearCheckRange(): void { this._frustumPlanes = undefined; }
 
   private setupClassificationByVolume(): void {
-    // To make is easier to process the classifiers individually, set up a secondary command list for them where they
-    // are each separated by their own push & pop and can more easily be accessed by index.
-    // NOTE: This assumes no nested branches.
+    // To make it easier to process the classifiers individually, set up a secondary command list for them where they
+    // are each separated by their own pushes & pops so that they can easily be drawn individually.  This now supports
+    // nested branches and batches.
     const groupedCmds = this._commands[RenderPass.Classification];
     const byIndexCmds = this._commands[RenderPass.ClassificationByIndex];
-    let pushBranch: DrawCommand | undefined;
-    let pushBatch: DrawCommand | undefined;
+    const pushCommands: DrawCommands = []; // will contain current set of pushes ahead of a primitive
     for (const cmd of groupedCmds) {
-      if (undefined === pushBranch) {
-        // Looking for a set of commands inside a branch.
-        if ("pushBranch" === cmd.opcode)
-          pushBranch = cmd;
-      } else {
-        if (undefined === pushBatch) {
-          // Looking for a set of commands inside a batch inside a branch.
-          if ("pushBatch" === cmd.opcode)
-            pushBatch = cmd;
-          else if ("popBranch" === cmd.opcode)
-            pushBranch = undefined; // no batches in this branch.
-        } else {
-          // Looking for primitives inside a batch inside a branch.
-          switch (cmd.opcode) {
-            case "drawPrimitive":
-              byIndexCmds.push(pushBranch);
-              byIndexCmds.push(pushBatch);
-              byIndexCmds.push(cmd);
-              byIndexCmds.push(PopBatchCommand.instance);
-              byIndexCmds.push(PopBranchCommand.instance);
-              break;
-            case "popBatch":
-              pushBatch = undefined;
-              break;
-            case "popBranch":
-              pushBranch = undefined;
-              break;
+      switch (cmd.opcode) {
+        case "pushBranch":
+        case "pushBatch":
+        case "pushState":
+          pushCommands.push(cmd);
+          break;
+        case "drawPrimitive":
+          for (const pushCmd of pushCommands) {
+            byIndexCmds.push(pushCmd);
           }
-        }
+          byIndexCmds.push(cmd);
+          for (let i = pushCommands.length - 1; i >= 0; --i) {
+            if ("pushBatch" === pushCommands[i].opcode)
+              byIndexCmds.push(PopBatchCommand.instance);
+            else // should be eith pushBranch or pushState opcode
+              byIndexCmds.push(PopBranchCommand.instance);
+          }
+          break;
+        case "popBatch":
+        case "popBranch":
+          pushCommands.pop();
+          break;
       }
     }
   }

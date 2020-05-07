@@ -4,27 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
-import { IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { TestUsers } from "./TestUsers";
+import { TestUtility } from "./TestUtility";
 
 describe("IModelApp (#integration)", () => {
 
   before(async () => {
-    IModelApp.startup({
+    await IModelApp.startup({
       applicationId: "1234",
       applicationVersion: "testappversion",
       sessionId: "testsessionid",
     });
 
-    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
-    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    IModelApp.authorizationClient = imsTestAuthorizationClient;
+    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(requestContext.accessToken);
   });
 
   after(async () => {
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
 
     IModelApp.authorizationClient = undefined;
   });

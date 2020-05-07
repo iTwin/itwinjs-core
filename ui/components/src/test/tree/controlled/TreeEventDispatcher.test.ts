@@ -3,19 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "typemoq";
-import * as sinon from "sinon";
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { CheckBoxState } from "@bentley/ui-core";
-import { TreeEventDispatcher } from "../../../ui-components/tree/controlled/TreeEventDispatcher";
-import { TreeEvents, TreeSelectionModificationEvent, TreeSelectionReplacementEvent, TreeCheckboxStateChangeEvent } from "../../../ui-components/tree/controlled/TreeEvents";
-import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { SelectionMode } from "../../../ui-components/common/selection/SelectionModes";
-import { VisibleTreeNodes, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, isTreeModelRootNode, isTreeModelNode } from "../../../ui-components/tree/controlled/TreeModel";
-import { TreeSelectionManager, RangeSelection } from "../../../ui-components/tree/controlled/internal/TreeSelectionManager";
+import { RangeSelection, TreeSelectionManager } from "../../../ui-components/tree/controlled/internal/TreeSelectionManager";
 import { from } from "../../../ui-components/tree/controlled/Observable";
+import { TreeEventDispatcher } from "../../../ui-components/tree/controlled/TreeEventDispatcher";
+import {
+  TreeCheckboxStateChangeEventArgs, TreeEvents, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
+} from "../../../ui-components/tree/controlled/TreeEvents";
+import {
+  isTreeModelNode, isTreeModelRootNode, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, VisibleTreeNodes,
+} from "../../../ui-components/tree/controlled/TreeModel";
+import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { extractSequence } from "../ObservableTestHelpers";
-import { createRandomMutableTreeModelNodes, createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
+import { createRandomMutableTreeModelNode, createRandomMutableTreeModelNodes } from "./RandomTreeNodesHelpers";
 
 describe("TreeEventDispatcher", () => {
 
@@ -105,7 +109,7 @@ describe("TreeEventDispatcher", () => {
         selectionManager.onDragSelection.emit({ selectionChanges: from([{ selectedNodes: rangeSelection, deselectedNodes: [] }]) });
         expect(spy).to.be.called;
 
-        const spyArgs = spy.args[0][0] as TreeSelectionModificationEvent;
+        const spyArgs = spy.args[0][0] as TreeSelectionModificationEventArgs;
         const results = await extractSequence(rxjsFrom(spyArgs.modifications));
         expect(results).to.not.be.empty;
         const selectionChange = results[0];
@@ -125,7 +129,7 @@ describe("TreeEventDispatcher", () => {
         selectionManager.onDragSelection.emit({ selectionChanges: from([{ selectedNodes: rangeSelection, deselectedNodes: [] }]) });
         expect(spy).to.be.called;
 
-        const spyArgs = spy.args[0][0] as TreeSelectionModificationEvent;
+        const spyArgs = spy.args[0][0] as TreeSelectionModificationEventArgs;
         const results = await extractSequence(rxjsFrom(spyArgs.modifications));
         expect(results).to.not.be.empty;
         const selectionChange = results[0];
@@ -150,7 +154,7 @@ describe("TreeEventDispatcher", () => {
         selectionManager.onDragSelection.emit({ selectionChanges: from([{ selectedNodes: rangeSelection, deselectedNodes: [] }]) });
         expect(spy).to.be.called;
 
-        const spyArgs = spy.args[0][0] as TreeSelectionModificationEvent;
+        const spyArgs = spy.args[0][0] as TreeSelectionModificationEventArgs;
         const results = await extractSequence(rxjsFrom(spyArgs.modifications));
         expect(results).to.not.be.empty;
         const selectionChange = results[0];
@@ -170,7 +174,7 @@ describe("TreeEventDispatcher", () => {
         selectionManager.onDragSelection.emit({ selectionChanges: from([{ selectedNodes: rangeSelection, deselectedNodes: [] }]) });
         expect(spy).to.be.called;
 
-        const spyArgs = spy.args[0][0] as TreeSelectionModificationEvent;
+        const spyArgs = spy.args[0][0] as TreeSelectionModificationEventArgs;
         const results = await extractSequence(rxjsFrom(spyArgs.modifications));
         expect(results).to.not.be.empty;
         expect(results[0].selectedNodeItems).to.be.empty;
@@ -192,7 +196,7 @@ describe("TreeEventDispatcher", () => {
 
         const selectedNodeItems = deselectedNodes.map((node) => node.item);
         const deselectedNodeItems = selectedNodes.map((node) => node.item);
-        const spyArgs = spy.args[0][0] as TreeSelectionModificationEvent;
+        const spyArgs = spy.args[0][0] as TreeSelectionModificationEventArgs;
         const results = await extractSequence(rxjsFrom(spyArgs.modifications));
         expect(results).to.not.be.empty;
         const selectionChange = results[0];
@@ -213,7 +217,7 @@ describe("TreeEventDispatcher", () => {
         selectionManager.onSelectionReplaced.emit({ selectedNodeIds });
         expect(spy).to.be.called;
 
-        const spyArgs = spy.args[0][0] as TreeSelectionReplacementEvent;
+        const spyArgs = spy.args[0][0] as TreeSelectionReplacementEventArgs;
         const results = await extractSequence(rxjsFrom(spyArgs.replacements));
         expect(results).to.not.be.empty;
         const selectionChange = results[0];
@@ -231,7 +235,7 @@ describe("TreeEventDispatcher", () => {
         selectionManager.onSelectionReplaced.emit({ selectedNodeIds: selection });
         expect(spy).to.be.called;
 
-        const spyArgs = spy.args[0][0] as TreeSelectionReplacementEvent;
+        const spyArgs = spy.args[0][0] as TreeSelectionReplacementEventArgs;
         const results = await extractSequence(rxjsFrom(spyArgs.replacements));
         expect(results).to.not.be.empty;
         const selectionChange = results[0];
@@ -253,7 +257,7 @@ describe("TreeEventDispatcher", () => {
       dispatcher.onNodeCheckboxClicked(deselectedNodes[0].id, CheckBoxState.On);
 
       expect(spy).to.be.calledOnce;
-      const changes = spy.args[0][0] as TreeCheckboxStateChangeEvent;
+      const changes = spy.args[0][0] as TreeCheckboxStateChangeEventArgs;
       const results = await extractSequence(rxjsFrom(changes.stateChanges));
       expect(results).to.not.be.empty;
       const affectedNodeItems = results[0].map((change) => change.nodeItem);
@@ -268,7 +272,7 @@ describe("TreeEventDispatcher", () => {
 
       dispatcher.onNodeCheckboxClicked(selectedNodes[0].id, CheckBoxState.On);
 
-      const changes = spy.args[0][0] as TreeCheckboxStateChangeEvent;
+      const changes = spy.args[0][0] as TreeCheckboxStateChangeEventArgs;
       const results = await extractSequence(rxjsFrom(changes.stateChanges));
       expect(results).to.not.be.empty;
       const affectedItems = results[0].map((change) => change.nodeItem);
@@ -287,7 +291,7 @@ describe("TreeEventDispatcher", () => {
 
       dispatcher.onNodeCheckboxClicked(selectedNodes[0].id, CheckBoxState.On);
 
-      const checkboxChanges = spy.args[0][0] as TreeCheckboxStateChangeEvent;
+      const checkboxChanges = spy.args[0][0] as TreeCheckboxStateChangeEventArgs;
       const results = await extractSequence(rxjsFrom(checkboxChanges.stateChanges));
       expect(results).to.not.be.empty;
       const affectedItems = results

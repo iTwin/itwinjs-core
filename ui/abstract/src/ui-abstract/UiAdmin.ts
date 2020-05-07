@@ -3,14 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Admin
+ * @module UiAdmin
  */
 
 import { XAndY } from "@bentley/geometry-core";
 import { AbstractMenuItemProps } from "./items/AbstractMenuItemProps";
 import { AbstractToolbarProps } from "./items/AbstractToolbarProps";
 import { RelativePosition } from "./items/RelativePosition";
-import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc } from "./utils/callbacks";
+import { PropertyDescription } from "./properties/Description";
+import { Primitives } from "./properties/PrimitiveTypes";
+import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc } from "./utils/callbacks";
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
  * @beta
@@ -121,6 +123,19 @@ export class UiAdmin {
    * @return true if the editor was displayed, false if the editor could not be displayed.
    */
   public showHeightEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
+    return false;
+  }
+
+  /** Show an input editor for a primitive value at a particular location.
+   * @param _initialValue Value initially displayed in the editor.
+   * @param _propertyDescription Description of the primitive value property.
+   * @param _location Location of the editor, relative to the origin of htmlElement or the window.
+   * @param _onCommit Function called when the OK button or the Enter key is pressed.
+   * @param _onCancel Function called when the Cancel button or the Escape key  is pressed.
+   * @param _htmlElement The HTMLElement that anchors the context menu. If undefined, the location is relative to the overall window.
+   * @return true if the editor was displayed, false if the editor could not be displayed.
+   */
+  public showInputEditor(_initialValue: Primitives.Value, _propertyDescription: PropertyDescription, _location: XAndY, _onCommit: OnValueCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean {
     return false;
   }
 

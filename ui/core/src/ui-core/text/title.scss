@@ -6,6 +6,6 @@
 
 @mixin uicore-text-title {
 
-    @include uicore-text( title );
-    @include uicore-text-block-spacing;
+  @include uicore-text( title );
+  @include uicore-text-block-spacing;
 }

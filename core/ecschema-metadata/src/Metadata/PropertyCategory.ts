@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { PropertyCategoryProps } from "../Deserialization/JsonProps";
+import { SchemaItemType } from "../ECObjects";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { PropertyCategoryProps } from "./../Deserialization/JsonProps";
-import { SchemaItemType } from "./../ECObjects";
 
 /**
  * @beta
@@ -23,8 +23,13 @@ export class PropertyCategory extends SchemaItem {
     this._priority = 0;
   }
 
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+  /**
+   * Save this PropertyCategory's properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): PropertyCategoryProps {
+    const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.priority = this.priority;
     return schemaJson;
   }
@@ -36,12 +41,12 @@ export class PropertyCategory extends SchemaItem {
     return itemElement;
   }
 
-  public deserializeSync(propertyCategoryProps: PropertyCategoryProps) {
-    super.deserializeSync(propertyCategoryProps);
+  public fromJSONSync(propertyCategoryProps: PropertyCategoryProps) {
+    super.fromJSONSync(propertyCategoryProps);
     this._priority = propertyCategoryProps.priority;
   }
 
-  public async deserialize(propertyCategoryProps: PropertyCategoryProps) {
-    this.deserializeSync(propertyCategoryProps);
+  public async fromJSON(propertyCategoryProps: PropertyCategoryProps) {
+    this.fromJSONSync(propertyCategoryProps);
   }
 }

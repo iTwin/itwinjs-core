@@ -7,18 +7,18 @@
  * @module Solid
  */
 
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
 import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Geometry, AxisOrder } from "../Geometry";
+import { StrokeOptions } from "../curve/StrokeOptions";
+import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { SweepContour } from "./SweepContour";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Transform } from "../geometry3d/Transform";
 import { SolidPrimitive } from "./SolidPrimitive";
-import { StrokeOptions } from "../curve/StrokeOptions";
+import { SweepContour } from "./SweepContour";
 
 /**
  * A LinearSweep is

@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory, PropertyData } from "../../ui-components/propertygrid/PropertyDataProvider";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
-import TestUtils from "../TestUtils";
 import { Tooltip } from "../../ui-components/tooltip/Tooltip";
+import TestUtils from "../TestUtils";
 
 describe("Tooltip", () => {
 
@@ -29,7 +29,7 @@ describe("Tooltip", () => {
     ];
 
     data = {
-      label: faker.random.word(),
+      label: PropertyRecord.fromString(faker.random.word()),
       description: faker.random.words(),
       categories,
       records: {

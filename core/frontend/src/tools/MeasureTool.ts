@@ -6,32 +6,30 @@
  * @module Measure
  */
 
+import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import {
+  AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ,
+} from "@bentley/geometry-core";
+import {
+  BentleyStatus, ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps,
+} from "@bentley/imodeljs-common";
+import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
+import { AccuDrawHintBuilder } from "../AccuDraw";
+import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
+import { HitDetail, HitGeomType } from "../HitDetail";
+import { IModelApp } from "../IModelApp";
+import { Marker } from "../Marker";
+import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
+import { QuantityType } from "../QuantityFormatter";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { GraphicType } from "../render/GraphicBuilder";
-import { Point3d, XYAndZ, XAndY, Vector3d, Matrix3d, PointString3d, AxisOrder, Point2d, IModelJson, Plane3dByOriginAndUnitNormal, PolygonOps } from "@bentley/geometry-core";
-import { Viewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";
-import { Marker } from "../Marker";
-import { PrimitiveTool } from "./PrimitiveTool";
-import { IModelApp } from "../IModelApp";
-import { HitDetail, HitGeomType } from "../HitDetail";
-import { GeometryStreamProps, ColorDef, MassPropertiesRequestProps, MassPropertiesOperation, BentleyStatus, MassPropertiesResponseProps, LinePixels } from "@bentley/imodeljs-common";
-import { QuantityType } from "../QuantityFormatter";
-import { BeButtonEvent, EventHandled, InputSource, CoreTools } from "./Tool";
-import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
+import { Viewport } from "../Viewport";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
-import { AccuDrawHintBuilder } from "../AccuDraw";
-import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
-import { Id64String, Id64Array, Id64 } from "@bentley/bentleyjs-core";
-import { ToolAssistance, ToolAssistanceSection, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod } from "./ToolAssistance";
 import { EditManipulator } from "./EditManipulator";
-import {
-  ToolSettingsPropertyRecord,
-  ToolSettingsPropertySyncItem,
-  ToolSettingsValue,
-} from "../properties/ToolSettingsValue";
-import { PrimitiveValue } from "../properties/Value";
-import { PropertyDescription } from "../properties/Description";
+import { PrimitiveTool } from "./PrimitiveTool";
+import { BeButtonEvent, CoreTools, EventHandled, InputSource } from "./Tool";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 
 function translateBold(key: string) { return "<b>" + CoreTools.translate("Measure.Labels." + key) + ":</b> "; }
 
@@ -47,7 +45,7 @@ class MeasureLabel implements CanvasDecoration {
   }
 
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
-    ctx.font = "16px san-serif";
+    ctx.font = "16px sans-serif";
     const labelHeight = ctx.measureText("M").width; // Close enough for border padding...
     const labelWidth = ctx.measureText(this.label).width + labelHeight;
 
@@ -98,8 +96,10 @@ class MeasureMarker extends Marker {
     this.drawFunc = markerDrawFunc;
     this.title = title;
     this.label = label;
-    this.labelFont = "18px san-serif";
+    this.labelFont = "16px sans-serif";
     this.labelColor = "black";
+    this.labelMaxWidth = this.size.x * 0.75;
+    this.labelOffset = { x: 0, y: -1 };
   }
 
   public onMouseButton(_ev: BeButtonEvent): boolean { return true; } // Never forward event to active tool...
@@ -231,7 +231,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       const segPoints: Point3d[] = [];
       segPoints.push(basePt); basePt = basePt.plus(xVec);
       segPoints.push(basePt);
-      const colorX = ColorDef.red.adjustForContrast(context.viewport.view.backgroundColor);
+      const colorX = ColorDef.red.adjustedForContrast(context.viewport.view.backgroundColor);
       builderAxes.setSymbology(colorX, ColorDef.black, 5);
       builderAxes.addLineString(segPoints);
     }
@@ -240,7 +240,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       const segPoints: Point3d[] = [];
       segPoints.push(basePt); basePt = basePt.plus(yVec);
       segPoints.push(basePt);
-      const colorY = ColorDef.green.adjustForContrast(context.viewport.view.backgroundColor);
+      const colorY = ColorDef.green.adjustedForContrast(context.viewport.view.backgroundColor);
       builderAxes.setSymbology(colorY, ColorDef.black, 5);
       builderAxes.addLineString(segPoints);
     }
@@ -249,12 +249,12 @@ export class MeasureDistanceTool extends PrimitiveTool {
       const segPoints: Point3d[] = [];
       segPoints.push(basePt); basePt = basePt.plus(zVec);
       segPoints.push(basePt);
-      const colorZ = ColorDef.blue.adjustForContrast(context.viewport.view.backgroundColor);
+      const colorZ = ColorDef.blue.adjustedForContrast(context.viewport.view.backgroundColor);
       builderAxes.setSymbology(colorZ, ColorDef.black, 5);
       builderAxes.addLineString(segPoints);
     }
 
-    const segGlow = context.viewport.hilite.color.clone(); segGlow.setAlpha(50);
+    const segGlow = context.viewport.hilite.color.withAlpha(50);
     builderAxes.setSymbology(segGlow, ColorDef.black, 8);
     builderAxes.addLineString([seg.start, seg.end]);
 
@@ -283,7 +283,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
         context.addDecorationFromBuilder(builderDynVis);
 
         const builderDynHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-        const colorDynHid = colorDynVis.clone(); colorDynHid.setAlpha(100);
+        const colorDynHid = colorDynVis.withAlpha(100);
 
         builderDynHid.setSymbology(colorDynHid, ColorDef.black, 1, LinePixels.Code2);
         builderDynHid.addLineString(tmpPoints);
@@ -296,8 +296,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (this._acceptedSegments.length > 0) {
       const builderAccVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
       const builderAccHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-      const colorAccVis = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
-      const colorAccHid = colorAccVis.clone(); colorAccHid.setAlpha(100);
+      const colorAccVis = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
+      const colorAccHid = colorAccVis.withAlpha(100);
 
       builderAccVis.setSymbology(colorAccVis, ColorDef.black, 3);
       builderAccHid.setSymbology(colorAccHid, ColorDef.black, 1, LinePixels.Code2);
@@ -325,7 +325,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       this._snapGeomId = this.iModel.transientIds.next;
 
     const builderSnapPts = context.createGraphicBuilder(GraphicType.WorldOverlay, undefined, this._snapGeomId);
-    const colorAccPts = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
+    const colorAccPts = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
 
     builderSnapPts.setSymbology(colorAccPts, ColorDef.black, 7);
     builderSnapPts.addPointString(snapPoints);
@@ -718,7 +718,7 @@ export class MeasureLocationTool extends PrimitiveTool {
 export class MeasureAreaByPointsTool extends PrimitiveTool {
   public static toolId = "Measure.AreaByPoints";
   public static iconSpec = "icon-measure-2d";
-  private _orientationValue = new ToolSettingsValue(EditManipulator.RotationType.Top);
+  private _orientationValue: DialogItemValue = { value: EditManipulator.RotationType.Top };
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
   protected _isComplete = false;
@@ -753,16 +753,17 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     };
   }
 
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+  public supplyToolSettingsProperties(): DialogItem[] | undefined {
     IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: MeasureAreaByPointsTool._orientationName, value: this._orientationValue });
-    const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._orientationValue.clone() as PrimitiveValue, MeasureAreaByPointsTool._getEnumAsOrientationDescription(), { rowPriority: 0, columnIndex: 2 }));
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push({ value: this._orientationValue, property: MeasureAreaByPointsTool._getEnumAsOrientationDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
     return toolSettings;
   }
 
-  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
     if (updatedValue.propertyName === MeasureAreaByPointsTool._orientationName) {
-      if (!this._orientationValue.update(updatedValue.value))
+      this._orientationValue = updatedValue.value;
+      if (!this._orientationValue)
         return false;
       this.onReinitialize();
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: MeasureAreaByPointsTool._orientationName, value: this._orientationValue });
@@ -894,9 +895,9 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
 
     const builderAccVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
     const builderAccHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-    const colorAccVis = ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor);
-    const colorAccHid = colorAccVis.clone(); colorAccHid.setAlpha(100);
-    const fillAccVis = context.viewport.hilite.color.clone(); fillAccVis.setAlpha(50);
+    const colorAccVis = ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor);
+    const colorAccHid = colorAccVis.withAlpha(100);
+    const fillAccVis = context.viewport.hilite.color.withAlpha(50);
 
     builderAccVis.setSymbology(colorAccVis, fillAccVis, 3);
     builderAccHid.setSymbology(colorAccHid, fillAccVis, 1, LinePixels.Code2);

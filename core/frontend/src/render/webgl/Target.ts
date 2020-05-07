@@ -6,93 +6,61 @@
  * @module WebGL
  */
 
+import { assert, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { ClipPlaneContainment, ClipUtilities, Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
 import {
-  ClipPlaneContainment,
-  ClipUtilities,
-  ClipVector,
-  Point2d,
-  Point3d,
-  Range3d,
-  Transform,
-  XAndY,
-  XYZ,
-} from "@bentley/geometry-core";
-import {
-  IDisposable,
-  Id64,
-  Id64String,
-  assert,
-  dispose,
-  disposeArray,
-} from "@bentley/bentleyjs-core";
-import { GraphicList } from "../RenderGraphic";
-import { Scene } from "../Scene";
-import { AnimationBranchStates } from "../GraphicBranch";
-import { CanvasDecoration } from "../CanvasDecoration";
-import { Decorations } from "../Decorations";
-import { Pixel } from "../Pixel";
-import { ClippingType } from "../RenderClipVolume";
-import {
-  PlanarClassifierMap,
-  RenderPlanarClassifier,
-} from "../RenderPlanarClassifier";
-import {
-  PrimitiveVisibility,
-  RenderTarget,
-  RenderTargetDebugControl,
-} from "../RenderTarget";
-import {
-  RenderMemory,
-  RenderTextureDrape,
-  TextureDrapeMap,
-} from "../RenderSystem";
-import { RenderPlan } from "../RenderPlan";
-import {
-  AmbientOcclusion,
-  AnalysisStyle,
-  ColorDef,
-  Frustum,
-  ImageBuffer,
-  ImageBufferFormat,
-  Npc,
-  RenderMode,
-  RenderTexture,
-  SpatialClassificationProps,
+  AmbientOcclusion, AnalysisStyle, ColorDef, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassificationProps,
   ViewFlags,
 } from "@bentley/imodeljs-common";
-import { freeDrawParams } from "./ScratchDrawParams";
-import { Primitive } from "./Primitive";
-import { FeatureSymbology } from "../FeatureSymbology";
-import { Techniques } from "./Technique";
-import { TechniqueId } from "./TechniqueId";
-import { System } from "./System";
-import { BranchState } from "./BranchState";
-import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
-import { Branch, WorldDecorations, Batch } from "./Graphic";
-import { EdgeOverrides } from "./EdgeOverrides";
-import { ViewRect } from "../../ViewRect";
-import { DrawParams, ShaderProgramParams } from "./DrawCommand";
-import { RenderCommands } from "./RenderCommands";
-import { ColorInfo } from "./ColorInfo";
-import { RenderPass } from "./RenderFlags";
-import { RenderState } from "./RenderState";
-import { GL } from "./GL";
-import { SceneCompositor } from "./SceneCompositor";
-import { FrameBuffer } from "./FrameBuffer";
-import { TextureHandle } from "./Texture";
-import { PlanarClassifier } from "./PlanarClassifier";
-import { TextureDrape } from "./TextureDrape";
-import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
-import { ClipDef } from "./TechniqueFlags";
-import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
-import { SolarShadowMap } from "./SolarShadowMap";
-import { imageBufferToCanvas, canvasToResizedCanvasWithBars, canvasToImageBuffer } from "../../ImageUtil";
+import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
+import { Viewport } from "../../Viewport";
+import { ViewRect } from "../../ViewRect";
+import { CanvasDecoration } from "../CanvasDecoration";
+import { Decorations } from "../Decorations";
+import { FeatureSymbology } from "../FeatureSymbology";
+import { AnimationBranchStates } from "../GraphicBranch";
+import { Pixel } from "../Pixel";
+import { ClippingType } from "../RenderClipVolume";
+import { GraphicList } from "../RenderGraphic";
+import { RenderMemory } from "../RenderMemory";
+import { RenderPlan } from "../RenderPlan";
+import { PlanarClassifierMap, RenderPlanarClassifier } from "../RenderPlanarClassifier";
+import { RenderTextureDrape, TextureDrapeMap } from "../RenderSystem";
+import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../RenderTarget";
+import { Scene } from "../Scene";
+import { ViewClipSettings } from "../ViewClipSettings";
+import { BranchState } from "./BranchState";
+import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
+import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
+import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
-import { TargetUniforms } from "./TargetUniforms";
+import { DrawParams, ShaderProgramParams } from "./DrawCommand";
+import { EdgeOverrides } from "./EdgeOverrides";
+import { FloatRgba } from "./FloatRGBA";
+import { FrameBuffer } from "./FrameBuffer";
+import { GL } from "./GL";
+import { Batch, Branch, WorldDecorations } from "./Graphic";
+import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
 import { PerformanceMetrics } from "./PerformanceMetrics";
+import { PlanarClassifier } from "./PlanarClassifier";
+import { Primitive } from "./Primitive";
+import { RenderCommands } from "./RenderCommands";
+import { RenderPass } from "./RenderFlags";
+import { RenderState } from "./RenderState";
+import { SceneCompositor } from "./SceneCompositor";
+import { freeDrawParams } from "./ScratchDrawParams";
+import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
+import { SolarShadowMap } from "./SolarShadowMap";
 import { desync, SyncTarget } from "./Sync";
+import { System } from "./System";
+import { TargetUniforms } from "./TargetUniforms";
+import { Techniques } from "./Technique";
+import { ClipDef } from "./TechniqueFlags";
+import { TechniqueId } from "./TechniqueId";
+import { TextureHandle } from "./Texture";
+import { TextureDrape } from "./TextureDrape";
 
 /** Interface for 3d GPU clipping.
  * @internal
@@ -101,18 +69,25 @@ export class Clips {
   private _texture?: TextureHandle;
   private _clipActive: number = 0;   // count of SetActiveClip nesting (only outermost used)
   private _clipCount: number = 0;
+  private _outsideRgba: FloatRgba = FloatRgba.from(0.0, 0.0, 0.0, 0.0); // 0 alpha means disabled
+  private _insideRgba: FloatRgba = FloatRgba.from(0.0, 0.0, 0.0, 0.0); // 0 alpha means disabled
+
+  public get outsideRgba(): FloatRgba { return this._outsideRgba; }
+  public get insideRgba(): FloatRgba { return this._insideRgba; }
 
   public get texture(): TextureHandle | undefined { return this._texture; }
   public get count(): number { return this._clipCount; }
   public get isValid(): boolean { return this._clipCount > 0; }
 
-  public set(numPlanes: number, texture: TextureHandle) {
+  public set(numPlanes: number, texture: TextureHandle, outsideRgba: FloatRgba, insideRgba: FloatRgba) {
     this._clipActive++;
     if (this._clipActive !== 1)
       return;
 
     this._clipCount = numPlanes;
     this._texture = texture;
+    this._outsideRgba = outsideRgba;
+    this._insideRgba = insideRgba;
   }
 
   public clear() {
@@ -193,23 +168,34 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _readPixelsSelector = Pixel.Selector.None;
   private _drawNonLocatable = true;
   private _currentlyDrawingClassifier?: PlanarClassifier;
-  private _animationFraction: number = 0;
+  private _analysisFraction: number = 0;
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
   public activeVolumeClassifierModelId?: Id64String;
+  public terrainTransparency: number = 0.0;
 
   // RenderTargetDebugControl
-  public useLogZ = true;
   public vcSupportIntersectingVolumes: boolean = false;
   public drawForReadPixels = false;
+  public drawingBackgroundForReadPixels = false;
   public primitiveVisibility = PrimitiveVisibility.All;
   public displayDrapeFrustum = false;
+  public displayRealityTilePreload = false;
+  public displayRealityTileRanges = false;
+  public logRealityTiles = false;
+
+  public freezeRealityTiles = false;
   public get shadowFrustum(): Frustum | undefined {
     const map = this.solarShadowMap;
     return map.isEnabled && map.isReady ? map.frustum : undefined;
   }
+
   public get debugControl(): RenderTargetDebugControl { return this; }
+
+  public get viewRect(): ViewRect {
+    return this.renderRect;
+  }
 
   protected constructor(rect?: ViewRect) {
     super();
@@ -226,7 +212,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get isReadPixelsInProgress(): boolean { return this._isReadPixelsInProgress; }
   public get readPixelsSelector(): Pixel.Selector { return this._readPixelsSelector; }
   public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
-  public get wantLogZ(): boolean { return undefined !== this.uniforms.frustum.logZ; }
 
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
   public get techniques(): Techniques { return this.renderSystem.techniques!; }
@@ -241,11 +226,25 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get scene(): GraphicList { return this._scene; }
   public get dynamics(): GraphicList | undefined { return this._dynamics; }
 
-  public get animationFraction(): number { return this._animationFraction; }
-  public set animationFraction(fraction: number) { this._animationFraction = fraction; }
+  public get analysisFraction(): number { return this._analysisFraction; }
+  public set analysisFraction(fraction: number) { this._analysisFraction = fraction; }
 
-  public get animationBranches(): AnimationBranchStates | undefined { return this._animationBranches; }
-  public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
+  public get animationBranches(): AnimationBranchStates | undefined {
+    return this._animationBranches;
+  }
+  public set animationBranches(branches: AnimationBranchStates | undefined) {
+    this.disposeAnimationBranches();
+    this._animationBranches = branches;
+  }
+
+  private disposeAnimationBranches(): void {
+    if (this._animationBranches)
+      for (const branch of this._animationBranches.values())
+        branch.dispose();
+
+    this._animationBranches = undefined;
+  }
+
   public get solarShadowMap(): SolarShadowMap { return this.compositor.solarShadowMap; }
   public get isDrawingShadowMap(): boolean { return this.solarShadowMap.isEnabled && this.solarShadowMap.isDrawing; }
   public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
@@ -264,6 +263,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       const vf = new ViewFlags();
       vf.renderMode = RenderMode.SmoothShade;
       vf.clipVolume = false;
+      vf.whiteOnWhiteReversal = false;
 
       vf.lighting = !this.is2d;
       vf.shadows = false; // don't want shadows applied to these
@@ -325,6 +325,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       && this._renderCommands.isEmpty
       && 0 === this._batches.length
       && undefined === this._activeClipVolume
+      && this.uniforms.thematic.isDisposed
       && this._isDisposed;
   }
 
@@ -366,17 +367,20 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._activeClipVolume.pop(this);
   }
 
-  private updateActiveVolume(clip?: ClipVector): void {
-    if (undefined === clip) {
+  private updateActiveVolume(clipSettings?: ViewClipSettings): void {
+    if (undefined === clipSettings) {
       this._activeClipVolume = dispose(this._activeClipVolume);
       return;
     }
 
     // ###TODO: Currently we assume the active view ClipVector is never mutated in place.
     // ###TODO: We may want to compare differing ClipVectors to determine if they are logically equivalent to avoid reallocating clip volume.
-    if (undefined === this._activeClipVolume || this._activeClipVolume.clipVector !== clip) {
+    if (undefined === this._activeClipVolume || this._activeClipVolume.clipVector !== clipSettings.clipVector) {
       this._activeClipVolume = dispose(this._activeClipVolume);
-      this._activeClipVolume = this.renderSystem.createClipVolume(clip) as ClipVolume;
+      this._activeClipVolume = this.renderSystem.createClipVolume(clipSettings.clipVector) as ClipVolume;
+    }
+    if (undefined !== this._activeClipVolume) {
+      this._activeClipVolume.setClipColors(clipSettings.outsideColor, clipSettings.insideColor);
     }
   }
 
@@ -400,7 +404,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   /** @internal */
   public isRangeOutsideActiveVolume(range: Range3d): boolean {
-    if (undefined === this._activeClipVolume || !this.uniforms.branch.top.showClipVolume || !this.clips.isValid)
+    if (undefined === this._activeClipVolume || !this.uniforms.branch.top.showClipVolume || !this.clips.isValid || this._activeClipVolume.hasOutsideClipColor)
       return false;
 
     range = this.currentTransform.multiplyRange(range, range);
@@ -449,6 +453,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this._wantAmbientOcclusion;
   }
 
+  public get wantThematicDisplay(): boolean {
+    return this.currentViewFlags.thematicDisplay && this.is3d && undefined !== this.uniforms.thematic.thematicDisplay;
+  }
+
   public updateSolarShadows(context: SceneContext | undefined): void {
     this.compositor.updateSolarShadows(context);
   }
@@ -478,6 +486,14 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.activeVolumeClassifierProps = scene.volumeClassifier?.classifier;
     this.activeVolumeClassifierModelId = scene.volumeClassifier?.modelId;
+  }
+
+  public onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void) {
+    IModelFrameLifecycle.onBeforeRender.raiseEvent({
+      renderSystem: this.renderSystem,
+      viewport,
+      setSceneNeedRedraw,
+    });
   }
 
   private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<Id64String, T> | undefined, newMap: Map<Id64String, T> | undefined): void {
@@ -545,13 +561,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         this.updateSolarShadows(undefined);
     }
 
-    if (!this.assignDC()) {
-      assert(false);
+    if (!this.assignDC())
       return;
-    }
 
-    this.uniforms.style.update(plan);
-    this.uniforms.hilite.update(plan.hiliteSettings, plan.emphasisSettings);
+    this.terrainTransparency = plan.terrainTransparency;
+
+    this.uniforms.updateRenderPlan(plan);
     this.isFadeOutActive = plan.isFadeOutActive;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;
@@ -566,7 +581,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._transparencyThreshold = 1.0 - threshold;
     }
 
-    this.updateActiveVolume(plan.activeVolume);
+    this.updateActiveVolume(plan.activeClipSettings);
 
     let visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible : undefined;
     let hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden : undefined;
@@ -616,6 +631,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._wantAmbientOcclusion = vf.ambientOcclusion = false;
     }
 
+    this.uniforms.thematic.update(plan);
+
     this._visibleEdgeOverrides.init(forceEdgesOpaque, visEdgeOvrs);
     this._hiddenEdgeOverrides.init(forceEdgesOpaque, hidEdgeOvrs);
 
@@ -626,9 +643,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public drawFrame(sceneMilSecElapsed?: number): void {
     assert(this.renderSystem.frameBufferStack.isEmpty);
-    if (undefined === this._scene) {
+    if (undefined === this._scene)
       return;
-    }
+
+    if (!this.assignDC())
+      return;
 
     this.paintScene(sceneMilSecElapsed);
     this.drawOverlayDecorations();
@@ -651,10 +670,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._dynamics = disposeArray(this._dynamics);
     this._worldDecorations = dispose(this._worldDecorations);
 
+    // Clear thematic texture
+    dispose(this.uniforms.thematic);
+
     this.changePlanarClassifiers(undefined);
     this.changeTextureDrapes(undefined);
 
-    // Clear render commands
     this._renderCommands.clear();
 
     // Clear FeatureOverrides for this Target.
@@ -664,8 +685,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       batch.onTargetDisposed(this);
 
     this._batches = [];
-
     this._activeClipVolume = dispose(this._activeClipVolume);
+    this.disposeAnimationBranches();
 
     freeDrawParams();
     ShaderProgramExecutor.freeParams();
@@ -842,16 +863,24 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private assignDC(): boolean {
     if (!this._dcAssigned) {
-      this._dcAssigned = this._assignDC();
+      if (!this._assignDC())
+        return false;
+
       const rect = this.viewRect;
+      if (rect.width < 1 || rect.height < 1)
+        return false;
+
       this.uniforms.viewRect.update(rect.width, rect.height);
+      this._dcAssigned = true;
     }
 
-    assert(this._dcAssigned);
-    return this._dcAssigned;
+    return true;
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void {
+    if (!this.assignDC())
+      return;
+
     // if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics)
     this.beginPerfMetricFrame(undefined, true);
 
@@ -892,15 +921,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private getViewFlagsForReadPixels(): ViewFlags {
     const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-    vf.transparency = false;
-    vf.lighting = false;
-    vf.shadows = false;
+    vf.transparency = vf.lighting = vf.shadows = vf.acsTriad = vf.grid = vf.monochrome = vf.materials = vf.ambientOcclusion = vf.thematicDisplay = false;
     vf.noGeometryMap = true;
-    vf.acsTriad = false;
-    vf.grid = false;
-    vf.monochrome = false;
-    vf.materials = false;
-    vf.ambientOcclusion = false;
     return vf;
   }
 
@@ -1029,14 +1051,15 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * If wantRect.right or wantRect.bottom is -1, that means "read the entire image".
    */
   public readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
+    if (!this.assignDC())
+      return undefined;
+
     // Determine capture rect and validate
     const actualViewRect = this.renderRect; // already has device pixel ratio applied
     const wantRect = (wantRectIn.right === -1 || wantRectIn.bottom === -1) ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
     const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1);
     if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
       return undefined;
-
-    this.assignDC();
 
     // Read pixels. Note ViewRect thinks (0,0) = top-left. gl.readPixels expects (0,0) = bottom-left.
     const bytesPerPixel = 4;
@@ -1245,31 +1268,28 @@ export class OnScreenTarget extends Target {
     return window.devicePixelRatio || 1.0;
   }
 
-  public get viewRect(): ViewRect {
-    assert(0 < this.renderRect.width && 0 < this.renderRect.height, "Zero-size view rect");
-    assert(Math.floor(this.renderRect.width) === this.renderRect.width && Math.floor(this.renderRect.height) === this.renderRect.height, "fractional view rect dimensions");
-    return this.renderRect;
+  public setViewRect(_rect: ViewRect, _temporary: boolean): void {
+    assert(false);
   }
 
-  public setViewRect(_rect: ViewRect, _temporary: boolean): void { assert(false); }
-
   protected _assignDC(): boolean {
-    assert(undefined === this._fbo);
+    dispose(this._fbo);
 
-    const rect = this.viewRect; // updates the render rect to be the client width and height
+    const rect = this.viewRect;
     const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === color) {
+    if (undefined === color)
       return false;
-    }
 
     this._fbo = FrameBuffer.create([color]);
-    if (undefined === this._fbo) {
+    if (undefined === this._fbo)
       return false;
-    }
 
     const tx = this._fbo.getColor(0);
     assert(undefined !== tx.getHandle());
     this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColorNoAlpha);
+    if (undefined === this._blitGeom)
+      dispose(this._fbo);
+
     return undefined !== this._blitGeom;
   }
 
@@ -1399,9 +1419,10 @@ export class OffScreenTarget extends Target {
     super(rect);
   }
 
-  public get viewRect(): ViewRect { return this.renderRect; }
+  public onResized(): void {
+    assert(false); // offscreen viewport's dimensions are set once, in constructor.
+  }
 
-  public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
   public updateViewRect(): boolean { return false; } // offscreen target does not dynamically resize the view rect
 
   public setViewRect(rect: ViewRect, temporary: boolean): void {
@@ -1421,7 +1442,7 @@ export class OffScreenTarget extends Target {
   }
 
   protected _assignDC(): boolean {
-    if (!this.updateViewRect() && this._fbo !== undefined)
+    if (this._fbo !== undefined)
       return true;
 
     const rect = this.viewRect;

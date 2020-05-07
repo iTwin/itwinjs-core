@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ShortDateTypeConverter, DateTimeTypeConverter } from "../../ui-components";
+import { DateTimeTypeConverter, ShortDateTypeConverter } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 describe("ShortDateTypeConverter", () => {

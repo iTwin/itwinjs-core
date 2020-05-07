@@ -7,9 +7,8 @@
  */
 
 import * as React from "react";
-
+import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { SizeProps } from "@bentley/ui-core";
-
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 import { CustomItemProps } from "./CustomItemProps";
 
@@ -26,7 +25,8 @@ export class CustomItemDef extends ActionButtonItemDef {
   private static _sId = 0;
   public static customIdPrefix = "Custom-";
   public customId: string;
-  public reactElement: React.ReactNode;
+  public reactElement?: React.ReactNode;  // prefer to use popupPanelNode
+  public popupPanelNode?: React.ReactNode;
 
   constructor(props: CustomItemProps) {
     super(props);
@@ -39,6 +39,7 @@ export class CustomItemDef extends ActionButtonItemDef {
     }
 
     this.reactElement = props.reactElement;
+    this.popupPanelNode = props.popupPanelNode;
   }
 
   public get id(): string {
@@ -46,13 +47,13 @@ export class CustomItemDef extends ActionButtonItemDef {
   }
 
   public toolbarReactNode(index?: number): React.ReactNode {
-    if (!this.isVisible)
+    if (!this.isVisible || ConditionalBooleanValue.getValue(this.isHidden)) // tslint:disable-line:deprecation
       return null;
 
     let clone: React.ReactNode;
 
     // istanbul ignore else
-    if (React.isValidElement(this.reactElement)) {
+    if (this.reactElement && React.isValidElement(this.reactElement)) {
       const key = this.getKey(index);
       const cloneProps: CloneProps = {
         key,

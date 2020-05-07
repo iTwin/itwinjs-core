@@ -5,8 +5,7 @@ exports[`ModelSelector Category generates correct drawing categories' hierarchy 
 exports[`ModelSelector Category generates correct spatial categories' hierarchy 1`] = `
 Array [
   Object {
-    "label": "Uncategorized",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -25,8 +24,7 @@ Array [
 exports[`ModelSelector Model generates correct models' hierarchy 1`] = `
 Array [
   Object {
-    "label": "Properties_60InstancesWithUrl2",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",

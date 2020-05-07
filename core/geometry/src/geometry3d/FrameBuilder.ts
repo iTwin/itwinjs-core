@@ -8,21 +8,22 @@
  */
 
 // import { Point2d } from "./Geometry2d";
-/* tslint:disable:variable-name jsdoc-format no-empty */
-import { Geometry, AxisOrder, AxisScaleSelect } from "../Geometry";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Transform } from "./Transform";
-import { Matrix3d } from "./Matrix3d";
-import { Range3d } from "./Range";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { CurveCollection } from "../curve/CurveCollection";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { Arc3d } from "../curve/Arc3d";
+import { CurveCollection } from "../curve/CurveCollection";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
+/* tslint:disable:variable-name jsdoc-format no-empty */
+import { AxisOrder, AxisScaleSelect, Geometry } from "../Geometry";
+import { GrowableXYZArray } from "./GrowableXYZArray";
+import { Matrix3d } from "./Matrix3d";
+import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Point3dArray } from "./PointHelpers";
 import { PolygonOps } from "./PolygonOps";
-import { GrowableXYZArray } from "./GrowableXYZArray";
+import { Range3d } from "./Range";
+import { Transform } from "./Transform";
+
 /**
  * Helper class to accumulate points and vectors until there is enough data to define a coordinate system.
  *
@@ -160,7 +161,7 @@ export class FrameBuilder {
         const ray = data.fractionToPointAndDerivative(0.0);
         this.announcePoint(ray.origin);
         this.announceVector(ray.direction);
-        this.announceVector(data.matrix.columnZCrossVector(ray.direction));
+        this.announceVector(data.matrixRef.columnZCrossVector(ray.direction));
       } else if (data instanceof LineString3d) {
         for (const point of data.points) {
           this.announcePoint(point);

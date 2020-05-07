@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AbstractParser, CAProviderTuple } from "./AbstractParser";
-import {
-  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps,
-  MixinProps, NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps, PrimitivePropertyProps, PropertyCategoryProps,
-  PropertyProps, RelationshipClassProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructPropertyProps, UnitProps, StructClassProps, UnitSystemProps,
-} from "./JsonProps";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { ECName } from "../SchemaKey";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
+import { ECName } from "../SchemaKey";
+import { AbstractParser, CAProviderTuple } from "./AbstractParser";
+import {
+  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
+  NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps, PrimitivePropertyProps,
+  PropertyCategoryProps, PropertyProps, RelationshipClassProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps,
+  StructPropertyProps, UnitProps, UnitSystemProps,
+} from "./JsonProps";
 
 interface UnknownObject { readonly [name: string]: unknown; }
 function isObject(x: unknown): x is UnknownObject {

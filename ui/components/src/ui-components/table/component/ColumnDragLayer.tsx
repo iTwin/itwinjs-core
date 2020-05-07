@@ -6,8 +6,8 @@
  * @module Table
  */
 
-import * as React from "react";
 import classnames from "classnames";
+import * as React from "react";
 import { DragLayerProps } from "../../dragdrop/DragDropDef";
 
 /**

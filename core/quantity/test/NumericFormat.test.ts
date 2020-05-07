@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { Format, FormatterSpec } from "../src/Formatter/Format";
 import { Formatter } from "../src/Formatter/Formatter";
 import { BasicUnit } from "../src/Unit";
+import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
 describe("Numeric Formats tests:", () => {
   it("Feet to 4 Decimal places w/trailing zeros ", async () => {

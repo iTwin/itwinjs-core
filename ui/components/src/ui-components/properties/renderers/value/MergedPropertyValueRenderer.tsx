@@ -6,9 +6,9 @@
  * @module Properties
  */
 
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { UiComponents } from "../../../UiComponents";
+import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { withContextStyle } from "./WithContextStyle";
 
 /** Default Merged Property Renderer

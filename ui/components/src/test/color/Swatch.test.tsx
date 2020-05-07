@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup, fireEvent } from "@testing-library/react"; // , waitForElement
 import { expect } from "chai";
+import React from "react";
 import sinon from "sinon";
+import { ColorDef } from "@bentley/imodeljs-common";
+import { cleanup, fireEvent, render } from "@testing-library/react"; // , waitForElement
 import { ColorSwatch } from "../../ui-components/color/Swatch";
 import TestUtils from "../TestUtils";
-import { ColorDef } from "@bentley/imodeljs-common";
 
 describe("<ColorSwatch />", () => {
   const colorDef = ColorDef.from(255, 0, 0, 255);

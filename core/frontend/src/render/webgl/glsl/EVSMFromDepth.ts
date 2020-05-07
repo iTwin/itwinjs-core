@@ -6,14 +6,14 @@
  * @module WebGL
  */
 
-import { ProgramBuilder, VariableType, VertexShaderComponent, FragmentShaderComponent, VariablePrecision } from "../ShaderBuilder";
-import { TextureUnit } from "../RenderFlags";
-import { ShaderProgram } from "../ShaderProgram";
-import { assignFragColor } from "./Fragment";
-import { EVSMGeometry } from "../CachedGeometry";
-import { Texture2DHandle } from "../Texture";
-import { addEvsmExponent, warpDepth } from "./SolarShadowMapping";
 import { AttributeMap } from "../AttributeMap";
+import { EVSMGeometry } from "../CachedGeometry";
+import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { ShaderProgram } from "../ShaderProgram";
+import { Texture2DHandle } from "../Texture";
+import { assignFragColor } from "./Fragment";
+import { addEvsmExponent, warpDepth } from "./SolarShadowMapping";
 
 // This shader reads the depth texture, converts it to EVSM values, then averages those down 4 to 1
 
@@ -76,6 +76,9 @@ export function createEVSMProgram(context: WebGLRenderingContext | WebGL2Renderi
   frag.addFunction(warpDepth);
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeEVSM);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  builder.vert.headerComment = "//!V! EVSMFromDepth";
+  builder.frag.headerComment = "//!F! EVSMFromDepth";
 
   return builder.buildProgram(context);
 }

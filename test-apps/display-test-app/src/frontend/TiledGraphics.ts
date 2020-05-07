@@ -4,13 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  FeatureSymbology,
-  IModelConnection,
-  SceneContext,
-  SpatialModelState,
-  TiledGraphicsProvider,
-  TileTreeReference,
-  Viewport,
+  FeatureSymbology, IModelConnection, SceneContext, SnapshotConnection, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
 
@@ -23,6 +17,10 @@ class ExternalTreeRef extends TileTreeReference {
     super();
     this._ref = ref;
     this._ovrs = ovrs;
+  }
+
+  public get castsShadows() {
+    return this._ref.castsShadows;
   }
 
   public get treeOwner() { return this._ref.treeOwner; }
@@ -107,7 +105,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
   if (undefined !== existing) {
     vp.dropTiledGraphicsProvider(existing);
     providersByViewport.delete(vp);
-    await existing.iModel.closeSnapshot();
+    await existing.iModel.close();
     return;
   }
 
@@ -117,7 +115,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
 
   let iModel;
   try {
-    iModel = await IModelConnection.openSnapshot(filename);
+    iModel = await SnapshotConnection.openFile(filename);
     const provider = await Provider.create(vp, iModel);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);

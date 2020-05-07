@@ -2,17 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
-import TestUtils from "../TestUtils";
-import { DragDropLayerManager, DragDropLayerRenderer } from "../../ui-framework";
+import { mount } from "enzyme";
+import * as React from "react";
 import { BeDragDropContext } from "@bentley/ui-components";
+import { DragDropLayerManager, DragDropLayerRenderer } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("DragDropLayerManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   it("getType returns undefined when no type set", () => {

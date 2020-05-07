@@ -3,36 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as path from "path";
-import { TestViewport, testViewports, comparePixelData, Color, testOnScreenViewport, createOnScreenTestViewport } from "../TestViewport";
-import { RenderMode, ColorDef, Hilite, RgbColor } from "@bentley/imodeljs-common";
+import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import { ClipVector, Point2d, Point3d } from "@bentley/geometry-core";
 import {
-  GraphicType,
-  IModelApp,
-  IModelConnection,
-  FeatureOverrideProvider,
-  FeatureSymbology,
-  OffScreenViewport,
-  Pixel,
-  RenderMemory,
-  RenderSystem,
-  SpatialViewState,
-  Viewport,
-  ViewRect,
-  Decorator,
-  DecorateContext,
+  ColorDef, Hilite, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ViewFlags,
+} from "@bentley/imodeljs-common";
+import {
+  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicType, IModelApp, IModelConnection, IModelTileTree, OffScreenViewport,
+  Pixel, RenderMemory, RenderSystem, SnapshotConnection, SpatialViewState, TileAdmin, TileLoadStatus, TileTree, TileTreeSet, Viewport, ViewRect,
+  ViewState3d,
 } from "@bentley/imodeljs-frontend";
-import { Point2d, Point3d } from "@bentley/geometry-core";
 import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
+import {
+  Color, comparePixelData, createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports,
+} from "../TestViewport";
 
 describe("Test VAO creation", () => {
   before(async () => {
     const renderSysOpts: RenderSystem.Options = {};
-    IModelApp.startup({ renderSys: renderSysOpts });
+    await IModelApp.startup({ renderSys: renderSysOpts });
   });
 
   after(async () => {
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should create VAO BuffersContainer object", async () => {
@@ -45,11 +38,11 @@ describe("Test VBO creation", () => {
   before(async () => {
     const renderSysOpts: RenderSystem.Options = {};
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
-    IModelApp.startup({ renderSys: renderSysOpts });
+    await IModelApp.startup({ renderSys: renderSysOpts });
   });
 
   after(async () => {
-    IModelApp.shutdown();
+    await IModelApp.shutdown();
   });
 
   it("should create VBO BuffersContainer object", async () => {
@@ -71,14 +64,13 @@ describe("Render mirukuru with VAOs disabled", () => {
     const renderSysOpts: RenderSystem.Options = {};
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
-    IModelApp.startup({ renderSys: renderSysOpts });
-    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await IModelConnection.openSnapshot(imodelLocation);
+    await IModelApp.startup({ renderSys: renderSysOpts });
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    IModelApp.shutdown();
+    if (imodel) await imodel.close();
+    await IModelApp.shutdown();
   });
 
   it("should properly render the model (smooth shaded with visible edges)", async () => {
@@ -133,21 +125,17 @@ describe("Render mirukuru with VAOs disabled", () => {
   });
 });
 
-describe("Properly create on-screen viewport with directScreenRendering enabled", () => {
+describe("Properly render on- or off-screen", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    const renderSysOpts: RenderSystem.Options = {};
-    renderSysOpts.directScreenRendering = true;
-
-    IModelApp.startup({ renderSys: renderSysOpts });
-    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await IModelConnection.openSnapshot(imodelLocation);
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    IModelApp.shutdown();
+    if (imodel) await imodel.close();
+    await IModelApp.shutdown();
   });
 
   it("single viewport should render using system canvas", async () => {
@@ -167,6 +155,177 @@ describe("Properly create on-screen viewport with directScreenRendering enabled"
   });
 });
 
+describe("Render mirukuru with single clip plane", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+  });
+
+  after(async () => {
+    if (imodel) await imodel.close();
+    await IModelApp.shutdown();
+  });
+
+  it("should render the model", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
+      const vf = vp.view.viewFlags;
+      vf.visibleEdges = false;
+
+      const clip = ClipVector.fromJSON([{
+        shape: {
+          points: [[-58.57249751634662, -261.9870625343174, 0], [297.4029912650585, -261.9870625343174, 0], [297.4029912650585, 111.24234024435282, 0], [-58.57249751634662, 111.24234024435282, 0], [-58.57249751634662, -261.9870625343174, 0]],
+          trans: [[1, 0, 0, 289076.52682419703], [0, 1, 0, 3803926.4450675533], [0, 0, 1, 0]],
+        },
+      }]);
+      expect(clip).to.not.be.undefined;
+      vp.view.setViewClip(clip);
+      vp.outsideClipColor = ColorDef.red;
+      vp.insideClipColor = ColorDef.green;
+
+      await vp.waitForAllTilesToRender();
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
+
+      vp.outsideClipColor = ColorDef.red;
+      vp.insideClipColor = ColorDef.green;
+
+      // White rectangle is centered in view with black background surrounding. Clipping shape and colors splits the shape into red and green halves. Lighting is on so rectangle will not be pure red and green.
+      const colors = vp.readUniqueColors();
+      const bgColor = Color.fromRgba(0, 0, 0, 0xff);
+      expect(colors.length).least(3);
+      expect(colors.contains(bgColor)).to.be.true; // black background
+
+      const isReddish = (c: Color): boolean => {
+        return c.r >= 0x50 && c.g < 0xa && c.b < 0xa && c.a === 0xff;
+      };
+
+      const isGreenish = (c: Color) => {
+        return c.r < 0xa && c.g >= 0x50 && c.b < 0xa && c.a === 0xff;
+      };
+
+      for (const c of colors.array) {
+        if (0 !== c.compare(bgColor)) {
+          expect(isReddish(c) || isGreenish(c)).to.be.true;
+        }
+      }
+    });
+  });
+});
+
+describe("Render mirukuru with thematic display applied", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+  });
+
+  after(async () => {
+    if (imodel) await imodel.close();
+    await IModelApp.shutdown();
+  });
+
+  function isReddish(c: Color): boolean {
+    return c.r > c.g && c.g < 0xa && c.b < 0xa && c.a === 0xff;
+  }
+
+  function isBluish(c: Color): boolean {
+    return c.r < 0xa && c.g < 0xa && c.b > c.g && c.a === 0xff;
+  }
+
+  function isPurplish(c: Color): boolean {
+    return c.r > c.g && c.g < 0xa && c.b > c.g && c.a === 0xff;
+  }
+
+  function expectCorrectColors(vp: TestViewport) {
+    // White rectangle is centered in view with black background surrounding. Thematic display sets a blue/red gradient on the rectangle. Lighting is off.
+    const colors = vp.readUniqueColors();
+    const bgColor = Color.fromRgba(0, 0, 0, 0xff);
+    expect(colors.length).least(3); // red, blue, and black - (actually way more colors!)
+    expect(colors.contains(bgColor)).to.be.true; // black background
+
+    for (const c of colors.array) {
+      if (0 !== c.compare(bgColor)) {
+        expect(isReddish(c) || isBluish(c) || isPurplish(c)).to.be.true;
+      }
+    }
+  }
+
+  it("should render the model with proper thematic colors applied for height mode", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
+      expect(vp.view.is3d());
+
+      const vf = vp.view.viewFlags;
+      vf.visibleEdges = false;
+      vf.lighting = false;
+      vf.renderMode = RenderMode.SmoothShade;
+      vf.thematicDisplay = true;
+
+      // Create a ThematicDisplay object with the desired thematic settings
+      const thematicProps: ThematicDisplayProps = {
+        gradientSettings: {
+          colorScheme: ThematicGradientColorScheme.Custom,
+          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
+        },
+        range: { low: imodel.projectExtents.xLow, high: imodel.projectExtents.xHigh }, // grab imodel project extents to set range of thematic display
+        axis: [1.0, 0.0, 0.0],
+      };
+      const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
+
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
+      displaySettings.thematic = thematicDisplay;
+
+      await vp.waitForAllTilesToRender();
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
+
+      expectCorrectColors(vp);
+    });
+  });
+
+  it("should render the model with proper thematic colors applied for sensor mode", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
+      expect(vp.view.is3d());
+
+      const vf = vp.view.viewFlags;
+      vf.visibleEdges = false;
+      vf.lighting = false;
+      vf.renderMode = RenderMode.SmoothShade;
+      vf.thematicDisplay = true;
+
+      // Create a ThematicDisplay object with the desired thematic settings
+      const thematicProps: ThematicDisplayProps = {
+        displayMode: ThematicDisplayMode.InverseDistanceWeightedSensors,
+        gradientSettings: {
+          colorScheme: ThematicGradientColorScheme.Custom,
+          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
+        },
+        sensorSettings: {
+          sensors: [
+            { position: imodel.projectExtents.low.toJSON(), value: 0.01 },
+            { position: imodel.projectExtents.high.toJSON(), value: 0.99 },
+          ],
+        },
+      };
+      const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
+
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
+      displaySettings.thematic = thematicDisplay;
+
+      await vp.waitForAllTilesToRender();
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
+
+      expectCorrectColors(vp);
+    });
+  });
+});
+
 // Mirukuru contains a single view, looking at a single design model containing a single white rectangle (element ID 41 (0x29), subcategory ID = 24 (0x18)).
 // (It also is supposed to contain a reality model but the URL is presumably wrong).
 // The initial view is in top orientation, centered on the top of the rectangle, but not fitted to its extents (empty space on all sides of rectangle).
@@ -175,14 +334,13 @@ describe("Render mirukuru", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
-    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
-    imodel = await IModelConnection.openSnapshot(imodelLocation);
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    IModelApp.shutdown();
+    if (imodel) await imodel.close();
+    await IModelApp.shutdown();
   });
 
   it("should have expected view definition", async () => {
@@ -412,7 +570,7 @@ describe("Render mirukuru", () => {
       // Specify default overrides, but also override element color
       ovrProvider.ovrFunc = (ovrs, _) => {
         ovrs.setDefaultOverrides(FeatureSymbology.Appearance.fromRgb(ColorDef.green));
-        ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromRgb(new ColorDef(0x7f0000))); // blue = 0x7f...
+        ovrs.overrideElement(elemId, FeatureSymbology.Appearance.fromRgb(ColorDef.create(0x7f0000))); // blue = 0x7f...
       };
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
@@ -515,7 +673,7 @@ describe("Render mirukuru", () => {
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       const vf = vp.view.viewFlags;
       vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
-      vp.hilite = new Hilite.Settings(ColorDef.red.clone(), 1.0, 0.0, Hilite.Silhouette.Thin);
+      vp.hilite = new Hilite.Settings(ColorDef.red, 1.0, 0.0, Hilite.Silhouette.Thin);
 
       await vp.waitForAllTilesToRender();
 
@@ -623,6 +781,379 @@ describe("Render mirukuru", () => {
       const mapTreeRef = vp.displayStyle.backgroundMap;
       const mapTree = mapTreeRef.treeOwner.tileTree!;
       expect(mapTree).not.to.be.undefined;
+    });
+  });
+});
+
+describe("Tile unloading", async () => {
+  let imodel: IModelConnection;
+  const expirationSeconds = 0.1;
+  const waitSeconds = 4 * expirationSeconds;
+  const tileOpts = {
+    ignoreMinimumExpirationTimes: true,
+    tileExpirationTime: expirationSeconds,
+    realityTileExpirationTime: expirationSeconds,
+    tileTreeExpirationTime: expirationSeconds,
+    disableMagnification: true,
+    useProjectExtents: false,
+  };
+
+  before(async () => {
+    await IModelApp.startup({ tileAdmin: TileAdmin.create(tileOpts) });
+    imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
+  });
+
+  after(async () => {
+    if (imodel)
+      await imodel.close();
+
+    await IModelApp.shutdown();
+  });
+
+  function getTileTree(vp: Viewport): TileTree {
+    const trees = new TileTreeSet();
+    vp.discloseTileTrees(trees);
+    expect(trees.size).to.equal(1);
+    let tree: TileTree | undefined;
+    for (const t of trees.trees)
+      tree = t;
+
+    return tree!;
+  }
+
+  async function waitForExpiration(vp: TestViewport): Promise<void> {
+    const expiration = BeDuration.fromSeconds(waitSeconds);
+    await expiration.wait();
+    await vp.drawFrame(); // needed for off-screen viewports which don't participate in render loop
+  }
+
+  it("should not dispose of displayed tiles", async () => {
+    await testViewports("0x41", imodel, 1854, 931, async (vp) => {
+      await vp.waitForAllTilesToRender();
+
+      const tree = getTileTree(vp);
+      (tree as IModelTileTree).debugMaxDepth = 1;
+      expect(tree.isDisposed).to.be.false;
+
+      vp.invalidateScene();
+      await vp.waitForAllTilesToRender();
+
+      const expectLoadedChildren = () => {
+        const children = tree.rootTile.children!;
+        expect(children).not.to.be.undefined;
+        expect(children.length).to.equal(8);
+        for (const child of children)
+          expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
+
+        expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
+      };
+
+      expectLoadedChildren();
+
+      await waitForExpiration(vp);
+
+      expect(tree.isDisposed).to.be.false;
+      expectLoadedChildren();
+    });
+  });
+
+  // This test sporadically fails on Linux during CI job, with no useful output.
+  it.skip("should dispose of undisplayed tiles", async () => {
+    await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp) => {
+      await vp.waitForAllTilesToRender();
+
+      const tree = getTileTree(vp);
+      (tree as IModelTileTree).debugMaxDepth = 1;
+      expect(tree.isDisposed).to.be.false;
+
+      vp.invalidateScene();
+      await vp.waitForAllTilesToRender();
+
+      expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
+
+      const children = tree.rootTile.children!;
+      expect(children).not.to.be.undefined;
+      expect(children.length).to.equal(8);
+      for (const child of children)
+        expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
+
+      vp.scroll({ x: -9999, y: -9999 }, { animateFrustumChange: false });
+
+      await waitForExpiration(vp);
+
+      expect(tree.isDisposed).to.be.false;
+      expect(tree.rootTile.children).to.be.undefined;
+
+      for (const child of children)
+        expect(child.loadStatus).to.equal(TileLoadStatus.Abandoned);
+
+      expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.true;
+    });
+
+    await testOffScreenViewport("0x41", imodel, 1854, 931, async (vp) => {
+      await vp.waitForAllTilesToRender();
+
+      const tree = getTileTree(vp);
+      (tree as IModelTileTree).debugMaxDepth = 1;
+      expect(tree.isDisposed).to.be.false;
+
+      vp.invalidateScene();
+      await vp.waitForAllTilesToRender();
+
+      const children = tree.rootTile.children!;
+      expect(children).not.to.be.undefined;
+      expect(children.length).to.equal(8);
+      for (const child of children)
+        expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
+
+      expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
+
+      vp.scroll({ x: -9999, y: -9999 }, { animateFrustumChange: false });
+
+      await waitForExpiration(vp);
+
+      expect(tree.isDisposed).to.be.false;
+      expect(tree.rootTile.children).to.be.undefined;
+
+      for (const child of children)
+        expect(child.loadStatus).to.equal(TileLoadStatus.Abandoned);
+
+      expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.true;
+    });
+  });
+
+  it("should not dispose of displayed tile trees", async () => {
+    await testViewports("0x41", imodel, 1854, 931, async (vp) => {
+      await vp.waitForAllTilesToRender();
+
+      const tree = getTileTree(vp);
+      expect(tree.isDisposed).to.be.false;
+
+      await waitForExpiration(vp);
+
+      expect(tree.isDisposed).to.be.false;
+    });
+  });
+
+  it("should dispose of undisplayed tile trees", async () => {
+    await testViewports("0x41", imodel, 1854, 931, async (vp) => {
+      await vp.waitForAllTilesToRender();
+
+      const tree = getTileTree(vp);
+      expect(tree.isDisposed).to.be.false;
+
+      vp.changeViewedModels([]);
+
+      await waitForExpiration(vp);
+
+      expect(tree.isDisposed).to.be.true;
+    });
+  });
+
+  it("should not dispose of tile trees displayed in second viewport", async () => {
+    await testViewports("0x41", imodel, 1854, 931, async (vp1: TestViewport) => {
+      // vp1 loads+renders all tiles, then sits idle.
+      await vp1.waitForAllTilesToRender();
+      const tree = getTileTree(vp1);
+      expect(tree.isDisposed).to.be.false;
+
+      // vp2 renders continuously.
+      await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp2) => {
+        await vp2.waitForAllTilesToRender();
+
+        vp2.changeViewedModels([]);
+
+        await waitForExpiration(vp2);
+
+        // vp2 no longers views this tile tree, but vp1 still does.
+        expect(tree.isDisposed).to.be.false;
+        expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
+      });
+    });
+  });
+
+  it("should not dispose of tiles displayed in second viewport", async () => {
+    await testViewports("0x41", imodel, 1854, 931, async (vp1: TestViewport) => {
+      // vp1 loads+renders all tiles, then sits idle.
+      await vp1.waitForAllTilesToRender();
+      const tree = getTileTree(vp1);
+      (tree as IModelTileTree).debugMaxDepth = 1;
+
+      // After changing max depth we must re-select tiles...
+      vp1.invalidateScene();
+      await vp1.waitForAllTilesToRender();
+
+      // vp2 renders continuously, selecting tiles each frame.
+      await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp2) => {
+        vp2.onRender.addListener((_) => vp2.invalidateScene());
+        await vp2.waitForAllTilesToRender();
+
+        const expectLoadedChildren = () => {
+          const children = tree.rootTile.children!;
+          expect(children).not.to.be.undefined;
+          expect(children.length).to.equal(8);
+          for (const child of children)
+            expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
+
+          expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
+        };
+
+        expectLoadedChildren();
+
+        vp2.scroll({ x: -9999, y: -9999 }, { animateFrustumChange: false });
+
+        await waitForExpiration(vp2);
+
+        expectLoadedChildren();
+      });
+    });
+  });
+});
+
+describe("White-on-white reversal", async () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+  });
+
+  after(async () => {
+    if (imodel) await imodel.close();
+    await IModelApp.shutdown();
+  });
+
+  async function test(expectedColors: Color[], setup: (vp: Viewport, vf: ViewFlags) => void, cleanup?: (vp: Viewport) => void): Promise<void> {
+    await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
+      const vf = vp.viewFlags.clone();
+      vf.renderMode = RenderMode.Wireframe;
+      vf.acsTriad = false;
+      setup(vp, vf);
+
+      vp.viewFlags = vf;
+      vp.invalidateRenderPlan();
+
+      await vp.waitForAllTilesToRender();
+      if (undefined !== cleanup)
+        cleanup(vp);
+
+      const colors = vp.readUniqueColors();
+      expect(colors.length).to.equal(expectedColors.length);
+      for (const color of expectedColors)
+        expect(colors.contains(color)).to.be.true;
+    });
+  }
+
+  const white = Color.fromRgba(255, 255, 255, 255);
+  const black = Color.fromRgba(0, 0, 0, 255);
+  const red = Color.fromRgba(255, 0, 0, 255);
+  const blue = Color.fromRgba(0, 0, 255, 255);
+
+  it("should not apply if background is not white", async () => {
+    await test([red, white], (vp, _vf) => {
+      vp.displayStyle.backgroundColor = ColorDef.red;
+    });
+  });
+
+  it("should apply if background is white and geometry is white", async () => {
+    await test([black, white], (vp, _vf) => {
+      vp.displayStyle.backgroundColor = ColorDef.white;
+    });
+  });
+
+  it("should not apply if explicitly disabled", async () => {
+    await test([white], (vp, vf) => {
+      vf.whiteOnWhiteReversal = false;
+      vp.displayStyle.backgroundColor = ColorDef.white;
+    });
+  });
+
+  it("should not apply if geometry is not white", async () => {
+    await test([white, blue], (vp, _vf) => {
+      class ColorOverride {
+        public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _viewport: Viewport): void {
+          ovrs.setDefaultOverrides(FeatureSymbology.Appearance.fromRgb(ColorDef.blue));
+        }
+      }
+
+      vp.displayStyle.backgroundColor = ColorDef.white;
+      vp.featureOverrideProvider = new ColorOverride();
+    });
+  });
+
+  it("should not apply to decorations", async () => {
+    class TestDecorator {
+      public decorate(context: DecorateContext) {
+        const vp = context.viewport;
+        const rect = vp.viewRect;
+
+        const viewOverlay = context.createGraphicBuilder(GraphicType.ViewOverlay);
+        viewOverlay.setSymbology(ColorDef.white, ColorDef.white, 4);
+        viewOverlay.addLineString([
+          new Point3d(0, rect.height / 2, 0),
+          new Point3d(rect.width / 2, rect.height / 2, 0),
+        ]);
+        viewOverlay.setSymbology(ColorDef.blue, ColorDef.blue, 4);
+        viewOverlay.addLineString([
+          new Point3d(rect.width / 2, rect.height / 2, 0),
+          new Point3d(rect.width, rect.height / 2, 0),
+        ]);
+        context.addDecorationFromBuilder(viewOverlay);
+
+        const viewBG = context.createGraphicBuilder(GraphicType.ViewBackground);
+        viewBG.setSymbology(ColorDef.white, ColorDef.white, 4);
+        viewBG.addLineString([
+          new Point3d(rect.width / 2, 0, 0),
+          new Point3d(rect.width / 2, rect.height / 2, 0),
+        ]);
+        viewBG.setSymbology(ColorDef.red, ColorDef.red, 4);
+        viewBG.addLineString([
+          new Point3d(rect.width / 2, rect.height / 2, 0),
+          new Point3d(rect.width / 2, rect.height, 0),
+        ]);
+        context.addDecorationFromBuilder(viewBG);
+
+        const worldOverlay = context.createGraphicBuilder(GraphicType.WorldOverlay);
+        worldOverlay.setSymbology(ColorDef.white, ColorDef.white, 4);
+        worldOverlay.addLineString([
+          vp.npcToWorld({ x: 0, y: 0, z: 0.5 }),
+          vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
+        ]);
+
+        const greenDef = ColorDef.create(0x00ff00);
+        worldOverlay.setSymbology(greenDef, greenDef, 4);
+        worldOverlay.addLineString([
+          vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
+          vp.npcToWorld({ x: 1, y: 1, z: 0.5 }),
+        ]);
+        context.addDecorationFromBuilder(worldOverlay);
+
+        const yellowDef = ColorDef.create(0x00ffff);
+        const world = context.createGraphicBuilder(GraphicType.WorldDecoration);
+        world.setSymbology(ColorDef.white, ColorDef.white, 4);
+        world.addLineString([
+          vp.npcToWorld({ x: 0, y: 1, z: 0.5 }),
+          vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
+        ]);
+        world.setSymbology(yellowDef, yellowDef, 4);
+        world.addLineString([
+          vp.npcToWorld({ x: 0.5, y: 0.5, z: 0.5 }),
+          vp.npcToWorld({ x: 1, y: 0, z: 0.5 }),
+        ]);
+        context.addDecorationFromBuilder(world);
+      }
+    }
+
+    const decorator = new TestDecorator();
+    const yellow = Color.fromRgba(255, 255, 0, 255);
+    const green = Color.fromRgba(0, 255, 0, 255);
+
+    await test([white, red, blue, green, yellow], (vp, _vf) => {
+      IModelApp.viewManager.addDecorator(decorator);
+      vp.changeViewedModels([]);
+      vp.displayStyle.backgroundColor = ColorDef.white;
+    }, (_vp) => {
+      IModelApp.viewManager.dropDecorator(decorator);
     });
   });
 });

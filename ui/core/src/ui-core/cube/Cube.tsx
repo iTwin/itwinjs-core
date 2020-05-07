@@ -6,16 +6,14 @@
  * @module Cube
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-
 import "./Cube.scss";
-
+import classnames from "classnames";
+import * as React from "react";
 import { Matrix3d } from "@bentley/geometry-core";
 import { CommonProps } from "../utils/Props";
 
 /** Cube Face enumeration
- * @beta
+ * @public
  */
 export enum Face {
   None = "",
@@ -28,7 +26,7 @@ export enum Face {
 }
 
 /** Properties for the [[Cube]] React component
- * @beta
+ * @public
  */
 export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
   faces?: { [key: string]: React.ReactNode };
@@ -36,7 +34,7 @@ export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, Comm
 }
 
 /** Cube React component used by the 3d Cube Navigation Aid
- * @beta
+ * @public
  */
 export class Cube extends React.PureComponent<CubeProps> {
   public render(): React.ReactNode {

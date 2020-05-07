@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { HashRouter, Route } from "react-router-dom";
-import Home from "./pages/Home/Home";
 import Footer from "./pages/Footer";
+import Home from "./pages/Home/Home";
 import StagePanels from "./pages/StagePanels";
 import Tools from "./pages/Tools";
 import Zones from "./pages/Zones";

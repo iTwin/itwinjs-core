@@ -8,7 +8,7 @@
 
 // cSpell:ignore classname
 
-import { ScreenViewport, SpatialViewState, OrthographicViewState, DrawingViewState, SheetViewState } from "@bentley/imodeljs-frontend";
+import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@bentley/imodeljs-frontend";
 
 /**
  * Various View utility methods

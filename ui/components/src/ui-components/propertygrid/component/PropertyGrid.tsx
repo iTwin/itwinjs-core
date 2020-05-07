@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import * as React from "react";
+import "./PropertyGrid.scss";
 import classnames from "classnames";
+import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-
 import { DisposeFunc } from "@bentley/bentleyjs-core";
-import { Orientation, Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
-import { PropertyRecord, PropertyValueFormat, ArrayValue, StructValue } from "@bentley/imodeljs-frontend";
+import { ArrayValue, PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
+import { CommonProps, Orientation, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { matchLinks } from "../../common/Links";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
-import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { matchLinks } from "../../common/Links";
-import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
-import "./PropertyGrid.scss";
 
 /** Properties for [[PropertyGrid]] React component
  * @public
@@ -47,10 +47,12 @@ export interface PropertyGridProps extends CommonProps {
   isPropertyEditingEnabled?: boolean;
   /** Callback for when properties are being edited @beta */
   onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
-  /** Callback for when links in properties are being clicked @beta */
-  onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
   /** Callback for when properties are updated @beta */
   onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
+
+  /** Callback for when links in properties are being clicked @beta */
+  onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
+
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
 
@@ -59,7 +61,12 @@ export interface PropertyGridProps extends CommonProps {
   /** The minimum width before the auto-switch to Vertical when the width is too narrow. Defaults to 300. @beta */
   horizontalOrientationMinWidth?: number;
 
-  /** Array of action button renderers for each property record @beta */
+  /**
+   * Array of action button renderers. Each renderer is called for each property and can decide
+   * to render an action button for the property or not.
+   *
+   * @beta
+   */
   actionButtonRenderers?: ActionButtonRenderer[];
 }
 

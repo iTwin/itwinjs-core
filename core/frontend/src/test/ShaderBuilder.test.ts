@@ -3,24 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect, assert } from "chai";
+import { assert, expect } from "chai";
 import { IModelApp } from "../IModelApp";
 import {
-  System,
-  VariableType,
-  VariableScope,
-  VariablePrecision,
-  ShaderVariable,
-  ShaderVariables,
-  ShaderProgram,
-  ProgramBuilder,
-  VertexShaderComponent,
-  FragmentShaderComponent,
+  CompileStatus, FragmentShaderComponent, ProgramBuilder, ShaderProgram, ShaderVariable, ShaderVariables, System, VariablePrecision, VariableScope,
+  VariableType, VertexShaderComponent,
 } from "../webgl";
 
 describe("Variable declaration tests", () => {
-  before(() => IModelApp.startup());
-  after(() => IModelApp.shutdown());
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   it("should convert ShaderVariable to glsl declaration", () => {
     let variable = ShaderVariable.createGlobal("x", VariableType.Float, "1.0", true);
@@ -91,8 +83,8 @@ describe("ShaderVariables tests", () => {
 });
 
 describe("Test shader compilation", () => {
-  before(() => IModelApp.startup());
-  after(() => IModelApp.shutdown());
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   it.skip("should build and compile a simple shader program", () => {
     const builder = new ProgramBuilder();
@@ -107,7 +99,7 @@ describe("Test shader compilation", () => {
     const prog = builder.buildProgram(System.instance.context);
     expect(prog.isDisposed).to.equal(false);
     expect(prog.isUncompiled).to.equal(true);
-    expect(prog.compile()).to.equal(true);
+    expect(prog.compile()).to.equal(CompileStatus.Success);
     expect(prog.isUncompiled).to.equal(false);
 
     prog.dispose();

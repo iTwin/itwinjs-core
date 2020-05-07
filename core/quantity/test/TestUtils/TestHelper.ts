@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { UnitProps, UnitsProvider, UnitConversion } from "../../src/Interfaces";
-import { BasicUnit, BadUnit } from "../../src/Unit";
+import { UnitConversion, UnitProps, UnitsProvider } from "../../src/Interfaces";
+import { BadUnit, BasicUnit } from "../../src/Unit";
 
 interface ConversionDef {
   numerator: number;

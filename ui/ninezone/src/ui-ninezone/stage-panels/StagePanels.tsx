@@ -6,10 +6,10 @@
  * @module StagePanels
  */
 
-import * as classnames from "classnames";
+import "./StagePanels.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./StagePanels.scss";
 
 /** Properties of [[StagePanels]] component.
  * @beta
@@ -57,7 +57,7 @@ export class StagePanels extends React.PureComponent<StagePanelsProps> {
         <div className="nz-panel">
           {this.props.rightPanel}
         </div>
-      </div >
+      </div>
     );
   }
 }

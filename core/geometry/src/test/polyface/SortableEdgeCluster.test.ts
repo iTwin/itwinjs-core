@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { IndexedEdgeMatcher, SortableEdgeCluster, SortableEdge } from "../../polyface/IndexedEdgeMatcher";
+import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
+import { Checker } from "../Checker";
 
 describe("SortableEdgeCluster", () => {
   it("hello", () => {

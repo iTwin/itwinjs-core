@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { initialize, terminate } from "../IntegrationTests";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
+import { initialize, terminate } from "../IntegrationTests";
 
 describe("Selection Scopes", () => {
 
@@ -15,13 +15,13 @@ describe("Selection Scopes", () => {
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    imodel = await SnapshotConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
 
   after(async () => {
-    await imodel.closeSnapshot();
-    terminate();
+    await imodel.close();
+    await terminate();
   });
 
   beforeEach(() => {

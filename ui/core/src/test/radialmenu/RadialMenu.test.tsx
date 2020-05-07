@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { mount, shallow } from "enzyme";
-import { expect } from "chai";
 import { render } from "@testing-library/react";
-
-import { RadialMenu, RadialButton } from "../../ui-core";
+import { RadialButton, RadialMenu } from "../../ui-core";
 import { TestUtils } from "../TestUtils";
 
 describe("RadialMenu", () => {
@@ -76,17 +75,20 @@ describe("RadialMenu", () => {
       wrapper.unmount();
     });
 
-    it("should call onEsc", () => {
+    it("should call onEsc", async () => {
       const spyMethod = sinon.fake();
       const component = render(<RadialMenu opened={true} left={100} top={100} innerRadius={10} outerRadius={100} onEsc={spyMethod} />);
+      await TestUtils.flushAsyncOperations();
+
       const item = component.getByTestId("core-radial-menu");
       item.dispatchEvent(createBubbledEvent("keyup", { key: "Escape" }));
       spyMethod.should.have.been.called;
     });
 
-    it("should call onBlur on window mouseup", () => {
+    it("should call onBlur on window mouseup", async () => {
       const spyMethod = sinon.fake();
       render(<RadialMenu opened={true} left={100} top={100} innerRadius={10} outerRadius={100} onBlur={spyMethod} />);
+      await TestUtils.flushAsyncOperations();
 
       const mouseUp = document.createEvent("HTMLEvents");
       mouseUp.initEvent("mouseup");

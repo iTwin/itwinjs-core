@@ -7,12 +7,10 @@
  */
 
 import * as React from "react";
-
 import { Logger } from "@bentley/bentleyjs-core";
 import { CommonProps } from "@bentley/ui-core";
-
-import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
 import { UiFramework } from "../UiFramework";
+import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
 
 // cSpell:ignore ZINDEX modeless
 

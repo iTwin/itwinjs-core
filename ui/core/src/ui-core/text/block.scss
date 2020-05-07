@@ -6,6 +6,6 @@
 
 @mixin uicore-text-block {
 
-    @include uicore-text( body );
-    @include uicore-text-block-spacing;
+  @include uicore-text( body );
+  @include uicore-text-block-spacing;
 }

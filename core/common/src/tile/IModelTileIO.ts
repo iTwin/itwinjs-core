@@ -6,24 +6,15 @@
  * @module Tile
  */
 
-import {
-  assert,
-  ByteStream,
-} from "@bentley/bentleyjs-core";
+import { assert, ByteStream } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { ElementAlignedBox3d } from "../geometry/Placement";
-import {
-  nextPoint3d64FromByteStream,
-  TileFormat,
-  TileHeader,
-} from "./TileIO";
-
-// tslint:disable:no-const-enum
+import { nextPoint3d64FromByteStream, TileFormat, TileHeader } from "./TileIO";
 
 /** Flags describing the geometry contained within a tile in iMdl format.
  * @internal
  */
-export const enum ImdlFlags {
+export enum ImdlFlags {
   /** No special flags */
   None = 0,
   /** The tile contains some curved geometry */
@@ -35,7 +26,7 @@ export const enum ImdlFlags {
 /** Describes the maximum major and minor version of the iMdl tile format supported by this version of this package.
  * @internal
  */
-export const enum CurrentImdlVersion {
+export enum CurrentImdlVersion {
   /** The unsigned 16-bit major version number. If the major version specified in the tile header is greater than this value, then this
    * front-end is not capable of reading the tile content. Otherwise, this front-end can read the tile content even if the header specifies a
    * greater minor version than CurrentVersion.Minor, although some data may be skipped.

@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 import { createDecoderModule } from "draco3d";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { QPoint3dList/*, QParams3d, QParams2d, QPoint2dList */ } from "@bentley/imodeljs-common";
 import { Point2d, Point3d } from "@bentley/geometry-core";
+import { QPoint3dList } from "@bentley/imodeljs-common";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
 
 /** @internal */

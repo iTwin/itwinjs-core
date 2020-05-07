@@ -7,27 +7,28 @@
  */
 
 import * as React from "react";
-
+import { ViewFlags } from "@bentley/imodeljs-common";
 // cSpell:ignore configurableui keyinbrowser
 import {
-  FitViewTool, FlyViewTool, IModelApp, PanViewTool, RotateViewTool, SelectionTool, ViewToggleCameraTool, WalkViewTool,
-  WindowAreaTool, ZoomViewTool, ViewUndoTool, ViewRedoTool,
-  ViewClipDecorationProvider,
-  ViewClipByShapeTool, ViewClipByRangeTool, ViewClipByElementTool, ViewClipByPlaneTool,
-  MeasureDistanceTool, MeasureLocationTool,
+  FitViewTool, FlyViewTool, IModelApp, MeasureDistanceTool, MeasureLocationTool, PanViewTool, RotateViewTool, SelectionTool, ViewClipByElementTool,
+  ViewClipByPlaneTool, ViewClipByRangeTool, ViewClipByShapeTool, ViewClipDecorationProvider, ViewRedoTool, ViewToggleCameraTool, ViewUndoTool,
+  WalkViewTool, WindowAreaTool, ZoomViewTool,
 } from "@bentley/imodeljs-frontend";
-import { PopupButton, PopupButtonChildrenRenderPropArgs } from "./toolbar/PopupButton";
-import { GroupItemDef } from "./toolbar/GroupItem";
-import { ViewFlags } from "@bentley/imodeljs-common";
-import { ToolItemDef } from "./shared/ToolItemDef";
-import { CustomItemDef } from "./shared/CustomItemDef";
-import { CommandItemDef } from "./shared/CommandItemDef";
-import { KeyinBrowser } from "./keyinbrowser/KeyinBrowser";
-import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
-import { BaseItemState } from "./shared/ItemDefBase";
+import { ConditionalBooleanValue, ConditionalStringValue } from "@bentley/ui-abstract";
+import { ToolbarPopupContext } from "@bentley/ui-components";
+import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../ui-framework";
 import { ContentViewManager } from "./content/ContentViewManager";
+import { KeyinBrowser } from "./keyinbrowser/KeyinBrowser";
+import { getIsHiddenIfSelectionNotActive, getSelectionContextSyncEventIds, selectionContextStateFunc } from "./selection/SelectionContextItemDef";
+import { CommandItemDef } from "./shared/CommandItemDef";
+import { CustomItemDef } from "./shared/CustomItemDef";
+import { BaseItemState } from "./shared/ItemDefBase";
+import { ToolItemDef } from "./shared/ToolItemDef";
+import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
+import { GroupItemDef } from "./toolbar/GroupItem";
 import { UiFramework } from "./UiFramework";
-import { getSelectionContextSyncEventIds, selectionContextStateFunc } from "./selection/SelectionContextItemDef";
+
+// tslint:disable: deprecation
 
 /** Utility Class that provides definitions of tools provided by iModel.js core. These definitions can be used to populate the UI.
  * @public
@@ -40,6 +41,14 @@ export class CoreTools {
   public static get keyinBrowserButtonItemDef() {
     return new CustomItemDef({
       customId: "uif:keyinbrowser",
+      iconSpec: "icon-process",
+      labelKey: "UiFramework:keyinbrowser.label",
+      popupPanelNode: <ToolbarPopupContext.Consumer>
+        {({ closePanel }) => (
+          <KeyinBrowser onExecute={closePanel} onCancel={closePanel} />
+        )}
+      </ToolbarPopupContext.Consumer>,
+      // DEPRECATED way
       reactElement: (
         <PopupButton iconSpec="icon-process" labelKey="UiFramework:keyinbrowser.label">
           {this._renderKeyInBrowser}
@@ -53,13 +62,12 @@ export class CoreTools {
       <KeyinBrowser onExecute={closePanel} onCancel={closePanel} />
     );
   }
-
   public static get fitViewCommand() {
     return new ToolItemDef({
       toolId: FitViewTool.toolId,
       iconSpec: FitViewTool.iconSpec,
-      label: () => FitViewTool.flyover,
-      description: () => FitViewTool.description,
+      label: FitViewTool.flyover,
+      description: FitViewTool.description,
       execute: () => { IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true); },
     });
   }
@@ -68,8 +76,8 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: WindowAreaTool.toolId,
       iconSpec: WindowAreaTool.iconSpec,
-      label: () => WindowAreaTool.flyover,
-      description: () => WindowAreaTool.description,
+      label: WindowAreaTool.flyover,
+      description: WindowAreaTool.description,
       execute: () => { IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -78,8 +86,8 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: ZoomViewTool.toolId,
       iconSpec: ZoomViewTool.iconSpec,
-      label: () => ZoomViewTool.flyover,
-      description: () => ZoomViewTool.description,
+      label: ZoomViewTool.flyover,
+      description: ZoomViewTool.description,
       execute: () => { IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -88,8 +96,8 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: PanViewTool.toolId,
       iconSpec: PanViewTool.iconSpec,
-      label: () => PanViewTool.flyover,
-      description: () => PanViewTool.description,
+      label: PanViewTool.flyover,
+      description: PanViewTool.description,
       execute: () => { IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -97,9 +105,14 @@ export class CoreTools {
   public static get rotateViewCommand() {
     return new ToolItemDef({
       toolId: RotateViewTool.toolId,
-      iconSpec: RotateViewTool.iconSpec,
-      label: () => RotateViewTool.flyover,
-      description: () => RotateViewTool.description,
+      iconSpec: new ConditionalStringValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl?.viewport?.view.is2d())
+          return "icon-rotate-left";
+        return "icon-gyroscope";
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
+      label: RotateViewTool.flyover,
+      description: RotateViewTool.description,
       execute: () => { IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -108,8 +121,12 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: WalkViewTool.toolId,
       iconSpec: WalkViewTool.iconSpec,
-      label: () => WalkViewTool.flyover,
-      description: () => WalkViewTool.description,
+      label: WalkViewTool.flyover,
+      description: WalkViewTool.description,
+      isHidden: new ConditionalBooleanValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        return !!activeContentControl?.viewport?.view.is2d();
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       execute: () => { IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -118,8 +135,8 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: SelectionTool.toolId,
       iconSpec: SelectionTool.iconSpec,
-      label: () => SelectionTool.flyover,
-      description: () => SelectionTool.description,
+      label: SelectionTool.flyover,
+      description: SelectionTool.description,
       execute: () => {
         IModelApp.tools.run(SelectionTool.toolId);
       },
@@ -129,9 +146,18 @@ export class CoreTools {
   public static get toggleCameraViewCommand() {
     return new ToolItemDef({
       toolId: ViewToggleCameraTool.toolId,
-      iconSpec: ViewToggleCameraTool.iconSpec,
-      label: () => ViewToggleCameraTool.flyover,
-      description: () => ViewToggleCameraTool.description,
+      iconSpec: new ConditionalStringValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl?.viewport?.view.is3d() && activeContentControl?.viewport?.isCameraOn)
+          return "icon-camera-animation";
+        return "icon-camera-animation-disabled";
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
+      label: ViewToggleCameraTool.flyover,
+      description: ViewToggleCameraTool.description,
+      isHidden: new ConditionalBooleanValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        return !!activeContentControl?.viewport?.view.is2d();
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       execute: () => { IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -140,8 +166,8 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: FlyViewTool.toolId,
       iconSpec: FlyViewTool.iconSpec,
-      label: () => FlyViewTool.flyover,
-      description: () => FlyViewTool.description,
+      label: FlyViewTool.flyover,
+      description: FlyViewTool.description,
       execute: () => { IModelApp.tools.run(FlyViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -151,10 +177,18 @@ export class CoreTools {
   public static get viewUndoCommand() {
     return new ToolItemDef({
       toolId: ViewUndoTool.toolId,
+      isDisabled: new ConditionalBooleanValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl && activeContentControl.viewport)
+          return !activeContentControl.viewport.isUndoPossible;
+        return false;
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       iconSpec: ViewUndoTool.iconSpec,
-      label: () => ViewUndoTool.flyover,
-      description: () => ViewUndoTool.description,
-      execute: () => { IModelApp.tools.run(ViewUndoTool.toolId, IModelApp.viewManager.selectedView); },
+      label: ViewUndoTool.flyover,
+      description: ViewUndoTool.description,
+      execute: () => {
+        IModelApp.tools.run(ViewUndoTool.toolId, IModelApp.viewManager.selectedView);
+      },
       stateSyncIds: [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
         const returnState: BaseItemState = { ...currentState };
@@ -170,9 +204,15 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: ViewRedoTool.toolId,
       iconSpec: ViewRedoTool.iconSpec,
-      label: () => ViewRedoTool.flyover,
-      description: () => ViewRedoTool.description,
+      label: ViewRedoTool.flyover,
+      description: ViewRedoTool.description,
       execute: () => { IModelApp.tools.run(ViewRedoTool.toolId, IModelApp.viewManager.selectedView); },
+      isDisabled: new ConditionalBooleanValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl && activeContentControl.viewport)
+          return !activeContentControl.viewport.isRedoPossible;
+        return false;
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       stateSyncIds: [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
         const returnState: BaseItemState = { ...currentState };
@@ -200,8 +240,8 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: ViewClipByPlaneTool.toolId,
       iconSpec: ViewClipByPlaneTool.iconSpec,
-      label: () => ViewClipByPlaneTool.flyover,
-      description: () => ViewClipByPlaneTool.description,
+      label: ViewClipByPlaneTool.flyover,
+      description: ViewClipByPlaneTool.description,
       execute: () => {
         this.turnOnClipVolume();
         IModelApp.tools.run(ViewClipByPlaneTool.toolId, ViewClipDecorationProvider.create());
@@ -214,8 +254,8 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: ViewClipByElementTool.toolId,
       iconSpec: ViewClipByElementTool.iconSpec,
-      label: () => ViewClipByElementTool.flyover,
-      description: () => ViewClipByElementTool.description,
+      label: ViewClipByElementTool.flyover,
+      description: ViewClipByElementTool.description,
       execute: () => {
         this.turnOnClipVolume();
         IModelApp.tools.run(ViewClipByElementTool.toolId, ViewClipDecorationProvider.create());
@@ -228,8 +268,8 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: ViewClipByRangeTool.toolId,
       iconSpec: ViewClipByRangeTool.iconSpec,
-      label: () => ViewClipByRangeTool.flyover,
-      description: () => ViewClipByRangeTool.description,
+      label: ViewClipByRangeTool.flyover,
+      description: ViewClipByRangeTool.description,
       execute: () => {
         this.turnOnClipVolume();
         IModelApp.tools.run(ViewClipByRangeTool.toolId, ViewClipDecorationProvider.create());
@@ -242,8 +282,8 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: ViewClipByShapeTool.toolId,
       iconSpec: ViewClipByShapeTool.iconSpec,
-      label: () => ViewClipByShapeTool.flyover,
-      description: () => ViewClipByShapeTool.description,
+      label: ViewClipByShapeTool.flyover,
+      description: ViewClipByShapeTool.description,
       execute: () => {
         this.turnOnClipVolume();
         IModelApp.tools.run(ViewClipByShapeTool.toolId, ViewClipDecorationProvider.create());
@@ -261,6 +301,10 @@ export class CoreTools {
       groupId: "sectionTools-group",
       labelKey: "UiFramework:tools.sectionTools",
       iconSpec: "icon-section-tool",
+      isHidden: new ConditionalBooleanValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        return !!activeContentControl?.viewport?.view.is2d();
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       items: [this.sectionByPlaneCommandItemDef, this.sectionByElementCommandItemDef, this.sectionByRangeCommandItemDef, this.sectionByShapeCommandItemDef],
       itemsInColumn: 4,
     });
@@ -271,8 +315,8 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: MeasureDistanceTool.toolId,
       iconSpec: MeasureDistanceTool.iconSpec,
-      label: () => MeasureDistanceTool.flyover,
-      description: () => MeasureDistanceTool.description,
+      label: MeasureDistanceTool.flyover,
+      description: MeasureDistanceTool.description,
       execute: () => {
         IModelApp.tools.run(MeasureDistanceTool.toolId);
       },
@@ -284,8 +328,8 @@ export class CoreTools {
     return new ToolItemDef({
       toolId: MeasureLocationTool.toolId,
       iconSpec: MeasureLocationTool.iconSpec,
-      label: () => MeasureLocationTool.flyover,
-      description: () => MeasureLocationTool.description,
+      label: MeasureLocationTool.flyover,
+      description: MeasureLocationTool.description,
       execute: () => {
         IModelApp.tools.run(MeasureLocationTool.toolId);
       },
@@ -312,6 +356,7 @@ export class CoreTools {
       labelKey: "UiFramework:buttons.clearSelection",
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
+      isHidden: getIsHiddenIfSelectionNotActive(),
       execute: () => {
         const iModelConnection = UiFramework.getIModelConnection();
         if (iModelConnection) {

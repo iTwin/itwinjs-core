@@ -13,6 +13,7 @@
 - [Information Hierarchy](./information-hierarchy.md)
 - [3D Guidance](./3d-guidance.md)
 - [Physical Models and Elements](./physical-models-and-elements.md)
+- [Type Definitions](./type-definitions.md)
 - [Functional Models and Elements](./functional-models-and-elements.md)
 - [Analysis Models and Elements](./analysis-models-and-elements.md)
 - [Information Models and Elements](./information-models-and-elements.md)

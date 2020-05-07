@@ -6,10 +6,10 @@
  * @module TypeConverters
  */
 
+import { Primitives } from "@bentley/ui-abstract";
 import { UiComponents } from "../UiComponents";
-import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
+import { StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { Primitives } from "@bentley/imodeljs-frontend";
 
 /** Boolean Type Converter.
  * @public

@@ -62,9 +62,7 @@ function useLongPress(args: UseLongPressArgs) {
       return;
     const newPosition = new Point(e.clientX, e.clientY);
     const distance = args.initialPosition.current.getDistanceTo(newPosition);
-    if (distance < 2)
-      return;
-    longPressTimer.current.stop();
+    distance >= 2 && longPressTimer.current.stop();
   }, [args.initialPosition]);
   React.useEffect(() => {
     longPressTimer.current.setOnExecute(args.onLongPress);

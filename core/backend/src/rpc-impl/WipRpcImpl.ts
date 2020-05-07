@@ -6,11 +6,11 @@
  * @module RpcInterface
  */
 
-import { RpcInterface, RpcManager, ChangedElements, IModelToken, IModelTokenProps } from "@bentley/imodeljs-common";
+import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
-import { IModelDb } from "../IModelDb";
-import { ChangeSummaryManager } from "../ChangeSummaryManager";
 import { ChangedElementsManager } from "../ChangedElementsManager";
+import { ChangeSummaryManager } from "../ChangeSummaryManager";
+import { BriefcaseDb } from "../IModelDb";
 
 /** The backend implementation of WipRpcInterface.
  * @internal
@@ -18,32 +18,27 @@ import { ChangedElementsManager } from "../ChangedElementsManager";
 export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
 
   public static register() { RpcManager.registerImpl(WipRpcInterface, WipRpcImpl); }
-  public async placeholder(_tokenProps: IModelTokenProps): Promise<string> { return "placeholder"; }
+  public async placeholder(_tokenProps: IModelRpcProps): Promise<string> { return "placeholder"; }
 
-  public async isChangeCacheAttached(tokenProps: IModelTokenProps): Promise<boolean> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    return ChangeSummaryManager.isChangeCacheAttached(IModelDb.find(iModelToken));
+  public async isChangeCacheAttached(tokenProps: IModelRpcProps): Promise<boolean> {
+    return ChangeSummaryManager.isChangeCacheAttached(BriefcaseDb.findByKey(tokenProps.key));
   }
 
-  public async attachChangeCache(tokenProps: IModelTokenProps): Promise<void> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    ChangeSummaryManager.attachChangeCache(IModelDb.find(iModelToken));
+  public async attachChangeCache(tokenProps: IModelRpcProps): Promise<void> {
+    ChangeSummaryManager.attachChangeCache(BriefcaseDb.findByKey(tokenProps.key));
   }
 
-  public async detachChangeCache(tokenProps: IModelTokenProps): Promise<void> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    const iModel: IModelDb = IModelDb.find(iModelToken);
+  public async detachChangeCache(tokenProps: IModelRpcProps): Promise<void> {
+    const iModel: BriefcaseDb = BriefcaseDb.findByKey(tokenProps.key);
     if (ChangeSummaryManager.isChangeCacheAttached(iModel))
       ChangeSummaryManager.detachChangeCache(iModel);
   }
 
-  public async getChangedElements(tokenProps: IModelTokenProps, startChangesetId: string, endChangesetId: string): Promise<ChangedElements | undefined> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    return ChangedElementsManager.getChangedElements(iModelToken.iModelId!, startChangesetId, endChangesetId);
+  public async getChangedElements(tokenProps: IModelRpcProps, startChangesetId: string, endChangesetId: string): Promise<ChangedElements | undefined> {
+    return ChangedElementsManager.getChangedElements(tokenProps.iModelId!, startChangesetId, endChangesetId);
   }
 
-  public async isChangesetProcessed(tokenProps: IModelTokenProps, changesetId: string): Promise<boolean> {
-    const iModelToken = IModelToken.fromJSON(tokenProps);
-    return ChangedElementsManager.isProcessed(iModelToken.iModelId!, changesetId);
+  public async isChangesetProcessed(tokenProps: IModelRpcProps, changesetId: string): Promise<boolean> {
+    return ChangedElementsManager.isProcessed(tokenProps.iModelId!, changesetId);
   }
 }

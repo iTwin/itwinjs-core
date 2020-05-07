@@ -7,14 +7,12 @@
  */
 
 import * as React from "react";
-
-import { UiError, AbstractMenuItemProps } from "@bentley/ui-abstract";
-import { ContextSubMenu, ContextMenuItem } from "@bentley/ui-core";
-
-import { ActionButtonItemDef } from "./ActionButtonItemDef";
-import { ItemDefBase } from "./ItemDefBase";
+import { AbstractMenuItemProps, UiError } from "@bentley/ui-abstract";
+import { ContextMenuItem, ContextSubMenu } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
+import { ActionButtonItemDef } from "./ActionButtonItemDef";
 import { CommandItemDef } from "./CommandItemDef";
+import { ItemDefBase } from "./ItemDefBase";
 
 /** Menu Item Properties
  * @beta

@@ -7,32 +7,32 @@
  */
 
 // import { Point2d } from "../Geometry2d";
-/* tslint:disable:variable-name jsdoc-format no-empty no-console*/
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range3d, Range1d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-
+import { CurveIntervalRole, CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { LineString3d } from "../curve/LineString3d";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
-import { CurveLocationDetail, CurveIntervalRole } from "../curve/CurveLocationDetail";
-
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { KnotVector, BSplineWrapMode } from "./KnotVector";
-import { LineString3d } from "../curve/LineString3d";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+/* tslint:disable:variable-name jsdoc-format no-empty no-console*/
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
-import { BezierCurveBase } from "./BezierCurveBase";
-import { BezierCurve3dH } from "./BezierCurve3dH";
-import { BezierCurve3d } from "./BezierCurve3d";
-import { BSpline1dNd } from "./BSpline1dNd";
+import { Range1d, Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Transform } from "../geometry3d/Transform";
+import { Point4d } from "../geometry4d/Point4d";
+import { BandedSystem } from "../numerics/BandedSystem";
 import { UnivariateBezier } from "../numerics/BezierPolynomials";
 import { Bezier1dNd } from "./Bezier1dNd";
-import { Point4d } from "../geometry4d/Point4d";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { BezierCurve3d } from "./BezierCurve3d";
+import { BezierCurve3dH } from "./BezierCurve3dH";
+import { BezierCurveBase } from "./BezierCurveBase";
+import { BSpline1dNd } from "./BSpline1dNd";
+import { BSplineWrapMode, KnotVector } from "./KnotVector";
 
 /**
  * Base class for BSplineCurve3d and BSplineCurve3dH.
@@ -362,6 +362,47 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     }
     return curve;
   }
+/**
+ *
+ * @param points pass-through points.
+ * @param order bspline order (1 more than degree)
+ */
+  public static createThroughPoints(points: IndexedXYZCollection, order: number): BSplineCurve3d | undefined {
+    const numPoints = points.length;
+    if (order > numPoints || order < 2)
+      return undefined;
+    const degree = order - 1;
+    const bw = 1 + 2 * degree;    // probably less than that . . just zeros at fringe.
+    const matrix = new Float64Array(bw * numPoints);
+    const basisFunctions = new Float64Array(order);
+    const rhs = new GrowableXYZArray();
+    const knots = KnotVector.createUniformClamped(numPoints, order - 1, 0.0, 1.0);
+    const xyz = Point3d.create();
+    for (let basePointIndex = 0; basePointIndex < numPoints; basePointIndex++) {
+      const u = knots.grevilleKnot(basePointIndex);
+      const spanIndex = knots.knotToLeftKnotIndex(u);
+      knots.evaluateBasisFunctions(spanIndex, u, basisFunctions);
+      // hmph .. how do the max points shift within the order spots?
+      let maxIndex = 0;
+      for (let i = 1; i < order; i++)
+        if (basisFunctions[i] > basisFunctions[maxIndex])
+          maxIndex = i;
+      const basisFunctionStartWithinRow = degree - maxIndex;
+      const rowStart = basePointIndex * bw;
+      for (let i = 0; i < order; i++) {
+        const realColumn = basePointIndex - degree + basisFunctionStartWithinRow + i;
+        if (rowStart + realColumn >= 0 && realColumn < numPoints)
+          matrix[rowStart + basisFunctionStartWithinRow + i] = basisFunctions[i];
+      }
+      rhs.push(points.getPoint3dAtUncheckedPointIndex(basePointIndex, xyz));
+    }
+    const poles = BandedSystem.solveBandedSystemMultipleRHS(numPoints, bw, matrix, 3, rhs.float64Data());
+    if (poles) {
+      return BSplineCurve3d.create(poles, knots.knots, order);
+    }
+    return undefined;
+  }
+
   /** Create a bspline with given knots.
    *
    * *  Two count conditions are recognized:

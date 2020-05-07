@@ -6,20 +6,19 @@
 /* tslint:disable: no-console */
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeMaskValidation, HalfEdgePointerInspector } from "../../topology/HalfEdgeGraphValidation";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
-
-import { Angle } from "../../geometry3d/Angle";
+import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Geometry } from "../../Geometry";
-import { LineSegment3d } from "../../curve/LineSegment3d";
 
 function logGraph(graph: HalfEdgeGraph, title: any) {
   console.log(" ==begin== " + title);

@@ -6,10 +6,10 @@
  * @module ToolSettings
  */
 
+import { IModelApp, InteractiveTool } from "@bentley/imodeljs-frontend";
+import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
-import { IModelApp, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, InteractiveTool } from "@bentley/imodeljs-frontend";
-import { Logger } from "@bentley/bentleyjs-core";
-import { UiFramework } from "../../UiFramework";
+import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
 
 // -----------------------------------------------------------------------------
 // Events
@@ -20,7 +20,7 @@ import { UiFramework } from "../../UiFramework";
  */
 export interface SyncToolSettingsPropertiesEventArgs {
   toolId: string;
-  syncProperties: ToolSettingsPropertySyncItem[];
+  syncProperties: DialogPropertySyncItem[];
 }
 
 /** Sync Tool Settings Properties Event class.
@@ -41,14 +41,16 @@ export class ToolUiManager {
   private static _activeToolLabel: string = "";
   private static _activeToolDescription: string = "";
 
-  private static syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
-    // istanbul ignore next
-    if (toolId !== ToolUiManager._toolIdForToolSettings) {
-      Logger.logError(UiFramework.loggerCategory(this), `Sync tool with UI - ToolId ${toolId} does not match id of cached properties ${ToolUiManager._toolIdForToolSettings}`);
-      return;
-    }
-
+  // istanbul ignore next
+  private static syncToolSettingsProperties(toolId: string, syncProperties: DialogPropertySyncItem[]): void {
     ToolUiManager.onSyncToolSettingsProperties.emit({ toolId, syncProperties });
+  }
+
+  private static dispatchSyncUiEvent(syncEventId: string, useImmediateDispatch?: boolean): void {
+    if (useImmediateDispatch)
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(syncEventId);
+    else
+      SyncUiEventDispatcher.dispatchSyncUiEvent(syncEventId);
   }
 
   /** Initializes the ToolUiManager */
@@ -56,6 +58,7 @@ export class ToolUiManager {
     // istanbul ignore else
     if (IModelApp && IModelApp.toolAdmin) {
       IModelApp.toolAdmin.toolSettingsChangeHandler = ToolUiManager.syncToolSettingsProperties;
+      IModelApp.toolAdmin.toolSyncUiEventDispatcher = ToolUiManager.dispatchSyncUiEvent;
     }
   }
 
@@ -68,7 +71,7 @@ export class ToolUiManager {
   }
 
   /** Cache Tool Settings properties */
-  public static initializeToolSettingsData(toolSettingsProperties: ToolSettingsPropertyRecord[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean {
+  public static initializeToolSettingsData(toolSettingsProperties: DialogItem[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean {
     ToolUiManager.clearToolSettingsData();
     // istanbul ignore else
     if (toolLabel)
@@ -97,7 +100,7 @@ export class ToolUiManager {
   }
 
   /** Returns the toolSettings properties that can be used to populate the tool settings widget. */
-  public static get toolSettingsProperties(): ToolSettingsPropertyRecord[] {
+  public static get toolSettingsProperties(): DialogItem[] {
     if (IModelApp.toolAdmin && IModelApp.toolAdmin.activeTool && IModelApp.toolAdmin.activeTool.toolId === ToolUiManager._toolIdForToolSettings) {
       const properties = IModelApp.toolAdmin.activeTool.supplyToolSettingsProperties();
       if (properties)

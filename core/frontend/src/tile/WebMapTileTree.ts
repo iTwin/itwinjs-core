@@ -3,182 +3,76 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 /// cSpell:ignore quadkey
 
+import { assert, compareBooleans, compareNumbers, compareStrings, Id64String } from "@bentley/bentleyjs-core";
+import { Range1d, Range3d, Transform, XYZProps } from "@bentley/geometry-core";
 import {
-  Id64String,
-  assert,
-  compareBooleans,
-  compareNumbers,
-  compareStrings,
-} from "@bentley/bentleyjs-core";
-import {
-  BackgroundMapProviderName,
-  BackgroundMapType,
-  Feature,
-  FeatureTable,
-  GeoCoordStatus,
-  ImageSource,
-  ImageSourceFormat,
-  PackedFeatureTable,
+  BackgroundMapProviderName, BackgroundMapType, Feature, FeatureTable, GeoCoordStatus, GlobeMode, ImageSource, ImageSourceFormat, PackedFeatureTable,
   RenderTexture,
-  TileProps,
-  TileTreeProps,
 } from "@bentley/imodeljs-common";
-import {
-  Matrix4d,
-  Point3d,
-  Point4d,
-  Range1d,
-  Range3d,
-  Range3dProps,
-  Transform,
-  TransformProps,
-  XYZProps,
-} from "@bentley/geometry-core";
-import {
-  TileTree,
-  ContextTileLoader,
-  TileTreeOwner,
-  TileGraphicType,
-  TileTreeSupplier,
-  tileTreeParamsFromJSON,
-  Tile, TileLoadPriority,
-  TileContent,
-  TileDrawArgs,
-  TileParams,
-  TileRequest,
-  MapTilingScheme,
-  QuadId,
-  WebMercatorTilingScheme,
-  MapTileTree,
-  MapTile,
-  MapTileTreeReference,
-  ImageryProvider,
-  MapTileGeometryAttributionProvider,
-} from "./internal";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 import { RenderSystem } from "../render/RenderSystem";
+import {
+  calculateEcefToDb, ImageryProvider, MapTile, MapTileGeometryAttributionProvider, MapTileTree, MapTileTreeReference, MapTilingScheme, QuadId,
+  RealityTile, RealityTileLoader, RealityTileTreeParams, Tile, TileContent, TileGraphicType, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
+  TileTreeSupplier, WebMercatorTilingScheme,
+} from "./internal";
 
 /** @internal */
-export class WebMapTileTreeProps implements TileTreeProps {
-  /** The unique identifier of this TileTree within the iModel */
+export class WebMapTileTreeProps implements RealityTileTreeParams {
   public id: string;
-  /** Metadata describing the tree's root Tile. */
-  public rootTile: TileProps;
-  /** Transform tile coordinates to iModel world coordinates. */
-  public location: TransformProps;
+  public modelId: string;
+  public location = Transform.createIdentity();
   public yAxisUp = true;
-  public maxTilesToSkip = 10;
-  public constructor(groundBias: number, modelId: Id64String, heightRange?: Range1d, maxTilesToSkip?: number) {
-    const corners: Point3d[] = [];
-    corners[0] = new Point3d(-10000000, -10000000, groundBias);
-    corners[1] = new Point3d(-10000000, 10000000, groundBias);
-    corners[2] = new Point3d(10000000, -10000000, groundBias);
-    corners[3] = new Point3d(10000000, 10000000, groundBias);
+  public is3d = true;
+  public rootTile = { contentId: "", range: Range3d.createNull(), maximumSize: 0 };
+  public loader: MapTileLoaderBase;
+  public iModel: IModelConnection;
+  public get priority(): TileLoadPriority { return this.loader.priority; }
 
-    this.rootTile = new WebMapTileProps("0_0_0", 0, corners, heightRange ? heightRange.low : groundBias, heightRange ? heightRange.high : groundBias);
-    this.location = Transform.createIdentity();
-    this.id = modelId;
-    if (maxTilesToSkip)
-      this.maxTilesToSkip = maxTilesToSkip;
+  public constructor(modelId: Id64String, loader: MapTileLoaderBase, iModel: IModelConnection) {
+    this.id = this.modelId = modelId;
+    this.loader = loader;
+    this.iModel = iModel;
   }
 }
 
 /** @internal */
-export class WebMapTileProps implements TileProps {
-  public readonly contentId: string;
-  public readonly range: Range3dProps;
-  public readonly contentRange?: Range3dProps;  // not used for WebMap tiles.
-  public readonly maximumSize: number;
-  public readonly isLeaf: boolean = false;
-  public readonly corners: Point3d[];
-  private static _scratchRange = Range3d.create();
-
-  constructor(thisId: string, level: number, corners: Point3d[], zLow: number, zHigh: number) {
-    this.corners = corners;
-
-    WebMapTileProps._scratchRange.setNull();
-    WebMapTileProps._scratchRange.extendArray(corners);
-    WebMapTileProps._scratchRange.low.z = zLow;
-    WebMapTileProps._scratchRange.high.z = zHigh;
-    this.range = WebMapTileProps._scratchRange.toJSON();
-
-    this.contentId = thisId;
-    this.maximumSize = (0 === level) ? 0.0 : 512;
-  }
-}
-
-/** @internal */
-export abstract class MapTileLoaderBase extends ContextTileLoader {
+export abstract class MapTileLoaderBase extends RealityTileLoader {
   protected _applyLights = false;
-  protected _featureTable: PackedFeatureTable;
-  public get heightRange(): Range1d | undefined { return this._heightRange; }
+  public readonly featureTable: PackedFeatureTable;
+  // public get heightRange(): Range1d | undefined { return this._heightRange; }
   protected readonly _heightRange: Range1d | undefined;
   public get isContentUnbounded(): boolean { return true; }
-  public isLeaf(quadId: QuadId) { return quadId.level >= this.maxDepth; }
+  public isTileAvailable(quadId: QuadId) { return quadId.level <= this.maxDepth; }
 
-  constructor(protected _iModel: IModelConnection, protected _modelId: Id64String, protected _groundBias: number, protected _mapTilingScheme: MapTilingScheme, heightRange?: Range1d) {
+  constructor(protected _iModel: IModelConnection, protected _modelId: Id64String, protected _groundBias: number, protected _mapTilingScheme: MapTilingScheme, public readonly isDrape?: boolean) {
     super();
     const featureTable = new FeatureTable(1, this._modelId);
     const feature = new Feature(this._modelId);
     featureTable.insert(feature);
-    this._featureTable = PackedFeatureTable.pack(featureTable);
-    this._heightRange = (heightRange === undefined) ? undefined : heightRange.clone();
+    this.featureTable = PackedFeatureTable.pack(featureTable);
   }
 
   public get priority(): TileLoadPriority { return TileLoadPriority.Map; }
-  public tileRequiresLoading(params: TileParams): boolean {
-    return 0.0 !== params.maximumSize;
-  }
   public abstract async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent>;
   public abstract get maxDepth(): number;
   public abstract async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response>;
-  public async getChildrenProps(_parent: Tile): Promise<TileProps[]> {
-    assert(false);      // children are generated synchronously in MapTile....
-    return [];
+
+  public async loadChildren(_tile: RealityTile): Promise<Tile[] | undefined> {
+    assert(false); // children are generated synchronously in MapTile....
+    return undefined;
   }
 }
 
 /** @internal */
-export class WebMapDrawArgs extends TileDrawArgs {
-  private readonly _tileToView: Matrix4d;
-  private readonly _scratchViewCorner = Point4d.createZero();
-
-  public constructor(args: TileDrawArgs) {
-    super(args.context, args.location, args.root, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, false, args.graphics.symbologyOverrides);
-
-    const tileToWorld = Matrix4d.createTransform(this.location);
-    this._tileToView = tileToWorld.multiplyMatrixMatrix(this.worldToViewMap.transform0);
-  }
-
-  public getPixelSize(tile: Tile): number {
-    /* For background maps which contain only rectangles with textures, use the projected screen rectangle rather than sphere to calculate pixel size.  */
-    const rangeCorners = tile.contentRange.corners();
-    const xRange = Range1d.createNull();
-    const yRange = Range1d.createNull();
-
-    let behindEye = false;
-    for (const corner of rangeCorners) {
-      const viewCorner = this._tileToView.multiplyPoint3d(corner, 1, this._scratchViewCorner);
-      if (viewCorner.w < 0.0) {
-        behindEye = true;
-        break;
-      }
-
-      xRange.extendX(viewCorner.x / viewCorner.w);
-      yRange.extendX(viewCorner.y / viewCorner.w);
-    }
-
-    if (!behindEye)
-      return xRange.isNull ? 1.0E-3 : Math.sqrt(xRange.length() * yRange.length());
-
-    return super.getPixelSize(tile);
-  }
+export interface WebMapTileContent extends TileContent {
+  imageryTexture?: RenderTexture;
 }
 
 /** @internal */
@@ -191,13 +85,13 @@ export class WebMapTileLoader extends MapTileLoaderBase {
       this._imageryProvider.geometryAttributionProvider = provider;
   }
 
-  public get parentsAndChildrenExclusive(): boolean { return false; }     // Allow map tiles to draw both parent and children -- this will cause these to be displayed with parents first.
+  public get parentsAndChildrenExclusive(): boolean { return this._globeMode !== GlobeMode.Plane; } // Allow map tiles to draw both parent and children if in planar/columbus -- this will cause these to be displayed with parents first.
   public get imageryProvider(): ImageryProvider {
     return this._imageryProvider;
   }
 
-  constructor(private _imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, mapTilingScheme: MapTilingScheme, private _filterTextures: boolean, heightRange?: Range1d) {
-    super(iModel, modelId, groundBias, mapTilingScheme, heightRange);
+  constructor(private _imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, mapTilingScheme: MapTilingScheme, private _filterTextures: boolean, private _globeMode: GlobeMode, isDrape?: boolean) {
+    super(iModel, modelId, groundBias, mapTilingScheme, isDrape);
   }
 
   public async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
@@ -205,28 +99,38 @@ export class WebMapTileLoader extends MapTileLoaderBase {
     return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
   }
 
-  public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
+  public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<WebMapTileContent> {
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
 
     assert(data instanceof ImageSource);
     assert(tile instanceof MapTile);
-    const content: TileContent = {};
+    const content: WebMapTileContent = {};
     const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system, isCanceled);
     if (undefined === texture)
       return content;
 
+    if (this.isDrape) {
+      content.imageryTexture = texture;
+      return content;
+    }
+
     // we put the corners property on WebMapTiles
-    const corners = (tile as any).corners;
-    const graphic = system.createTile(texture, corners, 0);
-    content.graphic = undefined !== graphic ? system.createBatch(graphic, this._featureTable, tile.range) : graphic;
+    assert(tile instanceof MapTile);
+    const mapTile = tile as MapTile;
+    const graphic = mapTile.getGraphic(system, texture);
+
+    content.graphic = undefined !== graphic ? system.createBatch(graphic, this.featureTable, tile.range) : graphic;
 
     return content;
   }
 
   private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem, isCanceled: () => boolean): Promise<RenderTexture | undefined> {
     try {
-      const textureParams = new RenderTexture.Params(undefined, this._filterTextures ? RenderTexture.Type.FilteredTileSection : RenderTexture.Type.TileSection);
+      const isOwned = this.isDrape; // drape textures are shared with terrain tile graphics - let garbage collector dispose of them.
+      const type = this._filterTextures ? RenderTexture.Type.FilteredTileSection : RenderTexture.Type.TileSection;
+      const textureParams = new RenderTexture.Params(undefined, type, isOwned);
+
       return imageElementFromImageSource(imageSource)
         .then((image) => isCanceled() ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
         .catch((_) => undefined);
@@ -250,15 +154,19 @@ export abstract class TerrainTileLoaderBase extends MapTileLoaderBase {
 /** Methods and properties common to both BackgroundMapProviders and OverlayMapProviders
  * @internal
  */
-interface BackgroundMapTreeId {
+export interface BackgroundMapTreeId {
   providerName: BackgroundMapProviderName;
   mapType: BackgroundMapType;
   groundBias: number;
   forDrape: boolean;
   filterTextures: boolean;
+  globeMode: GlobeMode;
+  wantSkirts: boolean;
 }
 
 class BackgroundMapTreeSupplier implements TileTreeSupplier {
+  public readonly isEcefDependent = true;
+
   public compareTileTreeIds(lhs: BackgroundMapTreeId, rhs: BackgroundMapTreeId): number {
     let cmp = compareStrings(lhs.providerName, rhs.providerName);
     if (0 === cmp) {
@@ -267,8 +175,15 @@ class BackgroundMapTreeSupplier implements TileTreeSupplier {
         cmp = compareNumbers(lhs.groundBias, rhs.groundBias);
         if (0 === cmp) {
           cmp = compareBooleans(lhs.forDrape, rhs.forDrape);
-          if (0 === cmp)
+          if (0 === cmp) {
             cmp = compareBooleans(lhs.filterTextures, rhs.filterTextures);
+            if (0 === cmp) {
+              cmp = compareNumbers(lhs.globeMode, rhs.globeMode);
+              if (0 === cmp)
+                cmp = compareBooleans(lhs.wantSkirts, rhs.wantSkirts);
+
+            }
+          }
         }
       }
     }
@@ -281,7 +196,7 @@ class BackgroundMapTreeSupplier implements TileTreeSupplier {
     if (undefined === imageryProvider)
       return undefined;
 
-    return createTileTreeFromImageryProvider(imageryProvider, id.groundBias, id.filterTextures, iModel);
+    return createTileTreeFromImageryProvider(imageryProvider, id.groundBias, id.filterTextures, id.globeMode, id.wantSkirts, iModel, id.forDrape);
   }
 }
 
@@ -295,6 +210,7 @@ export function getBackgroundMapTreeSupplier(): TileTreeSupplier {
 /** Better if folks implement their own TileTreeSupplier which can share tiles... */
 class ImageryTreeSupplier implements TileTreeSupplier {
   public readonly provider: ImageryProvider;
+  public readonly isEcefDependent = true;
 
   public constructor(provider: ImageryProvider) {
     this.provider = provider;
@@ -302,14 +218,18 @@ class ImageryTreeSupplier implements TileTreeSupplier {
 
   public compareTileTreeIds(lhs: number, rhs: number) { return compareNumbers(lhs, rhs); }
 
-  public async createTileTree(options: { groundBias: number, filterTextures: boolean }, iModel: IModelConnection): Promise<TileTree | undefined> {
-    return createTileTreeFromImageryProvider(this.provider, options.groundBias, options.filterTextures, iModel);
+  public async createTileTree(options: { groundBias: number, filterTextures: boolean, globeMode: GlobeMode, wantSkirts: boolean }, iModel: IModelConnection): Promise<TileTree | undefined> {
+    return createTileTreeFromImageryProvider(this.provider, options.groundBias, options.filterTextures, options.globeMode, options.wantSkirts, iModel, false);
   }
 }
+
 /** Returns whether a GCS converter is available.
  * @internal
  */
 export async function getGcsConverterAvailable(iModel: IModelConnection) {
+  if (iModel.noGcsDefined)
+    return false;
+
   // Determine if we have a usable GCS.
   const converter = iModel.geoServices.getConverter("WGS84");
   if (undefined === converter)
@@ -328,7 +248,7 @@ export async function getGcsConverterAvailable(iModel: IModelConnection) {
 /** Represents the service that is providing map tiles for Web Mercator models (background maps).
  * @internal
  */
-export async function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise<TileTree | undefined> {
+export async function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, useDepthBuffer: boolean, iModel: IModelConnection, forDrape = false): Promise<TileTree | undefined> {
   if (undefined === iModel.ecefLocation)
     return undefined;
 
@@ -336,11 +256,11 @@ export async function createTileTreeFromImageryProvider(imageryProvider: Imagery
 
   const modelId = iModel.transientIds.next;
   const tilingScheme = new WebMercatorTilingScheme();
-  const heightRange = Range1d.createXX(groundBias, groundBias);
   const haveConverter = await getGcsConverterAvailable(iModel);
-  const loader = new WebMapTileLoader(imageryProvider, iModel, modelId, groundBias, tilingScheme, filterTextures);
-  const tileTreeProps = new WebMapTileTreeProps(groundBias, modelId);
-  return new MapTileTree(tileTreeParamsFromJSON(tileTreeProps, iModel, true, loader, modelId), groundBias, haveConverter, tilingScheme, true, heightRange);
+  const loader = new WebMapTileLoader(imageryProvider, iModel, modelId, bimElevationBias, tilingScheme, filterTextures, globeMode, forDrape);
+  const tileTreeProps = new WebMapTileTreeProps(modelId, loader, iModel);
+  const ecefToDb = await calculateEcefToDb(iModel, bimElevationBias);
+  return new MapTileTree(tileTreeProps, ecefToDb!, bimElevationBias, haveConverter, tilingScheme, imageryProvider.maximumZoomLevel, globeMode, false, useDepthBuffer);
 }
 
 /** A specialization of MapTileTreeReference associated with a specific ImageryProvider. Provided mostly as a convenience.
@@ -365,6 +285,10 @@ export class MapImageryTileTreeReference extends MapTileTreeReference {
     this.transparency = transparency;
     this._iModel = iModel;
     this._supplier = new ImageryTreeSupplier(imageryProvider);
+  }
+
+  public get castsShadows() {
+    return false;
   }
 
   public get treeOwner(): TileTreeOwner {

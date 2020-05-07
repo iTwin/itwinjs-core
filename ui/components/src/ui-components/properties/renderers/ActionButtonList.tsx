@@ -6,12 +6,12 @@
  * @module Properties
  */
 
+import "./ActionButtonList.scss";
 import * as React from "react";
+import { PropertyRecord } from "@bentley/ui-abstract";
 // tslint:disable-next-line: no-duplicate-imports
 import { Orientation } from "@bentley/ui-core";
 import { ActionButtonRenderer, ActionButtonRendererProps } from "./ActionButtonRenderer";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
-import "./ActionButtonList.scss";
 
 /** Properties of [[ActionButtonList]] React component
  * @beta
@@ -61,8 +61,7 @@ interface ActionButtonContainerProps {
   rendererProps: ActionButtonRendererProps;
 }
 
-// tslint:disable-next-line: variable-name
-const ActionButtonContainer: React.FC<ActionButtonContainerProps> = (props: ActionButtonContainerProps) => {
+function ActionButtonContainer(props: ActionButtonContainerProps) {
   const actionButton = props.renderer(props.rendererProps);
   if (!actionButton)
     return null;
@@ -72,4 +71,4 @@ const ActionButtonContainer: React.FC<ActionButtonContainerProps> = (props: Acti
       {actionButton}
     </div>
   );
-};
+}

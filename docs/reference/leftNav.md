@@ -7,18 +7,35 @@ packageClassification:  [
          "imodeljs-frontend",
          "imodeljs-common",
          "imodeljs-backend",
-         "imodeljs-clients",
-         "imodeljs-clients-backend",
          "imodeljs-markup",
          "imodeljs-i18n",
+         "backend-itwin-client",
          "bentleyjs-core",
-         "frontend-devtools",
          "geometry-core",
-         "logger-config"
+         "logger-config",
+         "frontend-devtools",
+         "webgl-compatibility"
       ]
    },
    {
-      "order":"2",
+     "order":"2",
+     "header": "iModel.js Client Packages",
+     "packages": [
+       "context-registry-client",
+       "extension-client",
+       "forms-data-management-client",
+       "frontend-authorization-client",
+       "imodelhub-client",
+       "itwin-client",
+       "product-settings-client",
+       "projectshare-client",
+       "rbac-client",
+       "reality-data-client",
+       "usage-logging-client"
+     ]
+   },
+   {
+      "order":"3",
       "header":"iModel.js UI Packages",
       "packages":[
          "ui-abstract",
@@ -29,7 +46,7 @@ packageClassification:  [
       ]
    },
    {
-      "order":"3",
+      "order":"4",
       "header":"iModel.js Presentation Packages",
       "packages":[
          "presentation-common",

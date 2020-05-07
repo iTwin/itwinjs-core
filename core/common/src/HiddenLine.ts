@@ -41,7 +41,7 @@ export namespace HiddenLine {
   }
 
   /** Describes the symbology with which edges should be drawn. */
-  export class Style implements StyleProps {
+  export class Style {
     /** @internal */
     public get ovrColor(): boolean { return undefined !== this.color; }
     /** If defined, the color used to draw the edges. If undefined, edges are drawn using the element's line color. */
@@ -101,7 +101,7 @@ export namespace HiddenLine {
         return this;
 
       return Style.fromJSON({
-        color: undefined !== color ? color.clone() : undefined,
+        color: color?.toJSON(),
         ovrColor: undefined !== color,
         pattern: this.pattern,
         width: this.width,
@@ -114,7 +114,7 @@ export namespace HiddenLine {
         return this;
 
       return Style.fromJSON({
-        color: this.color,
+        color: this.color?.toJSON(),
         ovrColor: this.ovrColor,
         pattern,
         width: this.width,
@@ -127,7 +127,7 @@ export namespace HiddenLine {
         return this;
 
       return Style.fromJSON({
-        color: this.color,
+        color: this.color?.toJSON(),
         ovrColor: this.ovrColor,
         pattern: this.pattern,
         width,
@@ -147,7 +147,7 @@ export namespace HiddenLine {
     public toJSON(): StyleProps {
       return {
         ovrColor: this.ovrColor,
-        color: undefined !== this.color ? this.color : ColorDef.white,
+        color: this.color ? this.color.toJSON() : ColorDef.white.toJSON(),
         pattern: undefined !== this.pattern ? this.pattern : LinePixels.Invalid,
         width: undefined !== this.width ? this.width : 0,
       };
@@ -213,8 +213,8 @@ export namespace HiddenLine {
       const hidden = props.hidden;
       const transparencyThreshold = props.transThreshold;
       return Settings.fromJSON({
-        visible: undefined !== visible ? visible : this.visible,
-        hidden: undefined !== hidden ? hidden : this.hidden,
+        visible: undefined !== visible ? visible : this.visible.toJSON(),
+        hidden: undefined !== hidden ? hidden : this.hidden.toJSON(),
         transThreshold: undefined !== transparencyThreshold ? transparencyThreshold : this.transparencyThreshold,
       });
     }

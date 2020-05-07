@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Utilities
+ * @module Toolbar
  */
 
 /** Available directions.
  * @beta
  */
 export enum Direction {
-  Left,
+  Left = 1,
   Top,
   Right,
   Bottom,

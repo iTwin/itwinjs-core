@@ -26,6 +26,7 @@ const out = (argv.out === undefined) ? paths.appDocs : argv.out;
 const json = (argv.json === undefined) ? paths.appJsonDocs : argv.json;
 
 const baseUrlOptions = (argv.baseUrl === undefined) ? [] : ["--baseUrl", argv.baseUrl];
+console.log("Input: " + argv)
 const includeOptions = (argv.includes === undefined) ? [] : ["--includes", argv.includes];
 
 let excludeList = "**/node_modules/**/*,**/*test*/**/*";
@@ -74,7 +75,7 @@ const args = [
 console.log("Arguments to TypeDoc: " + JSON.stringify(args, null, 2));
 
 spawn(require.resolve(".bin/typedoc"), args).then((code) => {
-  // Copy index.ts file to json output folder and rename to index.ts if a file is specified. Needed by bemetalsmith for adding descriptions
+  // Copy index.ts file to json output folder and rename to index.ts if a file is specified. Needed to add descriptions within the barrel file.
   const outputDir = path.parse(json).dir;
   if (argv.tsIndexFile) {
     cpx.copySync(path.join(source, argv.tsIndexFile), outputDir);

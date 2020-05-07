@@ -7,11 +7,11 @@
  * @module Curve
  */
 
-import { CurveLocationDetailPair, CurveLocationDetail } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
 import { Geometry } from "../../Geometry";
-import { CurveCollection, CurveChain } from "../CurveCollection";
+import { CurveChain, CurveCollection } from "../CurveCollection";
 import { CurveCurve } from "../CurveCurve";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
 import { Path } from "../Path";
 
 /**

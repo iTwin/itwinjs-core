@@ -3,21 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { RpcManager, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { ConnectClient, Config } from "@bentley/imodeljs-clients";
-import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations } from "@bentley/imodeljs-backend";
-import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
+import { Config, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
+import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
+import { IModelReadRpcInterface, RpcManager } from "@bentley/imodeljs-common";
+
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
-  enableTransactions?: boolean;
-  openMode?: OpenMode;
 }
 
 export class KnownTestLocations {
@@ -38,10 +37,10 @@ export class KnownTestLocations {
 
 export class IModelTestUtils {
 
-  private static _connectClient: ConnectClient | undefined;
-  public static get connectClient(): ConnectClient {
+  private static _connectClient: ContextRegistryClient | undefined;
+  public static get connectClient(): ContextRegistryClient {
     if (!IModelTestUtils._connectClient)
-      IModelTestUtils._connectClient = new ConnectClient();
+      IModelTestUtils._connectClient = new ContextRegistryClient();
     return IModelTestUtils._connectClient!;
   }
 
@@ -55,48 +54,57 @@ export class IModelTestUtils {
     return stat;
   }
 
-  public static openIModel(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
+  private static copyIModelForOpen(filename: string, opts: IModelTestUtilsOpenOptions): string {
     const destPath = KnownTestLocations.outputDir;
     if (!IModelJsFs.existsSync(destPath))
       IModelJsFs.mkdirSync(destPath);
-
-    if (opts === undefined)
-      opts = {};
 
     const srcName = path.join(KnownTestLocations.assetsDir, filename);
     const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
     const srcStat = IModelTestUtils.getStat(srcName);
     const destStat = IModelTestUtils.getStat(dbName);
-    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {
+    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs)
       IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
-    }
 
-    const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
+    return dbName;
+  }
+
+  public static openSnapshotFromSeed(filename: string, opts?: IModelTestUtilsOpenOptions): SnapshotDb {
+    const dbName = IModelTestUtils.copyIModelForOpen(filename, opts || {});
+    const iModel = SnapshotDb.openFile(dbName); // could throw Error
     assert.exists(iModel);
     return iModel!;
   }
 
+  public static openIModelForWrite(filename: string, opts?: IModelTestUtilsOpenOptions): StandaloneDb {
+    opts = opts || {};
+    const dbName = IModelTestUtils.copyIModelForOpen(filename, opts);
+    const iModel = StandaloneDb.openFile(dbName, OpenMode.ReadWrite);
+    assert.exists(iModel);
+    return iModel;
+  }
+
   // __PUBLISH_EXTRACT_START__ IModelHost.startup
-  public static startupIModelHost() {
+  public static async startupIModelHost(): Promise<void> {
     // The host configuration.
     // The defaults will work for most backends.
-    // Here is an example of how the briefcasesCacheDir property of the host configuration
+    // Here is an example of how the cacheDir property of the host configuration
     // could be set from an environment variable, which could be set by a cloud deployment mechanism.
-    let briefcaseCacheDir = process.env.MY_SERVICE_BRIEFCASES_DIR;
-    if (briefcaseCacheDir === undefined) {
+    let cacheDir = process.env.MY_SERVICE_CACHE_DIR;
+    if (cacheDir === undefined) {
       const tempDir = process.env.MY_SERVICE_TMP_DIR || KnownLocations.tmpdir;
-      briefcaseCacheDir = path.join(tempDir, "iModelJs_cache");
+      cacheDir = path.join(tempDir, "iModelJs_cache");
     }
 
     const imHostConfig = new IModelHostConfiguration();
-    imHostConfig.briefcaseCacheDir = briefcaseCacheDir;
+    imHostConfig.cacheDir = cacheDir;
 
     // Start up IModelHost, supplying the configuration.
-    IModelHost.startup(imHostConfig);
+    await IModelHost.startup(imHostConfig);
   }
   // __PUBLISH_EXTRACT_END__
 
 }
 
 // Start the backend
-IModelTestUtils.startupIModelHost();
+IModelTestUtils.startupIModelHost(); // tslint:disable-line:no-floating-promises

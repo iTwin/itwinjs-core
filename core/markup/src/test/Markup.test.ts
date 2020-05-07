@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Transform, Point3d, Matrix3d, AxisIndex, Angle } from "@bentley/geometry-core";
-import { initSvgExt } from "../SvgJsExt";
-import { Svg, SVG, G, Element, Matrix } from "@svgdotjs/svg.js";
+import { Angle, AxisIndex, Matrix3d, Point3d, Transform } from "@bentley/geometry-core";
+import { Element, G, Matrix, Svg, SVG } from "@svgdotjs/svg.js";
 import { MarkupApp } from "../Markup";
+import { initSvgExt } from "../SvgJsExt";
 
 describe("Markup", () => {
   let div: HTMLDivElement;

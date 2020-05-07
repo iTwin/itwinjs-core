@@ -6,9 +6,9 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { Clipper, ClipUtilities } from "./ClipUtils";
-import { BooleanClipNodeUnion, BooleanClipNodeIntersection, BooleanClipNodeParity } from "./BooleanClipNode";
+import { BooleanClipNodeIntersection, BooleanClipNodeParity, BooleanClipNodeUnion } from "./BooleanClipNode";
 import { ClipPlane } from "./ClipPlane";
+import { Clipper, ClipUtilities } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 

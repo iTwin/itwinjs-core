@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { LabelDefinition, LabelDefinitionJSON, LabelCompositeValue } from "../LabelDefinition";
+import { LabelCompositeValue, LabelDefinition, LabelDefinitionJSON } from "../presentation-common/LabelDefinition";
 import {
-  createRandomLabelDefinitionJSON, createRandomLabelDefinition,
-  createRandomLabelCompositeValue, createRandomLabelCompositeValueJSON,
+  createRandomLabelCompositeValue, createRandomLabelCompositeValueJSON, createRandomLabelDefinition, createRandomLabelDefinitionJSON,
 } from "./_helpers/random";
 
 const createRandomCompositeLabelDefinition = (): LabelDefinition => {

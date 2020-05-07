@@ -2,20 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-
 import {
-  ContentLayout,
-  ContentGroup,
-  ContentLayoutDef,
-  ContentControl,
-  ConfigurableCreateInfo,
-  ContentViewManager,
-  ContentLayoutProps,
-  ContentLayoutManager,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager, ContentLayoutProps, ContentViewManager,
   FrontstageManager,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
@@ -29,12 +21,16 @@ describe("ContentLayout", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div>Test</div>;
+      this.reactNode = <div>Test</div>;
     }
   }
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   const myContentGroup: ContentGroup = new ContentGroup({

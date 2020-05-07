@@ -6,11 +6,12 @@
     "outDir": "./lib",
     "skipLibCheck": true,
     "jsx": "react",
-    "preserveSymlinks": true,
     "types": [
       "sinon-chai",
       "chai-as-promised",
-      "@bentley/webpack-tools"
+      "mocha",
+      "chai-jest-snapshot",
+      "@bentley/react-scripts"
     ]
   },
   "include": [

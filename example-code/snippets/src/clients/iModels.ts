@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelHubClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { IModelHubClient } from "@bentley/imodelhub-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 // __PUBLISH_EXTRACT_START__ IModelHandler.getIModels.example-code
 export async function getIModelId(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<string | undefined> {

@@ -2,24 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PlaneByOriginAndVectors4d } from "../../geometry4d/PlaneByOriginAndVectors4d";
-import { Map4d } from "../../geometry4d/Map4d";
-import { Matrix4d } from "../../geometry4d/Matrix4d";
-import { Point4d } from "../../geometry4d/Point4d";
+import { expect } from "chai";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Angle } from "../../geometry3d/Angle";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Transform } from "../../geometry3d/Transform";
-import { LineString3d } from "../../curve/LineString3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Angle } from "../../geometry3d/Angle";
-import * as bsiChecker from "../Checker";
-import { expect } from "chai";
-import { prettyPrint } from "../testFunctions";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Map4d } from "../../geometry4d/Map4d";
+import { Matrix4d } from "../../geometry4d/Matrix4d";
+import { PlaneByOriginAndVectors4d } from "../../geometry4d/PlaneByOriginAndVectors4d";
+import { Point4d } from "../../geometry4d/Point4d";
 import { SmallSystem } from "../../numerics/Polynomials";
+import * as bsiChecker from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+
 /* tslint:disable:no-console variable-name */
 
 /**

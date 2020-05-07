@@ -5,32 +5,24 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
 import {
-  imageBufferToPngDataUrl,
-  IModelApp,
-  IModelConnection,
-  NotifyMessageDetails,
-  openImageDataUrlInNewWindow,
-  OutputMessagePriority,
-  ScreenViewport,
-  Tool,
-  Viewport,
-  ViewState,
+  imageBufferToPngDataUrl, IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
+  SnapshotConnection, Tool, Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
-import { MarkupApp } from "@bentley/imodeljs-markup";
-import { AnimationPanel } from "./AnimationPanel";
-import { CategoryPicker, ModelPicker } from "./IdPicker";
-import { DebugPanel } from "./DebugPanel";
+import { MarkupApp, MarkupData } from "@bentley/imodeljs-markup";
+import { ClassificationsPanel } from "./ClassificationsPanel";
+import { DebugWindow } from "./DebugWindow";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
+import { CategoryPicker, ModelPicker } from "./IdPicker";
+import { SavedViewPicker } from "./SavedViews";
+import { SectionsPanel } from "./SectionTools";
 import { StandardRotations } from "./StandardRotations";
+import { Surface } from "./Surface";
+import { createTimeline } from "./Timeline";
+import { setTitle } from "./Title";
 import { createImageButton, createToolButton, ToolBar } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
-import { SectionsPanel } from "./SectionTools";
-import { SavedViewPicker } from "./SavedViews";
-import { ClassificationsPanel } from "./ClassificationsPanel";
-import { setTitle } from "./Title";
 import { Window } from "./Window";
-import { Surface } from "./Surface";
 
 function saveImage(vp: Viewport) {
   const buffer = vp.readImage(undefined, new Point2d(768, 768), true); // flip vertically...
@@ -51,7 +43,7 @@ function saveImage(vp: Viewport) {
 async function zoomToSelectedElements(vp: Viewport) {
   const elems = vp.iModel.selectionSet.elements;
   if (0 < elems.size)
-    await vp.zoomToElements(elems);
+    await vp.zoomToElements(elems, { animateFrustumChange: true });
 }
 
 export class ZoomToSelectedElementsTool extends Tool {
@@ -78,7 +70,11 @@ export class SaveImageTool extends Tool {
 
 export class MarkupTool extends Tool {
   public static toolId = "Markup";
-  public run(_args: any[]): boolean {
+  public static savedData?: MarkupData;
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(wantSavedData: boolean): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -92,16 +88,23 @@ export class MarkupTool extends Tool {
       }
       MarkupApp.props.result.maxWidth = 1500;
       MarkupApp.stop().then((markupData) => {
+        if (wantSavedData)
+          MarkupTool.savedData = markupData;
         if (undefined !== markupData.image)
           openImageDataUrlInNewWindow(markupData.image, "Markup");
       }).catch((_) => { });
     } else {
       MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
       MarkupApp.markupSelectToolId = "Markup.TestSelect"; // as an example override the default markup select tool to launch redline tools using key events
-      MarkupApp.start(vp); // tslint:disable-line:no-floating-promises
+      MarkupApp.start(vp, wantSavedData ? MarkupTool.savedData : undefined); // tslint:disable-line:no-floating-promises
     }
 
     return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const wantSavedData = "savedata" === args[0]?.toLowerCase();
+    return this.run(wantSavedData);
   }
 }
 
@@ -120,6 +123,7 @@ export class Viewer extends Window {
   private readonly _viewPicker: ViewPicker;
   private readonly _3dOnly: HTMLElement[] = [];
   private _isSavedView = false;
+  private _debugWindow?: DebugWindow;
 
   public static async create(surface: Surface, props: ViewerProps): Promise<Viewer> {
     const views = await ViewList.create(props.iModel, props.defaultViewName);
@@ -160,7 +164,7 @@ export class Viewer extends Window {
   }
 
   private constructor(surface: Surface, view: ViewState, views: ViewList, props: ViewerProps) {
-    super(surface);
+    super(surface, { scrollbars: true });
     surface.element.appendChild(this.container);
 
     this.disableEdges = true === props.disableEdges;
@@ -172,11 +176,11 @@ export class Viewer extends Window {
 
     this.toolBar = new ToolBar(IModelApp.makeHTMLElement("div", { className: "topdiv" }));
 
-    this.toolBar.addDropDown({
+    this.toolBar.addItem(createToolButton({
       iconUnicode: "\ue90c", // properties
       tooltip: "Debug info",
-      createDropDown: async (container: HTMLElement) => Promise.resolve(new DebugPanel(this.viewport, container)),
-    });
+      click: () => this.toggleDebugWindow(),
+    }));
 
     this.toolBar.addItem(createToolButton({
       iconUnicode: "\ue9cc",
@@ -290,7 +294,7 @@ export class Viewer extends Window {
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue931", // "animation"
-      createDropDown: async (container: HTMLElement) => new AnimationPanel(this.viewport, container),
+      createDropDown: async (container: HTMLElement) => createTimeline(this.viewport, container, 10),
       tooltip: "Animation / solar time",
     });
 
@@ -355,7 +359,7 @@ export class Viewer extends Window {
   }
 
   private async clearViews(): Promise<void> {
-    await this._imodel.closeSnapshot();
+    await this._imodel.close();
     this.views.clear();
   }
 
@@ -365,11 +369,11 @@ export class Viewer extends Window {
   }
 
   private async resetIModel(filename: string): Promise<void> {
-    let newIModel: IModelConnection;
-    const sameFile = filename === this._imodel.iModelToken.key;
+    let newIModel: SnapshotConnection;
+    const sameFile = filename === this._imodel.getRpcProps().key;
     if (!sameFile) {
       try {
-        newIModel = await IModelConnection.openSnapshot(filename);
+        newIModel = await SnapshotConnection.openFile(filename);
       } catch (err) {
         alert(err.toString());
         return;
@@ -382,7 +386,7 @@ export class Viewer extends Window {
     await this.clearViews();
 
     if (sameFile)
-      newIModel = await IModelConnection.openSnapshot(filename);
+      newIModel = await SnapshotConnection.openFile(filename);
 
     this._imodel = newIModel!;
     await this.buildViewList();
@@ -432,13 +436,26 @@ export class Viewer extends Window {
   public get windowId(): string { return this.viewport.viewportId.toString(); }
 
   public onClosing(): void {
+    this.toolBar.dispose();
+    if (this._debugWindow) {
+      this._debugWindow.dispose();
+      this._debugWindow = undefined;
+    }
+
     IModelApp.viewManager.dropViewport(this.viewport, true);
   }
 
   public onClosed(): void {
     if (undefined === IModelApp.viewManager.selectedView) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Closing iModel..."));
-      this._imodel.closeSnapshot().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // tslint:disable-line:no-floating-promises
+      this._imodel.close().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // tslint:disable-line:no-floating-promises
     }
+  }
+
+  public toggleDebugWindow(): void {
+    if (!this._debugWindow)
+      this._debugWindow = new DebugWindow(this.viewport);
+
+    this._debugWindow.toggle();
   }
 }

@@ -6,10 +6,10 @@
  * @module Message
  */
 
-import * as classnames from "classnames";
+import "./Button.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Button.scss";
 
 /** Properties of [[TitleBarButton]] component.
  * @beta

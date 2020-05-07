@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DiagnosticCategory, DiagnosticType, DiagnosticCode } from "../../src/Validation/Diagnostic";
-import { I18N } from "@bentley/imodeljs-i18n";
 import * as I18NodeFSBackend from "i18next-node-fs-backend";
+import { I18N } from "@bentley/imodeljs-i18n";
+import { DiagnosticCategory, DiagnosticCode, DiagnosticType } from "../../src/Validation/Diagnostic";
 
 export const testMessages = {
   TestErrorA: { code: DiagnosticCode.BaseClassIsSealed, category: DiagnosticCategory.Error, diagnosticType: DiagnosticType.SchemaItem, key: "TestErrorA", message: "Test message with parameter '{0}'" },

@@ -6,11 +6,7 @@
  * @module DisplayStyles
  */
 
-import {
-  Id64,
-  Id64String,
-  JsonUtils,
-} from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 

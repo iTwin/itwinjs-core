@@ -7,11 +7,7 @@
  * @module Widgets
  */
 
-import {
-  PerformanceMetrics,
-  Target,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
+import { PerformanceMetrics, Target, Viewport } from "@bentley/imodeljs-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 
 /** Displays average frames-per-second.

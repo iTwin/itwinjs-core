@@ -9,13 +9,13 @@
 
 // import { Geometry, Angle, AngleSweep } from "../Geometry";
 
+import { CurveCollection } from "./CurveCollection";
 // import { Point3d, Vector3d, Matrix3d } from "../PointVector";
 import { CurvePrimitive } from "./CurvePrimitive";
-
-import { CurveCollection } from "./CurveCollection";
 import { Loop } from "./Loop";
 import { ParityRegion } from "./ParityRegion";
 import { UnionRegion } from "./UnionRegion";
+
 /** Union type for `GeometryQuery` classes that have contain curves, either as individual parameter space or as collections
  * @public
  */

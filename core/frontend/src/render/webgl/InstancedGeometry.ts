@@ -7,17 +7,17 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Range3d, Point3d, Transform } from "@bentley/geometry-core";
+import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
-import { RenderMemory } from "../RenderSystem";
-import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
-import { Target } from "./Target";
-import { ShaderProgramParams } from "./DrawCommand";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
-import { GL } from "./GL";
+import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
-import { TechniqueId } from "./TechniqueId";
+import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { WebGLDisposable } from "./Disposable";
+import { ShaderProgramParams } from "./DrawCommand";
+import { GL } from "./GL";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
 
 /** @internal */
 export class InstanceBuffers implements WebGLDisposable {
@@ -205,6 +205,7 @@ export class InstancedGeometry extends CachedGeometry {
   public get isEdge() { return this._repr.isEdge; }
   public get hasFeatures() { return this._buffers.hasFeatures; }
   public get techniqueId(): TechniqueId { return this._repr.techniqueId; }
+  public get supportsThematicDisplay() { return this._repr.supportsThematicDisplay; }
 
   public getRenderPass(target: Target) { return this._repr.getRenderPass(target); }
   public wantWoWReversal(params: ShaderProgramParams) { return this._repr.wantWoWReversal(params); }

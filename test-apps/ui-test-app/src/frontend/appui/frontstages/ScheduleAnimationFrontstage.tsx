@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Frontstage, FrontstageProvider, FrontstageProps, ContentGroup, CoreTools } from "@bentley/ui-framework";
+import { ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider } from "@bentley/ui-framework";
 
 export class ScheduleAnimationFrontstage extends FrontstageProvider {
 

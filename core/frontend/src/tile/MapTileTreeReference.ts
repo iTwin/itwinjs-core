@@ -3,79 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
-import {
-  Plane3dByOriginAndUnitNormal,
-  Point3d,
-  Range3d,
-} from "@bentley/geometry-core";
-import {
-  ImageryProvider,
-  Tile,
-  TileDrawArgs,
-  TileGraphicType,
-  TileTree,
-  TileTreeReference,
-} from "./internal";
-import {
-  ScreenViewport,
-  Viewport,
-} from "../Viewport";
-import { SceneContext } from "../ViewContext";
+import { Range3d } from "@bentley/geometry-core";
 import { FeatureSymbology } from "../render/FeatureSymbology";
+import { ScreenViewport } from "../Viewport";
+import { createDefaultViewFlagOverrides, ImageryProvider, TileDrawArgs, TileGraphicType, TileTree, TileTreeReference } from "./internal";
+
+const viewFlagOverrides = createDefaultViewFlagOverrides({ clipVolume: false, thematic: false });
 
 /** A reference to a TileTree used for drawing tiled map graphics into a Viewport.
  * @internal
  */
 export abstract class MapTileTreeReference extends TileTreeReference {
   private _overrides?: FeatureSymbology.Overrides;
-  private _plane?: {
-    plane: Plane3dByOriginAndUnitNormal,
-    height: number,
-  };
 
   protected abstract get _groundBias(): number;
   protected abstract get _graphicType(): TileGraphicType;
   protected abstract get _imageryProvider(): ImageryProvider | undefined;
   protected abstract get _transparency(): number | undefined;
 
-  public get plane(): Plane3dByOriginAndUnitNormal {
-    const height = this._groundBias;
-    if (undefined === this._plane || this._plane.height !== height)
-      this._plane = { height, plane: Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0, 0, height)) };
-
-    return this._plane.plane;
-  }
-
   /** Map tiles do not contribute to the range used by "fit view". */
   public unionFitRange(_range: Range3d): void { }
-
-  public addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void {
-    const tree = this.treeOwner.tileTree;
-    const heightRange = undefined !== tree ? (tree.loader as any).heightRange : undefined;
-    if (undefined !== heightRange) {
-      planes.push(Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0, 0, heightRange.low)));
-      planes.push(Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0, 0, heightRange.high)));
-      return;
-    }
-
-    if (undefined !== this.plane)
-      planes.push(this.plane);
-  }
-
-  /** Select the tiles that would be displayed in the viewport. */
-  public getTilesForView(viewport: Viewport): Tile[] {
-    const sceneContext = viewport.createSceneContext();
-    const args = this.createDrawArgs(sceneContext);
-
-    let tiles: Tile[] = [];
-    if (undefined !== args)
-      sceneContext.withGraphicTypeAndPlane(this._graphicType, this.plane, () => tiles = args.root.selectTilesForScene(args));
-
-    return tiles;
-  }
 
   /** Add logo cards to container div. */
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
@@ -98,14 +48,18 @@ export abstract class MapTileTreeReference extends TileTreeReference {
 
   /** Draw the tiles into the viewport. */
   public draw(args: TileDrawArgs): void {
-    args.context.withGraphicTypeAndPlane(this._graphicType, this.plane, () => args.root.draw(args));
+    args.context.withGraphicType(this._graphicType, () => args.tree.draw(args));
+  }
+
+  protected getViewFlagOverrides(_tree: TileTree) {
+    return viewFlagOverrides;
   }
 
   protected getSymbologyOverrides(_tree: TileTree) {
-    return this._symbologyOverrides;
+    return this.symbologyOverrides;
   }
 
-  private get _symbologyOverrides(): FeatureSymbology.Overrides {
+  protected get symbologyOverrides(): FeatureSymbology.Overrides | undefined {
     if (undefined === this._overrides || this._overrides.defaultOverrides.transparency !== this._transparency) {
       this._overrides = new FeatureSymbology.Overrides();
       const json: FeatureSymbology.AppearanceProps = {

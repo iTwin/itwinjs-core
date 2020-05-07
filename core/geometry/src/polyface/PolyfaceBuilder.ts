@@ -7,48 +7,48 @@
  * @module Polyface
  */
 
-import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { BoxTopology } from "./BoxTopology";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { Cone } from "../solid/Cone";
-import { CurveChain, CurveCollection } from "../curve/CurveCollection";
-
-import { Sphere } from "../solid/Sphere";
-import { TorusPipe } from "../solid/TorusPipe";
-import { LinearSweep } from "../solid/LinearSweep";
-import { RotationalSweep } from "../solid/RotationalSweep";
-import { Box } from "../solid/Box";
-import { RuledSweep } from "../solid/RuledSweep";
-import { AnyCurve, AnyRegion } from "../curve/CurveChain";
-import { Geometry, AxisOrder } from "../Geometry";
-import { LineString3d } from "../curve/LineString3d";
-import { HalfEdgeGraph, HalfEdge, HalfEdgeToBooleanFunction } from "../topology/Graph";
-import { NullGeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
-import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { StrokeCountSection } from "../curve/Query/StrokeCountChain";
-import { ParityRegion } from "../curve/ParityRegion";
-import { Range1d } from "../geometry3d/Range";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
+import { AnyCurve, AnyRegion } from "../curve/CurveChain";
+import { CurveChain, CurveCollection } from "../curve/CurveCollection";
+import { CurveFactory } from "../curve/CurveFactory";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineString3d } from "../curve/LineString3d";
+import { ParityRegion } from "../curve/ParityRegion";
 import { CylindricalRangeQuery } from "../curve/Query/CylindricalRange";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Segment1d } from "../geometry3d/Segment1d";
+import { StrokeCountSection } from "../curve/Query/StrokeCountChain";
+import { StrokeOptions } from "../curve/StrokeOptions";
+import { AxisOrder, Geometry } from "../Geometry";
+import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
 import { BilinearPatch } from "../geometry3d/BilinearPatch";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
-import { Triangulator } from "../topology/Triangulation";
-import { PolygonOps } from "../geometry3d/PolygonOps";
-import { SweepContour } from "../solid/SweepContour";
+import { NullGeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
+import { Range1d } from "../geometry3d/Range";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Transform } from "../geometry3d/Transform";
+import { Box } from "../solid/Box";
+import { Cone } from "../solid/Cone";
+import { LinearSweep } from "../solid/LinearSweep";
+import { RotationalSweep } from "../solid/RotationalSweep";
+import { RuledSweep } from "../solid/RuledSweep";
+import { Sphere } from "../solid/Sphere";
+import { SweepContour } from "../solid/SweepContour";
+import { TorusPipe } from "../solid/TorusPipe";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeToBooleanFunction } from "../topology/Graph";
+import { Triangulator } from "../topology/Triangulation";
+import { BoxTopology } from "./BoxTopology";
 import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
-import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
+import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 
 /* tslint:disable:variable-name prefer-for-of*/
 /**
@@ -343,7 +343,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       let numEdge = n;
       if (ls.isPhysicallyClosed)
         numEdge--;
-      for (let i = 2; i < numEdge; i++ , pointIndex1 = pointIndex2, paramIndex1 = paramIndex2) {
+      for (let i = 2; i < numEdge; i++, pointIndex1 = pointIndex2, paramIndex1 = paramIndex2) {
         pointIndex2 = this.findOrAddPointInLineString(ls, i)!;
         this.addIndexedTrianglePointIndexes(pointIndex0, pointIndex1, pointIndex2, false);
         if (normalIndex !== undefined)
@@ -462,14 +462,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
     return undefined;
 
-  }
-  // cspell:word Normaln
-  /**
-   * This is a misspelling of findOrAddNormalInLineString
-   * @deprecated
-   */
-  public findOrAddNormalnLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined {
-    return this.findOrAddNormalInLineString(ls, index, transform, priorIndexA, priorIndexB);
   }
 
   /**
@@ -1699,6 +1691,44 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       (triangle: BarycentricTriangle) => {
         this.addTriangleFacet(triangle.points);
       });
+  }
+
+  private addMiteredPipesFromPoints(centerline: IndexedXYZCollection, radius: number, numFacetAround: number = 12) {
+    const sections = CurveFactory.createMiteredPipeSections(centerline, radius);
+    const pointA0 = Point3d.create();
+    const pointA1 = Point3d.create();
+    const pointB0 = Point3d.create();
+    const pointB1 = Point3d.create();
+    if (numFacetAround < 3)
+      numFacetAround = 3;
+    const df = 1.0 / numFacetAround;
+    for (let i = 1; i < sections.length; i++) {
+      const arcA = sections[i - 1];
+      const arcB = sections[i];
+      arcA.fractionToPoint(0.0, pointA0);
+      arcB.fractionToPoint(0.0, pointB0);
+      for (let k = 1; k <= numFacetAround; k++, pointA0.setFromPoint3d(pointA1), pointB0.setFromPoint3d(pointB1)) {
+        const f = k * df;
+        arcA.fractionToPoint(f, pointA1);
+        arcB.fractionToPoint(f, pointB1);
+        this.addQuadFacet([pointA0, pointB0, pointB1, pointA1]);
+      }
+    }
+  }
+  public addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, radius: number, numFacetAround: number = 12) {
+    if (Array.isArray(centerline)) {
+      this.addMiteredPipesFromPoints(new Point3dArrayCarrier(centerline), radius, numFacetAround);
+    } else if (centerline instanceof GrowableXYZArray) {
+      this.addMiteredPipesFromPoints(centerline, radius, numFacetAround);
+    } else if (centerline instanceof IndexedXYZCollection) {
+      this.addMiteredPipesFromPoints(centerline, radius, numFacetAround);
+    } else if (centerline instanceof LineString3d) {
+      this.addMiteredPipesFromPoints(centerline.packedPoints, radius, numFacetAround);
+    } else if (centerline instanceof GeometryQuery) {
+      const linestring = LineString3d.create();
+      centerline.emitStrokes(linestring);
+      this.addMiteredPipesFromPoints(linestring.packedPoints, radius, numFacetAround);
+    }
   }
 }
 

@@ -6,23 +6,23 @@
  * @module SyncUi
  */
 
+import { Logger } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelConnection, SelectedViewportChangedArgs, SelectionSetEvent } from "@bentley/imodeljs-frontend";
+import { getInstancesCount, SelectionScope } from "@bentley/presentation-common";
+import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 // cSpell:ignore configurableui
 import { UiEvent } from "@bentley/ui-core";
-import { Logger } from "@bentley/bentleyjs-core";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { Backstage } from "../backstage/Backstage";
-import { WorkflowManager } from "../workflow/Workflow";
 import { ContentViewManager } from "../content/ContentViewManager";
-import { SessionStateActionId, PresentationSelectionScope } from "../redux/SessionState";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { PresentationSelectionScope, SessionStateActionId } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
-import { IModelConnection, IModelApp, SelectedViewportChangedArgs, SelectionSetEvent } from "@bentley/imodeljs-frontend";
-import { Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
-import { SelectionScope, getInstancesCount } from "@bentley/presentation-common";
+import { WorkflowManager } from "../workflow/Workflow";
 
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, backstageevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
 // cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
-// cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged
+// cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged viewstatechanged
 
 /** Event Id used to sync UI components. Used to refresh visibility or enable state of control.
  * @public
@@ -63,7 +63,7 @@ export enum SyncUiEventId {
   /** The SelectionSet for the active IModelConnection has changed. */
   SelectionSetChanged = "selectionsetchanged",
   /** The current view state has changed (used by view undo/redo toolbar buttons). */
-  ViewStateChanged = "viewstateshanged",
+  ViewStateChanged = "viewstatechanged",
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
@@ -148,6 +148,7 @@ export class SyncUiEventDispatcher {
 
   /** Save multiple eventIds in Set for processing. */
   public static dispatchSyncUiEvents(eventIds: string[]): void {
+    // istanbul ignore else
     if (0 === SyncUiEventDispatcher._timeoutPeriod) {
       Logger.logInfo(UiFramework.loggerCategory(this), `[dispatchSyncUiEvents] not processed because _timeoutPeriod=0`);
       return;
@@ -172,6 +173,7 @@ export class SyncUiEventDispatcher {
         Logger.logError(UiFramework.loggerCategory(this), "SyncUiEventDispatcher.checkForAdditionalIds - expected _syncEventTimerId to be defined");
       }
       SyncUiEventDispatcher._eventIdAdded = false;
+      // istanbul ignore else
       if (SyncUiEventDispatcher.syncEventIds.size > 0) {
         const eventIds = new Set<string>();
         SyncUiEventDispatcher.syncEventIds.forEach((value) => eventIds.add(value));
@@ -238,7 +240,7 @@ export class SyncUiEventDispatcher {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WidgetStateChanged);
     });
 
-    Backstage.onBackstageEvent.addListener(() => {
+    Backstage.onBackstageEvent.addListener(() => { // tslint:disable-line:deprecation
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.BackstageEvent);
     });
 
@@ -293,7 +295,7 @@ export class SyncUiEventDispatcher {
   public static initializeConnectionEvents(iModelConnection: IModelConnection) {
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
     iModelConnection.selectionSet.onChanged.addListener(SyncUiEventDispatcher.selectionChangedHandler);
-    (iModelConnection.iModelToken && iModelConnection.iModelToken.iModelId) ? UiFramework.setActiveIModelId(iModelConnection.iModelToken.iModelId) : "";
+    (iModelConnection.iModelId) ? UiFramework.setActiveIModelId(iModelConnection.iModelId) : "";
     if (SyncUiEventDispatcher._unregisterListenerFunc)
       SyncUiEventDispatcher._unregisterListenerFunc();
 

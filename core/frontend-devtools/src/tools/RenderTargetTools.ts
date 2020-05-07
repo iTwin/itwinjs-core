@@ -7,13 +7,7 @@
  * @module Tools
  */
 
-import {
-  IModelApp,
-  PrimitiveVisibility,
-  RenderTargetDebugControl,
-  ScreenViewport,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { IModelApp, PrimitiveVisibility, RenderTargetDebugControl, ScreenViewport, Tool } from "@bentley/imodeljs-frontend";
 
 /** Executes some code against a RenderTargetDebugControl obtained from the selected viewport.
  * @beta
@@ -39,18 +33,6 @@ export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
   public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
     control.drawForReadPixels = !control.drawForReadPixels;
     vp.invalidateScene();
-  }
-}
-
-/** The first time this tool runs, it disables the use of logarithmic depth buffer-enabled shaders. The second time, it re-enables them.
- * This affects *only* the choice of shader programs. It does not affect the frustum nor does it override the RenderSystem.Options.logarithmicDepthBuffer option.
- * @alpha
- */
-export class ToggleLogZTool extends RenderTargetDebugControlTool {
-  public static toolId = "ToggleLogZ";
-  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    control.useLogZ = !control.useLogZ;
-    vp.invalidateRenderPlan();
   }
 }
 
@@ -97,6 +79,49 @@ export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool 
     }
 
     return this.run(args);
+  }
+}
+
+/** Turn on display of reality tile boundaies.
+ * @alpha
+ */
+export class ToggleRealityTileBounds extends RenderTargetDebugControlTool {
+  public static toolId = "ToggleRealityTileBounds";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.displayRealityTileRanges = !control.displayRealityTileRanges;
+    vp.invalidateScene();
+  }
+}
+
+/** Turn on display of reality tile preload debugging.
+ * @alpha
+ */
+export class ToggleRealityTilePreload extends RenderTargetDebugControlTool {
+  public static toolId = "ToggleRealityTilePreload";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.displayRealityTilePreload = !control.displayRealityTilePreload;
+    vp.invalidateScene();
+  }
+}
+/** Freeze loading of reality tiles.
+ * @alpha
+ */
+export class ToggleRealityTileFreeze extends RenderTargetDebugControlTool {
+  public static toolId = "ToggleRealityTileFreeze";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.freezeRealityTiles = !control.freezeRealityTiles;
+    vp.invalidateScene();
+  }
+}
+
+/** Turn on logging of console tile selection and loadding (to console).
+ * @alpha
+ */
+export class ToggleRealityTileLogging extends RenderTargetDebugControlTool {
+  public static toolId = "ToggleRealityTileLogging";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.logRealityTiles = !control.logRealityTiles;
+    vp.invalidateScene();
   }
 }
 

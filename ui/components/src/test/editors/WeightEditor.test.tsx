@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup, fireEvent, waitForElement } from "@testing-library/react";
 import { expect } from "chai";
+import React from "react";
 import sinon from "sinon";
+import { PrimitiveValue } from "@bentley/ui-abstract";
+import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import { WeightEditor } from "../../ui-components/editors/WeightEditor";
-import { PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { PrimitiveValue } from "@bentley/imodeljs-frontend";
 
 describe("<WeightEditor />", () => {
   afterEach(cleanup);
@@ -63,6 +63,13 @@ describe("<WeightEditor />", () => {
       await TestUtils.flushAsyncOperations();
       expect(spyOnCommit).to.be.calledOnce;
     }
+  });
+
+  it("renders editor for 'number' type and 'weight-picker' editor using WeightEditor", () => {
+    const weight1 = 1;
+    const propertyRecord = TestUtils.createWeightProperty("Test", weight1);
+    const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
+    expect(renderedComponent.getByTestId("components-weightpicker-button")).to.exist;
   });
 
 });

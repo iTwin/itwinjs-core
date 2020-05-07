@@ -9,13 +9,11 @@
 // cSpell:ignore statusfields
 
 import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useState, useEffect } from "react";
+import { useActiveViewport } from "../hooks/useActiveViewport";
 import { Indicator } from "../statusfields/Indicator";
-import { SelectionContextUtilities } from "./SelectionContextUtilities";
 import { StatusFieldProps } from "../statusfields/StatusFieldProps";
 import { UiFramework } from "../UiFramework";
-import { useActiveViewport } from "../hooks/useActiveViewport";
+import { SelectionContextUtilities } from "./SelectionContextUtilities";
 
 /** Clear Emphasis StatusField Props
  * @beta
@@ -27,13 +25,12 @@ interface ClearEmphasisStatusFieldProps extends StatusFieldProps {
 /** Clear Emphasis StatusField
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const ClearEmphasisStatusField: React.FC<ClearEmphasisStatusFieldProps> = (props) => {
-  const [toolTip] = useState(UiFramework.translate("tools.clearVisibility"));
+export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps) {
+  const [toolTip] = React.useState(UiFramework.translate("tools.clearVisibility"));
   const activeViewport = useActiveViewport();
-  const [showIndicator, setShowIndicator] = useState(false);
+  const [showIndicator, setShowIndicator] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // istanbul ignore next
     const onEmphasizeChange = () => {
       // istanbul ignore next
@@ -67,4 +64,4 @@ export const ClearEmphasisStatusField: React.FC<ClearEmphasisStatusFieldProps> =
     <Indicator toolTip={toolTip} className={classes} opened={false} onClick={clearEmphasize} iconName="icon-visibility"
       isInFooterMode={props.isInFooterMode} />
   );
-};
+}

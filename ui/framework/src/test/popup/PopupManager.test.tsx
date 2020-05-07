@@ -2,34 +2,32 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { MockRender, AngleDescription, LengthDescription } from "@bentley/imodeljs-frontend";
-import { AbstractToolbarProps, BadgeType, RelativePosition } from "@bentley/ui-abstract";
-import { Point } from "@bentley/ui-core";
+import { AngleDescription, LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
+import { AbstractToolbarProps, BadgeType, PropertyDescription, RelativePosition } from "@bentley/ui-abstract";
 import { EditorContainer } from "@bentley/ui-components";
+import { Point } from "@bentley/ui-core";
 import { Toolbar } from "@bentley/ui-ninezone";
-
-import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
-import { Calculator } from "../../ui-framework/accudraw/Calculator";
-import { TestUtils } from "../TestUtils";
-import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
-import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
 import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
+import { Calculator } from "../../ui-framework/accudraw/Calculator";
+import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
+import { PopupInfo, PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
+import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
+import { TestUtils } from "../TestUtils";
 
 describe("PopupManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    MockRender.App.startup();
+    await MockRender.App.startup();
   });
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
 
@@ -41,7 +39,7 @@ describe("PopupManager", () => {
     it("showMenuButton should add menuButton", () => {
       const menuItemProps: MenuItemProps[] = [
         {
-          id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
+          id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } },
         },
       ];
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
@@ -66,7 +64,7 @@ describe("PopupManager", () => {
     it("hideMenuButton should hide menuButton", () => {
       const menuItemProps: MenuItemProps[] = [
         {
-          id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
+          id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } },
         },
       ];
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
@@ -150,6 +148,15 @@ describe("PopupManager", () => {
       popup = PopupManager.popups[0];
       expect(popup.pt.x).to.eq(200);
       expect(popup.pt.y).to.eq(300);
+
+      const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: "number" };
+
+      PopupManager.showInputEditor(doc.documentElement, new Point(300, 400), 256, propertyDescription, spyCommit, spyCancel);
+
+      expect(PopupManager.popupCount).to.eq(1);
+      popup = PopupManager.popups[0];
+      expect(popup.pt.x).to.eq(300);
+      expect(popup.pt.y).to.eq(400);
     });
 
     it("hideInputEditor should hide editor", () => {
@@ -188,9 +195,7 @@ describe("PopupManager", () => {
       const wrapper = mount(<PopupRenderer />);
 
       const menuItemProps: MenuItemProps[] = [
-        {
-          id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
-        },
+        { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
       ];
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
@@ -243,9 +248,8 @@ describe("PopupManager", () => {
 
       const toolbarProps: AbstractToolbarProps = {
         items: [
-          { label: "Mode 1", iconSpec: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } },
-          { label: "Mode 2", iconSpec: "icon-placeholder", isVisible: false, execute: () => { } },
-          { conditionalId: "c1", items: [{ label: "Test 1", iconSpec: "icon-placeholder", execute: () => { } }] },
+          { id: "Mode-1", itemPriority: 10, label: "Mode 1", icon: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } },
+          { id: "Mode-2", itemPriority: 20, label: "Mode 2", icon: "icon-placeholder", execute: () => { } },
         ],
       };
 

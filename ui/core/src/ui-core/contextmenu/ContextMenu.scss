@@ -2,7 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "../index.scss";
+@import "../icons/variables";
+@import "../inputs/variables";
+@import "../style/baseline";
+@import "../style/colors";
+@import "../style/themecolors";
+@import "../style/typography";
+@import "../z-index";
 
 $uicore-menu-bordered-padding:  $uicore-bordered-padding + 2px;
 
@@ -10,7 +16,8 @@ $uicore-menu-bordered-padding:  $uicore-bordered-padding + 2px;
   position: fixed;
   width: 0px;
   height: 0px;
-  z-index: 9999;
+
+  @include uicore-z-index(context-menu-z)
 }
 
 .core-context-menu {
@@ -24,7 +31,8 @@ $uicore-menu-bordered-padding:  $uicore-bordered-padding + 2px;
   width: 0px;
   height: 0px;
   position: relative;
-  z-index: 9999;
+
+  @include uicore-z-index(context-menu-z)
 
   .core-context-menu-container {
     position: absolute;
@@ -203,7 +211,7 @@ $uicore-menu-bordered-padding:  $uicore-bordered-padding + 2px;
   }
 
   .core-context-menu-divider {
-    border-bottom: 1px solid $buic-background-divider;
+    border-bottom: 1px solid $buic-inputs-border;
     height: 0px;
   }
 

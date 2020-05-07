@@ -3,80 +3,38 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
+import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import {
-  assert,
-  ByteStream,
-  Id64String,
-  JsonUtils,
-} from "@bentley/bentleyjs-core";
-import {
-  Point3d,
-  Range2d,
-  Range3d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  BatchType,
-  ColorDef,
-  ElementAlignedBox3d,
-  FeatureTableHeader,
-  FillFlags,
-  Gradient,
-  ImageSource,
-  ImageSourceFormat,
-  ImdlHeader,
-  LinePixels,
-  PackedFeatureTable,
-  PolylineTypeFlags,
-  QParams2d,
-  QParams3d,
-  readTileContentDescription,
-  RenderMaterial,
-  RenderTexture,
-  TextureMapping,
-  TileReadError,
-  TileReadStatus,
+  BatchType, ColorDef, ElementAlignedBox3d, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImageSourceFormat, ImdlHeader, LinePixels,
+  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
+  TileReadError, TileReadStatus,
 } from "@bentley/imodeljs-common";
-import {
-  GltfReader,
-  GltfReaderProps,
-  GltfReaderResult,
-  ShouldAbortReadGltf,
-} from "./internal";
-import { DisplayParams } from "../render/primitives/DisplayParams";
-import {
-  EdgeParams,
-  MeshParams,
-  PointStringParams,
-  PolylineParams,
-  SegmentEdgeParams,
-  SilhouetteParams,
-  SurfaceMaterial,
-  SurfaceParams,
-  SurfaceType,
-  TesselatedPolyline,
-  VertexIndices,
-  VertexTable,
-  createSurfaceMaterial,
-  isValidSurfaceType,
-} from "../render/primitives/VertexTable";
-import {
-  AuxChannelTable,
-  AuxChannelTableProps,
-} from "../render/primitives/AuxChannelTable";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
-import { GraphicBranch } from "../render/GraphicBranch";
-import { RenderSystem } from "../render/RenderSystem";
 import { imageElementFromImageSource } from "../ImageUtil";
-import { IModelConnection } from "../IModelConnection";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
+import { DisplayParams } from "../render/primitives/DisplayParams";
+import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import {
+  createSurfaceMaterial, EdgeParams, isValidSurfaceType, MeshParams, PointStringParams, PolylineParams, SegmentEdgeParams, SilhouetteParams,
+  SurfaceMaterial, SurfaceParams, SurfaceType, TesselatedPolyline, VertexIndices, VertexTable,
+} from "../render/primitives/VertexTable";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { RenderSystem } from "../render/RenderSystem";
+import { GltfReader, GltfReaderProps, IModelTileContent, ShouldAbortReadGltf } from "./internal";
 
 // tslint:disable:no-const-enum
+
+/** @internal */
+export interface ImdlReaderResult extends IModelTileContent {
+  readStatus: TileReadStatus;
+}
 
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
@@ -104,7 +62,7 @@ export class ImdlReader extends GltfReader {
   }
 
   /** Attempt to deserialize the tile data */
-  public async read(): Promise<GltfReaderResult> {
+  public async read(): Promise<ImdlReaderResult> {
     let content;
     try {
       content = readTileContentDescription(this._buffer, this._sizeMultiplier, !this._is3d, IModelApp.tileAdmin, this._isVolumeClassifier);
@@ -133,8 +91,8 @@ export class ImdlReader extends GltfReader {
   /** @internal */
   protected createDisplayParams(json: any): DisplayParams | undefined {
     const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
-    const lineColor = new ColorDef(JsonUtils.asInt(json.lineColor));
-    const fillColor = new ColorDef(JsonUtils.asInt(json.fillColor));
+    const lineColor = ColorDef.create(JsonUtils.asInt(json.lineColor));
+    const fillColor = ColorDef.create(JsonUtils.asInt(json.fillColor));
     const width = JsonUtils.asInt(json.lineWidth);
     const linePixels = JsonUtils.asInt(json.linePixels, LinePixels.Solid);
     const fillFlags = JsonUtils.asInt(json.fillFlags, FillFlags.None);
@@ -368,7 +326,7 @@ export class ImdlReader extends GltfReader {
       return undefined;
     }
 
-    const isPlanar = JsonUtils.asBool(primitive.isPlanar);
+    const isPlanar = !this._is3d || JsonUtils.asBool(primitive.isPlanar);
     const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
     const instances = this.readInstances(primitive);
     switch (primitiveType) {
@@ -653,7 +611,7 @@ export class ImdlReader extends GltfReader {
     return this._system.createMesh(params, instances);
   }
 
-  private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): GltfReaderResult {
+  private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): ImdlReaderResult {
     const graphics: RenderGraphic[] = [];
 
     if (undefined === this._nodes.Node_Root) {

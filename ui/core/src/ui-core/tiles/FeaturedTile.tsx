@@ -9,8 +9,9 @@
 import * as React from "react";
 import { Tile, TileProps } from "./Tile";
 
-/** @alpha */
-// tslint:disable-next-line:variable-name
-export const FeaturedTile: React.FunctionComponent<TileProps> = (props: TileProps) => {
+/** Featured [[Tile]] component
+ * @beta
+ */
+export function FeaturedTile(props: TileProps) {
   return <Tile {...props} featured={true} />;
-};
+}

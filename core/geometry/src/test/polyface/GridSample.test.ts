@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Range3d } from "../../geometry3d/Range";
-import { Polyface, IndexedPolyface } from "../../polyface/Polyface";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Geometry } from "../../Geometry";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /* tslint:disable:no-console */
 /**

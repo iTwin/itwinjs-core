@@ -8,13 +8,13 @@
 
 import { IModelApp } from "../IModelApp";
 import { QuantityType } from "../QuantityFormatter";
-import { BaseQuantityDescription } from "./BaseQuantityDescription";
+import { FormattedQuantityDescription } from "./FormattedQuantityDescription";
 
 /**
  * Angle Property Description
  * @beta
  */
-export class AngleDescription extends BaseQuantityDescription {
+export class AngleDescription extends FormattedQuantityDescription {
   constructor(name?: string, displayLabel?: string, iconSpec?: string) {
     const defaultName = "angle";
     super(
@@ -24,7 +24,8 @@ export class AngleDescription extends BaseQuantityDescription {
     );
   }
 
-  public get quantityType(): QuantityType { return QuantityType.Angle; }
+  public get formatterQuantityType(): QuantityType { return QuantityType.Angle; }
+  public get quantityType(): string { return "Angle"; }
 
   public get parseError(): string { return IModelApp.i18n.translate("iModelJs:Properties.UnableToParseAngle"); }
 }

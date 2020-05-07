@@ -3,40 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
+import { DialogItemsManager } from "@bentley/ui-abstract";
 import {
-  FrontstageProps,
-  GroupButton,
-  ToolButton,
-  ToolWidget,
-  ZoneState,
-  WidgetState,
-  NavigationWidget,
-  ContentGroup,
-  ModalDialogManager,
-  FrontstageProvider,
-  Frontstage,
-  Zone,
-  Widget,
-  CoreTools,
-  CommandItemDef,
+  CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, ModalDialogManager, NavigationWidget,
+  StagePanel, StagePanelState, ToolButton, ToolWidget, Widget, WidgetState, Zone, ZoneState,
 } from "@bentley/ui-framework";
-
-import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import { AppTools } from "../../tools/ToolSpecifications";
+import { PopupTestDialog } from "../dialogs/PopupTest";
+import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
+import { TestModalDialog } from "../dialogs/TestModalDialog";
+import { TestModalDialog2 } from "../dialogs/TestModalDialog2";
+import { TestRadialMenu } from "../dialogs/TestRadialMenu";
+import { TestUiProviderDialog } from "../dialogs/TestUiProviderDialog";
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
+import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+import {
+  HorizontalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl2, VerticalPropertyGridWidgetControl,
+} from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
 import { TreeSelectionDemoWidgetControl } from "../widgets/TreeSelectionDemoWidget";
-
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
-
-import { TestModalDialog } from "../dialogs/TestModalDialog";
-import { TestModalDialog2 } from "../dialogs/TestModalDialog2";
-import { PopupTestDialog } from "../dialogs/PopupTest";
-import { TestRadialMenu } from "../dialogs/TestRadialMenu";
-import { AppTools } from "../../tools/ToolSpecifications";
-import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
 
 export class Frontstage4 extends FrontstageProvider {
 
@@ -60,21 +47,21 @@ export class Frontstage4 extends FrontstageProvider {
         defaultContentId="TestContent1"
         isInFooterMode={true}
         applicationData={{ key: "value" }}
-        topLeft={
+        contentManipulationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={this.getToolWidget()} />,
             ]}
           />
         }
-        topCenter={
+        toolSettings={
           <Zone
             widgets={[
               <Widget isToolSettings={true} />,
             ]}
           />
         }
-        topRight={
+        viewNavigationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={this.getNavigationWidget()} />,
@@ -91,7 +78,27 @@ export class Frontstage4 extends FrontstageProvider {
             ]}
           />
         }
-        bottomCenter={
+        rightPanel={<StagePanel
+          defaultState={StagePanelState.Minimized}
+          panelZones={{
+            start: {
+              widgets: [
+                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
+                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
+                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeDemo" control={TreeDemoWidgetControl} />,
+                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeSelectionDemo" control={TreeSelectionDemoWidgetControl} />,
+              ],
+            },
+            end: {
+              widgets: [
+                <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+                <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl2} />,
+                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TableDemo" control={TableDemoWidgetControl} />,
+              ],
+            },
+          }}
+        />}
+        statusBar={
           <Zone
             widgets={[
               <Widget isStatusBar={true} classId="SmallStatusBar" />,
@@ -99,7 +106,7 @@ export class Frontstage4 extends FrontstageProvider {
           />
         }
         bottomRight={
-          <Zone defaultState={ZoneState.Open} allowsMerging={false}
+          <Zone defaultState={ZoneState.Open} allowsMerging={true}
             widgets={[
               <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
@@ -123,10 +130,10 @@ export class Frontstage4 extends FrontstageProvider {
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
               items={[
-                AppTools.tool1, AppTools.tool2, AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand,
+                AppTools.tool1, AppTools.tool2, AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand, AppTools.noIconMessageCommand,
                 AppTools.item6, AppTools.item7, AppTools.item8]}
               direction={Direction.Bottom}
-              itemsInColumn={4}
+              itemsInColumn={5}
             />
           </>
         }
@@ -149,7 +156,8 @@ export class Frontstage4 extends FrontstageProvider {
               direction={Direction.Right}
             />
             <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
-            <ToolButton toolId={AppTools.addMessageCommand.commandId} iconSpec={AppTools.addMessageCommand.iconSpec!} labelKey={AppTools.addMessageCommand.label} execute={AppTools.addMessageCommand.execute} />
+            <ToolButton toolId={AppTools.addMessageCommand.commandId} iconSpec={AppTools.addMessageCommand.iconSpec!} labelKey={AppTools.addMessageCommand.label}
+              execute={AppTools.addMessageCommand.execute} />
           </>
         }
       />;
@@ -190,8 +198,12 @@ export class Frontstage4 extends FrontstageProvider {
   private radialMenu(): React.ReactNode {
     return (
       <TestRadialMenu
-        opened={true} />
+        opened={true} onClose={this._closeModal} />
     );
+  }
+
+  private _closeModal = () => {
+    ModalDialogManager.closeDialog();
   }
 
   private get _spinnerTestDialogItem() {
@@ -200,6 +212,12 @@ export class Frontstage4 extends FrontstageProvider {
     });
   }
 
+  private testUiProviderDialog(): React.ReactNode {
+    return (
+      <TestUiProviderDialog
+        opened={true} itemsManager={new DialogItemsManager()} />
+    );
+  }
   /** Define a NavigationWidget with Buttons to display in the TopRight zone.
    */
   private getNavigationWidget(): React.ReactNode {
@@ -215,6 +233,7 @@ export class Frontstage4 extends FrontstageProvider {
             <ToolButton toolId="openDialog2" label="open modal 2" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.modalDialog2())} />
             <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.radialMenu())} />
             <ToolButton toolId="popupTest" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.testPopup())} />
+            <ToolButton toolId="uiProviderModalTest" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.testUiProviderDialog())} />
           </>
         }
       />;

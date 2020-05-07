@@ -6,12 +6,12 @@
  * @module Message
  */
 
-import * as classnames from "classnames";
+import "./Progress.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
 import { Css } from "../../utilities/Css";
 import { Status, StatusHelpers } from "./Status";
-import "./Progress.scss";
 
 /** Properties of [[MessageProgress]] component.
  * @beta

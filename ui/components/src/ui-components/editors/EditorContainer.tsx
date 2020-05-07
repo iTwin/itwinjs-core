@@ -6,12 +6,12 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import { PropertyRecord, PropertyValue } from "@bentley/imodeljs-frontend";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-
 import "./EditorContainer.scss";
+import * as React from "react";
+import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValue } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** Arguments for the Property Updated event callback
  * @beta
@@ -71,7 +71,7 @@ export interface TypeEditor {
 }
 
 /**
- * EditorContainer React component
+ * EditorContainer React component used by the Table, Tree and PropertyGrid for cell editing.
  * @beta
  */
 export class EditorContainer extends React.PureComponent<EditorContainerProps> {
@@ -102,7 +102,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
     const editorName = propDescription.editor !== undefined ? propDescription.editor.name : undefined;
     this._propertyEditor = PropertyEditorManager.createEditor(propDescription.typename, editorName, propDescription.dataController);
-    editorNode = this._propertyEditor.reactElement;
+    editorNode = this._propertyEditor.reactNode;
 
     // istanbul ignore else
     if (React.isValidElement(editorNode)) {
@@ -169,8 +169,12 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     if (this._propertyEditor && this.props.propertyRecord) {
       const validateResult = await this._propertyEditor.validateValue(value, this.props.propertyRecord);
       if (validateResult.encounteredError) {
-        // this.setState({ isInvalid: validateResult.encounteredError });
-        // TODO - display InputField
+        const errorMessage = validateResult.errorMessage;
+        if (errorMessage && this._editorRef) {
+          const details = new NotifyMessageDetails(errorMessage.priority, errorMessage.briefMessage, errorMessage.detailedMessage);
+          details.setInputFieldTypeDetails(this._editorRef);
+          IModelApp.notifications.outputMessage(details);
+        }
         return !validateResult.encounteredError;
       }
     }

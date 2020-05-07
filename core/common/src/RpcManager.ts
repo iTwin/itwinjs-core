@@ -6,8 +6,10 @@
  * @module RpcInterface
  */
 
-import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface";
+import { IModelRpcProps } from "./IModel";
+import { RpcOperation } from "./rpc/core/RpcOperation";
 import { RpcRegistry } from "./rpc/core/RpcRegistry";
+import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface";
 
 /** Describes the endpoints of an RPC interface.
  * @public
@@ -60,5 +62,10 @@ export class RpcManager {
    */
   public static async describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]> {
     return RpcRegistry.instance.describeAvailableEndpoints();
+  }
+
+  /** Configures RPC protocols that employ iModel-based routing infrastructure. */
+  public static setIModel(props: IModelRpcProps) {
+    RpcOperation.fallbackToken = props;
   }
 }

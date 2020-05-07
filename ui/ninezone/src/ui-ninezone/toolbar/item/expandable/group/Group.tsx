@@ -6,11 +6,11 @@
  * @module Toolbar
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
-import { Panel } from "./Panel";
 import { Columns } from "./Columns";
+import { Panel } from "./Panel";
 import { Title } from "./Title";
 
 /** Properties of [[Group]] component.

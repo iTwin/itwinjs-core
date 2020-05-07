@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-
 import { InputStatus } from "./InputStatus";
 
 /** Properties for labeled components

@@ -7,24 +7,24 @@
  * @module Curve
  */
 
-import { Geometry, AxisOrder } from "../Geometry";
-import { AngleSweep } from "../geometry3d/AngleSweep";
+import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Quadrature } from "../numerics/Quadrature";
+import { AngleSweep } from "../geometry3d/AngleSweep";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { StrokeOptions } from "./StrokeOptions";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Transform } from "../geometry3d/Transform";
+import { Quadrature } from "../numerics/Quadrature";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
-
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { LineString3d } from "./LineString3d";
+import { StrokeOptions } from "./StrokeOptions";
+
 // import {} from "./";
 
 /** A transition spiral is a curve defined by its curvature, with the curvature function symmetric about midpoint.

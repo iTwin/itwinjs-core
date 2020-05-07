@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { ConnectClient, Project, IModelQuery } from "@bentley/imodeljs-clients";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { IModelQuery } from "@bentley/imodelhub-client";
+import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 
 /** Opens External IModel */
 export class ExternalIModel {
@@ -20,7 +21,7 @@ export class ExternalIModel {
     const info = await this.getIModelInfo();
 
     if (info.projectId && info.imodelId) {
-      this.iModelConnection = await IModelConnection.open(info.projectId, info.imodelId, OpenMode.Readonly);
+      this.iModelConnection = await RemoteBriefcaseConnection.open(info.projectId, info.imodelId, OpenMode.Readonly);
       this.viewId = await this.onIModelSelected(this.iModelConnection);
     }
   }
@@ -32,7 +33,7 @@ export class ExternalIModel {
 
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
 
-    const connectClient = new ConnectClient();
+    const connectClient = new ContextRegistryClient();
     let project: Project;
     try {
       project = await connectClient.getProject(requestContext, { $filter: `Name+eq+'${projectName}'` });
@@ -43,8 +44,9 @@ export class ExternalIModel {
     const imodelQuery = new IModelQuery();
     imodelQuery.byName(imodelName);
     const imodels = await IModelApp.iModelClient.iModels.get(requestContext, project.wsgId, imodelQuery);
-    if (imodels.length === 0)
+    if (imodels.length === 0) {
       throw new Error(`iModel with name "${imodelName}" does not exist in project "${projectName}"`);
+    }
     return { projectId: project.wsgId, imodelId: imodels[0].wsgId };
   }
 
@@ -72,8 +74,9 @@ export class ExternalIModel {
       "BisCore:DrawingViewDefinition",
     ];
     const acceptedViewSpecs = viewSpecs.filter((spec) => (-1 !== acceptedViewClasses.indexOf(spec.classFullName)));
-    if (0 === acceptedViewSpecs.length)
+    if (0 === acceptedViewSpecs.length) {
       throw new Error("No valid view definitions in imodel");
+    }
 
     // Prefer spatial view over drawing.
     const spatialViews = acceptedViewSpecs.filter((v) => {

@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup, fireEvent, waitForElement } from "@testing-library/react";
 import { expect } from "chai";
+import React from "react";
 import sinon from "sinon";
+import { ColorByName } from "@bentley/imodeljs-common";
+import { PrimitiveValue } from "@bentley/ui-abstract";
+import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import { ColorEditor } from "../../ui-components/editors/ColorEditor";
 import { PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { PrimitiveValue } from "@bentley/imodeljs-frontend";
-import { ColorByName } from "@bentley/imodeljs-common";
 
 describe("<ColorEditor />", () => {
   afterEach(cleanup);

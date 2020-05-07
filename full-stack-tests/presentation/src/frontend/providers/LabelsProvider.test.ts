@@ -3,25 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { PresentationLabelsProvider } from "@bentley/presentation-components";
 import { initialize, terminate } from "../../IntegrationTests";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { LabelsProvider } from "@bentley/presentation-components";
 
 describe("LabelsProvider", async () => {
 
   let imodel: IModelConnection;
-  let provider: LabelsProvider;
+  let provider: PresentationLabelsProvider;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await IModelConnection.openSnapshot(testIModelName);
-    provider = new LabelsProvider(imodel);
+    imodel = await SnapshotConnection.openFile(testIModelName);
+    provider = new PresentationLabelsProvider({ imodel });
   });
 
   after(async () => {
-    await imodel.closeSnapshot();
-    terminate();
+    await imodel.close();
+    await terminate();
   });
 
   describe("getLabel", () => {

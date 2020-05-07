@@ -6,15 +6,12 @@
  * @module Toolbar
  */
 
-import * as classnames from "classnames";
+import "./Item.scss";
+import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-
 import { CommonProps, Size, SizeProps } from "@bentley/ui-core";
-
 import { ToolbarItem, ToolbarItemProps } from "../Toolbar";
-
-import "./Item.scss";
 
 /** Properties of [[Item]] component.
  * @beta

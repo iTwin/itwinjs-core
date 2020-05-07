@@ -5,6 +5,7 @@ package-lock.json
 # build output
 .nyc_output
 /**/lib
+/**/build
 /**/test/output
 /generated-docs
 /out
@@ -12,6 +13,8 @@ package-lock.json
 coverage
 full_stack_test_results
 integration_test_results
+imjs_plugins
+imjs_extensions
 
 # rush-specific
 /common/temp

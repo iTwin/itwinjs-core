@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import {
-  StagePanelType, NineZoneNestedStagePanelsManager, getDefaultNineZoneStagePanelsManagerProps, NineZoneStagePanelsManager,
+  getDefaultNineZoneStagePanelsManagerProps, NineZoneNestedStagePanelsManager, NineZoneStagePanelsManager, StagePanelType,
 } from "../../ui-ninezone";
 
 // tslint:disable-next-line: completed-docs

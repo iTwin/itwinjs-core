@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { Angle, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ } from "@bentley/geometry-core";
+import { Angle, Constant, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ } from "@bentley/geometry-core";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 
@@ -41,6 +41,37 @@ export class Cartographic implements LatLongAndHeight {
     result.latitude = latitude;
     result.height = height;
     return result;
+  }
+
+  /** Freeze this Cartographic */
+  public freeze(): Readonly<this> {
+    return Object.freeze(this);
+  }
+
+  /** longitude, in degrees */
+  public get longitudeDegrees() {
+    return Angle.radiansToDegrees(this.longitude);
+  }
+
+  /** latitude, in degrees */
+  public get latitudeDegrees() {
+    return Angle.radiansToDegrees(this.latitude);
+  }
+
+  private static _oneMinusF = 1 - (Constant.earthRadiusWGS84.equator - Constant.earthRadiusWGS84.polar) / Constant.earthRadiusWGS84.equator;
+  private static _equatorOverPolar = Constant.earthRadiusWGS84.equator / Constant.earthRadiusWGS84.polar;
+  /** return the geocentric latitude angle for the input geodetic latitude angle (both in radians).
+   * @param geodeticLatitude geodetic latitude angle in radians
+   */
+  public static geocentricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number {
+    return Math.atan(Cartographic._oneMinusF * Cartographic._oneMinusF * Math.tan(geodeticLatitude));
+  }
+  /** return the parametric latitude angle for the input geodetic latitude angle (both in radians).  The parametric latitude
+   * is appropriate for input to the Ellipsoid methods.
+   * @param geodeticLatitude geodetic latitude angle in radians
+   */
+  public static parametricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number {
+    return Math.atan(Cartographic._oneMinusF * Cartographic._oneMinusF * Cartographic._equatorOverPolar * Math.tan(geodeticLatitude));
   }
 
   /** Create a new Cartographic from longitude and latitude specified in degrees. The values in the resulting object will be in radians.
@@ -79,10 +110,8 @@ export class Cartographic implements LatLongAndHeight {
    * @returns The modified result parameter, new Cartographic instance if none was provided, or undefined if the cartesian is at the center of the ellipsoid.
    */
   public static fromEcef(cartesian: Point3d, result?: Cartographic): Cartographic | undefined {
-    const oneOverRadii = Cartographic._wgs84OneOverRadii;
     const oneOverRadiiSquared = Cartographic._wgs84OneOverRadiiSquared;
-    const centerToleranceSquared = Cartographic._wgs84CenterToleranceSquared;
-    const p = Cartographic.scaleToGeodeticSurface(cartesian, oneOverRadii, oneOverRadiiSquared, centerToleranceSquared, Cartographic._cartesianToCartographicP);
+    const p = Cartographic.scalePointToGeodeticSurface(cartesian, Cartographic._cartesianToCartographicP);
 
     if (!p)
       return undefined;
@@ -103,6 +132,18 @@ export class Cartographic implements LatLongAndHeight {
     result.latitude = latitude;
     result.height = height;
     return result;
+  }
+
+  /** Scale point to geodetic surface
+   * @param point in ECEF to scale to the surface
+   * @param [result] The object onto which to store the result.
+   * @returns a point on the geodetic surface
+   */
+  public static scalePointToGeodeticSurface(point: Point3d, result?: Point3d): Point3d | undefined {
+    const oneOverRadii = Cartographic._wgs84OneOverRadii;
+    const oneOverRadiiSquared = Cartographic._wgs84OneOverRadiiSquared;
+    const centerToleranceSquared = Cartographic._wgs84CenterToleranceSquared;
+    return Cartographic._scaleToGeodeticSurface(point, oneOverRadii, oneOverRadiiSquared, centerToleranceSquared, result);
   }
 
   /** Duplicates a Cartographic. */
@@ -162,7 +203,7 @@ export class Cartographic implements LatLongAndHeight {
 
   private static _scaleToGeodeticSurfaceIntersection = new Point3d();
   private static _scaleToGeodeticSurfaceGradient = new Point3d();
-  private static scaleToGeodeticSurface(cartesian: Point3d, oneOverRadii: XYAndZ, oneOverRadiiSquared: XYAndZ, centerToleranceSquared: number, result?: Point3d) {
+  private static _scaleToGeodeticSurface(cartesian: Point3d, oneOverRadii: XYAndZ, oneOverRadiiSquared: XYAndZ, centerToleranceSquared: number, result?: Point3d) {
     const positionX = cartesian.x;
     const positionY = cartesian.y;
     const positionZ = cartesian.z;
@@ -319,7 +360,7 @@ export class CartographicRange {
 
   /** This method returns the raw latitude / longitude for the range in a Range2d object.
    * The X value represents the longitude and the Y value the latitudes.
-   * Y values are kept conscribed between -PI and +PI while
+   * Y values are kept between -PI and +PI while
    * longitude values can be expressed in any range between -2PI to +2PI
    * given the minimum longitude is always smaller numerically than the maximum longitude.
    * Note that usually the longitudes are usually by convention in the range of -PI to PI except

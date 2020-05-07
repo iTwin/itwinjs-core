@@ -6,17 +6,17 @@
  * @module Rendering
  */
 
-import { compareNumbers, compareBooleans, Dictionary } from "@bentley/bentleyjs-core";
+import { compareBooleans, compareNumbers, Dictionary } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { PolyfacePrimitive } from "../Polyface";
+import { Feature, FeatureTable } from "@bentley/imodeljs-common";
 import { DisplayParams } from "../DisplayParams";
+import { GeometryList } from "../geometry/GeometryList";
+import { Geometry } from "../geometry/GeometryPrimitives";
+import { PolyfacePrimitive } from "../Polyface";
 import { ToleranceRatio } from "../Primitives";
+import { StrokesPrimitive } from "../Strokes";
 import { MeshBuilder } from "./MeshBuilder";
 import { Mesh, MeshList } from "./MeshPrimitives";
-import { Geometry } from "../geometry/GeometryPrimitives";
-import { GeometryList } from "../geometry/GeometryList";
-import { StrokesPrimitive } from "../Strokes";
-import { Feature, FeatureTable } from "@bentley/imodeljs-common";
 
 /** @internal */
 export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> {

@@ -4,17 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore typemoq
 
-import TestUtils from "../TestUtils";
 import { expect } from "chai";
 import * as moq from "typemoq";
-
+import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { ContentViewManager, ViewportContentControl } from "../../ui-framework";
-import { ScreenViewport, SheetViewState, DrawingViewState, OrthographicViewState, SpatialViewState } from "@bentley/imodeljs-frontend";
+import TestUtils from "../TestUtils";
 
 describe("ContentViewManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   const viewportMock = moq.Mock.ofType<ScreenViewport>();

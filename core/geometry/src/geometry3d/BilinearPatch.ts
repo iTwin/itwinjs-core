@@ -7,17 +7,16 @@
  * @module Solid
  */
 
-import { Point3d } from "./Point3dVector3d";
-import { Range3d } from "./Range";
-import { Transform } from "./Transform";
-
-import { UVSurface } from "./GeometryHandler";
-import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
+import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { UVSurface } from "./GeometryHandler";
+import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
+import { Point3d } from "./Point3dVector3d";
+import { Range3d } from "./Range";
 import { Ray3d } from "./Ray3d";
-import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
+import { Transform } from "./Transform";
 
 /**
  * * A Bilinear patch is defined by its 4 corner points.

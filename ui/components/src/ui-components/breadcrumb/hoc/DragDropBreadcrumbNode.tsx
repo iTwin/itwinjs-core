@@ -6,12 +6,14 @@
  * @module Breadcrumb
  */
 
+import classnames from "classnames";
 import * as React from "react";
 import { DndComponentClass } from "react-dnd";
-import classnames from "classnames";
-import { TreeDragDropType } from "../../tree/hocs/withDragDrop";
 import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
 import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
+import { TreeDragDropType } from "../../tree/deprecated/hocs/withDragDrop";
+
+// tslint:disable:deprecation
 
 /** @internal */
 export interface DragDropBreadcrumbNodeProps extends React.AllHTMLAttributes<HTMLSpanElement> {

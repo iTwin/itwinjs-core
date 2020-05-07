@@ -6,10 +6,9 @@
  * @module ElementSeparator
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-
 import "./ElementSeparator.scss";
+import classnames from "classnames";
+import * as React from "react";
 import { Orientation } from "../enums/Orientation";
 import { CommonProps } from "../utils/Props";
 

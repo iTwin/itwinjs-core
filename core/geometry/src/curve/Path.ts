@@ -7,15 +7,15 @@
  * @module Curve
  */
 
-import { StrokeOptions } from "./StrokeOptions";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { GeometryQuery } from "./GeometryQuery";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { LineString3d } from "./LineString3d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { AnyCurve } from "./CurveChain";
 import { CurveChain } from "./CurveCollection";
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { RecursiveCurveProcessor } from "./CurveProcessor";
+import { GeometryQuery } from "./GeometryQuery";
+import { LineString3d } from "./LineString3d";
+import { StrokeOptions } from "./StrokeOptions";
 
 /**
  * * A `Path` object is a collection of curves that join head-to-tail to form a path.

@@ -2,24 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { expect, assert } from "chai";
-import { GraphicType, IModelApp, IModelConnection, SpatialViewState, StandardViewId, ScreenViewport } from "@bentley/imodeljs-frontend";
-import * as path from "path";
+import { assert, expect } from "chai";
+import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@bentley/geometry-core";
+import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 import {
-  DisplayParams,
-  Geometry,
-  GeometryAccumulator,
-  PrimitiveBuilder,
-  StrokesPrimitiveList,
-  StrokesPrimitivePointList,
-  StrokesPrimitivePointLists,
+  GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+} from "@bentley/imodeljs-frontend";
+import {
+  DisplayParams, Geometry, GeometryAccumulator, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists,
 } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { Branch } from "@bentley/imodeljs-frontend/lib/webgl";
-import { Arc3d, Point3d, LineString3d, Loop, Path, Transform, Range3d, Polyface, IndexedPolyface, Point2d } from "@bentley/geometry-core";
-import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
 describe("PrimitiveBuilder tests", () => {
   let imodel: IModelConnection;
@@ -31,15 +23,15 @@ describe("PrimitiveBuilder tests", () => {
   document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    IModelApp.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    IModelApp.shutdown();
+    if (imodel) await imodel.close();
+    await IModelApp.shutdown();
   });
 
   it("PrimitiveBuilder should produce proper arc strokes for specific tolerances", () => {
@@ -345,8 +337,8 @@ describe("PrimitiveBuilder tests", () => {
     const accum = new GeometryAccumulator(imodel, IModelApp.renderSystem);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const points: Point3d[] = [];
@@ -370,7 +362,7 @@ describe("PrimitiveBuilder tests", () => {
     const pth = Path.create(line2);
 
     const gfParams2: GraphicParams = new GraphicParams();
-    gfParams2.setLineColor(ColorDef.white);
+    gfParams2.lineColor = ColorDef.white;
     const displayParams2: DisplayParams = DisplayParams.createForLinear(gfParams2);
 
     accum.addPolyface(loopGeom.getPolyfaces(0.22)![0].indexedPolyface, displayParams, Transform.createIdentity());

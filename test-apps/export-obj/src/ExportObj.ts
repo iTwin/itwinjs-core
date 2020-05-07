@@ -2,20 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ExportGraphicsInfo, IModelHost, IModelDb, ECSqlStatement, Texture } from "@bentley/imodeljs-backend";
-import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
-import { Angle } from "@bentley/geometry-core";
 import * as fs from "fs";
-import * as Yargs from "yargs";
 import * as path from "path";
+import * as Yargs from "yargs";
+import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Angle } from "@bentley/geometry-core";
+import { ECSqlStatement, ExportGraphicsInfo, IModelHost, SnapshotDb, Texture } from "@bentley/imodeljs-backend";
+import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
 
-function doExport(iModelName: string, objName: string, mtlName: string) {
-  IModelHost.startup();
+async function doExport(iModelName: string, objName: string, mtlName: string): Promise<void> {
+  await IModelHost.startup();
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Error);
 
-  const iModel: IModelDb = IModelDb.openSnapshot(iModelName);
+  const iModel = SnapshotDb.openFile(iModelName);
   process.stdout.write(`Opened ${iModelName} successfully.\n`);
 
   const objFile = fs.openSync(objName, "w");
@@ -88,7 +88,7 @@ function doExport(iModelName: string, objName: string, mtlName: string) {
 
   materialMap.forEach((materialName: string, color: number) => {
     fs.appendFileSync(mtlFile, `newmtl ${materialName}\n`);
-    const rawColors = new ColorDef(color).colors;
+    const rawColors = ColorDef.getColors(color);
     fs.appendFileSync(mtlFile, `Kd ${(rawColors.r / 255).toFixed(2)} ${(rawColors.g / 255).toFixed(2)} ${(rawColors.b / 255).toFixed(2)}\n`);
     if (rawColors.t !== 0)
       fs.appendFileSync(mtlFile, `Tr ${(rawColors.t / 255).toFixed(2)}\n`);
@@ -115,16 +115,18 @@ interface ExportObjArgs {
   output: string;
 }
 
-try {
-  Yargs.usage("Export an OBJ from an existing BIM file.");
-  Yargs.required("input", "The input BIM");
-  Yargs.required("output", "The output OBJ file");
-  const args = Yargs.parse() as Yargs.Arguments<ExportObjArgs>;
+(async () => {
+  try {
+    Yargs.usage("Export an OBJ from an existing BIM file.");
+    Yargs.required("input", "The input BIM");
+    Yargs.required("output", "The output OBJ file");
+    const args = Yargs.parse() as Yargs.Arguments<ExportObjArgs>;
 
-  const parsedOutput = path.parse(args.output);
-  const mtlName = path.join(parsedOutput.dir, `${parsedOutput.name}.mtllib`);
+    const parsedOutput = path.parse(args.output);
+    const mtlName = path.join(parsedOutput.dir, `${parsedOutput.name}.mtllib`);
 
-  doExport(args.input, args.output, mtlName);
-} catch (error) {
-  process.stdout.write(error.message + "\n" + error.stack);
-}
+    await doExport(args.input, args.output, mtlName);
+  } catch (error) {
+    process.stdout.write(error.message + "\n" + error.stack);
+  }
+})(); // tslint:disable-line:no-floating-promises

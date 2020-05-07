@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { initialize, terminate } from "../IntegrationTests";
-import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { using } from "@bentley/bentleyjs-core";
-import { Ruleset } from "@bentley/presentation-common";
-import { RulesetManagerImpl } from "@bentley/presentation-backend/lib/RulesetManager";
-import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/NativePlatform";
-import { tweakRuleset } from "./Helpers";
 import { PresentationManagerMode } from "@bentley/presentation-backend";
+import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
+import { RulesetManagerImpl } from "@bentley/presentation-backend/lib/presentation-backend/RulesetManager";
+import { Ruleset } from "@bentley/presentation-common";
+import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { initialize, terminate } from "../IntegrationTests";
+import { tweakRuleset } from "./Helpers";
 
 describe("Rulesets roundtrip", () => {
 
@@ -25,15 +25,17 @@ describe("Rulesets roundtrip", () => {
       localeDirectories: [],
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadWrite,
+      isChangeTrackingEnabled: false,
+      cacheDirectory: "",
     });
     nativePlatform = new TNativePlatform();
 
     rulesets = new RulesetManagerImpl(() => nativePlatform);
   });
 
-  after(() => {
+  after(async () => {
     nativePlatform.dispose();
-    terminate();
+    await terminate();
   });
 
   const getRoundtripRuleset = async (sourceRuleset: Ruleset): Promise<Ruleset> => {

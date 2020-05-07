@@ -7,7 +7,6 @@
  */
 
 import { OnItemExecutedFunc } from "@bentley/ui-abstract";
-
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 import { CommandItemProps } from "./ItemProps";
 

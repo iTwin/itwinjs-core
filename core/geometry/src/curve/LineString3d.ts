@@ -5,30 +5,30 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Geometry, AxisOrder, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
+import { Clipper } from "../clipping/ClipUtils";
+import { AxisOrder, BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { XAndY } from "../geometry3d/XYZProps";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
-import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { StrokeOptions } from "./StrokeOptions";
-import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
-import { StrokeCountMap } from "./Query/StrokeCountMap";
-import { GeometryQuery } from "./GeometryQuery";
-import { CurveLocationDetail, CurveSearchStatus, CurveIntervalRole } from "./CurveLocationDetail";
-import { Clipper } from "../clipping/ClipUtils";
-import { LineSegment3d } from "./LineSegment3d";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "../geometry3d/PointStreaming";
-import { VariantCurveExtendParameter, CurveExtendOptions } from "./CurveExtendMode";
+import { Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Transform } from "../geometry3d/Transform";
+import { XAndY } from "../geometry3d/XYZProps";
+import { MultiLineStringDataVariant } from "../topology/Triangulation";
+import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
+import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
+import { LineSegment3d } from "./LineSegment3d";
+import { StrokeCountMap } from "./Query/StrokeCountMap";
+import { StrokeOptions } from "./StrokeOptions";
 
 /* tslint:disable:variable-name no-empty*/
 
@@ -1249,7 +1249,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    *   * data with no point is an empty array.
    *   * "deep" data is flattened to a single array of linestrings, losing structure.
    */
-  public static createArrayOfLineString3dFromVariantData(data: MultiLineStringDataVariant): LineString3d[] {
+  public static createArrayOfLineString3d(data: MultiLineStringDataVariant): LineString3d[] {
     const collector = new PointStreamGrowableXYZArrayCollector();
     VariantPointDataStream.streamXYZ(data, collector);
     const growableArrays = collector.claimArrayOfGrowableXYZArray();
@@ -1259,14 +1259,6 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         result.push(LineString3d.createCapture(points));
     }
     return result;
-  }
-  /**
-   * This method name is deprecated. Use `LineString3d.createArrayOfLineString3dFromVariantData`
-   * @deprecated use LineString3d.createArrayOfLineString3dFromVariantData
-   */
-  public static createArrayOfLineString3d(data: MultiLineStringDataVariant): LineString3d[] {
-    return this.createArrayOfLineString3dFromVariantData(data);
-
   }
 }
 /** An AnnotatedLineString3d is a linestring with additional surface-related data attached to each point

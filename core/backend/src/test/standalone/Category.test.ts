@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorByName, SubCategoryAppearance, SubCategoryOverride } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef, SubCategoryAppearance, SubCategoryOverride } from "@bentley/imodeljs-common";
 
 // spell-checker: disable
 
@@ -95,7 +95,7 @@ describe("Category tests", () => {
     assert.equal(a2, a3);
 
     const o2 = SubCategoryOverride.fromJSON({
-      color: new ColorDef("darkblue"),
+      color: ColorDef.fromString("darkblue").toJSON(),
       priority: 33,
       weight: 13,
       transp: 133,

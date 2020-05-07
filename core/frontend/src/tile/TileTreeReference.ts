@@ -3,58 +3,40 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
-import {
-  Matrix4d,
-  Plane3dByOriginAndUnitNormal,
-  Range3d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  ElementAlignedBox3d,
-  FrustumPlanes,
-  ViewFlag,
-} from "@bentley/imodeljs-common";
+import { Matrix4d, Range1d, Range3d, Transform } from "@bentley/geometry-core";
+import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { HitDetail } from "../HitDetail";
-import { Viewport } from "../Viewport";
-import { RenderClipVolume } from "../render/RenderClipVolume";
-import { RenderMemory } from "../render/RenderSystem";
 import { FeatureSymbology } from "../render/FeatureSymbology";
-import {
-  TileDrawArgs,
-  TileTree,
-  TileTreeOwner,
-  TileTreeSet,
-} from "./internal";
-import {
-  DecorateContext,
-  SceneContext,
-} from "../ViewContext";
+import { RenderClipVolume } from "../render/RenderClipVolume";
+import { RenderMemory } from "../render/RenderMemory";
+import { DecorateContext, SceneContext } from "../ViewContext";
+import { TileDrawArgs, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSet } from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
- * @internal
+ * @beta
  */
 export enum TileGraphicType {
   /** Rendered behind all other geometry without depth. */
   BackgroundMap = 0,
   /** Rendered with normal scene graphics. */
   Scene = 1,
-  /** Renders overlaid on all other geometry. */
+  /** Rendered in front of all other geometry. */
   Overlay = 2,
 }
 
 /** A reference to a [[TileTree]] suitable for drawing within a [[Viewport]]. Does not *own* its TileTree - the tree is owned by a [[TileTreeOwner]].
  * The specific [[TileTree]] referenced by this object may change based on the current state of the Viewport in which it is drawn - for example,
  * as a result of changing the RenderMode, or animation settings, or classification settings, etc.
- * A reference to a TileTree is typically associated with a ViewState, a DisplayStyleState, or a ViewState.
+ * A reference to a TileTree is typically associated with a [[ViewState]], a [[DisplayStyleState]], or a [[Viewport]].
  * Multiple references can refer to the same TileTree with different parameters and logic - for example, the same background map tiles can be displayed in two viewports with
  * differing levels of transparency.
- * @internal
+ * @beta
  */
-export abstract class TileTreeReference implements RenderMemory.Consumer {
+export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** The owner of the currently-referenced [[TileTree]]. Do not store a direct reference to it, because it may change or become disposed. */
   public abstract get treeOwner(): TileTreeOwner;
 
@@ -68,15 +50,16 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
       trees.add(tree);
   }
 
-  /** Adds this reference's graphics to the scene. By default this invokes [[TileTree.drawScene]] on the referenced TileTree, if it is loaded. */
+  /** Adds this reference's graphics to the scene. By default this invokes [[draw]]. */
   public addToScene(context: SceneContext): void {
     const args = this.createDrawArgs(context);
     if (undefined !== args)
       this.draw(args);
   }
 
+  /** Adds this reference's graphics to the scene. By default this invokes [[TileTree.draw]] on the referenced TileTree, if it is loaded. */
   public draw(args: TileDrawArgs): void {
-    args.root.draw(args);
+    args.tree.draw(args);
   }
 
   /** Optionally return a tooltip describing the hit. */
@@ -96,14 +79,40 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
       union.extendRange(contentRange);
   }
 
+  /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void {
     const tree = this.treeOwner.tileTree;
     if (undefined !== tree)
       tree.collectStatistics(stats);
   }
 
+  /** Return true if the tile tree is fully loaded.
+   * The default implementation returns true if the tile tree loading process completed (whether it resulted in success or failure).
+   * @note Do *not* override this property - override [[_isLoadingComplete]] instead..
+   * @internal
+   */
+  public get isLoadingComplete(): boolean {
+    switch (this.treeOwner.loadStatus) {
+      case TileTreeLoadStatus.NotLoaded:
+      case TileTreeLoadStatus.Loading:
+        return false;
+      case TileTreeLoadStatus.NotFound:
+        return true; // we tried, and failed, to load.
+      case TileTreeLoadStatus.Loaded:
+        return this._isLoadingComplete;
+    }
+  }
+
+  /** Override if additional asynchronous loading is required after the tile tree is successfully loaded.
+   * @internal
+   */
+  protected get _isLoadingComplete(): boolean {
+    return true;
+  }
+
   /** Create context for drawing the tile tree, if it is ready for drawing.
    * TileTreeReferences can override individual portions of the context, e.g. apply their own transform.
+   * Returns undefined if, e.g., the tile tree is not yet loaded.
    */
   public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
     const tree = this.treeOwner.load();
@@ -111,12 +120,11 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
       return undefined;
 
     const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(tree.expirationTime);
     const transform = this.computeTransform(tree);
     const clipVolume = this.getClipVolume(tree);
     const viewFlagOverrides = this.getViewFlagOverrides(tree);
 
-    return new TileDrawArgs(context, transform, tree, now, purgeOlderThan, viewFlagOverrides, clipVolume, tree.loader.parentsAndChildrenExclusive, this.getSymbologyOverrides(tree));
+    return new TileDrawArgs(context, transform, tree, now, viewFlagOverrides, clipVolume, tree.parentsAndChildrenExclusive, this.getSymbologyOverrides(tree));
   }
 
   /** Supply transform from this tile tree reference's location to iModel coordinate space.
@@ -127,6 +135,7 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
     return undefined !== tree ? this.computeTransform(tree) : undefined;
   }
 
+  /** Compute a transform from this tile tree reference's coordinate space to the [[IModelConnection]]'s coordinate space. */
   protected computeTransform(tree: TileTree): Transform {
     return tree.iModelTransform.clone();
   }
@@ -143,19 +152,13 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
     return range;
   }
 
-  public computeTileRangeForFrustum(vp: Viewport): Range3d | undefined {
-    const tree = this.treeOwner.tileTree;
-    if (undefined === tree)
-      return undefined;
-
-    return tree.computeTileRangeForFrustum(this.computeTransform(tree), vp.viewingSpace);
-  }
-
+  /** Return the clip volume applied to this reference's tile tree, if any. */
   protected getClipVolume(tree: TileTree): RenderClipVolume | undefined {
     return tree.clipVolume;
   }
 
-  protected getViewFlagOverrides(tree: TileTree): ViewFlag.Overrides {
+  /** Supply overrides that should be applied to the [[ViewState]]'s [ViewFlags]($common) when drawing this tile tree reference. */
+  protected getViewFlagOverrides(tree: TileTree): ViewFlagOverrides {
     return tree.viewFlagOverrides;
   }
 
@@ -164,7 +167,9 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
     return undefined;
   }
 
-  /* Extend range to include transformed range of this tile tree */
+  /* Extend range to include transformed range of this tile tree.
+   * @internal
+   */
   public accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes) {
     const tree = this.treeOwner.tileTree;
     if (undefined === tree)
@@ -174,5 +179,9 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
     tree.accumulateTransformedRange(range, matrix, location, frustumPlanes);
   }
 
-  public addPlanes(_planes: Plane3dByOriginAndUnitNormal[]): void { }
+  /** @internal */
+  public getTerrainHeight(_terrainHeights: Range1d): void { }
+
+  /** Return whether the geometry exposed by this tile tree reference should cast shadows on other geometry. */
+  public abstract get castsShadows(): boolean;
 }

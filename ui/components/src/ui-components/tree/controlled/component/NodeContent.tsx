@@ -6,22 +6,15 @@
  * @module Tree
  */
 
-import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useState, useEffect, useMemo } from "react";
+import "./NodeContent.scss";
 import classnames from "classnames";
-import { Subject } from "rxjs/internal/Subject";
-import { from } from "rxjs/internal/observable/from";
-import { takeUntil } from "rxjs/internal/operators/takeUntil";
-import { TreeNodePlaceholder, isPromiseLike, CommonProps, useEffectSkipFirst } from "@bentley/ui-core";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/imodeljs-frontend";
+import * as React from "react";
+import { CommonProps, TreeNodePlaceholder } from "@bentley/ui-core";
+import { ItemStyle, ItemStyleProvider } from "../../../properties/ItemStyle";
+import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
+import { HighlightableTreeNodeProps, HighlightingEngine } from "../../HighlightingEngine";
 import { TreeModelNode } from "../TreeModel";
-import { HighlightingEngine, HighlightableTreeNodeProps } from "../../HighlightingEngine";
-import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../properties/ValueRendererManager";
-import { UiComponents } from "../../../UiComponents";
-import { ItemStyleProvider, ItemStyle } from "../../../properties/ItemStyle";
-import "../../component/NodeContent.scss";
-import { TreeNodeEditorRenderer, TreeNodeEditor } from "./TreeNodeEditor";
+import { TreeNodeEditor, TreeNodeEditorRenderer } from "./TreeNodeEditor";
 
 /** Properties for [[TreeNodeContent]] component
  * @internal
@@ -39,11 +32,10 @@ export interface TreeNodeContentProps extends CommonProps {
 /** React component for displaying [[TreeNode]] label
  * @internal
  */
-// tslint:disable-next-line: variable-name
-export const TreeNodeContent: React.FC<TreeNodeContentProps> = (props: TreeNodeContentProps) => {
-  const label = useLabel(props.node, props.valueRendererManager, props.highlightProps);
-  const { node, onLabelRendered } = props;
-  useEffect(() => {
+export function TreeNodeContent(props: TreeNodeContentProps) {
+  const { node, valueRendererManager, onLabelRendered, highlightProps } = props;
+  const label = React.useMemo(() => getLabel(node, valueRendererManager, highlightProps), [node, valueRendererManager, highlightProps]);
+  React.useEffect(() => {
     onLabelRendered && onLabelRendered(node);
   }, [label, node, onLabelRendered]);
 
@@ -84,40 +76,6 @@ export const TreeNodeContent: React.FC<TreeNodeContentProps> = (props: TreeNodeC
         : undefined}
     </div>
   );
-};
-
-function useLabel(node: TreeModelNode, valueRendererManager: PropertyValueRendererManager, highlightProps?: HighlightableTreeNodeProps) {
-  const cancelled = useMemo(() => new Subject<void>(), []);
-
-  const [label, setLabel] = useState<React.ReactNode>(() => {
-    const newLabel = getLabel(node, valueRendererManager, highlightProps);
-    if (isPromiseLike(newLabel)) {
-      from(newLabel).pipe(takeUntil(cancelled)).subscribe((result) => setLabel(result));
-      return <TreeNodePlaceholder level={0} data-testid={"node-label-placeholder"} />;
-    }
-    return newLabel;
-  });
-
-  useEffectSkipFirst(() => {
-    const updateLabel = (result: React.ReactNode) => {
-      cancelled.next();
-      setLabel(result);
-    };
-    const newLabel = getLabel(node, valueRendererManager, highlightProps);
-    if (isPromiseLike(newLabel)) {
-      const subscription = from(newLabel).subscribe(updateLabel);
-      // istanbul ignore next
-      return () => subscription.unsubscribe();
-    } else {
-      updateLabel(newLabel);
-      // istanbul ignore next
-      return () => { };
-    }
-  }, [node, cancelled, valueRendererManager, highlightProps]);
-
-  useEffect(() => () => cancelled.next(), [cancelled]);
-
-  return label;
 }
 
 function getLabel(
@@ -134,27 +92,12 @@ function getLabel(
     containerType: PropertyContainerType.Tree,
     style: getStyle(node.item.style, node.isSelected),
     textHighlighter: highlightCallback,
+    defaultValue: <TreeNodePlaceholder level={0} data-testid={"node-label-placeholder"} />,
   };
 
-  const nodeRecord = node.item.labelDefinition ? node.item.labelDefinition : nodeToPropertyRecord(node);
-  return valueRendererManager.render(nodeRecord, context);
+  return valueRendererManager.render(node.item.label, context);
 }
 
 function getStyle(style?: ItemStyle, isSelected?: boolean): React.CSSProperties {
   return ItemStyleProvider.createStyle(style ? style : {}, isSelected);
-}
-
-function nodeToPropertyRecord(node: TreeModelNode) {
-  const value: PrimitiveValue = {
-    displayValue: node.item.label as string,
-    value: node.item.label,
-    valueFormat: PropertyValueFormat.Primitive,
-  };
-  const property: PropertyDescription = {
-    displayLabel: UiComponents.translate("general.label"),
-    typename: node.item && node.item.typename ? node.item.typename : "string",
-    name: "node_label",
-  };
-
-  return new PropertyRecord(value, property);
 }

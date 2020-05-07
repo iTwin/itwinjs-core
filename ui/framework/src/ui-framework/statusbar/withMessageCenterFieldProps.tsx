@@ -7,9 +7,8 @@
  */
 
 import * as React from "react";
-
-import { StatusBarContext } from "./StatusBar";
 import { MessageCenterFieldProps } from "../statusfields/MessageCenter";
+import { StatusBarContext } from "./StatusBar";
 
 /** HOC that injects values for [[MessageCenterFieldProps]].
  * @beta
@@ -18,7 +17,8 @@ export const withMessageCenterFieldProps = <P extends MessageCenterFieldProps, C
   // tslint:disable-next-line: variable-name
   Component: React.JSXElementConstructor<P> & C,
 ) => {
-  type Props = JSX.LibraryManagedAttributes<C, Omit<P, keyof MessageCenterFieldProps>>;
+  type InjectedProps = Pick<MessageCenterFieldProps, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">;
+  type Props = JSX.LibraryManagedAttributes<C, Omit<P, keyof InjectedProps>>;
   return function WithMessageCenterFieldProps(props: Props) {
     const statusBarContext = React.useContext(StatusBarContext);
     const { toastTargetRef, ...args } = statusBarContext;

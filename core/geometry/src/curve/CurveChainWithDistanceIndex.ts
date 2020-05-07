@@ -7,22 +7,23 @@
  * @module Curve
  */
 
-import { Geometry } from "../Geometry";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
-import { IStrokeHandler, GeometryHandler } from "../geometry3d/GeometryHandler";
-import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
-import { GeometryQuery } from "./GeometryQuery";
-import { CurveChain } from "./CurveCollection";
+import { Geometry } from "../Geometry";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { LineString3d } from "./LineString3d";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Transform } from "../geometry3d/Transform";
+import { CurveChain } from "./CurveCollection";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveLocationDetail } from "./CurveLocationDetail";
-import { VariantCurveExtendParameter, CurveExtendMode, CurveExtendOptions } from "./CurveExtendMode";
+import { GeometryQuery } from "./GeometryQuery";
+import { LineString3d } from "./LineString3d";
+import { StrokeOptions } from "./StrokeOptions";
+
 /**
  * * Annotation of an interval of a curve.
  * * The interval is marked with two pairs of numbers:

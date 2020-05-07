@@ -8,7 +8,7 @@ Concurrency control is a way to coordinate simultaneous transactions (briefcases
 
 An iModel has a concurrency control policy that specifies how multiple briefcases may modify models and elements. The policy may stipulate that locks must be used, forcing transactions to be sequential (pessimistic), or it may specify change-merging with conflict-resolution to combine the results of simultaneous transactions (optimistic).
 
-An app uses [IModelDb]($backend) and [ConcurrencyControl]($backend) to follow concurrency control rules.
+An app uses [BriefcaseDb]($backend) and [ConcurrencyControl]($backend) to follow concurrency control rules.
 
 Locks and code reservations are associated with a briefcase while it is making changes and are released when it pushes.
 
@@ -17,7 +17,7 @@ Locks and code reservations are associated with a briefcase while it is making c
 This article assumes that you already know that:
 
 * An iModel is a multi-user database
-* An app works with a [briefcase](../Glossary.md#Briefcase) using the [IModelDb]($backend) class.
+* An app works with a [briefcase](../Glossary.md#Briefcase) using the [BriefcaseDb]($backend) class.
 * A briefcase has a unique identity that is issued and tracked by [iModelHub]($docs/learning/IModelHub/index.md).
 * Changes are captured and distributed in the form of [ChangeSets]($docs/learning/IModelHub/briefcases.md).
 * ChangeSets are ordered in a sequence that is called the [timeline]($docs/learning/IModelHub/index.md#the-timeline-of-changes-to-an-imodel) of the iModel.
@@ -108,17 +108,17 @@ Locks are normally released when the briefcase pushes its changes, or they may b
 
  ![optimistic concurrency example workflow](./OptimisticConcurrencyControl.jpg)
 
- #### Conflicts
+#### Conflicts
+
  Working without locks also opens up the possibility that local changes may overlap with in-coming ChangeSets. When ChangeSets are merged into the briefcase, the change-merging algorithm checks for conflicts. The algorithm merges changes and checks for conflicts at the level of individual element properties. In the example above, the two briefcases changed different properties of the same element. That is not a conflict. Likewise, it is not a conflict for two briefcases both to set a property to the same value, or for two briefcases both to delete an element. Conflicts arise if the two briefcases set the same property to different values, or if one briefcase modifies a property and the other deletes the element.
 
- If conflicts are found, the change-merging algorithm applies the iModel's conflict-resolution policy. This can be accessed using the [IModelDb.concurrencyControl]($backend) property. The policy object includes a [ConcurrencyControl.ConflictResolutionPolicy]($backend) that specifies a conflict-handling policy for each combination of changes that could conflict. The handling operations are defined by [ConcurrencyControl.OnConflict]($backend). The default conflict-resolution policies are:
+ If conflicts are found, the change-merging algorithm applies the iModel's conflict-resolution policy. This can be accessed using the [BriefcaseDb.concurrencyControl]($backend) property. The policy object includes a [ConcurrencyControl.ConflictResolutionPolicy]($backend) that specifies a conflict-handling policy for each combination of changes that could conflict. The handling operations are defined by [ConcurrencyControl.OnConflict]($backend). The default conflict-resolution policies are:
 
  |Local Change|RemoteChange|Resolution|
  |------------|------------|--------|
  |update|update|RejectIncomingChange
  |update|delete|AcceptIncomingChange (reject not support)
  |delete|update|RejectIncomingChange (accept not supported)
-
 
  Property-level change-merging is very fine-grained, and so it allows many kinds of changes to be made simultaneously without conflicts. A schema may also specify rules to check for conflicts on a higher level.
  <!-- TBD: Link to ElementDrivesElement -->
@@ -129,7 +129,7 @@ Locks are normally released when the briefcase pushes its changes, or they may b
 
 This section describes how an app reserves Codes and/or acquires locks. There are two options for when and how to do this during a local transaction: before making changes (pessimistic) or after making changes (optimistic).
 
-### Acquiring locks and/or codes pessimistically.
+### Acquiring locks and/or codes pessimistically
 
  1. Call [Model.buildConcurrencyControlRequest]($backend) and [Element.buildConcurrencyControlRequest]($backend) to discover what locks and codes would be needed before making local changes.
 
@@ -139,7 +139,7 @@ This section describes how an app reserves Codes and/or acquires locks. There ar
 
 This approach is the safest way to avoid conflicts. It requires that the app must plan ahead before making local changes.
 
-This aproach is *required* when the iModel's locking policy is set to pessimistic.
+This approach is *required* when the iModel's locking policy is set to pessimistic.
 This approach may be used when the iModel's locking policy is set to optimistic.
 
 Note that sending a request to iModelHub is a relatively expensive operation. Therefore it is important to batch up requests for locks and/or Codes.

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { NodePathElement } from "../../hierarchy/NodePathElement";
+import { NodePathElement } from "../../presentation-common/hierarchy/NodePathElement";
 import { createRandomNodePathElement, createRandomNodePathElementJSON } from "../_helpers/random";
 
 describe("NodePathElement", () => {

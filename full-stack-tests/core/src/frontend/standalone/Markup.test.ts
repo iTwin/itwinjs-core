@@ -3,21 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import * as path from "path";
-import { IModelConnection, IModelApp, StandardViewTool, StandardViewId, WindowAreaTool } from "@bentley/imodeljs-frontend";
-import { MarkupApp, SelectTool, LineTool, EditTextTool } from "@bentley/imodeljs-markup";
+import { IModelApp, IModelConnection, SnapshotConnection, StandardViewId, StandardViewTool, WindowAreaTool } from "@bentley/imodeljs-frontend";
+import { EditTextTool, LineTool, MarkupApp, SelectTool } from "@bentley/imodeljs-markup";
+import { Element, G, LinkedHTMLElement } from "@svgdotjs/svg.js";
 import { createOnScreenTestViewport, ScreenTestViewport } from "../TestViewport";
-import { G, Element, LinkedHTMLElement } from "@svgdotjs/svg.js";
-
-const testIModelName = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
 
 describe("Markup tests", async () => {
   let imodel: IModelConnection;
   let vp: ScreenTestViewport;
 
   before(async () => {
-    IModelApp.startup();
-    imodel = await IModelConnection.openSnapshot(testIModelName);
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     await MarkupApp.initialize();
     vp = await createOnScreenTestViewport("0x24", imodel, 500, 500);
     await MarkupApp.start(vp);
@@ -25,8 +22,8 @@ describe("Markup tests", async () => {
 
   after(async () => {
     vp.dispose();
-    if (imodel) await imodel.closeSnapshot();
-    IModelApp.shutdown();
+    if (imodel) await imodel.close();
+    await IModelApp.shutdown();
   });
 
   const makeRect = (g: G) => g.rect(10, 10).move(3, 3).css(MarkupApp.props.active.element);

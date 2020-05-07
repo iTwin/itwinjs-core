@@ -23,14 +23,14 @@ To restore it, uncomment the use of it in in GltfTileIO.ts, and add the lines be
 
 ------------------------------------------- */
 /** reply sent through PostMessage
- * @internal
+ * @alpha
  */
 class WorkerReply {
   constructor(public msgId: number, public result: any) { }
 }
 
 /** error thrown when we detect or catch an error.
- * @internal
+ * @alpha
  */
 class WorkerError extends Error {
   constructor(public msgId: number, public originalError: Error) {

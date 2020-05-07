@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
 import { expect } from "chai";
+import * as React from "react";
+import { DragDropContext } from "react-dnd";
+import TestBackend from "react-dnd-test-backend";
 import ReactTestUtils from "react-dom/test-utils";
 import * as sinon from "sinon";
-import { withDragSource, DragSourceArguments } from "../../ui-components";
-import TestBackend from "react-dnd-test-backend";
-import { DragDropContext } from "react-dnd";
-import { render, cleanup } from "@testing-library/react";
+import { cleanup, render } from "@testing-library/react";
+import { DragSourceArguments, withDragSource } from "../../ui-components";
 
 describe("withDragSource", () => {
 

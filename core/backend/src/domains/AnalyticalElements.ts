@@ -6,8 +6,8 @@
  * @module Elements
  */
 
-import { GeometricElement3d, TypeDefinitionElement, InformationPartitionElement } from "../Element";
 import { GeometricElement3dProps, TypeDefinitionElementProps } from "@bentley/imodeljs-common";
+import { GeometricElement3d, InformationPartitionElement, TypeDefinitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
 
 /** An AnalyticalPartition element indicates that there is a specialized analytical perspective within

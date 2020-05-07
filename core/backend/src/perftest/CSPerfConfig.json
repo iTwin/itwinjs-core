@@ -1,6 +1,24 @@
 {
-  "projectId": "23383876-c4a1-4c6b-9dc4-f3f2cf828606",
-  "imodelId": "2d391981-83d1-4600-97ff-30e3f7e488ae",
-  "imodelPushId": "b066d7e0-f70e-4649-9ae4-7a095c4d8213",
-  "aspectIModelId": "789a93cd-762a-4f66-81d0-9fa008324c60"
+  "basicTest": {
+    "projectId": "23383876-c4a1-4c6b-9dc4-f3f2cf828606",
+    "imodelId": "2d391981-83d1-4600-97ff-30e3f7e488ae",
+    "imodelPushId": "b066d7e0-f70e-4649-9ae4-7a095c4d8213",
+    "aspectIModelId": "789a93cd-762a-4f66-81d0-9fa008324c60"
+  },
+  "utilityTest": {
+    "projectId": "04b7b40e-8bd2-4335-9232-40e61c32b7a9",
+    "imodelId": "ce4f86f7-08a9-4437-a2ad-048cf0c8a705"
+  },
+  "rootDir": "./lib/test/output",
+  "bigDatasets": [
+    {
+      "projId": "94b99b9d-8a0e-4ac0-98e7-40bdd0c2bfdd",
+      "projName": "MSTNV2JK",
+      "modelId": "8bed3d91-e413-4f90-b35d-d9d51bea1638",
+      "modelName": "CS_ALL_2.1.0.227",
+      "csStart": 0,
+      "csEnd": "",
+      "csType": "All"
+    }
+  ]
 }

@@ -6,24 +6,16 @@
  * @module Rendering
  */
 
-import {
-  disposeArray,
-  IDisposable,
-} from "@bentley/bentleyjs-core";
+import { disposeArray, IDisposable } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import {
-  ViewFlag,
-  ViewFlags,
-} from "@bentley/imodeljs-common";
+import { ViewFlagOverrides, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { RenderGraphic } from "./RenderGraphic";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { RenderClipVolume } from "./RenderClipVolume";
+import { RenderGraphic } from "./RenderGraphic";
+import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
-import {
-  RenderMemory,
-  RenderTextureDrape,
-} from "./RenderSystem";
+import { RenderTextureDrape } from "./RenderSystem";
 
 /**
  * A node in a scene graph. The branch itself is not renderable. Instead it contains a list of RenderGraphics,
@@ -37,7 +29,7 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
   public readonly entries: RenderGraphic[] = [];
   /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */
   public readonly ownsEntries: boolean;
-  public viewFlagOverrides = new ViewFlag.Overrides();
+  public viewFlagOverrides = new ViewFlagOverrides();
   /** Optional symbology overrides to be applied to all graphics in this branch */
   public symbologyOverrides?: FeatureSymbology.Overrides;
   /** Optional animation branch Id.
@@ -57,7 +49,7 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
   /** @internal */
   public setViewFlags(flags: ViewFlags): void { this.viewFlagOverrides.overrideAll(flags); }
   /** @internal */
-  public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this.viewFlagOverrides.copyFrom(ovr); }
+  public setViewFlagOverrides(ovr: ViewFlagOverrides): void { this.viewFlagOverrides.copyFrom(ovr); }
 
   public dispose() { this.clear(); }
   public get isEmpty(): boolean { return 0 === this.entries.length; }
@@ -93,7 +85,16 @@ export class AnimationBranchState {
   public readonly omit?: boolean;
   public readonly transform?: Transform;
   public readonly clip?: RenderClipVolume;
-  constructor(transform?: Transform, clip?: RenderClipVolume, omit?: boolean) { this.transform = transform; this.clip = clip; this.omit = omit; }
+  constructor(transform?: Transform, clip?: RenderClipVolume, omit?: boolean) {
+    this.transform = transform;
+    this.clip = clip;
+    this.omit = omit;
+  }
+
+  public dispose(): void {
+    if (this.clip)
+      this.clip.dispose();
+  }
 }
 
 /** Mapping from node/branch IDs to animation branch state

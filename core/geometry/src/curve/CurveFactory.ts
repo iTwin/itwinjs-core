@@ -9,17 +9,25 @@
 
 // import { Geometry, Angle, AngleSweep } from "../Geometry";
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Arc3d, ArcBlendData } from "./Arc3d";
-import { LineString3d } from "./LineString3d";
-import { LineSegment3d } from "./LineSegment3d";
-import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Path } from "./Path";
-import { Geometry } from "../Geometry";
-import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
-import { Loop } from "./Loop";
+import { AxisOrder, Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { Cone } from "../solid/Cone";
+import { TorusPipe } from "../solid/TorusPipe";
+import { Arc3d, ArcBlendData } from "./Arc3d";
+import { CurveChain } from "./CurveCollection";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { GeometryQuery } from "./GeometryQuery";
+import { LineSegment3d } from "./LineSegment3d";
+import { LineString3d } from "./LineString3d";
+import { Loop } from "./Loop";
+import { Path } from "./Path";
+
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
  * @public
@@ -33,16 +41,50 @@ export class CurveFactory {
     }
   }
   /**
+   * Create a circular arc from start point, tangent at start, and another point (endpoint) on the arc.
+   * @param pointA
+   * @param tangentA
+   * @param pointB
+   */
+  public static createArcPointTangentPoint(pointA: Point3d, tangentA: Vector3d, pointB: Point3d): Arc3d | undefined {
+    const vectorV = Vector3d.createStartEnd(pointA, pointB);
+    const frame = Matrix3d.createRigidFromColumns(tangentA, vectorV, AxisOrder.XYZ);
+    if (frame !== undefined) {
+      const vv = vectorV.dotProduct(vectorV);
+      const vw = frame.dotColumnY(vectorV);
+      const alpha = Geometry.conditionalDivideCoordinate(vv, 2 * vw);
+      if (alpha !== undefined) {
+        const vector0 = frame.columnY();
+        vector0.scaleInPlace(-alpha);
+        const vector90 = frame.columnX();
+        vector90.scaleInPlace(alpha);
+        const centerToEnd = vector0.plus(vectorV);
+        const sweepAngle = vector0.angleTo(centerToEnd);
+        let sweepRadians = sweepAngle.radians;  // That's always positive and less than PI.
+        if (tangentA.dotProduct(centerToEnd) < 0.0) // ah, sweepRadians is the wrong way
+          sweepRadians = 2.0 * Math.PI - sweepRadians;
+        const center = pointA.plusScaled(vector0, -1.0);
+        return Arc3d.create(center, vector0, vector90, AngleSweep.createStartEndRadians(0.0, sweepRadians));
+      }
+    }
+    return undefined;
+  }
+  /**
    * Construct a sequence of alternating lines and arcs with the arcs creating tangent transition between consecutive edges.
+   *  * If the radius parameter is a number, that radius is used throughout.
+   *  * If the radius parameter is an array of numbers, `radius[i]` is applied at `point[i]`.
+   *    * Note that since no fillet is constructed at the initial or final point, those entries in `radius[]` are never referenced.
+   *    * A zero radius for any point indicates to leave the as a simple corner.
    * @param points point source
-   * @param radius fillet radius
+   * @param radius fillet radius or array of radii indexed to correspond to the points.
    * @param allowBackupAlongEdge true to allow edges to be created going "backwards" along edges if needed to create the blend.
    */
-  public static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number, allowBackupAlongEdge: boolean = true): Path | undefined {
+  public static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge: boolean = true): Path | undefined {
     if (Array.isArray(points))
       return this.createFilletsInLineString(new Point3dArrayCarrier(points), radius, allowBackupAlongEdge);
     if (points instanceof LineString3d)
       return this.createFilletsInLineString(points.packedPoints, radius, allowBackupAlongEdge);
+
     const n = points.length;
     if (n <= 1)
       return undefined;
@@ -55,7 +97,17 @@ export class CurveFactory {
 
     for (let i = 1; i + 1 < n; i++) {
       const pointC = points.getPoint3dAtCheckedPointIndex(i + 1)!;
-      blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, radius));
+      let thisRadius = 0;
+      if (Array.isArray(radius)) {
+        if (i < radius.length)
+          thisRadius = radius[i];
+      } else if (Number.isFinite(radius))
+        thisRadius = radius;
+
+      if (thisRadius !== 0.0)
+        blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, thisRadius));
+      else
+        blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointB.clone() });
       pointA.setFromPoint3d(pointB);
       pointB.setFromPoint3d(pointC);
     }
@@ -176,4 +228,95 @@ export class CurveFactory {
     }
     return arcPath;
   }
+  private static appendGeometryQueryArray(candidate: GeometryQuery | GeometryQuery[] | undefined, result: GeometryQuery[]) {
+    if (candidate instanceof GeometryQuery)
+      result.push(candidate);
+    else if (Array.isArray(candidate)) {
+      for (const p of candidate)
+        this.appendGeometryQueryArray(p, result);
+    }
+
+  }
+  /**
+   * Create solid primitives for pipe segments (e.g. Cone or TorusPipe) around line and arc primitives.
+   * @param centerline centerline geometry/
+   * @param pipeRadius radius of pipe.
+   */
+  public static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined {
+    if (centerline instanceof LineSegment3d) {
+      return Cone.createAxisPoints(centerline.startPoint(), centerline.endPoint(), pipeRadius, pipeRadius, false);
+    } else if (centerline instanceof Arc3d) {
+      return TorusPipe.createAlongArc(centerline, pipeRadius, false);
+    } else if (centerline instanceof CurvePrimitive) {
+      const builder = PolyfaceBuilder.create();
+      builder.addMiteredPipes(centerline, pipeRadius);
+      return builder.claimPolyface();
+    } else if (centerline instanceof CurveChain) {
+      const result: GeometryQuery[] = [];
+      for (const p of centerline.children) {
+        const pipe = this.createPipeSegments(p, pipeRadius);
+        this.appendGeometryQueryArray(pipe, result);
+      }
+      return result;
+    }
+    return undefined;
+  }
+  /**
+   * * Create section arcs for mitered pipe.
+   * * At each end of each pipe, the pipe is cut by the plane that bisects the angle between successive pipe centerlines.
+   * * The arc definitions are constructed so that lines between corresponding fractional positions on the arcs are
+   *     axial lines on the pipes.
+   *   * This means that each arc definition axes (aka vector0 and vector90) are _not_ perpendicular to each other.
+   * @param centerline centerline of pipe
+   * @param radius radius of arcs
+   */
+  public static createMiteredPipeSections(centerline: IndexedXYZCollection, radius: number): Arc3d[] {
+    const arcs: Arc3d[] = [];
+    if (centerline.length < 2)
+      return [];
+    const vectorAB = Vector3d.create();
+    const vectorBC = Vector3d.create();
+    const bisector = Vector3d.create();
+    const vector0 = Vector3d.create();
+    const vector90 = Vector3d.create();
+    const currentCenter = centerline.getPoint3dAtUncheckedPointIndex(0);
+    centerline.vectorIndexIndex(0, 1, vectorBC)!;
+    const baseFrame = Matrix3d.createRigidHeadsUp(vectorBC, AxisOrder.ZXY);
+    baseFrame.columnX(vector0);
+    baseFrame.columnY(vector90);
+    vector0.scaleInPlace(radius);
+    vector90.scaleInPlace(radius);
+    // circular section on base plane ....
+    const ellipseA = Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360());
+    arcs.push(ellipseA);
+    for (let i = 1; i < centerline.length; i++) {
+      vectorAB.setFromVector3d(vectorBC);
+      centerline.getPoint3dAtUncheckedPointIndex(i, currentCenter);
+      if (i + 1 < centerline.length) {
+        centerline.vectorIndexIndex(i, i + 1, vectorBC)!;
+      } else {
+        vectorBC.setFromVector3d(vectorAB);
+      }
+      if (vectorAB.normalizeInPlace() && vectorBC.normalizeInPlace()) {
+        vectorAB.interpolate(0.5, vectorBC, bisector);
+        // On the end ellipse for this pipe section. ..
+        // center comes directly from centerline[i]
+        // vector0 and vector90 are obtained by sweeping the corresponding vectors of the start ellipse to the split plane.
+        moveVectorToPlane(vector0, vectorAB, bisector, vector0);
+        moveVectorToPlane(vector90, vectorAB, bisector, vector90);
+        arcs.push(Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360()));
+      }
+    }
+    return arcs;
+  }
+}
+/**
+ * Starting at vectorR, move parallel to vectorV until perpendicular to planeNormal
+ */
+function moveVectorToPlane(vectorR: Vector3d, vectorV: Vector3d, planeNormal: Vector3d, result?: Vector3d): Vector3d {
+  // find s such that (vectorR + s * vectorV) DOT planeNormal = 0.
+  const dotRN = vectorR.dotProduct(planeNormal);
+  const dotVN = vectorV.dotProduct(planeNormal);
+  const s = Geometry.safeDivideFraction(dotRN, dotVN, 0.0);
+  return vectorR.plusScaled(vectorV, -s, result);
 }

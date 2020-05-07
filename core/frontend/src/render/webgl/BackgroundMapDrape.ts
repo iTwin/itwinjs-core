@@ -2,27 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module WebGL
  */
-import { GL } from "./GL";
-import { dispose, assert } from "@bentley/bentleyjs-core";
-import { FrameBuffer } from "./FrameBuffer";
-import { RenderGraphic } from "../RenderGraphic";
-import { Texture, TextureHandle } from "./Texture";
-import { Target } from "./Target";
-import { SceneContext } from "../../ViewContext";
+
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
+import { ColorDef, Frustum, FrustumPlanes, RenderTexture } from "@bentley/imodeljs-common";
 import { BackgroundMapTileTreeReference, GraphicsCollectorDrawArgs, TileTreeReference } from "../../tile/internal";
-import { Frustum, FrustumPlanes, RenderTexture, ColorDef } from "@bentley/imodeljs-common";
-import { Matrix4d } from "@bentley/geometry-core";
-import { System } from "./System";
+import { SceneContext } from "../../ViewContext";
+import { ViewState3d } from "../../ViewState";
+import { FeatureSymbology } from "../FeatureSymbology";
+import { RenderGraphic } from "../RenderGraphic";
 import { BatchState, BranchStack } from "./BranchState";
+import { FrameBuffer } from "./FrameBuffer"; import { GL } from "./GL";
+import { PlanarTextureProjection } from "./PlanarTextureProjection";
 import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
-import { ViewState3d } from "../../ViewState";
-import { PlanarTextureProjection } from "./PlanarTextureProjection";
+import { System } from "./System";
+import { Target } from "./Target";
+import { Texture, TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
-import { FeatureSymbology } from "../FeatureSymbology";
 
 /** @internal */
 export class BackgroundMapDrape extends TextureDrape {
@@ -42,6 +43,7 @@ export class BackgroundMapDrape extends TextureDrape {
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private readonly _symbologyOverrides = new FeatureSymbology.Overrides();
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
+  private readonly _plane = Plane3dByOriginAndUnitNormal.create(Point3d.createZero(), Vector3d.create(0, 0, 1))!;
 
   private constructor(drapedTree: TileTreeReference, mapTree: BackgroundMapTileTreeReference) {
     super();
@@ -86,8 +88,7 @@ export class BackgroundMapDrape extends TextureDrape {
     this._width = requiredWidth;
     this._height = requiredHeight;
 
-    const plane = this._mapTree.plane;
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(plane!, context.viewingSpace, this._drapedTree, this._mapTree, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewingSpace, this._drapedTree, this._mapTree, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 

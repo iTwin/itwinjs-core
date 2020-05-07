@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { ClusterableArray } from "../../numerics/ClusterableArray";
-import { prettyPrint } from "../testFunctions";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
-import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Sample } from "../../serialization/GeometrySamples";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableBlockedArray } from "../../geometry3d/GrowableBlockedArray";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { Transform } from "../../geometry3d/Transform";
+import { ClusterableArray } from "../../numerics/ClusterableArray";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { prettyPrint } from "../testFunctions";
 
 /* tslint:disable: no-console */
 /** point whose coordinates are a function of i only. */
@@ -284,7 +284,7 @@ describe("GrowablePoint3dArray", () => {
       let lengthA = 0;
       for (let i = 0; i + 1 < n; i++) {
         lengthA += pointA.getPoint3dAtUncheckedPointIndex(i).distance(pointA.getPoint3dAtUncheckedPointIndex(i + 1));
-        const d0 = pointA.distance(i, i + 1);
+        const d0 = pointA.distanceIndexIndex(i, i + 1);
         const d1 = pointA.distanceIndexIndex(i, i + 1);
         const d1Squared = pointA.distanceSquaredIndexIndex(i, i + 1);
         ck.testCoordinate(d0!, d1!);
@@ -509,8 +509,8 @@ describe("GrowablePoint3dArray", () => {
       }
     }
 
-    ck.testUndefined(xyzPoints.distance(-1, 0), "distance to invalid indexA");
-    ck.testUndefined(xyzPoints.distance(0, -1), "distance to invalid indexB");
+    ck.testUndefined(xyzPoints.distanceIndexIndex(-1, 0), "distance to invalid indexA");
+    ck.testUndefined(xyzPoints.distanceIndexIndex(0, -1), "distance to invalid indexB");
     ck.testUndefined(xyzPoints.distanceIndexToPoint(-1, spacePoint), "distance to invalid indexA");
 
     ck.testFalse(xyzPoints.setXYZAtCheckedPointIndex(-5, 1, 2, 3), "negative index for setCoordinates");

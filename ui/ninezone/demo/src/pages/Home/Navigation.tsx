@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as classnames from "classnames";
+import "./Navigation.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { Link } from "react-router-dom";
-import "./Navigation.scss";
 
 export interface Props {
   className?: string;

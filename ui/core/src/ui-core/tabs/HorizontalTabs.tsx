@@ -7,12 +7,13 @@
  */
 
 import * as React from "react";
-import { TabsProps, Tabs } from "./Tabs";
+import { Tabs, TabsProps } from "./Tabs";
 
 /** Horizontal tabs meant to represent the current position in a page/section
- * @beta
+ * @public
  */
 export class HorizontalTabs extends React.PureComponent<TabsProps> {
+  /** @internal */
   public render(): JSX.Element {
     return (
       <Tabs mainClassName="uicore-tabs-horizontal" {...this.props} />

@@ -6,10 +6,10 @@
  * @module Toolbar
  */
 
-import * as classnames from "classnames";
+import "./Expandable.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Expandable.scss";
 
 /** Properties of [[ExpandableButton]] component.
  * @alpha

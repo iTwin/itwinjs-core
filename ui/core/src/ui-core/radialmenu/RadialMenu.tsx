@@ -6,14 +6,13 @@
  * @module RadialMenu
  */
 
-import * as React from "react";
-import * as classnames from "classnames";
-
-import { AnnularSector, Annulus } from "./Annulus";
-import { CommonProps } from "../utils/Props";
-import { Point } from "../utils/Point";
-
 import "./RadialMenu.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { Icon, IconSpec } from "../icons/IconComponent";
+import { Point } from "../utils/Point";
+import { CommonProps } from "../utils/Props";
+import { AnnularSector, Annulus } from "./Annulus";
 
 /** Properties for [[RadialMenu]]
  * @beta
@@ -70,6 +69,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
   public render(): JSX.Element {
     const width = 2 * (this.props.outerRadius + 1);
     let x = this.props.left, y = this.props.top;
+
     if (this.props.left && this.props.top && typeof this.props.left === "number" && typeof this.props.top === "number") {
       x = this.props.left;
       y = this.props.top;
@@ -83,6 +83,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
       if (y > window.innerHeight - width)
         y = window.innerHeight - width;
     }
+
     const divStyle: React.CSSProperties = { left: x, top: y, ...this.props.style };
 
     return (
@@ -121,8 +122,10 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
   public componentDidMount() {
     this._generateAnnularSectors();
 
-    window.addEventListener("keyup", this._handleKeyUp);
-    window.addEventListener("mouseup", this._handleClick);
+    setTimeout(() => {
+      window.addEventListener("keyup", this._handleKeyUp);
+      window.addEventListener("mouseup", this._handleClick);
+    });
   }
 
   public componentWillUnmount() {
@@ -176,7 +179,7 @@ export interface RadialButtonProps extends CommonProps {
   /** Whether label is rotated to radial menu. Default: Inherit */
   labelRotate?: boolean;
   /** which icon to display in on the menu button */
-  icon?: string;
+  icon?: IconSpec;
   /** @internal */
   annularSector?: AnnularSector;
   /** listens to any onClick event, or any select event, which can be triggered by the select() method. */
@@ -209,6 +212,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
     let size = 0;
     let t = "";
     let path = "";
+
     if (sector) {
       size = sector.start.p1.getDistanceTo(sector.end.p2) * 2;
       path = sector.path;
@@ -223,7 +227,8 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
         let a = angle * 180 / Math.PI + 90;
         while (a > 180)
           a -= 360;
-        while (a < -180) a += 360;
+        while (a < -180)
+          a += 360;
         if (a > 90)
           a -= 180;
         if (a < -90)
@@ -231,6 +236,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
         t = `rotate(${a} ${p.x}, ${p.y})`;
       }
     }
+
     return (
       <g
         onMouseOver={this._handleMouseOver}
@@ -243,7 +249,9 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
         </path>
         <foreignObject transform={t} x={p.x - size / 2} y={p.y - 16} width={size} height={size} className={"core-radial-menu-button-svg"}>
           <div {...{ xmlns: "http://www.w3.org/1999/xhtml" }} className={"core-radial-menu-button-container"}>
-            <div className={classnames("core-radial-menu-button-icon", "icon", this.props.icon)} />
+            <div className="core-radial-menu-button-icon">
+              <Icon iconSpec={this.props.icon} />
+            </div>
             <div className={"core-radial-menu-button-content"}>
               {this.props.children}
             </div>
@@ -252,20 +260,24 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
       </g>
     );
   }
+
   /** Manually call this.props.onSelect */
   public select = () => {
     // istanbul ignore else
     if (this.props.onSelect)
       this.props.onSelect(undefined);
   }
+
   private _handleClick = (event: React.MouseEvent<SVGElement>) => {
     // istanbul ignore else
     if (this.props.onSelect)
       this.props.onSelect(event);
   }
+
   private _handleMouseOver = (_event: React.MouseEvent<SVGElement>) => {
     this.setState({ hover: true });
   }
+
   private _handleMouseOut = (_event: React.MouseEvent<SVGElement>) => {
     this.setState({ hover: false });
   }

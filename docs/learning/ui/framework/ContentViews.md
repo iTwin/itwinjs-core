@@ -19,7 +19,7 @@ A Content Control will either subclass [ViewportContentControl]($ui-framework) i
 
 ### Subclassing ViewportContentControl
 
-The following shows a sample Viewport content control that subclasses ViewportContentControl. It imports a local **ViewportComponent** implementation and sets `this.reactElement`. The `options` parameter to the constructor comes from the `applicationData` values set in a Content Group.
+The following shows a sample Viewport content control that subclasses ViewportContentControl. It imports a local **ViewportComponent** implementation and sets `this.reactNode`. The `options` parameter to the constructor comes from the `applicationData` values set in a Content Group.
 
 ```ts
 import * as React from "react";
@@ -41,7 +41,7 @@ export class ViewportContent extends ViewportContentControl {
     super(info, options);
 
     if (options.iModelConnection && options.viewId) {
-      this.reactElement = (
+      this.reactNode = (
         <SimpleViewportComponent
           viewportRef={(v: ScreenViewport) => { this.viewport = v; }}
           imodel={options.iModelConnection}
@@ -81,7 +81,7 @@ export class TableContent extends ContentControl {
     super(info, options);
 
     if (options.iModelConnection) {
-      this.reactElement = <SimpleTableComponent imodel={options.iModelConnection} rulesetId={options.rulesetId} />;
+      this.reactNode = <SimpleTableComponent imodel={options.iModelConnection} rulesetId={options.rulesetId} />;
     }
   }
 }

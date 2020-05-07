@@ -234,7 +234,7 @@ export class MarkupApp {
     // @internal (undocumented)
     static get dynamicsClass(): string;
     // (undocumented)
-    static getActionName(action: string): any;
+    static getActionName(action: string): string;
     // (undocumented)
     static getVpToScreenMtx(): Matrix;
     // (undocumented)
@@ -369,12 +369,14 @@ export class MarkupApp {
     protected static readMarkup(): Promise<MarkupData>;
     // @internal
     protected static readMarkupSvg(): string | undefined;
+    // @internal
+    protected static readMarkupSvgForDrawImage(): string | undefined;
     // @internal (undocumented)
     static get rotateHandleClass(): string;
     // @internal (undocumented)
     static get rotateLineClass(): string;
     // (undocumented)
-    static screenToVbMtx: Matrix;
+    static screenToVbMtx(): Matrix;
     static start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void>;
     static stop(): Promise<MarkupData>;
     // @internal (undocumented)

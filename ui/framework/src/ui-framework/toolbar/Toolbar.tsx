@@ -8,20 +8,17 @@
 
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { CommonProps, Orientation, NoChildrenProps, Size } from "@bentley/ui-core";
-import { Direction, ToolbarPanelAlignment, Toolbar as NZ_Toolbar } from "@bentley/ui-ninezone";
-import { UiFramework } from "../UiFramework";
-
-import { ItemList } from "../shared/ItemMap";
+import { CommonProps, NoChildrenProps, Orientation, Size } from "@bentley/ui-core";
+import { Direction, Toolbar as NZ_Toolbar, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
-import { ItemDefBase } from "../shared/ItemDefBase";
-import { GroupItemDef } from "./GroupItem";
-import { ConditionalItemDef } from "../shared/ConditionalItemDef";
-import { CustomItemDef } from "../shared/CustomItemDef";
 import { AnyItemDef } from "../shared/AnyItemDef";
+import { CustomItemDef } from "../shared/CustomItemDef";
+import { ItemDefBase } from "../shared/ItemDefBase";
+import { ItemList } from "../shared/ItemMap";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
+import { GroupItemDef } from "./GroupItem";
 
 /** Properties of [[Toolbar]] component.
  * @internal
@@ -75,6 +72,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     let width = (ActionButtonItemDef.defaultButtonSize + 2) * 3;
     let height = width;
 
+    // istanbul ignore next
     if (props.initialSize) {
       width = props.initialSize.width;
       height = props.initialSize.height;
@@ -113,12 +111,12 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
   private setCurrentStateValues(item: ItemDefBase): boolean {
     // if a stateFunc is specified call it to get current state values
     // istanbul ignore else
-    if (item.stateFunc) {
-      const itemState = item.stateFunc({
-        isVisible: item.isVisible, isEnabled: item.isEnabled, isPressed: item.isPressed, isActive: item.isActive,
+    if (item.stateFunc) { // tslint:disable-line:deprecation
+      const itemState = item.stateFunc({ // tslint:disable-line:deprecation
+        isVisible: item.isVisible, isEnabled: item.isEnabled, isPressed: item.isPressed, isActive: item.isActive, // tslint:disable-line:deprecation
       });
-      item.isVisible = !!itemState.isVisible;
-      item.isEnabled = !!itemState.isEnabled;
+      item.isVisible = !!itemState.isVisible; // tslint:disable-line:deprecation
+      item.isEnabled = !!itemState.isEnabled; // tslint:disable-line:deprecation
       item.isPressed = !!itemState.isPressed;
       item.isActive = !!itemState.isActive;
       return true;
@@ -135,11 +133,9 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
 
     // Review all the itemDefs to see if any are monitoring sync events in SyncUiEventArgs
     for (const item of itemList) {
-      if (item.stateFunc && item.stateSyncIds && item.stateSyncIds.length > 0 &&
-        item.stateSyncIds.some((value: string): boolean => args.eventIds.has(value))) {
-        if (item instanceof ConditionalItemDef) {
-          item.handleSyncUiEvent(args);
-        } else if (item instanceof GroupItemDef) {
+      if (item.stateFunc && item.stateSyncIds && item.stateSyncIds.length > 0 && // tslint:disable-line:deprecation
+        item.stateSyncIds.some((value: string): boolean => args.eventIds.has(value))) { // tslint:disable-line:deprecation
+        if (item instanceof GroupItemDef) {
           this.setCurrentStateValues(item);
           this._processSyncUiEvent(item.items, args);
         } else {
@@ -147,6 +143,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
         }
         returnValue = true;
       } else {
+        // istanbul ignore next
         if (item instanceof GroupItemDef) {
           if (this._processSyncUiEvent(item.items, args))
             returnValue = true;
@@ -178,17 +175,11 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
 
     // Filter on ActionButtonItemDef
     itemList.forEach((item: ItemDefBase) => {
-      if (item.isVisible) {
+      // istanbul ignore else
+      if (item.isVisible) { // tslint:disable-line:deprecation
+        // istanbul ignore else
         if (item instanceof ActionButtonItemDef) {
           actionItems.push(item);
-        } else {
-          // istanbul ignore else
-          if (item instanceof ConditionalItemDef) {
-            const visibleItems = item.getVisibleItems();
-            visibleItems.forEach((childItem: ActionButtonItemDef) => {
-              actionItems.push(childItem);
-            });
-          }
         }
       }
     });
@@ -212,6 +203,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
         const lastItemIndex = actionItems.length - 1;
         let singleItemSize = 0;
         for (let index = lastItemIndex; index >= 0; index--) {
+          // istanbul ignore next
           if (actionItems[index] instanceof CustomItemDef)
             continue;
           if (0 === singleItemSize)
@@ -276,7 +268,8 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
 
   private hasVisibleItems(items: ItemList) {
     for (const item of items) {
-      if (item && item.isVisible)
+      // istanbul ignore else
+      if (item && item.isVisible) // tslint:disable-line:deprecation
         return true;
     }
     return false;

@@ -6,13 +6,13 @@
  * @module Frontstage
  */
 
-import * as classnames from "classnames";
+import "./StagePanelHeader.scss";
+import classnames from "classnames";
 import * as React from "react";
+import { StagePanelLocation } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { StagePanelLocation } from "./StagePanel";
 import { StagePanelState } from "./StagePanelDef";
-import "./StagePanelHeader.scss";
 
 /** Properties of a [[StagePanelHeader]] component
  * @alpha

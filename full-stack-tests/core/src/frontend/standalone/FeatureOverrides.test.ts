@@ -2,15 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { expect, assert } from "chai";
-import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
-import { HiliteSet, IModelApp, ScreenViewport, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
-import * as path from "path";
-import { GeometryClass, Feature, FeatureTable, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { assert, expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
+import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@bentley/imodeljs-common";
+import {
+  HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+} from "@bentley/imodeljs-frontend";
+import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();
@@ -31,15 +29,15 @@ describe("FeatureOverrides tests", () => {
   document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    IModelApp.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    await IModelApp.startup();
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    IModelApp.shutdown();
+    if (imodel) await imodel.close();
+    await IModelApp.shutdown();
   });
 
   it("should create a uniform feature overrides object", () => {

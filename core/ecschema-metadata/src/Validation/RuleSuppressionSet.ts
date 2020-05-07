@@ -3,25 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AnyECType, AnyClass } from "../Interfaces";
+import { AnyClass, AnyECType } from "../Interfaces";
+import { StructClass } from "../Metadata/Class";
+import { Constant } from "../Metadata/Constant";
+import { CustomAttribute, CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
+import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
+import { EntityClass } from "../Metadata/EntityClass";
+import { Enumeration } from "../Metadata/Enumeration";
+import { Format } from "../Metadata/Format";
+import { InvertedUnit } from "../Metadata/InvertedUnit";
 import { KindOfQuantity } from "../Metadata/KindOfQuantity";
+import { Mixin } from "../Metadata/Mixin";
+import { Phenomenon } from "../Metadata/Phenomenon";
+import { AnyProperty } from "../Metadata/Property";
+import { PropertyCategory } from "../Metadata/PropertyCategory";
+import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
-import { AnyProperty } from "../Metadata/Property";
-import { EntityClass } from "../Metadata/EntityClass";
-import { StructClass } from "../Metadata/Class";
-import { Mixin } from "../Metadata/Mixin";
-import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
-import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
-import { CustomAttributeContainerProps, CustomAttribute } from "../Metadata/CustomAttribute";
-import { Enumeration } from "../Metadata/Enumeration";
-import { PropertyCategory } from "../Metadata/PropertyCategory";
-import { Format } from "../Metadata/Format";
 import { Unit } from "../Metadata/Unit";
-import { InvertedUnit } from "../Metadata/InvertedUnit";
 import { UnitSystem } from "../Metadata/UnitSystem";
-import { Phenomenon } from "../Metadata/Phenomenon";
-import { Constant } from "../Metadata/Constant";
 import { AnyDiagnostic } from "./Diagnostic";
 
 /**

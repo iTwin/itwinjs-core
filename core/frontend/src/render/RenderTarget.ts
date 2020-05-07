@@ -6,45 +6,31 @@
  * @module Rendering
  */
 
-import {
-  Id64String,
-  IDisposable,
-} from "@bentley/bentleyjs-core";
-import {
-  Point2d,
-  Transform,
-  XAndY,
-} from "@bentley/geometry-core";
-import {
-  Frustum,
-  ImageBuffer,
-  SpatialClassificationProps,
-} from "@bentley/imodeljs-common";
-import { ViewRect } from "../ViewRect";
-import { Viewport } from "../Viewport";
-import { SceneContext } from "../ViewContext";
+import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { Point2d, Transform, XAndY } from "@bentley/geometry-core";
+import { Frustum, ImageBuffer, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { HiliteSet } from "../SelectionSet";
+import { SceneContext } from "../ViewContext";
+import { Viewport } from "../Viewport";
+import { ViewRect } from "../ViewRect";
 import { CanvasDecoration } from "./CanvasDecoration";
-import {
-  RenderMemory,
-  RenderSystem,
-  RenderTextureDrape,
-} from "./RenderSystem";
-import { AnimationBranchStates } from "./GraphicBranch";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
-import { GraphicType } from "./GraphicBuilder";
-import { GraphicList } from "./RenderGraphic";
-import { RenderPlan } from "./RenderPlan";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
+import { AnimationBranchStates } from "./GraphicBranch";
+import { GraphicType } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
+import { GraphicList } from "./RenderGraphic";
+import { RenderMemory } from "./RenderMemory";
+import { RenderPlan } from "./RenderPlan";
+import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
 import { Scene } from "./Scene";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].
  * @alpha
  */
-export const enum PrimitiveVisibility { // tslint:disable-line:no-const-enum
+export enum PrimitiveVisibility {
   /** Draw all primitives. */
   All,
   /** Only draw instanced primitives. */
@@ -59,8 +45,6 @@ export const enum PrimitiveVisibility { // tslint:disable-line:no-const-enum
 export interface RenderTargetDebugControl {
   /** If true, render to the screen as if rendering off-screen for readPixels(). */
   drawForReadPixels: boolean;
-  /** If true, use log-z depth buffer (assuming supported by client). */
-  useLogZ: boolean;
   /** @alpha */
   primitiveVisibility: PrimitiveVisibility;
   /** @internal */
@@ -73,6 +57,14 @@ export interface RenderTargetDebugControl {
    * @internal
    */
   devicePixelRatioOverride?: number;
+  /** @internal */
+  displayRealityTilePreload: boolean;
+  /** @internal */
+  displayRealityTileRanges: boolean;
+  /** @internal */
+  logRealityTiles: boolean;
+  /** @internal */
+  freezeRealityTiles: boolean;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
@@ -104,8 +96,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
 
   public abstract get wantInvertBlackBackground(): boolean;
 
-  public abstract get animationFraction(): number;
-  public abstract set animationFraction(fraction: number);
+  public abstract get analysisFraction(): number;
+  public abstract set analysisFraction(fraction: number);
 
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
   public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
@@ -128,6 +120,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
   public setHiliteSet(_hilited: HiliteSet): void { }
   public setFlashed(_elementId: Id64String, _intensity: number): void { }
+  public onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void { }
   public abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
   public onResized(): void { }
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw

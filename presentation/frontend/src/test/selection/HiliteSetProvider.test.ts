@@ -6,15 +6,12 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstanceKey, createRandomTransientId, createRandomDescriptor } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, DEFAULT_KEYS_BATCH_SIZE, Content, Item } from "@bentley/presentation-common";
-import { Presentation } from "../../Presentation";
-import { PresentationManager } from "../../PresentationManager";
-import { RulesetManager } from "../../RulesetManager";
-import { HiliteSetProvider } from "../../selection/HiliteSetProvider";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "../../selection/SelectionManager";
+import { Content, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { createRandomDescriptor, createRandomECInstanceKey, createRandomTransientId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { HiliteSetProvider, Presentation, PresentationManager, RulesetManager } from "../../presentation-frontend";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
 describe("HiliteSetProvider", () => {
 
@@ -26,7 +23,7 @@ describe("HiliteSetProvider", () => {
     imodelMock.reset();
     presentationManagerMock.reset();
     rulesetsManagerMock.reset();
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
   });
 
@@ -37,7 +34,7 @@ describe("HiliteSetProvider", () => {
   describe("create", () => {
 
     it("creates a new HiliteSetProvider instance", () => {
-      const result = HiliteSetProvider.create(imodelMock.object);
+      const result = HiliteSetProvider.create({ imodel: imodelMock.object });
       expect(result).to.not.be.undefined;
       expect(result instanceof HiliteSetProvider).to.be.true;
     });
@@ -49,7 +46,7 @@ describe("HiliteSetProvider", () => {
     let provider: HiliteSetProvider;
 
     beforeEach(() => {
-      provider = HiliteSetProvider.create(imodelMock.object);
+      provider = HiliteSetProvider.create({ imodel: imodelMock.object });
     });
 
     it("registers ruleset only on first call", async () => {

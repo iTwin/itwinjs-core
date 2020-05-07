@@ -3,33 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { dispose, Id64String } from "@bentley/bentleyjs-core";
+import { Transform } from "@bentley/geometry-core";
+import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { IModelApp, IModelAppOptions } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { Decorations } from "./Decorations";
-import {
-  GraphicBranch,
-  GraphicBranchOptions,
-} from "./GraphicBranch";
-import {
-  GraphicList,
-  RenderGraphic,
-} from "./RenderGraphic";
-import { Pixel } from "./Pixel";
-import { RenderTarget } from "./RenderTarget";
-import {
-  RenderMemory,
-  RenderSystem,
-} from "./RenderSystem";
-import { RenderPlan } from "./RenderPlan";
+import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { GraphicType } from "./GraphicBuilder";
-import { IModelApp, IModelAppOptions } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
+import { Pixel } from "./Pixel";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
-import { MeshParams, PolylineParams, PointStringParams } from "./primitives/VertexTable";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
-import { Transform } from "@bentley/geometry-core";
-import { Id64String, dispose } from "@bentley/bentleyjs-core";
+import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
+import { GraphicList, RenderGraphic } from "./RenderGraphic";
+import { RenderMemory } from "./RenderMemory";
+import { RenderPlan } from "./RenderPlan";
+import { RenderSystem } from "./RenderSystem";
+import { RenderTarget } from "./RenderTarget";
 import { Scene } from "./Scene";
 
 /** Contains extensible mock implementations of the various components of a RenderSystem, intended for use in tests.
@@ -50,8 +42,8 @@ export namespace MockRender {
 
     public get renderSystem(): RenderSystem { return this._system; }
     public get wantInvertBlackBackground() { return false; }
-    public get animationFraction() { return 0; }
-    public set animationFraction(_fraction: number) { }
+    public get analysisFraction() { return 0; }
+    public set analysisFraction(_fraction: number) { }
     public changeScene(_scene: Scene) { }
     public changeDynamics(_dynamics?: GraphicList) { }
     public changeDecorations(_decs: Decorations) { }
@@ -128,6 +120,8 @@ export namespace MockRender {
 
     public constructor() { super(); }
 
+    public doIdleWork(): boolean { return false; }
+
     public createTarget(canvas: HTMLCanvasElement) { return new OnScreenTarget(this, canvas); }
     public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
 
@@ -151,14 +145,14 @@ export namespace MockRender {
   export class App {
     public static systemFactory: SystemFactory = () => App.createDefaultRenderSystem();
 
-    public static startup(opts?: IModelAppOptions) {
+    public static async startup(opts?: IModelAppOptions): Promise<void> {
       opts = opts ? opts : {};
       opts.renderSys = this.systemFactory();
-      IModelApp.startup(opts);
+      await IModelApp.startup(opts);
     }
-    public static shutdown(): void {
+    public static async shutdown(): Promise<void> {
       this.systemFactory = () => App.createDefaultRenderSystem();
-      IModelApp.shutdown();
+      await IModelApp.shutdown();
     }
 
     protected static createDefaultRenderSystem() { return new System(); }

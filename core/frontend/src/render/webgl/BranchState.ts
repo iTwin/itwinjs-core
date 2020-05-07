@@ -6,13 +6,13 @@
  * @module WebGL
  */
 
+import { assert, Id64, Id64String, lowerBound } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { ViewFlags, RenderMode, Feature } from "@bentley/imodeljs-common";
-import { Id64, Id64String, assert, lowerBound } from "@bentley/bentleyjs-core";
+import { Feature, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { Branch, Batch } from "./Graphic";
-import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
+import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
+import { Batch, Branch } from "./Graphic";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TextureDrape } from "./TextureDrape";
 
@@ -49,6 +49,7 @@ export class BranchState {
     const vf = new ViewFlags();
     vf.renderMode = RenderMode.SmoothShade;
     vf.lighting = false;
+    vf.whiteOnWhiteReversal = false;
     return new BranchState(vf, Transform.createIdentity(), new FeatureSymbology.Overrides());
   }
 

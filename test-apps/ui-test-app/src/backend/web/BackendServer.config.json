@@ -63,15 +63,15 @@
         "logLevel": "Trace"
       },
       {
-        "category": "imodeljs-clients.Clients",
+        "category": "itwin-client.Clients",
         "logLevel": "Trace"
       },
       {
-        "category": "imodeljs-clients.imodelhub",
+        "category": "imodelhub-client.iModelHub",
         "logLevel": "Trace"
       },
       {
-        "category": "imodeljs-clients.Url",
+        "category": "itwin-client.Url",
         "logLevel": "Trace"
       },
       {
@@ -80,6 +80,10 @@
       },
       {
         "category": "IModelDb.open",
+        "logLevel": "Trace"
+      },
+      {
+        "category": "backend-itwin-client.FileHandlers",
         "logLevel": "Trace"
       }
     ]

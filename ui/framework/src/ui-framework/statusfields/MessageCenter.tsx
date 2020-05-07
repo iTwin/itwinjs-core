@@ -7,18 +7,14 @@
  */
 
 import * as React from "react";
-
-import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-
-import { UiFramework } from "../UiFramework";
-
-import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
-import { MessageManager, MessageAddedEventArgs } from "../messages/MessageManager";
-import {
-  MessageCenter, MessageCenterTab, MessageCenterMessage, MessageCenterDialog, FooterPopup,
-} from "@bentley/ui-ninezone";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { FooterPopup, MessageCenter, MessageCenterDialog, MessageCenterMessage, MessageCenterTab } from "@bentley/ui-ninezone";
+import { MessageManager } from "../messages/MessageManager";
 import { MessageSpan } from "../messages/MessageSpan";
+import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
+import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
+import { UiFramework } from "../UiFramework";
+import { StatusFieldProps } from "./StatusFieldProps";
 
 /** Enum for the [[MessageCenterField]] active tab
  * @internal
@@ -37,7 +33,7 @@ interface MessageCenterState {
   messageCount: number;
 }
 
-/** Properties of [[MessageCenterField]] component.
+/** Properties for withMessageCenterFieldProps HOC.
  * @public
  */
 export interface MessageCenterFieldProps extends StatusFieldProps {
@@ -68,15 +64,15 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
 
   /** @internal */
   public componentDidMount() {
-    MessageManager.onMessageAddedEvent.addListener(this._handleMessageAddedEvent);
+    MessageManager.onMessagesUpdatedEvent.addListener(this._handleMessagesUpdatedEvent);
   }
 
   /** @internal */
   public componentWillUnmount() {
-    MessageManager.onMessageAddedEvent.removeListener(this._handleMessageAddedEvent);
+    MessageManager.onMessagesUpdatedEvent.removeListener(this._handleMessagesUpdatedEvent);
   }
 
-  private _handleMessageAddedEvent = (_args: MessageAddedEventArgs) => {
+  private _handleMessagesUpdatedEvent = () => {
     this.setState({ messageCount: MessageManager.messages.length });
   }
 
@@ -88,13 +84,13 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
           className={this.props.className}
           style={this.props.style}
           title={tooltip}
+          ref={this._handleTargetRef}
         >
           <MessageCenter
             indicatorRef={this._indicator}
             isInFooterMode={this.props.isInFooterMode}
             label={this.props.isInFooterMode ? this._title : undefined}
             onClick={this._handleMessageIndicatorClick}
-            targetRef={this._handleTargetRef}
           >
             {this.state.messageCount.toString()}
           </MessageCenter>
@@ -171,7 +167,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
     const messages = MessageManager.messages.slice(0).reverse();
     const tabRows: React.ReactChild[] = new Array<React.ReactChild>();
 
-    messages.forEach((details: NotifyMessageDetails, index: number) => {
+    messages.forEach((details: NotifyMessageDetailsType, index: number) => {
       /* istanbul ignore else */
       if (this.state.activeTab === MessageCenterActiveTab.AllMessages || this.isProblemStatus(details.priority)) {
 

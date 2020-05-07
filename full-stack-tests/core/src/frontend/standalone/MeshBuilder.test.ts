@@ -2,37 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect, assert } from "chai";
-import { GraphicType, MockRender, IModelConnection, SpatialViewState, StandardViewId, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { GraphicParams, ColorDef } from "@bentley/imodeljs-common";
+import { assert, expect } from "chai";
+import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 import {
-  Range3d,
-  Point3d,
-  Arc3d,
-  LineString3d,
-  Loop,
-  Transform,
-} from "@bentley/geometry-core";
-import * as path from "path";
+  GraphicType, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+} from "@bentley/imodeljs-frontend";
 import {
-  PolyfacePrimitive,
-  PolyfacePrimitiveList,
-  DisplayParams,
-  Geometry,
-  MeshBuilder,
-  Mesh,
-  ToleranceRatio,
-  PrimitiveBuilder,
-  StrokesPrimitiveList,
-  StrokesPrimitivePointLists,
-  Triangle,
+  DisplayParams, Geometry, Mesh, MeshBuilder, PolyfacePrimitive, PolyfacePrimitiveList, PrimitiveBuilder, StrokesPrimitiveList,
+  StrokesPrimitivePointLists, ToleranceRatio, Triangle,
 } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
-
 export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, new ColorDef(), new ColorDef()); }
+  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
 }
 
 /**
@@ -49,15 +32,15 @@ describe("Mesh Builder Tests", () => {
   document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    MockRender.App.startup();
-    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    await MockRender.App.startup();
+    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    MockRender.App.shutdown();
+    if (imodel) await imodel.close();
+    await MockRender.App.shutdown();
   });
 
   it("constructor", () => {
@@ -149,8 +132,8 @@ describe("Mesh Builder Tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopRange: Range3d = new Range3d();
@@ -197,8 +180,8 @@ describe("Mesh Builder Tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopRange: Range3d = new Range3d();
@@ -245,8 +228,8 @@ describe("Mesh Builder Tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopRange: Range3d = new Range3d();
@@ -295,8 +278,8 @@ describe("Mesh Builder Tests", () => {
     const loop = Loop.create(line);
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopRange: Range3d = new Range3d();

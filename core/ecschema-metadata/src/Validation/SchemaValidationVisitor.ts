@@ -22,11 +22,11 @@ import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { UnitSystem } from "../Metadata/UnitSystem";
+import { ISchemaPartVisitor } from "../SchemaPartVisitorDelegate";
 import { AnyDiagnostic, DiagnosticCategory } from "./Diagnostic";
 import { IDiagnosticReporter } from "./DiagnosticReporter";
 import { IRuleSet } from "./Rules";
-import { ISchemaPartVisitor } from "../SchemaPartVisitorDelegate";
-import { IRuleSuppressionSet, IRuleSuppressionMap, ISuppressionRule } from "./RuleSuppressionSet";
+import { IRuleSuppressionMap, IRuleSuppressionSet, ISuppressionRule } from "./RuleSuppressionSet";
 
 interface RuleSetArray {
   [name: string]: IRuleSet;

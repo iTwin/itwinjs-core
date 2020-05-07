@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect, assert } from "chai";
+import { assert, expect } from "chai";
 import {
-  ECClassModifier, CustomAttributeContainerType, parseClassModifier,
-  PrimitiveType, parsePrimitiveType, parseCustomAttributeContainerType, containerTypeToString,
-  RelationshipEnd, relationshipEndToString, StrengthType, parseStrength, StrengthDirection,
-  parseStrengthDirection, SchemaItemType, schemaItemTypeToString, parseSchemaItemType, classModifierToString, strengthToString,
-  strengthDirectionToString, parseRelationshipEnd, primitiveTypeToString
+  classModifierToString, containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseClassModifier, parseCustomAttributeContainerType,
+  parsePrimitiveType, parseRelationshipEnd, parseSchemaItemType, parseStrength, parseStrengthDirection, PrimitiveType, primitiveTypeToString,
+  RelationshipEnd, relationshipEndToString, SchemaItemType, schemaItemTypeToString, StrengthDirection, strengthDirectionToString, strengthToString,
+  StrengthType,
 } from "../src/ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../src/Exception";
 

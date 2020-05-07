@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection, SpatialViewState, DisplayStyle3dState } from "@bentley/imodeljs-frontend";
-import { Cartographic, ColorDef } from "@bentley/imodeljs-common";
 import { Range3d } from "@bentley/geometry-core";
+import { Cartographic, ColorDef } from "@bentley/imodeljs-common";
+import { BlankConnection, DisplayStyle3dState, IModelConnection, SpatialViewState } from "@bentley/imodeljs-frontend";
 
 export class BlankConnectionExample {
 
@@ -12,7 +12,7 @@ export class BlankConnectionExample {
 
   // create a new blank connection centered on Exton PA
   public openBlankConnection() {
-    const exton = IModelConnection.createBlank({
+    const exton: BlankConnection = BlankConnection.create({
       // call this connection "Exton PA"
       name: "Exton PA",
       // put the center of the connection near Exton, Pennsylvania (Bentley's HQ)

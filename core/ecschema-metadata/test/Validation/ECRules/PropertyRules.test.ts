@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
 import { SchemaContext } from "../../../src/Context";
 import { DelayedPromiseWithProps } from "../../../src/DelayedPromise";
+import { PropertyProps } from "../../../src/Deserialization/JsonProps";
 import { PrimitiveType } from "../../../src/ECObjects";
 import { ECClass, MutableClass, StructClass } from "../../../src/Metadata/Class";
 import { EntityClass } from "../../../src/Metadata/EntityClass";
@@ -15,7 +15,6 @@ import { PrimitiveProperty } from "../../../src/Metadata/Property";
 import { MutableSchema, Schema } from "../../../src/Metadata/Schema";
 import { DiagnosticCategory, DiagnosticType } from "../../../src/Validation/Diagnostic";
 import * as Rules from "../../../src/Validation/ECRules";
-import { PropertyProps } from "../../../src/Deserialization/JsonProps";
 
 describe("PropertyRule tests", () => {
   let schema: Schema;
@@ -201,19 +200,19 @@ describe("PropertyRule tests", () => {
     };
 
     const baseProperty = testBaseClass.properties![0];
-    await baseProperty.deserialize(basePropJson);
+    await baseProperty.fromJSON(basePropJson);
 
     const childProperty = testClass.properties![0];
-    await childProperty.deserialize(childPropJson);
+    await childProperty.fromJSON(childPropJson);
 
     const baseUnit = await (schema as MutableSchema).createUnit("BaseTestUnit");
-    await testBaseKindOfQuantity.deserialize({
+    await testBaseKindOfQuantity.fromJSON({
       persistenceUnit: "TestSchema.BaseTestUnit",
       relativeError: 5,
     });
 
     const childUnit = await (schema as MutableSchema).createUnit("TestUnit");
-    await testKindOfQuantity.deserialize({
+    await testKindOfQuantity.fromJSON({
       persistenceUnit: "TestSchema.TestUnit",
       relativeError: 4,
     });
@@ -256,19 +255,19 @@ describe("PropertyRule tests", () => {
     };
 
     const baseProperty = rootBaseClass.properties![0];
-    await baseProperty.deserialize(basePropJson);
+    await baseProperty.fromJSON(basePropJson);
 
     const childProperty = testClass.properties![0];
-    await childProperty.deserialize(childPropJson);
+    await childProperty.fromJSON(childPropJson);
 
     const baseUnit = await (schema as MutableSchema).createUnit("BaseTestUnit");
-    await testBaseKindOfQuantity.deserialize({
+    await testBaseKindOfQuantity.fromJSON({
       persistenceUnit: "TestSchema.BaseTestUnit",
       relativeError: 5,
     });
 
     const childUnit = await (schema as MutableSchema).createUnit("TestUnit");
-    await testKindOfQuantity.deserialize({
+    await testKindOfQuantity.fromJSON({
       persistenceUnit: "TestSchema.TestUnit",
       relativeError: 4,
     });
@@ -308,18 +307,18 @@ describe("PropertyRule tests", () => {
     };
 
     const baseProperty = testBaseClass.properties![0];
-    await baseProperty.deserialize(basePropJson);
+    await baseProperty.fromJSON(basePropJson);
 
     const childProperty = testClass.properties![0];
-    await childProperty.deserialize(childPropJson);
+    await childProperty.fromJSON(childPropJson);
 
     await (schema as MutableSchema).createUnit("TestUnit");
-    await testBaseKindOfQuantity.deserialize({
+    await testBaseKindOfQuantity.fromJSON({
       persistenceUnit: "TestSchema.TestUnit",
       relativeError: 5,
     });
 
-    await testKindOfQuantity.deserialize({
+    await testKindOfQuantity.fromJSON({
       persistenceUnit: "TestSchema.TestUnit",
       relativeError: 4,
     });
@@ -346,13 +345,13 @@ describe("PropertyRule tests", () => {
     };
 
     const baseProperty = testBaseClass.properties![0];
-    await baseProperty.deserialize(basePropJson);
+    await baseProperty.fromJSON(basePropJson);
 
     const childProperty = testClass.properties![0];
-    await childProperty.deserialize(childPropJson);
+    await childProperty.fromJSON(childPropJson);
 
     await (schema as MutableSchema).createUnit("TestUnit");
-    await testKindOfQuantity.deserialize({
+    await testKindOfQuantity.fromJSON({
       persistenceUnit: "TestSchema.TestUnit",
       relativeError: 4,
     });
@@ -377,10 +376,10 @@ describe("PropertyRule tests", () => {
     };
 
     const baseProperty = testBaseClass.properties![0];
-    await baseProperty.deserialize(basePropJson);
+    await baseProperty.fromJSON(basePropJson);
 
     const childProperty = testClass.properties![0];
-    await childProperty.deserialize(childPropJson);
+    await childProperty.fromJSON(childPropJson);
 
     const results = Rules.incompatibleUnitPropertyOverride(testClass.properties![0] as PrimitiveProperty);
     for await (const _diagnostic of results)
@@ -404,19 +403,19 @@ describe("PropertyRule tests", () => {
     };
 
     const baseProperty = testBaseClass.properties![0];
-    await baseProperty.deserialize(basePropJson);
+    await baseProperty.fromJSON(basePropJson);
 
     const childProperty = testClass.properties![0];
-    await childProperty.deserialize(childPropJson);
+    await childProperty.fromJSON(childPropJson);
 
     await (schema as MutableSchema).createUnit("BaseTestUnit");
-    await testBaseKindOfQuantity.deserialize({
+    await testBaseKindOfQuantity.fromJSON({
       persistenceUnit: "TestSchema.BaseTestUnit",
       relativeError: 5,
     });
 
     await (schema as MutableSchema).createUnit("TestUnit");
-    await testKindOfQuantity.deserialize({
+    await testKindOfQuantity.fromJSON({
       persistenceUnit: "TestSchema.TestUnit",
       relativeError: 4,
     });

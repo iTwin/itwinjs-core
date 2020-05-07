@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { InstanceKey, RelatedClassInfo, RelationshipPath } from "../EC";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { InstanceKey, RelationshipPath } from "../presentation-common";
 import { createRandomECClassInfo } from "./_helpers/random";
 
 describe("InstanceKey", () => {

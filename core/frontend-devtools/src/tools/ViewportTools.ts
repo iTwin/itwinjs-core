@@ -7,16 +7,9 @@
  * @module Tools
  */
 
-import {
-  ColorDef,
-  Hilite,
-} from "@bentley/imodeljs-common";
-import {
-  IModelApp,
-  TileBoundingBoxes,
-  Tool,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
+import { ColorDef, Hilite } from "@bentley/imodeljs-common";
+import { IModelApp, TileBoundingBoxes, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";
 
 /** Freeze or unfreeze the scene for the selected viewport. While the scene is frozen, no new tiles will be selected for drawing within the viewport.
@@ -137,8 +130,8 @@ export abstract class ChangeHiliteTool extends Tool {
   protected abstract apply(vp: Viewport, settings: Hilite.Settings | undefined): void;
   protected abstract getCurrentSettings(vp: Viewport): Hilite.Settings;
 
-  public parseAndRun(...args: string[]): boolean {
-    if (0 === args.length)
+  public parseAndRun(...inputArgs: string[]): boolean {
+    if (0 === inputArgs.length)
       return this.run();
 
     const vp = IModelApp.viewManager.selectedView;
@@ -151,48 +144,37 @@ export abstract class ChangeHiliteTool extends Tool {
     let hidden = cur.hiddenRatio;
     let silhouette = cur.silhouette;
 
-    const parseColorComponent = (x: string, c: "r" | "g" | "b") => {
-      const num = parseInt(x, 10);
-      if (!Number.isNaN(num))
+    const args = parseArgs(inputArgs);
+    const parseColorComponent = (c: "r" | "g" | "b") => {
+      const num = args.getInteger(c);
+      if (undefined !== num)
         colors[c] = Math.floor(Math.max(0, Math.min(255, num)));
     };
 
-    for (const arg of args) {
-      const parts = arg.split("=");
-      if (2 !== parts.length)
-        return true;
+    parseColorComponent("r");
+    parseColorComponent("g");
+    parseColorComponent("b");
 
-      const key = parts[0][0].toLowerCase();
-      const value = parts[1];
-      switch (key) {
-        case "r": parseColorComponent(value, "r"); break;
-        case "g": parseColorComponent(value, "g"); break;
-        case "b": parseColorComponent(value, "b"); break;
-        case "s": {
-          const n = parseInt(value, 10);
-          if (n >= Hilite.Silhouette.None && n <= Hilite.Silhouette.Thick)
-            silhouette = n;
+    const silhouetteArg = args.getInteger("s");
+    if (undefined !== silhouetteArg && silhouetteArg >= Hilite.Silhouette.None && silhouetteArg <= Hilite.Silhouette.Thick)
+      silhouette = silhouetteArg;
 
-          break;
-        }
-        case "v":
-        case "h": {
-          const s = parseFloat(value);
-          if (s >= 0.0 && s <= 1.0) {
-            if ("v" === key)
-              visible = s;
-            else
-              hidden = s;
-          }
+    const v = args.getFloat("v");
+    if (undefined !== v && v >= 0 && v <= 1)
+      visible = v;
 
-          break;
-        }
-      }
-    }
+    const h = args.getFloat("h");
+    if (undefined !== h && h >= 0 && h <= 1)
+      hidden = h;
 
-    if (undefined === silhouette) silhouette = cur.silhouette;
-    if (undefined === visible) visible = cur.visibleRatio;
-    if (undefined === hidden) hidden = cur.hiddenRatio;
+    if (undefined === silhouette)
+      silhouette = cur.silhouette;
+
+    if (undefined === visible)
+      visible = cur.visibleRatio;
+
+    if (undefined === hidden)
+      hidden = cur.hiddenRatio;
 
     const settings: Hilite.Settings = {
       color: ColorDef.from(colors.r, colors.g, colors.b),
@@ -316,5 +298,30 @@ export class ViewportAddRealityModel extends Tool {
 
   public parseAndRun(...args: string[]): boolean {
     return this.run(args[0]);
+  }
+}
+
+/** Changes the `allow3dManipulations` flag for the selected viewport if the viewport is displaying a `ViewState3d`.
+ * @alpha
+ */
+export class Toggle3dManipulationsTool extends Tool {
+  public static toolId = "Toggle3dManipulations";
+  public run(allow?: boolean): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === vp || !vp.view.is3d())
+      return false;
+    if (undefined === allow)
+      allow = !vp.view.allow3dManipulations();
+    if (allow !== vp.view.allow3dManipulations()) {
+      vp.view.setAllow3dManipulations(allow);
+      IModelApp.toolAdmin.startDefaultTool();
+    }
+    return true;
+  }
+  public parseAndRun(...args: string[]): boolean {
+    const enable = parseToggle(args[0]);
+    if (typeof enable !== "string")
+      this.run(enable);
+    return true;
   }
 }

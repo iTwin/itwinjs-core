@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { DepthType } from "@bentley/webgl-compatibility";
+import { IModelApp } from "../IModelApp";
 import { GL } from "../render/webgl/GL";
 import { RenderState } from "../render/webgl/RenderState";
-import { System, DepthType } from "../render/webgl/System";
-import { IModelApp } from "../IModelApp";
+import { System } from "../render/webgl/System";
 
 function withinTolerance(x: number, y: number): boolean {
   const tol: number = 0.1e-6;
@@ -16,8 +17,8 @@ function withinTolerance(x: number, y: number): boolean {
 }
 
 describe("RenderState", () => {
-  before(() => IModelApp.startup());
-  after(() => IModelApp.shutdown());
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   it("should compare as expected", () => {
     // Test equality

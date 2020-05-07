@@ -6,15 +6,18 @@
  * @module Models
  */
 
-import { DbOpcode, GuidString, Id64String, JsonUtils, DbResult, assert } from "@bentley/bentleyjs-core";
+import { assert, DbOpcode, DbResult, GuidString, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
+import { LockLevel } from "@bentley/imodelhub-client";
+import {
+  AxisAlignedBox3d, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps,
+  ModelProps, RelatedElement,
+} from "@bentley/imodeljs-common";
+import { ConcurrencyControl } from "./ConcurrencyControl";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
-import { ConcurrencyControl } from "./ConcurrencyControl";
-import { LockLevel } from "@bentley/imodeljs-clients";
 
 /** A Model is a container for persisting a collection of related elements within an iModel.
  * See [[IModelDb.Models]] for how to query and manage the Models in an IModelDb.
@@ -37,7 +40,7 @@ export class Model extends Entity implements ModelProps {
     this.name = props.name ? props.name : ""; // NB this isn't really a property of Model (it's the code.value of the modeled element), but it comes in ModelProps because it's often needed
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
-    this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
+    this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
   /** Add all properties of a Model to a json object.
@@ -49,15 +52,18 @@ export class Model extends Entity implements ModelProps {
     return val;
   }
 
-  /**
-   * Disclose the codes and locks needed to perform the specified operation on this model
+  /** Disclose the codes and locks needed to perform the specified operation on this model
    * @param req The request to be populated
    * @param props The version of the model that will be written
    * @param iModel The iModel
    * @param opcode The operation that will be performed on the model
    * @beta
    */
-  public static populateRequest(req: ConcurrencyControl.Request, props: ModelProps, iModel: IModelDb, opcode: DbOpcode) {
+  public static populateRequest(req: ConcurrencyControl.Request, props: ModelProps, iModel: IModelDb, opcode: DbOpcode): void {
+    if (!iModel.isBriefcaseDb()) {
+      assert(false);
+      return;
+    }
     switch (opcode) {
       case DbOpcode.Insert: {
         req.addLocks([ConcurrencyControl.Request.dbLock]);
@@ -87,31 +93,37 @@ export class Model extends Entity implements ModelProps {
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onInsert(props: ModelProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Insert); }
+  protected static onInsert(props: ModelProps, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Insert); }
+  }
   /** Called after a new model is inserted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
   protected static onInserted(id: string, iModel: IModelDb): void {
-    assert(iModel.needsConcurrencyControl !== undefined, "check that caller passed object of the correct type!");
-    if (iModel.needsConcurrencyControl)
-      iModel.concurrencyControl.onModelWritten(this, id, DbOpcode.Insert);
+    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWritten(this, id, DbOpcode.Insert); }
   }
   /** Called before a model is updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onUpdate(props: ModelProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Update); }
+  protected static onUpdate(props: ModelProps, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Update); }
+  }
   /** Called after a model is updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onUpdated(props: ModelProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onModelWritten(this, props.id!, DbOpcode.Update); }
+  protected static onUpdated(props: ModelProps, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWritten(this, props.id!, DbOpcode.Update); }
+  }
   /** Called before a model is deleted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onDelete(props: ModelProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete); }
+  protected static onDelete(props: ModelProps, iModel: IModelDb): void {
+    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete); }
+  }
   /** Called after a model is deleted.
    * @throws [[IModelError]] if there is a problem
    * @beta
@@ -132,11 +144,14 @@ export class Model extends Entity implements ModelProps {
   public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
 
-  /**
-   * Add a request for the locks that would be needed to carry out the specified operation.
+  /** Add a request for the locks that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.
    */
-  public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForModel(this, opcode); }
+  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
+    if (this.iModel.isBriefcaseDb()) {
+      this.iModel.concurrencyControl.buildRequestForModel(this, opcode);
+    }
+  }
 
   /** Insert this Model in the iModel */
   public insert() { return this.iModel.models.insertModel(this); }

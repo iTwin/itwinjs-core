@@ -3,16 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Range3d } from "../../geometry3d/Range";
 import { Sample } from "../../serialization/GeometrySamples";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 class PolylineCompressionChecker {
   public ck = new Checker();
@@ -96,7 +95,7 @@ describe("GlobalCompression", () => {
         Sample.createFractalLReversingPattern(depth, 1.0),
         Sample.createFractalHatReversingPattern(depth, 0.05)]) {
 
-        const dataRange = Point3dArray.createRange(fractal);
+        const dataRange = Range3d.createFromVariantData(fractal);
         const qBase = 0.001 * dataRange.diagonal().magnitude();
         for (const factor of [1.0, 5.0, 10.0, 50.0, 100.0, 200.0]) {
           const q = factor * qBase;

@@ -2,16 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
 import * as enzyme from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-import TestUtils from "../TestUtils";
 import { MessageManager, ValidationTextbox } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("ValidationTextbox", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   const onValueChanged = sinon.spy();

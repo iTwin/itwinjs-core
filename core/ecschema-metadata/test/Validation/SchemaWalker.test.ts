@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import sinon = require("sinon");
-
 import { SchemaContext } from "../../src/Context";
 import { SchemaReadHelper } from "../../src/Deserialization/Helper";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
-import { ISchemaPartVisitor } from "../../src/SchemaPartVisitorDelegate";
 import { ECClass } from "../../src/Metadata/Class";
 import { RelationshipClass } from "../../src/Metadata/RelationshipClass";
 import { Schema } from "../../src/Metadata/Schema";
+import { ISchemaPartVisitor } from "../../src/SchemaPartVisitorDelegate";
 import { SchemaWalker } from "../../src/Validation/SchemaWalker";
+
+import sinon = require("sinon");
 
 describe("SchemaWalker tests", () => {
   let testSchema: Schema;

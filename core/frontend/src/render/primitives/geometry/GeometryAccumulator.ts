@@ -6,19 +6,19 @@
  * @module Rendering
  */
 
-import { Transform, Range3d, Loop, Path, IndexedPolyface, Point3d } from "@bentley/geometry-core";
+import { assert } from "@bentley/bentleyjs-core";
+import { IndexedPolyface, Loop, Path, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { FeatureTable } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../../IModelConnection";
-import { GeometryOptions } from "../Primitives";
-import { RenderGraphic } from "../../RenderGraphic";
 import { GraphicBranch } from "../../GraphicBranch";
+import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";
-import { MeshGraphicArgs, MeshList } from "../mesh/MeshPrimitives";
 import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
-import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
+import { MeshGraphicArgs, MeshList } from "../mesh/MeshPrimitives";
+import { GeometryOptions } from "../Primitives";
 import { GeometryList } from "./GeometryList";
-import { assert } from "@bentley/bentleyjs-core";
-import { FeatureTable } from "@bentley/imodeljs-common";
+import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
 
 /** @internal */
 export class GeometryAccumulator {

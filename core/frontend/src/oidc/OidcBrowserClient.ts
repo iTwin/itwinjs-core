@@ -6,15 +6,20 @@
  * @module OIDC
  */
 
-import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel, assert } from "@bentley/bentleyjs-core";
-import { AccessToken, IOidcFrontendClient, OidcClient, OidcFrontendClientConfiguration, UserInfo, IncludePrefix } from "@bentley/imodeljs-clients";
-import { User, UserManager, UserManagerSettings, WebStorageStateStore, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
-import { FrontendRequestContext } from "../FrontendRequestContext";
+import { Log as OidcClientLog, Logger as IOidcClientLogger, User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
+import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { FrontendRequestContext } from "../FrontendRequestContext";
+import { OidcFrontendClientConfiguration } from "./OidcFrontendClient";
 
 const loggerCategory: string = FrontendLoggerCategory.Authorization;
 
-/** Utility to forward oidc-client logs to the Bentley logger */
+/** Utility to forward oidc-client logs to the Bentley logger
+ * @beta
+ * @deprecated Use [[BrowserAuthorizationClient]] and related utilities instead
+ */
 class OidcClientLogger implements IOidcClientLogger {
   private constructor() {
   }
@@ -59,7 +64,7 @@ class OidcClientLogger implements IOidcClientLogger {
 
   /** Initializes forwarding of OidcClient logs to the Bentley Logger */
   public static initializeLogger() {
-    OidcClientLog.logger = new OidcClientLogger();
+    OidcClientLog.logger = new OidcClientLogger(); // tslint:disable-line:deprecation
     this.initializeLevel();
   }
 
@@ -72,14 +77,15 @@ class OidcClientLogger implements IOidcClientLogger {
 /**
  * Utility to generate OIDC/OAuth tokens for Single Page Applications (running in the Browser)
  * @beta
+ * @deprecated Use [[BrowserAuthorizationClient]] instead
  */
-export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient {
+export class OidcBrowserClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
   private _userManager?: UserManager;
   protected _accessToken?: AccessToken;
   private _redirectPath: string;
 
   /** Constructor */
-  public constructor(private _configuration: OidcFrontendClientConfiguration) {
+  public constructor(private _configuration: OidcFrontendClientConfiguration) { // tslint:disable-line:deprecation
     super();
     const redirectUri: URL = new URL(this._configuration.redirectUri);
     this._redirectPath = redirectUri.pathname;
@@ -101,7 +107,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
 
     // Initialize user manager and logging
     await this.createUserManager(requestContext);
-    OidcClientLogger.initializeLogger();
+    OidcClientLogger.initializeLogger(); // tslint:disable-line:deprecation
 
     if (this.getIsRedirecting()) {
       // Handle redirection to extract the accessToken
@@ -289,7 +295,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     this._userManager.events.removeUserUnloaded(this._onUserUnloaded);
     this._userManager.events.removeSilentRenewError(this._onSilentRenewError);
     this._userManager.events.removeUserSignedOut(this._onUserSignedOut);
-    OidcClientLogger.reset();
+    OidcClientLogger.reset(); // tslint:disable-line:deprecation
     this._userManager = undefined;
   }
 
@@ -340,10 +346,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       return;
     }
 
-    const startsAt: Date = new Date((user.expires_at - user.expires_in!) * 1000);
-    const expiresAt: Date = new Date(user.expires_at * 1000);
-    const userInfo = UserInfo.fromJson(user.profile);
-    this._accessToken = AccessToken.fromJsonWebTokenString(user.access_token, startsAt, expiresAt, userInfo);
+    this._accessToken = AccessToken.fromTokenResponseJson(user, user.profile);
   }
 
   private _onUserStateChanged = (user: User | undefined) => {
@@ -406,23 +409,4 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     this._onUserStateChanged(undefined);
   }
 
-}
-
-/**
- * Utility to get the legacy SAML token at the frontend of SPA/Electron applications
- * @internal
- * @deprecated  Will be removed in iModel.js 2.0.
- */
-export class OidcBrowserSamlClient extends OidcBrowserClient {
-
-  /**
-   * Gets the legacy SAML token
-   * @throws If error with fetching the SAML token
-   * @internal
-   */
-  public async getSamlToken(requestContext: ClientRequestContext): Promise<AccessToken> {
-    const user = await this.signInSilent(requestContext);
-    this._accessToken = AccessToken.fromSamlTokenString(user.access_token, IncludePrefix.No);
-    return this._accessToken;
-  }
 }

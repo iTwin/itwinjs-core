@@ -6,26 +6,25 @@
 /* tslint:disable: no-console */
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../../topology/Graph";
-
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Sample } from "../../serialization/GeometrySamples";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
+import { HalfEdgeGraphOps } from "../../topology/Merging";
 import { RegularizationContext } from "../../topology/RegularizeFace";
 import { Triangulator } from "../../topology/Triangulation";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { LineString3d } from "../../curve/LineString3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Angle } from "../../geometry3d/Angle";
-import { HalfEdgeGraphOps } from "../../topology/Merging";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Geometry } from "../../Geometry";
-import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
 
 /** Treat each xy as (r, radians) */
 function mapThetaR(points: Point3d[], scaleX: number, scaleY: number): Point3d[] {

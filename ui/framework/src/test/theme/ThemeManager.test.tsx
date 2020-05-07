@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import { Provider } from "react-redux";
-import TestUtils from "../TestUtils";
-import { ThemeManager, ColorTheme } from "../../ui-framework/theme/ThemeManager";
 import { UiFramework } from "../../ui-framework";
+import { ColorTheme, ThemeManager } from "../../ui-framework/theme/ThemeManager";
+import TestUtils from "../TestUtils";
 
 describe("ThemeManager", () => {
 

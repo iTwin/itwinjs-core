@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { QParams3d } from "@bentley/imodeljs-common";
 import { Range3d } from "@bentley/geometry-core";
+import { QParams3d } from "@bentley/imodeljs-common";
 import { Geometry } from "./GeometryPrimitives";
 
 /** @internal */

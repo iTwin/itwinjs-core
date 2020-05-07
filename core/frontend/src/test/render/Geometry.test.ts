@@ -3,15 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect, assert } from "chai";
-
-import { Loop, Path, LineString3d, Point3d, Transform, Range3d, IndexedPolyface } from "@bentley/geometry-core";
-import { GraphicParams, ColorDef } from "@bentley/imodeljs-common";
-
-import { PolyfacePrimitiveList, PolyfacePrimitive } from "../../render/primitives/Polyface";
-import { Geometry } from "../../render/primitives/geometry/GeometryPrimitives";
+import { assert, expect } from "chai";
+import { IndexedPolyface, LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 import { DisplayParams } from "../../render/primitives/DisplayParams";
-import { StrokesPrimitiveList, StrokesPrimitivePointLists, StrokesPrimitivePointList } from "../../render/primitives/Strokes";
+import { Geometry } from "../../render/primitives/geometry/GeometryPrimitives";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../render/primitives/Polyface";
+import { StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../../render/primitives/Strokes";
 
 function pointIsInArray(pt: Point3d, arr: Point3d[]): boolean {
   for (const arrPt of arr) {
@@ -45,8 +43,8 @@ describe("GeometryPrimitives tests", () => {
     expect(loopRange).to.not.be.null;
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
-    gfParams.setFillColor(ColorDef.black); // forces region outline flag
+    gfParams.lineColor = ColorDef.white;
+    gfParams.fillColor = ColorDef.black; // forces region outline flag
     const displayParams: DisplayParams = DisplayParams.createForMesh(gfParams);
 
     const loopGeom = Geometry.createFromLoop(loop, Transform.createIdentity(), loopRange, displayParams, false);
@@ -107,7 +105,7 @@ describe("GeometryPrimitives tests", () => {
     expect(pathRange).to.not.be.null;
 
     const gfParams: GraphicParams = new GraphicParams();
-    gfParams.setLineColor(ColorDef.white);
+    gfParams.lineColor = ColorDef.white;
     const displayParams: DisplayParams = DisplayParams.createForLinear(gfParams);
 
     const pathGeom = Geometry.createFromPath(pth, Transform.createIdentity(), pathRange, displayParams, false);

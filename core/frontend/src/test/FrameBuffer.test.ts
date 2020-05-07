@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect, assert } from "chai";
+import { assert, expect } from "chai";
+import { Capabilities } from "@bentley/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
-import { Capabilities, System, RenderBuffer, TextureHandle, FrameBuffer, GL, Debug } from "../webgl";
+import { Debug, FrameBuffer, GL, RenderBuffer, System, TextureHandle } from "../webgl";
 
 describe("FrameBuffer tests", () => {
-  before(() => IModelApp.startup());
-  after(() => IModelApp.shutdown());
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   it("should produce and bind a valid framebuffer with single color attachment", () => {
     if (!IModelApp.hasRenderSystem)

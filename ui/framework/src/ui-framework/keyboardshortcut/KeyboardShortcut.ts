@@ -7,13 +7,12 @@
  */
 
 import { UiError } from "@bentley/ui-abstract";
-
+import { CursorInformation } from "../cursor/CursorInformation";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
-import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
-import { UiFramework } from "../UiFramework";
-import { CursorInformation } from "../cursor/CursorInformation";
 import { ItemProps } from "../shared/ItemProps";
+import { UiFramework } from "../UiFramework";
+import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
 
 /** Enumeration for Function Keys
  * @public

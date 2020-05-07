@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/text/mixins";
 @import "../variables";
 
 .uifw-pointer-message {
@@ -14,7 +14,7 @@
     width: $uifw-popup-border-width;
   }
 
-  background-color: rgba(var(--buic-background-2-rgb), $uifw-popup-opacity);
+  background-color: rgba($buic-background-2-rgb, $uifw-popup-opacity);
 
   .uifw-pointer-message-content {
     display: flex;

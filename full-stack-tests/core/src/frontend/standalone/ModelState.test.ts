@@ -2,30 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code, IModel, ModelSelectorProps } from "@bentley/imodeljs-common";
-import { DrawingModelState, GeometricModelState, IModelConnection, MockRender, ModelSelectorState, SheetModelState, SpatialModelState } from "@bentley/imodeljs-frontend";
-import { assert, expect } from "chai";
-import * as path from "path";
-
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
+import {
+  DrawingModelState, GeometricModelState, IModelConnection, MockRender, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
+} from "@bentley/imodeljs-frontend";
 
 describe("ModelState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
   let imodel3: IModelConnection;
   before(async () => {
-    MockRender.App.startup();
-    imodel2 = await IModelConnection.openSnapshot(iModelLocation + "mirukuru.ibim");
-    imodel = await IModelConnection.openSnapshot(iModelLocation + "CompatibilityTestSeed.bim");
-    imodel3 = await IModelConnection.openSnapshot(iModelLocation + "test.bim");
+    await MockRender.App.startup();
+    imodel2 = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel3 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
-    if (imodel) await imodel.closeSnapshot();
-    if (imodel2) await imodel2.closeSnapshot();
-    if (imodel3) await imodel3.closeSnapshot();
-    MockRender.App.shutdown();
+    if (imodel) await imodel.close();
+    if (imodel2) await imodel2.close();
+    if (imodel3) await imodel3.close();
+    await MockRender.App.shutdown();
   });
 
   it("ModelSelectors should hold models", () => {

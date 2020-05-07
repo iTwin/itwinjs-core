@@ -4,18 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as moq from "typemoq";
 import sinon from "sinon";
-import { render } from "@testing-library/react";
+import * as moq from "typemoq";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { ControlledTree } from "../../../../ui-components/tree/controlled/component/ControlledTree";
-import { VisibleTreeNodes, MutableTreeModelNode, TreeModel } from "../../../../ui-components/tree/controlled/TreeModel";
-import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
-import { from } from "../../../../ui-components/tree/controlled/Observable";
-import TestUtils from "../../../TestUtils";
+import { render } from "@testing-library/react";
 import { SelectionMode } from "../../../../ui-components/common/selection/SelectionModes";
-import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
+import { ControlledTree } from "../../../../ui-components/tree/controlled/component/ControlledTree";
+import { from } from "../../../../ui-components/tree/controlled/Observable";
 import { TreeEvents } from "../../../../ui-components/tree/controlled/TreeEvents";
+import { MutableTreeModelNode, TreeModel, VisibleTreeNodes } from "../../../../ui-components/tree/controlled/TreeModel";
+import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
+import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
+import TestUtils from "../../../TestUtils";
 
 describe("ControlledTree", () => {
 
@@ -27,6 +28,15 @@ describe("ControlledTree", () => {
 
   before(async () => {
     await TestUtils.initializeUiComponents();
+    // note: this is needed for AutoSizer used by the Tree to
+    // have non-zero size and render the virtualized list
+    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
+    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
+    sinon.restore();
   });
 
   beforeEach(() => {
@@ -35,7 +45,7 @@ describe("ControlledTree", () => {
 
     node = {
       id: "0",
-      label: "label",
+      label: PropertyRecord.fromString("label", "label"),
       checkbox: { isVisible: false, state: CheckBoxState.Off, isDisabled: false },
       depth: 0,
       description: "Test Node Description",
@@ -46,7 +56,7 @@ describe("ControlledTree", () => {
       parentId: undefined,
       item: {
         id: "0",
-        label: "label",
+        label: PropertyRecord.fromString("label", "label"),
         description: "Test Node Description",
       },
     };
@@ -88,7 +98,7 @@ describe("ControlledTree", () => {
         selectionMode={SelectionMode.Single}
       />);
 
-    const message = container.querySelector(".components-tree-errormessage");
+    const message = container.querySelector(".components-controlledTree-errorMessage");
     expect(message).to.not.be.null;
   });
 
@@ -142,7 +152,7 @@ describe("ControlledTree", () => {
   it("renders highlighted node", () => {
     mockVisibleNode();
     const highlightProps: HighlightableTreeProps = {
-      searchText: node.label as string,
+      searchText: "label",
       activeMatch: {
         nodeId: node.id,
         matchIndex: 0,

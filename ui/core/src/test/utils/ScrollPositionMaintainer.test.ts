@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ScrollPositionMaintainer } from "../../ui-core";
 import { using } from "@bentley/bentleyjs-core";
+import { ScrollPositionMaintainer } from "../../ui-core";
 
 describe("ScrollPositionMaintainer", () => {
 

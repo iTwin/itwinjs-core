@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ToleranceRatio, GeometryOptions, NormalMode, SurfacesOnly, PreserveOrder, GenerateEdges } from "../../render/primitives/Primitives";
-import { GeometryList } from "../../render/primitives/geometry/GeometryList";
-import { Point3d, Range3d, Transform, Vector3d, Sample, Loop, LineString3d } from "@bentley/geometry-core";
-import { Geometry } from "../../render/primitives/geometry/GeometryPrimitives";
-import { DisplayParams } from "../../render/primitives/DisplayParams";
+import { LineString3d, Loop, Point3d, Range3d, Sample, Transform, Vector3d } from "@bentley/geometry-core";
 import { GraphicParams } from "@bentley/imodeljs-common";
+import { DisplayParams } from "../../render/primitives/DisplayParams";
+import { GeometryList } from "../../render/primitives/geometry/GeometryList";
+import { Geometry } from "../../render/primitives/geometry/GeometryPrimitives";
+import { GenerateEdges, GeometryOptions, NormalMode, PreserveOrder, SurfacesOnly, ToleranceRatio } from "../../render/primitives/Primitives";
 
 function verifyGeometryQueries(g: Geometry, doDecimate: boolean = false, doVertexCluster: boolean = true, hasPart: boolean = false) {
   assert.equal(doDecimate, g.doDecimate());

@@ -4,13 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
+import { Content, ContentJSON } from "../../presentation-common/content/Content";
+import { Item } from "../../presentation-common/content/Item";
 import {
-  createRandomECInstanceKeyJSON, createRandomECClassInfoJSON, createRandomDescriptorJSON,
-  createRandomDescriptor,
-  createRandomLabelDefinitionJSON,
+  createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKeyJSON, createRandomLabelDefinitionJSON,
 } from "../_helpers/random";
-import { Content, ContentJSON } from "../../content/Content";
-import { Item } from "../../content/Item";
 
 describe("Content", () => {
 

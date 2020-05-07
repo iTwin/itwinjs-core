@@ -6,58 +6,55 @@
  * @module IModelApp
  */
 
-const copyrightNotice = 'Copyright © 2017-2019 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const copyrightNotice = 'Copyright © 2017-2020 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { dispose, Guid, GuidString, ClientRequestContext, SerializedClientRequestContext, Logger, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
-import {
-  AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient,
-  SettingsAdmin, IAuthorizationClient, IncludePrefix,
-} from "@bentley/imodeljs-clients";
+import { BeDuration, ClientRequestContext, dispose, Guid, GuidString, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { AccuSnap } from "./AccuSnap";
+import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
+import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
+import { UiAdmin } from "@bentley/ui-abstract";
+import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
+import { AccuSnap } from "./AccuSnap";
+import * as auxCoordState from "./AuxCoordSys";
+import * as categorySelectorState from "./CategorySelectorState";
+import * as displayStyleState from "./DisplayStyleState";
 import { ElementLocateManager } from "./ElementLocateManager";
+import { EntityState } from "./EntityState";
+import { ExtensionAdmin } from "./extension/ExtensionAdmin";
+import { FeatureToggleClient } from "./FeatureToggleClient";
+import { FeatureTrackingManager } from "./FeatureTrackingManager";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { FrontendRequestContext } from "./FrontendRequestContext";
+import * as modelselector from "./ModelSelectorState";
+import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./QuantityFormatter";
-import { FrontendRequestContext } from "./FrontendRequestContext";
 import { RenderSystem } from "./render/RenderSystem";
+import { System } from "./render/webgl/System";
+import * as sheetState from "./Sheet";
 import { TentativePoint } from "./TentativePoint";
+import { TerrainProvider } from "./TerrainProvider";
+import { TileAdmin } from "./tile/internal";
+import * as accudrawTool from "./tools/AccuDrawTool";
+import * as clipViewTool from "./tools/ClipViewTool";
+import * as extensionTool from "./tools/ExtensionTool";
+import * as idleTool from "./tools/IdleTool";
+import * as measureTool from "./tools/MeasureTool";
+import * as selectTool from "./tools/SelectTool";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
-import { ViewManager } from "./ViewManager";
-import { WebGLRenderCompatibilityInfo } from "./RenderCompatibility";
-import { TileAdmin } from "./tile/internal";
-import { EntityState } from "./EntityState";
-import { TerrainProvider } from "./TerrainProvider";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { PluginAdmin } from "./plugin/Plugin";
-import { UiAdmin } from "@bentley/ui-abstract";
-import { FeatureTrackingManager } from "./FeatureTrackingManager";
-import { FeatureToggleClient } from "./FeatureToggleClient";
-import { System } from "./render/webgl/System";
-
-import * as idleTool from "./tools/IdleTool";
-import * as selectTool from "./tools/SelectTool";
-import * as pluginTool from "./tools/PluginTool";
 import * as viewTool from "./tools/ViewTool";
-import * as clipViewTool from "./tools/ClipViewTool";
-import * as measureTool from "./tools/MeasureTool";
-import * as accudrawTool from "./tools/AccuDrawTool";
-import * as modelState from "./ModelState";
-import * as sheetState from "./Sheet";
+import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
-import * as displayStyleState from "./DisplayStyleState";
-import * as modelselector from "./ModelSelectorState";
-import * as categorySelectorState from "./CategorySelectorState";
-import * as auxCoordState from "./AuxCoordSys";
 
 // tslint:disable-next-line: no-var-requires
 require("./IModeljs-css");
 
 // cSpell:ignore noopener noreferrer gprid forin nbsp
-
-declare var BUILD_SEMVER: string;
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
  * @public
@@ -90,7 +87,7 @@ export interface IModelAppOptions {
   /** If present, supplies the [[I18N]] for this session. May be either an I18N instance or an I18NOptions used to create an I18N */
   i18n?: I18N | I18NOptions;
   /** If present, supplies the authorization information for various frontend APIs */
-  authorizationClient?: IAuthorizationClient;
+  authorizationClient?: FrontendAuthorizationClient;
   /** @internal */
   sessionId?: GuidString;
   /** @internal */
@@ -104,7 +101,7 @@ export interface IModelAppOptions {
   /** @internal */
   terrainProvider?: TerrainProvider;
   /** @internal */
-  pluginAdmin?: PluginAdmin;
+  extensionAdmin?: ExtensionAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
   /** if present, supplies the [[FeatureTrackingManager]] for this session
@@ -168,7 +165,7 @@ export class IModelApp {
   private static _imodelClient: IModelClient;
   private static _locateManager: ElementLocateManager;
   private static _notifications: NotificationManager;
-  private static _pluginAdmin: PluginAdmin;
+  private static _extensionAdmin: ExtensionAdmin;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
   private static _settings: SettingsAdmin;
@@ -182,9 +179,8 @@ export class IModelApp {
   private static _animationRequested = false;
   private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
   private static _animationIntervalId?: number;
-  private static _tileTreePurgeTime?: BeTimePoint;
-  private static _tileTreePurgeInterval?: BeDuration;
   private static _features: FeatureTrackingManager;
+  private static _nativeApp: boolean = false;
   private static _featureToggles: FeatureToggleClient;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
@@ -195,7 +191,7 @@ export class IModelApp {
    */
   public static eventSourceOptions: EventSourceOptions = { pollInterval: 3000, prefetchLimit: 512 };
   /** Provides authorization information for various frontend APIs */
-  public static authorizationClient?: IAuthorizationClient;
+  public static authorizationClient?: FrontendAuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
   public static readonly tools = new ToolRegistry();
   /** A uniqueId for this session */
@@ -204,6 +200,10 @@ export class IModelApp {
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
   public static get viewManager(): ViewManager { return this._viewManager; }
+  /** Check if native app or not
+   * @internal
+   */
+  public static get isNativeApp(): boolean { return this._nativeApp; }
   /** The [[NotificationManager]] for this session. */
   public static get notifications(): NotificationManager { return this._notifications; }
   /** The [[TileAdmin]] for this session.
@@ -243,7 +243,7 @@ export class IModelApp {
   /** @internal */
   public static get terrainProvider() { return this._terrainProvider; }
   /** @internal */
-  public static get pluginAdmin() { return this._pluginAdmin; }
+  public static get extensionAdmin() { return this._extensionAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
   /** The [[FeatureTrackingManager]] for this session
@@ -294,7 +294,7 @@ export class IModelApp {
    * and/or performance.
    * @beta
    */
-  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return System.queryRenderCompatibility(); }
+  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return queryRenderCompatibility(System.createContext); }
 
   /**
    * This method must be called before any iModel.js frontend services are used.
@@ -304,7 +304,7 @@ export class IModelApp {
    * ```
    * @param opts The options for configuring IModelApp
    */
-  public static startup(opts?: IModelAppOptions): void {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
 
     if (this._initialized)
@@ -319,7 +319,7 @@ export class IModelApp {
     // Initialize basic application details before log messages are sent out
     this.sessionId = (opts.sessionId !== undefined) ? opts.sessionId : Guid.createValue();
     this._applicationId = (opts.applicationId !== undefined) ? opts.applicationId : "2686";  // Default to product id of iModel.js
-    this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : (typeof BUILD_SEMVER !== "undefined" ? BUILD_SEMVER : "");
+    this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "";
     this.authorizationClient = opts.authorizationClient;
 
     this._imodelClient = (opts.imodelClient !== undefined) ? opts.imodelClient : new IModelHubClient();
@@ -338,7 +338,7 @@ export class IModelApp {
       clipViewTool,
       measureTool,
       accudrawTool,
-      pluginTool,
+      extensionTool,
     ].forEach((tool) => this.tools.registerModule(tool, coreNamespace));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
@@ -363,7 +363,7 @@ export class IModelApp {
     this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
-    this._pluginAdmin = (opts.pluginAdmin !== undefined) ? opts.pluginAdmin : new PluginAdmin();
+    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin({});
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._terrainProvider = opts.terrainProvider;
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
@@ -378,7 +378,7 @@ export class IModelApp {
       this.accuSnap,
       this.locateManager,
       this.tentativePoint,
-      this.pluginAdmin,
+      this.extensionAdmin,
       this.quantityFormatter,
       this._terrainProvider,
       this.uiAdmin,
@@ -389,7 +389,7 @@ export class IModelApp {
   }
 
   /** Must be called before the application exits to release any held resources. */
-  public static shutdown() {
+  public static async shutdown() {
     if (!this._initialized)
       return;
 
@@ -452,12 +452,6 @@ export class IModelApp {
   public static startEventLoop() {
     if (!IModelApp._wantEventLoop) {
       IModelApp._wantEventLoop = true;
-      const treeExpirationTime = IModelApp.tileAdmin.tileTreeExpirationTime;
-      if (undefined !== treeExpirationTime) {
-        IModelApp._tileTreePurgeInterval = treeExpirationTime;
-        IModelApp._tileTreePurgeTime = BeTimePoint.now().plus(treeExpirationTime);
-      }
-
       window.addEventListener("resize", IModelApp.requestNextAnimation);
       IModelApp.requestIntervalAnimation();
       IModelApp.requestNextAnimation();
@@ -474,12 +468,6 @@ export class IModelApp {
       IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
       IModelApp.viewManager.renderLoop();
       IModelApp.tileAdmin.process();
-
-      if (undefined !== IModelApp._tileTreePurgeTime && IModelApp._tileTreePurgeTime.milliseconds < Date.now()) {
-        const now = BeTimePoint.now();
-        IModelApp._tileTreePurgeTime = now.plus(IModelApp._tileTreePurgeInterval!);
-        IModelApp.viewManager.purgeTileTrees(now.minus(IModelApp._tileTreePurgeInterval!));
-      }
     } catch (exception) {
       ToolAdmin.exceptionHandler(exception).then(() => { // tslint:disable-line:no-floating-promises
         close(); // this does nothing in a web browser, closes electron.
@@ -508,11 +496,15 @@ export class IModelApp {
       let userId: string | undefined;
       if (IModelApp.authorizationClient) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
-        const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
-        authorization = accessToken.toTokenString(IncludePrefix.Yes);
-        const userInfo = accessToken.getUserInfo();
-        if (userInfo)
-          userId = userInfo.id;
+        try {
+          const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
+          authorization = accessToken.toTokenString(IncludePrefix.Yes);
+          const userInfo = accessToken.getUserInfo();
+          if (userInfo)
+            userId = userInfo.id;
+        } catch (err) {
+          // The application may go offline
+        }
       }
       return {
         id,

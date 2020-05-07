@@ -2,25 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
-import { expect } from "chai";
-
+import { Point3d, Vector3d } from "@bentley/geometry-core";
 import {
-  ScreenViewport, MockRender, IModelConnection, SpatialViewState, ViewState, SubCategoriesCache, DrawingViewState, SheetViewState, EmphasizeElements,
+  CategorySelectorProps, DisplayStyleProps, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
+} from "@bentley/imodeljs-common";
+import {
+  DrawingViewState, EmphasizeElements, IModelConnection, MockRender, ScreenViewport, SheetViewState, SpatialViewState, SubCategoriesCache, ViewState,
 } from "@bentley/imodeljs-frontend";
 import {
-  SpatialViewDefinitionProps, ViewStateProps, CategorySelectorProps, ModelSelectorProps, DisplayStyleProps, SheetProps,
-} from "@bentley/imodeljs-common";
-import { Vector3d, Point3d } from "@bentley/geometry-core";
-
-import {
-  ViewportContentControl, ConfigurableCreateInfo, FrontstageProvider, ContentLayoutDef, FrontstageProps,
-  ContentGroup, Frontstage, CoreTools, Zone, Widget, NavigationWidget, FrontstageManager, ContentLayoutManager,
-  SavedViewLayout, ContentProps, SavedViewLayoutProps, ConfigurableUiManager,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentProps, CoreTools, Frontstage,
+  FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SavedViewLayout, SavedViewLayoutProps, ViewportContentControl, Widget,
+  Zone,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
 import { ViewUtilities } from "../../ui-framework/utils/ViewUtilities";
+import TestUtils from "../TestUtils";
 
 describe("SavedViewLayout", () => {
 
@@ -122,21 +120,22 @@ describe("SavedViewLayout", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    MockRender.App.startup();
+    await MockRender.App.startup();
 
     // Required for SavedViewLayout
     ConfigurableUiManager.registerControl("TestViewport", TestViewportContentControl);
   });
 
-  after(() => {
-    MockRender.App.shutdown();
+  after(async () => {
+    await MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
   });
 
   class TestViewportContentControl extends ViewportContentControl {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div />;
+      this.reactNode = <div />;
 
       this.viewport = viewportMock.object;
     }
@@ -175,7 +174,7 @@ describe("SavedViewLayout", () => {
 
           topRight={
             <Zone widgets={[
-              <Widget isFreeform={true} element={<NavigationWidget />} />,
+              <Widget isFreeform={true} element={<NavigationWidget />} />, // tslint:disable-line:deprecation
             ]} />
           }
         />

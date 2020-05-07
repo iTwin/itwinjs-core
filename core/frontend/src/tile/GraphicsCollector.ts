@@ -3,17 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import { Map4d } from "@bentley/geometry-core";
 import { FrustumPlanes } from "@bentley/imodeljs-common";
-import {
-  TileDrawArgs,
-  TileTreeReference,
-} from "./internal";
-import { SceneContext } from "../ViewContext";
 import { RenderGraphic } from "../render/RenderGraphic";
+import { SceneContext } from "../ViewContext";
+import { TileDrawArgs, TileTreeReference } from "./internal";
 
 /** @internal */
 export interface GraphicsCollector {
@@ -27,7 +24,7 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
   private _collector: GraphicsCollector;
 
   private constructor(planes: FrustumPlanes, worldToViewMap: Map4d, collector: GraphicsCollector, args: TileDrawArgs) {
-    super(args.context, args.location, args.root, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, args.parentsAndChildrenExclusive, args.graphics.symbologyOverrides);
+    super(args.context, args.location, args.tree, args.now, args.graphics.viewFlagOverrides, args.clipVolume, args.parentsAndChildrenExclusive, args.graphics.symbologyOverrides);
 
     this._planes = planes;
     this._worldToViewMap = worldToViewMap;
@@ -35,7 +32,7 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
   }
 
   public get frustumPlanes(): FrustumPlanes { return this._planes; }
-  protected get worldToViewMap(): Map4d { return this._worldToViewMap; }
+  public get worldToViewMap(): Map4d { return this._worldToViewMap; }
   public drawGraphics(): void {
     if (!this.graphics.isEmpty)
       this._collector.addGraphic(this.context.createBranch(this.graphics, this.location));

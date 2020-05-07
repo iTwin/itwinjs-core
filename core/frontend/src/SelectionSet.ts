@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module SelectionSet
  */
-import { BeEvent, Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "./IModelConnection";
+import { BeEvent, Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
 import { IModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
 
 /** Identifies the type of changes made to the [[SelectionSet]] to produce a [[SelectionSetEvent]].
  * @public
@@ -168,7 +168,7 @@ class HilitedElementIds extends HilitedIds {
  * @note Typically, elements are hilited by virtue of their presence in the IModelConnection's [[SelectionSet]]. The HiliteSet allows additional
  * elements to be displayed with the hilite effect without adding them to the [[SelectionSet]].
  * @see [Hilite.Settings]($common) for customization of the hilite effect.
- * @alpha
+ * @beta
  */
 export class HiliteSet {
   private readonly _elements: HilitedElementIds;
@@ -202,6 +202,7 @@ export class HiliteSet {
     this.models.clear();
   }
 
+  /** Returns true if nothing is hilited. */
   public get isEmpty(): boolean { return this.elements.isEmpty && this.subcategories.isEmpty && this.models.isEmpty; }
 
   /** Toggle the hilited state of one or more elements.

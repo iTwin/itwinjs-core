@@ -3,12 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  IModelApp, PrimitiveTool,
-  BeButtonEvent, EventHandled,
-} from "@bentley/imodeljs-frontend";
-
 import { Point3d } from "@bentley/geometry-core";
+import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool } from "@bentley/imodeljs-frontend";
 
 // tslint:disable: completed-docs
 

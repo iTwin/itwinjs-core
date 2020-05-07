@@ -2,28 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
+import { ColorDef, RgbColor } from "@bentley/imodeljs-common";
 import {
-  assert,
-  BeTimePoint,
-} from "@bentley/bentleyjs-core";
-import {
-  ColorDef,
-  RgbColor,
-} from "@bentley/imodeljs-common";
-import {
-  ChangeFlags,
-  FeatureOverrideProvider,
-  FeatureSymbology,
-  IModelApp,
-  IModelConnection,
-  SpatialModelState,
-  SpatialModelTileTrees,
-  SpatialViewState,
-  TileTree,
-  TiledGraphicsProvider,
-  TileTreeReference,
-  Tool,
-  Viewport,
+  ChangeFlags, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialModelState, SpatialModelTileTrees,
+  SpatialViewState, TiledGraphicsProvider, TileTree, TileTreeReference, Tool, Viewport,
 } from "@bentley/imodeljs-frontend";
 
 interface ChangedElems {
@@ -126,7 +109,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
     // closing the iModel will do this - but let's not wait.
     this.iModel.tiles.purge(BeTimePoint.now());
 
-    this.iModel.closeSnapshot(); // tslint:disable-line no-floating-promises
+    this.iModel.close(); // tslint:disable-line no-floating-promises
   }
 
   public static async create(vp: Viewport): Promise<Provider | undefined> {
@@ -135,8 +118,8 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
       assert(view.isSpatialView());
 
       // Open the "revision" iModel.
-      const filename = vp.iModel.iModelToken.key! + ".rev";
-      const iModel = await IModelConnection.openSnapshot(filename);
+      const filename = vp.iModel.getRpcProps().key + ".rev";
+      const iModel = await SnapshotConnection.openFile(filename);
 
       // ###TODO determine which model(s) contain the deleted elements - don't need tiles for any others.
       await iModel.models.load(view.modelSelector.models);
@@ -223,6 +206,10 @@ class Reference extends TileTreeReference {
     this._provider = provider;
   }
 
+  public get castsShadows() {
+    return this._ref.castsShadows;
+  }
+
   public get treeOwner() { return this._ref.treeOwner; }
 
   protected getSymbologyOverrides(_tree: TileTree) {
@@ -273,7 +260,7 @@ export async function disableVersionComparison(vp: Viewport): Promise<void> {
   const existing = vp.featureOverrideProvider;
   if (undefined !== existing && existing instanceof Provider) {
     existing.dispose();
-    await existing.iModel.closeSnapshot();
+    await existing.iModel.close();
   }
 }
 

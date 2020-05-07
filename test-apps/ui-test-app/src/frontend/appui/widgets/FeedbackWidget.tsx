@@ -4,16 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import {
-  ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ValidationTextbox, InputStatus,
-} from "@bentley/ui-framework";
+import { ConfigurableCreateInfo, ConfigurableUiManager, InputStatus, ValidationTextbox, WidgetControl } from "@bentley/ui-framework";
 
 /** Feedback Demo Widget */
 export class FeedbackDemoWidget extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <FeedbackWidget />;
+    this.reactNode = <FeedbackWidget />;
   }
 }
 

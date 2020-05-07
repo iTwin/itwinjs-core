@@ -6,9 +6,8 @@
  * @module Loading
  */
 
-import * as React from "react";
-
 import "./Spinner.scss";
+import * as React from "react";
 
 // cspell:ignore xlarge
 
@@ -33,7 +32,7 @@ export interface SpinnerProps {
 }
 
 /**
- * A spinner component.
+ * An indeterminate spinner component.
  * @public
  */
 export class Spinner extends React.PureComponent<SpinnerProps> {

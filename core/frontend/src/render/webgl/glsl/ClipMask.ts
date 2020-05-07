@@ -6,11 +6,11 @@
  * @module WebGL
  */
 
-import { ProgramBuilder, FragmentShaderComponent, VertexShaderComponent } from "../ShaderBuilder";
+import { AttributeMap } from "../AttributeMap";
+import { FragmentShaderComponent, ProgramBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { assignFragColor } from "./Fragment";
 import { addModelViewProjectionMatrix } from "./Vertex";
-import { AttributeMap } from "../AttributeMap";
 
 const computePosition = "return MAT_MVP * rawPos;";
 
@@ -25,6 +25,9 @@ export function createClipMaskProgram(context: WebGLRenderingContext | WebGL2Ren
 
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  builder.vert.headerComment = "//!V! ClipMask";
+  builder.frag.headerComment = "//!F! ClipMask";
 
   return builder.buildProgram(context);
 }

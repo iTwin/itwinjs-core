@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { shallow } from "enzyme";
-import { MessageSpan, MessageDiv } from "../../ui-framework/messages/MessageSpan";
+import * as React from "react";
+import { UnderlinedButton } from "@bentley/ui-core";
+import { MessageDiv, MessageSpan } from "../../ui-framework/messages/MessageSpan";
 
 describe("MessageSpan & MessageDiv", () => {
 
@@ -19,6 +20,12 @@ describe("MessageSpan & MessageDiv", () => {
       newSpan.appendChild(newContent);
       shallow(<MessageSpan message={newSpan} />).should.matchSnapshot();
     });
+
+    it("with React node", () => {
+      const reactNode = (<span>For more details, <UnderlinedButton>click here</UnderlinedButton>.</span>);
+      const reactMessage = { reactNode };
+      shallow(<MessageSpan message={reactMessage} />).should.matchSnapshot();
+    });
   });
 
   describe("MessageDiv", () => {
@@ -31,6 +38,12 @@ describe("MessageSpan & MessageDiv", () => {
       const newContent = document.createTextNode("Test");
       newSpan.appendChild(newContent);
       shallow(<MessageDiv message={newSpan} />).should.matchSnapshot();
+    });
+
+    it("with React node", () => {
+      const reactNode = (<span>For more details, <UnderlinedButton>click here</UnderlinedButton>.</span>);
+      const reactMessage = { reactNode };
+      shallow(<MessageDiv message={reactMessage} />).should.matchSnapshot();
     });
   });
 

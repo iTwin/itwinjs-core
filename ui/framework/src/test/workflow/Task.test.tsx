@@ -2,22 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { expect } from "chai";
-import TestUtils from "../TestUtils";
 import {
-  FrontstageProvider,
-  FrontstageProps,
-  Frontstage,
-  ConfigurableUiManager,
-  TaskPropsList,
-  WorkflowPropsList,
-  FrontstageManager,
-  FrontstageActivatedEventArgs,
-  WorkflowManager,
-  CoreTools,
+  ConfigurableUiManager, CoreTools, Frontstage, FrontstageActivatedEventArgs, FrontstageManager, FrontstageProps, FrontstageProvider, TaskPropsList,
+  WorkflowManager, WorkflowPropsList,
 } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("Task", () => {
 

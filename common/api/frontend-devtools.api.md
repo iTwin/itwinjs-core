@@ -62,6 +62,20 @@ export class ApplyViewTool extends Tool {
     static toolId: string;
 }
 
+// @alpha (undocumented)
+export class AttachRealityModelTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(data: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha
 export interface Button {
     // (undocumented)
@@ -120,7 +134,7 @@ export abstract class ChangeHiliteTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): boolean;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
     run(settings?: Hilite.Settings): boolean;
 }
@@ -134,7 +148,7 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    protected parse(args: string[]): boolean;
+    protected parse(inputArgs: string[]): boolean;
     // (undocumented)
     protected get require3d(): boolean;
     // (undocumented)
@@ -433,6 +447,14 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
 }
 
 // @beta
+export class ElementIdFromSourceAspectIdTool extends SourceAspectIdTool {
+    // (undocumented)
+    protected getECSql(queryId: string): string;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export abstract class EmphasizeElementsTool extends Tool {
     // (undocumented)
     protected abstract execute(emph: EmphasizeElements, vp: ScreenViewport): void;
@@ -501,7 +523,7 @@ export class FrustumDecorator implements Decorator {
     // (undocumented)
     decorate(context: DecorateContext): void;
     static disable(): void;
-    static enable(vp: Viewport): void;
+    static enable(vp: Viewport, options?: FrustumDecorationOptions): void;
     // (undocumented)
     static get isEnabled(): boolean;
 }
@@ -537,7 +559,7 @@ export class InspectElementTool extends PrimitiveTool {
     // (undocumented)
     onUnsuspend(): void;
     // (undocumented)
-    parseAndRun(...args: string[]): boolean;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
@@ -570,9 +592,17 @@ export class KeyinField {
 }
 
 // @beta
+export enum KeyinFieldLocalization {
+    Both = 2,
+    Localized = 1,
+    NonLocalized = 0
+}
+
+// @beta
 export interface KeyinFieldProps {
     baseId: string;
     historyLength?: number;
+    localization?: KeyinFieldLocalization;
     parent?: HTMLElement;
     wantButton?: boolean;
     wantLabel?: boolean;
@@ -692,6 +722,9 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
 }
 
 // @beta
+export function parseArgs(args: string[]): ToolArgs;
+
+// @beta
 export function parseToggle(arg: string | undefined): string | boolean | undefined;
 
 // @beta (undocumented)
@@ -784,6 +817,20 @@ export abstract class RenderTargetDebugControlTool extends Tool {
 export class ReportWebGLCompatibilityTool extends Tool {
     // (undocumented)
     run(_args: any[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha (undocumented)
+export class SaveRealityModelTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(name: string | undefined): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -891,6 +938,28 @@ export interface SliderProps {
 }
 
 // @beta
+export class SourceAspectIdFromElementIdTool extends SourceAspectIdTool {
+    // (undocumented)
+    protected getECSql(queryId: string): string;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export abstract class SourceAspectIdTool extends Tool {
+    // (undocumented)
+    protected abstract getECSql(queryId: string): string;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...keyinArgs: string[]): boolean;
+    // (undocumented)
+    run(idToQuery?: string, copyToClipboard?: boolean): boolean;
+}
+
+// @beta
 export interface TextBox {
     div: HTMLDivElement;
     label?: HTMLLabelElement;
@@ -933,6 +1002,16 @@ export class TileStatisticsTracker {
     }
 
 // @alpha
+export class Toggle3dManipulationsTool extends Tool {
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(allow?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
 export class ToggleDrapeFrustumTool extends RenderTargetDebugControlTool {
     // (undocumented)
     execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
@@ -949,15 +1028,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean): boolean;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @alpha
-export class ToggleLogZTool extends RenderTargetDebugControlTool {
-    // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersecctions?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -995,6 +1066,38 @@ export class ToggleProjectExtentsTool extends Tool {
 
 // @beta
 export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleRealityTileBounds extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleRealityTileFreeze extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleRealityTileLogging extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleRealityTilePreload extends RenderTargetDebugControlTool {
     // (undocumented)
     execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
     // (undocumented)
@@ -1075,6 +1178,14 @@ export class ToggleWiremeshTool extends RenderSystemDebugControlTool {
     execute(control: RenderSystemDebugControl): void;
     // (undocumented)
     static toolId: string;
+}
+
+// @beta
+export interface ToolArgs {
+    get(namePrefix: string): string | undefined;
+    getBoolean(namePrefix: string): boolean | undefined;
+    getFloat(namePrefix: string): number | undefined;
+    getInteger(namePrefix: string): number | undefined;
 }
 
 // @alpha

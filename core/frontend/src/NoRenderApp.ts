@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AnimationBranchStates } from "./render/GraphicBranch";
-import { RenderTarget } from "./render/RenderTarget";
-import { RenderSystem } from "./render/RenderSystem";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
+import { AnimationBranchStates } from "./render/GraphicBranch";
+import { RenderSystem } from "./render/RenderSystem";
+import { RenderTarget } from "./render/RenderTarget";
 import { ViewRect } from "./ViewRect";
 
 /**
@@ -14,8 +14,8 @@ import { ViewRect } from "./ViewRect";
  * @internal
  */
 export class NullTarget extends RenderTarget {
-  public get animationFraction(): number { return 0; }
-  public set animationFraction(_fraction: number) { }
+  public get analysisFraction(): number { return 0; }
+  public set analysisFraction(_fraction: number) { }
   public get renderSystem() { return undefined as any; }
   public get viewRect(): ViewRect { return new ViewRect(); }
   public get wantInvertBlackBackground(): boolean { return false; }
@@ -47,6 +47,7 @@ export class NullTarget extends RenderTarget {
  */
 export class NullRenderSystem extends RenderSystem {
   public get isValid(): boolean { return false; }
+  public doIdleWork(): boolean { return false; }
   public createTarget() { return new NullTarget(); }
   public createOffscreenTarget() { return new NullTarget(); }
   public createGraphicBuilder() { return undefined as any; }
@@ -63,9 +64,9 @@ export class NullRenderSystem extends RenderSystem {
  * @internal
  */
 export class NoRenderApp {
-  public static startup(opts?: IModelAppOptions) {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.renderSys = new NullRenderSystem();
-    IModelApp.startup(opts);
+    await IModelApp.startup(opts);
   }
 }

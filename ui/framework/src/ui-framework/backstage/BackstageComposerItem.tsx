@@ -8,14 +8,11 @@
 
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
+import {
+  BackstageActionItem, BackstageItem, BackstageStageLauncher, ConditionalBooleanValue, ConditionalStringValue, isStageLauncher,
+} from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
-import {
-  BackstageActionItem,
-  BackstageStageLauncher,
-  isStageLauncher,
-  BackstageItem,
-} from "@bentley/ui-abstract";
 import { useActiveFrontstageId } from "../frontstage/Frontstage";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { useBackstageManager } from "./BackstageManager";
@@ -34,11 +31,12 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
   }, [manager, item]);
   return (
     <NZ_BackstageItem
-      icon={<Icon iconSpec={item.icon} />}
-      isDisabled={!item.isEnabled}
+      icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
+      isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       onClick={handleClick}
+      subtitle={ConditionalStringValue.getValue(item.subtitle)}
     >
-      {item.label}
+      {ConditionalStringValue.getValue(item.label)}
     </NZ_BackstageItem>
   );
 }
@@ -61,13 +59,13 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
   const activeFrontstageId = useActiveFrontstageId();
   return (
     <NZ_BackstageItem
-      icon={<Icon iconSpec={item.icon} />}
+      icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
       isActive={item.stageId === activeFrontstageId}
-      isDisabled={!item.isEnabled}
+      isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       onClick={handleClick}
-      subtitle={item.subtitle}
+      subtitle={ConditionalStringValue.getValue(item.subtitle)}
     >
-      {item.label}
+      {ConditionalStringValue.getValue(item.label)}
     </NZ_BackstageItem>
   );
 }
@@ -76,6 +74,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
  * @beta
  */
 export interface BackstageComposerItemProps {
+  /** Backstage item to render */
   readonly item: BackstageItem;
 }
 

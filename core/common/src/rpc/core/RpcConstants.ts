@@ -44,6 +44,7 @@ export enum RpcRequestStatus {
   Rejected,
   Disposed,
   NotFound,
+  Cancelled,
 }
 
 /** RPC request event types.

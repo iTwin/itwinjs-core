@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
@@ -10,6 +9,7 @@ export * from "./CategorySelectorState";
 export * from "./ContextRealityModelState";
 export * from "./DevTools";
 export * from "./DisplayStyleState";
+export * from "./EditingFunctions";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
@@ -22,6 +22,8 @@ export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./HitDetail";
 export * from "./IModelApp";
+export * from "./NativeApp";
+export * from "./NativeAppLogger";
 export * from "./IModelConnection";
 export * from "./ElementEditor";
 export * from "./ImageUtil";
@@ -31,36 +33,31 @@ export * from "./ModelState";
 export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./QuantityFormatter";
-export * from "./RelativePosition";
-export * from "./RenderCompatibility";
 export * from "./RenderScheduleState";
 export * from "./SelectionSet";
 export * from "./Sheet";
-export * from "./SolarCalculate";
 export * from "./SpatialClassifiers";
 export * from "./Sprites";
 export * from "./StandardView";
 export * from "./SubCategoriesCache";
 export * from "./TentativePoint";
 export * from "./TerrainProvider";
+export * from "./Tiles";
 export * from "./ViewContext";
 export * from "./ViewingSpace";
 export * from "./ViewManager";
 export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./Viewport";
+export * from "./oidc/DesktopAuthorizationClient";
 export * from "./oidc/OidcBrowserClient";
-export * from "./oidc/OidcDesktopClientRenderer";
-export * from "./plugin/Plugin";
+export * from "./extension/Extension";
+export * from "./extension/ExtensionAdmin";
+export * from "./extension/loaders/ExtensionServiceExtensionLoader";
+export * from "./extension/loaders/ExternalServerExtensionLoader";
 export * from "./properties/AngleDescription";
-export * from "./properties/BaseQuantityDescription";
-export * from "./properties/Description";
-export * from "./properties/EditorParams";
+export * from "./properties/FormattedQuantityDescription";
 export * from "./properties/LengthDescription";
-export * from "./properties/PrimitiveTypes";
-export * from "./properties/Record";
-export * from "./properties/ToolSettingsValue";
-export * from "./properties/Value";
 export * from "./render/CanvasDecoration";
 export * from "./render/Decorations";
 export * from "./render/FeatureSymbology";
@@ -71,6 +68,7 @@ export * from "./render/MockRender";
 export * from "./render/Pixel";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";
+export * from "./render/RenderMemory";
 export * from "./render/RenderPlan";
 export * from "./render/RenderPlanarClassifier";
 export * from "./render/RenderTarget";
@@ -78,6 +76,7 @@ export * from "./render/RenderSystem";
 export * from "./render/Scene";
 export * from "./render/webgl/PerformanceMetrics";
 export * from "./render/webgl/Target";
+export * from "./render/webgl/IModelFrameLifecycle";
 export * from "./tools/AccuDrawTool";
 export * from "./tile/internal";
 export * from "./tools/ClipViewTool";
@@ -93,16 +92,7 @@ export * from "./tools/ToolSettings";
 export * from "./tools/ToolAdmin";
 export * from "./tools/ToolAssistance";
 export * from "./tools/ViewTool";
-
-// Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
-declare var BUILD_SEMVER: string;
-declare var BUILD_TYPE: string;
-if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
-  if (!(window as any).iModelJsVersions)
-    (window as any).iModelJsVersions = new Map<string, string>();
-  (window as any).iModelJsVersions.set("imodeljs-frontend", BUILD_SEMVER);
-  (window as any).iModelJsVersions.set("buildType", BUILD_TYPE);
-}
+export * from "./BackgroundMapGeometry";
 
 /** @docs-package-description
  * The imodeljs-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
@@ -151,8 +141,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
- * @docs-group-description Plugins
- * Classes for creating and managing runtime [Plugins]($docs/learning/frontend/Plugins.md)
+ * @docs-group-description Extensions
+ * Classes for creating and managing runtime [Extensions]($docs/learning/frontend/Extensions.md)
  */
 /**
  * @docs-group-description Properties
@@ -186,4 +176,12 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Features
  * Classes for Feature Tracking classification.
+ */
+/**
+ * @docs-group-description Tiles
+ * Classes representing graphics as [hierarchical 3d tiles](https://github.com/CesiumGS/3d-tiles).
+ */
+/**
+ * @docs-group-description Authentication
+ * Classes for managing authentication.
  */

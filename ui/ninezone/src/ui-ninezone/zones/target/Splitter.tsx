@@ -6,11 +6,11 @@
  * @module Zone
  */
 
-import * as classnames from "classnames";
+import "./Splitter.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { MergeTargetProps } from "./Merge";
 import { WidgetTarget } from "./Target";
-import "./Splitter.scss";
 
 /** Properties of [[SplitterTarget]] component.
  * @beta

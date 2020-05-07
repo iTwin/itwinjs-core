@@ -3,17 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
 import {
-  ToolWidget,
-  Frontstage,
-  Zone,
-  Widget,
-  FrontstageProvider,
-  FrontstageProps,
-  NestedFrontstage,
-  ContentGroup,
-  CoreTools,
+  ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, NestedFrontstage, ToolWidget, Widget, Zone,
 } from "@bentley/ui-framework";
 
 export class NestedAnimationStage extends FrontstageProvider {
@@ -36,7 +27,7 @@ export class NestedAnimationStage extends FrontstageProvider {
         contentGroup={myContentGroup}
         isInFooterMode={false}
         applicationData={{ key: "value" }}
-        topLeft={
+        contentManipulationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={<FrontstageToolWidget />} />,

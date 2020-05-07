@@ -7,10 +7,10 @@
  */
 
 // import { Point2d } from "../Geometry2d";
+import { Geometry } from "../Geometry";
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { Point3d } from "../geometry3d/Point3dVector3d";
-import { KnotVector, BSplineWrapMode } from "./KnotVector";
-import { Geometry } from "../Geometry";
+import { BSplineWrapMode, KnotVector } from "./KnotVector";
 
 /** Bspline knots and poles for 1d-to-Nd.
  * * The "pole" (aka control point) of this class is a block of `poleLength` numbers.

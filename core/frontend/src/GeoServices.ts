@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection } from "./IModelConnection";
-import {
-  IModelReadRpcInterface,
-  PointWithStatus, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus,
-} from "@bentley/imodeljs-common";
 import { XYZProps } from "@bentley/geometry-core";
+import {
+  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
+  IModelReadRpcInterface, PointWithStatus,
+} from "@bentley/imodeljs-common";
+import { IModelConnection } from "./IModelConnection";
 
 /** Response to a request to obtain imodel coordinates from cache.
  * @internal
@@ -105,7 +105,7 @@ class GCtoIMCResultCache {
       const promises: Array<Promise<void>> = [];
       for (let i = 0; i < missing.length; i += maxPointsPerRequest) {
         const remainingRequest = { sourceDatum: this._sourceDatum, geoCoords: missing.slice(i, i + maxPointsPerRequest) };
-        const promise = IModelReadRpcInterface.getClient().getIModelCoordinatesFromGeoCoordinates(this._iModel.iModelToken.toJSON(), JSON.stringify(remainingRequest)).then((remainingResponse) => {
+        const promise = IModelReadRpcInterface.getClient().getIModelCoordinatesFromGeoCoordinates(this._iModel.getRpcProps(), JSON.stringify(remainingRequest)).then((remainingResponse) => {
           // put the responses into the cache, and fill in the output response for each
           for (let iResponse: number = 0; iResponse < remainingResponse.iModelCoords.length; ++iResponse) {
             const thisPoint: PointWithStatus = remainingResponse.iModelCoords[iResponse];
@@ -189,7 +189,7 @@ class IMCtoGCResultCache {
     } else {
       // keep track of how many came from the cache (mostly for tests).
       response.fromCache = request.iModelCoords.length - originalPositions.length;
-      const remainingResponse = await IModelReadRpcInterface.getClient().getGeoCoordinatesFromIModelCoordinates(this._iModel.iModelToken.toJSON(), JSON.stringify(remainingRequest));
+      const remainingResponse = await IModelReadRpcInterface.getClient().getGeoCoordinatesFromIModelCoordinates(this._iModel.getRpcProps(), JSON.stringify(remainingRequest));
       // put the responses into the cache, and fill in the output response for each
       for (let iResponse: number = 0; iResponse < remainingResponse.geoCoords.length; ++iResponse) {
         const thisPoint: PointWithStatus = remainingResponse.geoCoords[iResponse];

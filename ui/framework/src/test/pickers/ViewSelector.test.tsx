@@ -2,15 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
 import * as enzyme from "enzyme";
+import * as React from "react";
 import * as moq from "typemoq";
-
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-
-import TestUtils from "../TestUtils";
 import { ViewSelector } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 // cSpell:ignore Spatials
 

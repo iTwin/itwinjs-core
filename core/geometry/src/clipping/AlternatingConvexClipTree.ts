@@ -7,22 +7,20 @@
  * @module CartesianGeometry
  */
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d } from "../geometry3d/Range";
+import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { Arc3d } from "../curve/Arc3d";
+import { CurveCollection } from "../curve/CurveCollection";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
 import { Angle } from "../geometry3d/Angle";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
+import { Range1d } from "../geometry3d/Range";
+import { Range1dArray } from "../numerics/Range1dArray";
 import { ClipPlane } from "./ClipPlane";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { PolygonOps } from "../geometry3d/PolygonOps";
-
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
-import { CurveCollection } from "../curve/CurveCollection";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { Arc3d } from "../curve/Arc3d";
-import { LineString3d } from "../curve/LineString3d";
-
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { Range1dArray } from "../numerics/Range1dArray";
 
 /**
  * An AlternatingConvexClipTreeNode is a node in a tree structure in which

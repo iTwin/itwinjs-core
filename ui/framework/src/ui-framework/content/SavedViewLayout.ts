@@ -6,14 +6,14 @@
  * @module ContentView
  */
 
-import { ContentLayoutProps } from "./ContentLayoutProps";
-import { ContentGroupProps, ContentGroup, ContentCallback } from "./ContentGroup";
-import { SavedViewProps, SavedView } from "./SavedView";
+import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { ContentCallback, ContentGroup, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutDef } from "./ContentLayout";
-import { ViewState, IModelConnection } from "@bentley/imodeljs-frontend";
+import { ContentLayoutProps } from "./ContentLayoutProps";
+import { SavedView, SavedViewProps } from "./SavedView";
 
 /** SavedViewLayoutProps interface for sharing view layout information.
- * @beta
+ * @public
  */
 export interface SavedViewLayoutProps {
   contentLayoutProps: ContentLayoutProps;
@@ -22,7 +22,7 @@ export interface SavedViewLayoutProps {
 }
 
 /** ViewLayout interface for sharing view layout information.
- * @beta
+ * @public
  */
 export interface ViewLayout {
   contentLayoutDef: ContentLayoutDef;
@@ -31,7 +31,7 @@ export interface ViewLayout {
 }
 
 /** SavedViewLayout class. Used to serialize/deserialize a View Layout with Saved Views.
- * @beta
+ * @public
  */
 export class SavedViewLayout {
 
