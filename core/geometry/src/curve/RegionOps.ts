@@ -39,6 +39,13 @@ import { CurveSplitContext } from "./Query/CurveSplitContext";
 import { PointInOnOutContext } from "./Query/InOutTests";
 import { PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { RegionMomentsXY } from "./RegionMomentsXY";
+import { OffsetHelpers } from "./internalContexts/MultiChainCollector";
+import { GeometryQuery } from "./GeometryQuery";
+/**
+ * Possible return types from
+ * @public
+ */
+export type ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined;
 
 /**
  * * `properties` is a string with special characters indicating
@@ -352,13 +359,13 @@ export class RegionOps {
       return loopSeeds;
     return undefined;
   }
-/**
- * Given a graph just produced by booleans, convert to a polyface
- * * "just produced" implies exterior face markup.
- *
- * @param graph
- * @param triangulate
- */
+  /**
+   * Given a graph just produced by booleans, convert to a polyface
+   * * "just produced" implies exterior face markup.
+   *
+   * @param graph
+   * @param triangulate
+   */
   private static finishGraphToPolyface(graph: HalfEdgeGraph | undefined, triangulate: boolean): Polyface | undefined {
     if (graph) {
       if (triangulate) {
@@ -519,6 +526,26 @@ export class RegionOps {
     }
     return chainCollector.grabResult();
   }
+  /**
+   * * Restructure curve fragments as chains and offsets
+   * * Return object with named chains, insideOffsets, outsideOffsets
+   * * BEWARE that if the input is not a loop the classification of outputs is suspect.
+   * @param fragments fragments to be chained
+   * @param offsetDistance offset distance.
+   */
+  public static collectInsideAndOutsideOffsets(fragments: GeometryQuery[], offsetDistance: number, gapTolerance: number): { insideOffsets: GeometryQuery[], outsideOffsets: GeometryQuery[], chains: ChainTypes } {
+    return OffsetHelpers.collectInsideAndOutsideOffsets(fragments, offsetDistance, gapTolerance);
+  }
+  /**
+   * * Restructure curve fragments as chains
+   * * Return the chains, possibly wrapped in BagOfCurves if there multiple chains.
+   * @param fragments fragments to be chained
+   * @param offsetDistance offset distance.
+   */
+  public static collectChains(fragments: GeometryQuery[], gapTolerance: number): ChainTypes {
+    return OffsetHelpers.collectChains(fragments, gapTolerance);
+  }
+
   /**
    * * Find intersections of `curvesToCut` with boundaries of `region`.
    * * Break `curvesToCut` into parts inside, outside, and coincident.

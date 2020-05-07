@@ -871,6 +871,9 @@ export enum BSplineWrapMode {
 }
 
 // @public
+export type ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined;
+
+// @public
 export enum ClipMaskXYZRangePlanes {
     All = 63,
     None = 0,
@@ -1268,7 +1271,7 @@ export abstract class CurveChain extends CurveCollection {
 export class CurveChainWireOffsetContext {
     constructor();
     static applyBasePoints(cp: CurvePrimitive | undefined, startPoint: Point3d | undefined, endPoint: Point3d | undefined): CurvePrimitive | undefined;
-    static constructCurveXYOffset(curves: Path | Loop, options: JointOptions): CurveCollection | undefined;
+    static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined;
     static createSingleOffsetPrimitiveXY(g: CurvePrimitive, distanceLeft: number): CurvePrimitive | CurvePrimitive[] | undefined;
     }
 
@@ -4408,7 +4411,13 @@ export class RegionOps {
     // @internal
     static addLoopsWithEdgeTagToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any): HalfEdge[] | undefined;
     static cloneCurvesWithXYSplitFlags(curvesToCut: CurvePrimitive | CurveCollection | undefined, cutterCurves: CurveCollection): CurveCollection | CurvePrimitive | undefined;
+    static collectChains(fragments: GeometryQuery[], gapTolerance: number): ChainTypes;
     static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean): CurvePrimitive[];
+    static collectInsideAndOutsideOffsets(fragments: GeometryQuery[], offsetDistance: number, gapTolerance: number): {
+        insideOffsets: GeometryQuery[];
+        outsideOffsets: GeometryQuery[];
+        chains: ChainTypes;
+    };
     static computeXYArea(root: AnyRegion): number | undefined;
     static computeXYAreaMoments(root: AnyRegion): MomentData | undefined;
     static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined;

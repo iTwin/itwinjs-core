@@ -194,7 +194,9 @@ class Joint {
     if (primitive)
       destination.push(primitive);
   }
-  public static collectCurvesFromChain(start: Joint, destination: CurvePrimitive[], maxTest: number = 100) {
+  public static collectCurvesFromChain(start: Joint | undefined, destination: CurvePrimitive[], maxTest: number = 100) {
+    if (start === undefined)
+      return;
     let numOut = -2 * maxTest;    // allow extra things to happen
     Joint.visitJointsOnChain(start, (joint: Joint) => {
       this.collectPrimitive(destination, joint.jointCurve);
@@ -214,8 +216,9 @@ class Joint {
   }
 
   /** Execute `joint.annotateJointMode()` at all joints on the chain. */
-  public static annotateChain(start: Joint, options: JointOptions, maxTest: number = 100) {
-    Joint.visitJointsOnChain(start, (joint: Joint) => { joint.annotateJointMode(options); return true; }, maxTest);
+  public static annotateChain(start: Joint | undefined, options: JointOptions, maxTest: number = 100) {
+    if (start)
+      Joint.visitJointsOnChain(start, (joint: Joint) => { joint.annotateJointMode(options); return true; }, maxTest);
   }
 
   /**
@@ -592,7 +595,7 @@ export class CurveChainWireOffsetContext {
         const sign = g1.sweep.sweepRadians * g1.matrixRef.coffs[8] >= 0.0 ? 1.0 : -1.0;
         const r = g1.matrixRef.columnXMagnitude();
         const r1 = r - sign * distanceLeft;
-        if (!Geometry.isSmallMetricDistance (r1)) {
+        if (!Geometry.isSmallMetricDistance(r1)) {
           const factor = r1 / r;
           const matrix = g1.matrixClone();
           matrix.scaleColumnsInPlace(factor, factor, 1.0);
@@ -635,7 +638,7 @@ export class CurveChainWireOffsetContext {
    * @param curves input curves
    * @param offsetDistanceOrOptions offset controls.
    */
-  public static constructCurveXYOffset(curves: Path | Loop, options: JointOptions): CurveCollection | undefined {
+  private static constructCurveXYOffsetGo(curves: Path | Loop, options: JointOptions): CurveCollection | undefined {
     const wrap = curves instanceof Loop;
     if (options === undefined)
       return undefined;
@@ -655,18 +658,23 @@ export class CurveChainWireOffsetContext {
         }
       }
     }
-    let fragment0 = simpleOffsets[0];
-    const joint0 = new Joint(undefined, fragment0, fragment0.fractionToPoint(0.0));
+    let fragment0;
     let newJoint;
-    let previousJoint = joint0;
-    for (let i = 1; i < simpleOffsets.length; i++) {
-      const fragment1 = simpleOffsets[i];
-      newJoint = new Joint(fragment0, fragment1, fragment1.fractionToPoint(0.0));
-      Joint.link(previousJoint, newJoint);
-      previousJoint = newJoint;
-      fragment0 = fragment1;
+    let previousJoint;
+    let joint0;
+    for (const fragment1 of simpleOffsets) {
+      if (fragment1) {
+        newJoint = new Joint(fragment0, fragment1, fragment1.fractionToPoint(0.0));
+        if (newJoint !== undefined)
+          if (joint0 === undefined)
+            joint0 = newJoint;
+        if (previousJoint)
+          Joint.link(previousJoint, newJoint);
+        previousJoint = newJoint;
+        fragment0 = fragment1;
+      }
     }
-    if (curves instanceof Loop)
+    if (joint0 && previousJoint && curves instanceof Loop)
       Joint.link(previousJoint, joint0);
 
     const numOffset = simpleOffsets.length;
@@ -675,5 +683,14 @@ export class CurveChainWireOffsetContext {
     const outputCurves: CurvePrimitive[] = [];
     Joint.collectCurvesFromChain(joint0, outputCurves, numOffset);
     return RegionOps.createLoopPathOrBagOfCurves(outputCurves, wrap);
+  }
+  /**
+   * Construct offset curves as viewed in xy.
+   * @param curves base curves.
+   * @param offsetDistanceOrOptions distance (positive left, negative right) or options.
+   */
+  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined {
+    const options = JointOptions.create(offsetDistanceOrOptions);
+    return this.constructCurveXYOffsetGo(curves, options);
   }
 }
