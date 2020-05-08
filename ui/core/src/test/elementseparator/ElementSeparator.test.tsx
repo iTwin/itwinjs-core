@@ -10,6 +10,21 @@ import { ElementSeparator, RatioChangeResult } from "../../ui-core/elementsepara
 import { Orientation } from "../../ui-core/enums/Orientation";
 
 describe("ElementSeparator", () => {
+  let clock: sinon.SinonFakeTimers;
+  before(() => {
+    clock = sinon.useFakeTimers({ now: Date.now() });
+  });
+
+  after(() => {
+    clock.restore();
+  });
+
+  const throttleMs = 16;
+  function moveElement(moveAmount: { clientX: number } | { clientY: number }, moveDelayMs: number = throttleMs) {
+    document.dispatchEvent(new MouseEvent("pointermove", moveAmount));
+    clock.tick(moveDelayMs);
+  }
+
   type UncontrolledRatioCallback = sinon.SinonSpy<[number], void>;
   type ControlledRatioCallback = sinon.SinonSpy<[number], RatioChangeResult>;
   type TestRatioCallbackTypes = { onRatioChanged: UncontrolledRatioCallback } | { onRatioChanged: ControlledRatioCallback };
@@ -18,9 +33,6 @@ describe("ElementSeparator", () => {
     Uncontrolled,
     Controlled,
   }
-
-  setupElementSeparatorCallbackIndifferentTests(TestCallbackType.Controlled);
-  setupElementSeparatorCallbackIndifferentTests(TestCallbackType.Uncontrolled);
 
   function setupElementSeparatorCallbackIndifferentTests(callbackType: TestCallbackType) {
     const testCaseName = TestCallbackType[callbackType];
@@ -54,9 +66,9 @@ describe("ElementSeparator", () => {
           />);
 
         elementSeparator.simulate("pointerdown", { clientX: 50 });
-        document.dispatchEvent(new MouseEvent("pointermove", { clientX: 70 }));
+        moveElement({ clientX: 70 });
 
-        expect(onRatioChanged.calledOnce, "Called more or less than once").to.be.true;
+        expect(onRatioChanged.callCount).to.be.equal(1);
         expect(onRatioChanged.calledWith(0.7), "Called with wrong argument").to.be.true;
       });
 
@@ -70,13 +82,13 @@ describe("ElementSeparator", () => {
           />);
 
         elementSeparator.simulate("pointerdown", { clientY: 50 });
-        document.dispatchEvent(new MouseEvent("pointermove", { clientY: 70 }));
+        moveElement({ clientY: 70 });
 
-        expect(onRatioChanged.calledOnce, "Called more or less than once").to.be.true;
+        expect(onRatioChanged.callCount).to.be.equal(1);
         expect(onRatioChanged.calledWith(0.7), "Called with wrong argument").to.be.true;
       });
 
-      it("does not call onRatioChanged when it gets dragged too little", () => {
+      it("calls onRatioChanged when it gets dragged 1px", () => {
         const elementSeparator = mount(
           <ElementSeparator
             orientation={Orientation.Horizontal}
@@ -86,12 +98,12 @@ describe("ElementSeparator", () => {
           />);
 
         elementSeparator.simulate("pointerdown", { clientX: 50 });
-        document.dispatchEvent(new MouseEvent("pointermove", { clientX: 51 }));
+        moveElement({ clientX: 51 });
 
-        expect(onRatioChanged.notCalled).to.be.true;
+        expect(onRatioChanged.callCount).to.be.equal(1);
       });
 
-      it("stops calling onRatioChanged when dragging stops", async () => {
+      it("calls onRatioChanged only once when moved multiple times in the same throttle frame", async () => {
         const elementSeparator = mount(
           <ElementSeparator
             orientation={Orientation.Horizontal}
@@ -101,14 +113,34 @@ describe("ElementSeparator", () => {
           />);
 
         elementSeparator.simulate("pointerdown", { clientX: 50 });
-        document.dispatchEvent(new MouseEvent("pointermove", { clientX: 70 }));
+        moveElement({ clientX: 60 }, 1);
+        moveElement({ clientX: 80 }, 1);
 
-        expect(onRatioChanged.calledOnce, "Called more or less than once").to.be.true;
+        clock.tick(throttleMs);
+
+        expect(onRatioChanged.callCount).to.be.equal(1);
+        expect(onRatioChanged.calledWith(0.8)).to.be.true;
+
+      });
+
+      it("stops calling onRatioChanged when dragging stops", () => {
+        const elementSeparator = mount(
+          <ElementSeparator
+            orientation={Orientation.Horizontal}
+            movableArea={100}
+            ratio={0.5}
+            {...props}
+          />);
+
+        elementSeparator.simulate("pointerdown", { clientX: 50 });
+        moveElement({ clientX: 70 });
+
+        expect(onRatioChanged.callCount).to.be.equal(1);
 
         document.dispatchEvent(new MouseEvent("pointerup"));
-        document.dispatchEvent(new MouseEvent("pointermove", { clientX: 90 }));
+        moveElement({ clientX: 90 });
 
-        expect(onRatioChanged.calledOnce, "Called when dragging stopped").to.be.true;
+        expect(onRatioChanged.callCount, "Called when dragging stopped").to.be.equal(1);
       });
 
       it("does not call onRatioChanged when dragging without movableArea set", () => {
@@ -120,9 +152,9 @@ describe("ElementSeparator", () => {
           />);
 
         elementSeparator.simulate("pointerdown", { clientX: 50 });
-        document.dispatchEvent(new MouseEvent("pointermove", { clientX: 70 }));
+        moveElement({ clientX: 70 });
 
-        expect(onRatioChanged.notCalled).to.be.true;
+        expect(onRatioChanged.callCount).to.be.equal(0);
       });
 
       it("stops calling onRatioChanged when pointerdown event happens while still dragging", () => {
@@ -135,14 +167,14 @@ describe("ElementSeparator", () => {
           />);
 
         elementSeparator.simulate("pointerdown", { clientX: 50 });
-        document.dispatchEvent(new MouseEvent("pointermove", { clientX: 70 }));
+        moveElement({ clientX: 70 });
 
-        expect(onRatioChanged.calledOnce, "Called more or less than once").to.be.true;
+        expect(onRatioChanged.callCount).to.be.equal(1);
 
         elementSeparator.simulate("pointerdown", { clientY: 70 });
-        document.dispatchEvent(new MouseEvent("pointermove", { clientX: 90 }));
+        moveElement({ clientX: 90 });
 
-        expect(onRatioChanged.calledOnce, "Called when dragging stopped").to.be.true;
+        expect(onRatioChanged.callCount, "Called when dragging stopped").to.be.equal(1);
       });
 
       it("should not have hover classes when element created", () => {
@@ -221,10 +253,10 @@ describe("ElementSeparator", () => {
           />);
 
         elementSeparator.simulate("pointerdown");
-        expect(onDragChanged.calledOnce, "Was not called on pointer down").to.be.true;
+        expect(onDragChanged.callCount, "Was not called on pointer down").to.be.equal(1);
 
         document.dispatchEvent(new MouseEvent("pointerup"));
-        expect(onDragChanged.calledTwice, "Was not called on pointer up").to.be.true;
+        expect(onDragChanged.callCount, "Was not called on pointer up").to.be.equal(2);
       });
 
       it("should have hover class when pointer down", () => {
@@ -352,6 +384,9 @@ describe("ElementSeparator", () => {
     });
   }
 
+  setupElementSeparatorCallbackIndifferentTests(TestCallbackType.Controlled);
+  setupElementSeparatorCallbackIndifferentTests(TestCallbackType.Uncontrolled);
+
   it("should update ratio if update is not needed but element hovered", () => {
     const onRatioChanged = sinon.spy();
 
@@ -365,13 +400,13 @@ describe("ElementSeparator", () => {
 
     elementSeparator.simulate("pointerover");
     elementSeparator.simulate("pointerdown", { clientX: 50 });
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 70 }));
+    moveElement({ clientX: 70 });
     elementSeparator.mount();
 
-    expect(onRatioChanged.calledOnce, "Called more or less than once").to.be.true;
+    expect(onRatioChanged.callCount).to.be.equal(1);
 
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 90 }));
-    expect(onRatioChanged.calledTwice, "Called more or less than twice").to.be.true;
+    moveElement({ clientX: 90 });
+    expect(onRatioChanged.callCount).to.be.equal(2);
   });
 
   it("should update ratio if update is needed but element not hovered", () => {
@@ -386,11 +421,11 @@ describe("ElementSeparator", () => {
       />);
 
     elementSeparator.simulate("pointerdown", { clientX: 50 });
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 70 }));
-    expect(onRatioChanged.calledOnce, "Called more or less than once").to.be.true;
+    moveElement({ clientX: 70 });
+    expect(onRatioChanged.callCount).to.be.equal(1);
 
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 90 }));
-    expect(onRatioChanged.calledTwice, "Called more or less than twice").to.be.true;
+    moveElement({ clientX: 90 });
+    expect(onRatioChanged.callCount).to.be.equal(2);
   });
 
   it("should update ratio if update is needed and element is hovered", () => {
@@ -406,11 +441,11 @@ describe("ElementSeparator", () => {
 
     elementSeparator.simulate("pointerover");
     elementSeparator.simulate("pointerdown", { clientX: 50 });
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 70 }));
-    expect(onRatioChanged.calledOnce, "Called more or less than once").to.be.true;
+    moveElement({ clientX: 70 });
+    expect(onRatioChanged.callCount).to.be.equal(1);
 
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 90 }));
-    expect(onRatioChanged.calledTwice, "Called more or less than twice").to.be.true;
+    moveElement({ clientX: 90 });
+    expect(onRatioChanged.callCount).to.be.equal(2);
   });
 
   it("should not update ratio if update is not needed and element is not hovered (draggable area left)", () => {
@@ -425,11 +460,11 @@ describe("ElementSeparator", () => {
       />);
 
     elementSeparator.simulate("pointerdown", { clientX: 50 });
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 70 }));
-    expect(onRatioChanged.calledOnce, "First ratio change should always be called").to.be.true;
+    moveElement({ clientX: 70 });
+    expect(onRatioChanged.callCount, "First ratio change should always be called").to.be.equal(1);
 
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 90 }));
-    expect(onRatioChanged.calledOnce, "Called ratio change when it was not hovered and update was not needed").to.be.true;
+    moveElement({ clientX: 90 });
+    expect(onRatioChanged.callCount, "Called ratio change when it was not hovered and update was not needed").to.be.equal(1);
   });
 
   it("should start updating on hover after leaving draggable area", () => {
@@ -444,14 +479,14 @@ describe("ElementSeparator", () => {
       />);
 
     elementSeparator.simulate("pointerdown", { clientX: 50 });
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 70 }));
-    expect(onRatioChanged.calledOnce, "First ratio change should always be called").to.be.true;
+    moveElement({ clientX: 70 });
+    expect(onRatioChanged.callCount, "First ratio change should always be called").to.be.equal(1);
 
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 90 }));
-    expect(onRatioChanged.calledOnce, "Called ratio change when it was not hovered and update was not needed").to.be.true;
+    moveElement({ clientX: 90 });
+    expect(onRatioChanged.callCount, "Called ratio change when it was not hovered and update was not needed").to.be.equal(1);
 
     elementSeparator.simulate("pointerover");
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 40 }));
-    expect(onRatioChanged.calledTwice, "Ratio change should be called again after pointer is hovering").to.be.true;
+    moveElement({ clientX: 40 });
+    expect(onRatioChanged.callCount, "Ratio change should be called again after pointer is hovering").to.be.equal(2);
   });
 });

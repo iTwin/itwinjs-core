@@ -8,10 +8,11 @@
 
 import "./ElementSeparator.scss";
 import * as React from "react";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"; // tslint:disable-line: no-duplicate-imports
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"; // tslint:disable-line: no-duplicate-imports
 import classnames from "classnames";
 import { Orientation } from "../enums/Orientation";
 import { CommonProps } from "../utils/Props";
+import { useThrottledFn } from "../utils/hooks/useThrottledFn";
 
 /**
  * Results returned by onRatioChanged callback for determining new ratio and whether the ratio was updated.
@@ -57,10 +58,8 @@ const useElementSeparatorPointerHandler = ({
   movableArea,
   ratio,
   orientation,
-  // tslint:disable-next-line: deprecation
   onRatioChanged,
 }: ElementSeparatorProps) => {
-  const updateThreshold = 3;
   const globalPosition = useRef(0);
   const pointerOutOfBounds = useRef(false);
 
@@ -94,7 +93,7 @@ const useElementSeparatorPointerHandler = ({
     stopDrag();
   }, [stopDrag]);
 
-  const onPointerMove = useCallback((e: PointerEvent | React.PointerEvent) => {
+  const onThrottledPointerMove = useThrottledFn((e: PointerEvent | React.PointerEvent) => {
     if (!movableArea) {
       stopDrag();
       return;
@@ -102,10 +101,6 @@ const useElementSeparatorPointerHandler = ({
 
     const currentPosition = getCurrentGlobalPosition(orientation, e);
     const positionChange = currentPosition - globalPosition.current;
-
-    // Limit update count
-    if (Math.abs(positionChange) < updateThreshold)
-      return;
 
     const currentLocalPosition = movableArea * ratio + positionChange;
     const newRatio = currentLocalPosition / movableArea;
@@ -117,20 +112,23 @@ const useElementSeparatorPointerHandler = ({
     const result = onRatioChanged(newRatio);
     if (result === undefined && !isElementHovered && !pointerOutOfBounds.current)
       pointerOutOfBounds.current = true;
+  }, 16, [stopDrag, isElementHovered, ratio, movableArea, onRatioChanged, orientation]);
 
-  }, [stopDrag, isElementHovered, ratio, movableArea, onRatioChanged, orientation]);
+  useEffect(() => {
+    return () => onThrottledPointerMove.cancel();
+  }, [onThrottledPointerMove]);
 
   useLayoutEffect(() => {
     if (isElementDragged) {
       document.addEventListener("pointerup", onPointerUp);
-      document.addEventListener("pointermove", onPointerMove);
+      document.addEventListener("pointermove", onThrottledPointerMove);
     }
 
     return () => {
       document.removeEventListener("pointerup", onPointerUp);
-      document.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointermove", onThrottledPointerMove);
     };
-  }, [isElementDragged, onPointerUp, onPointerMove]);
+  }, [isElementDragged, onPointerUp, onThrottledPointerMove]);
 
   const onPointerDown = useCallback((e: PointerEvent | React.PointerEvent) => {
     if (!isGroupDragged) {

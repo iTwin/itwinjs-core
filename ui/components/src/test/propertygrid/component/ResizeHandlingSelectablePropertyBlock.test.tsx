@@ -5,16 +5,29 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
+import sinon from "sinon";
 import { Orientation } from "@bentley/ui-core";
 import { ResizeHandlingSelectablePropertyBlock, ResizeHandlingSelectablePropertyBlockProps } from "../../../ui-components/propertygrid/component/ResizeHandlingSelectablePropertyBlock";
 import TestUtils from "../../TestUtils";
 
-describe("SelectablePropertyBlock", () => {
+describe("ResizeHandlingSelectablePropertyBlock", () => {
+  let clock: sinon.SinonFakeTimers;
   let props: ResizeHandlingSelectablePropertyBlockProps;
 
+  const throttleMs = 16;
   before(async () => {
+    clock = sinon.useFakeTimers({ now: Date.now() });
     await TestUtils.initializeUiComponents();
   });
+
+  after(() => {
+    clock.restore();
+  });
+
+  function moveElement(moveAmount: { clientX: number } | { clientY: number }, moveDelayMs: number = throttleMs) {
+    document.dispatchEvent(new MouseEvent("pointermove", moveAmount));
+    clock.tick(moveDelayMs);
+  }
 
   beforeEach(() => {
     props = {
@@ -59,7 +72,7 @@ describe("SelectablePropertyBlock", () => {
 
       const elementSeparator = propertyBlockMount.find(".core-element-separator").first();
       elementSeparator.simulate("pointerdown", { clientX: 10 });
-      document.dispatchEvent(new MouseEvent("pointermove", { clientX: 40 }));
+      moveElement({ clientX: 40 });
       document.dispatchEvent(new MouseEvent("pointerup"));
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.55);
@@ -74,7 +87,7 @@ describe("SelectablePropertyBlock", () => {
 
       const elementSeparator = propertyBlockMount.find(".core-element-separator").first();
       elementSeparator.simulate("pointerdown", { clientX: 30 });
-      document.dispatchEvent(new MouseEvent("pointermove", { clientX: 0 }));
+      moveElement({ clientX: 0 });
       document.dispatchEvent(new MouseEvent("pointerup"));
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.15);
@@ -89,7 +102,7 @@ describe("SelectablePropertyBlock", () => {
 
       const elementSeparator = propertyBlockMount.find(".core-element-separator").first();
       elementSeparator.simulate("pointerdown", { clientX: 25 });
-      document.dispatchEvent(new MouseEvent("pointermove", { clientX: 90 }));
+      moveElement({ clientX: 90 });
       document.dispatchEvent(new MouseEvent("pointerup"));
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.6);
@@ -129,7 +142,7 @@ describe("SelectablePropertyBlock", () => {
 
       const elementSeparator = propertyBlockMount.find(".core-element-separator").first();
       elementSeparator.simulate("pointerdown", { clientX: 240 });
-      document.dispatchEvent(new MouseEvent("pointermove", { clientX: 490 }));
+      moveElement({ clientX: 490 });
       document.dispatchEvent(new MouseEvent("pointerup"));
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.5);
@@ -147,7 +160,7 @@ describe("SelectablePropertyBlock", () => {
 
       const elementSeparator = propertyBlockMount.find(".core-element-separator").first();
       elementSeparator.simulate("pointerdown", { clientX: 255 });
-      document.dispatchEvent(new MouseEvent("pointermove", { clientX: 0 }));
+      moveElement({ clientX: 0 });
       document.dispatchEvent(new MouseEvent("pointerup"));
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.1);
@@ -165,11 +178,10 @@ describe("SelectablePropertyBlock", () => {
 
       const elementSeparator = propertyBlockMount.find(".core-element-separator").first();
       elementSeparator.simulate("pointerdown", { clientX: 250 });
-      document.dispatchEvent(new MouseEvent("pointermove", { clientX: 950 }));
+      moveElement({ clientX: 950 });
       document.dispatchEvent(new MouseEvent("pointerup"));
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.8);
     });
   });
-
 });
