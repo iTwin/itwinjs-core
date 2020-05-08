@@ -2707,7 +2707,7 @@ export class ExternalServerExtensionLoader implements ExtensionLoader {
     // (undocumented)
     getExtensionName(extensionRoot: string): string;
     // (undocumented)
-    loadExtension(extensionName: string, _extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
+    loadExtension(extensionName: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
     // (undocumented)
     resolveResourceUrl(extensionName: string, relativeUrl: string): string;
     // (undocumented)
