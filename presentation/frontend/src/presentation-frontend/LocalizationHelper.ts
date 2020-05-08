@@ -59,7 +59,7 @@ export class LocalizationHelper {
       compositeValue.values.map((value) => this.translateLabelDefinition(value));
     };
 
-    if (labelDefinition.typeName === "composite")
+    if (labelDefinition.typeName === LabelDefinition.COMPOSITE_DEFINITION_TYPENAME)
       translateComposite(labelDefinition.rawValue as LabelCompositeValue);
     else if (labelDefinition.typeName === "string")
       labelDefinition.rawValue = this.translate(labelDefinition.rawValue as string);

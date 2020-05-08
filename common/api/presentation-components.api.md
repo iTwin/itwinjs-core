@@ -316,6 +316,8 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
 
 // @public
 export interface PresentationTreeDataProviderProps {
+    // @beta (undocumented)
+    appendChildrenCountForGroupingNodes?: boolean;
     imodel: IModelConnection;
     pagingSize?: number;
     ruleset: string | Ruleset;
