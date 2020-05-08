@@ -150,6 +150,9 @@
     "AttachRealityModelTool": {
       "keyin": "fdt attach reality properties"
     },
+    "ExtensionService": {
+      "keyin": "fdt add extensionService"
+    },
     "SaveRealityModelTool": {
       "keyin": "fdt save reality properties"
     }

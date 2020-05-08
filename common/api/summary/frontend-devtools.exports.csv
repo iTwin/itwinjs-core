@@ -51,6 +51,7 @@ alpha;DumpPlanProjectionSettingsTool
 beta;ElementIdFromSourceAspectIdTool 
 beta;class EmphasizeElementsTool 
 beta;EmphasizeSelectedElementsTool 
+internal;ExtensionServiceTool 
 beta;FadeOutTool 
 beta;FpsTracker
 beta;FreezeSceneTool 

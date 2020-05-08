@@ -36,6 +36,8 @@
     "@bentley/imodeljs-common": "2.1.0-dev.5",
     "@bentley/bentleyjs-core": "2.1.0-dev.5",
     "@bentley/geometry-core": "2.1.0-dev.5",
+    "@bentley/itwin-client": "2.1.0-dev.5",
+    "@bentley/context-registry-client": "2.1.0-dev.5",
     "file-saver": "^2.0.2"
   },
   "peerDependencies": {},

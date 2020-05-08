@@ -35,6 +35,7 @@ import {
   ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool,
   ShowTileVolumesTool, Toggle3dManipulationsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool,
 } from "./tools/ViewportTools";
+import { ExtensionServiceTool } from "./tools/ExtensionServiceTool";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -72,6 +73,7 @@ export class FrontendDevTools {
       DumpPlanProjectionSettingsTool,
       ElementIdFromSourceAspectIdTool,
       EmphasizeSelectedElementsTool,
+      ExtensionServiceTool,
       FadeOutTool,
       FreezeSceneTool,
       InspectElementTool,

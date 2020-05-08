@@ -478,6 +478,20 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
     static toolId: string;
     }
 
+// @internal
+export class ExtensionServiceTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): undefined;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(args: any[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export class FadeOutTool extends Tool {
     // (undocumented)

@@ -144,3 +144,8 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt sourceId from elemId` and `fdt elemId from sourceId` - Converts between the Id of an element in the iModel and the corresponding object in the source document from which it originated. Outputs the result to IModelApp.notifications.
 *   * `id=`: the source aspect Id or element Id.
 *   * `copy=`: (optional) 1 to copy the resultant Id to the system clipboard.
+* `fdt add extensionService <context>` - Adds a context id to be used with Extension Service. It's added to the front of loaders list, so the most recently added context will get used first. `<context>` can be one of the following:
+  * `id <id>`, where `<id>` is a Connected Context GUID.
+  * `project <projectName>`.
+  * `asset <assetName>`.
+  * `public` - loads Bentley-published public extensions.
