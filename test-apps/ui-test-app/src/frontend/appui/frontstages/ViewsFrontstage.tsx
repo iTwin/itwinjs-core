@@ -624,6 +624,15 @@ class AdditionalTools {
     ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(130, AppTools.toolWithSettings, { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(135, AppTools.toggleHideShowItemsCommand, { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(140, new CommandItemDef({
+      commandId: "Show widget",
+      iconSpec: "icon-placeholder",
+      label: "Show widget",
+      execute: () => {
+        UiFramework.layoutManager.showWidget("uitestapp-test-wd3");
+        UiFramework.layoutManager.expandWidget("uitestapp-test-wd3");
+      },
+    }), { groupPriority: 30 }),
     this.formatGroupItemsItem(),
   ];
 

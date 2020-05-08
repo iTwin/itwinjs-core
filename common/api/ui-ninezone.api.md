@@ -6,6 +6,7 @@
 
 import { CommonProps } from '@bentley/ui-core';
 import * as CSS from 'csstype';
+import { Draft } from 'immer';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { Omit } from '@bentley/ui-core';
 import { OmitChildrenProp } from '@bentley/ui-core';
@@ -511,6 +512,9 @@ export function FloatingTab(): JSX.Element;
 
 // @internal (undocumented)
 export const FloatingWidget: React.NamedExoticComponent<FloatingWidgetProps>;
+
+// @internal (undocumented)
+export function floatingWidgetBringToFront(state: Draft<NineZoneState>, floatingWidgetId: FloatingWidgetState["id"]): void;
 
 // @internal
 export interface FloatingWidgetBringToFrontAction {

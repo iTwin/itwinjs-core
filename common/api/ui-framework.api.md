@@ -47,10 +47,12 @@ import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DndComponentClass } from 'react-dnd';
+import { Draft } from 'immer';
 import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
+import { FloatingWidgetState } from '@bentley/ui-ninezone';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -127,6 +129,7 @@ import { Store } from 'redux';
 import { StringGetter } from '@bentley/ui-abstract';
 import { Tab } from '@bentley/ui-ninezone';
 import { TabMode } from '@bentley/ui-ninezone';
+import { TabState } from '@bentley/ui-ninezone';
 import { TimelineDataProvider } from '@bentley/ui-components';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
@@ -162,6 +165,7 @@ import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
 import { WidgetState as WidgetState_2 } from '@bentley/ui-abstract';
+import { WidgetState as WidgetState_3 } from '@bentley/ui-ninezone';
 import { WidgetZoneId } from '@bentley/ui-ninezone';
 import { XAndY } from '@bentley/geometry-core';
 import { ZoneManagerProps } from '@bentley/ui-ninezone';
@@ -1661,6 +1665,9 @@ export interface ExtensibleToolbarProps {
     usage: ToolbarUsage;
 }
 
+// @internal (undocumented)
+export function findTab(state: Draft<NineZoneState>, id: TabState["id"]): FindTabType;
+
 // @public
 export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
     // (undocumented)
@@ -1851,7 +1858,7 @@ export interface FrameworkZoneProps extends CommonProps {
 }
 
 // @public
-export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
+export class Frontstage extends React.Component<FrontstageProps, FrontstageState_2> {
     // @internal
     constructor(props: FrontstageProps);
     // @internal
@@ -1870,13 +1877,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     }
 
 // @internal (undocumented)
-export const FRONTSTAGE_INITIALIZE = "FRONTSTAGE_INITIALIZE";
-
-// @internal (undocumented)
-export const FRONTSTAGE_STATE_SETTING_LOAD = "FRONTSTAGE_STATE_SETTING_LOAD";
-
-// @internal (undocumented)
-export type FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction;
+export type FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction | WidgetTabShowAction | WidgetTabExpandAction;
 
 // @public
 export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> {
@@ -2041,7 +2042,7 @@ export interface FrontstageInitializeAction {
     // (undocumented)
     readonly frontstage: FrontstageDef | undefined;
     // (undocumented)
-    readonly type: typeof FRONTSTAGE_INITIALIZE;
+    readonly type: "FRONTSTAGE_INITIALIZE";
 }
 
 // @public
@@ -2207,11 +2208,22 @@ export interface FrontstageRuntimeProps {
 }
 
 // @internal (undocumented)
+export interface FrontstageState {
+    // (undocumented)
+    setting: FrontstageStateSetting;
+    // (undocumented)
+    status: "LOADING" | "DONE";
+}
+
+// @internal (undocumented)
+export const FrontstageStateReducer: (state: FrontstageState, action: FrontstageActionTypes) => FrontstageState;
+
+// @internal (undocumented)
 export interface FrontstageStateSettingLoadAction {
     // (undocumented)
     readonly setting: FrontstageStateSetting | undefined;
     // (undocumented)
-    readonly type: typeof FRONTSTAGE_STATE_SETTING_LOAD;
+    readonly type: "FRONTSTAGE_STATE_SETTING_LOAD";
 }
 
 // @public
@@ -2514,7 +2526,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
 }
 
 // @internal (undocumented)
-export function initializeFrontstageState({ frontstage }: InitializeFrontstageStateArgs): FrontstageState_2;
+export function initializeFrontstageState({ frontstage }: InitializeFrontstageStateArgs): FrontstageState;
 
 // @alpha (undocumented)
 export class InputEditorCommitHandler {
@@ -2845,6 +2857,26 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
     minSizeBottom?: number;
     minSizeTop?: number;
     top: LayoutFragmentProps | number;
+}
+
+// @beta
+export class LayoutManager {
+    expandWidget(widgetId: WidgetDef["id"]): void;
+    // @internal (undocumented)
+    readonly onLayoutManagerDispatchActionEvent: LayoutManagerDispatchActionEvent;
+    showWidget(widgetId: WidgetDef["id"]): void;
+}
+
+// @internal (undocumented)
+export class LayoutManagerDispatchActionEvent extends UiEvent<LayoutManagerDispatchActionEventArgs> {
+}
+
+// @internal (undocumented)
+export interface LayoutManagerDispatchActionEventArgs {
+    // (undocumented)
+    action: "show" | "expand";
+    // (undocumented)
+    widgetId: WidgetDef["id"];
 }
 
 // @public
@@ -5064,6 +5096,8 @@ export class UiFramework {
     static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
     // (undocumented)
     static isMobile(): boolean;
+    // @beta
+    static get layoutManager(): LayoutManager;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal
@@ -5181,7 +5215,7 @@ export const useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly 
 export function useFrameworkVersion(): FrameworkVersion;
 
 // @internal (undocumented)
-export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [FrontstageState_2, React.Dispatch<FrontstageActionTypes>];
+export function useFrontstageDefNineZone(frontstage: FrontstageDef | undefined): [FrontstageState, React.Dispatch<FrontstageActionTypes>];
 
 // @internal (undocumented)
 export const useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems;
@@ -5191,6 +5225,9 @@ export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
 
 // @beta
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
+
+// @internal (undocumented)
+export function useLayoutManager(dispatch: React.Dispatch<FrontstageActionTypes>): void;
 
 // @public
 export class UserProfileBackstageItem extends React.PureComponent<UserProfileBackstageItemProps> {
@@ -5207,7 +5244,7 @@ export interface UserProfileBackstageItemProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function useSaveFrontstageSettings(frontstageState: FrontstageState_2): void;
+export function useSaveFrontstageSettings(frontstageState: FrontstageState): void;
 
 // @internal (undocumented)
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
@@ -5900,10 +5937,26 @@ export interface WidgetTab {
     readonly title: string;
 }
 
+// @internal (undocumented)
+export interface WidgetTabExpandAction {
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    readonly type: "WIDGET_TAB_EXPAND";
+}
+
 // @internal
 export type WidgetTabs = {
     readonly [id in WidgetZoneId]: ReadonlyArray<WidgetTab>;
 };
+
+// @internal (undocumented)
+export interface WidgetTabShowAction {
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    readonly type: "WIDGET_TAB_SHOW";
+}
 
 // @public
 export enum WidgetType {

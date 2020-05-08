@@ -231,5 +231,4 @@ export class WidgetManager {
 
     return widgetDefs.length > 0 ? widgetDefs : undefined;
   }
-
 }

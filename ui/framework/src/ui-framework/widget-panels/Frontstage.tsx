@@ -7,12 +7,12 @@
  * @module Frontstage
  */
 import "./Frontstage.scss";
-import produce, { castDraft } from "immer";
+import produce, { castDraft, Draft } from "immer";
 import * as React from "react";
 import { UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, createNineZoneState, FloatingWidgets, NineZoneActionTypes, NineZoneProvider, NineZoneState, NineZoneStateReducer, PanelSide,
-  WidgetPanels,
+  addPanelWidget, addTab, createNineZoneState, floatingWidgetBringToFront, FloatingWidgets, FloatingWidgetState, NineZoneActionTypes, NineZoneProvider,
+  NineZoneState, NineZoneStateReducer, PanelSide, TabState, WidgetPanels, WidgetState,
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef } from "../frontstage/FrontstageDef";
@@ -26,6 +26,8 @@ import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "./ModalFr
 import { WidgetPanelsStatusBar } from "./StatusBar";
 import { WidgetPanelsToolbars } from "./Toolbars";
 import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
+import { LayoutManagerDispatchActionEventArgs } from "./LayoutManager";
+import { UiFramework } from "../UiFramework";
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // tslint:disable-line: variable-name no-shadowed-variable
@@ -55,13 +57,14 @@ const widgetPanelsFrontstage = <WidgetPanelsFrontstageComponent />;
 /** @internal */
 export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage() { // tslint:disable-line: variable-name no-shadowed-variable
   const frontstageDef = useActiveFrontstageDef();
-  const [frontstageState, nineZoneDispatch] = useFrontstageDefNineZone(frontstageDef);
+  const [frontstageState, dispatch] = useFrontstageDefNineZone(frontstageDef);
   useSaveFrontstageSettings(frontstageState);
+  useLayoutManager(dispatch);
   if (!frontstageDef)
     return null;
   return (
     <NineZoneProvider
-      dispatch={nineZoneDispatch}
+      dispatch={dispatch}
       state={frontstageState.setting.nineZone}
       widgetContent={widgetContent}
       toolSettingsContent={toolSettingsContent}
@@ -262,30 +265,39 @@ export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined
 }
 
 /** @internal */
-export const FRONTSTAGE_INITIALIZE = "FRONTSTAGE_INITIALIZE";
-
-/** @internal */
-export const FRONTSTAGE_STATE_SETTING_LOAD = "FRONTSTAGE_STATE_SETTING_LOAD";
-
-/** @internal */
 export interface FrontstageInitializeAction {
-  readonly type: typeof FRONTSTAGE_INITIALIZE;
+  readonly type: "FRONTSTAGE_INITIALIZE";
   readonly frontstage: FrontstageDef | undefined;
 }
 
 /** @internal */
 export interface FrontstageStateSettingLoadAction {
-  readonly type: typeof FRONTSTAGE_STATE_SETTING_LOAD;
+  readonly type: "FRONTSTAGE_STATE_SETTING_LOAD";
   readonly setting: FrontstageStateSetting | undefined;
+}
+
+/** @internal */
+export interface WidgetTabShowAction {
+  readonly type: "WIDGET_TAB_SHOW";
+  readonly id: string;
+}
+
+/** @internal */
+export interface WidgetTabExpandAction {
+  readonly type: "WIDGET_TAB_EXPAND";
+  readonly id: string;
 }
 
 /** @internal */
 export type FrontstageActionTypes =
   NineZoneActionTypes |
   FrontstageInitializeAction |
-  FrontstageStateSettingLoadAction;
+  FrontstageStateSettingLoadAction |
+  WidgetTabShowAction |
+  WidgetTabExpandAction;
 
-interface FrontstageState {
+/** @internal */
+export interface FrontstageState {
   setting: FrontstageStateSetting;
   status: "LOADING" | "DONE";
 }
@@ -298,29 +310,108 @@ interface FrontstageStateSetting {
 }
 
 /** @internal */
-export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [FrontstageState, React.Dispatch<FrontstageActionTypes>] {
+export const FrontstageStateReducer: (state: FrontstageState, action: FrontstageActionTypes) => FrontstageState = produce(( // tslint:disable-line: variable-name
+  state: Draft<FrontstageState>,
+  action: FrontstageActionTypes,
+) => {
+  switch (action.type) {
+    case "FRONTSTAGE_INITIALIZE": {
+      return initializeFrontstageState({ frontstage: action.frontstage });
+    }
+    case "FRONTSTAGE_STATE_SETTING_LOAD": {
+      state.setting = castDraft(action.setting) || state.setting;
+      state.status = "DONE";
+      return;
+    }
+    case "WIDGET_TAB_SHOW": {
+      const nineZone = state.setting.nineZone;
+      const location = findTab(nineZone, action.id);
+      if (!location)
+        return;
+      const widget = nineZone.widgets[location.widgetId];
+      if ("side" in location) {
+        const panel = nineZone.panels[location.side];
+        panel.collapsed = false;
+        widget.minimized = false;
+        widget.activeTabId = action.id;
+        return;
+      }
+      widget.minimized = false;
+      floatingWidgetBringToFront(nineZone, location.floatingWidgetId);
+      return;
+    }
+    case "WIDGET_TAB_EXPAND": {
+      const nineZone = state.setting.nineZone;
+      const location = findTab(nineZone, action.id);
+      if (!location)
+        return;
+      const widget = nineZone.widgets[location.widgetId];
+      if ("side" in location) {
+        const panel = nineZone.panels[location.side];
+        panel.widgets.forEach((wId) => {
+          const w = nineZone.widgets[wId];
+          w.minimized = true;
+        });
+        widget.minimized = false;
+        return;
+      }
+      widget.minimized = false;
+      return;
+    }
+    default: {
+      state.setting.nineZone = castDraft(NineZoneStateReducer(state.setting.nineZone, action));
+      return;
+    }
+  }
+});
+
+const sides: PanelSide[] = ["bottom", "left", "right", "top"];
+
+type FindTabType = undefined |
+{ widgetId: WidgetState["id"], side: PanelSide } |
+{ widgetId: WidgetState["id"], floatingWidgetId: FloatingWidgetState["id"] };
+
+/** @internal */
+export function findTab(state: Draft<NineZoneState>, id: TabState["id"]): FindTabType {
+  let widgetId;
+  for (const [, widget] of Object.entries(state.widgets)) {
+    const index = widget.tabs.indexOf(id);
+    if (index >= 0) {
+      widgetId = widget.id;
+    }
+  }
+  if (!widgetId)
+    return undefined;
+  for (const side of sides) {
+    const panel = state.panels[side];
+    const index = panel.widgets.indexOf(widgetId);
+    if (index >= 0) {
+      return {
+        widgetId,
+        side,
+      };
+    }
+  }
+  if (widgetId in state.floatingWidgets.byId) {
+    return {
+      widgetId,
+      floatingWidgetId: widgetId,
+    };
+  }
+  return undefined;
+}
+
+/** @internal */
+export function useFrontstageDefNineZone(frontstage: FrontstageDef | undefined): [FrontstageState, React.Dispatch<FrontstageActionTypes>] {
   const uiSettings = useUiSettingsContext();
   const uiSettingsRef = React.useRef(uiSettings);
-  const reducerCallback = React.useCallback<React.Reducer<FrontstageState, FrontstageActionTypes>>((state, action) => {
-    if (action.type === FRONTSTAGE_INITIALIZE) {
-      return initializeFrontstageState({ frontstage: action.frontstage });
-    } else if (action.type === FRONTSTAGE_STATE_SETTING_LOAD) {
-      return produce(state, (draft) => {
-        draft.setting = castDraft(action.setting) || draft.setting;
-        draft.status = "DONE";
-      });
-    }
-    return produce(state, (draft) => {
-      draft.setting.nineZone = castDraft(NineZoneStateReducer(draft.setting.nineZone, action));
-    });
-  }, []);
-  const [nineZone, dispatch] = React.useReducer(reducerCallback, { frontstage }, initializeFrontstageState);
+  const [nineZone, dispatch] = React.useReducer(FrontstageStateReducer, { frontstage }, initializeFrontstageState);
   React.useEffect(() => {
     uiSettingsRef.current = uiSettings;
   }, [uiSettings]);
   React.useEffect(() => {
     dispatch({
-      type: FRONTSTAGE_INITIALIZE,
+      type: "FRONTSTAGE_INITIALIZE",
       frontstage,
     });
     async function fetchFrontstageState() {
@@ -332,13 +423,13 @@ export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [Frontstag
         settingsResult.setting.stateVersion >= stateVersion
       ) {
         dispatch({
-          type: FRONTSTAGE_STATE_SETTING_LOAD,
+          type: "FRONTSTAGE_STATE_SETTING_LOAD",
           setting: settingsResult.setting,
         });
         return;
       }
       dispatch({
-        type: FRONTSTAGE_STATE_SETTING_LOAD,
+        type: "FRONTSTAGE_STATE_SETTING_LOAD",
         setting: undefined,
       });
     }
@@ -396,4 +487,32 @@ function getFrontstageId(frontstage: FrontstageDef | undefined) {
 
 function getFrontstageVersion(frontstage: FrontstageDef | undefined) {
   return frontstage ? frontstage.version : 0;
+}
+
+/** @internal */
+export function useLayoutManager(dispatch: React.Dispatch<FrontstageActionTypes>) {
+  React.useEffect(() => {
+    const listener = (args: LayoutManagerDispatchActionEventArgs) => {
+      switch (args.action) {
+        case "show": {
+          dispatch({
+            type: "WIDGET_TAB_SHOW",
+            id: args.widgetId,
+          });
+          break;
+        }
+        case "expand": {
+          dispatch({
+            type: "WIDGET_TAB_EXPAND",
+            id: args.widgetId,
+          });
+          break;
+        }
+      }
+    };
+    UiFramework.layoutManager.onLayoutManagerDispatchActionEvent.addListener(listener);
+    return () => {
+      UiFramework.layoutManager.onLayoutManagerDispatchActionEvent.removeListener(listener);
+    };
+  }, [dispatch]);
 }
