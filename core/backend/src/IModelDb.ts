@@ -854,7 +854,8 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
-   *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend.
+   *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend,
+   *    or that shared backends export a limited number of elements at a time.
    *  * Vertices are exported in the IModelDb's world coordinate system, which is right-handed with Z pointing up.
    *  * The results of changing [ExportGraphicsOptions]($imodeljs-backend) during the [ExportGraphicsOptions.onGraphics]($imodeljs-backend) callback are not defined.
    *

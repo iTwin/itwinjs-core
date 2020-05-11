@@ -7,6 +7,7 @@
  */
 
 import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { IndexedPolyface } from "@bentley/geometry-core";
 
 /** A collection of line segments, suitable for direct use with graphics APIs.
  * The structure of this data matches GL_LINES in OpenGL.
@@ -224,5 +225,41 @@ export namespace ExportGraphics {
     if (lhs.elmTransparency !== rhs.elmTransparency) return false;
     if (lhs.lineColor !== rhs.lineColor) return false;
     return true;
+  }
+
+  /**
+   * Convert an ExportGraphicsMesh to an IndexedPolyface usable by the geometry API.
+   * @note The resulting IndexedPolyface may have duplicate points, normals and params. If problematic, call [PolyfaceData.compress]($geometry-core)
+   * @public
+   */
+  export function convertToIndexedPolyface(mesh: ExportGraphicsMesh): IndexedPolyface {
+    const polyface = IndexedPolyface.create(true, true, false, mesh.isTwoSided);
+
+    const p: Float64Array = mesh.points;
+    for (let i = 0; i < p.length; i += 3)
+      polyface.data.point.pushXYZ(p[i], p[i + 1], p[i + 2]);
+
+    const n: Float32Array = mesh.normals;
+    for (let i = 0; i < n.length; i += 3)
+      polyface.data.normal!.pushXYZ(n[i], n[i + 1], n[i + 2]);
+
+    const uv: Float32Array = mesh.params;
+    for (let i = 0; i < uv.length; i += 2)
+      polyface.data.param!.pushXY(uv[i], uv[i + 1]);
+
+    const indices = mesh.indices;
+    const addIndex = (idx: number) => {
+      polyface.addPointIndex(idx, true);
+      polyface.addNormalIndex(idx);
+      polyface.addParamIndex(idx);
+    };
+    for (let i = 0; i < indices.length; i += 3) {
+      addIndex(indices[i]);
+      addIndex(indices[i + 1]);
+      addIndex(indices[i + 2]);
+      polyface.terminateFacet(false);
+    }
+
+    return polyface;
   }
 }

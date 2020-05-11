@@ -2,20 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { BentleyStatus, DbResult, Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { Angle, Arc3d, Box, Geometry, IModelJson, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, CreatePolyfaceRequestProps, CreatePolyfaceResponseProps, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, TextString, TextStringProps } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { BentleyStatus, Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import {
-  Angle, Arc3d, Box, Geometry, IModelJson, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import {
-  AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, CreatePolyfaceRequestProps, CreatePolyfaceResponseProps, FillDisplay,
-  FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags,
-  GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps,
-  TextString, TextStringProps,
-} from "@bentley/imodeljs-common";
-import {
-  BackendRequestContext, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb,
-} from "../../imodeljs-backend";
+import { ExportGraphics, ExportGraphicsInfo, ExportGraphicsOptions } from "../../ExportGraphics";
+import { BackendRequestContext, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function assertTrue(expr: boolean): asserts expr {
@@ -937,6 +929,67 @@ describe("GeometryStream", () => {
     builder.isViewIndependent = false;
     expect(builder.getHeader()).not.to.be.undefined;
     expect(builder.isViewIndependent).to.be.false;
+  });
+});
+
+describe("exportGraphics", () => {
+  let imodel: SnapshotDb;
+
+  before(() => {
+    const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
+    imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+  });
+
+  after(() => {
+    imodel.close();
+  });
+
+  it("converts to IndexedPolyface", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const box = Box.createRange(Range3d.create(Point3d.createZero(), Point3d.create(1.0, 1.0, 1.0)), true);
+    assert.isFalse(undefined === box);
+
+    const builder = new GeometryStreamBuilder();
+    builder.appendGeometry(box!);
+
+    const elementProps: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: builder.geometryStream,
+    };
+
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const infos: ExportGraphicsInfo[] = [];
+    const onGraphics = (info: ExportGraphicsInfo) => {
+      infos.push(info);
+    };
+    const exportGraphicsOptions: ExportGraphicsOptions = {
+      elementIdArray: [newId],
+      onGraphics,
+    };
+
+    const exportStatus = imodel.exportGraphics(exportGraphicsOptions);
+    assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(infos.length, 1);
+    assert.strictEqual(infos[0].color, ColorDef.white.tbgr);
+    assert.strictEqual(infos[0].mesh.indices.length, 36);
+    assert.strictEqual(infos[0].elementId, newId);
+    const polyface = ExportGraphics.convertToIndexedPolyface(infos[0].mesh);
+    assert.strictEqual(polyface.facetCount, 12);
+    assert.strictEqual(polyface.data.pointCount, 24);
+    assert.strictEqual(polyface.data.normalCount, 24);
+    assert.strictEqual(polyface.data.paramCount, 24);
   });
 });
 
