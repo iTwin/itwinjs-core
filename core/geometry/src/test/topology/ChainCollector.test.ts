@@ -29,7 +29,7 @@ describe("ChainCollector", () => {
     const ck = new Checker();
     let xOut = 0;
     let y0 = 0;
-    for (const filename of ["aecc_alignment", "linestring01", "boomerang.incompleteOffset", "boomerang.noOffsetsWithThisOrder", "boomerang", "rectangle00", "linestrings"]) {
+    for (const filename of ["fillet00", "aecc_alignment", "linestring01", "boomerang.incompleteOffset", "boomerang.noOffsetsWithThisOrder", "boomerang", "rectangle00", "linestrings"]) {
       const allGeometry: GeometryQuery[] = [];
       const stringData = fs.readFileSync(chainCollectorInputDirectory + filename + ".imjs", "utf8");
       if (stringData) {
@@ -134,8 +134,8 @@ describe("ChainCollector", () => {
     const xShift = 20.0;
     const yShift = 20.0;
     const offsetDistance = 0.5;
-    const boxA = Loop.create (LineString3d.create(Sample.createRectangle(0, 0, 3, 4, 0, true)));
-    const boxB = Loop.create (LineString3d.create(Sample.createRectangle(5, 0, 9, 4, 0, true)));
+    const boxA = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 3, 4, 0, true)));
+    const boxB = Loop.create(LineString3d.create(Sample.createRectangle(5, 0, 9, 4, 0, true)));
     for (const primitives of [boxA, BagOfCurves.create(boxA, boxB)]) {
       let y0 = 0;
       // sort them all back together

@@ -1260,6 +1260,22 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return result;
   }
+  /**
+   * Return an array containing only the curve primitives.
+   * * This DEFAULT simply pushes `this` to the collectorArray.
+   * * CurvePrimitiveWithDistanceIndex optionally collects its members.
+   * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
+   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
+   */
+  public collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, explodeLinestrings: boolean = false) {
+    if (explodeLinestrings) {
+      let segment: LineSegment3d | undefined;
+      for (let i = 0; (segment = this.getIndexedSegment(i)) !== undefined; i++)
+        collectorArray.push(segment);
+    } else {
+      collectorArray.push(this);
+    }
+  }
 }
 /** An AnnotatedLineString3d is a linestring with additional surface-related data attached to each point
  * * This is useful in facet construction.

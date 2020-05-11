@@ -187,7 +187,8 @@ export class PolylineCompressionContext {
       data.moveIndexToIndex(n - 1, indexB);
     let candidateIndex = lastAcceptedIndex + 1;
     while (candidateIndex <= indexB) {
-      if (data.distanceIndexIndex(lastAcceptedIndex, candidateIndex)! >= edgeLength) {
+      const d = data.distanceIndexIndex(lastAcceptedIndex, candidateIndex)!;
+      if (d >= edgeLength) {
         data.moveIndexToIndex(candidateIndex, lastAcceptedIndex + 1);
         lastAcceptedIndex++;
       }

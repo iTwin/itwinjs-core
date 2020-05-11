@@ -303,6 +303,23 @@ export class CurveLocationDetail {
     result.a = 0.0;
     return result;
   }
+  /** create with CurvePrimitive pointer and fraction for evaluation.
+   */
+  public static createCurveEvaluatedFractionPointAndDerivative(
+    curve: CurvePrimitive,
+    fraction: number,
+    result?: CurveLocationDetail): CurveLocationDetail {
+    result = result ? result : new CurveLocationDetail();
+    result.curve = curve;
+    result.fraction = fraction;
+    const ray = curve.fractionToPointAndDerivative(fraction);
+    result.point = ray.origin;
+    result.vectorInCurveLocationDetail = ray.direction;
+    result.curveSearchStatus = undefined;
+    result.a = 0.0;
+    return result;
+  }
+
   /** create with CurvePrimitive pointer and 2 fractions for evaluation.
    */
   public static createCurveEvaluatedFractionFraction(

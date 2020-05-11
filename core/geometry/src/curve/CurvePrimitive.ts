@@ -85,6 +85,10 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @internal
    */
   public endCut?: CurveLocationDetail;
+  /**
+   * data attached by various algorithms (e.g. Region booleans)
+   */
+  public parent?: any;
 
   /** Return the point (x,y,z) on the curve at fractional position.
    * @param fraction fractional position along the geometry.
@@ -563,7 +567,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
    * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
    */
-  public collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean) {
+  public collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, _explodeLinestrings: boolean = false) {
     collectorArray.push(this);
   }
 
@@ -573,9 +577,10 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param collectorArray optional array to receive primitives.   If present, new primitives are ADDED (without clearing the array.)
    * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
    */
-  public collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false): CurvePrimitive[] {
+  public collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false,
+    explodeLinestrings: boolean = false): CurvePrimitive[] {
     const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
-    this.collectCurvePrimitivesGo(results, smallestPossiblePrimitives);
+    this.collectCurvePrimitivesGo(results, smallestPossiblePrimitives, explodeLinestrings);
     return results;
   }
 
