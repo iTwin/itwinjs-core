@@ -202,6 +202,12 @@ export abstract class IModelConnection extends IModel {
     // wait until we get the full list of base classes from backend
     if (this.isOpen) {
       const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.getRpcProps(), className);
+
+      // Make sure some other async code didn't register this class while we were await-ing above
+      ctor = IModelApp.lookupEntityClass(className) as T | undefined;
+      if (undefined !== ctor)
+        return ctor;
+
       // walk through the list until we find a registered base class
       baseClasses.some((baseClass: string) => {
         const test = IModelApp.lookupEntityClass(baseClass) as T | undefined;
