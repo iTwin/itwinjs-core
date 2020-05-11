@@ -1245,10 +1245,22 @@ export abstract class ViewState3d extends ViewState {
   public setExtents(extents: XYAndZ) { this.extents.setFrom(extents); }
   public setRotation(rot: Matrix3d) { this.rotation.setFrom(rot); }
   /** @internal */
-  protected enableCamera(): void { if (this.supportsCamera()) this._cameraOn = true; }
-  public supportsCamera(): boolean { return true; }
-  public minimumFrontDistance() { return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist); }
-  public isEyePointAbove(elevation: number): boolean { return !this._cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
+  protected enableCamera(): void {
+    if (this.supportsCamera())
+      this._cameraOn = true;
+  }
+
+  public supportsCamera(): boolean {
+    return this.allow3dManipulations();
+  }
+
+  public minimumFrontDistance() {
+    return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist);
+  }
+
+  public isEyePointAbove(elevation: number): boolean {
+    return !this._cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation);
+  }
 
   public getDisplayStyle3d() { return this.displayStyle as DisplayStyle3dState; }
 
