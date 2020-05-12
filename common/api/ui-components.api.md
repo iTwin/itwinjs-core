@@ -4017,6 +4017,8 @@ export interface TreeRendererContext {
     nodeRenderer: (props: TreeNodeRendererProps) => React.ReactNode;
     // @internal
     onLabelRendered?: (node: TreeModelNode) => void;
+    // @internal
+    onNodeWidthMeasured?: (width: number) => void;
     // (undocumented)
     treeActions: TreeActions;
     visibleNodes: VisibleTreeNodes;

@@ -5,23 +5,20 @@
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/scrollbar";
 
-.components-tree-loader {
+.components-controlledTree-loader {
   position: relative;
   display: block;
   left: calc(50% - 24px);
   top: calc(50% - 24px);
 }
 
-.components-tree-errormessage {
-  position: absolute;
-  left: 50%;
-  top: 40%;
-  transform: translate(-50%,-50%);
+.components-controlledTree-errorMessage {
   font-style: italic;
   color: $buic-foreground-muted;
+  margin: 0 20%;
 }
 
-.components-tree {
+.components-controlledTree {
   color: $buic-foreground-body;
   background-color: $buic-background-control;
 
@@ -41,8 +38,6 @@
 
     >div {
       overflow: visible !important;
-      width: fit-content !important;
-      min-width: 100% !important;
       max-width: none !important;
     }
   }
