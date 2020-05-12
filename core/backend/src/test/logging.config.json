@@ -3,7 +3,7 @@
   "categoryLevels": [
     {
       "category": "BeSQLite",
-      "logLevel": "Error"
+      "logLevel": "None"
     },
     {
       "category": "imodeljs-backend.BriefcaseManager",
