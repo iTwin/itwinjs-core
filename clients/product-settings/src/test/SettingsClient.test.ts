@@ -6,9 +6,9 @@ import * as chai from "chai";
 import { GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { SettingsMapResult, SettingsResult, SettingsStatus } from "../../SettingsAdmin";
-import { ConnectSettingsClient } from "../../SettingsClient";
-import { TestConfig } from "../TestConfig";
+import { SettingsMapResult, SettingsResult, SettingsStatus } from "../SettingsAdmin";
+import { ConnectSettingsClient } from "../SettingsClient";
+import { TestConfig } from "./TestConfig";
 
 // compare simple arrays
 function arraysEqual(array1: any, array2: any) {
@@ -253,9 +253,6 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
-    if (TestConfig.enableMocks)
-      return;
-
     settingsClient = new ConnectSettingsClient("1001");
 
     requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.super);
