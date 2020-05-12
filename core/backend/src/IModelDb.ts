@@ -595,7 +595,7 @@ export abstract class IModelDb extends IModel {
   public static findByKey(key: string): IModelDb {
     const iModelDb: IModelDb | undefined = IModelDb.tryFindByKey(key);
     if (undefined === iModelDb) {
-      Logger.logError(loggerCategory, "IModelDb not found in the in-memory cache", () => key);
+      Logger.logError(loggerCategory, "IModelDb not found in the in-memory cache", () => ({ key }));
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
     return iModelDb;
@@ -2035,7 +2035,7 @@ export class BriefcaseDb extends IModelDb {
   public static findByKey(key: string): BriefcaseDb {
     const briefcaseDb: BriefcaseDb | undefined = BriefcaseDb.tryFindByKey(key);
     if (undefined === briefcaseDb) {
-      Logger.logError(loggerCategory, "BriefcaseDb not found in the in-memory cache", () => key);
+      Logger.logError(loggerCategory, "BriefcaseDb not found in the in-memory cache", () => ({ key }));
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
     return briefcaseDb;
