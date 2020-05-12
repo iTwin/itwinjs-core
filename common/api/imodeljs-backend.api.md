@@ -427,7 +427,9 @@ export enum BackendLoggerCategory {
     NativeApp = "imodeljs-backend.NativeApp",
     PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
     Relationship = "imodeljs-backend.Relationship",
-    Schemas = "imodeljs-backend.Schemas"
+    Schemas = "imodeljs-backend.Schemas",
+    // @internal
+    UsageLogging = "imodeljs-backend.UlasUtilities"
 }
 
 // @public
