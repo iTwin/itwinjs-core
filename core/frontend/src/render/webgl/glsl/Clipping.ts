@@ -33,9 +33,7 @@ export const unpackFloat = `
     float sign = (temp - exponent) * 2.0;
     exponent = exponent - bias;
     sign = -(sign * 2.0 - 1.0);
-    float unpacked = sign * v.x * (1.0 / 256.0); // shift right 8
-    unpacked += sign * v.y * (1.0 / 65536.0); // shift right 16
-    unpacked += sign * v.z * (1.0 / 16777216.0); // shift right 24
+    float unpacked = dot(sign * v.xyz, vec3(1.0 / 256.0, 1.0 / 65536.0, 1.0 / 16777216.0)); // shift x right 8, y right 16 and z right 24
     return unpacked * pow(10.0, exponent);
   }
 `;

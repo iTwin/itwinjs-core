@@ -381,7 +381,8 @@ const applyBackgroundColor = `
 
 const computeTexCoord = `
   vec2 tc = g_vertexBaseCoords;
-  tc.x += 3.0 * g_vert_stepX;  vec4 rgba = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  tc.x += 3.0 * g_vert_stepX;
+  vec4 rgba = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   vec2 qcoords = vec2(decodeUInt16(rgba.xy), decodeUInt16(rgba.zw));
   return chooseVec2WithBitFlag(vec2(0.0), unquantize2d(qcoords, u_qTexCoordParams), surfaceFlags, kSurfaceBit_HasTexture);
 `;
@@ -405,11 +406,11 @@ const computeBaseColor = `
   vec4 glyphColor = surfaceColor;
   const vec3 white = vec3(1.0);
   const vec3 epsilon = vec3(0.0001);
-  vec3 color = glyphColor.rgb;
-  vec3 delta = (color + epsilon) - white;
+  const vec3 almostWhite = white - epsilon;
 
-  // set to black if almost white
-  glyphColor.rgb *= float(!u_reverseWhiteOnWhite || delta.x <= 0.0 || delta.y <= 0.0 || delta.z <= 0.0);
+  // set to black if almost white and reverse white-on-white is on
+  bvec3 isAlmostWhite = greaterThan(glyphColor.rgb, almostWhite);
+  glyphColor.rgb = (u_reverseWhiteOnWhite && isAlmostWhite.r && isAlmostWhite.g && isAlmostWhite.b ? vec3(0.0, 0.0, 0.0) : glyphColor.rgb);
   glyphColor = vec4(glyphColor.rgb * g_surfaceTexel.rgb, g_surfaceTexel.a);
 
   // Choose glyph color or unmodified texture sample
