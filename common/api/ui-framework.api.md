@@ -2864,6 +2864,7 @@ export class LayoutManager {
     expandWidget(widgetId: WidgetDef["id"]): void;
     // @internal (undocumented)
     readonly onLayoutManagerDispatchActionEvent: LayoutManagerDispatchActionEvent;
+    restoreLayout(frontstageId: FrontstageDef["id"]): void;
     showWidget(widgetId: WidgetDef["id"]): void;
 }
 
@@ -2872,12 +2873,7 @@ export class LayoutManagerDispatchActionEvent extends UiEvent<LayoutManagerDispa
 }
 
 // @internal (undocumented)
-export interface LayoutManagerDispatchActionEventArgs {
-    // (undocumented)
-    action: "show" | "expand";
-    // (undocumented)
-    widgetId: WidgetDef["id"];
-}
+export type LayoutManagerDispatchActionEventArgs = LayoutManagerShowWidgetAction | LayoutManagerExpandWidgetAction | LayoutManagerRestoreLayoutAction;
 
 // @public
 export interface LayoutSplit {
@@ -5227,7 +5223,7 @@ export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
 
 // @internal (undocumented)
-export function useLayoutManager(dispatch: React.Dispatch<FrontstageActionTypes>): void;
+export function useLayoutManager(state: FrontstageState, dispatch: React.Dispatch<FrontstageActionTypes>): void;
 
 // @public
 export class UserProfileBackstageItem extends React.PureComponent<UserProfileBackstageItemProps> {

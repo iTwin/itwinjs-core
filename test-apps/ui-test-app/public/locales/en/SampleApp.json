@@ -233,6 +233,12 @@
       "description": "Toggle test UiProvider",
       "flyover": "Toggle test UiProvider"
     },
+    "TestLayoutManager": {
+      "RestoreLayout": {
+        "keyin": "layout restore",
+        "description": "Restore layout"
+      }
+    },
     "select": "Select",
     "fitView": "Fit View",
     "windowArea": "Window Area",

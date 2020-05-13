@@ -45,6 +45,7 @@ import { Tool2 } from "./tools/Tool2";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
 import { AppUiSettings } from "./AppUiSettings";
+import { LayoutManagerRestoreLayoutTool } from "./tools/LayoutManagerTool";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -245,6 +246,7 @@ export class SampleAppIModelApp {
     ToolWithSettings.register(this.sampleAppNamespace);
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     UiProviderTool.register(this.sampleAppNamespace);
+    LayoutManagerRestoreLayoutTool.register(this.sampleAppNamespace);
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
 

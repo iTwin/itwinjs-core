@@ -633,6 +633,14 @@ class AdditionalTools {
         UiFramework.layoutManager.expandWidget("uitestapp-test-wd3");
       },
     }), { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(140, new CommandItemDef({
+      commandId: "Restore layout",
+      iconSpec: "icon-placeholder",
+      label: "Restore layout",
+      execute: () => {
+        UiFramework.layoutManager.restoreLayout("ViewsFrontstage");
+      },
+    }), { groupPriority: 30 }),
     this.formatGroupItemsItem(),
   ];
 

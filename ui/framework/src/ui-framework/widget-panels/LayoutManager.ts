@@ -8,11 +8,27 @@
 
 import { WidgetDef } from "../widgets/WidgetDef";
 import { UiEvent } from "@bentley/ui-core";
+import { FrontstageDef } from "../frontstage/FrontstageDef";
 
 /** @internal */
-export interface LayoutManagerDispatchActionEventArgs {
+export type LayoutManagerDispatchActionEventArgs =
+  LayoutManagerShowWidgetAction |
+  LayoutManagerExpandWidgetAction |
+  LayoutManagerRestoreLayoutAction;
+
+interface LayoutManagerShowWidgetAction {
   widgetId: WidgetDef["id"];
-  action: "show" | "expand";
+  type: "show";
+}
+
+interface LayoutManagerExpandWidgetAction {
+  widgetId: WidgetDef["id"];
+  type: "expand";
+}
+
+interface LayoutManagerRestoreLayoutAction {
+  frontstageId: FrontstageDef["id"];
+  type: "restore";
 }
 
 /** @internal */
@@ -29,11 +45,16 @@ export class LayoutManager {
    * I.e. opens the stage panel or brings floating widget to front of the screen.
    */
   public showWidget(widgetId: WidgetDef["id"]) {
-    this.onLayoutManagerDispatchActionEvent.emit({ widgetId, action: "show" });
+    this.onLayoutManagerDispatchActionEvent.emit({ type: "show", widgetId });
   }
 
   /** Expands widget of active frontstage. */
   public expandWidget(widgetId: WidgetDef["id"]) {
-    this.onLayoutManagerDispatchActionEvent.emit({ widgetId, action: "expand" });
+    this.onLayoutManagerDispatchActionEvent.emit({ type: "expand", widgetId });
+  }
+
+  /** Restores frontstage layout and deletes saved layout settings. */
+  public restoreLayout(frontstageId: FrontstageDef["id"]) {
+    this.onLayoutManagerDispatchActionEvent.emit({ type: "restore", frontstageId });
   }
 }

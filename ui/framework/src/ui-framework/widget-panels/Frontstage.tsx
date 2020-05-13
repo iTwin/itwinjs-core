@@ -28,6 +28,7 @@ import { WidgetPanelsToolbars } from "./Toolbars";
 import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
 import { LayoutManagerDispatchActionEventArgs } from "./LayoutManager";
 import { UiFramework } from "../UiFramework";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // tslint:disable-line: variable-name no-shadowed-variable
@@ -57,15 +58,15 @@ const widgetPanelsFrontstage = <WidgetPanelsFrontstageComponent />;
 /** @internal */
 export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage() { // tslint:disable-line: variable-name no-shadowed-variable
   const frontstageDef = useActiveFrontstageDef();
-  const [frontstageState, dispatch] = useFrontstageDefNineZone(frontstageDef);
-  useSaveFrontstageSettings(frontstageState);
-  useLayoutManager(dispatch);
+  const [state, dispatch] = useFrontstageDefNineZone(frontstageDef);
+  useSaveFrontstageSettings(state);
+  useLayoutManager(state, dispatch);
   if (!frontstageDef)
     return null;
   return (
     <NineZoneProvider
       dispatch={dispatch}
-      state={frontstageState.setting.nineZone}
+      state={state.setting.nineZone}
       widgetContent={widgetContent}
       toolSettingsContent={toolSettingsContent}
     >
@@ -490,10 +491,11 @@ function getFrontstageVersion(frontstage: FrontstageDef | undefined) {
 }
 
 /** @internal */
-export function useLayoutManager(dispatch: React.Dispatch<FrontstageActionTypes>) {
+export function useLayoutManager(state: FrontstageState, dispatch: React.Dispatch<FrontstageActionTypes>) {
+  const uiSettings = useUiSettingsContext();
   React.useEffect(() => {
     const listener = (args: LayoutManagerDispatchActionEventArgs) => {
-      switch (args.action) {
+      switch (args.type) {
         case "show": {
           dispatch({
             type: "WIDGET_TAB_SHOW",
@@ -508,11 +510,26 @@ export function useLayoutManager(dispatch: React.Dispatch<FrontstageActionTypes>
           });
           break;
         }
+        case "restore": {
+          // TODO: track restoring frontstages to support workflows:  i.e. prevent loading frontstage OR saving layout when delete is pending
+          uiSettings.deleteSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(args.frontstageId)); // tslint:disable-line: no-floating-promises
+          if (state.setting.id === args.frontstageId) {
+            const frontstage = FrontstageManager.findFrontstageDef(args.frontstageId);
+            dispatch({
+              type: "FRONTSTAGE_INITIALIZE",
+              frontstage,
+            });
+            dispatch({
+              type: "FRONTSTAGE_STATE_SETTING_LOAD",
+              setting: undefined,
+            });
+          }
+        }
       }
     };
     UiFramework.layoutManager.onLayoutManagerDispatchActionEvent.addListener(listener);
     return () => {
       UiFramework.layoutManager.onLayoutManagerDispatchActionEvent.removeListener(listener);
     };
-  }, [dispatch]);
+  }, [dispatch, uiSettings, state]);
 }

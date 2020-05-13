@@ -19,6 +19,18 @@ import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "../../ui-
 import TestUtils, { storageMock, UiSettingsStub } from "../TestUtils";
 import { FrontstageActionTypes, FrontstageStateReducer } from "../../ui-framework/widget-panels/Frontstage";
 
+function createFrontstageState(nineZone = createNineZoneState()): FrontstageState {
+  return {
+    status: "DONE",
+    setting: {
+      id: "frontstage1",
+      nineZone,
+      stateVersion: 100,
+      version: 100,
+    },
+  };
+}
+
 describe("WidgetPanelsFrontstage", () => {
   const sandbox = sinon.createSandbox();
 
@@ -170,7 +182,7 @@ describe("useLayoutManager", () => {
 
   it("should dispatch WIDGET_TAB_SHOW", () => {
     const dispatch = sinon.stub<React.Dispatch<FrontstageActionTypes>>();
-    renderHook(() => useLayoutManager(dispatch));
+    renderHook(() => useLayoutManager(createFrontstageState(), dispatch));
     act(() => {
       UiFramework.layoutManager.showWidget("w1");
     });
@@ -182,13 +194,44 @@ describe("useLayoutManager", () => {
 
   it("should dispatch WIDGET_TAB_EXPAND", () => {
     const dispatch = sinon.stub<React.Dispatch<FrontstageActionTypes>>();
-    renderHook(() => useLayoutManager(dispatch));
+    renderHook(() => useLayoutManager(createFrontstageState(), dispatch));
     act(() => {
       UiFramework.layoutManager.expandWidget("w1");
     });
     dispatch.calledOnceWithExactly({
       type: "WIDGET_TAB_EXPAND",
       id: "w1",
+    }).should.true;
+  });
+
+  it("should delete saved layout", () => {
+    const dispatch = sinon.stub<React.Dispatch<FrontstageActionTypes>>();
+    const uiSettings = new UiSettingsStub();
+    const deleteSettings = sinon.spy(uiSettings, "deleteSetting");
+    renderHook(() => useLayoutManager(createFrontstageState(), dispatch), {
+      wrapper: (props) => <UiSettingsProvider {...props} uiSettings={uiSettings} />,
+    });
+    act(() => {
+      UiFramework.layoutManager.restoreLayout("f1");
+    });
+    deleteSettings.calledOnce.should.true;
+  });
+
+  it("should restore layout", () => {
+    const dispatch = sinon.stub<React.Dispatch<FrontstageActionTypes>>();
+    const uiSettings = new UiSettingsStub();
+    renderHook(() => useLayoutManager(createFrontstageState(), dispatch), {
+      wrapper: (props) => <UiSettingsProvider {...props} uiSettings={uiSettings} />,
+    });
+    act(() => {
+      UiFramework.layoutManager.restoreLayout("frontstage1");
+    });
+    dispatch.firstCall.calledWithExactly(sinon.match({
+      type: "FRONTSTAGE_INITIALIZE",
+    })).should.true;
+    dispatch.secondCall.calledWithExactly({
+      type: "FRONTSTAGE_STATE_SETTING_LOAD",
+      setting: undefined,
     }).should.true;
   });
 });
@@ -299,18 +342,6 @@ describe("getWidgetId", () => {
 });
 
 describe("FrontstageStateReducer", () => {
-  function createFrontstageState(nineZone = createNineZoneState()): FrontstageState {
-    return {
-      status: "DONE",
-      setting: {
-        id: "frontstage1",
-        nineZone,
-        stateVersion: 100,
-        version: 100,
-      },
-    };
-  }
-
   describe("WIDGET_TAB_SHOW", () => {
     it("should not modify if tab not found", () => {
       const state = createFrontstageState();
