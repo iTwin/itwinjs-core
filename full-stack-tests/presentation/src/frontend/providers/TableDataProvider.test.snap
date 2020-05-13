@@ -56,6 +56,27 @@ Array [
       Object {
         "key": "pc_bis_Model_ModeledElement",
         "record": PropertyRecord {
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Modeled Element",
+            "name": "pc_bis_Model_ModeledElement",
+            "typename": "navigation",
+          },
+          "value": Object {
+            "displayValue": "",
+            "value": undefined,
+            "valueFormat": 0,
+          },
+        },
+      },
+    ],
+    "key": "{\\"className\\":\\"BisCore:RepositoryModel\\",\\"id\\":\\"0x1\\"}",
+  },
+  Object {
+    "cells": Array [
+      Object {
+        "key": "pc_bis_Model_ModeledElement",
+        "record": PropertyRecord {
           "description": "BisCore.DictionaryModel",
           "isReadonly": true,
           "property": Object {
@@ -94,28 +115,6 @@ Array [
       },
     ],
     "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x1c\\"}",
-  },
-  Object {
-    "cells": Array [
-      Object {
-        "key": "pc_bis_Model_ModeledElement",
-        "record": PropertyRecord {
-          "description": "Ñót spêçìfíêd",
-          "isReadonly": true,
-          "property": Object {
-            "displayLabel": "Modeled Element",
-            "name": "pc_bis_Model_ModeledElement",
-            "typename": "navigation",
-          },
-          "value": Object {
-            "displayValue": "Ñót spêçìfíêd",
-            "value": undefined,
-            "valueFormat": 0,
-          },
-        },
-      },
-    ],
-    "key": "{\\"className\\":\\"BisCore:RepositoryModel\\",\\"id\\":\\"0x1\\"}",
   },
 ]
 `;
@@ -127,28 +126,6 @@ Array [
       Object {
         "key": "pc_bis_Model_ModeledElement",
         "record": PropertyRecord {
-          "description": "Ñót spêçìfíêd",
-          "isReadonly": true,
-          "property": Object {
-            "displayLabel": "Modeled Element",
-            "name": "pc_bis_Model_ModeledElement",
-            "typename": "navigation",
-          },
-          "value": Object {
-            "displayValue": "Ñót spêçìfíêd",
-            "value": undefined,
-            "valueFormat": 0,
-          },
-        },
-      },
-    ],
-    "key": "{\\"className\\":\\"BisCore:RepositoryModel\\",\\"id\\":\\"0x1\\"}",
-  },
-  Object {
-    "cells": Array [
-      Object {
-        "key": "pc_bis_Model_ModeledElement",
-        "record": PropertyRecord {
           "description": "Properties_60InstancesWithUrl2",
           "isReadonly": true,
           "property": Object {
@@ -187,6 +164,27 @@ Array [
       },
     ],
     "key": "{\\"className\\":\\"BisCore:DictionaryModel\\",\\"id\\":\\"0x10\\"}",
+  },
+  Object {
+    "cells": Array [
+      Object {
+        "key": "pc_bis_Model_ModeledElement",
+        "record": PropertyRecord {
+          "isReadonly": true,
+          "property": Object {
+            "displayLabel": "Modeled Element",
+            "name": "pc_bis_Model_ModeledElement",
+            "typename": "navigation",
+          },
+          "value": Object {
+            "displayValue": "",
+            "value": undefined,
+            "valueFormat": 0,
+          },
+        },
+      },
+    ],
+    "key": "{\\"className\\":\\"BisCore:RepositoryModel\\",\\"id\\":\\"0x1\\"}",
   },
 ]
 `;
