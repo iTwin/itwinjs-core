@@ -522,6 +522,7 @@ export class BriefcaseEntry {
     syncMode: SyncMode;
     targetChangeSetId: string;
     targetChangeSetIndex?: number;
+    upgrade: IModelJsNative.UpgradeMode;
 }
 
 // @public

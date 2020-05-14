@@ -132,6 +132,9 @@ export class BriefcaseEntry {
   /** Mode used to open the briefcase */
   public openMode: OpenMode;
 
+  /** Whether to performan any upgrades upon opening the db */
+  public upgrade: IModelJsNative.UpgradeMode = IModelJsNative.UpgradeMode.None;
+
   /** Params used to open the briefcase */
   public openParams: OpenParams; // tslint:disable-line:deprecation
 
@@ -313,10 +316,12 @@ class BriefcaseCache {
   }
 
   /** Find VariableVersion (PullAndPush or PullOnly) briefcase */
-  public findBriefcaseByBriefcaseId(iModelId: GuidString, briefcaseId: BriefcaseId, syncMode: SyncMode): BriefcaseEntry | undefined {
+  public findBriefcaseByBriefcaseId(iModelId: GuidString, briefcaseId: BriefcaseId, syncMode: SyncMode, upgrade: IModelJsNative.UpgradeMode = IModelJsNative.UpgradeMode.None): BriefcaseEntry | undefined {
     for (const entry of this._briefcases.values()) {
-      if (entry.iModelId === iModelId && entry.briefcaseId === briefcaseId && entry.syncMode === syncMode)
+      if (entry.iModelId === iModelId && entry.briefcaseId === briefcaseId && entry.syncMode === syncMode) {
+        entry.upgrade = upgrade;
         return entry;
+      }
     }
     return undefined;
   }
@@ -816,7 +821,7 @@ export class BriefcaseManager {
    * @internal
    */
   public static openBriefcase(briefcase: BriefcaseEntry) {
-    const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openMode);
+    const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openMode, briefcase.upgrade);
     briefcase.isOpen = true;
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, `Unable to reopen briefcase at ${briefcase.pathname}`, Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
