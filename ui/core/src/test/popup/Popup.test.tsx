@@ -10,7 +10,7 @@ import { RelativePosition } from "@bentley/ui-abstract";
 import { fireEvent, render, RenderResult } from "@testing-library/react";
 import { Popup } from "../../ui-core";
 
-describe("Popup />", () => {
+describe("<Popup />", () => {
 
   it("renders correctly", () => {
     const component = render(<Popup isOpen={true} top={30} left={70} />);

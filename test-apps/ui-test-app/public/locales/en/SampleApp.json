@@ -239,6 +239,11 @@
         "description": "Restore layout"
       }
     },
+    "OpenPropertyGrid": {
+      "keyin": "Test OpenPropertyGrid",
+      "description": "Open Property Grid",
+      "flyover": "Open Property Grid"
+    },
     "select": "Select",
     "fitView": "Fit View",
     "windowArea": "Window Area",

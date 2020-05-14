@@ -169,18 +169,28 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     MessageManager.onMessageAddedEvent.addListener(this._handleMessageAddedEvent);
     MessageManager.onActivityMessageUpdatedEvent.addListener(this._handleActivityMessageUpdatedEvent);
     MessageManager.onActivityMessageCancelledEvent.addListener(this._handleActivityMessageCancelledEvent);
+    MessageManager.onMessagesUpdatedEvent.addListener(this._handleMessagesUpdatedEvent);
   }
 
   public componentWillUnmount() {
     MessageManager.onMessageAddedEvent.removeListener(this._handleMessageAddedEvent);
     MessageManager.onActivityMessageUpdatedEvent.removeListener(this._handleActivityMessageUpdatedEvent);
     MessageManager.onActivityMessageCancelledEvent.removeListener(this._handleActivityMessageCancelledEvent);
+    MessageManager.onMessagesUpdatedEvent.removeListener(this._handleMessagesUpdatedEvent);
   }
 
   private _handleMessageAddedEvent = (args: MessageAddedEventArgs) => {
     this._messageManager.add(args.message);
 
     this.setState({ messages: this._messageManager.messages });
+  }
+
+  /** Respond to clearing the message list */
+  private _handleMessagesUpdatedEvent = () => {
+    if (MessageManager.messages.length === 0) {
+      this._messageManager.initialize();
+      this.setState({ messages: this._messageManager.messages });
+    }
   }
 
   /**

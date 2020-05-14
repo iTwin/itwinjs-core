@@ -10,7 +10,7 @@ import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps, useResizeObserver } from "@bentley/ui-core";
-import { useToolItemEntryContext } from "./Toolbar";
+import { useToolItemEntryContext } from "./ToolbarWithOverflow";
 
 /** Properties of [[ToolbarOverflowButton]] component.
  * @internal

@@ -449,4 +449,13 @@ export class MessageManager {
     ElementTooltip.showTooltip(htmlElement, message, location, options);
   }
 
+  /** @internal */
+  public static closeAllMessages(): void {
+    ElementTooltip.hideTooltip();
+    PointerMessage.hideMessage();
+    MessageManager.clearMessages();
+    MessageManager.hideInputFieldMessage();
+    MessageManager.endActivityMessage(false);
+  }
+
 }

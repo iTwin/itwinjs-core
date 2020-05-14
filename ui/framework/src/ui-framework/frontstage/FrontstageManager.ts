@@ -468,8 +468,8 @@ export class FrontstageManager {
     return false;
   }
 
-  /** Sets the state of the widget with the given id
-   * @param widgetId  Id of the Widget for which to set the state
+  /** Finds a widget with the given id in the active frontstage
+   * @param widgetId  Id of the Widget to find
    * @returns The WidgetDef with the given id, or undefined if not found.
    */
   public static findWidget(widgetId: string): WidgetDef | undefined {

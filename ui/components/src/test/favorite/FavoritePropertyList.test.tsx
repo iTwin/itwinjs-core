@@ -8,10 +8,10 @@ import * as faker from "faker";
 import * as React from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory, PropertyData } from "../../ui-components/propertygrid/PropertyDataProvider";
-import { Tooltip } from "../../ui-components/tooltip/Tooltip";
+import { FavoritePropertyList } from "../../ui-components/favorite/FavoritePropertyList";
 import TestUtils from "../TestUtils";
 
-describe("Tooltip", () => {
+describe("FavoritePropertyList", () => {
 
   let data: PropertyData;
 
@@ -41,12 +41,12 @@ describe("Tooltip", () => {
   describe("rendering", () => {
 
     it("renders correctly with label as string", async () => {
-      const wrapper = mount(<Tooltip propertyData={data} />);
+      const wrapper = mount(<FavoritePropertyList propertyData={data} />);
 
       await TestUtils.flushAsyncOperations();
       wrapper.update();
 
-      expect(wrapper.find(".components-element-tooltip").first().exists()).to.be.true;
+      expect(wrapper.find(".components-favorite-property-list").first().exists()).to.be.true;
 
       let record = wrapper.find(".components-property-record--horizontal").at(0);
       expect(record.exists(), "First record does not exist").to.be.true;

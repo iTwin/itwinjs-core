@@ -46,6 +46,7 @@ import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 
 export class ViewsFrontstage extends FrontstageProvider {
+  public static unifiedSelectionPropertyGridId = "UnifiedSelectionPropertyGrid";
   private _additionalTools = new AdditionalTools();
 
   public static savedViewLayoutProps: string;
@@ -113,7 +114,7 @@ export class ViewsFrontstage extends FrontstageProvider {
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage="MyUsage"
-        version={1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
+        version={3} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
         contentManipulationTools={
           < Zone
             widgets={
@@ -167,7 +168,7 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={350}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
+                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
                 applicationData={{
                   iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
@@ -191,9 +192,9 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={
               [
                 <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                  applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} badgeType={BadgeType.New} />,
+                  applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
                 /* <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
-                   applicationData={{ projectName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
+                   applicationData={{ projectName: "iModelHubTest", imodelName: "Demo" }} />, */
               ]}
           />
         }
@@ -210,15 +211,16 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={
               [
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
+                  id={ViewsFrontstage.unifiedSelectionPropertyGridId}
                   control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
-                  applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }}
-                  syncEventIds={[SyncUiEventId.SelectionSetChanged]}
-                  stateFunc={(): WidgetState => {
-                    const activeContentControl = ContentViewManager.getActiveContentControl();
-                    if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0))
-                      return WidgetState.Open;
-                    return WidgetState.Closed;
-                  }}
+                  applicationData={{ iModelConnection: this.iModelConnection }}
+                // syncEventIds={[SyncUiEventId.SelectionSetChanged]}
+                // stateFunc={(): WidgetState => {
+                //   const activeContentControl = ContentViewManager.getActiveContentControl();
+                //   if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0))
+                //     return WidgetState.Open;
+                //   return WidgetState.Closed;
+                // }}
                 />,
                 <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               ]}
@@ -442,7 +444,7 @@ class AdditionalTools {
     this._viewportDialogCnt++;
     const id = "ViewportDialog_" + this._viewportDialogCnt.toString();
 
-    const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="GrandCanyonTerrain" dialogId={id} />;
+    const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="Demo" dialogId={id} />;
 
     ModelessDialogManager.openDialog(dialog, id);
   }
@@ -491,7 +493,7 @@ class AdditionalTools {
 
           // Add applicationData to the ContentProps
           savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
-            contentProps.applicationData = { viewState: viewStates[index], iModelConnection, rulesetId: "Items" };
+            contentProps.applicationData = { viewState: viewStates[index], iModelConnection };
           });
           const contentGroup = new ContentGroup(savedViewLayoutProps.contentGroupProps);
 
@@ -594,7 +596,7 @@ class AdditionalTools {
               dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
               proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </div>
-            {false && <ViewportWidget projectName="iModelHubTest" imodelName="GrandCanyonTerrain" />}
+            {false && <ViewportWidget projectName="iModelHubTest" imodelName="Demo" />}
             <div>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
               Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure

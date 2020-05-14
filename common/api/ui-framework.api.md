@@ -913,6 +913,8 @@ export interface ConfigurableUiElement {
 // @public
 export class ConfigurableUiManager {
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
+    // @internal (undocumented)
+    static closeUi(): void;
     static createControl(classId: string, uniqueId: string, options?: any): ConfigurableUiElement | undefined;
     static findFrontstageDef(id?: string): FrontstageDef | undefined;
     // @internal
@@ -1491,6 +1493,8 @@ export class DialogManagerBase {
     // (undocumented)
     get activeDialog(): React.ReactNode | undefined;
     // (undocumented)
+    closeAll(): void;
+    // (undocumented)
     closeDialog(dialog?: React.ReactNode): void;
     // (undocumented)
     get dialogCount(): number;
@@ -1612,6 +1616,9 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
     componentWillUnmount(): void;
     // (undocumented)
     static hideTooltip(): void;
+    // (undocumented)
+    static get isTooltipHalted(): boolean;
+    static set isTooltipHalted(halt: boolean);
     // (undocumented)
     static get isTooltipVisible(): boolean;
     // (undocumented)
@@ -1758,6 +1765,7 @@ export interface FrameworkState {
 export class FrameworkUiAdmin extends UiAdmin {
     get cursorPosition(): XAndY;
     hideCalculator(): boolean;
+    hideCard(): boolean;
     hideHTMLElement(): boolean;
     hideInputEditor(): boolean;
     hideMenuButton(id: string): boolean;
@@ -1766,9 +1774,10 @@ export class FrameworkUiAdmin extends UiAdmin {
     onInitialized(): void;
     showAngleEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showCalculator(initialValue: number, resultIcon: string, location: XAndY, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
+    showCard(content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
     showContextMenu(items: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
     showHeightEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
-    showHTMLElement(displayElement: HTMLElement, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
+    showHTMLElement(displayElement: HTMLElement, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
     showInputEditor(initialValue: Primitives.Value, propertyDescription: PropertyDescription, location: XAndY, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
@@ -3106,6 +3115,8 @@ export class MessageManager {
     static addMessage(message: NotifyMessageDetailsType): void;
     static addToMessageCenter(message: NotifyMessageDetailsType): void;
     static clearMessages(): void;
+    // @internal (undocumented)
+    static closeAllMessages(): void;
     static displayInputFieldMessage(target: HTMLElement, messageText: NotifyMessageType, detailedMessage?: NotifyMessageType, priority?: OutputMessagePriority): void;
     static endActivityMessage(isCompleted: boolean): boolean;
     static getIconClassName(details: NotifyMessageDetailsType): string;
@@ -3146,6 +3157,8 @@ export class ModalDialogChangedEvent extends DialogChangedEvent {
 // @public
 export class ModalDialogManager {
     static get activeDialog(): React.ReactNode | undefined;
+    // @internal (undocumented)
+    static closeAll(): void;
     static closeDialog(dialog?: React.ReactNode): void;
     static get dialogCount(): number;
     // @internal (undocumented)
@@ -3213,6 +3226,8 @@ export class ModelessDialogChangedEvent extends DialogChangedEvent {
 // @public
 export class ModelessDialogManager {
     static get activeDialog(): React.ReactNode | undefined;
+    // @internal (undocumented)
+    static closeAll(): void;
     static closeDialog(id: string): void;
     static get dialogCount(): number;
     // @internal (undocumented)
@@ -3533,6 +3548,8 @@ export class PopupManager {
     // (undocumented)
     static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size: SizeProps): Point;
     // (undocumented)
+    static hideCard(): boolean;
+    // (undocumented)
     static hideHTMLElement(): boolean;
     // (undocumented)
     static hideInputEditor(): boolean;
@@ -3547,6 +3564,8 @@ export class PopupManager {
     static set popups(popups: ReadonlyArray<PopupInfo>);
     // (undocumented)
     static removePopup(id: string): boolean;
+    // (undocumented)
+    static showCard(content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
     static showHTMLElement(displayElement: HTMLElement, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
@@ -5131,6 +5150,8 @@ export class UiFramework {
     static terminate(): void;
     // @internal
     static translate(key: string | string[]): string;
+    // @beta
+    static get uiVersion(): string;
     // @alpha (undocumented)
     static get widgetManager(): WidgetManager;
     }

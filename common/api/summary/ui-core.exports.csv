@@ -98,7 +98,7 @@ public;Icon(props: IconProps): JSX.Element | null
 public;IconHelper
 public;IconInput 
 public;IconInputProps 
-public;IconProps
+public;IconProps 
 public;IconSpec = string | ConditionalStringValue | React.ReactNode
 public;ImageCheckBox 
 public;ImageCheckBoxProps 

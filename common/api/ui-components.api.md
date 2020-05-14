@@ -39,6 +39,7 @@ import { NodeCheckboxProps as NodeCheckboxProps_2 } from '@bentley/ui-core';
 import { NodeCheckboxRenderer } from '@bentley/ui-core';
 import { Observable as Observable_2 } from 'rxjs/internal/Observable';
 import { Omit } from '@bentley/ui-core';
+import { OnItemExecutedFunc } from '@bentley/ui-abstract';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
@@ -105,6 +106,12 @@ export interface ActionButtonRendererProps {
     isPropertyHovered?: boolean;
     property: PropertyRecord;
 }
+
+// @internal (undocumented)
+export function ActionItem({ item, addGroupSeparator }: {
+    item: ActionButton;
+    addGroupSeparator: boolean;
+}): JSX.Element;
 
 // @beta
 export interface ActiveMatchInfo {
@@ -1017,6 +1024,12 @@ export interface CubeRotationChangeEventArgs {
     rotMatrix: Matrix3d;
 }
 
+// @internal (undocumented)
+export function CustomItem({ item, addGroupSeparator }: {
+    item: CustomToolbarItem;
+    addGroupSeparator: boolean;
+}): JSX.Element | null;
+
 // @alpha
 export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps, CustomNumberEditorState> implements TypeEditor {
     // @internal (undocumented)
@@ -1163,6 +1176,30 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
 
 // @beta @deprecated
 export function DEPRECATED_withTreeDragDrop<P extends TreeProps, DragDropObject extends TreeDragDropType>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeDragDropProps<DragDropObject>>;
+
+// @beta
+export enum Direction {
+    // (undocumented)
+    Bottom = 4,
+    // (undocumented)
+    Left = 1,
+    // (undocumented)
+    Right = 3,
+    // (undocumented)
+    Top = 2
+}
+
+// @internal
+export class DirectionHelpers {
+    static readonly BOTTOM_CLASS_NAME = "components-direction-bottom";
+    // (undocumented)
+    static getCssClassName(direction: Direction): string;
+    // (undocumented)
+    static getOrthogonalDirection(direction: Direction): OrthogonalDirection;
+    static readonly LEFT_CLASS_NAME = "components-direction-left";
+    static readonly RIGHT_CLASS_NAME = "components-direction-right";
+    static readonly TOP_CLASS_NAME = "components-direction-top";
+}
 
 // @beta
 export class DistinctValueCollection {
@@ -1514,6 +1551,14 @@ export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
 }
 
 // @beta
+export class FavoritePropertiesRenderer {
+    // (undocumented)
+    hasFavorites(propertyData: PropertyData): boolean;
+    // (undocumented)
+    renderFavorites(propertyData: PropertyData, orientation?: Orientation): HTMLElement | string;
+}
+
+// @beta
 export interface FieldFilterDescriptor extends FilterDescriptor {
     addFieldValue(fieldValue: any, operator: FilterOperator, isCaseSensitive?: boolean): void;
     filterDescriptorCollection: OperatorValueFilterDescriptorCollection;
@@ -1663,6 +1708,12 @@ export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | und
 export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
 
 // @internal (undocumented)
+export function GroupPopupItem({ item, addGroupSeparator }: {
+    item: GroupButton;
+    addGroupSeparator: boolean;
+}): JSX.Element;
+
+// @internal (undocumented)
 export function handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void;
 
 // @public
@@ -1807,11 +1858,6 @@ export class IconPropertyEditor extends PropertyEditorBase {
     get reactNode(): React.ReactNode;
 }
 
-// @beta
-export interface IElementPropertyDataProvider {
-    getData: (imodel: IModelConnection, elementId: Id64String) => Promise<PropertyData>;
-}
-
 // @public
 export interface IImageLoader {
     load: (item: any) => Image | undefined;
@@ -1902,6 +1948,9 @@ export interface IPropertyValueRenderer {
     canRender: (record: PropertyRecord, context?: PropertyValueRendererContext) => boolean;
     render: (record: PropertyRecord, context?: PropertyValueRendererContext) => React.ReactNode;
 }
+
+// @internal
+export function isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem;
 
 // @public
 export const isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider;
@@ -2308,6 +2357,24 @@ export interface OperatorValueFilterDescriptor extends FilterDescriptor {
 
 // @beta
 export class OperatorValueFilterDescriptorCollection extends FilterDescriptorCollectionBase<OperatorValueFilterDescriptor> {
+}
+
+// @alpha
+export enum OrthogonalDirection {
+    // (undocumented)
+    Horizontal = 1,
+    // (undocumented)
+    Vertical = 0
+}
+
+// @internal
+export class OrthogonalDirectionHelpers {
+    // (undocumented)
+    static getCssClassName(direction: OrthogonalDirection): string;
+    static readonly HORIZONTAL_CLASS_NAME = "components-horizontal";
+    // (undocumented)
+    static inverse(direction: OrthogonalDirection): OrthogonalDirection;
+    static readonly VERTICAL_CLASS_NAME = "components-vertical";
 }
 
 // @beta
@@ -3511,6 +3578,9 @@ export const toNode: <TPayload>(inspireNode: Inspire.TreeNode) => BeInspireTreeN
 export const toNodes: <TPayload>(inspireNodes: Inspire.TreeNodes) => BeInspireTreeNodes<TPayload>;
 
 // @beta
+export function Toolbar(props: ToolbarProps): JSX.Element;
+
+// @beta
 export const ToolbarButtonItem: React.MemoExoticComponent<React.FC<ToolbarButtonItemProps>>;
 
 // @beta
@@ -3528,6 +3598,12 @@ export interface ToolbarButtonItemProps extends CommonProps {
 // @beta
 export type ToolbarItem = ActionButton | GroupButton | CustomToolbarItem;
 
+// @internal (undocumented)
+export function ToolbarItemComponent({ item, addGroupSeparator }: {
+    item: ToolbarItem;
+    addGroupSeparator: boolean;
+}): JSX.Element | null;
+
 // @internal
 export const ToolbarItemContext: React.Context<ToolbarItemContextArgs>;
 
@@ -3541,12 +3617,23 @@ export interface ToolbarItemContextArgs {
     readonly useHeight: boolean;
 }
 
+// @beta
+export enum ToolbarOpacitySetting {
+    Defaults = 0,
+    Proximity = 1,
+    Transparent = 2
+}
+
 // @internal (undocumented)
 export interface ToolbarOverflowContextProps {
     // (undocumented)
     readonly direction: OrthogonalDirection;
     // (undocumented)
     readonly expandsTo: Direction;
+    // (undocumented)
+    readonly onItemExecuted: OnItemExecutedFunc;
+    // (undocumented)
+    readonly onKeyDown: (e: React.KeyboardEvent) => void;
     // (undocumented)
     readonly onPopupPanelOpenClose: (isOpening: boolean) => void;
     // (undocumented)
@@ -3560,9 +3647,9 @@ export interface ToolbarOverflowContextProps {
     // (undocumented)
     readonly panelAlignment: ToolbarPanelAlignment;
     // (undocumented)
-    readonly useDragInteraction: boolean;
+    readonly toolbarOpacitySetting: ToolbarOpacitySetting;
     // (undocumented)
-    readonly useProximityOpacity: boolean;
+    readonly useDragInteraction: boolean;
 }
 
 // @beta
@@ -3593,6 +3680,17 @@ export interface ToolbarPopupContextProps {
 }
 
 // @beta
+export interface ToolbarProps extends CommonProps, NoChildrenProps {
+    expandsTo?: Direction;
+    items: CommonToolbarItem[];
+    onItemExecuted?: OnItemExecutedFunc;
+    onKeyDown?: (e: React.KeyboardEvent) => void;
+    panelAlignment?: ToolbarPanelAlignment;
+    toolbarOpacitySetting?: ToolbarOpacitySetting;
+    useDragInteraction?: boolean;
+}
+
+// @beta
 export function ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element;
 
 // @internal
@@ -3602,10 +3700,12 @@ export const ToolbarWithOverflowDirectionContext: React.Context<ToolbarOverflowC
 export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
     items: CommonToolbarItem[];
+    onItemExecuted?: OnItemExecutedFunc;
+    onKeyDown?: (e: React.KeyboardEvent) => void;
     overflowExpandsTo?: Direction;
     panelAlignment?: ToolbarPanelAlignment;
+    toolbarOpacitySetting?: ToolbarOpacitySetting;
     useDragInteraction?: boolean;
-    useProximityOpacity?: boolean;
 }
 
 // @beta
@@ -4114,13 +4214,6 @@ export class UiComponents {
     static terminate(): void;
     // @internal
     static translate(key: string | string[]): string;
-}
-
-// @alpha
-export class UITooltipRenderer {
-    constructor(provider: IElementPropertyDataProvider);
-    // (undocumented)
-    renderTooltip(imodel: IModelConnection, elementId: string): Promise<HTMLElement | string>;
 }
 
 // @public

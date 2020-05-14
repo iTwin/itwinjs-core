@@ -11,11 +11,10 @@ import classnames from "classnames";
 import * as React from "react";
 import { ActionButton, ConditionalStringValue, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { BadgeUtilities, IconHelper, useOnOutsideClick } from "@bentley/ui-core";
-import { ToolbarPanelAlignmentHelpers } from "../toolbar/Toolbar";
 import { ToolbarButtonItemProps } from "./Item";
 import { ToolbarPopupContext } from "./PopupItem";
 import { PopupItemsPanel } from "./PopupItemsPanel";
-import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./Toolbar";
+import { ToolbarPanelAlignmentHelpers, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
 import { useDragInteraction } from "./useDragInteraction";
 import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
 

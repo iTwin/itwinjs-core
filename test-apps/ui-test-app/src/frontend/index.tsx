@@ -45,6 +45,8 @@ import { Tool2 } from "./tools/Tool2";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
 import { AppUiSettings } from "./AppUiSettings";
+import { ElementSelectionListener } from "./favorites/ElementSelectionListener";  // Favorite Properties Support
+import { AppViewManager } from "./favorites/AppViewManager";  // Favorite Properties Support
 import { LayoutManagerRestoreLayoutTool } from "./tools/LayoutManagerTool";
 
 // Initialize my application gateway configuration for the frontend
@@ -170,6 +172,9 @@ export class SampleAppIModelApp {
   private static _uiSettings: UiSettings | undefined;
   private static _appUiSettings = new AppUiSettings();
 
+  // Favorite Properties Support
+  private static _selectionSetListener = new ElementSelectionListener(true);
+
   public static get store(): Store<RootState> {
     return StateManager.store as Store<RootState>;
   }
@@ -188,6 +193,7 @@ export class SampleAppIModelApp {
     opts.accuSnap = new SampleAppAccuSnap();
     opts.notifications = new AppNotificationManager();
     opts.uiAdmin = new FrameworkUiAdmin();
+    opts.viewManager = new AppViewManager(true);  // Favorite Properties Support
     await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
@@ -254,6 +260,9 @@ export class SampleAppIModelApp {
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
 
     await MarkupApp.initialize();
+
+    // Favorite Properties Support
+    SampleAppIModelApp._selectionSetListener.initialize();
   }
 
   // cSpell:enable
@@ -509,7 +518,7 @@ const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragIntera
 // tslint:disable-next-line: variable-name
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
-export class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
+class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
   constructor(props: any) {
     super(props);
 

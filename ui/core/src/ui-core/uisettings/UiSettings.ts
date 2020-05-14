@@ -23,6 +23,7 @@ export enum UiSettingsStatus {
   NotFound = 1,
   UnknownError = 2,
   Uninitialized = 3,
+  AuthorizationError = 4,
 }
 
 /** Interface for [[UiSettings]] result.

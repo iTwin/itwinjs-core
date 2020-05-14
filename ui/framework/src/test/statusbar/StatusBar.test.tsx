@@ -15,6 +15,7 @@ import {
   StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
+import { MessageManager } from "../../ui-framework/messages/MessageManager";
 
 describe("StatusBar", () => {
 
@@ -186,6 +187,22 @@ describe("StatusBar", () => {
     wrapper.update();
 
     expect(wrapper.find(Message).length).to.eq(3);
+
+    wrapper.unmount();
+  });
+
+  it("StatusBar should clear messages", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
+    notifications.outputMessage(details);
+    wrapper.update();
+
+    expect(wrapper.find(Message).length).to.eq(1);
+
+    MessageManager.clearMessages();
+    wrapper.update();
+    expect(wrapper.find(Message).length).to.eq(0);
 
     wrapper.unmount();
   });

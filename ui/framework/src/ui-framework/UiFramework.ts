@@ -31,6 +31,7 @@ import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManage
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { LayoutManager } from "./widget-panels/LayoutManager";
+import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
 
 // cSpell:ignore Mobi
 
@@ -75,6 +76,7 @@ export class UiFramework {
   private static _widgetManager?: WidgetManager;
   private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
   private static _layoutManager = new LayoutManager();
+  private static _uiVersion = "";
 
   /** Get Show Ui event.
    * @public
@@ -299,7 +301,7 @@ export class UiFramework {
 
   /** @beta */
   public static getCursorMenuData(): CursorMenuData | undefined {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.cursorMenuData : undefined;
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.cursorMenuData : /* istanbul ignore next */ undefined;
   }
 
   public static getActiveIModelId(): string {
@@ -412,9 +414,17 @@ export class UiFramework {
     return UiFramework._layoutManager;
   }
 
+  /** Returns the Ui Version.
+   * @beta
+   */
+  public static get uiVersion(): string {
+    return UiFramework._uiVersion;
+  }
+
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
     // Log Ui Version used
     Logger.logInfo(UiFramework.loggerCategory(UiFramework), `Ui Version changed to ${args.version} `);
+    UiFramework._uiVersion = args.version;
 
     // If Ui Version 1, save widget opacity
     if (args.oldVersion === "1")
@@ -428,6 +438,10 @@ export class UiFramework {
   // istanbul ignore next
   private static _handleUserStateChanged = (accessToken: AccessToken | undefined) => {
     UiFramework.setUserInfo(accessToken !== undefined ? accessToken.getUserInfo() : undefined);
+
+    if (accessToken === undefined) {
+      ConfigurableUiManager.closeUi();
+    }
   }
 
 }

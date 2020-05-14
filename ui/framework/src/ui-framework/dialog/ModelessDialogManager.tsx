@@ -78,6 +78,11 @@ export class ModelessDialogManager {
     }
   }
 
+  /** @internal */
+  public static closeAll(): void {
+    ModelessDialogManager.dialogManager.closeAll();
+  }
+
   /** Update the dialogs */
   public static update(): void {
     ModelessDialogManager.dialogManager.update();

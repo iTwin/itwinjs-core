@@ -883,7 +883,7 @@ export interface IconInputProps extends InputProps {
 }
 
 // @public
-export interface IconProps {
+export interface IconProps extends CommonProps {
     iconSpec?: IconSpec;
 }
 
@@ -2020,6 +2020,8 @@ export interface UiSettingsResult {
 
 // @beta
 export enum UiSettingsStatus {
+    // (undocumented)
+    AuthorizationError = 4,
     // (undocumented)
     NotFound = 1,
     // (undocumented)

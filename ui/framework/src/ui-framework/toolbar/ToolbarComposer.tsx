@@ -11,8 +11,8 @@ import { Logger } from "@bentley/bentleyjs-core";
 import {
   ActionButton, CommonToolbarItem, ConditionalBooleanValue, GroupButton, ToolbarItemsManager, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
 } from "@bentley/ui-abstract";
-import { ToolbarItem, ToolbarWithOverflow } from "@bentley/ui-components";
 import { Orientation } from "@bentley/ui-core";
+import { ToolbarItem, ToolbarOpacitySetting, ToolbarWithOverflow } from "@bentley/ui-components";
 import { Direction, Toolbar, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
@@ -290,7 +290,7 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
     panelAlignment={panelAlignment}
     items={toolbarItems}
     useDragInteraction={isDragEnabled}
-    useProximityOpacity={useProximityOpacity && !UiFramework.isMobile()}
+    toolbarOpacitySetting={useProximityOpacity && !UiFramework.isMobile() ? ToolbarOpacitySetting.Proximity : ToolbarOpacitySetting.Defaults}
   />;
 
 }

@@ -37,9 +37,18 @@
     }
   }
 
+  &:focus {
+    color: $hovered-icon-color;
+    background-color: $buic-background-focus-overlay;
+
+    svg {
+      opacity: 1;
+    }
+  }
+
   &:hover {
     color: $hovered-icon-color;
-    background-color: $buic-background-active-overlay;
+    background-color: $buic-background-hover-overlay;
 
     svg {
       opacity: 1;

@@ -276,4 +276,5 @@ describe("<ToolbarComposer  />", async () => {
     // renderedComponent.debug();
     // expect(renderedComponent.queryByTitle("tool-added-to-group")).not.to.be.null;
   });
+
 });

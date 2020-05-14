@@ -8,8 +8,8 @@ import * as React from "react";
 import { MockRender } from "@bentley/imodeljs-frontend";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentGroupManager, ContentGroupProps, ContentLayoutManager, ContentLayoutProps, CoreTools,
-  Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps,
-  WorkflowPropsList,
+  Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, MessageManager, ModalDialogManager, ModelessDialogManager, PopupManager,
+  TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
@@ -202,6 +202,15 @@ describe("ConfigurableUiManager", () => {
 
     if (workflow)
       expect(WorkflowManager.removeWorkflow(workflow)).to.eq(true);
+  });
+
+  it("closeUi", () => {
+    ConfigurableUiManager.closeUi();
+
+    expect(MessageManager.messages.length).to.eq(0);
+    expect(ModelessDialogManager.dialogCount).to.eq(0);
+    expect(ModalDialogManager.dialogCount).to.eq(0);
+    expect(PopupManager.popupCount).to.eq(0);
   });
 
 });

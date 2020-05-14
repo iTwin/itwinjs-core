@@ -6,6 +6,7 @@ beta;ActionButtonList
 beta;ActionButtonListProps
 beta;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode
 beta;ActionButtonRendererProps
+internal;ActionItem({ item, addGroupSeparator }:
 beta;ActiveMatchInfo
 beta;AlphaSlider 
 beta;AlphaSliderProps 
@@ -84,6 +85,7 @@ beta;CubeNavigationAid
 beta;CubeNavigationAidProps 
 public;CubeRotationChangeEvent 
 public;CubeRotationChangeEventArgs
+internal;CustomItem({ item, addGroupSeparator }:
 alpha;CustomNumberEditor 
 alpha;CustomNumberPropertyEditor 
 beta;CustomToolbarItem 
@@ -96,6 +98,8 @@ internal;DayPicker
 public;DelayLoadedTreeNodeItem 
 public;DEPRECATED_Tree 
 beta;DEPRECATED_withTreeDragDrop
+beta;Direction
+internal;DirectionHelpers
 beta;DistinctValueCollection
 beta;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
@@ -128,6 +132,7 @@ public;EventsMuteContext
 beta;ExtendedTreeNodeRendererProps 
 internal;FaceCell 
 internal;FaceCellProps 
+beta;FavoritePropertiesRenderer
 beta;FieldFilterDescriptor 
 beta;FilterableColumn
 beta;FilterableTable
@@ -143,6 +148,7 @@ public;FloatTypeConverter
 public;from
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
+internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
 public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
@@ -159,7 +165,6 @@ alpha;IconEditor
 alpha;IconPickerButton 
 alpha;IconPickerProps 
 alpha;IconPropertyEditor 
-beta;IElementPropertyDataProvider
 public;IImageLoader
 public;Image = LoadedImage | LoadedBinaryImage
 public;ImageFileFormat = "png" | "jpg" | "jpge"
@@ -172,6 +177,7 @@ internal;InputSwitchProps
 public;IntTypeConverter 
 public;IPropertyDataProvider
 public;IPropertyValueRenderer
+internal;isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem
 public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider
 public;isTreeDataProviderMethod: (provider: TreeDataProvider) => provider is TreeDataProviderMethod
 public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is TreeDataProviderPromise
@@ -228,6 +234,8 @@ public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
 public;OperatorProcessor
 beta;OperatorValueFilterDescriptor 
 beta;OperatorValueFilterDescriptorCollection 
+alpha;OrthogonalDirection
+internal;OrthogonalDirectionHelpers
 beta;PagedTreeNodeLoader
 public;PageOptions
 alpha;PlaybackSettings
@@ -349,16 +357,20 @@ beta;ToggleEditor
 beta;TogglePropertyEditor 
 internal;toNode: 
 internal;toNodes: 
+beta;Toolbar(props: ToolbarProps): JSX.Element
 beta;ToolbarButtonItem: React.MemoExoticComponent
 beta;ToolbarButtonItemProps 
 beta;ToolbarItem = ActionButton | GroupButton | CustomToolbarItem
+internal;ToolbarItemComponent({ item, addGroupSeparator }:
 internal;ToolbarItemContext: React.Context
 internal;ToolbarItemContextArgs
+beta;ToolbarOpacitySetting
 internal;ToolbarOverflowContextProps
 beta;ToolbarPanelAlignment
 internal;ToolbarPanelAlignmentHelpers
 internal;ToolbarPopupContext: React.Context
 internal;ToolbarPopupContextProps
+beta;ToolbarProps 
 beta;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React.Context
 beta;ToolbarWithOverflowProps 
@@ -410,7 +422,6 @@ public;class TypeConverter
 public;TypeConverterManager
 beta;TypeEditor
 public;UiComponents
-alpha;UITooltipRenderer
 public;Unsubscribable
 beta;useAsyncValue: 
 beta;usePagedTreeNodeLoader
