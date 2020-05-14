@@ -372,13 +372,21 @@ export class PolyfaceData {
    * * revise all indexing for the relocated coordinates
    */
   public compress() {
-    const packedData = ClusterableArray.clusterGrowablePoint3dArray(this.point);
-    this.point = packedData.growablePackedPoints!;
-    packedData.updateIndices(this.pointIndex);
-    //    if (this.paramIndex)  // Tracking uv params
-    //      packedData.updateIndices(this.paramIndex);
-    //    if (this.normalIndex) // Tracking normals
-    //      packedData.updateIndices(this.normalIndex);
+    const packedPoints = ClusterableArray.clusterGrowablePoint3dArray(this.point);
+    this.point = packedPoints.growablePackedPoints!;
+    packedPoints.updateIndices(this.pointIndex);
+
+    if (this.normalIndex && this.normal) {
+      const packedNormals = ClusterableArray.clusterGrowablePoint3dArray(this.normal);
+      this.normal = packedNormals.growablePackedPoints!;
+      packedNormals.updateIndices(this.normalIndex);
+    }
+
+    if (this.paramIndex && this.param) {
+      const packedParams = ClusterableArray.clusterGrowablePoint2dArray(this.param);
+      this.param = packedParams.growablePackedPoints;
+      packedParams.updateIndices(this.paramIndex);
+    }
   }
 
   /**

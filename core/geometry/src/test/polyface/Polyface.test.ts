@@ -225,23 +225,37 @@ describe("Polyface.HelloWorld", () => {
 describe("Polyface.HelloWorld", () => {
   it("Polyface.Compress", () => {
     const ck = new Checker();
-    const polyface = IndexedPolyface.create();
-    // create with duplicate points on edge ..
+    const polyface = IndexedPolyface.create(true, true);
+    // create with duplicate points and params on edge
     polyface.addPoint(Point3d.create(0, 0, 0));
+    polyface.addParam(Point2d.create(0, 0));
     polyface.addPoint(Point3d.create(1, 0, 0));
+    polyface.addParam(Point2d.create(1, 0));
     polyface.addPoint(Point3d.create(1, 1, 0));
+    polyface.addParam(Point2d.create(1, 1));
 
     polyface.addPoint(Point3d.create(1, 1, 0));
+    polyface.addParam(Point2d.create(1, 1));
     polyface.addPoint(Point3d.create(0, 1, 0));
+    polyface.addParam(Point2d.create(0, 1));
     polyface.addPoint(Point3d.create(0, 0, 0));
+    polyface.addParam(Point2d.create(0, 0));
 
-    polyface.addPointIndex(0);
-    polyface.addPointIndex(1);
-    polyface.addPointIndex(2);
+    for (let i = 0; i < 6; ++i)
+      polyface.addNormalXYZ(0, 0, 1); // addNormalXYZ to force redundant normals
+
+    const addIndex = (idx: number) => {
+      polyface.addPointIndex(idx);
+      polyface.addNormalIndex(idx);
+      polyface.addParamIndex(idx);
+    };
+    addIndex(0);
+    addIndex(1);
+    addIndex(2);
     polyface.terminateFacet();
-    polyface.addPointIndex(3);
-    polyface.addPointIndex(4);
-    polyface.addPointIndex(5);
+    addIndex(3);
+    addIndex(4);
+    addIndex(5);
     polyface.terminateFacet();
     polyface.data.compress();
     const loops = PolyfaceQuery.indexedPolyfaceToLoops(polyface);
@@ -252,6 +266,8 @@ describe("Polyface.HelloWorld", () => {
       4 + 2 * Math.sqrt(2));
 
     ck.testExactNumber(4, polyface.data.point.length, "compressed point count");
+    ck.testExactNumber(1, polyface.data.normal!.length, "compressed point count");
+    ck.testExactNumber(4, polyface.data.param!.length, "compressed point count");
     ck.checkpoint("Polyface.Compress");
     expect(ck.getNumErrors()).equals(0);
   });

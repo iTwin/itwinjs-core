@@ -9,6 +9,7 @@
 
 import { Geometry } from "../Geometry";
 import { GrowableBlockedArray } from "../geometry3d/GrowableBlockedArray";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -21,8 +22,8 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 export class ClusterableArray extends GrowableBlockedArray {
   //  (This is pretty strange)
   // The sort vector is (1,c, c*c, ...)
-  // Settint c = 1 makes it 1,1,1 which may be useful for visual scans during debug.
-  // c wuith some inobvious digits makes it unlikley tha there will be multiple points on a perpendicular to the sort vector.
+  // Setting c = 1 makes it 1,1,1 which may be useful for visual scans during debug.
+  // c with some inobvious digits makes it unlikely that there will be multiple points on a perpendicular to the sort vector.
   private static readonly _vectorFactor = 0.8732;  // use 1.0 to rig easy tests.
   /** Return a component of the sort vector. */
   public static sortVectorComponent(index: number): number {
@@ -343,6 +344,37 @@ export class ClusterableArray extends GrowableBlockedArray {
    * Returns packed points with indices mapping old to new.
    * @param data points to cluster.
    */
+  public static clusterGrowablePoint2dArray(source: GrowableXYArray, tolerance: number = Geometry.smallMetricDistance): PackedPoint2dsWithIndex {
+    const clusterArray = new ClusterableArray(2, 0, source.length);
+    const p = Point2d.create();
+    const numSourcePoint = source.length;
+    for (let i = 0; i < numSourcePoint; i++) {
+      source.getPoint2dAtUncheckedPointIndex(i, p);
+      clusterArray.addDirect(p.x, p.y);
+    }
+    const order = clusterArray.clusterIndicesLexical(tolerance);
+    const numPackedPoints = clusterArray.countClusters(order);
+    const result = new PackedPoint2dsWithIndex(source.length, numPackedPoints);
+    let currentClusterIndex = 0;
+    let numThisCluster = 0;
+    order.forEach((k: number) => {
+      if (ClusterableArray.isClusterTerminator(k)) {
+        currentClusterIndex++;
+        numThisCluster = 0;
+      } else {
+        if (numThisCluster === 0) // This is the first encounter with a new cluster
+          result.growablePackedPoints.pushFromGrowableXYArray(source, k);
+        result.oldToNew[k] = currentClusterIndex;
+        numThisCluster++;
+      }
+    });
+    return result;
+  }
+
+  /**
+   * Returns packed points with indices mapping old to new.
+   * @param data points to cluster.
+   */
   public static clusterGrowablePoint3dArray(source: GrowableXYZArray, tolerance: number = Geometry.smallMetricDistance):
     PackedPointsWithIndex {
     const clusterArray = new ClusterableArray(3, 0, source.length);
@@ -372,6 +404,20 @@ export class ClusterableArray extends GrowableBlockedArray {
     return result;
   }
 }
+
+/**
+ * @internal
+ */
+function updateIndices(indices: number[], oldToNew: Uint32Array): boolean {
+  let numErrors = 0;
+  indices.forEach((value: number, i: number, data: number[]) => {
+    if (value < oldToNew.length) {
+      data[i] = oldToNew[value];
+    } else numErrors++;
+  });
+  return numErrors === 0;
+}
+
 /**
  * Data carrier class for
  * * packedPoints = an array of Point3d
@@ -383,7 +429,7 @@ class PackedPointsWithIndex {
   public packedPoints: Point3d[];
   /** array of coordinates packed in GrowableXYZArray  */
   public growablePackedPoints: GrowableXYZArray | undefined;
-  /** mapping from old point index to new ponit index. */
+  /** mapping from old point index to new point index. */
   public oldToNew: Uint32Array;
   /** integer value for unknown index. */
   public static readonly invalidIndex = 0xFFFFffff;
@@ -405,13 +451,38 @@ class PackedPointsWithIndex {
    * @returns true if all input indices were valid for the oldToNew array.
    */
   public updateIndices(indices: number[]): boolean {
-    let numErrors = 0;
-    indices.forEach((value: number, i: number, data: number[]) => {
-      if (value < this.oldToNew.length) {
-        data[i] = this.oldToNew[value];
-      } else numErrors++;
-    });
-    return numErrors === 0;
+    return updateIndices(indices, this.oldToNew);
   }
+}
 
+/**
+ * @internal
+ */
+class PackedPoint2dsWithIndex {
+  /** array of coordinates packed in GrowableXYArray  */
+  public growablePackedPoints: GrowableXYArray;
+  /** mapping from old point index to new point index. */
+  public oldToNew: Uint32Array;
+  /** integer value for unknown index. */
+  public static readonly invalidIndex = 0xFFFFffff;
+
+  /** construct a PackedPoints object with
+   * * empty packedPoints array
+   * * oldToNew indices all initialized to PackedPoints.invalidIndex
+   */
+  constructor(numOldIndexEntry: number, numPackedPoints: number) {
+    this.growablePackedPoints = new GrowableXYArray(numPackedPoints);
+    this.oldToNew = new Uint32Array(numOldIndexEntry);
+    for (let i = 0; i < numOldIndexEntry; i++) {
+      this.oldToNew[i] = PackedPoint2dsWithIndex.invalidIndex;
+    }
+  }
+  /**
+   * Use the oldToNew array to update an array of "old" indices.
+   * @param indices array of indices into prepacked array.
+   * @returns true if all input indices were valid for the oldToNew array.
+   */
+  public updateIndices(indices: number[]): boolean {
+    return updateIndices(indices, this.oldToNew);
+  }
 }

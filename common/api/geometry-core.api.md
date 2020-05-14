@@ -1073,6 +1073,7 @@ export class ClusterableArray extends GrowableBlockedArray {
     addDirect(x0: number, x1: number, x2?: number, x3?: number, x4?: number): void;
     addPoint2d(xy: Point2d, a?: number, b?: number, c?: number): void;
     addPoint3d(xyz: Point3d, a?: number, b?: number, c?: number): void;
+    static clusterGrowablePoint2dArray(source: GrowableXYArray, tolerance?: number): PackedPoint2dsWithIndex;
     static clusterGrowablePoint3dArray(source: GrowableXYZArray, tolerance?: number): PackedPointsWithIndex;
     clusterIndicesLexical(clusterTolerance?: number): Uint32Array;
     static clusterPoint3dArray(data: Point3d[], tolerance?: number): PackedPointsWithIndex;
