@@ -183,5 +183,49 @@ describe("ResizeHandlingSelectablePropertyBlock", () => {
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.8);
     });
+
+    it("stops changing label-value ratio after reaching max when element not hovered", () => {
+      props.category.expand = true;
+      props.minLabelWidth = 100;
+      props.minValueWidth = 100;
+      props.actionButtonWidth = 100;
+
+      const propertyBlockMount = mount(<ResizeHandlingSelectablePropertyBlock {...props} />);
+
+      expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
+
+      const elementSeparator = propertyBlockMount.find(".core-element-separator").first();
+      elementSeparator.simulate("pointerdown", { clientX: 250 });
+      moveElement({ clientX: 950 });
+      expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.8);
+
+      moveElement({ clientX: 980 });
+      moveElement({ clientX: 500 });
+      document.dispatchEvent(new MouseEvent("pointerup"));
+
+      expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.8);
+    });
+
+    it("stops changing label-value ratio after reaching min when element not hovered", () => {
+      props.category.expand = true;
+      props.minLabelWidth = 100;
+      props.minValueWidth = 100;
+      props.actionButtonWidth = 100;
+
+      const propertyBlockMount = mount(<ResizeHandlingSelectablePropertyBlock {...props} />);
+
+      expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
+
+      const elementSeparator = propertyBlockMount.find(".core-element-separator").first();
+      elementSeparator.simulate("pointerdown", { clientX: 250 });
+      moveElement({ clientX: 10 });
+      expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.1);
+
+      moveElement({ clientX: 0 });
+      moveElement({ clientX: 500 });
+      document.dispatchEvent(new MouseEvent("pointerup"));
+
+      expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.1);
+    });
   });
 });

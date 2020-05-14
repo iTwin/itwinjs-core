@@ -102,6 +102,10 @@ const useElementSeparatorPointerHandler = ({
     const currentPosition = getCurrentGlobalPosition(orientation, e);
     const positionChange = currentPosition - globalPosition.current;
 
+    // Should not need to recalculate if position on our movement axis does not change
+    if (Math.abs(positionChange) < 1)
+      return;
+
     const currentLocalPosition = movableArea * ratio + positionChange;
     const newRatio = currentLocalPosition / movableArea;
 
@@ -110,9 +114,9 @@ const useElementSeparatorPointerHandler = ({
       return;
 
     const result = onRatioChanged(newRatio);
-    if (result === undefined && !isElementHovered && !pointerOutOfBounds.current)
+    if (result && result.ratio === ratio && !isGroupHovered && !pointerOutOfBounds.current)
       pointerOutOfBounds.current = true;
-  }, 16, [stopDrag, isElementHovered, ratio, movableArea, onRatioChanged, orientation]);
+  }, 16, [stopDrag, isGroupHovered, ratio, movableArea, onRatioChanged, orientation]);
 
   useEffect(() => {
     return () => onThrottledPointerMove.cancel();

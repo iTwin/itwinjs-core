@@ -60,11 +60,10 @@ export class ResizeHandlingSelectablePropertyBlock
     actionButtonWidth: 90,
   };
 
-  private _onColumnRatioChanged = (ratio: number): void | RatioChangeResult => {
+  private _onColumnRatioChanged = (ratio: number): RatioChangeResult => {
     ratio = Geometry.clamp(ratio, this._minRatio, this._maxRatio);
-
     if (this.state.columnRatio === ratio)
-      return;
+      return { ratio };
 
     this.setState({ columnRatio: ratio });
     return { ratio };

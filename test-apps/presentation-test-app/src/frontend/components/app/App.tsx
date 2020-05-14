@@ -78,19 +78,19 @@ export default class App extends React.Component<{}, State> {
     this.setState({ activeUnitSystem: unitSystem });
   }
 
-  private _onTreePaneRatioChanged = (ratio: number): void | RatioChangeResult => {
+  private _onTreePaneRatioChanged = (ratio: number): RatioChangeResult => {
     ratio = Geometry.clamp(ratio, this._minRightPaneRatio, this._maxRightPaneRatio);
     if (this.state.rightPaneRatio === ratio)
-      return;
+      return { ratio };
 
     this.setState({ rightPaneRatio: ratio });
     return { ratio };
   }
 
-  private _onContentRatioChanged = (ratio: number): void | RatioChangeResult => {
+  private _onContentRatioChanged = (ratio: number): RatioChangeResult => {
     ratio = Geometry.clamp(ratio, this._minContentRatio, this._maxContentRatio);
     if (this.state.contentRatio === ratio)
-      return;
+      return { ratio };
 
     this.setState({ contentRatio: ratio });
     return { ratio };

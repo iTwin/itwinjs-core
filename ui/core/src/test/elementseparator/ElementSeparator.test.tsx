@@ -25,10 +25,6 @@ describe("ElementSeparator", () => {
     clock.tick(moveDelayMs);
   }
 
-  type UncontrolledRatioCallback = sinon.SinonSpy<[number], void>;
-  type ControlledRatioCallback = sinon.SinonSpy<[number], RatioChangeResult>;
-  type TestRatioCallbackTypes = { onRatioChanged: UncontrolledRatioCallback } | { onRatioChanged: ControlledRatioCallback };
-
   enum TestCallbackType {
     Uncontrolled,
     Controlled,
@@ -37,18 +33,15 @@ describe("ElementSeparator", () => {
   function setupElementSeparatorCallbackIndifferentTests(callbackType: TestCallbackType) {
     const testCaseName = TestCallbackType[callbackType];
     describe(`Callback indifferent tests: ${testCaseName}`, () => {
-      let props: TestRatioCallbackTypes;
-      let onRatioChanged: UncontrolledRatioCallback | ControlledRatioCallback;
+      let onRatioChanged: sinon.SinonSpy<[number], void> | sinon.SinonSpy<[number], RatioChangeResult>;
 
       beforeEach(() => {
         switch (callbackType) {
           case TestCallbackType.Uncontrolled:
             onRatioChanged = sinon.spy((_: number) => { return; });
-            props = { onRatioChanged };
             return;
           case TestCallbackType.Controlled:
             onRatioChanged = sinon.spy((ratio: number) => ({ ratio }));
-            props = { onRatioChanged };
             return;
           default:
             const unhandledType: never = callbackType;
@@ -62,7 +55,7 @@ describe("ElementSeparator", () => {
             orientation={Orientation.Horizontal}
             movableArea={100}
             ratio={0.5}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerdown", { clientX: 50 });
@@ -78,7 +71,7 @@ describe("ElementSeparator", () => {
             orientation={Orientation.Vertical}
             movableArea={100}
             ratio={0.5}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerdown", { clientY: 50 });
@@ -94,7 +87,7 @@ describe("ElementSeparator", () => {
             orientation={Orientation.Horizontal}
             movableArea={100}
             ratio={0.5}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerdown", { clientX: 50 });
@@ -109,7 +102,7 @@ describe("ElementSeparator", () => {
             orientation={Orientation.Horizontal}
             movableArea={100}
             ratio={0.5}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerdown", { clientX: 50 });
@@ -129,7 +122,7 @@ describe("ElementSeparator", () => {
             orientation={Orientation.Horizontal}
             movableArea={100}
             ratio={0.5}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerdown", { clientX: 50 });
@@ -148,7 +141,7 @@ describe("ElementSeparator", () => {
           <ElementSeparator
             orientation={Orientation.Horizontal}
             ratio={0.5}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerdown", { clientX: 50 });
@@ -163,7 +156,7 @@ describe("ElementSeparator", () => {
             orientation={Orientation.Horizontal}
             movableArea={100}
             ratio={0.5}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerdown", { clientX: 50 });
@@ -183,7 +176,7 @@ describe("ElementSeparator", () => {
             orientation={Orientation.Horizontal}
             movableArea={100}
             ratio={0.5}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Found hover class on freshly created element").to.be.equal(0);
@@ -196,7 +189,7 @@ describe("ElementSeparator", () => {
             orientation={Orientation.Horizontal}
             movableArea={100}
             ratio={0.5}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerover");
@@ -211,7 +204,7 @@ describe("ElementSeparator", () => {
             orientation={Orientation.Horizontal}
             movableArea={100}
             ratio={0.5}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerover");
@@ -230,7 +223,7 @@ describe("ElementSeparator", () => {
             movableArea={100}
             ratio={0.5}
             onResizeHandleHoverChanged={onHoverChanged}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerover");
@@ -249,7 +242,7 @@ describe("ElementSeparator", () => {
             movableArea={100}
             ratio={0.5}
             onResizeHandleDragChanged={onDragChanged}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerdown");
@@ -265,7 +258,7 @@ describe("ElementSeparator", () => {
             orientation={Orientation.Horizontal}
             movableArea={100}
             ratio={0.5}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerdown");
@@ -280,7 +273,7 @@ describe("ElementSeparator", () => {
             orientation={Orientation.Horizontal}
             movableArea={100}
             ratio={0.5}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.simulate("pointerdown");
@@ -299,7 +292,7 @@ describe("ElementSeparator", () => {
             movableArea={100}
             ratio={0.5}
             isResizeHandleHovered={true}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Did not find hover class on hovered element").to.be.equal(1);
@@ -313,7 +306,7 @@ describe("ElementSeparator", () => {
             movableArea={100}
             ratio={0.5}
             isResizeHandleHovered={false}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Found hover class on unhovered element").to.be.equal(0);
@@ -327,7 +320,7 @@ describe("ElementSeparator", () => {
             movableArea={100}
             ratio={0.5}
             isResizeHandleHovered={false}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.setProps({ isResizeHandleHovered: true });
@@ -344,7 +337,7 @@ describe("ElementSeparator", () => {
             movableArea={100}
             ratio={0.5}
             isResizeHandleBeingDragged={true}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Did not find hover class on hovered element").to.be.equal(1);
@@ -358,7 +351,7 @@ describe("ElementSeparator", () => {
             movableArea={100}
             ratio={0.5}
             isResizeHandleBeingDragged={false}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Found hover class on unhovered element").to.be.equal(0);
@@ -372,7 +365,7 @@ describe("ElementSeparator", () => {
             movableArea={100}
             ratio={0.5}
             isResizeHandleBeingDragged={false}
-            {...props}
+            onRatioChanged={onRatioChanged}
           />);
 
         elementSeparator.setProps({ isResizeHandleBeingDragged: true });
@@ -381,14 +374,42 @@ describe("ElementSeparator", () => {
         expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Found hover class on unhovered element").to.be.equal(0);
         expect(elementSeparator.find(".core-element-separator-group-unhovered").length, "Did not find unhover class on unhovered element").to.be.equal(1);
       });
+
+      it("should not call callback if orientation horizontal and position on x axis does not change", () => {
+        const elementSeparator = mount(
+          <ElementSeparator
+            orientation={Orientation.Horizontal}
+            movableArea={100}
+            onRatioChanged={onRatioChanged}
+            ratio={0.5}
+          />);
+
+        elementSeparator.simulate("pointerdown", { clientX: 50 });
+        moveElement({ clientX: 50, clientY: 70 });
+        expect(onRatioChanged.callCount, "Called when position did not change on x axis").to.be.equal(0);
+      });
+
+      it("should not call callback if orientation vertical and position on y axis does not change", () => {
+        const elementSeparator = mount(
+          <ElementSeparator
+            orientation={Orientation.Vertical}
+            movableArea={100}
+            onRatioChanged={onRatioChanged}
+            ratio={0.5}
+          />);
+
+        elementSeparator.simulate("pointerdown", { clientY: 50 });
+        moveElement({ clientX: 70, clientY: 50 });
+        expect(onRatioChanged.callCount, "Called when position did not change on y axis").to.be.equal(0);
+      });
     });
   }
 
   setupElementSeparatorCallbackIndifferentTests(TestCallbackType.Controlled);
   setupElementSeparatorCallbackIndifferentTests(TestCallbackType.Uncontrolled);
 
-  it("should update ratio if update is not needed but element hovered", () => {
-    const onRatioChanged = sinon.spy();
+  it("should update ratio if ratio not changed but element hovered", () => {
+    const onRatioChanged = sinon.spy(() => ({ ratio: 0.5 }));
 
     const elementSeparator = mount(
       <ElementSeparator
@@ -409,7 +430,7 @@ describe("ElementSeparator", () => {
     expect(onRatioChanged.callCount).to.be.equal(2);
   });
 
-  it("should update ratio if update is needed but element not hovered", () => {
+  it("should update ratio if ratio changes but element not hovered", () => {
     const onRatioChanged = sinon.spy((ratio: number) => ({ ratio }));
 
     const elementSeparator = mount(
@@ -428,7 +449,7 @@ describe("ElementSeparator", () => {
     expect(onRatioChanged.callCount).to.be.equal(2);
   });
 
-  it("should update ratio if update is needed and element is hovered", () => {
+  it("should update ratio if ratio changed and element is hovered", () => {
     const onRatioChanged = sinon.spy((ratio: number) => ({ ratio }));
 
     const elementSeparator = mount(
@@ -448,8 +469,8 @@ describe("ElementSeparator", () => {
     expect(onRatioChanged.callCount).to.be.equal(2);
   });
 
-  it("should not update ratio if update is not needed and element is not hovered (draggable area left)", () => {
-    const onRatioChanged = sinon.spy();
+  it("should not update ratio if ratio has not changed and element is not hovered (draggable area left)", () => {
+    const onRatioChanged = sinon.spy(() => ({ ratio: 0.5 }));
 
     const elementSeparator = mount(
       <ElementSeparator
@@ -467,8 +488,27 @@ describe("ElementSeparator", () => {
     expect(onRatioChanged.callCount, "Called ratio change when it was not hovered and update was not needed").to.be.equal(1);
   });
 
-  it("should start updating on hover after leaving draggable area", () => {
+  it("should update ratio if ratio undefined and element is not hovered", () => {
     const onRatioChanged = sinon.spy();
+
+    const elementSeparator = mount(
+      <ElementSeparator
+        orientation={Orientation.Horizontal}
+        movableArea={100}
+        onRatioChanged={onRatioChanged}
+        ratio={0.5}
+      />);
+
+    elementSeparator.simulate("pointerdown", { clientX: 50 });
+    moveElement({ clientX: 70 });
+    expect(onRatioChanged.callCount, "First ratio change should always be called").to.be.equal(1);
+
+    moveElement({ clientX: 90 });
+    expect(onRatioChanged.callCount, "Element should move when ratio undefined for backwards compatibility").to.be.equal(2);
+  });
+
+  it("should start updating on hover after leaving draggable area", () => {
+    const onRatioChanged = sinon.spy(() => ({ ratio: 0.5 }));
 
     const elementSeparator = mount(
       <ElementSeparator
