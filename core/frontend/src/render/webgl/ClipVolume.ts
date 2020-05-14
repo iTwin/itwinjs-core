@@ -29,9 +29,8 @@ import { Texture2DData, Texture2DHandle, TextureHandle } from "./Texture";
 
 /** @internal */
 interface ClipPlaneSets {
-  readonly planes: UnionOfConvexClipPlaneSets;
+  readonly unions: UnionOfConvexClipPlaneSets[];
   readonly numPlanes: number;
-  readonly numSets: number;
 }
 
 /** @internal */
@@ -78,33 +77,39 @@ abstract class ClippingPlanes implements WebGLDisposable {
     const pos = new Point3d();
     const v0 = new Vector3d();
 
-    let numSetsProcessed = 0;
-    for (const set of this._planes.planes.convexSets) {
-      if (set.planes.length === 0)
-        continue;
+    for (let i = 0; i < this._planes.unions.length; i++) {
+      if (i > 0)
+        this.appendUnionBoundary();
 
-      for (const plane of set.planes) {
-        plane.inwardNormalRef.clone(pInwardNormal);
-        let pDistance = plane.distance;
+      const union = this._planes.unions[i];
+      for (let j = 0; j < union.convexSets.length; j++) {
+        const set = union.convexSets[j];
+        if (0 === set.planes.length)
+          continue;
 
-        // Transform direction of clip plane
-        const norm = pInwardNormal;
-        transform.matrix.multiplyVector(norm, dir);
-        dir.normalizeInPlace();
+        if (j > 0)
+          this.appendSetBoundary();
 
-        // Transform distance of clip plane
-        transform.multiplyPoint3d(norm.scale(pDistance, v0), pos);
-        v0.setFromPoint3d(pos);
+        for (const plane of set.planes) {
+          plane.inwardNormalRef.clone(pInwardNormal);
+          let pDistance = plane.distance;
 
-        pInwardNormal.set(dir.x, dir.y, dir.z);
-        pDistance = -v0.dotProduct(dir);
+          // Transform direction of clip plane
+          const norm = pInwardNormal;
+          transform.matrix.multiplyVector(norm, dir);
+          dir.normalizeInPlace();
 
-        // The plane has been transformed into view space
-        this.appendPlane(pInwardNormal, pDistance);
+          // Transform distance of clip plane
+          transform.multiplyPoint3d(norm.scale(pDistance, v0), pos);
+          v0.setFromPoint3d(pos);
+
+          pInwardNormal.set(dir.x, dir.y, dir.z);
+          pDistance = -v0.dotProduct(dir);
+
+          // The plane has been transformed into view space
+          this.appendPlane(pInwardNormal, pDistance);
+        }
       }
-
-      if (++numSetsProcessed < this._planes.numSets)
-        this.appendZeroPlane();
     }
 
     this._texture.handle.replaceTextureData(this._texture.data);
@@ -139,7 +144,8 @@ abstract class ClippingPlanes implements WebGLDisposable {
   }
 
   private appendPlane(normal: Vector3d, distance: number): void { this.appendValues(normal.x, normal.y, normal.z, distance); }
-  private appendZeroPlane(): void { this.appendValues(0, 0, 0, 0); }
+  private appendSetBoundary(): void { this.appendValues(0, 0, 0, 0); }
+  private appendUnionBoundary(): void { this.appendValues(2, 2, 2, 0); }
 }
 
 /** Stores clip planes in floating-point texture.
@@ -147,9 +153,8 @@ abstract class ClippingPlanes implements WebGLDisposable {
  */
 class FloatPlanes extends ClippingPlanes {
   public static create(planes: ClipPlaneSets): ClippingPlanes | undefined {
-    const totalNumPlanes = planes.numPlanes + planes.numSets - 1;
-    const data = new Float32Array(totalNumPlanes * 4);
-    const handle = Texture2DHandle.createForData(1, totalNumPlanes, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+    const data = new Float32Array(planes.numPlanes * 4);
+    const handle = Texture2DHandle.createForData(1, planes.numPlanes, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
     return undefined !== handle ? new FloatPlanes(planes, { handle, data }) : undefined;
   }
 
@@ -163,9 +168,8 @@ class FloatPlanes extends ClippingPlanes {
  */
 class PackedPlanes extends ClippingPlanes {
   public static create(planes: ClipPlaneSets): ClippingPlanes | undefined {
-    const totalNumPlanes = planes.numPlanes + planes.numSets - 1;
-    const data = new Uint8Array(totalNumPlanes * 4 * 4);
-    const handle = Texture2DHandle.createForData(4, totalNumPlanes, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+    const data = new Uint8Array(planes.numPlanes * 4 * 4);
+    const handle = Texture2DHandle.createForData(4, planes.numPlanes, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
     return undefined !== handle ? new PackedPlanes(planes, { handle, data }) : undefined;
   }
 
@@ -213,35 +217,39 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
 
   public get type(): ClippingType { return ClippingType.Planes; }
 
-  /** Create a new ClipPlanesVolume from a ClipVector.
-   * * The result is undefined if
-   *   * (a) there is more than one clipper
-   *   * (b) the clipper does not have clipPlaneSet (for instance, a pure mask clipper has mask planes but not primary clip planes)
-   */
+  /** Create a new ClipPlanesVolume from a ClipVector; or undefined if no clip planes could be extracted. */
   public static create(clipVec: ClipVector): ClipPlanesVolume | undefined {
-    if (1 !== clipVec.clips.length)
+    if (0 === clipVec.clips.length)
       return undefined;
 
-    const clipPrim = clipVec.clips[0];
-    const clipPlaneSet = clipPrim.fetchClipPlanesRef();
-    return undefined !== clipPlaneSet ? ClipPlanesVolume.createFromClipPlaneSet(clipPlaneSet, clipVec) : undefined;
-  }
-
-  private static createFromClipPlaneSet(clipPlaneSet: UnionOfConvexClipPlaneSets, clip: ClipVector) {
+    const unions = [];
     let numPlanes = 0;
-    let numSets = 0;
-    for (const set of clipPlaneSet.convexSets) {
-      const setLength = set.planes.length;
-      if (setLength !== 0) {
-        numSets++;
-        numPlanes += setLength;
+    for (const primitive of clipVec.clips) {
+      const union = primitive.fetchClipPlanesRef();
+      if (undefined === union)
+        continue;
+
+      let numSets = 0;
+      for (const set of union.convexSets) {
+        const setLength = set.planes.length;
+        if (setLength > 0) {
+          ++numSets;
+          numPlanes += setLength;
+        }
+      }
+
+      if (numSets > 0) {
+        unions.push(union);
+        numPlanes += (numSets - 1);
       }
     }
-    if (numPlanes === 0)
+
+    if (0 === unions.length)
       return undefined;
 
-    const planes = ClippingPlanes.create({ planes: clipPlaneSet, numPlanes, numSets });
-    return new ClipPlanesVolume(clip, planes);
+    numPlanes += (unions.length - 1);
+    const planes = ClippingPlanes.create({ unions, numPlanes });
+    return new ClipPlanesVolume(clipVec, planes);
   }
 
   public get isDisposed(): boolean { return undefined === this._planes; }

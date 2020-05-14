@@ -65,30 +65,35 @@ const applyClipPlanes = `
   int numPlaneSets = 1;
   int numSetsClippedBy = 0;
   bool clippedByCurrentPlaneSet = false;
-  for (int i = 0; i < MAX_CLIPPING_PLANES; i++)
-      {
-      if (i >= u_numClips)
-          break;
+  for (int i = 0; i < MAX_CLIPPING_PLANES; i++) {
+    if (i >= u_numClips)
+      break;
 
-      vec4 plane = getClipPlane(i);
-      if (plane.xyz == vec3(0.0)) // indicates start of new clip plane set
-          {
-          numPlaneSets = numPlaneSets + 1;
-          numSetsClippedBy += int(clippedByCurrentPlaneSet);
-          clippedByCurrentPlaneSet = false;
-          }
-      else if (!clippedByCurrentPlaneSet && calcClipPlaneDist(v_eyeSpace, plane) < 0.0)
-          clippedByCurrentPlaneSet = true;
-      }
+    vec4 plane = getClipPlane(i);
+    if (plane.x == 2.0) { // indicates start of new UnionOfConvexClipPlaneSets
+      if (numSetsClippedBy + int(clippedByCurrentPlaneSet) == numPlaneSets)
+        break;
+
+      numPlaneSets = 1;
+      numSetsClippedBy = 0;
+      clippedByCurrentPlaneSet = false;
+    } else if (plane.xyz == vec3(0.0)) { // indicates start of new clip plane set
+      numPlaneSets = numPlaneSets + 1;
+      numSetsClippedBy += int(clippedByCurrentPlaneSet);
+      clippedByCurrentPlaneSet = false;
+    } else if (!clippedByCurrentPlaneSet && calcClipPlaneDist(v_eyeSpace, plane) < 0.0) {
+      clippedByCurrentPlaneSet = true;
+    }
+  }
 
   numSetsClippedBy += int(clippedByCurrentPlaneSet);
   if (numSetsClippedBy == numPlaneSets) {
     if (u_outsideRgba.a > 0.0) {
       g_clipColor = u_outsideRgba.rgb;
       return true;
-    }
-    else
+    } else {
       discard;
+    }
   } else if (u_insideRgba.a > 0.0) {
     g_clipColor = u_insideRgba.rgb;
     return true;
