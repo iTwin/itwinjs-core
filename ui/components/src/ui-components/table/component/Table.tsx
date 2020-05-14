@@ -136,6 +136,8 @@ export interface TableProps extends CommonProps {
 
   /** Hide the header */
   hideHeader?: boolean;
+  /** Alternate the background of odd and even rows */
+  stripedRows?: boolean;
   /** Specifies a row index to scroll to */
   scrollToRow?: number;
   /** @internal */
@@ -1340,7 +1342,8 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private async loadDistinctValues(): Promise<void> {
     await Promise.all(this.state.columns.map(async (tableColumn: TableColumn) => {
-      tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(1000);
+      if (tableColumn.filterable)
+        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(1000);
     }));
   }
 
@@ -1402,6 +1405,7 @@ export class Table extends React.Component<TableProps, TableState> {
       this.props.className,
       {
         "hide-header": this.props.hideHeader,
+        "striped-rows": this.props.stripedRows,
         "row-selection": this._tableSelectionTarget === TableSelectionTarget.Row,
         "cell-selection": this._tableSelectionTarget === TableSelectionTarget.Cell,
       },

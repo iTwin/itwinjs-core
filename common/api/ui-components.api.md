@@ -3414,6 +3414,7 @@ export interface TableProps extends CommonProps {
     selectionMode?: SelectionMode;
     settingsIdentifier?: string;
     showHideColumns?: boolean;
+    stripedRows?: boolean;
     tableSelectionTarget?: TableSelectionTarget;
     uiSettings?: UiSettings;
 }
