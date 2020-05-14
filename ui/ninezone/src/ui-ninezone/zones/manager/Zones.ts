@@ -1092,7 +1092,7 @@ export class ZonesManager {
       ...props,
       widgets: {
         ...props.widgets,
-        [2]: {
+        2: {
           ...props.widgets[2],
           mode,
         },

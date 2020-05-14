@@ -3,12 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { MessageButton } from "@src/footer/message/Button";
-import { MessageHyperlink } from "@src/footer/message/Hyperlink";
-import { MessageLayout } from "@src/footer/message/Layout";
-import { Message } from "@src/footer/message/Message";
-import { MessageProgress } from "@src/footer/message/Progress";
-import { Status } from "@src/footer/message/Status";
+import {
+  MessageButton,
+  MessageHyperlink,
+  MessageLayout,
+  Message,
+  MessageProgress,
+  Status,
+} from "@bentley/ui-ninezone";
 import { cols2 } from "./Tools";
 
 export const cols3: React.CSSProperties = {

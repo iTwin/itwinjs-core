@@ -20,7 +20,7 @@ describe("<Tools />", () => {
   });
 
   it("renders correctly with out gap", () => {
-    shallow(<Tools verticalToolbar={""} />).should.matchSnapshot();
+    shallow(<Tools verticalToolbar="" />).should.matchSnapshot();
   });
 
   it("renders correctly with reduced gap", () => {

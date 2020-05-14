@@ -8,84 +8,105 @@ import classnames from "classnames";
 import rafSchedule, { ScheduleFn } from "raf-schd";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import ReactResizeDetector from "react-resize-detector";
 import {
   Button, ButtonProps, ButtonType, Omit, Point, PointProps, Rectangle, RectangleProps, Size, SizeProps, withOnOutsideClick, withTimeout,
 } from "@bentley/ui-core";
-import { Backstage } from "@src/backstage/Backstage";
-import { BackstageItem } from "@src/backstage/Item";
-import { BackstageSeparator } from "@src/backstage/Separator";
-import { UserProfile } from "@src/backstage/UserProfile";
-import { withContainIn } from "@src/base/WithContainIn";
-import { TitleBarButton } from "@src/footer/dialog/Button";
-import { Footer } from "@src/footer/Footer";
-import { MessageCenterDialog } from "@src/footer/message-center/Dialog";
-import { MessageCenter } from "@src/footer/message-center/Indicator";
-import { MessageCenterMessage } from "@src/footer/message-center/Message";
-import { MessageCenterTab } from "@src/footer/message-center/Tab";
-import { MessageButton } from "@src/footer/message/Button";
-import { MessageHyperlink } from "@src/footer/message/Hyperlink";
-import { MessageLayout } from "@src/footer/message/Layout";
-import { Message } from "@src/footer/message/Message";
-import { MessageProgress } from "@src/footer/message/Progress";
-import { Status } from "@src/footer/message/Status";
-import { Toast } from "@src/footer/message/Toast";
-import { FooterPopup, FooterPopupContentType } from "@src/footer/Popup";
-import { FooterSeparator } from "@src/footer/Separator";
-import { SnapMode } from "@src/footer/snap-mode/Indicator";
-import { SnapModePanel } from "@src/footer/snap-mode/Panel";
-import { Snap } from "@src/footer/snap-mode/Snap";
-import { ToolAssistanceDialog } from "@src/footer/tool-assistance/Dialog";
-import { ToolAssistance } from "@src/footer/tool-assistance/Indicator";
-import { ToolAssistanceItem } from "@src/footer/tool-assistance/Item";
-import { ToolAssistanceSeparator } from "@src/footer/tool-assistance/Separator";
-import { NineZoneNestedStagePanelsManagerProps } from "@src/manager/NestedStagePanels";
-import { NineZoneManager, NineZoneManagerProps } from "@src/manager/NineZone";
-import { NineZoneStagePanelManagerProps } from "@src/manager/StagePanel";
-import { getDefaultNineZoneStagePanelsManagerProps, NineZoneStagePanelsManagerProps } from "@src/manager/StagePanels";
-import { offsetAndContainInContainer, Tooltip } from "@src/popup/Tooltip";
-import { NestedStagePanelKey } from "@src/stage-panels/manager/NestedStagePanels";
-import { StagePanelsManager } from "@src/stage-panels/manager/StagePanels";
-import { Splitter } from "@src/stage-panels/Splitter";
-import { StagePanel, StagePanelType, StagePanelTypeHelpers } from "@src/stage-panels/StagePanel";
-import { StagePanels } from "@src/stage-panels/StagePanels";
-import { ExpandableItem } from "@src/toolbar/item/expandable/Expandable";
-import { GroupColumn } from "@src/toolbar/item/expandable/group/Column";
-import { Group } from "@src/toolbar/item/expandable/group/Group";
-import { NestedGroup } from "@src/toolbar/item/expandable/group/Nested";
-import { GroupToolExpander } from "@src/toolbar/item/expandable/group/tool/Expander";
-import { GroupTool } from "@src/toolbar/item/expandable/group/tool/Tool";
-import { withDragInteraction } from "@src/toolbar/item/expandable/WithDragInteraction";
-import { Item } from "@src/toolbar/item/Item";
-import { Toolbar, ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
-import { Direction } from "@src/utilities/Direction";
-import { DisabledResizeHandles } from "@src/utilities/DisabledResizeHandles";
-import { SafeAreaInsets } from "@src/utilities/SafeAreaInsets";
-import { WidgetContent } from "@src/widget/rectangular/Content";
-import { HandleMode, TabGroup } from "@src/widget/rectangular/tab/Group";
-import { TabSeparator } from "@src/widget/rectangular/tab/Separator";
-import { Tab, TabMode } from "@src/widget/rectangular/tab/Tab";
-import { HorizontalAnchor, ResizeHandle, Stacked, VerticalAnchor, VerticalAnchorHelpers } from "@src/widget/Stacked";
-import { NestedToolSettings } from "@src/widget/tool-settings/Nested";
-import { ToolSettingsPopup } from "@src/widget/tool-settings/Popup";
-import { ScrollableToolSettings } from "@src/widget/tool-settings/Scrollable";
-import { ToolSettingsTab } from "@src/widget/tool-settings/Tab";
-import { Tools as ToolsWidget } from "@src/widget/Tools";
-import { AppButton } from "@src/widget/tools/button/App";
-import { ToolSettings } from "@src/widget/ToolSettings";
-import { DraggedWidgetManagerProps, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps } from "@src/zones/manager/Widget";
-import { ZoneManagerProps } from "@src/zones/manager/Zone";
 import {
-  getDefaultZonesManagerProps, WidgetZoneId, widgetZoneIds, ZonesManagerProps, ZonesManagerTargetProps, ZonesManagerWidgetsProps, ZoneTargetType,
-} from "@src/zones/manager/Zones";
-import { Outline } from "@src/zones/Outline";
-import { BackTarget } from "@src/zones/target/Back";
-import { MergeTarget } from "@src/zones/target/Merge";
-import { SplitterTarget } from "@src/zones/target/Splitter";
-import { SplitterPaneTarget } from "@src/zones/target/SplitterPane";
-import { StagePanelTarget } from "@src/zones/target/StagePanel";
-import { Zone } from "@src/zones/Zone";
-import { Zones } from "@src/zones/Zones";
+  Backstage,
+  BackstageItem,
+  BackstageSeparator,
+  UserProfile,
+  withContainIn,
+  TitleBarButton,
+  Footer,
+  MessageCenterDialog,
+  MessageCenter,
+  MessageCenterMessage,
+  MessageCenterTab,
+  MessageButton,
+  MessageHyperlink,
+  MessageLayout,
+  Message,
+  MessageProgress,
+  Status,
+  Toast,
+  FooterPopup,
+  FooterPopupContentType,
+  FooterSeparator,
+  SnapMode,
+  SnapModePanel,
+  Snap,
+  ToolAssistanceDialog,
+  ToolAssistance,
+  ToolAssistanceItem,
+  ToolAssistanceSeparator,
+  NineZoneNestedStagePanelsManagerProps,
+  NineZoneManager,
+  NineZoneManagerProps,
+  NineZoneStagePanelManagerProps,
+  getDefaultNineZoneStagePanelsManagerProps,
+  NineZoneStagePanelsManagerProps,
+  offsetAndContainInContainer,
+  Tooltip,
+  NestedStagePanelKey,
+  StagePanelsManager,
+  Splitter,
+  StagePanel,
+  StagePanelType,
+  StagePanelTypeHelpers,
+  StagePanels,
+  ExpandableItem,
+  GroupColumn,
+  Group,
+  NestedGroup,
+  GroupToolExpander,
+  GroupTool,
+  withDragInteraction,
+  Item,
+  Toolbar,
+  ToolbarPanelAlignment,
+  Direction,
+  DisabledResizeHandles,
+  SafeAreaInsets,
+  WidgetContent,
+  HandleMode,
+  TabGroup,
+  TabSeparator,
+  Tab,
+  TabMode,
+  HorizontalAnchor,
+  ResizeHandle,
+  Stacked,
+  VerticalAnchor,
+  VerticalAnchorHelpers,
+  NestedToolSettings,
+  ToolSettingsPopup,
+  ScrollableToolSettings,
+  ToolSettingsTab,
+  Tools as ToolsWidget,
+  AppButton,
+  ToolSettings,
+  DraggedWidgetManagerProps,
+  ToolSettingsWidgetManagerProps,
+  ToolSettingsWidgetMode,
+  WidgetManagerProps,
+  ZoneManagerProps,
+  getDefaultZonesManagerProps,
+  WidgetZoneId,
+  widgetZoneIds,
+  ZonesManagerProps,
+  ZonesManagerTargetProps,
+  ZonesManagerWidgetsProps,
+  ZoneTargetType,
+  Outline,
+  BackTarget,
+  MergeTarget,
+  SplitterTarget,
+  SplitterPaneTarget,
+  StagePanelTarget,
+  Zone,
+  Zones,
+} from "@bentley/ui-ninezone";
 
 // tslint:disable-next-line:variable-name
 const TooltipWithTimeout = withTimeout(Tooltip);
@@ -361,10 +382,10 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                 buttons={
                   <>
                     <TitleBarButton>
-                      <i className={"icon icon-placeholder"} />
+                      <i className="icon icon-placeholder" />
                     </TitleBarButton>
                     <TitleBarButton onClick={this._handlePopupClose}>
-                      <i className={"icon icon-close"} />
+                      <i className="icon icon-close" />
                     </TitleBarButton>
                   </>
                 }
@@ -389,31 +410,31 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
               >
                 {this.state.messageCenterTab === MessageCenterActiveTab.AllMessages ?
                   <>
-                    <MessageCenterMessage icon={<i className={"icon icon-status-success nzdemo-success"} />}>
+                    <MessageCenterMessage icon={<i className="icon icon-status-success nzdemo-success" />}>
                       Document saved successfully.
                     </MessageCenterMessage>
-                    <MessageCenterMessage icon={<i className={"icon icon-clock nzdemo-progress"} />}>
+                    <MessageCenterMessage icon={<i className="icon icon-clock nzdemo-progress" />}>
                       <span>Downloading required assets.</span>
                       <br />
                       <i><small>75% complete</small></i>
                     </MessageCenterMessage>
-                    <MessageCenterMessage icon={<i className={"icon icon-status-rejected nzdemo-error"} />}>
+                    <MessageCenterMessage icon={<i className="icon icon-status-rejected nzdemo-error" />}>
                       <span>Cannot attach reference.</span>
                       <br />
                       <i><u><small>Details...</small></u></i>
                     </MessageCenterMessage>
-                    <MessageCenterMessage icon={<i className={"icon icon-status-warning nzdemo-warning"} />}>
+                    <MessageCenterMessage icon={<i className="icon icon-status-warning nzdemo-warning" />}>
                       Missing 10 fonts. Replaces with Arial.
                       </MessageCenterMessage>
-                    <MessageCenterMessage icon={<i className={"icon icon-star nzdemo-favorite"} />}>
+                    <MessageCenterMessage icon={<i className="icon icon-star nzdemo-favorite" />}>
                       Your document has been favorited by 5 people in the...
                     </MessageCenterMessage>
-                    <MessageCenterMessage icon={<i className={"icon icon-status-success nzdemo-success"} />}>
+                    <MessageCenterMessage icon={<i className="icon icon-status-success nzdemo-success" />}>
                       Navigator has successfully updated
                     </MessageCenterMessage>
                   </> :
                   <>
-                    <MessageCenterMessage icon={<i className={"icon icon-status-rejected nzdemo-error"} />}>
+                    <MessageCenterMessage icon={<i className="icon icon-status-rejected nzdemo-error" />}>
                       Missing 10 fonts. Replaced with Arial.
                     </MessageCenterMessage>
                     <MessageCenterMessage>Cannot attach reference</MessageCenterMessage>
@@ -992,7 +1013,7 @@ class ToolSettingsWidget extends React.PureComponent<ToolSettingsWidgetProps> {
               onClick={this.props.onTabClick}
               title="Minimize"
             >
-              <i className={"icon icon-chevron-up"} />
+              <i className="icon icon-chevron-up" />
             </TitleBarButton>
           </div>
         }
@@ -1398,8 +1419,6 @@ interface WidgetContentExampleProps extends Widget6Tab1ContentProps, Widget7Tab1
 class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps> {
   private _content = document.createElement("span");
   private _widgetContent = React.createRef<WidgetContent>();
-  private _container = React.createRef<HTMLDivElement>();
-  private _measurer = React.createRef<HTMLDivElement>();
 
   public componentDidMount() {
     if (!this.props.renderTo)
@@ -1426,10 +1445,7 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
         content = (
           <>
             <Widget2Tab1Content />
-            <div className="nzdemo-measurer" ref={this._measurer} />
-            <div className="nzdemo-zone-measurer">
-              <ReactResizeDetector handleWidth onResize={this._handleResize} />
-            </div>
+            <div className="nzdemo-measurer" />
             <div className="nzdemo-expander" />
           </>
         );
@@ -1486,22 +1502,10 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
     return ReactDOM.createPortal(<WidgetContent
       anchor={this.props.anchor}
       className={className}
-      containerRef={this._container}
       content={content}
       ref={this._widgetContent}
       style={this.props.isDisplayed ? undefined : displayNone}
     />, this._content);
-  }
-
-  private _handleResize = () => {
-    const container = this._container.current;
-    const measurer = this._measurer.current;
-    if (!container || !measurer)
-      return;
-
-    container.classList.add("nzdemo-measure");
-    const measurerBounds = measurer.getBoundingClientRect();
-    container.classList.remove("nzdemo-measure");
   }
 }
 

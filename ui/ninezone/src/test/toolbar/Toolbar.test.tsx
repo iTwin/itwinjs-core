@@ -127,7 +127,7 @@ describe("<PanelsProvider />", () => {
     const children = sinon.fake(() => null);
     mount(
       <PanelsProvider
-        items={"!element"}
+        items="!element"
         panels={null}
       >
         {children}

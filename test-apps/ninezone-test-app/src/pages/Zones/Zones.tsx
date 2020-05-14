@@ -8,21 +8,32 @@ import * as React from "react";
 import { ActionButton, GroupButton } from "@bentley/ui-abstract";
 import { ToolbarItem, ToolbarWithOverflow } from "@bentley/ui-components";
 import { Point } from "@bentley/ui-core";
-import { assert } from "@src/base/assert";
-import { NineZoneDispatchContext, NineZoneProvider } from "@src/base/NineZone";
 import {
-  addPanelWidget, addTab, createNineZoneState, NineZoneStateReducer, PANEL_TOGGLE_COLLAPSED, PANEL_TOGGLE_PINNED, PANEL_TOGGLE_SPAN,
-} from "@src/base/NineZoneState";
-import { Footer } from "@src/footer/Footer";
-import { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
-import { Direction } from "@src/utilities/Direction";
-import { isHorizontalPanelSide, PanelPinnedContext, PanelSideContext, PanelSpanContext } from "@src/widget-panels/Panel";
-import { WidgetPanels } from "@src/widget-panels/Panels";
-import { TabIdContext, useTransientState } from "@src/widget/ContentRenderer";
-import { FloatingWidgets } from "@src/widget/FloatingWidgets";
-import { NavigationArea } from "@src/widget/NavigationArea";
-import { AppButton } from "@src/widget/tools/button/App";
-import { ToolsArea } from "@src/widget/ToolsArea";
+  assert,
+  NineZoneDispatchContext,
+  NineZoneProvider,
+  addPanelWidget,
+  addTab,
+  createNineZoneState,
+  NineZoneStateReducer,
+  PANEL_TOGGLE_COLLAPSED,
+  PANEL_TOGGLE_PINNED,
+  PANEL_TOGGLE_SPAN,
+  Footer,
+  ToolbarPanelAlignment,
+  Direction,
+  isHorizontalPanelSide,
+  PanelPinnedContext,
+  PanelSideContext,
+  PanelSpanContext,
+  WidgetPanels,
+  TabIdContext,
+  useTransientState,
+  FloatingWidgets,
+  NavigationArea,
+  AppButton,
+  ToolsArea,
+} from "@bentley/ui-ninezone";
 import { ToolSettingProps } from "./ToolSetting";
 import ToolSettings from "./ToolSettings";
 

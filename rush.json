@@ -460,6 +460,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "ninezone-test-app",
+      "projectFolder": "test-apps/ninezone-test-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "presentation-test-app",
       "projectFolder": "test-apps/presentation-test-app",
       "reviewCategory": "internal",

@@ -2,11 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import Demo from "./Demo";
+declare module "*.md" {
+  const markdown: string;
+  export = markdown;
+}
 
-ReactDOM.render(
-  <Demo />,
-  document.getElementById("demo"),
-);
+declare module "raf-schd" {
+  function rafSchedule<TFn extends Function>(fn: TFn): ScheduleFn<TFn>;
+  type CancelFn = {
+    cancel: () => void,
+  };
+  export type ScheduleFn<TFn> = TFn & CancelFn;
+  export default rafSchedule;
+}

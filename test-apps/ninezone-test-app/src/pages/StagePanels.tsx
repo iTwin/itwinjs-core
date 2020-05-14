@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { StagePanels } from "@src/stage-panels/StagePanels";
+import { StagePanels } from "@bentley/ui-ninezone";
 
 export default class StagePanelsPage extends React.PureComponent {
   public render() {

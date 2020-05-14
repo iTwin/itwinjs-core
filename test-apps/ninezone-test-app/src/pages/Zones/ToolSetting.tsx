@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { DockedToolSetting } from "@src/tool-settings/Setting";
+import { DockedToolSetting } from "@bentley/ui-ninezone";
 
 export interface CommonToolSettingProps {
   readonly id: string;
