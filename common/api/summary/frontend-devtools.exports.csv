@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 beta;AnimationIntervalTool 
 alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
+beta;ApplyViewByIdTool 
 beta;ApplyViewTool 
 alpha;AttachRealityModelTool 
 alpha;Button
@@ -119,8 +120,12 @@ beta;ToggleShadowFrustumTool
 beta;ToggleSkyboxTool 
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleTileTreeBoundsDecorationTool 
+beta;ToggleViewAttachmentBoundariesTool 
+beta;ToggleViewAttachmentClipShapesTool 
+beta;ToggleViewAttachmentsTool 
 beta;ToggleWiremeshTool 
 beta;ToolArgs
 alpha;ToolSettingsTracker
 alpha;ViewportAddRealityModel 
 alpha;ViewportTileSizeModifierTool 
+beta;class ViewportToggleTool 

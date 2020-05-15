@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { BatchState } from "./BranchState";
+import { BatchState } from "./BatchState";
 import { FeatureOverrides } from "./FeatureOverrides";
 import { Batch } from "./Graphic";
 import { UniformHandle } from "./Handle";

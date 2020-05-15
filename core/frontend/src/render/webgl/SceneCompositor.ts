@@ -16,7 +16,8 @@ import { ViewRect } from "../../ViewRect";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { BatchState, BranchState } from "./BranchState";
+import { BranchState } from "./BranchState";
+import { BatchState } from "./BatchState";
 import {
   AmbientOcclusionGeometry, BlurGeometry, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, ScreenPointsGeometry,
   SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
@@ -888,10 +889,10 @@ abstract class Compositor extends SceneCompositor {
     }
 
     // Render overlays as opaque into the pick buffers. Make sure we use the decoration state (to ignore symbology overrides, esp. the non-locatable flag).
-    this.target.decorationsState.isReadPixelsInProgress = true;
+    this.target.decorationsState.viewFlags.transparency = false;
     this.renderOpaque(commands, CompositeFlags.None, true);
     this.target.endPerfMetricRecord();
-    this.target.decorationsState.isReadPixelsInProgress = false;
+    this.target.decorationsState.viewFlags.transparency = true;
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
@@ -1041,7 +1042,16 @@ abstract class Compositor extends SceneCompositor {
     vf.textures = false;
     vf.transparency = false;
     vf.visibleEdges = false;
-    this._vcBranchState = BranchState.create(top.symbologyOverrides, vf, Transform.createIdentity(), top.clipVolume, top.planarClassifier, top.iModel);
+    this._vcBranchState = new BranchState({
+      symbologyOverrides: top.symbologyOverrides,
+      viewFlags: vf,
+      transform: Transform.createIdentity(),
+      clipVolume: top.clipVolume,
+      planarClassifier: top.planarClassifier,
+      iModel: top.iModel,
+      is3d: top.is3d,
+      edgeSettings: top.edgeSettings,
+    });
 
     this._vcSetStencilRenderState = new RenderState();
     this._vcCopyZRenderState = new RenderState();

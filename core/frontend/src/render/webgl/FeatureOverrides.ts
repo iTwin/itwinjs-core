@@ -11,7 +11,7 @@ import { PackedFeature, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { DisplayParams } from "../primitives/DisplayParams";
 import { WebGLDisposable } from "./Disposable";
-import { LineCode } from "./EdgeOverrides";
+import { LineCode } from "./LineCode";
 import { GL } from "./GL";
 import { UniformHandle } from "./Handle";
 import { OvrFlags, TextureUnit } from "./RenderFlags";

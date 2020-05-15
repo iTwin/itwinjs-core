@@ -16,7 +16,8 @@ import { ViewState3d } from "../../ViewState";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
-import { BatchState, BranchStack } from "./BranchState";
+import { BatchState } from "./BatchState";
+import { BranchStack } from "./BranchStack";
 import { CombineTexturesGeometry, ViewportQuadGeometry } from "./CachedGeometry";
 import { WebGLDisposable } from "./Disposable";
 import { DrawCommands } from "./DrawCommand";
@@ -418,7 +419,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const prevProjMatrix = target.uniforms.frustum.projectionMatrix;
     target.uniforms.frustum.changeProjectionMatrix(PlanarClassifier._postProjectionMatrix.multiplyMatrixMatrix(prevProjMatrix));
 
-    target.uniforms.branch.changeViewFlags(vf);
+    target.uniforms.branch.changeRenderPlan(vf, target.plan.is3d, target.plan.hline);
 
     const renderCommands = this._renderCommands;
     renderCommands.reset(target, this._branchStack, this._batchState);

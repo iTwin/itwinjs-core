@@ -43,7 +43,7 @@ import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } fr
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
 import { Debug } from "./Diagnostics";
 import { WebGLDisposable } from "./Disposable";
-import { LineCode } from "./EdgeOverrides";
+import { LineCode } from "./LineCode";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";

@@ -16,7 +16,7 @@ import { AttributeMap } from "./AttributeMap";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
-import { LineCode } from "./EdgeOverrides";
+import { LineCode } from "./LineCode";
 import { fromSumOf, FrustumUniformType } from "./FrustumUniforms";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle2d, QBufferHandle3d } from "./Handle";

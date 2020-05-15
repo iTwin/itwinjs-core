@@ -49,6 +49,20 @@ export class AnimationIntervalTool extends Tool {
 export function appendDataListEntries(dl: DataList, entries: DataListEntry[]): void;
 
 // @beta
+export class ApplyViewByIdTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(viewId?: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ApplyViewTool extends Tool {
     // (undocumented)
     static get maxArgs(): undefined;
@@ -493,15 +507,9 @@ export class ExtensionServiceTool extends Tool {
 }
 
 // @beta
-export class FadeOutTool extends Tool {
+export class FadeOutTool extends ViewportToggleTool {
     // (undocumented)
-    static get maxArgs(): number;
-    // (undocumented)
-    static get minArgs(): number;
-    // (undocumented)
-    parseAndRun(...args: string[]): boolean;
-    // (undocumented)
-    run(enable?: boolean): boolean;
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -514,15 +522,9 @@ export class FpsTracker {
     }
 
 // @beta
-export class FreezeSceneTool extends Tool {
+export class FreezeSceneTool extends ViewportToggleTool {
     // (undocumented)
-    static get maxArgs(): number;
-    // (undocumented)
-    static get minArgs(): number;
-    // (undocumented)
-    parseAndRun(...args: string[]): boolean;
-    // (undocumented)
-    run(enable?: boolean): boolean;
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -1016,11 +1018,9 @@ export class TileStatisticsTracker {
     }
 
 // @alpha
-export class Toggle3dManipulationsTool extends Tool {
+export class Toggle3dManipulationsTool extends ViewportToggleTool {
     // (undocumented)
-    parseAndRun(...args: string[]): boolean;
-    // (undocumented)
-    run(allow?: boolean): boolean;
+    protected toggle(vp: Viewport, allow?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -1187,6 +1187,30 @@ export class ToggleTileTreeBoundsDecorationTool extends Tool {
 }
 
 // @beta
+export class ToggleViewAttachmentBoundariesTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleViewAttachmentsTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ToggleWiremeshTool extends RenderSystemDebugControlTool {
     // (undocumented)
     execute(control: RenderSystemDebugControl): void;
@@ -1235,6 +1259,20 @@ export class ViewportTileSizeModifierTool extends Tool {
     run(modifier?: number): boolean;
     // (undocumented)
     static toolId: string;
+}
+
+// @beta
+export abstract class ViewportToggleTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    protected abstract toggle(vp: Viewport, enable?: boolean): void;
 }
 
 

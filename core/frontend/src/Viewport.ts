@@ -44,6 +44,7 @@ import { areaToEyeHeight, eyeToCartographicOnGlobe, GlobalLocation, metersToRang
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewRect } from "./ViewRect";
 import { MarginPercent, ViewPose, ViewPose3d, ViewState, ViewState2d, ViewState3d, ViewStatus } from "./ViewState";
+import { SheetViewState } from "./Sheet";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -872,6 +873,42 @@ export abstract class Viewport implements IDisposable {
    */
   public lastFlashedElem?: string;
 
+  private _wantViewAttachments = true;
+  /** For debug purposes, controls whether or not view attachments are displayed in sheet views.
+   * @internal
+   */
+  public get wantViewAttachments() { return this._wantViewAttachments; }
+  public set wantViewAttachments(want: boolean) {
+    if (want !== this._wantViewAttachments) {
+      this._wantViewAttachments = want;
+      this.invalidateScene();
+    }
+  }
+
+  private _wantViewAttachmentBoundaries = false;
+  /** For debug purposes, controls whether or not the boundary of each view attachment is displayed in a sheet view.
+   * @internal
+   */
+  public get wantViewAttachmentBoundaries() { return this._wantViewAttachmentBoundaries; }
+  public set wantViewAttachmentBoundaries(want: boolean) {
+    if (want !== this._wantViewAttachmentBoundaries) {
+      this._wantViewAttachmentBoundaries = want;
+      this.invalidateScene();
+    }
+  }
+
+  private _wantViewAttachmentClipShapes = false;
+  /** For debug purposes, controls whether or not graphics representing the clipping shapes of each view attachment are displayed in a sheet view.
+   * @internal
+   */
+  public get wantViewAttachmentClipShapes() { return this._wantViewAttachmentClipShapes; }
+  public set wantViewAttachmentClipShapes(want: boolean) {
+    if (want !== this._wantViewAttachmentClipShapes) {
+      this._wantViewAttachmentClipShapes = want;
+      this.invalidateScene();
+    }
+  }
+
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
   private static _nextViewportId = 1;
@@ -1118,10 +1155,19 @@ export abstract class Viewport implements IDisposable {
    */
   public isSubCategoryVisible(id: Id64String): boolean { return this.view.isSubCategoryVisible(id); }
 
-  private invalidateShadows(): void {
+  /** Some changes may or may not require us to invalidate the scene.
+   * Specifically, when shadows are enabled or we are displaying view attachments, the following changes may affect the visibility or transparency of elements or features:
+   * - Viewed categories and subcategories;
+   * - Always/never drawn elements
+   * - Symbology overrides.
+   */
+  private maybeInvalidateScene(): void {
     // When shadows are being displayed and the set of displayed categories changes, we must invalidate the scene so that shadows will be regenerated.
     // Same occurs when changing feature symbology overrides (e.g., always/never-drawn element sets, transparency override)
-    if (this._sceneValid && this.view.displayStyle.wantShadows)
+    if (!this._sceneValid)
+      return;
+
+    if (this.view.displayStyle.wantShadows || this.view instanceof SheetViewState)
       this.invalidateScene();
   }
 
@@ -1134,7 +1180,7 @@ export abstract class Viewport implements IDisposable {
    */
   public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false): void {
     this._changeFlags.setViewedCategories();
-    this.invalidateShadows();
+    this.maybeInvalidateScene();
 
     if (!display) {
       this.view.categorySelector.dropCategories(categories);
@@ -1187,7 +1233,7 @@ export abstract class Viewport implements IDisposable {
     const json = undefined !== curOvr ? curOvr.toJSON() : {};
     json.invisible = !display;
     this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json)); // will set the ChangeFlag appropriately
-    this.invalidateShadows();
+    this.maybeInvalidateScene();
   }
 
   /** The settings controlling how a background map is displayed within a view.
@@ -1454,7 +1500,7 @@ export abstract class Viewport implements IDisposable {
 
       this._alwaysDrawnExclusive = false;
       this._changeFlags.setAlwaysDrawn();
-      this.invalidateShadows();
+      this.maybeInvalidateScene();
     }
   }
 
@@ -1465,7 +1511,7 @@ export abstract class Viewport implements IDisposable {
     if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
       this.neverDrawn.clear();
       this._changeFlags.setNeverDrawn();
-      this.invalidateShadows();
+      this.maybeInvalidateScene();
     }
   }
 
@@ -1475,7 +1521,7 @@ export abstract class Viewport implements IDisposable {
   public setNeverDrawn(ids: Id64Set): void {
     this._neverDrawn = ids;
     this._changeFlags.setNeverDrawn();
-    this.invalidateShadows();
+    this.maybeInvalidateScene();
   }
 
   /** Specify the Ids of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
@@ -1488,7 +1534,7 @@ export abstract class Viewport implements IDisposable {
     this._alwaysDrawn = ids;
     this._alwaysDrawnExclusive = exclusive;
     this._changeFlags.setAlwaysDrawn();
-    this.invalidateShadows();
+    this.maybeInvalidateScene();
   }
 
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
@@ -1528,7 +1574,7 @@ export abstract class Viewport implements IDisposable {
    */
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
-    this.invalidateShadows();
+    this.maybeInvalidateScene();
   }
 
   /** @internal */
@@ -3186,12 +3232,12 @@ export class TwoWayViewportSync {
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
 
-  public static create(view: ViewState, viewRect?: ViewRect, lockAspectRatio = false) {
+  public static create(view: ViewState, viewRect?: ViewRect, lockAspectRatio = false, target?: RenderTarget) {
     const rect = new ViewRect(0, 0, 1, 1);
     if (undefined !== viewRect)
       rect.setFrom(viewRect);
 
-    const vp = new this(IModelApp.renderSystem.createOffscreenTarget(rect));
+    const vp = new this(target ?? IModelApp.renderSystem.createOffscreenTarget(rect));
     vp._isAspectRatioLocked = lockAspectRatio;
     vp.changeView(view);
     vp._decorationsValid = true;

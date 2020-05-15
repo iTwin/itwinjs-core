@@ -31,6 +31,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, GlobalLocation } from "./ViewGlobalLocation";
+import { Frustum2d } from "./Frustum2d";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewChangeOptions, Viewport } from "./Viewport";
 
@@ -1013,6 +1014,9 @@ export abstract class ViewState3d extends ViewState {
   public readonly camera: Camera;
   /** Minimum distance for front plane */
   public forceMinFrontDist = 0.0;
+  /** This function is never called.
+   * @deprecated
+   */
   public onRenderFrame(_viewport: Viewport): void { }
 
   /** Provides access to optional detail settings for this view.
@@ -1958,6 +1962,9 @@ export abstract class ViewState2d extends ViewState {
     return this.getViewedExtents();
   }
 
+  /** This function is never called.
+   * @deprecated
+   */
   public onRenderFrame(_viewport: Viewport): void { }
   public async load(): Promise<void> {
     await super.load();
@@ -1972,8 +1979,8 @@ export abstract class ViewState2d extends ViewState {
   }
 
   public allow3dManipulations(): boolean { return false; }
-  public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }
-  public getExtents() { return new Vector3d(this.delta.x, this.delta.y); }
+  public getOrigin() { return new Point3d(this.origin.x, this.origin.y, Frustum2d.minimumZExtents.low); }
+  public getExtents() { return new Vector3d(this.delta.x, this.delta.y, Frustum2d.minimumZExtents.length()); }
   public getRotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
   public setExtents(delta: XAndY) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: XAndY) { this.origin.set(origin.x, origin.y); }

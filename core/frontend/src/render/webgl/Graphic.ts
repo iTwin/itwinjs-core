@@ -11,7 +11,7 @@ import { Transform } from "@bentley/geometry-core";
 import { ElementAlignedBox3d, PackedFeatureTable, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
+import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
@@ -23,6 +23,7 @@ import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
 import { TextureDrape } from "./TextureDrape";
+import { EdgeSettings } from "./EdgeSettings";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -173,10 +174,11 @@ export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
   public localToWorldTransform: Transform;
   public clips?: ClipPlanesVolume | ClipMaskVolume;
-  public planarClassifier?: PlanarClassifier;
-  public textureDrape?: TextureDrape;
-  public readonly animationId?: number;
+  public readonly planarClassifier?: PlanarClassifier;
+  public readonly textureDrape?: TextureDrape;
+  public readonly edgeSettings?: EdgeSettings;
   public readonly iModel?: IModelConnection; // used chiefly for readPixels to identify context of picked Ids.
+  public readonly frustum?: GraphicBranchFrustum;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -186,29 +188,43 @@ export class Branch extends Graphic {
     if (undefined !== viewFlags)
       branch.setViewFlags(viewFlags);
 
-    if (undefined !== opts) {
-      this.clips = opts.clipVolume as any;
-      this.iModel = opts.iModel;
+    if (!opts)
+      return;
 
-      if (undefined !== opts.classifierOrDrape) {
-        if (opts.classifierOrDrape instanceof PlanarClassifier)
-          this.planarClassifier = opts.classifierOrDrape;
-        else
-          this.textureDrape = opts.classifierOrDrape as TextureDrape;
-      }
-    }
+    this.clips = opts.clipVolume as any;
+    this.iModel = opts.iModel;
+    this.frustum = opts.frustum;
+
+    if (opts.hline)
+      this.edgeSettings = EdgeSettings.create(opts.hline);
+
+    if (opts.classifierOrDrape instanceof PlanarClassifier)
+      this.planarClassifier = opts.classifierOrDrape;
+    else if (opts.classifierOrDrape instanceof TextureDrape)
+      this.textureDrape = opts.classifierOrDrape;
   }
 
-  public get isDisposed(): boolean { return 0 === this.branch.entries.length; }
-  public dispose() { this.branch.dispose(); }
+  public get isDisposed(): boolean {
+    return 0 === this.branch.entries.length;
+  }
+
+  public dispose() {
+    this.branch.dispose();
+  }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.branch.collectStatistics(stats);
     if (undefined !== this.clips)
       this.clips.collectStatistics(stats);
   }
 
-  public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
-  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void { commands.addHiliteBranch(this, pass); }
+  public addCommands(commands: RenderCommands): void {
+    commands.addBranch(this);
+  }
+
+  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+    commands.addHiliteBranch(this, pass);
+  }
 }
 
 /** @internal */

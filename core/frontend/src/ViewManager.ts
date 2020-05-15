@@ -110,10 +110,7 @@ export class ViewManager {
     this.addDecorator(IModelApp.toolAdmin);
     this.cursor = "default";
 
-    const removeTileLoad = IModelApp.tileAdmin.onTileLoad.addListener((_) => this.invalidateScenes());
-    const removeTreeLoad = IModelApp.tileAdmin.onTileTreeLoad.addListener((_) => this.invalidateScenes());
-    const removeChildLoad = IModelApp.tileAdmin.onTileTreeLoad.addListener((_) => this.invalidateScenes());
-    this._removeTileAdminEventListeners = () => { removeTileLoad(); removeTreeLoad(); removeChildLoad(); };
+    this._removeTileAdminEventListeners = IModelApp.tileAdmin.addLoadListener((_) => this.invalidateScenes());
 
     const options = IModelApp.renderSystem.options;
     this._doIdleWork = true === options.doIdleWork;

@@ -25,7 +25,7 @@ import {
   ToggleRealityTileBounds, ToggleRealityTileFreeze, ToggleRealityTileLogging, ToggleRealityTilePreload,
 } from "./tools/RenderTargetTools";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
-import { ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
+import { ApplyViewByIdTool, ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
 import { SelectElementsByIdTool } from "./tools/SelectionTools";
 import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from "./tools/SourceAspectIdTools";
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
@@ -33,7 +33,7 @@ import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecora
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import {
   ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool,
-  ShowTileVolumesTool, Toggle3dManipulationsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool,
+  ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool,
 } from "./tools/ViewportTools";
 import { ExtensionServiceTool } from "./tools/ExtensionServiceTool";
 
@@ -60,6 +60,7 @@ export class FrontendDevTools {
     const i18n = IModelApp.i18n.registerNamespace("FrontendDevTools");
     const tools = [
       AnimationIntervalTool,
+      ApplyViewByIdTool,
       ApplyViewTool,
       ChangeEmphasisSettingsTool,
       ChangeHiliteSettingsTool,
@@ -102,6 +103,9 @@ export class FrontendDevTools {
       ToggleTileRequestDecorationTool,
       ToggleTileTreeBoundsDecorationTool,
       ToggleToolTipsTool,
+      ToggleViewAttachmentBoundariesTool,
+      ToggleViewAttachmentClipShapesTool,
+      ToggleViewAttachmentsTool,
       ToggleWiremeshTool,
       ToggleRealityTileBounds,
       ToggleRealityTilePreload,
