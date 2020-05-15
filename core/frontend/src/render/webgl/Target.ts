@@ -22,7 +22,6 @@ import { Decorations } from "../Decorations";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { AnimationBranchStates } from "../GraphicBranch";
 import { Pixel } from "../Pixel";
-import { ClippingType } from "../RenderClipVolume";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { RenderPlan } from "../RenderPlan";
@@ -33,7 +32,7 @@ import { Scene } from "../Scene";
 import { ViewClipSettings } from "../ViewClipSettings";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
-import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
+import { ClipVolume } from "./ClipVolume";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -106,8 +105,6 @@ function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   image.data[i1] = tmp;
 }
 
-type ClipVolume = ClipPlanesVolume | ClipMaskVolume;
-
 /** @internal */
 export interface Hilites {
   readonly elements: Id64.Uint32Set;
@@ -146,7 +143,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _overlayRenderState: RenderState;
   protected _compositor: SceneCompositor;
   private _activeClipVolume?: ClipVolume;
-  private _clipMask?: TextureHandle;
   public readonly clips = new Clips();
   protected _fbo?: FrameBuffer;
   protected _dcAssigned: boolean = false;
@@ -292,21 +288,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this.uniforms.branch.modelViewMatrix.multiplyPoint3dQuietNormalize(modelPt, result);
   }
 
+  public get hasClipVolume(): boolean { return this.clips.isValid && this.uniforms.branch.top.showClipVolume; }
   public get clipDef(): ClipDef {
     if (this.hasClipVolume)
-      return new ClipDef(ClippingType.Planes, this.clips.count);
-    else if (this.hasClipMask)
-      return new ClipDef(ClippingType.Mask);
+      return new ClipDef(this.clips.count);
     else
       return new ClipDef();
-  }
-  public get hasClipVolume(): boolean { return this.clips.isValid && this.uniforms.branch.top.showClipVolume; }
-  public get hasClipMask(): boolean { return undefined !== this.clipMask; }
-  public get clipMask(): TextureHandle | undefined { return this._clipMask; }
-  public set clipMask(mask: TextureHandle | undefined) {
-    assert((mask === undefined) === this.hasClipMask);
-    assert(this.is2d);
-    this._clipMask = mask;
   }
 
   public get is2d(): boolean { return this.uniforms.frustum.is2d; }

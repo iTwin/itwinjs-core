@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { ClipShape, ClipVector, Point3d } from "@bentley/geometry-core";
 import { IModelApp } from "../IModelApp";
-import { ClipPlanesVolume, Clips, FrustumUniforms, FrustumUniformType } from "../webgl";
+import { Clips, ClipVolume, FrustumUniforms, FrustumUniformType } from "../webgl";
 
 class TestUniforms extends FrustumUniforms {
   public constructor() {
@@ -73,7 +73,7 @@ describe("Clips", () => {
       const clips: Clips = new Clips();
       expect(clips.isValid).to.equal(false);
       expect(clips.count).to.equal(0);
-      const clipVolume = ClipPlanesVolume.create(clipVector);
+      const clipVolume = ClipVolume.create(clipVector);
       expect(clipVolume).to.not.be.undefined;
 
       const data = clipVolume!.getTextureData() as Float32Array;

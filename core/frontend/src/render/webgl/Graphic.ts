@@ -14,7 +14,7 @@ import { FeatureSymbology } from "../FeatureSymbology";
 import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
+import { ClipVolume } from "./ClipVolume";
 import { WebGLDisposable } from "./Disposable";
 import { FeatureOverrides } from "./FeatureOverrides";
 import { PlanarClassifier } from "./PlanarClassifier";
@@ -173,7 +173,7 @@ export class Batch extends Graphic {
 export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
   public localToWorldTransform: Transform;
-  public clips?: ClipPlanesVolume | ClipMaskVolume;
+  public clips?: ClipVolume;
   public readonly planarClassifier?: PlanarClassifier;
   public readonly textureDrape?: TextureDrape;
   public readonly edgeSettings?: EdgeSettings;

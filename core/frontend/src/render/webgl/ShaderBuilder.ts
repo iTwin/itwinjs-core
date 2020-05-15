@@ -7,13 +7,12 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ClippingType } from "../RenderClipVolume";
 import { AttributeDetails } from "./AttributeMap";
 import { addClipping } from "./glsl/Clipping";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { volClassOpaqueColor } from "./glsl/PlanarClassification";
 import { addPosition, earlyVertexDiscard, lateVertexDiscard, vertexDiscard } from "./glsl/Vertex";
-import { CompileStatus, ShaderProgram } from "./ShaderProgram";
+import { ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";
 import { ClipDef } from "./TechniqueFlags";
 
@@ -1066,26 +1065,12 @@ export class FragmentShaderBuilder extends ShaderBuilder {
 export class ClippingShaders {
   public builder: ProgramBuilder;
   public shaders: ShaderProgram[] = [];
-  public maskShader?: ShaderProgram;
 
-  public constructor(prog: ProgramBuilder, context: WebGLRenderingContext | WebGL2RenderingContext, wantMask: boolean) {
+  public constructor(prog: ProgramBuilder) {
     this.builder = prog.clone();
     this.builder.vert.headerComment += "-ClipPlanes";
     this.builder.frag.headerComment += "-ClipPlanes";
     addClipping(this.builder, ClipDef.forPlanes(6));
-
-    if (wantMask) {
-      const maskBuilder = prog.clone();
-      maskBuilder.vert.headerComment += "-ClipMask";
-      maskBuilder.frag.headerComment += "-ClipMask";
-      addClipping(maskBuilder, ClipDef.forMask());
-      this.maskShader = maskBuilder.buildProgram(context);
-      assert(this.maskShader !== undefined);
-    }
-  }
-
-  public compileShaders(): boolean {
-    return undefined === this.maskShader || this.maskShader.compile() === CompileStatus.Success;
   }
 
   private static roundUpToNearestMultipleOf(value: number, factor: number): number {
@@ -1108,9 +1093,7 @@ export class ClippingShaders {
   }
 
   public getProgram(clipDef: ClipDef): ShaderProgram | undefined {
-    if (clipDef.type === ClippingType.Mask) {
-      return this.maskShader;
-    } else if (clipDef.type === ClippingType.Planes) {
+    if (clipDef.isValid) {
       assert(clipDef.numberOfPlanes > 0);
       const numClips = ClippingShaders.roundNumPlanes(clipDef.numberOfPlanes);
       for (const shader of this.shaders)

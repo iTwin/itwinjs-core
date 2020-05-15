@@ -13,7 +13,6 @@ import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
-import { createClipMaskProgram } from "./glsl/ClipMask";
 import { createCombineTexturesProgram } from "./glsl/CombineTextures";
 import { addEyeSpace, addFrustum, addShaderFlags } from "./glsl/Common";
 import { createCompositeProgram } from "./glsl/Composite";
@@ -101,11 +100,6 @@ export abstract class VariedTechnique implements Technique {
         allCompiled = false;
     }
 
-    for (const clipProg of this._clippingPrograms) {
-      if (!clipProg.compileShaders())
-        allCompiled = false;
-    }
-
     return allCompiled;
   }
 
@@ -128,7 +122,6 @@ export abstract class VariedTechnique implements Technique {
     this._basicPrograms.length = 0;
     for (const clipShaderObj of this._clippingPrograms) {
       assert(undefined !== clipShaderObj);
-      dispose(clipShaderObj.maskShader);
 
       for (const clipShader of clipShaderObj.shaders) {
         assert(undefined !== clipShader);
@@ -136,7 +129,6 @@ export abstract class VariedTechnique implements Technique {
       }
 
       clipShaderObj.shaders.length = 0;
-      clipShaderObj.maskShader = undefined;
       this._isDisposed = true;
     }
   }
@@ -156,16 +148,16 @@ export abstract class VariedTechnique implements Technique {
       addLogDepth(builder);
 
     const index = this.getShaderIndex(flags);
-    this.addProgram(builder, index, gl, !flags.isClassified);
+    this.addProgram(builder, index, gl);
   }
 
-  private addProgram(builder: ProgramBuilder, index: number, gl: WebGLRenderingContext | WebGL2RenderingContext, wantClippingMask: boolean): void {
+  private addProgram(builder: ProgramBuilder, index: number, gl: WebGLRenderingContext | WebGL2RenderingContext): void {
     assert(this._basicPrograms[index] === undefined);
     this._basicPrograms[index] = builder.buildProgram(gl);
     assert(this._basicPrograms[index] !== undefined);
 
     assert(this._clippingPrograms[index] === undefined);
-    this._clippingPrograms[index] = new ClippingShaders(builder, gl, wantClippingMask);
+    this._clippingPrograms[index] = new ClippingShaders(builder);
     assert(this._clippingPrograms[index] !== undefined);
   }
 
@@ -644,7 +636,6 @@ const _techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.CompositeHiliteAndOcclusion },
   { techniqueId: TechniqueId.CompositeAll },
   { techniqueId: TechniqueId.VolClassColorUsingStencil },
-  { techniqueId: TechniqueId.ClipMask },
   { techniqueId: TechniqueId.EVSMFromDepth },
   { techniqueId: TechniqueId.SkyBox },
   { techniqueId: TechniqueId.SkySphereGradient },
@@ -790,7 +781,6 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));
     this._list[TechniqueId.CopyColorNoAlpha] = new SingularTechnique(createCopyColorProgram(gl, false));
     this._list[TechniqueId.CopyPickBuffers] = new SingularTechnique(createCopyPickBuffersProgram(gl));
-    this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
     this._list[TechniqueId.EVSMFromDepth] = new SingularTechnique(createEVSMProgram(gl));
     this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
     this._list[TechniqueId.SkySphereGradient] = new SingularTechnique(createSkySphereProgram(gl, true));

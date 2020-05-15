@@ -67,7 +67,6 @@ beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
 alpha;ClipEventType
-beta;ClippingType
 internal;ClipResult
 internal;Clips
 public;Cluster

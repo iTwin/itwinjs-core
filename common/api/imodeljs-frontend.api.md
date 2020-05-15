@@ -1577,13 +1577,6 @@ export enum ClipEventType {
     NewPlane = 1
 }
 
-// @beta
-export enum ClippingType {
-    Mask = 1,
-    None = 0,
-    Planes = 2
-}
-
 // @internal
 export enum ClipResult {
     NewElements = 1,
@@ -6240,7 +6233,6 @@ export abstract class RenderClipVolume implements IDisposable {
     abstract get hasOutsideClipColor(): boolean;
     // @internal (undocumented)
     abstract setClipColors(outsideColor: ColorDef | undefined, insideColor: ColorDef | undefined): void;
-    abstract get type(): ClippingType;
 }
 
 // @public
@@ -6701,10 +6693,6 @@ export abstract class RenderSystem implements IDisposable {
     createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
     createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
-    // @internal (undocumented)
-    createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList;
-    // @internal (undocumented)
-    createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[];
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
@@ -7940,9 +7928,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get clipDef(): ClipDef;
     // (undocumented)
-    get clipMask(): TextureHandle | undefined;
-    set clipMask(mask: TextureHandle | undefined);
-    // (undocumented)
     readonly clips: Clips;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
@@ -8038,8 +8023,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     getTextureDrape(id: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
     getWorldDecorations(decs: GraphicList): Branch;
-    // (undocumented)
-    get hasClipMask(): boolean;
     // (undocumented)
     get hasClipVolume(): boolean;
     // (undocumented)

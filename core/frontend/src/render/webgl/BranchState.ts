@@ -10,7 +10,7 @@ import { Transform } from "@bentley/geometry-core";
 import { HiddenLine, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
+import { ClipVolume } from "./ClipVolume";
 import { Branch } from "./Graphic";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TextureDrape } from "./TextureDrape";
@@ -24,7 +24,7 @@ export interface BranchStateOptions {
   readonly transform: Transform;
   viewFlags: ViewFlags;
   symbologyOverrides: FeatureSymbology.Overrides;
-  readonly clipVolume?: ClipMaskVolume | ClipPlanesVolume;
+  readonly clipVolume?: ClipVolume;
   readonly planarClassifier?: PlanarClassifier;
   readonly textureDrape?: TextureDrape;
   readonly edgeSettings: EdgeSettings;

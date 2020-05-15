@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { IModelApp } from "../IModelApp";
-import { ClippingType } from "../render/RenderClipVolume";
 import { RenderSystem } from "../render/RenderSystem";
 import {
   AttributeMap, CompileStatus, DrawParams, FeatureMode, FragmentShaderComponent, ProgramBuilder, ShaderProgramParams, SingularTechnique, System,
@@ -115,7 +114,6 @@ describe("Techniques", () => {
 
   it("should successfully compile surface shader with clipping planes", () => {
     const flags = new TechniqueFlags(true);
-    flags.clip.type = ClippingType.Planes;
     flags.clip.numberOfPlanes = 6;
     flags.featureMode = FeatureMode.Overrides;
 

@@ -11,18 +11,6 @@ import { ClipVector } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { RenderMemory } from "./RenderMemory";
 
-/** Describes the type of a RenderClipVolume.
- * @beta
- */
-export enum ClippingType {
-  /** No clip volume. */
-  None,
-  /** A 2d mask which excludes geometry obscured by the mask. */
-  Mask,
-  /** A 3d set of convex clipping planes which excludes geometry outside of the planes. */
-  Planes,
-}
-
 /** An opaque representation of a clip volume applied to geometry within a [[Viewport]].
  * A RenderClipVolume is created from a [[ClipVector]] and takes ownership of that ClipVector, expecting that it will not be modified while the RenderClipVolume still references it.
  * @see [System.createClipVolume]
@@ -35,9 +23,6 @@ export abstract class RenderClipVolume implements IDisposable /* , RenderMemory.
   protected constructor(clipVector: ClipVector) {
     this.clipVector = clipVector;
   }
-
-  /** Returns the type of this clipping volume. */
-  public abstract get type(): ClippingType;
 
   /** Disposes of any WebGL resources owned by this volume. Must be invoked when finished with the clip volume object to prevent memory leaks. */
   public abstract dispose(): void;

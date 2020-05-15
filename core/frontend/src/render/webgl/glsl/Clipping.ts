@@ -7,13 +7,11 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ClippingType } from "../../RenderClipVolume";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { ClipDef } from "../TechniqueFlags";
 import { addEyeSpace } from "./Common";
-import { addWindowToTexCoords } from "./Fragment";
 import { addModelViewMatrix } from "./Vertex";
 
 const getClipPlaneFloat = `
@@ -102,19 +100,9 @@ const applyClipPlanes = `
   return false;
 `;
 
-const applyClipMask = `
-  vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
-  vec4 texel = TEXTURE(s_clipSampler, tc);
-  if (texel.r < 0.5)
-    discard;
-  return false;
-`;
-
 /** @internal */
 export function addClipping(prog: ProgramBuilder, clipDef: ClipDef) {
-  if (clipDef.type === ClippingType.Mask)
-    addClippingMask(prog);
-  else if (clipDef.type === ClippingType.Planes)
+  if (clipDef.isValid)
     addClippingPlanes(prog, clipDef.numberOfPlanes);
 }
 
@@ -165,18 +153,4 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
     });
   }, VariablePrecision.High);
   frag.set(FragmentShaderComponent.ApplyClipping, applyClipPlanes);
-}
-
-function addClippingMask(prog: ProgramBuilder) {
-  prog.frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
-    program.addGraphicUniform("s_clipSampler", (uniform, params) => {
-      const texture = params.target.clipMask;
-      assert(texture !== undefined);
-      if (texture !== undefined)
-        texture.bindSampler(uniform, TextureUnit.ClipVolume);
-    });
-  }, VariablePrecision.High);
-
-  addWindowToTexCoords(prog.frag);
-  prog.frag.set(FragmentShaderComponent.ApplyClipping, applyClipMask);
 }

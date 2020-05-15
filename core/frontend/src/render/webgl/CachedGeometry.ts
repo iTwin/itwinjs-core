@@ -273,23 +273,6 @@ export abstract class IndexedGeometry extends CachedGeometry {
   public get qScale() { return this._params.positions.scale; }
 }
 
-/** A geometric primitive representative of a set of clipping planes to clip a volume of space.
- * @internal
- */
-export class ClipMaskGeometry extends IndexedGeometry {
-  public constructor(indices: Uint32Array, vertices: QPoint3dList) {
-    super(IndexedGeometryParams.createFromList(vertices, indices)!);
-  }
-
-  public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addClipVolume(this._params.positions.bytesUsed + this._params.indices.bytesUsed);
-  }
-
-  public get techniqueId(): TechniqueId { return TechniqueId.ClipMask; }
-  public getRenderPass(_target: Target): RenderPass { return RenderPass.None; }
-  public get renderOrder(): RenderOrder { return RenderOrder.UnlitSurface; }
-}
-
 /** a cube of quads in normalized device coordinates for skybox rendering techniques
  * @internal
  */
