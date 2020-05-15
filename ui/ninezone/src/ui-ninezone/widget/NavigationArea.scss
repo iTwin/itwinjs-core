@@ -31,7 +31,7 @@
 
     > .nz-vertical-toolbar-container {
       grid-area: vtools;
-      height: 100%;
+      height: calc(100% - 60px);
       display: inline-flex;
       flex-direction: column;
       align-items: flex-end;
