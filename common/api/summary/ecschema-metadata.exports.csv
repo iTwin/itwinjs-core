@@ -207,6 +207,7 @@ internal;SchemaReadHelper
 alpha;SchemaReferenceDelta 
 alpha;SchemaReferenceMissing 
 beta;SchemaReferenceProps
+beta;SchemaValidater
 beta;SchemaValidationVisitor 
 internal;SchemaWalker
 beta;ScientificType
