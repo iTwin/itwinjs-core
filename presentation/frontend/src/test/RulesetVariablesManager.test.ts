@@ -6,6 +6,7 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
+import sinon from "sinon";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { VariableValueTypes } from "@bentley/presentation-common";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
@@ -47,6 +48,14 @@ describe("RulesetVariablesManager", () => {
       expect(await vars.getString(variableId)).to.eq(value);
     });
 
+    it("raises onVariableChanged event when variable changes", async () => {
+      const spy = sinon.spy();
+      vars.onVariableChanged.addListener(spy);
+      const value = faker.random.word();
+      await vars.setString(variableId, value);
+      expect(spy).to.be.calledWith(variableId);
+    });
+
   });
 
   describe("bool", () => {
@@ -59,6 +68,14 @@ describe("RulesetVariablesManager", () => {
       const value = faker.random.boolean();
       await vars.setBool(variableId, value);
       expect(await vars.getBool(variableId)).to.eq(value);
+    });
+
+    it("raises onVariableChanged event when variable changes", async () => {
+      const spy = sinon.spy();
+      vars.onVariableChanged.addListener(spy);
+      const value = faker.random.boolean();
+      await vars.setBool(variableId, value);
+      expect(spy).to.be.calledWith(variableId);
     });
 
     it("handles type conversion", async () => {
@@ -91,6 +108,14 @@ describe("RulesetVariablesManager", () => {
       expect(await vars.getInt(variableId)).to.eq(value);
     });
 
+    it("raises onVariableChanged event when variable changes", async () => {
+      const spy = sinon.spy();
+      vars.onVariableChanged.addListener(spy);
+      const value = faker.random.number();
+      await vars.setInt(variableId, value);
+      expect(spy).to.be.calledWith(variableId);
+    });
+
     it("handles type conversion", async () => {
       const value = faker.random.number();
       await vars.setInt(variableId, value);
@@ -113,6 +138,14 @@ describe("RulesetVariablesManager", () => {
       const value = [faker.random.number(), faker.random.number()];
       await vars.setInts(variableId, value);
       expect(await vars.getInts(variableId)).to.eq(value);
+    });
+
+    it("raises onVariableChanged event when variable changes", async () => {
+      const spy = sinon.spy();
+      vars.onVariableChanged.addListener(spy);
+      const value = [faker.random.number(), faker.random.number()];
+      await vars.setInts(variableId, value);
+      expect(spy).to.be.calledWith(variableId);
     });
 
     it("handles type conversion", async () => {
@@ -139,6 +172,14 @@ describe("RulesetVariablesManager", () => {
       expect(await vars.getId64(variableId)).to.eq(value);
     });
 
+    it("raises onVariableChanged event when variable changes", async () => {
+      const spy = sinon.spy();
+      vars.onVariableChanged.addListener(spy);
+      const value = createRandomId();
+      await vars.setId64(variableId, value);
+      expect(spy).to.be.calledWith(variableId);
+    });
+
     it("handles type conversion", async () => {
       const value = createRandomId();
       await vars.setId64(variableId, value);
@@ -161,6 +202,14 @@ describe("RulesetVariablesManager", () => {
       const value = [createRandomId(), createRandomId()];
       await vars.setId64s(variableId, value);
       expect(await vars.getId64s(variableId)).to.eq(value);
+    });
+
+    it("raises onVariableChanged event when variable changes", async () => {
+      const spy = sinon.spy();
+      vars.onVariableChanged.addListener(spy);
+      const value = [createRandomId(), createRandomId()];
+      await vars.setId64s(variableId, value);
+      expect(spy).to.be.calledWith(variableId);
     });
 
     it("handles type conversion", async () => {

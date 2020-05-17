@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { RulesetVariable, VariableValue, VariableValueTypes } from "@bentley/presentation-common";
 
 /**
@@ -14,6 +14,11 @@ import { RulesetVariable, VariableValue, VariableValueTypes } from "@bentley/pre
  * @public
  */
 export interface RulesetVariablesManager {
+
+  /**
+   * An event that is raised when variable changes.
+   */
+  onVariableChanged: BeEvent<(variableId: string) => void>;
 
   /**
    * Retrieves `string` variable value.
@@ -89,6 +94,8 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
   public constructor() {
   }
 
+  public onVariableChanged = new BeEvent<(variableId: string) => void>();
+
   public async getAllVariables(): Promise<RulesetVariable[]> {
     const variables: RulesetVariable[] = [];
     for (const entry of this._clientValues)
@@ -143,6 +150,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
   }
   private async setValue(id: string, type: VariableValueTypes, value: VariableValue): Promise<void> {
     this._clientValues.set(id, [type, value]);
+    this.onVariableChanged.raiseEvent(id);
   }
 
   /**
