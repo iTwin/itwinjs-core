@@ -765,6 +765,78 @@ describe("GeometryStream", () => {
     }
   });
 
+  it("create GeometricElement3d partToWorld test", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const arc = Arc3d.createXY(Point3d.create(0, 0), 1);
+    const partBuilder = new GeometryStreamBuilder();
+
+    partBuilder.appendGeometry(arc);
+
+    const partProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      geom: partBuilder.geometryStream,
+    };
+
+    const testPart = imodel.elements.createElement(partProps);
+    const partId = imodel.elements.insertElement(testPart);
+    imodel.saveChanges();
+
+    const builder = new GeometryStreamBuilder();
+    const shapePts: Point3d[] = [Point3d.create(1, 1, 0), Point3d.create(2, 1, 0), Point3d.create(2, 2, 0), Point3d.create(1, 2, 0)];
+    const testOrigin = Point3d.create(0.5, 0.5, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(45, 0, 0);
+
+    builder.setLocalToWorld3d(testOrigin, testAngles);
+    builder.appendGeometry(Loop.create(LineString3d.create(shapePts)));
+    shapePts.forEach((pt) => { builder.appendGeometryPart3d(partId, pt, undefined, 0.25); }); // Postion part (arc center) at each vertex...
+
+    const elementProps: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: builder.geometryStream,
+      placement: { origin: testOrigin, angles: testAngles },
+    };
+
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    // Extract and test value returned
+    const valueElem = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
+    assert.isDefined(valueElem.geom);
+
+    const outPts: Point3d[] = [];
+    const itWorld = GeometryStreamIterator.fromGeometricElement3d(valueElem);
+    for (const entry of itWorld) {
+      if ("partReference" !== entry.primitive.type)
+        continue;
+      assertTrue(partId === entry.primitive.part.id);
+      const valuePart = imodel.elements.getElementProps<GeometryPartProps>({ id: entry.primitive.part.id, wantGeometry: true });
+      assert.isDefined(valuePart.geom);
+
+      const itWorldPart = GeometryStreamIterator.fromGeometryPart(valuePart, undefined, itWorld.partToWorld());
+      for (const partEntry of itWorldPart) {
+        assertTrue(partEntry.primitive.type === "geometryQuery");
+        assertTrue(partEntry.primitive.geometry instanceof Arc3d);
+        outPts.push(partEntry.primitive.geometry.center);
+      }
+    }
+
+    assert.isTrue(outPts.length === shapePts.length);
+    for (let i = 0; i < outPts.length; i++) {
+      assert.isTrue(outPts[i].isAlmostEqual(shapePts[i]));
+    }
+  });
+
   it("create GeometricElement3d wire format appearance check", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
