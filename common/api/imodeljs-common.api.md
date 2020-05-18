@@ -6515,6 +6515,15 @@ export interface ViewAttachmentLabelProps extends GeometricElement2dProps {
 // @public
 export interface ViewAttachmentProps extends GeometricElement2dProps {
     // (undocumented)
+    jsonProperties?: {
+        displayPriority?: number;
+        clip?: any;
+        displayOptions?: {
+            drawAsRaster?: boolean;
+            preserveBackground?: boolean;
+        };
+    };
+    // (undocumented)
     view: RelatedElementProps;
 }
 

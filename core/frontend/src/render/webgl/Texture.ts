@@ -456,7 +456,9 @@ export class Texture2DHandle extends TextureHandle {
 
   /** Create a texture from a bitmap */
   public static createForImageBuffer(image: ImageBuffer, type: RenderTexture.Type) {
-    assert(isPowerOfTwo(image.width) && isPowerOfTwo(image.height), "###TODO: Resize image dimensions to powers-of-two if necessary");
+    if (RenderTexture.Type.TileSection !== type)
+      assert(isPowerOfTwo(image.width) && isPowerOfTwo(image.height), "###TODO: Resize image dimensions to powers-of-two if necessary");
+
     return this.create(Texture2DCreateParams.createForImageBuffer(image, type));
   }
 

@@ -453,12 +453,20 @@ export class DecorateContext extends RenderContext {
  * @beta
  */
 export class SceneContext extends RenderContext {
+  private _missingChildTiles = false;
   /** The graphics comprising the scene. */
   public readonly scene = new Scene();
   /** @internal */
   public readonly missingTiles = new Set<Tile>();
   /** @internal */
-  public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
+  public markChildrenLoading(): void {
+    this._missingChildTiles = true;
+  }
+  /** @internal */
+  public get hasMissingTiles(): boolean {
+    return this._missingChildTiles || this.missingTiles.size > 0;
+  }
+
   /** @internal */
   public readonly modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
   private _viewingSpace?: ViewingSpace;

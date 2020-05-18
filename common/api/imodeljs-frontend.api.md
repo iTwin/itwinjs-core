@@ -6981,8 +6981,10 @@ export class SceneContext extends RenderContext {
     // @internal (undocumented)
     get graphicType(): TileGraphicType;
     // @internal (undocumented)
-    hasMissingTiles: boolean;
+    get hasMissingTiles(): boolean;
     insertMissingTile(tile: Tile): void;
+    // @internal (undocumented)
+    markChildrenLoading(): void;
     // @internal (undocumented)
     readonly missingTiles: Set<Tile>;
     // @internal (undocumented)
@@ -7393,6 +7395,8 @@ export class SheetViewState extends ViewState2d {
     attachViews(attachments: ViewAttachmentProps[]): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
+    // @internal (undocumented)
+    collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
     computeFitRange(): Range3d;
     // (undocumented)
@@ -10593,6 +10597,10 @@ export abstract class ViewState extends ElementState {
     categorySelector: CategorySelectorState;
     // @internal (undocumented)
     static get className(): string;
+    // @internal
+    collectNonTileTreeStatistics(_stats: RenderMemory.Statistics): void;
+    // @internal
+    collectStatistics(stats: RenderMemory.Statistics): void;
     abstract computeFitRange(): Range3d;
     // @internal (undocumented)
     computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio?: boolean): {
