@@ -60,6 +60,7 @@ export class SettingsMapResult {
   constructor(public status: SettingsStatus, public errorMessage?: string, public settingsMap?: Map<string, any>) {
   }
 }
+
 /** Methods available to save and get Settings objects on behalf of combinations of the Application, Project, iModel, and User
  * @beta
  */

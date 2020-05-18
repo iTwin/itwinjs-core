@@ -15,7 +15,8 @@ import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../til
 import { SceneContext } from "../../ViewContext";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { BatchState, BranchStack } from "./BranchState";
+import { BranchStack } from "./BranchStack";
+import { BatchState } from "./BatchState";
 import { EVSMGeometry } from "./CachedGeometry";
 import { WebGLDisposable } from "./Disposable";
 import { FrameBuffer } from "./FrameBuffer";
@@ -455,7 +456,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     const prevPlan = target.plan;
 
     target.changeFrustum(this._shadowFrustum, this._shadowFrustum.getFraction(), true);
-    target.uniforms.branch.changeViewFlags(viewFlags);
+    target.uniforms.branch.changeRenderPlan(viewFlags, target.plan.is3d, target.plan.hline);
 
     const renderCommands = bundle.renderCommands;
     renderCommands.reset(target, this._branchStack, this._batchState);

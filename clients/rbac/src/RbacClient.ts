@@ -86,7 +86,7 @@ export class RbacClient extends WsgClient {
 
     const userInfo = requestContext.accessToken.getUserInfo();
     if (!userInfo)
-      return Promise.reject(new Error("Invalid access token"));
+      throw new Error("Invalid access token");
 
     const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userInfo.id + "/Project";
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
@@ -108,11 +108,11 @@ export class RbacClient extends WsgClient {
     requestContext.enter();
 
     if (!res.body || !res.body.hasOwnProperty("instances"))
-      return Promise.reject(new Error("Expected an array of instances to be returned"));
+      throw new Error("Expected an array of instances to be returned");
 
     const instances = res.body.instances;
     if (!instances || instances.length !== 1)
-      return Promise.reject(new Error("Project with specified id was not found"));
+      throw new Error("Project with specified id was not found");
 
     const permissions: Permission[] = new Array<Permission>();
     for (const relationshipInstance of instances[0].relationshipInstances) {

@@ -12,7 +12,7 @@ import * as React from "react";
 import { ActionButton } from "@bentley/ui-abstract";
 import { useOnOutsideClick } from "@bentley/ui-core";
 import { ToolbarButtonItemProps } from "./Item";
-import { ToolbarPanelAlignmentHelpers, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./Toolbar";
+import { ToolbarPanelAlignmentHelpers, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
 import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
 
 /** @internal */
@@ -54,6 +54,7 @@ export function PopupItem(props: PopupItemProps) {
   const { expandsTo, direction, overflowExpandsTo, overflowDirection, panelAlignment, onPopupPanelOpenClose } = useToolbarWithOverflowDirectionContext();
   const processPanelOpenClose = React.useCallback((isOpening: boolean) => {
     setPanelShown((prev) => {
+      // istanbul ignore else
       if (prev !== isOpening)
         onPopupPanelOpenClose(isOpening);
       return isOpening;

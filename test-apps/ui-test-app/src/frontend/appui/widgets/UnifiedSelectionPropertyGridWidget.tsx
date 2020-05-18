@@ -8,7 +8,7 @@ import { Field } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { ActionButtonRendererProps, PropertyGrid, PropertyGridContextMenuArgs, useAsyncValue } from "@bentley/ui-components";
-import { ContextMenuItem, ContextMenuItemProps, GlobalContextMenu, Orientation } from "@bentley/ui-core";
+import { ContextMenuItem, ContextMenuItemProps, GlobalContextMenu, Icon, Orientation } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
 
 // create a HOC property grid component that supports unified selection
@@ -191,8 +191,8 @@ class FavoriteActionButton extends React.Component<FavoriteActionButtonProps> {
     return (
       <div onClick={this._onActionButtonClicked}>
         {this.isFavorite() ?
-          <div style={{ width: "20px", height: "20px", background: "orange" }} /> :
-          <div style={{ width: "20px", height: "20px", background: "blue" }} />}
+          <Icon iconSpec="icon-star" /> :
+          <Icon iconSpec="icon-star" />}
       </div>
     );
   }

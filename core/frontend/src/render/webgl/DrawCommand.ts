@@ -9,10 +9,9 @@
 import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { AnimationBranchState } from "../GraphicBranch";
-import { ClippingType } from "../RenderClipVolume";
 import { BranchState } from "./BranchState";
 import { CachedGeometry } from "./CachedGeometry";
-import { ClipPlanesVolume } from "./ClipVolume";
+import { ClipVolume } from "./ClipVolume";
 import { isFeatureHilited } from "./FeatureOverrides";
 import { Batch, Branch } from "./Graphic";
 import { UniformHandle } from "./Handle";
@@ -157,8 +156,8 @@ export class PushBranchCommand {
       this.branch.localToWorldTransform = transform;
     }
 
-    if (anim.clip !== undefined && anim.clip.type === ClippingType.Planes) {
-      this.branch.clips = anim.clip as ClipPlanesVolume;
+    if (anim.clip !== undefined) {
+      this.branch.clips = anim.clip as ClipVolume;
       if (undefined === PushBranchCommand._viewFlagOverrides) {
         PushBranchCommand._viewFlagOverrides = new ViewFlagOverrides();
         PushBranchCommand._viewFlagOverrides.setShowClipVolume(true);

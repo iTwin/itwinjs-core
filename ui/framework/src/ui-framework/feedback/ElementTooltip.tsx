@@ -47,11 +47,14 @@ export class ElementTooltipChangedEvent extends UiEvent<ElementTooltipChangedEve
 export class ElementTooltip extends React.Component<CommonProps, ElementTooltipState> {
   private static _elementTooltipChangedEvent: ElementTooltipChangedEvent = new ElementTooltipChangedEvent();
   private static _isTooltipVisible: boolean;
+  private static _isTooltipHalted: boolean;
 
   public static get onElementTooltipChangedEvent(): ElementTooltipChangedEvent { return ElementTooltip._elementTooltipChangedEvent; }
   public static get isTooltipVisible(): boolean { return ElementTooltip._isTooltipVisible; }
 
   public static showTooltip(el: HTMLElement, message: NotifyMessageType, pt?: XAndY, options?: ToolTipOptions): void {
+    if (ElementTooltip._isTooltipHalted)
+      return;
     ElementTooltip._isTooltipVisible = true;
     ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: true, el, message, pt, options });
   }
@@ -59,6 +62,13 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
   public static hideTooltip(): void {
     ElementTooltip._isTooltipVisible = false;
     ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: false, message: "" });
+  }
+
+  public static get isTooltipHalted(): boolean { return ElementTooltip._isTooltipHalted; }
+  public static set isTooltipHalted(halt: boolean) {
+    ElementTooltip._isTooltipHalted = halt;
+    if (halt && ElementTooltip._isTooltipVisible)
+      ElementTooltip.hideTooltip();
   }
 
   private _size: SizeProps = {

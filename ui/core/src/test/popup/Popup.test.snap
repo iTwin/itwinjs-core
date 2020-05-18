@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Popup /> renders renders correctly with few props 1`] = `
+exports[`<Popup /> renders renders correctly with few props 1`] = `
 <div>
   <Popup
     isOpen={true}
@@ -14,7 +14,7 @@ exports[`Popup /> renders renders correctly with few props 1`] = `
 </div>
 `;
 
-exports[`Popup /> renders renders correctly with many props 1`] = `
+exports[`<Popup /> renders renders correctly with many props 1`] = `
 <div>
   <Popup
     isOpen={true}

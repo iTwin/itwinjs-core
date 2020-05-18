@@ -16,6 +16,8 @@ import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core
  */
 export class IModelAppUiSettings implements UiSettings {
   public async getSetting(namespace: string, name: string): Promise<UiSettingsResult> {
+    if (!this.isSignedIn)
+      return { status: UiSettingsStatus.AuthorizationError };
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const result = await IModelApp.settings.getUserSetting(requestContext, namespace, name, true);
     const status = settingsStatusToUiSettingsStatus(result.status);
@@ -26,6 +28,8 @@ export class IModelAppUiSettings implements UiSettings {
   }
 
   public async saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult> {
+    if (!this.isSignedIn)
+      return { status: UiSettingsStatus.AuthorizationError };
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const result = await IModelApp.settings.saveUserSetting(requestContext, setting, namespace, name, true);
     const status = settingsStatusToUiSettingsStatus(result.status);
@@ -36,6 +40,8 @@ export class IModelAppUiSettings implements UiSettings {
   }
 
   public async deleteSetting(namespace: string, name: string): Promise<UiSettingsResult> {
+    if (!this.isSignedIn)
+      return { status: UiSettingsStatus.AuthorizationError };
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const result = await IModelApp.settings.deleteUserSetting(requestContext, namespace, name, true);
     const status = settingsStatusToUiSettingsStatus(result.status);
@@ -43,6 +49,10 @@ export class IModelAppUiSettings implements UiSettings {
       status,
       setting: result.setting,
     };
+  }
+
+  private get isSignedIn(): boolean {
+    return !!IModelApp.authorizationClient && IModelApp.authorizationClient.hasSignedIn;
   }
 }
 
@@ -52,5 +62,7 @@ export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSett
     return UiSettingsStatus.Success;
   else if (status === SettingsStatus.SettingNotFound)
     return UiSettingsStatus.NotFound;
+  else if (status === SettingsStatus.AuthorizationError)
+    return UiSettingsStatus.AuthorizationError;
   return UiSettingsStatus.UnknownError;
 }

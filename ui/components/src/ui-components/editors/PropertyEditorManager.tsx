@@ -33,14 +33,14 @@ export abstract class PropertyEditorBase implements DataController {
     if (this.customDataController)
       return this.customDataController.commitValue(newValue, record);
 
-    return Promise.resolve({ encounteredError: false });
+    return { encounteredError: false };
   }
 
   public async validateValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult> {
     if (this.customDataController)
       return this.customDataController.validateValue(newValue, record);
 
-    return Promise.resolve({ encounteredError: false });
+    return { encounteredError: false };
   }
 
 }
@@ -50,11 +50,11 @@ export abstract class PropertyEditorBase implements DataController {
  */
 export abstract class DataControllerBase implements DataController {
   public async commitValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-    return Promise.resolve({ encounteredError: false });
+    return { encounteredError: false };
   }
 
   public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-    return Promise.resolve({ encounteredError: false });
+    return { encounteredError: false };
   }
 }
 

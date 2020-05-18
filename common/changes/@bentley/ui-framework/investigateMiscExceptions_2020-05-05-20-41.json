@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Address React warnings about deprecated methods.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}

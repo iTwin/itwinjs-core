@@ -42,7 +42,7 @@ export class RobotWorld extends Schema {
   public static async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, iModelDb: IModelDb): Promise<void> {
     requestContext.enter();
     if (iModelDb.containsClass(_schemaNames.Class.Robot))
-      return Promise.resolve();
+      return;
 
     if (iModelDb.isReadonly)
       throw new IModelError(IModelStatus.ReadOnly, "importSchema failed because IModelDb is read-only");
@@ -56,8 +56,6 @@ export class RobotWorld extends Schema {
     // This is the right time to create definitions, such as Categories, that will
     // be used with the classes in this schema.
     RobotWorld.bootStrapDefinitions(iModelDb);
-
-    return Promise.resolve();
   }
   // __PUBLISH_EXTRACT_END__
 

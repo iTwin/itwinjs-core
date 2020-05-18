@@ -45,3 +45,13 @@ export class BackendError extends IModelError {
     this.name = name;
   }
 }
+
+/**
+ * Channel constraint error
+ * @alpha
+ */
+export class ChannelConstraintError extends IModelError {
+  public constructor(message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+    super(RepositoryStatus.ChannelConstraintViolation, message, log, category, getMetaData);
+  }
+}

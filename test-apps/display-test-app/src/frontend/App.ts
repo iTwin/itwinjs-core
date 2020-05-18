@@ -23,6 +23,7 @@ import {
 import { showError, showStatus } from "./Utils";
 import { VersionComparisonTool } from "./VersionComparison";
 import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { AttachViewTool, DetachViewsTool } from "./AttachViewTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -207,10 +208,12 @@ export class DisplayTestApp {
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     [
+      AttachViewTool,
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
       CreateWindowTool,
+      DetachViewsTool,
       DockWindowTool,
       DrawingAidTestTool,
       FocusWindowTool,

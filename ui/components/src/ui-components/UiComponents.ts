@@ -37,8 +37,6 @@ export class UiComponents {
 
     await UiCore.initialize(UiComponents._i18n);
     UiComponents._initialized = true;
-
-    return Promise.resolve();
   }
 
   /** Unregisters the UiComponents I18N namespace */

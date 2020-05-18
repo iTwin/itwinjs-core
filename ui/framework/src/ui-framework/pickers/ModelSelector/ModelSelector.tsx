@@ -100,30 +100,25 @@ export class ModelSelectorWidget extends React.Component<
 
   /** Initialize models */
   private _initModelState = async () => {
-    return Presentation.presentation
+    const ruleset = await Presentation.presentation
       .rulesets()
-      .add(require("../../../../rulesets/Models.json"))
-      .then((ruleset: RegisteredRuleset) => {
-        this._modelRuleset = ruleset;
+      .add(require("../../../../rulesets/Models.json"));
 
-        this._setViewType(ruleset).then(() => {
-          this._updateModelsWithViewport(this.state.activeView); // tslint:disable-line:no-floating-promises
-        });
-      });
+    this._modelRuleset = ruleset;
+
+    await this._setViewType(ruleset);
+    this._updateModelsWithViewport(this.state.activeView); // tslint:disable-line:no-floating-promises
   }
 
   /** Initialize categories */
   private _initCategoryState = async () => {
-    return Presentation.presentation
+    const ruleset = await Presentation.presentation
       .rulesets()
-      .add(require("../../../../rulesets/Categories.json"))
-      .then((ruleset: RegisteredRuleset) => {
-        this._categoryRuleset = ruleset;
+      .add(require("../../../../rulesets/Categories.json"));
+    this._categoryRuleset = ruleset;
 
-        this._setViewType(ruleset).then(() => {
-          this._updateCategoriesWithViewport(this.state.activeView); // tslint:disable-line:no-floating-promises
-        });
-      });
+    await this._setViewType(ruleset);
+    this._updateCategoriesWithViewport(this.state.activeView); // tslint:disable-line:no-floating-promises
   }
 
   /**

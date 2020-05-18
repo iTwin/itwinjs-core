@@ -10,7 +10,8 @@ import { DefaultContentDisplayTypes, PresentationUnitSystem } from "@bentley/pre
 import { DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider } from "@bentley/presentation-components";
 import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { ElementSeparator, Orientation } from "@bentley/ui-core";
+import { ElementSeparator, Orientation, RatioChangeResult } from "@bentley/ui-core";
+import { Geometry } from "@bentley/geometry-core";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import GridWidget from "../grid-widget/GridWidget";
 import IModelSelector from "../imodel-selector/IModelSelector";
@@ -77,20 +78,22 @@ export default class App extends React.Component<{}, State> {
     this.setState({ activeUnitSystem: unitSystem });
   }
 
-  private _onTreePaneRatioChanged = (ratio: number) => {
-    if (ratio < this._minRightPaneRatio)
-      ratio = this._minRightPaneRatio;
-    if (ratio > this._maxRightPaneRatio)
-      ratio = this._maxRightPaneRatio;
+  private _onTreePaneRatioChanged = (ratio: number): RatioChangeResult => {
+    ratio = Geometry.clamp(ratio, this._minRightPaneRatio, this._maxRightPaneRatio);
+    if (this.state.rightPaneRatio === ratio)
+      return { ratio };
+
     this.setState({ rightPaneRatio: ratio });
+    return { ratio };
   }
 
-  private _onContentRatioChanged = (ratio: number) => {
-    if (ratio < this._minContentRatio)
-      ratio = this._minContentRatio;
-    if (ratio > this._maxContentRatio)
-      ratio = this._maxContentRatio;
+  private _onContentRatioChanged = (ratio: number): RatioChangeResult => {
+    ratio = Geometry.clamp(ratio, this._minContentRatio, this._maxContentRatio);
+    if (this.state.contentRatio === ratio)
+      return { ratio };
+
     this.setState({ contentRatio: ratio });
+    return { ratio };
   }
 
   private _selectAllInstances = async (provider: IPresentationTableDataProvider) => {

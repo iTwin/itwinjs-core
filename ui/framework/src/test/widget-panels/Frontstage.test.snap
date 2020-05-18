@@ -213,7 +213,7 @@ Object {
       },
       "widgets": Object {},
     },
-    "stateVersion": 0,
+    "stateVersion": 1,
     "version": 0,
   },
   "status": "LOADING",

@@ -233,6 +233,17 @@
       "description": "Toggle test UiProvider",
       "flyover": "Toggle test UiProvider"
     },
+    "TestLayoutManager": {
+      "RestoreLayout": {
+        "keyin": "layout restore",
+        "description": "Restore layout"
+      }
+    },
+    "OpenPropertyGrid": {
+      "keyin": "Test OpenPropertyGrid",
+      "description": "Open Property Grid",
+      "flyover": "Open Property Grid"
+    },
     "select": "Select",
     "fitView": "Fit View",
     "windowArea": "Window Area",

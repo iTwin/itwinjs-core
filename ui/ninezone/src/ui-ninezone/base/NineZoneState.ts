@@ -446,9 +446,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       return;
     }
     case FLOATING_WIDGET_BRING_TO_FRONT: {
-      const idIndex = state.floatingWidgets.allIds.indexOf(action.id);
-      const spliced = state.floatingWidgets.allIds.splice(idIndex, 1);
-      state.floatingWidgets.allIds.push(spliced[0]);
+      floatingWidgetBringToFront(state, action.id);
       return;
     }
     case WIDGET_TAB_CLICK: {
@@ -458,7 +456,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
 
       state.widgets[widget.id].activeTabId = action.id;
       if (widget.minimized) {
-        state.widgets[widget.id].minimized = false;
+        widget.minimized = false;
         return;
       }
 
@@ -571,6 +569,13 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     }
   }
 });
+
+/** @internal */
+export function floatingWidgetBringToFront(state: Draft<NineZoneState>, floatingWidgetId: FloatingWidgetState["id"]) {
+  const idIndex = state.floatingWidgets.allIds.indexOf(floatingWidgetId);
+  const spliced = state.floatingWidgets.allIds.splice(idIndex, 1);
+  state.floatingWidgets.allIds.push(spliced[0]);
+}
 
 function removeWidgetTab(
   state: Draft<NineZoneState>,

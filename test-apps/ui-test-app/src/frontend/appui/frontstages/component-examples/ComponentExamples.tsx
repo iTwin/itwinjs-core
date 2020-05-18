@@ -44,7 +44,8 @@ const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: Comp
   };
 
   const isLightTheme = _isLightTheme();
-  const _theme: string = UiFramework.i18n.translate((isLightTheme) ? "SampleApp:componentExamplesStage.light" : "SampleApp:componentExamplesStage.dark");
+  const darkLabel = UiFramework.i18n.translate("SampleApp:settingsStage.dark");
+  const lightLabel = UiFramework.i18n.translate("SampleApp:settingsStage.light");
 
   const _handleClickLabel = (index: number) => {
     setActiveIndex(index);
@@ -61,9 +62,11 @@ const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: Comp
         <ComponentExample title={_themeTitle} description={_themeDescription}
           content={
             <>
+              {darkLabel}
+              &nbsp;
               <Toggle isOn={isLightTheme} showCheckmark={false} onChange={_onThemeChange} />
-              &nbsp;&nbsp;
-              {_theme}
+              &nbsp;
+              {lightLabel}
             </>
           }
         />

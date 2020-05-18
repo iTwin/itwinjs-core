@@ -1,6 +1,29 @@
 # Change Log - @bentley/hypermodeling-extension
 
-This log was last generated on Fri, 01 May 2020 15:29:28 GMT and should not be manually modified.
+This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- New hyper modeling marker images.
+- react to changes in imodeljs-clients
+- Upgrade to Rush 5.23.2
+- #301812 #288370 Fix label font specifications. Added max label width option to Marker.
+- Rename the hypermodeling-plugin to hypermodeling-extension
+- Update to use UiItemManager
+- Update to support new iModel.js Extension build system and drop support for the iModel.js module system.
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+*Version update only*
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+*Version update only*
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT

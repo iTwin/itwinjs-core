@@ -8,9 +8,11 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@bentley/geometry-core";
-import { ViewFlags } from "@bentley/imodeljs-common";
+import { HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { BatchState, BranchStack, BranchState } from "./BranchState";
+import { BranchState } from "./BranchState";
+import { BranchStack } from "./BranchStack";
+import { BatchState } from "./BatchState";
 import { CachedGeometry } from "./CachedGeometry";
 import { Branch } from "./Graphic";
 import { UniformHandle } from "./Handle";
@@ -98,8 +100,8 @@ export class BranchUniforms {
     this._stack.pop();
   }
 
-  public changeViewFlags(vf: ViewFlags): void {
-    this._stack.setViewFlags(vf);
+  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
+    this._stack.changeRenderPlan(vf, is3d, hline);
   }
 
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {

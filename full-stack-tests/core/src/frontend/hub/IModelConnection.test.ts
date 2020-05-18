@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { Id64, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { Range3d, Transform, XYAndZ } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, RelatedElement } from "@bentley/imodeljs-common";
-import {
-  CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender, ModelSelectorState,
-  OrthographicViewState, RemoteBriefcaseConnection, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { CategorySelectorState, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, RemoteBriefcaseConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { assert, expect } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
+import { TestSeqClient } from "./TestSeqClient";
 import { TestUtility } from "./TestUtility";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
@@ -33,11 +31,15 @@ describe("IModelConnection (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(requestContext.accessToken);
+    const testProjectName = "iModelJsIntegrationTest";
+    const testIModelName = "ConnectionReadTest";
 
-    const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
+    const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    IModelApp.authorizationClient = authorizationClient;
+
+    // Setup a model with a large number of change sets
+    const testProjectId = await TestUtility.getTestProjectId(testProjectName);
+    const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
     iModel = await RemoteBriefcaseConnection.open(testProjectId, testIModelId);
   });
@@ -142,6 +144,30 @@ describe("IModelConnection (#integration)", () => {
 
     const noVersionsIModel3 = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(""));
     assert.isNotNull(noVersionsIModel3);
+  });
+
+  it("should send a usage log everytime an iModel is opened", async () => {
+    const projectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
+    const iModelId = await TestUtility.getTestIModelId(projectId, "ReadOnlyTest");
+
+    // Set a new session id to isolate the usage logs
+    IModelApp.sessionId = Guid.createValue();
+
+    // Open multiple connections
+    let n = 0;
+    const MAX_CONNECTIONS = 12;
+    while (n++ < MAX_CONNECTIONS) {
+      const noVersionsIModel = await RemoteBriefcaseConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+      assert.isNotNull(noVersionsIModel);
+    }
+
+    const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    await pause(5000); // Give ULAS and SEQ about 5 seconds to catch up
+
+    const filter = `And(And(Equal(ServiceRequest,"FePostClientLog"),has(UsageLogEntry)),Equal(UsageLogEntry.CorrelationId,"${IModelApp.sessionId}"))`;
+    const seqClient = new TestSeqClient(true /* = forUsageLogging */);
+    const results = await seqClient.query(filter, MAX_CONNECTIONS * 2);
+    assert.equal(results.length, MAX_CONNECTIONS);
   });
 
   it("should be able to open the same IModel many times", async () => {

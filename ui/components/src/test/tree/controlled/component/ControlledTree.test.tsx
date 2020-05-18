@@ -84,7 +84,7 @@ describe("ControlledTree", () => {
         selectionMode={SelectionMode.Single}
       />);
 
-    const message = container.querySelector(".components-tree-loader");
+    const message = container.querySelector(".components-controlledTree-loader");
     expect(message).to.not.be.null;
   });
 
@@ -113,7 +113,7 @@ describe("ControlledTree", () => {
         selectionMode={SelectionMode.Single}
       />);
 
-    const tree = container.querySelector(".components-tree");
+    const tree = container.querySelector(".components-controlledTree");
     expect(tree).to.not.be.null;
   });
 

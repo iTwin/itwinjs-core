@@ -114,6 +114,7 @@ public;ContentViewManager
 public;CoreTools
 public;createAction
 public;createAction
+internal;createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef
 alpha;createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element
 public;CubeNavigationAidControl 
 public;CursorDirection
@@ -165,6 +166,7 @@ public;ElementTooltipChangedEventArgs
 beta;ExpandableSection 
 beta;ExpandableSectionProps 
 beta;ExtensibleToolbarProps
+internal;findTab(state: Draft
 public;FooterModeField 
 public;FooterModeFieldProps 
 beta;FrameworkRootState
@@ -183,9 +185,7 @@ internal;FrameworkVersionSwitchProps
 internal;FrameworkZone 
 internal;FrameworkZoneProps 
 public;Frontstage 
-internal;FRONTSTAGE_INITIALIZE = "FRONTSTAGE_INITIALIZE"
-internal;FRONTSTAGE_STATE_SETTING_LOAD = "FRONTSTAGE_STATE_SETTING_LOAD"
-internal;FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction
+internal;FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction | WidgetTabShowAction | WidgetTabExpandAction
 public;FrontstageActivatedEvent 
 public;FrontstageActivatedEventArgs
 public;FrontstageComposer 
@@ -201,6 +201,8 @@ public;class FrontstageProvider
 public;FrontstageReadyEvent 
 public;FrontstageReadyEventArgs
 internal;FrontstageRuntimeProps
+internal;FrontstageState
+internal;FrontstageStateReducer: (state: FrontstageState, action: FrontstageActionTypes) => FrontstageState
 internal;FrontstageStateSettingLoadAction
 public;FunctionKey
 public;FunctionType = (...args: any[]) => any
@@ -214,6 +216,7 @@ internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
 beta;getSelectionContextSyncEventIds(): string[]
+internal;getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps
 internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
 internal;getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes
 public;GroupButton(props: GroupButtonProps): JSX.Element
@@ -241,7 +244,7 @@ beta;IModelViewportControl
 beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
 beta;Indicator 
-internal;initializeFrontstageState({ frontstage }: InitializeFrontstageStateArgs): FrontstageState_2
+internal;initializeFrontstageState({ frontstage }: InitializeFrontstageStateArgs): FrontstageState
 alpha;InputEditorCommitHandler
 alpha;InputEditorPopup 
 alpha;InputEditorPopupProps 
@@ -275,6 +278,9 @@ beta;KeyinBrowserExecuteArgs
 beta;KeyinBrowserProps 
 public;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 
+beta;LayoutManager
+internal;LayoutManagerDispatchActionEvent 
+internal;LayoutManagerDispatchActionEventArgs = LayoutManagerShowWidgetAction | LayoutManagerExpandWidgetAction | LayoutManagerRestoreLayoutAction
 public;LayoutSplit
 public;LayoutSplitPropsBase
 public;LayoutVerticalSplitProps 
@@ -535,13 +541,14 @@ internal;useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly 
 beta;useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[]
 internal;useFrameworkVersion(): FrameworkVersion
-internal;useFrontstageDefNineZone(frontstage?: FrontstageDef): [FrontstageState_2, React.Dispatch
+internal;useFrontstageDefNineZone(frontstage: FrontstageDef | undefined): [FrontstageState, React.Dispatch
 internal;useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems
 internal;useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
+internal;useLayoutManager(state: FrontstageState, dispatch: React.Dispatch
 public;UserProfileBackstageItem 
 public;UserProfileBackstageItemProps 
-internal;useSaveFrontstageSettings(frontstageState: FrontstageState_2): void
+internal;useSaveFrontstageSettings(frontstageState: FrontstageState): void
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
 internal;useToolSettingsNode(): React.ReactNode
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
@@ -610,7 +617,9 @@ public;WidgetStateChangedEvent
 public;WidgetStateChangedEventArgs
 public;WidgetStateFunc = (state: Readonly
 internal;WidgetTab
+internal;WidgetTabExpandAction
 internal;WidgetTabs =
+internal;WidgetTabShowAction
 public;WidgetType
 beta;withMessageCenterFieldProps: 
 alpha;withSafeArea: 

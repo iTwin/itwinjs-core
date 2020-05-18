@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
@@ -48,6 +49,10 @@ describe("NumericInput", () => {
     const iUp = iNodes.at(0);
     iUp.simulate("mousedown");
     expect(value).to.eq(1);
+
+    wrapper.setProps({ value: 5 });
+    wrapper.update();
+    expect(wrapper.prop("value")).to.eq(5);
     wrapper.unmount();
   });
 
@@ -64,4 +69,30 @@ describe("NumericInput", () => {
     expect(value).to.eq(5);
     wrapper.unmount();
   });
+});
+
+describe("<NumericInput - React Testing Library />", () => {
+  afterEach(cleanup);
+
+  it("focus into select with setFocus prop", () => {
+    let updatedValue: number | null = 5;
+    const handleChange = (v: number | null, _stringValue: string, _input: HTMLInputElement): void => {
+      updatedValue = v;
+    };
+
+    const component = render(<NumericInput value={1} step={undefined} onChange={handleChange} />);
+    const input = component.container.querySelector("input") as HTMLInputElement;
+    expect(input.value).to.eq("1");
+
+    component.rerender(<NumericInput value={5} step={undefined} onChange={handleChange} />);
+    expect(input.value).to.eq("5");
+
+    const incrementor = component.container.querySelectorAll("i");
+    expect(incrementor.length).to.eq(2);
+    fireEvent.mouseDown(incrementor[0]);
+    fireEvent.mouseUp(incrementor[0]);
+    expect(input.value).to.eq("6");
+    expect(updatedValue).to.eq(6);
+  });
+
 });

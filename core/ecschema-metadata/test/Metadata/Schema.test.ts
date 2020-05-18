@@ -34,7 +34,7 @@ describe("Schema", () => {
       const context = new SchemaContext();
       expect(() => { new Schema(context, "NewSchemaWithInvalidReadVersion", "new", 123, 4, 5); }).to.throw(ECObjectsError);
       expect(() => { new Schema(context, "NewSchemaWithInvalidWriteVersion", "new", 12, 345, 6); }).to.throw(ECObjectsError);
-      expect(() => { new Schema(context, "NewSchemaWithInvalidMinorVersion", "new", 12, 34, 567); }).to.throw(ECObjectsError);
+      expect(() => { new Schema(context, "NewSchemaWithInvalidMinorVersion", "new", 12, 34, 56700000); }).to.throw(ECObjectsError);
     });
   });
 

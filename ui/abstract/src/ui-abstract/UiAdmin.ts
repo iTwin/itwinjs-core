@@ -13,6 +13,7 @@ import { RelativePosition } from "./items/RelativePosition";
 import { PropertyDescription } from "./properties/Description";
 import { Primitives } from "./properties/PrimitiveTypes";
 import { OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc } from "./utils/callbacks";
+import { PropertyRecord } from "./properties/Record";
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
  * @beta
@@ -159,5 +160,27 @@ export class UiAdmin {
 
   /** Hides the HTML Element. */
   public hideHTMLElement(): boolean { return false; }
+
+  /** Show a Card containing content, a title and a toolbar at a particular location.
+   * @param _content The HTMLElement of the content to display
+   * @param _title Title to display at the top of the card.
+   * @param _toolbarProps Properties of the Toolbar to display.
+   * @param _location Location of the Card, relative to the origin of htmlElement or the window.
+   * @param _offset Offset of the Card from the location.
+   * @param _onItemExecuted Function invoked after a Toolbar item is executed
+   * @param _onCancel Function invoked when the Escape key is pressed or a click occurs outside the Card
+   * @param _relativePosition Position relative to the given location. Defaults to TopRight.
+   * @param _anchorElement The HTMLElement that anchors the Card. If undefined, the location is relative to the overall window.
+   * @return true if the Card was displayed, false if the Card could not be displayed.
+   */
+  public showCard(
+    _content: HTMLElement, _title: string | PropertyRecord | undefined, _toolbarProps: AbstractToolbarProps | undefined,
+    _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc,
+    _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean {
+    return false;
+  }
+
+  /** Hides the Card. */
+  public hideCard(): boolean { return false; }
 
 }

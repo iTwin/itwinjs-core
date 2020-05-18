@@ -3,16 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, compareStrings, Id64, Id64String, SortedArray } from "@bentley/bentleyjs-core";
+import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { DisplayStyle3dState, IModelConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
 
-export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
+interface ViewSpec extends IModelConnection.ViewSpec {
+  isPrivate: boolean;
+}
+
+export class ViewList extends SortedArray<ViewSpec> {
   private _defaultViewId = Id64.invalid;
   private readonly _views = new Map<Id64String, ViewState>();
 
   private constructor() {
-    super((lhs, rhs) => compareStrings(lhs.id, rhs.id));
+    super((lhs, rhs) => {
+      let cmp = compareBooleans(lhs.isPrivate, rhs.isPrivate);
+      if (0 === cmp) {
+        cmp = compareStrings(lhs.name, rhs.name);
+        if (0 === cmp)
+          cmp = compareStrings(lhs.id, rhs.id);
+      }
+
+      return cmp;
+    });
   }
 
   public get defaultViewId(): Id64String { return this._defaultViewId; }
@@ -47,10 +60,23 @@ export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
   public async populate(iModel: IModelConnection, viewName?: string): Promise<void> {
     this.clear();
 
-    const query = { wantPrivate: false };
-    const specs = await iModel.views.getViewList(query);
+    // Query all non-private views. They sort first in list.
+    let specs = await iModel.views.getViewList({ wantPrivate: false });
     for (const spec of specs)
-      this.insert(spec);
+      this.insert({ ...spec, isPrivate: false });
+
+    // Query private views. They sort to end of list.
+    const nSpecs = specs.length;
+    specs = await iModel.views.getViewList({ wantPrivate: true });
+    if (specs.length > nSpecs) {
+      for (const spec of specs) {
+        const entry = { ...spec, isPrivate: false };
+        if (!this.findEqual(entry)) {
+          entry.isPrivate = true;
+          this.insert(entry);
+        }
+      }
+    }
 
     if (undefined !== viewName) {
       for (const spec of this) {
@@ -73,7 +99,7 @@ export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
     }
 
     if (Id64.isInvalid(this._defaultViewId))
-      this.insert({ id: Id64.invalid, name: "Spatial View", class: SpatialViewState.classFullName });
+      this.insert({ id: Id64.invalid, name: "Spatial View", class: SpatialViewState.classFullName, isPrivate: false });
 
     const selectedView = Id64.isInvalid(this._defaultViewId) ? this.manufactureSpatialView(iModel) : await iModel.views.load(this._defaultViewId);
     this._views.set(this._defaultViewId, selectedView);

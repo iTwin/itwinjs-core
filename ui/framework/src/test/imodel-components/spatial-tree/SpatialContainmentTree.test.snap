@@ -7,7 +7,7 @@ exports[`SpatialContainmentTree <SpatialContainmentTree /> renders 1`] = `
       class="ui-fw-spatial-tree"
     >
       <div
-        class="core-tree components-tree"
+        class="core-tree components-controlledTree"
       >
         <div
           style="overflow: visible; height: 0px; width: 0px;"
@@ -17,7 +17,7 @@ exports[`SpatialContainmentTree <SpatialContainmentTree /> renders 1`] = `
             style="position: relative; height: 200px; width: 200px; overflow: auto; will-change: transform; direction: ltr;"
           >
             <div
-              style="height: 25px; width: 100%;"
+              style="height: 25px; width: 100%; min-width: 0;"
             >
               <div
                 class="node-wrapper"
@@ -33,7 +33,7 @@ exports[`SpatialContainmentTree <SpatialContainmentTree /> renders 1`] = `
                     style="margin-left: 24px;"
                   >
                     <div
-                      class="components-tree-node-content"
+                      class="components-controlledTree-node-content"
                     >
                       <span>
                         test-node

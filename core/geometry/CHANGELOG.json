@@ -2,6 +2,72 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/geometry-core_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "freeze methods return Readonly<this>"
+          },
+          {
+            "comment": "Show min/max window error for mouse wheel zoom."
+          },
+          {
+            "comment": "Show min/max window error for mouse wheel zoom."
+          },
+          {
+            "comment": "Methods to create mitered pipe sequences; improve chainCollector sort for full-chain reorder."
+          },
+          {
+            "comment": "handle simple wraparound in consolidateAdjacentPrimitives (for sandy Bugai)"
+          },
+          {
+            "comment": "Fix z bug in Arc3d cloneAtZ()"
+          },
+          {
+            "comment": "CurveFactory and RegionOps support for pipe construction and finding loops in unstructured curve sets"
+          },
+          {
+            "comment": "BUG 273249"
+          },
+          {
+            "comment": "PolyfaceClip for plane, convex, union clippers.  Prevent small fragment construction in curve clip."
+          },
+          {
+            "comment": "docs for PolyfaceClip.clipPolyfaceInsideOutside"
+          },
+          {
+            "comment": "modernize cubic root finder"
+          },
+          {
+            "comment": "geometry coverage.   Logic bugs in ChainCollectorContext.needBreakBetweenPrimitives"
+          },
+          {
+            "comment": "ChainCollector support for DesignReview; Bspline through points for futureOnBridge"
+          },
+          {
+            "comment": "In earcut triangulation, test for bowtie point."
+          },
+          {
+            "comment": "v2.0 API cleanup -- Ellipsoid use LongitudeLatitudeNumber instead of Point2d for angle return"
+          },
+          {
+            "comment": "imjs importer; move curve context classes to separate files"
+          },
+          {
+            "comment": "Remove deprecated APIs; see NextVersion.md for details."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/geometry-core_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",

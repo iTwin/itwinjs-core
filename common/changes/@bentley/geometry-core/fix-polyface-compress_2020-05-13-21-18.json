@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "Fix PolyfaceData.compress to handle normals and params",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Matt.Gooding@bentley.com"
+}

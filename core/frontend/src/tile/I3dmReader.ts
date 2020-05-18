@@ -97,11 +97,11 @@ export class I3dmReader extends GltfReader {
 
     await this.loadTextures();
     if (this._isCanceled)
-      return Promise.resolve({ readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf });
+      return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
 
     const instances = this.readInstances();
     if (undefined === instances)
-      return Promise.resolve({ readStatus: TileReadStatus.InvalidTileData, isLeaf: this._isLeaf });
+      return { readStatus: TileReadStatus.InvalidTileData, isLeaf: this._isLeaf };
 
     return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._range, undefined, undefined, instances);
   }

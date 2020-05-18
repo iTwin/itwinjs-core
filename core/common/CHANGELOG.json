@@ -2,6 +2,180 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/imodeljs-common_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add freeze method and degrees accessors to Cartographic class"
+          },
+          {
+            "comment": "Show min/max window error for mouse wheel zoom."
+          },
+          {
+            "comment": "Show min/max window error for mouse wheel zoom."
+          },
+          {
+            "comment": "Make animation state of a display style persistent."
+          },
+          {
+            "comment": "Send a default pending message since Azure strips content-type header if no data is present"
+          },
+          {
+            "comment": "Monitor progress of downloading briefcases, ability to cancel download of briefcases. "
+          },
+          {
+            "comment": "Added to DisplayStyle3dSettings: MonochromeMode, LightSettings."
+          },
+          {
+            "comment": "Simplify GeometryStreamIteratorEntry (breaking API change)."
+          },
+          {
+            "comment": "constructor of ColorDef wasn't setting transparency properly for rgba() strings"
+          },
+          {
+            "comment": "added ColorDef.toRgbaString"
+          },
+          {
+            "comment": "Deprecate members of SectionLocationProps pending refactor."
+          },
+          {
+            "comment": "Support for progress/cancel from ios"
+          },
+          {
+            "comment": "EcefLocation can now optionally preserve a meaningful cartographic origin."
+          },
+          {
+            "comment": "Fix for electron request lifecycle."
+          },
+          {
+            "comment": "IModelTokenProps.key is now a required member"
+          },
+          {
+            "comment": "Include model extents with ViewStateProps for drawing views."
+          },
+          {
+            "comment": "hsl color conversion wasn't working if s===0"
+          },
+          {
+            "comment": "Remove deprecated APIs; see NextVersion.md for details."
+          },
+          {
+            "comment": "Fix documentation of RenderSchedule time units."
+          },
+          {
+            "comment": "Fix for EcefLocation.createFromCartographicOrigin."
+          },
+          {
+            "comment": "ColorDef, HSVColor, and HSLColor are immutable types."
+          },
+          {
+            "comment": "react to changes in imodeljs-clients"
+          },
+          {
+            "comment": "Promote properties from IModelToken onto IModel"
+          },
+          {
+            "comment": "Support suspend/resume in mobile apps."
+          },
+          {
+            "comment": "Store current mobile RPC port in protocol."
+          },
+          {
+            "comment": "Added file size."
+          },
+          {
+            "comment": "Supply RPC routing props for SnapshotIModelRpcInterface open methods\""
+          },
+          {
+            "comment": "MobileRpcConfiguration throws exception"
+          },
+          {
+            "comment": "Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline. "
+          },
+          {
+            "comment": "Refactored NativeApp API and RPC interfaces. This continues to be WIP. "
+          },
+          {
+            "comment": "Added DownloadBriefcaseOptions and OpenBriefcaseOptions as parameters to the download/open calls for a briefcase. "
+          },
+          {
+            "comment": "Added new interface for native app"
+          },
+          {
+            "comment": "VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP). "
+          },
+          {
+            "comment": "Handle null JSON in ViewDetails."
+          },
+          {
+            "comment": "Renamed OIDC constructs for consistency; Removed SAML support."
+          },
+          {
+            "comment": "OrbitGT point cloud interface."
+          },
+          {
+            "comment": "Support OrbitGT Point Clouds"
+          },
+          {
+            "comment": "Fix BackgroundMapSettings.toJSON() discarding the 'useDepthBuffer' flag."
+          },
+          {
+            "comment": "Add mechanism for preloading reality tiles by frustum."
+          },
+          {
+            "comment": "react to new clients packages from imodeljs-clients"
+          },
+          {
+            "comment": "IModelRpcProps replaces IModelToken and IModelTokenProps"
+          },
+          {
+            "comment": "Change RenderTexture.Type to a non-const enum"
+          },
+          {
+            "comment": "Remove 'const' from exported enums."
+          },
+          {
+            "comment": "Remove check for contextId in BentleyCloudRpcProtocol since remote snapshots are now possible."
+          },
+          {
+            "comment": "\"Default to text if no content-type in RPC request handling."
+          },
+          {
+            "comment": "React to BentleyCloudRpcManager change."
+          },
+          {
+            "comment": "Track active RPC requests"
+          },
+          {
+            "comment": "RPC fix"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "support for editing"
+          },
+          {
+            "comment": "Add API for thematic display."
+          },
+          {
+            "comment": "Alpha feature: thematic sensor display."
+          },
+          {
+            "comment": "Rename GlobeMode: ThreeD => Ellipsoid, Columbus => Plane."
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          },
+          {
+            "comment": "Add a ViewFlag to control white-on-white reversal."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/imodeljs-common_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",

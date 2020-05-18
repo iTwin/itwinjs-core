@@ -38,7 +38,7 @@ import { Scene } from "./Scene";
 export namespace MockRender {
   /** @internal */
   export abstract class Target extends RenderTarget {
-    protected constructor(private readonly _system: System) { super(); }
+    protected constructor(private readonly _system: RenderSystem) { super(); }
 
     public get renderSystem(): RenderSystem { return this._system; }
     public get wantInvertBlackBackground() { return false; }
@@ -55,7 +55,7 @@ export namespace MockRender {
 
   /** @internal */
   export class OnScreenTarget extends Target {
-    public constructor(system: System, private readonly _canvas: HTMLCanvasElement) { super(system); }
+    public constructor(system: RenderSystem, private readonly _canvas: HTMLCanvasElement) { super(system); }
 
     public get viewRect() { return new ViewRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight); }
     public setViewRect(_rect: ViewRect, _temp: boolean) { }
@@ -63,7 +63,7 @@ export namespace MockRender {
 
   /** @internal */
   export class OffScreenTarget extends Target {
-    public constructor(system: System, private readonly _viewRect: ViewRect) { super(system); }
+    public constructor(system: RenderSystem, private readonly _viewRect: ViewRect) { super(system); }
 
     public get viewRect() { return this._viewRect; }
     public setViewRect(rect: ViewRect, _temp: boolean) { this._viewRect.setFrom(rect); }
@@ -122,7 +122,7 @@ export namespace MockRender {
 
     public doIdleWork(): boolean { return false; }
 
-    public createTarget(canvas: HTMLCanvasElement) { return new OnScreenTarget(this, canvas); }
+    public createTarget(canvas: HTMLCanvasElement): OnScreenTarget { return new OnScreenTarget(this, canvas); }
     public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
 
     public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String) { return new Builder(this, placement, type, viewport, pickableId); }

@@ -75,7 +75,7 @@ describe("FavoritePropertiesDataProvider", () => {
 
     beforeEach(() => {
       const selectionScopesManager = moq.Mock.ofType<SelectionScopesManager>();
-      selectionScopesManager.setup((x) => x.computeSelection(moq.It.isAny(), [elementId], moq.It.isAny())).returns(async () => new KeySet());
+      selectionScopesManager.setup((x) => x.computeSelection(moq.It.isAny(), elementId, moq.It.isAny())).returns(async () => new KeySet());
       selectionManagerMock.setup((x) => x.scopes).returns(() => selectionScopesManager.object);
     });
 

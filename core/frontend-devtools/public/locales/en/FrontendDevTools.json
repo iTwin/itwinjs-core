@@ -39,6 +39,9 @@
     "ApplyView": {
       "keyin": "fdt apply view"
     },
+    "ApplyViewById": {
+      "keyin": "fdt apply viewid"
+    },
     "ToggleProjectExtents": {
       "keyin": "fdt project extents"
     },
@@ -150,8 +153,20 @@
     "AttachRealityModelTool": {
       "keyin": "fdt attach reality properties"
     },
+    "ExtensionService": {
+      "keyin": "fdt add extensionService"
+    },
     "SaveRealityModelTool": {
       "keyin": "fdt save reality properties"
+    },
+    "ToggleViewAttachments": {
+      "keyin": "fdt attachments"
+    },
+    "ToggleViewAttachmentBoundaries": {
+      "keyin": "fdt attachment bounds"
+    },
+    "ToggleViewAttachmentClipShapes": {
+      "keyin": "fdt attachment clip shapes"
     }
   }
 }

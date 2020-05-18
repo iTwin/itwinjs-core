@@ -132,6 +132,9 @@ export class BriefcaseEntry {
   /** Mode used to open the briefcase */
   public openMode: OpenMode;
 
+  /** Whether to performan any upgrades upon opening the db */
+  public upgrade: IModelJsNative.UpgradeMode = IModelJsNative.UpgradeMode.None;
+
   /** Params used to open the briefcase */
   public openParams: OpenParams; // tslint:disable-line:deprecation
 
@@ -313,10 +316,12 @@ class BriefcaseCache {
   }
 
   /** Find VariableVersion (PullAndPush or PullOnly) briefcase */
-  public findBriefcaseByBriefcaseId(iModelId: GuidString, briefcaseId: BriefcaseId, syncMode: SyncMode): BriefcaseEntry | undefined {
+  public findBriefcaseByBriefcaseId(iModelId: GuidString, briefcaseId: BriefcaseId, syncMode: SyncMode, upgrade: IModelJsNative.UpgradeMode = IModelJsNative.UpgradeMode.None): BriefcaseEntry | undefined {
     for (const entry of this._briefcases.values()) {
-      if (entry.iModelId === iModelId && entry.briefcaseId === briefcaseId && entry.syncMode === syncMode)
+      if (entry.iModelId === iModelId && entry.briefcaseId === briefcaseId && entry.syncMode === syncMode) {
+        entry.upgrade = upgrade;
         return entry;
+      }
     }
     return undefined;
   }
@@ -816,7 +821,7 @@ export class BriefcaseManager {
    * @internal
    */
   public static openBriefcase(briefcase: BriefcaseEntry) {
-    const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openMode);
+    const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openMode, briefcase.upgrade);
     briefcase.isOpen = true;
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, `Unable to reopen briefcase at ${briefcase.pathname}`, Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
@@ -877,7 +882,7 @@ export class BriefcaseManager {
       }
 
       if (cachedBriefcase.isOpen) {
-        Logger.logError(loggerCategory, "Briefcase found is not of the required version, but is already open. Cannot update or recreate it!", ({ ...cachedBriefcase.getDebugInfo(), requiredChangeSetId: changeSetId }));
+        Logger.logError(loggerCategory, "Briefcase found is not of the required version, but is already open. Cannot update or recreate it!", () => ({ ...cachedBriefcase.getDebugInfo(), requiredChangeSetId: changeSetId }));
         return cachedBriefcase;
       }
 
@@ -931,7 +936,7 @@ export class BriefcaseManager {
         }
 
         if (cachedBriefcase.isOpen) {
-          Logger.logError(loggerCategory, "Briefcase found is not of the required version, but is already open. Cannot update or recreate it!", ({ ...cachedBriefcase.getDebugInfo(), requiredChangeSetId: changeSetId }));
+          Logger.logError(loggerCategory, "Briefcase found is not of the required version, but is already open. Cannot update or recreate it!", () => ({ ...cachedBriefcase.getDebugInfo(), requiredChangeSetId: changeSetId }));
           return cachedBriefcase;
         }
 
@@ -1230,7 +1235,7 @@ export class BriefcaseManager {
 
     if (!briefcase) {
       // Could well be that the current user does not have the appropriate access
-      return Promise.reject(new IModelError(BriefcaseStatus.CannotAcquire, "Could not acquire briefcase", Logger.logError, loggerCategory));
+      throw new IModelError(BriefcaseStatus.CannotAcquire, "Could not acquire briefcase", Logger.logError, loggerCategory);
     }
     return briefcase;
   }
@@ -1664,9 +1669,9 @@ export class BriefcaseManager {
   private static async processChangeSets(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, targetChangeSetId: string, targetChangeSetIndex: number): Promise<void> {
     requestContext.enter();
     if (!briefcase.nativeDb || !briefcase.isOpen)
-      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open to process change sets", Logger.logError, loggerCategory, () => briefcase.getDebugInfo()));
+      throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open to process change sets", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
     if (briefcase.openMode !== OpenMode.ReadWrite)
-      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets", Logger.logError, loggerCategory, () => briefcase.getDebugInfo()));
+      throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
     assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.parentChangeSetId, "Mismatch between briefcase and the native Db");
 
     // Determine the reinstates, reversals or merges required
@@ -1736,7 +1741,7 @@ export class BriefcaseManager {
     const currentChangeSetId: string = briefcase.currentChangeSetId;
     const currentChangeSetIndex: number = briefcase.currentChangeSetIndex;
     if (targetChangeSetIndex === currentChangeSetIndex)
-      return Promise.resolve(); // nothing to apply
+      return; // nothing to apply
 
     // Download change sets
     const reverse: boolean = (targetChangeSetIndex < currentChangeSetIndex);
@@ -1867,7 +1872,7 @@ export class BriefcaseManager {
     const { changeSetId: targetChangeSetId, changeSetIndex: targetChangeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, targetVersion, briefcase.iModelId);
     requestContext.enter();
     if (targetChangeSetIndex < briefcase.currentChangeSetIndex)
-      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Can reinstate only to a later version", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex })));
+      throw new IModelError(ChangeSetStatus.ApplyError, "Can reinstate only to a later version", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex }));
 
     return BriefcaseManager.processChangeSets(requestContext, briefcase, targetChangeSetId, targetChangeSetIndex);
   }
@@ -1884,7 +1889,7 @@ export class BriefcaseManager {
     const { changeSetId: targetChangeSetId, changeSetIndex: targetChangeSetIndex } = await BriefcaseManager.evaluateVersion(requestContext, mergeToVersion, briefcase.iModelId);
     requestContext.enter();
     if (targetChangeSetIndex < briefcase.currentChangeSetIndex)
-      return Promise.reject(new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex })));
+      throw new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex }));
 
     await BriefcaseManager.updatePendingChangeSets(requestContext, briefcase);
     requestContext.enter();
@@ -2066,7 +2071,7 @@ export class BriefcaseManager {
       requestContext.enter();
       // If ChangeSet already exists, updating codes and locks might have timed out.
       if (!(error instanceof IModelHubError) || error.errorNumber !== IModelHubStatus.ChangeSetAlreadyExists) {
-        return Promise.reject(error);
+        throw error;
       }
     }
 
@@ -2097,7 +2102,7 @@ export class BriefcaseManager {
     } catch (err) {
       requestContext.enter();
       BriefcaseManager.abandonCreateChangeSet(briefcase);
-      return Promise.reject(err);
+      throw err;
     }
   }
 
@@ -2139,7 +2144,7 @@ export class BriefcaseManager {
         return;
 
       if (!BriefcaseManager.shouldRetryPush(error)) {
-        return Promise.reject(error);
+        throw error;
       }
       const delay = Math.floor(Math.random() * 4800) + 200;
       await new Promise((resolve: any) => setTimeout(resolve, delay));

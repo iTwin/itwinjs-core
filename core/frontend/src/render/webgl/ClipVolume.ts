@@ -6,32 +6,25 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { dispose } from "@bentley/bentleyjs-core";
 import {
-  ClipUtilities, ClipVector, IndexedPolyfaceVisitor, Point3d, PolyfaceBuilder, StrokeOptions, Transform, Triangulator, UnionOfConvexClipPlaneSets,
-  Vector3d,
+  ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets, Vector3d,
 } from "@bentley/geometry-core";
-import { ColorDef, Frustum, QParams3d, QPoint3dList } from "@bentley/imodeljs-common";
-import { ViewRect } from "../../ViewRect";
-import { ClippingType, RenderClipVolume } from "../RenderClipVolume";
+import { ColorDef } from "@bentley/imodeljs-common";
+import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderMemory } from "../RenderMemory";
-import { ClipMaskGeometry } from "./CachedGeometry";
 import { WebGLDisposable } from "./Disposable";
-import { DrawParams } from "./DrawCommand";
 import { FloatRgba } from "./FloatRGBA";
-import { FrameBuffer } from "./FrameBuffer";
 import { GL } from "./GL";
-import { RenderState } from "./RenderState";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
-import { Texture2DData, Texture2DHandle, TextureHandle } from "./Texture";
+import { Texture2DData, Texture2DHandle } from "./Texture";
 
 /** @internal */
 interface ClipPlaneSets {
-  readonly planes: UnionOfConvexClipPlaneSets;
+  readonly unions: UnionOfConvexClipPlaneSets[];
   readonly numPlanes: number;
-  readonly numSets: number;
 }
 
 /** @internal */
@@ -63,7 +56,13 @@ abstract class ClippingPlanes implements WebGLDisposable {
     dispose(this._texture.handle);
   }
 
-  public get bytesUsed(): number { return this._texture.handle.bytesUsed; }
+  public get bytesUsed(): number {
+    return this._texture.handle.bytesUsed;
+  }
+
+  public get numPlanes(): number {
+    return this._planes.numPlanes;
+  }
 
   public getTexture(transform: Transform): Texture2DHandle {
     if (transform.isAlmostEqual(this._transform))
@@ -78,33 +77,39 @@ abstract class ClippingPlanes implements WebGLDisposable {
     const pos = new Point3d();
     const v0 = new Vector3d();
 
-    let numSetsProcessed = 0;
-    for (const set of this._planes.planes.convexSets) {
-      if (set.planes.length === 0)
-        continue;
+    for (let i = 0; i < this._planes.unions.length; i++) {
+      if (i > 0)
+        this.appendUnionBoundary();
 
-      for (const plane of set.planes) {
-        plane.inwardNormalRef.clone(pInwardNormal);
-        let pDistance = plane.distance;
+      const union = this._planes.unions[i];
+      for (let j = 0; j < union.convexSets.length; j++) {
+        const set = union.convexSets[j];
+        if (0 === set.planes.length)
+          continue;
 
-        // Transform direction of clip plane
-        const norm = pInwardNormal;
-        transform.matrix.multiplyVector(norm, dir);
-        dir.normalizeInPlace();
+        if (j > 0)
+          this.appendSetBoundary();
 
-        // Transform distance of clip plane
-        transform.multiplyPoint3d(norm.scale(pDistance, v0), pos);
-        v0.setFromPoint3d(pos);
+        for (const plane of set.planes) {
+          plane.inwardNormalRef.clone(pInwardNormal);
+          let pDistance = plane.distance;
 
-        pInwardNormal.set(dir.x, dir.y, dir.z);
-        pDistance = -v0.dotProduct(dir);
+          // Transform direction of clip plane
+          const norm = pInwardNormal;
+          transform.matrix.multiplyVector(norm, dir);
+          dir.normalizeInPlace();
 
-        // The plane has been transformed into view space
-        this.appendPlane(pInwardNormal, pDistance);
+          // Transform distance of clip plane
+          transform.multiplyPoint3d(norm.scale(pDistance, v0), pos);
+          v0.setFromPoint3d(pos);
+
+          pInwardNormal.set(dir.x, dir.y, dir.z);
+          pDistance = -v0.dotProduct(dir);
+
+          // The plane has been transformed into view space
+          this.appendPlane(pInwardNormal, pDistance);
+        }
       }
-
-      if (++numSetsProcessed < this._planes.numSets)
-        this.appendZeroPlane();
     }
 
     this._texture.handle.replaceTextureData(this._texture.data);
@@ -139,7 +144,8 @@ abstract class ClippingPlanes implements WebGLDisposable {
   }
 
   private appendPlane(normal: Vector3d, distance: number): void { this.appendValues(normal.x, normal.y, normal.z, distance); }
-  private appendZeroPlane(): void { this.appendValues(0, 0, 0, 0); }
+  private appendSetBoundary(): void { this.appendValues(0, 0, 0, 0); }
+  private appendUnionBoundary(): void { this.appendValues(2, 2, 2, 0); }
 }
 
 /** Stores clip planes in floating-point texture.
@@ -147,9 +153,8 @@ abstract class ClippingPlanes implements WebGLDisposable {
  */
 class FloatPlanes extends ClippingPlanes {
   public static create(planes: ClipPlaneSets): ClippingPlanes | undefined {
-    const totalNumPlanes = planes.numPlanes + planes.numSets - 1;
-    const data = new Float32Array(totalNumPlanes * 4);
-    const handle = Texture2DHandle.createForData(1, totalNumPlanes, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+    const data = new Float32Array(planes.numPlanes * 4);
+    const handle = Texture2DHandle.createForData(1, planes.numPlanes, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
     return undefined !== handle ? new FloatPlanes(planes, { handle, data }) : undefined;
   }
 
@@ -163,9 +168,8 @@ class FloatPlanes extends ClippingPlanes {
  */
 class PackedPlanes extends ClippingPlanes {
   public static create(planes: ClipPlaneSets): ClippingPlanes | undefined {
-    const totalNumPlanes = planes.numPlanes + planes.numSets - 1;
-    const data = new Uint8Array(totalNumPlanes * 4 * 4);
-    const handle = Texture2DHandle.createForData(4, totalNumPlanes, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+    const data = new Uint8Array(planes.numPlanes * 4 * 4);
+    const handle = Texture2DHandle.createForData(4, planes.numPlanes, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
     return undefined !== handle ? new PackedPlanes(planes, { handle, data }) : undefined;
   }
 
@@ -196,10 +200,14 @@ class PackedPlanes extends ClippingPlanes {
 /** A 3D clip volume defined as a texture derived from a set of planes.
  * @internal
  */
-export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.Consumer, WebGLDisposable {
+export class ClipVolume extends RenderClipVolume implements RenderMemory.Consumer, WebGLDisposable {
   private _planes?: ClippingPlanes; // not read-only because dispose()...
   private _outsideRgba: FloatRgba = FloatRgba.from(0.0, 0.0, 0.0, 0.0); // 0 alpha means disabled
   private _insideRgba: FloatRgba = FloatRgba.from(0.0, 0.0, 0.0, 0.0); // 0 alpha means disabled
+
+  public get numPlanes(): number {
+    return this._planes?.numPlanes ?? 0;
+  }
 
   private constructor(clip: ClipVector, planes?: ClippingPlanes) {
     super(clip);
@@ -211,37 +219,39 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
       stats.addClipVolume(this._planes.bytesUsed);
   }
 
-  public get type(): ClippingType { return ClippingType.Planes; }
-
-  /** Create a new ClipPlanesVolume from a ClipVector.
-   * * The result is undefined if
-   *   * (a) there is more than one clipper
-   *   * (b) the clipper does not have clipPlaneSet (for instance, a pure mask clipper has mask planes but not primary clip planes)
-   */
-  public static create(clipVec: ClipVector): ClipPlanesVolume | undefined {
-    if (1 !== clipVec.clips.length)
+  /** Create a new ClipVolume from a ClipVector; or undefined if no clip planes could be extracted. */
+  public static create(clipVec: ClipVector): ClipVolume | undefined {
+    if (0 === clipVec.clips.length)
       return undefined;
 
-    const clipPrim = clipVec.clips[0];
-    const clipPlaneSet = clipPrim.fetchClipPlanesRef();
-    return undefined !== clipPlaneSet ? ClipPlanesVolume.createFromClipPlaneSet(clipPlaneSet, clipVec) : undefined;
-  }
-
-  private static createFromClipPlaneSet(clipPlaneSet: UnionOfConvexClipPlaneSets, clip: ClipVector) {
+    const unions = [];
     let numPlanes = 0;
-    let numSets = 0;
-    for (const set of clipPlaneSet.convexSets) {
-      const setLength = set.planes.length;
-      if (setLength !== 0) {
-        numSets++;
-        numPlanes += setLength;
+    for (const primitive of clipVec.clips) {
+      const union = primitive.fetchClipPlanesRef();
+      if (undefined === union)
+        continue;
+
+      let numSets = 0;
+      for (const set of union.convexSets) {
+        const setLength = set.planes.length;
+        if (setLength > 0) {
+          ++numSets;
+          numPlanes += setLength;
+        }
+      }
+
+      if (numSets > 0) {
+        unions.push(union);
+        numPlanes += (numSets - 1);
       }
     }
-    if (numPlanes === 0)
+
+    if (0 === unions.length)
       return undefined;
 
-    const planes = ClippingPlanes.create({ planes: clipPlaneSet, numPlanes, numSets });
-    return new ClipPlanesVolume(clip, planes);
+    numPlanes += (unions.length - 1);
+    const planes = ClippingPlanes.create({ unions, numPlanes });
+    return new ClipVolume(clipVec, planes);
   }
 
   public get isDisposed(): boolean { return undefined === this._planes; }
@@ -268,7 +278,7 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
     return 0.0 !== this._outsideRgba.alpha;
   }
 
-  /** Push this ClipPlanesVolume clipping onto a target. */
+  /** Push this ClipVolume clipping onto a target. */
   public pushToTarget(target: Target) {
     if (undefined !== this._planes) {
       const texture = this._planes.getTexture(target.uniforms.frustum.viewMatrix);
@@ -276,12 +286,12 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
     }
   }
 
-  /** Push this ClipPlanesVolume clipping onto the target of a shader program executor. */
+  /** Push this ClipVolume clipping onto the target of a shader program executor. */
   public pushToShaderExecutor(shader: ShaderProgramExecutor) {
     this.pushToTarget(shader.target);
   }
 
-  /** Pop this ClipPlanesVolume clipping from a target. */
+  /** Pop this ClipVolume clipping from a target. */
   public pop(target: Target) {
     target.clips.clear();
   }
@@ -289,176 +299,5 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
   /** Exposed for testing purposes. */
   public getTextureData(transform = Transform.identity): Float32Array | Uint8Array | undefined {
     return undefined !== this._planes ? this._planes.getTextureData(transform) : undefined;
-  }
-}
-
-/** A 2D clip volume defined as a texture derived from a masked set of planes.
- * @internal
- */
-export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Consumer, WebGLDisposable {
-  public readonly geometry: ClipMaskGeometry;
-  public readonly frustum: Frustum;
-  public readonly rect: ViewRect;
-  private _texture?: TextureHandle;
-  private _fbo?: FrameBuffer;
-
-  private constructor(geometry: ClipMaskGeometry, clip: ClipVector) {
-    super(clip);
-    this.geometry = geometry;
-    this.frustum = new Frustum();
-    this.rect = new ViewRect(0, 0, 0, 0);
-  }
-
-  public collectStatistics(stats: RenderMemory.Statistics): void {
-    this.geometry.collectStatistics(stats);
-    if (undefined !== this._texture)
-      stats.addClipVolume(this._texture.bytesUsed);
-  }
-
-  public get type(): ClippingType { return ClippingType.Mask; }
-
-  /** Create a new ClipMaskVolume from a clip vector. */
-  public static create(clipVec: ClipVector): ClipMaskVolume | undefined {
-    const range = clipVec.boundingRange;
-    if (range.isNull)
-      return undefined;
-
-    const pts: Point3d[] = [
-      Point3d.create(range.low.x, range.low.y, 0),
-      Point3d.create(range.high.x, range.low.y, 0),
-      Point3d.create(range.high.x, range.high.y, 0),
-      Point3d.create(range.low.x, range.high.y, 0),
-    ];
-
-    // Clip the polygon into smaller polygons inside the clipping region
-    const clippedPolygonInsides = ClipUtilities.clipPolygonToClipShape(pts, clipVec.clips[0]);  // ### TODO: Currently assume that there is only one shape...
-    const indices: number[] = [];
-    const vertices = QPoint3dList.createFrom([], QParams3d.fromRange(range));
-
-    const strokeOptions = new StrokeOptions();
-    strokeOptions.shouldTriangulate = true;
-    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
-    for (const clippedPolygon of clippedPolygonInsides) {
-      if (clippedPolygon.length < 3) {
-        continue;
-      } else if (clippedPolygon.length === 3) {
-        polyfaceBuilder.addTriangleFacet(clippedPolygon);
-
-      } else if (clippedPolygon.length === 4) {
-        polyfaceBuilder.addQuadFacet(clippedPolygon);
-
-      } else if (clippedPolygon.length > 4) {
-        // Clipped polygon must be triangulated before appending
-        const triangulatedPolygonGraph = Triangulator.createTriangulatedGraphFromSingleLoop(clippedPolygon);
-        Triangulator.flipTriangles(triangulatedPolygonGraph);
-        polyfaceBuilder.addGraph(triangulatedPolygonGraph, false);
-      }
-    }
-    const polyface = polyfaceBuilder.claimPolyface();
-    const nPoints = polyface.pointCount;
-    const pPoints = polyface.data.point;
-    assert(nPoints !== 0);
-
-    for (let i = 0; i < nPoints; i++)
-      vertices.add(pPoints.getPoint3dAtUncheckedPointIndex(i));
-
-    const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
-    while (visitor.moveToNextFacet())
-      for (let i = 0; i < 3; i++)
-        indices.push(visitor.clientPointIndex(i));
-
-    assert(indices.length > 0);
-    if (indices.length === 0 || vertices.length === 0)
-      return undefined;
-
-    return new ClipMaskVolume(new ClipMaskGeometry(new Uint32Array(indices), vertices), clipVec);
-  }
-
-  public get texture(): TextureHandle | undefined { return this._texture; }
-  public get fbo(): FrameBuffer | undefined { return this._fbo; }
-
-  public get isDisposed(): boolean { return undefined === this._texture && undefined === this._fbo; }
-
-  public dispose() {
-    this._texture = dispose(this._texture);
-    this._fbo = dispose(this._fbo);
-  }
-
-  public setClipColors(_outsideColor: ColorDef | undefined, _insideColor: ColorDef | undefined) { }
-  public get hasOutsideClipColor() { return false; }
-
-  /** Push this ClipMaskVolume clipping onto a target. */
-  public pushToTarget(_target: Target) { assert(false); }
-
-  /** Push this ClipMaskVolume clipping onto the target of a program executor. */
-  public pushToShaderExecutor(shader: ShaderProgramExecutor) {
-    const texture = this.getTexture(shader);
-    if (texture !== undefined)
-      shader.target.clipMask = texture;
-  }
-
-  /** Pop this ClipMaskVolume clipping from a target. */
-  public pop(target: Target) {
-    if (target.is2d && this._texture !== undefined)
-      target.clipMask = undefined;
-  }
-
-  /** Update the clip mask using the shader executor's target and return the resulting texture. */
-  public getTexture(exec: ShaderProgramExecutor): TextureHandle | undefined {
-    const target = exec.target;
-    if (!target.is2d)
-      return undefined;
-
-    const frust = target.planFrustum;
-    const rect = target.viewRect;
-    const frustumChanged = !this.frustum.equals(frust);
-    const textureChanged = this._texture === undefined || this.rect.width !== rect.width || this.rect.height !== rect.height;
-
-    if (textureChanged) {
-      this.dispose();
-      this._texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-      if (this._texture !== undefined)
-        this._fbo = FrameBuffer.create([this._texture]);
-    }
-
-    this.rect.init(rect.left, rect.top, rect.right, rect.bottom);
-    if (textureChanged || frustumChanged) {
-      this.frustum.setFrom(frust);
-      this.render(exec);
-    }
-
-    return this._texture;
-  }
-
-  private static _drawParams?: DrawParams;
-
-  public render(exec: ShaderProgramExecutor) {
-    if (this._fbo === undefined)
-      return;
-
-    const state = new RenderState();
-    state.flags.depthMask = false;
-    state.flags.blend = false;
-    state.flags.depthTest = false;
-
-    // Render clip geometry as a mask
-    System.instance.frameBufferStack.execute(this._fbo, true, () => {
-      const prevState = System.instance.currentRenderState.clone();
-      System.instance.applyRenderState(state);
-
-      const context = System.instance.context;
-      context.clearColor(0, 0, 0, 0);
-      context.clear(context.COLOR_BUFFER_BIT);
-
-      if (undefined === ClipMaskVolume._drawParams)
-        ClipMaskVolume._drawParams = new DrawParams();
-
-      const params = ClipMaskVolume._drawParams!;
-      params.init(exec.params, this.geometry);
-      exec.drawInterrupt(params);
-
-      // Restore previous render state
-      System.instance.applyRenderState(prevState);
-    });
   }
 }

@@ -7,10 +7,9 @@
  */
 
 import * as React from "react";
-import { CommonToolbarItem, ConditionalBooleanValue, OnCancelFunc, OnItemExecutedFunc, RelativePosition } from "@bentley/ui-abstract";
-import { DivWithOutsideClick, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
-import { Toolbar as NZ_Toolbar } from "@bentley/ui-ninezone";
-import { ToolbarHelper } from "../../ui-framework";
+import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, RelativePosition } from "@bentley/ui-abstract";
+import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
+import { Direction, Toolbar, ToolbarOpacitySetting, ToolbarPanelAlignment } from "@bentley/ui-components";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup } from "./PositionPopup";
@@ -64,20 +63,6 @@ export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps, Toolbar
     const popupRect = CursorPopup.getPopupRect(point, this.props.offset, this.state.size, this.props.relativePosition!);
     point = new Point(popupRect.left, popupRect.top);
 
-    const toolbarItems = () => {
-      const availableItems = this.props.items
-        .filter((item) => !(ConditionalBooleanValue.getValue(item.isHidden)))
-        .sort((a, b) => a.itemPriority - b.itemPriority);
-
-      if (0 === availableItems.length)
-        return null;
-
-      const createdNodes = availableItems.map((item: CommonToolbarItem) => {
-        return ToolbarHelper.createNodeForToolbarItem(item, this.props.onItemExecuted);
-      });
-      return createdNodes;
-    };
-
     return (
       <PositionPopup key={this.props.id}
         className="uifw-no-border"
@@ -85,7 +70,16 @@ export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps, Toolbar
         onSizeKnown={this._onSizeKnown}
       >
         <DivWithOutsideClick onOutsideClick={this.props.onCancel} onKeyDown={this._handleKeyDown}>
-          <NZ_Toolbar items={toolbarItems()} />
+          <FocusTrap active={true} returnFocusOnDeactivate={true}>
+            <Toolbar
+              expandsTo={Direction.Bottom}
+              panelAlignment={ToolbarPanelAlignment.Start}
+              items={this.props.items}
+              useDragInteraction={true}
+              toolbarOpacitySetting={ToolbarOpacitySetting.Defaults}
+              onItemExecuted={this.props.onItemExecuted}
+            />
+          </FocusTrap>
         </DivWithOutsideClick>
       </PositionPopup>
     );

@@ -9,15 +9,15 @@ import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { AngleDescription, LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
 import { AbstractToolbarProps, BadgeType, PropertyDescription, RelativePosition } from "@bentley/ui-abstract";
-import { EditorContainer } from "@bentley/ui-components";
-import { Point } from "@bentley/ui-core";
-import { Toolbar } from "@bentley/ui-ninezone";
+import { EditorContainer, Toolbar, ToolbarWithOverflow } from "@bentley/ui-components";
+import { LeadingText, Point } from "@bentley/ui-core";
 import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
 import { Calculator } from "../../ui-framework/accudraw/Calculator";
 import { MenuButton } from "../../ui-framework/accudraw/MenuButton";
-import { PopupInfo, PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
+import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
 import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
 import { TestUtils } from "../TestUtils";
+import { Card } from "../../ui-framework/popup/CardPopup";
 
 describe("PopupManager", () => {
 
@@ -283,6 +283,47 @@ describe("PopupManager", () => {
       PopupManager.showHTMLElement(display.documentElement, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
       wrapper.update();
       wrapper.should.matchSnapshot();
+
+      wrapper.unmount();
+    });
+
+    it("PopupRenderer should render Card", async () => {
+      const wrapper = mount(<PopupRenderer />);
+
+      const html = '<div style="width: 120px; height: 50px; display: flex; justify-content: center; align-items: center; background-color: aqua;">Hello World!</div>';
+      const content = new DOMParser().parseFromString(html, "text/html");
+
+      const toolbarProps: AbstractToolbarProps = {
+        items: [
+          { id: "Mode-1", itemPriority: 10, label: "Mode 1", icon: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } },
+          { id: "Mode-2", itemPriority: 20, label: "Mode 2", icon: "icon-placeholder", execute: () => { } },
+        ],
+      };
+
+      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+      const spyItemExecuted = sinon.spy();
+      const spyCancel = sinon.spy();
+
+      PopupManager.showCard(content.documentElement, "Title", toolbarProps, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
+      wrapper.update();
+      expect(wrapper.find(Card).length).to.eq(1);
+      expect(wrapper.find(LeadingText).length).to.eq(1);
+      expect(wrapper.find(ToolbarWithOverflow).length).to.eq(1);
+
+      const buttonNodes = wrapper.find("button");
+      expect(buttonNodes.length).to.be.greaterThan(0);
+
+      buttonNodes.at(0).simulate("keyDown", { key: "Escape" });
+      await TestUtils.flushAsyncOperations();
+      expect(spyCancel.called).to.be.true;
+      PopupManager.hideCard();
+
+      const record = TestUtils.createPrimitiveStringProperty("record", "Title");
+      PopupManager.showCard(content.documentElement, record, toolbarProps, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
+      wrapper.update();
+      expect(wrapper.find(Card).length).to.eq(1);
+      expect(wrapper.find(LeadingText).length).to.eq(1);
+      PopupManager.hideCard();
 
       wrapper.unmount();
     });

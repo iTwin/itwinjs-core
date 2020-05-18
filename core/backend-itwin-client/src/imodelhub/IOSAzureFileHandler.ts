@@ -57,7 +57,7 @@ export class IOSAzureFileHandler implements FileHandler {
     requestContext.enter();
     if (!IOSAzureFileHandler._isMobile) {
       Logger.logError(loggerCategory, "Expecting this code to run on a mobile device");
-      return Promise.reject("Expecting this code to run on a mobile device");
+      throw new Error("Expecting this code to run on a mobile device");
     }
 
     Logger.logInfo(loggerCategory, `Downloading file from ${downloadUrl}`);
@@ -107,7 +107,7 @@ export class IOSAzureFileHandler implements FileHandler {
       if (fs.existsSync(downloadToPathname))
         fs.unlinkSync(downloadToPathname); // Just in case there was a partial download, delete the file
       Logger.logError(loggerCategory, `Error downloading file`);
-      return Promise.reject(err);
+      throw err;
     }
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Downloaded file from ${downloadUrl}`);
@@ -154,7 +154,7 @@ export class IOSAzureFileHandler implements FileHandler {
     requestContext.enter();
     if (!IOSAzureFileHandler._isMobile) {
       Logger.logError(loggerCategory, "Expecting this code to run on a mobile device");
-      return Promise.reject("Expecting this code to run on a mobile device");
+      throw new Error("Expecting this code to run on a mobile device");
     }
 
     Logger.logTrace(loggerCategory, `Uploading file to ${uploadUrlString}`);

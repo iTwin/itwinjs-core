@@ -94,10 +94,10 @@ export class IModelVersion {
    */
   public async evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString> {
     if (this._first)
-      return Promise.resolve("");
+      return "";
 
     if (this._afterChangeSetId) {
-      return Promise.resolve(this._afterChangeSetId);
+      return this._afterChangeSetId;
     }
 
     if (this._latest) {
@@ -108,7 +108,7 @@ export class IModelVersion {
       return IModelVersion.getChangeSetFromNamedVersion(requestContext, imodelClient, iModelId, this._versionName);
     }
 
-    return Promise.reject(new IModelError(BentleyStatus.ERROR, "Invalid version"));
+    throw new IModelError(BentleyStatus.ERROR, "Invalid version");
   }
 
   /** Gets the last change set that was applied to the imodel */
@@ -122,7 +122,7 @@ export class IModelVersion {
     const versions = await imodelClient.versions.get(requestContext, iModelId, new VersionQuery().select("ChangeSetId").byName(versionName));
 
     if (!versions[0] || !versions[0].changeSetId)
-      return Promise.reject(new IModelError(BentleyStatus.ERROR, "Problem getting versions"));
+      throw new IModelError(BentleyStatus.ERROR, "Problem getting versions");
 
     return versions[0].changeSetId!;
   }

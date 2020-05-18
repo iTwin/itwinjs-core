@@ -450,6 +450,7 @@ export class AppUi {
     UiFramework.widgetManager.addWidgetDef(widgetDef2, undefined, StageUsage.General, ZoneLocation.BottomRight);
 
     const widgetDef3 = new WidgetDef({
+      id: "uitestapp-test-wd3",
       iconSpec: "icon-placeholder",
       label: "Dynamic Widget 3",
       element: <FillCentered>Dynamic Widget in panel</FillCentered>,

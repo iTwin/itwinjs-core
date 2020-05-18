@@ -1,0 +1,26 @@
+{
+  "name": "@bentley/projectshare-client",
+  "entries": [
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/projectshare-client_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API."
+          },
+          {
+            "comment": "react to renaming of imodeljs-clients"
+          },
+          {
+            "comment": "create new package from imodeljs-clients"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          }
+        ]
+      }
+    }
+  ]
+}

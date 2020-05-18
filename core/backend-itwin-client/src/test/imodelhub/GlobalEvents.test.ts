@@ -264,6 +264,20 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     chai.assert(!!event!.iModelId);
   });
 
+  it("should receive Global Event baseline NamedVersionCreatedEvent (#unit)", async () => {
+    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${Guid.createValue()}","iModelId":"${Guid.createValue()}","ChangeSetId":"","VersionId":"${Guid.createValue()}","VersionName":"357"}`;
+    mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "NamedVersionCreatedEvent");
+
+    const event = await imodelHubClient.globalEvents.getEvent(requestContext, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
+
+    chai.expect(event).to.be.instanceof(NamedVersionCreatedEvent);
+    chai.assert(!!event!.iModelId);
+    const typedEvent = event as NamedVersionCreatedEvent;
+    chai.assert(!!typedEvent);
+    chai.assert(!!typedEvent!.versionId);
+    chai.expect(typedEvent.changeSetId).to.be.eq("");
+  });
+
   it("should receive Global Event NamedVersionCreatedEvent (#unit)", async () => {
     const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${Guid.createValue()}","iModelId":"${Guid.createValue()}","ChangeSetId":"369","VersionId":"${Guid.createValue()}","VersionName":"357"}`;
     mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "NamedVersionCreatedEvent");

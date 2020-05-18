@@ -1,6 +1,22 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- Added key-in to toggle the 'allow 3d manipulations' flag for a 3d view.
+- Add keyin 'fdt clip color' to control colorizing of pixels inside or outside clip regions.
+- Add tools to save/attach reality models.
+- Moved keyin parsing logic to ToolRegistry.
+- KeyinField auto-completion supports localized and/or non-localized key-in strings.
+- Support display of OrbitGt Point Clouds.
+- Add tools for debugging reality tiles.
+- Upgrade to Rush 5.23.2
+- Add parseArgs() to facilitate keyin argument parsing; add keyins for converting between element Ids and source aspect Ids.
+- Remove support for the iModel.js module system by no longer delivering modules.
 
 ## 1.14.1
 Wed, 22 Apr 2020 19:04:00 GMT
@@ -91,15 +107,15 @@ Mon, 30 Sep 2019 22:28:48 GMT
 
 ### Updates
 
-- added support for blank IModelConnections
+- Added support for blank IModelConnections
 - Improved configurability of KeyinField.
 - DiagnosticsPanel can now be configured to exclude specific components.
 - Added tool to get geometry summary
 - Added ability to cycle through previously-entered key-ins in KeyinField.
 - Add tool to transition between reality and BIM models (demonstrate model animation).
 - Added key-in to toggle debugging tooltips.
-- #168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs.
-- upgrade to TypeScript 3.6.2
+- Tool assistance: Measure tools, view clip tools, and touch cursor inputs.
+- Upgrade to TypeScript 3.6.2
 - Fix WindowAreaTool full screen cursor. Added selected view frustum debug tool.
 
 ## 1.4.0

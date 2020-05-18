@@ -99,7 +99,7 @@ describe("LocalizationHelper", () => {
       const labelDefinition: LabelDefinition = {
         displayValue: "Display",
         rawValue: compositeValue,
-        typeName: "composite",
+        typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME,
       };
       i18nMock.setup((x) => x.translate("namespace:NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
       localizationHelper.getLocalizedLabelDefinition(labelDefinition);

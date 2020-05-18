@@ -135,6 +135,6 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
       return request;
     }
 
-    return Promise.resolve(container);
+    return container;
   }
 }

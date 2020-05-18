@@ -7,7 +7,7 @@
  */
 
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, FileHandler, ProgressCallback, ProgressInfo, WsgInstance } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ChunkedQueryContext, DownloadFailed, ECJsonTypeMap, FileHandler, ProgressCallback, ProgressInfo, RequestQueryOptions, SasUrlExpired, WsgInstance } from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
@@ -120,6 +120,17 @@ export class ChangeSet extends WsgInstance {
 
   /** Path to the download ChangeSet file on disk. */
   public pathname?: string;
+
+  private _fileSizeNumber?: number;
+
+  /** Parsed number of this ChangeSet file size. */
+  public get fileSizeNumber(): number {
+    if (this._fileSizeNumber)
+      return this._fileSizeNumber;
+
+    this._fileSizeNumber = parseInt(this.fileSize!, 10);
+    return this._fileSizeNumber;
+  }
 }
 
 /**
@@ -137,6 +148,16 @@ export class ChangeSetQuery extends StringIdQuery {
   constructor() {
     super();
     this.pageSize(ChangeSetQuery.defaultPageSize);
+  }
+
+  /**
+   * Clone current query.
+   * @returns Cloned query.
+   */
+  public clone(): ChangeSetQuery {
+    const changeSetQuery = new ChangeSetQuery();
+    changeSetQuery._query = { ...this.getQueryOptions() };
+    return changeSetQuery;
   }
 
   /**
@@ -323,6 +344,32 @@ class ParallelQueue {
   }
 }
 
+/** Object for tracking changeSets download progress. */
+class DownloadProgress {
+  private _totalSize: number;
+  private _downloadedSize: number;
+
+  constructor(totalSize: number) {
+    this._downloadedSize = 0;
+    this._totalSize = totalSize;
+  }
+
+  /** Gets total changeSets size to download. */
+  get totalSize(): number {
+    return this._totalSize;
+  }
+
+  /** Gets currently downloaded changeSets size. */
+  get downloadedSize(): number {
+    return this._downloadedSize;
+  }
+
+  /** Sets currently downloaded changeSets size. */
+  set downloadedSize(value: number) {
+    this._downloadedSize = value;
+  }
+}
+
 /**
  * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [BriefcaseDb]($backend) methods instead.
  * @beta
@@ -373,8 +420,28 @@ export class ChangeSetHandler {
     return changeSets;
   }
 
+  /** Get the chunk of [[ChangeSet]]s for the iModel.
+   * @param requestContext The client request context.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
+   * @param url [[ChangeSet]]s query url.
+   * @param chunkedQueryContext [[ChangeSet]]s chunked query context.
+   * @param queryOptions Request query options.
+   * @returns [[ChangeSet]]s chunk that match the query.
+   * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[ChangeSet]] with the specified id could not be found.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   */
+  private async getChunk(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, queryOptions: RequestQueryOptions): Promise<ChangeSet[]> {
+    requestContext.enter();
+    Logger.logInfo(loggerCategory, `Started querying ChangeSets chunk`, () => ({ iModelId }));
+    const changeSets = await this._handler.getInstancesChunk<ChangeSet>(requestContext, url, chunkedQueryContext, ChangeSet, queryOptions);
+    requestContext.enter();
+    Logger.logTrace(loggerCategory, `Finished querying ChangeSets chunk`, () => ({ iModelId, count: changeSets.length }));
+
+    return changeSets;
+  }
+
   /**
-   * Download the specified [[ChangeSet]]s. If you want to [pull]($docs/learning/Glossary.md#pull) and [merge]($docs/learning/Glossary.md#merge) ChangeSets from iModelHub to your [[Briefcase]], you should use [BriefcaseDb.pullAndMergeChanges]($backend) instead.
+   * Download the [[ChangeSet]]s that match provided query. If you want to [pull]($docs/learning/Glossary.md#pull) and [merge]($docs/learning/Glossary.md#merge) ChangeSets from iModelHub to your [[Briefcase]], you should use [BriefcaseDb.pullAndMergeChanges]($backend) instead.
    *
    * This method creates the directory containing the ChangeSets if necessary. If there is an error in downloading some of the ChangeSets, all partially downloaded ChangeSets are deleted from disk.
    * @param requestContext The client request context
@@ -386,70 +453,160 @@ export class ChangeSetHandler {
    * @throws [ResponseError]($itwin-client) if the download fails.
    */
   public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet[]> {
-    requestContext.enter();
-    query.selectDownloadUrl();
-    const changeSets = await this.get(requestContext, iModelId, query);
-
-    requestContext.enter();
-    if (changeSets.length === 0)
-      return new Array<ChangeSet>();
-
-    Logger.logInfo(loggerCategory, `Downloading ${changeSets.length} changesets`);
-    ArgumentCheck.nonEmptyArray("changeSets", changeSets);
+    ArgumentCheck.defined("requestContext", requestContext);
+    ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.defined("path", path);
+    requestContext.enter();
 
     if (typeof window !== "undefined")
-      return Promise.reject(IModelHubClientError.browser());
+      throw IModelHubClientError.browser();
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubClientError.fileHandler());
+      throw IModelHubClientError.fileHandler();
+
+    const changeSetsToDownloadQuery: ChangeSetQuery = query.clone();
+    changeSetsToDownloadQuery.select("FileSize");
+    const changeSetsToDownload = await this.get(requestContext, iModelId, changeSetsToDownloadQuery);
+    requestContext.enter();
+
+    if (changeSetsToDownload.length === 0)
+      return new Array<ChangeSet>();
+
+    Logger.logInfo(loggerCategory, `Downloading ${changeSetsToDownload.length} changesets`);
 
     let totalSize = 0;
-    let downloadedSize = 0;
-    changeSets.forEach((value) => totalSize += parseInt(value.fileSize!, 10));
+    changeSetsToDownload.forEach((value) => totalSize += value.fileSizeNumber);
+    const downloadProgress = new DownloadProgress(totalSize);
+
+    query.selectDownloadUrl();
+
+    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeUrl(iModelId, query.getId());
+    requestContext.enter();
+
+    const queryOptions = query.getQueryOptions();
+    const chunkedQueryContext = queryOptions ? ChunkedQueryContext.create(queryOptions) : undefined;
+    const changeSets: ChangeSet[] = new Array<ChangeSet>();
+    do {
+      const changeSetsChunk = await this.getChunk(requestContext, iModelId, url, chunkedQueryContext, queryOptions);
+      requestContext.enter();
+
+      await this.downloadChunk(requestContext, iModelId, changeSetsChunk, path, downloadProgress, progressCallback);
+      requestContext.enter();
+
+      changeSets.push(...changeSetsChunk);
+    } while (chunkedQueryContext && !chunkedQueryContext.isQueryFinished);
+
+    Logger.logInfo(loggerCategory, `Downloaded ${changeSets.length} changesets`);
+
+    return changeSets;
+  }
+
+  /** Download the chunk of [[ChangeSet]]s for the iModel.
+   * @param requestContext The client request context.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
+   * @param changeSets [[ChangeSet]]s chunk to download.
+   * @param path Path of directory where the ChangeSets should be downloaded.
+   * @param downloadProgress Object that tracks [[ChangeSet]]s download progress.
+   * @param progressCallback Callback for tracking progress.
+   * @throws [ResponseError]($itwin-client) if the download fails.
+   */
+  private async downloadChunk(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSets: ChangeSet[], path: string, downloadProgress: DownloadProgress, progressCallback?: ProgressCallback): Promise<void> {
+    requestContext.enter();
+
+    changeSets.forEach((changeSet) => {
+      if (!changeSet.downloadUrl)
+        throw IModelHubClientError.missingDownloadUrl("changeSets");
+    });
+
+    Logger.logInfo(loggerCategory, `Downloading ${changeSets.length} changesets chunk`);
+
+    // Sort changesets by file size ascending. This way we increase probability SAS token won't expire for small changesets
+    const sortedChangeSets = Array.from(changeSets).sort((a, b) => a.fileSizeNumber < b.fileSizeNumber ? -1 : a.fileSizeNumber === b.fileSizeNumber ? 0 : 1);
 
     const queue = new ParallelQueue();
-    const fileHandler = this._fileHandler;
-    changeSets.forEach((changeSet) =>
+    const fileHandler = this._fileHandler!;
+    sortedChangeSets.forEach((changeSet) =>
       queue.push(async () => {
         const downloadPath: string = fileHandler.join(path, changeSet.fileName!);
-        const changeSetSize = parseInt(changeSet.fileSize!, 10);
 
         let previouslyDownloaded = 0;
         const callback: ProgressCallback = (progress: ProgressInfo) => {
-          downloadedSize += (progress.loaded - previouslyDownloaded);
+          downloadProgress.downloadedSize += (progress.loaded - previouslyDownloaded);
           previouslyDownloaded = progress.loaded;
-          progressCallback!({ loaded: downloadedSize, total: totalSize, percent: downloadedSize / totalSize });
+          progressCallback!({ loaded: downloadProgress.downloadedSize, total: downloadProgress.totalSize, percent: downloadProgress.downloadedSize / downloadProgress.totalSize });
         };
 
-        if (this.wasChangeSetDownloaded(downloadPath, changeSetSize, changeSet)) {
+        if (this.wasChangeSetDownloaded(downloadPath, changeSet.fileSizeNumber, changeSet)) {
           if (progressCallback)
-            callback({ percent: 100, total: changeSetSize, loaded: changeSetSize });
-          return Promise.resolve();
+            callback({ percent: 100, total: changeSet.fileSizeNumber, loaded: changeSet.fileSizeNumber });
+          return;
         }
 
-        try {
-          // Get downloadUrl just before download start
-          const csWithSasUrl = await this.get(requestContext, iModelId, new ChangeSetQuery().selectDownloadUrl().byId(changeSet.id!));
-          const downloadUrl = csWithSasUrl[0].downloadUrl!;
-          await fileHandler.downloadFile(requestContext, downloadUrl, downloadPath, parseInt(changeSet.fileSize!, 10), progressCallback ? callback : undefined);
-          requestContext.enter();
-        } catch (error) {
-          requestContext.enter();
-          // Note: If the cache was shared across processes, it's possible that the download was completed by another process
-          if (this.wasChangeSetDownloaded(downloadPath, changeSetSize, changeSet))
-            return Promise.resolve();
-          throw error;
-        }
-
-        return Promise.resolve();
+        await this.downloadChangeSetWithRetry(requestContext, iModelId, changeSet, downloadPath, progressCallback ? callback : undefined);
+        requestContext.enter();
       }));
 
     await queue.waitAll();
     requestContext.enter();
-    Logger.logTrace(loggerCategory, `Downloaded ${changeSets.length} changesets`);
 
-    return changeSets;
+    Logger.logTrace(loggerCategory, `Finished downloading changesets chunk`);
+  }
+
+  /** Download single [[ChangeSet]] with retry if SAS url expired or download failed.
+   * @param requestContext The client request context.
+   * @param iModelId Id of the iModel. See [[HubIModel]].
+   * @param changeSet [[ChangeSet]] to download.
+   * @param downloadPath Path where the ChangeSet should be downloaded.
+   * @param changeSetProgress Callback for tracking progress.
+   * @throws [ResponseError]($itwin-client) if the download fails.
+   */
+  private async downloadChangeSetWithRetry(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, downloadPath: string, changeSetProgress?: ProgressCallback): Promise<void> {
+    requestContext.enter();
+    try {
+      await this.downloadChangeSet(requestContext, changeSet, downloadPath, changeSetProgress);
+      requestContext.enter();
+      return;
+    } catch (error) {
+      requestContext.enter();
+      if (!(error instanceof SasUrlExpired || error instanceof DownloadFailed))
+        throw error;
+
+      Logger.logWarning(loggerCategory, `ChangeSet download failed, refreshing downloadUrl to retry download.`, () => ({ iModelId, id: changeSet.id }));
+
+      const changeSetQuery = new ChangeSetQuery();
+      changeSetQuery.byId(changeSet.id!);
+      changeSetQuery.selectDownloadUrl();
+
+      const refreshedChangeSets = await this.get(requestContext, iModelId, changeSetQuery);
+      requestContext.enter();
+      if (refreshedChangeSets.length === 0)
+        throw error;
+
+      await this.downloadChangeSet(requestContext, refreshedChangeSets[0], downloadPath, changeSetProgress);
+      requestContext.enter();
+      return;
+    }
+  }
+
+  /** Download single [[ChangeSet]].
+   * @param requestContext The client request context.
+   * @param changeSet [[ChangeSet]] to download.
+   * @param downloadPath Path where the ChangeSet should be downloaded.
+   * @param changeSetProgress Callback for tracking progress.
+   * @throws [ResponseError]($itwin-client) if the download fails.
+   */
+  private async downloadChangeSet(requestContext: AuthorizedClientRequestContext, changeSet: ChangeSet, downloadPath: string, changeSetProgress?: ProgressCallback): Promise<void> {
+    requestContext.enter();
+    try {
+      await this._fileHandler!.downloadFile(requestContext, changeSet.downloadUrl!, downloadPath, changeSet.fileSizeNumber, changeSetProgress);
+      requestContext.enter();
+    } catch (error) {
+      requestContext.enter();
+      // Note: If the cache was shared across processes, it's possible that the download was completed by another process
+      if (this.wasChangeSetDownloaded(downloadPath, changeSet.fileSizeNumber, changeSet))
+        return;
+      throw error;
+    }
   }
 
   /** Checks if ChangeSet file was already downloaded.
@@ -503,13 +660,13 @@ export class ChangeSetHandler {
     ArgumentCheck.defined("path", path);
 
     if (typeof window !== "undefined")
-      return Promise.reject(IModelHubClientError.browser());
+      throw IModelHubClientError.browser();
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubClientError.fileHandler());
+      throw IModelHubClientError.fileHandler();
 
     if (!this._fileHandler.exists(path) || this._fileHandler.isDirectory(path))
-      return Promise.reject(IModelHubClientError.fileNotFound());
+      throw IModelHubClientError.fileNotFound();
 
     const postChangeSet = await this._handler.postInstance<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId), changeSet);
 

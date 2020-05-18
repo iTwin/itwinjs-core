@@ -174,8 +174,6 @@ export class ToolBar {
       this.close();
     else
       await this.open(index);
-
-    return Promise.resolve();
   }
 
   public async onViewChanged(vp: Viewport): Promise<void> {
@@ -193,6 +191,6 @@ export class ToolBar {
       }
     }
 
-    return Promise.all(promises).then(() => { });
+    await Promise.all(promises);
   }
 }

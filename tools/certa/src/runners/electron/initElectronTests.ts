@@ -45,7 +45,7 @@ async function startCertaTests(entryPoint: string) {
   }
 }
 
-const _CertaSendToBackend = async (name: string, args: any[]) => Promise.resolve(ipcRenderer.sendSync("certa-callback", { name, args }));
+const _CertaSendToBackend = async (name: string, args: any[]) => ipcRenderer.sendSync("certa-callback", { name, args });
 
 // Expose some globals
 window.startCertaTests = startCertaTests;

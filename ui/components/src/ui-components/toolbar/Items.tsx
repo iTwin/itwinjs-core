@@ -11,10 +11,11 @@ import classnames from "classnames";
 import * as React from "react";
 import {
   calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateProximityScale, calculateToolbarOpacity, CommonProps, getToolbarBackdropFilter,
-  getToolbarBackgroundColor, getToolbarBoxShadow, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
+  getToolbarBackgroundColor, getToolbarBoxShadow,
+  TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
   useProximityToMouse,
 } from "@bentley/ui-core";
-import { useToolbarWithOverflowDirectionContext } from "./Toolbar";
+import { ToolbarOpacitySetting, useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";
 import { OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
 
 /** Properties of [[ToolbarItems]] component.
@@ -34,13 +35,14 @@ export function ToolbarItems(props: ToolbarItemsProps) {
 
   const ref = React.useRef<HTMLDivElement>(null);
   const proximity = useProximityToMouse(ref);
-  const { useProximityOpacity, openPopupCount, overflowDisplayActive } = useToolbarWithOverflowDirectionContext();
-  let toolbarOpacity = TOOLBAR_OPACITY_DEFAULT;
-  let boxShadowOpacity = TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT;
-  let filterBlur = TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT;
-  let showSeparators = true;
+  const { toolbarOpacitySetting, openPopupCount, overflowDisplayActive } = useToolbarWithOverflowDirectionContext();
+  const useTransparentBackground = toolbarOpacitySetting === ToolbarOpacitySetting.Transparent;
+  let toolbarOpacity = useTransparentBackground ? 0 : TOOLBAR_OPACITY_DEFAULT;
+  let boxShadowOpacity = useTransparentBackground ? 0 : TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT;
+  let filterBlur = useTransparentBackground ? 0 : TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT;
+  let showSeparators = toolbarOpacitySetting === ToolbarOpacitySetting.Transparent ? false : true;
 
-  if (useProximityOpacity && openPopupCount < 1 && !overflowDisplayActive) {
+  if (toolbarOpacitySetting === ToolbarOpacitySetting.Proximity && openPopupCount < 1 && !overflowDisplayActive) {
     const proximityScale = calculateProximityScale(proximity);
     toolbarOpacity = calculateToolbarOpacity(proximityScale);
     boxShadowOpacity = calculateBoxShadowOpacity(proximityScale);

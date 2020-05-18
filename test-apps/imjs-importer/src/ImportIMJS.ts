@@ -130,7 +130,8 @@ export class ImportIMJS {
               classFullName: PhysicalObject.classFullName,
               category: this.featureCategoryId,
             };
-            featureProps.geom = IModelJson.Writer.toIModelJson(g);
+            const g1 = IModelJson.Writer.toIModelJson(g);
+            featureProps.geom = Array.isArray(g1) ? g1 : [g1];
             this.iModelDb.elements.insertElement(featureProps);
             const featureModel: SpatialModel = this.iModelDb.models.getModel(physicalModelId) as SpatialModel;
             const featureModelExtents = featureModel.queryExtents();

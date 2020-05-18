@@ -1,6 +1,45 @@
 {
-  "name": "@bentley/imodeljs-clients-backend",
+  "name": "@bentley/backend-itwin-client",
   "entries": [
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/backend-itwin-client_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. "
+          },
+          {
+            "comment": "Changed ChangeSets download API"
+          },
+          {
+            "comment": "Added unlink for file handler"
+          },
+          {
+            "comment": "Changeset get sas url just before starting download"
+          },
+          {
+            "comment": "update imodelbank authorization clients to implement FrontendAuthorizationClient"
+          },
+          {
+            "comment": "Logging fixes, separated open/download of briefcases a little more. "
+          },
+          {
+            "comment": "Throw exception if sas url is expired"
+          },
+          {
+            "comment": "order imports."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "rename imodeljs-clients-backend to backend-itwin-client"
+          }
+        ]
+      }
+    },
     {
       "version": "1.14.1",
       "tag": "@bentley/imodeljs-clients-backend_v1.14.1",

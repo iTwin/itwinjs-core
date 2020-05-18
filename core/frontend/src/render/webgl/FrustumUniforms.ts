@@ -8,7 +8,6 @@
 
 import { InverseMatrixState, Matrix4d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { Frustum, Npc } from "@bentley/imodeljs-common";
-import { RenderTarget } from "../RenderTarget";
 import { UniformHandle } from "./Handle";
 import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
 import { Matrix4 } from "./Matrix";
@@ -120,19 +119,7 @@ export class FrustumUniforms {
 
     this._planFraction = newFraction;
 
-    if (!is3d) {
-      const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, this._scratch.vec3d).magnitude() * 0.5;
-      const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
-      const depth = 2 * RenderTarget.frustumDepth2d;
-
-      this._nearPlaneCenter.set(nearCenter.x, nearCenter.y, RenderTarget.frustumDepth2d);
-
-      lookIn(this._nearPlaneCenter, viewX, viewY, viewZ, this.viewMatrix);
-      ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, 0, depth, this.projectionMatrix);
-
-      this.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
-      this.setFrustum(0, depth, FrustumUniformType.TwoDee);
-    } else if (newFraction > 0.999) { // ortho
+    if (!is3d || newFraction > 0.999) { // ortho or 2d
       const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, this._scratch.vec3d).magnitude() * 0.5;
       const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
       const depth = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, this._scratch.vec3d).magnitude();
@@ -144,7 +131,7 @@ export class FrustumUniforms {
       this._nearPlaneCenter.interpolate(0.5, nearUpperRight, this._nearPlaneCenter);
 
       this.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
-      this.setFrustum(0, depth, FrustumUniformType.Orthographic);
+      this.setFrustum(0, depth, is3d ? FrustumUniformType.Orthographic : FrustumUniformType.TwoDee);
     } else { // perspective
       const scale = 1.0 / (1.0 - newFraction);
       const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, this._scratch.vec3d);

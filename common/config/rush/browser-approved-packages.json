@@ -332,7 +332,7 @@
     },
     {
       "name": "css-loader",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "csstype",
@@ -444,11 +444,7 @@
     },
     {
       "name": "highlight.js",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "html-webpack-plugin",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "https-proxy-agent",
@@ -488,10 +484,6 @@
     },
     {
       "name": "istanbul-instrumenter-loader",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "jquery",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -656,11 +648,7 @@
     },
     {
       "name": "raf-schd",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "raw-loader",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react",
@@ -708,7 +696,7 @@
     },
     {
       "name": "react-markdown",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-redux",
@@ -720,7 +708,7 @@
     },
     {
       "name": "react-router-dom",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-select",
@@ -787,10 +775,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "sass-loader",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "save",
       "allowedCategories": [ "internal" ]
     },
@@ -820,15 +804,11 @@
     },
     {
       "name": "style-loader",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "superagent",
       "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "svg-react-loader",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "svg-sprite-loader",
@@ -856,7 +836,7 @@
     },
     {
       "name": "ts-loader",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "ts-node",
@@ -868,7 +848,7 @@
     },
     {
       "name": "tslib",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "tslint",
@@ -885,10 +865,6 @@
     {
       "name": "tslint-etc",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "tslint-loader",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "tsutils",
@@ -920,7 +896,7 @@
     },
     {
       "name": "url-loader",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "username",
@@ -936,15 +912,7 @@
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "frontend", "tools" ]
-    },
-    {
-      "name": "webpack-dev-server",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "webpack-merge",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "webpack-sources",

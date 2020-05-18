@@ -303,7 +303,6 @@ export class DefaultIModelCreateOptionsProvider {
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
     if (!options.template) // this assignment works incorrectly through deepAssign
       options.template = iModelTemplateEmpty;
-    return Promise.resolve();
   }
 
   /**
@@ -431,14 +430,14 @@ export class IModelsHandler {
       if (!(err instanceof IModelHubError) || IModelHubStatus.iModelAlreadyExists !== err.errorNumber) {
         Logger.logWarning(loggerCategory, `Can not create iModel: ${err.message}`, () => ({ contextId }));
 
-        return Promise.reject(err);
+        throw err;
       }
 
       const initialized: boolean = err.data.iModelInitialized;
       if (initialized) {
         Logger.logWarning(loggerCategory, `Error creating iModel: iModel with name ${iModelName} already exists and is initialized`, () => ({ contextId }));
 
-        return Promise.reject(err);
+        throw err;
       }
 
       Logger.logInfo(loggerCategory, `Querying iModel by name ${iModelName}`, () => ({ contextId }));
@@ -452,7 +451,7 @@ export class IModelsHandler {
       } else {
         Logger.logTrace(loggerCategory, `iModel by name: iModel ${iModelName} not found`, () => ({ contextId }));
 
-        return Promise.reject(new Error(`iModel by name: iModel ${iModelName} not found`));
+        throw new Error(`iModel by name: iModel ${iModelName} not found`);
       }
     }
 
@@ -470,7 +469,7 @@ export class IModelsHandler {
     const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, iModelId, new SeedFileQuery().latest());
     requestContext.enter();
     if (seedFiles.length < 1)
-      return Promise.reject(new IModelHubError(IModelHubStatus.FileDoesNotExist));
+      throw new IModelHubError(IModelHubStatus.FileDoesNotExist);
 
     return seedFiles[0].initializationState!;
   }
@@ -508,8 +507,8 @@ export class IModelsHandler {
 
         if (initState !== InitializationState.NotStarted && initState !== InitializationState.Scheduled) {
           Logger.logWarning(loggerCategory, errorMessage);
-          return Promise.reject(new IModelHubError(IModelHubStatus.SeedFileInitializationFailed,
-            `Seed file initialization failed with status ${InitializationState[initState]}`));
+          throw new IModelHubError(IModelHubStatus.SeedFileInitializationFailed,
+            `Seed file initialization failed with status ${InitializationState[initState]}`);
         }
 
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -517,12 +516,12 @@ export class IModelsHandler {
       } catch (err) {
         requestContext.enter();
         Logger.logWarning(loggerCategory, errorMessage);
-        return Promise.reject(err);
+        throw err;
       }
     }
 
     Logger.logWarning(loggerCategory, errorMessage);
-    return Promise.reject(IModelHubClientError.initializationTimeout());
+    throw IModelHubClientError.initializationTimeout();
   }
 
   /**
@@ -580,13 +579,13 @@ export class IModelsHandler {
       createOptions.template = undefined;
 
     if (typeof window !== "undefined")
-      return Promise.reject(IModelHubClientError.browser());
+      throw IModelHubClientError.browser();
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubClientError.fileHandler());
+      throw IModelHubClientError.fileHandler();
 
     if (!!createOptions.path && (!this._fileHandler.exists(createOptions.path) || this._fileHandler.isDirectory(createOptions.path)))
-      return Promise.reject(IModelHubClientError.fileNotFound());
+      throw IModelHubClientError.fileNotFound();
 
     const template = IModelsHandler._defaultCreateOptionsProvider.templateToString(createOptions);
     const imodel = await this.createIModelInstance(requestContext, contextId, name, createOptions.description, template, createOptions.extent);
@@ -601,7 +600,7 @@ export class IModelsHandler {
         await this._seedFileHandler.uploadSeedFile(requestContext, imodel.id!, createOptions.path!, createOptions.description, createOptions.progressCallback);
       } catch (err) {
         await this.delete(requestContext, contextId, imodel.id!);
-        return Promise.reject(err);
+        throw err;
       }
       requestContext.enter();
     }
@@ -646,16 +645,16 @@ export class IModelsHandler {
     ArgumentCheck.defined("path", path);
 
     if (typeof window !== "undefined")
-      return Promise.reject(IModelHubClientError.browser());
+      throw IModelHubClientError.browser();
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubClientError.fileHandler());
+      throw IModelHubClientError.fileHandler();
 
     const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, iModelId, new SeedFileQuery().selectDownloadUrl().latest());
     requestContext.enter();
 
     if (!seedFiles || !seedFiles[0] || !seedFiles[0].downloadUrl)
-      return Promise.reject(IModelHubError.fromId(IModelHubStatus.FileDoesNotExist, "Failed to get seed file."));
+      throw IModelHubError.fromId(IModelHubStatus.FileDoesNotExist, "Failed to get seed file.");
 
     await this._fileHandler.downloadFile(requestContext, seedFiles[0].downloadUrl!, path, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
     requestContext.enter();
@@ -697,7 +696,7 @@ export class IModelHandler {
     const imodels = await this._handler.get(requestContext, contextId, query);
 
     if (imodels.length < 1)
-      return Promise.reject(new IModelHubError(IModelHubStatus.iModelDoesNotExist));
+      throw new IModelHubError(IModelHubStatus.iModelDoesNotExist);
 
     return imodels[0];
   }
@@ -755,7 +754,7 @@ export class IModelHandler {
     }
 
     if (imodelExists)
-      return Promise.reject(new IModelHubError(IModelHubStatus.iModelAlreadyExists));
+      throw new IModelHubError(IModelHubStatus.iModelAlreadyExists);
 
     return this._handler.create(requestContext, contextId, name, createOptions);
   }

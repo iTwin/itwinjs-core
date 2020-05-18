@@ -38,14 +38,12 @@ class TestIModelHubUserMgr implements FrontendAuthorizationClient {
   public async signIn(_requestContext: ClientRequestContext): Promise<void> {
     _requestContext.enter();
     this._token = await TestUtility.getAccessToken(this._userCredentials);
-    return Promise.resolve();
   }
 
   public async signOut(_requestContext: ClientRequestContext): Promise<void> {
     _requestContext.enter();
     this._token = undefined;
     this.onUserStateChanged.raiseEvent(this._token);
-    return Promise.resolve();
   }
 
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
@@ -61,9 +59,9 @@ class TestIModelHubUserMgr implements FrontendAuthorizationClient {
 
   public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
     if (!this._token) {
-      return Promise.reject("User is not signed in.");
+      throw new Error("User is not signed in.");
     }
-    return Promise.resolve(this._token);
+    return this._token;
   }
 }
 
@@ -71,8 +69,8 @@ export class TestIModelHubCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return true; }
   public readonly contextMgr = new TestContextManagerClient();
   public readonly imodelClient = getImodelHubClient();
-  public async startup(): Promise<void> { return Promise.resolve(); }
-  public async shutdown(): Promise<number> { return Promise.resolve(0); }
+  public async startup(): Promise<void> { }
+  public async shutdown(): Promise<number> { return 0; }
 
   public getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any) {
     return new TestIModelHubUserMgr(userInfo, userCredentials);

@@ -60,12 +60,16 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt fadeout` - Toggles "fade-out" transparency mode for the selected viewport.
 * `fdt tile requests` - When enabled, displays in each viewport the bounding boxes of all tiles currently requested for loading by the viewport that was selected at the time the key-in was executed. Green boxes indicate pending requests; red indicate requests being actively processed.
 * `fdt 3dmanip` - Change the `allow3dManipulations` flag for the 3d view associated with the active viewport.
+* `fdt tiletree bounds` - When enabled, draws bounding boxes representing the volume of each tile tree displayed in the active viewport.
+* `fdt attachments` - Toggles display of view attachments in the sheet view associated with the active viewport.
+* `fdt attachment bounds` - Toggles display of bounding boxes around each view attachment in the active viewport.
 
 ### Other key-ins
 
 * `fdt save view` - Copies to the clipboard a JSON representation of the view currently displayed in the active viewport.
 * `fdt apply view` - Accepts an unquoted JSON representation of a view, e.g., as obtained from `fdt save view`, and applies that view to the active viewport.
-* `fdt change view flags` - Changes any number of ViewFlags for the active viewport. Each argument is of the format "flag=value". For boolean flags, the value is `0` for `false` or `1` for `true`. Flag names are case-insensitive.
+* `fdt apply viewid` - Accepts the Id of a persistent ViewDefinition in hexadecimal format and applies that view to the active viewport.
+* `fdt change viewflags` - Changes any number of ViewFlags for the active viewport. Each argument is of the format "flag=value". For boolean flags, the value is `0` for `false` or `1` for `true`. Flag names are case-insensitive.
   * Boolean flags: "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges", "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard"
   * "renderMode": 0 = wireframe, 3 = hidden line, 4 = solid fill, 6 = smooth shade (numeric values of RenderMode enum).
 * `fdt inspect element` - Creates a readable text summary of a geometric element or geometry part. The keyin takes the following arguments (only the first character of each is checked), all of which are optional:
@@ -111,10 +115,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "all": Display all geometry.
 * `fdt toggle readpixels` - Toggles "read pixels" mode on the active viewport. In this mode, geometry is rendered to the screen as if it was being rendered off-screen for element locate purposes.
 * `fdt toggle drapefrustum` - Toggles display of frustum that is used to drape classifiers and background map.
-* `fdt toggle logz` - Toggles the use of a logarithmic depth buffer for the active viewport.
-  * "modal=0|1" where `1` indicates the output should appear in a modal dialog.
-  * "copy=0|1" where `1` indicates the output should be copied to the clipboard.
-  * If no id is specified, the tool runs in interactive mode: first operating upon the selection set (if any), then allowing the user to select additional elements.
+* `fdt aspect skew` - Change the aspect ratio skew of the active viewport. Accepts the floating point skew; defaults to 1.
 * `fdt reality transition` Creates a rendering schedule to transition between reality model and BIM model display.
   * "x" - Wipe along X axis.
   * "y" - Wipe along Y axis.
@@ -144,3 +145,8 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt sourceId from elemId` and `fdt elemId from sourceId` - Converts between the Id of an element in the iModel and the corresponding object in the source document from which it originated. Outputs the result to IModelApp.notifications.
 *   * `id=`: the source aspect Id or element Id.
 *   * `copy=`: (optional) 1 to copy the resultant Id to the system clipboard.
+* `fdt add extensionService <context>` - Adds a context id to be used with Extension Service. It's added to the front of loaders list, so the most recently added context will get used first. `<context>` can be one of the following:
+  * `id <id>`, where `<id>` is a Connected Context GUID.
+  * `project <projectName>`.
+  * `asset <assetName>`.
+  * `public` - loads Bentley-published public extensions.

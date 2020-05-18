@@ -17,7 +17,7 @@ import {
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ClassRegistry } from "../ClassRegistry";
-import { PhysicalElement } from "../Element";
+import { PhysicalElement, Subject } from "../Element";
 import {
   BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, InformationPartitionElement,
   Model, NativeLoggerCategory, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
@@ -207,11 +207,14 @@ export class IModelTestUtils {
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps): Id64String {
+  public static createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
+    const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
+    const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
+
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
-      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-      model: IModel.repositoryModelId,
+      parent,
+      model,
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
@@ -219,11 +222,14 @@ export class IModelTestUtils {
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static async createAndInsertPhysicalPartitionAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
+  public static async createAndInsertPhysicalPartitionAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
+    const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
+    const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
+
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
-      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-      model: IModel.repositoryModelId,
+      parent,
+      model,
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
@@ -262,8 +268,8 @@ export class IModelTestUtils {
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   // @return [modeledElementId, modelId]
   //
-  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false): Id64String[] {
-    const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode);
+  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
+    const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode, parent);
     const modeledElementRef = new RelatedElement({ id: eid });
     const mid = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef, privateModel);
     return [eid, mid];
@@ -273,8 +279,8 @@ export class IModelTestUtils {
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   // @return [modeledElementId, modelId]
   //
-  public static async createAndInsertPhysicalPartitionAndModelAsync(rqctx: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false): Promise<Id64String[]> {
-    const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(rqctx, testImodel, newModelCode);
+  public static async createAndInsertPhysicalPartitionAndModelAsync(rqctx: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
+    const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(rqctx, testImodel, newModelCode, parentId);
     rqctx.enter();
     const modeledElementRef = new RelatedElement({ id: eid });
     const mid = await IModelTestUtils.createAndInsertPhysicalModelAsync(rqctx, testImodel, modeledElementRef, privateModel);
@@ -382,6 +388,12 @@ export class IModelTestUtils {
 
       return rows;
     });
+  }
+
+  public static createJobSubjectElement(iModel: IModelDb, name: string): Subject {
+    const subj = Subject.create(iModel, iModel.elements.getRootSubject().id, name);
+    subj.setJsonProperty("Subject", { Job: name });
+    return subj;
   }
 
   /** Flushes the Txns in the TxnTable - this allows importing of schemas */

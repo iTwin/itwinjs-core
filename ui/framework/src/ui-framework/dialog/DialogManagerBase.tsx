@@ -69,6 +69,12 @@ export class DialogManagerBase {
   }
 
   /** @internal */
+  public closeAll(): void {
+    this._dialogs = [];
+    this.emitDialogChangedEvent();
+  }
+
+  /** @internal */
   public removeDialog(dialog: React.ReactNode): void {
     const index = this._dialogs.findIndex((dialogInfo: DialogInfo) => {
       return dialog === dialogInfo.reactNode;

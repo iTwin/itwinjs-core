@@ -39,7 +39,6 @@ export const enum TechniqueId {
   CopyColorNoAlpha,
   VolClassColorUsingStencil,
   ClearPickAndColor,
-  ClipMask,
   EVSMFromDepth,
   SkyBox,
   SkySphereGradient,

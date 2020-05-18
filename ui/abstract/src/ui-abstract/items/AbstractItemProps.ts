@@ -43,7 +43,7 @@ export interface CommonItemProps {
   tooltip?: string;
 }
 
-/** Definition for a command handler used by [[CommandItemProps]].
+/** Definition for a command handler.
  * @beta
  */
 export interface CommandHandler {

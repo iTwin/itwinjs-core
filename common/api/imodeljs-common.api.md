@@ -732,6 +732,16 @@ export { ChangeSetStatus }
 // @internal (undocumented)
 export const CHANNEL = "@bentley/imodeljs-mobilegateway";
 
+// @alpha
+export class ChannelConstraintError extends IModelError {
+    constructor(message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+}
+
+// @public
+export interface ChannelRootAspectProps extends ElementAspectProps {
+    owner: string;
+}
+
 // @internal
 export interface ClassifierTileTreeId {
     // (undocumented)

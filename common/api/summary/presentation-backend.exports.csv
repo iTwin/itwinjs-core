@@ -5,7 +5,9 @@ public;Presentation
 public;PresentationManager
 public;PresentationManagerMode
 public;PresentationManagerProps
-public;PresentationProps 
+public;PresentationProps = PresentationPropsDeprecated | PresentationPropsNew
+public;PresentationPropsDeprecated 
+public;PresentationPropsNew 
 beta;RulesetEmbedder
 public;RulesetEmbedderProps
 public;RulesetManager

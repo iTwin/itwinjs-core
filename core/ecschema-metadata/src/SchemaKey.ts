@@ -14,12 +14,19 @@ export class ECVersion {
   private _write: number = 0;
   private _minor: number = 0;
 
+  /**
+   * The constructor will throw an ECObjectsError if any of the parameters below are above the threshold.
+   * @param read Can support up to 99.
+   * @param write Can support up to 99.
+   * @param minor Can support up to 9999999.
+   *
+   */
   constructor(read?: number, write?: number, minor?: number) {
     if (undefined !== read) this._read = read;
     if (undefined !== write) this._write = write;
     if (undefined !== minor) this._minor = minor;
 
-    if (this._read > 99 || this._read < 0 || this._write > 99 || this._write < 0 || this._minor > 99 || this._minor < 0)
+    if (this._read > 99 || this._read < 0 || this._write > 99 || this._write < 0 || this._minor > 9999999 || this._minor < 0)
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
   }
 

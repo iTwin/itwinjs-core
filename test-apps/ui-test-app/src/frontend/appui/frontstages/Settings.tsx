@@ -67,7 +67,8 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
 
   public render(): React.ReactNode {
     const isLightTheme = this._isLightTheme();
-    const _theme: string = UiFramework.i18n.translate((isLightTheme) ? "SampleApp:settingsStage.light" : "SampleApp:settingsStage.dark");
+    const darkLabel = UiFramework.i18n.translate("SampleApp:settingsStage.dark");
+    const lightLabel = UiFramework.i18n.translate("SampleApp:settingsStage.light");
 
     return (
       <div className="uifw-settings">
@@ -77,9 +78,11 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
             <span className="description">{this._themeDescription}</span>
           </div>
           <div className="panel right-panel">
+            {darkLabel}
+            &nbsp;
             <Toggle isOn={isLightTheme} showCheckmark={false} onChange={this._onThemeChange} />
-            &nbsp;&nbsp;
-            {_theme}
+            &nbsp;
+            {lightLabel}
           </div>
         </div>
         <div className="uifw-settings-item">

@@ -17,7 +17,6 @@ import { StatusFieldProps } from "../StatusFieldProps";
 
 let onViewOpen: (vp: ScreenViewport) => void;
 let onRenderUpdate: () => void;
-let cancelUpdate: () => boolean;
 
 /** State for the [[TileLoadingIndicator]] component
  * @internal
@@ -33,6 +32,9 @@ interface TileLoadingIndicatorState {
  * @beta
  */
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
+  private _removeViewOpenListener?: () => void;
+  private _removeOnRenderListener?: () => void;
+
   constructor(props: StatusFieldProps) {
     super(props);
     this.state = { label: "", progress: 0, enabled: false, finished: true };
@@ -69,8 +71,10 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
   private _onViewOpen(vp: ScreenViewport) {
     onRenderUpdate = () => this._update(vp);
 
-    vp.onRender.addListener(onRenderUpdate);
-    cancelUpdate = () => vp.onRender.removeListener(onRenderUpdate);
+    // istanbul ignore else
+    if (this._removeOnRenderListener)
+      this._removeOnRenderListener();
+    this._removeOnRenderListener = vp.onRender.addListener(onRenderUpdate, this);
   }
 
   public componentDidMount() {
@@ -86,7 +90,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
       this._onViewOpen(vp);
     } else {
       onViewOpen = (_vp: ScreenViewport) => this._onViewOpen(_vp);
-      IModelApp.viewManager.onViewOpen.addListener(onViewOpen);
+      this._removeViewOpenListener = IModelApp.viewManager.onViewOpen.addListener(onViewOpen, this);
     }
   }
 
@@ -96,11 +100,12 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
       return;
 
     // istanbul ignore else
-    if (onViewOpen)
-      IModelApp.viewManager.onViewOpen.removeListener(onViewOpen);
+    if (this._removeViewOpenListener)
+      this._removeViewOpenListener();
 
-    if (cancelUpdate)
-      cancelUpdate();
+    // istanbul ignore else
+    if (this._removeOnRenderListener)
+      this._removeOnRenderListener();
   }
 
   /** Renders TileLoadingIndicator */

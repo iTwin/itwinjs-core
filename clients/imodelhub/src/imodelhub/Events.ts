@@ -443,7 +443,7 @@ export class EventHandler extends EventBaseHandler {
 
     const event = ParseEvent(result);
     Logger.logTrace(loggerCategory, "Got event from subscription", () => ({ subscriptionId }));
-    return Promise.resolve(event);
+    return event;
   }
 
   /** Create a listener for long polling events from an [[EventSubscription]]. When event is received from the subscription, every registered listener callback is called. This continuously waits for events until all created listeners for that subscriptionId are deleted. [[EventSAS]] token expirations are handled automatically, [AccessToken]($itwin-client) expiration is handled by calling authenticationCallback to get a new token.

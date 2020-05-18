@@ -36,6 +36,8 @@ export interface GroupToolProps extends CommonProps {
   badge?: React.ReactNode;
   /** GroupButton item */
   item: GroupButton | ActionButton;
+  /** Optional function to call on any KeyDown events processed by toolbar */
+  onKeyDown?: (e: React.KeyboardEvent) => void;
 }
 
 /** Tool entry of tool group panel. Used in [[GroupColumn]].
@@ -70,6 +72,7 @@ export function GroupTool(props: GroupToolProps) {
     <div
       className={itemClassName}
       onClick={handleClick}
+      onKeyDown={props.onKeyDown}
       onPointerUp={handlePointerUp}
       ref={ref}
       style={props.style}

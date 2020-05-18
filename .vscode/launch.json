@@ -74,6 +74,41 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run IModelBridgeFwk Tests (standalone)",
+      "program": "${workspaceFolder}/core/imodel-bridge/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/imodel-bridge",
+      "args": [
+        "--testDir=${workspaceFolder}/core/imodel-bridge/lib/test/",
+        "--inspect",
+        "--recursive",
+        "--offline=mock",
+        "--grep",
+        "IModelBridgeFwkStandAlone"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run IModelBridgeFwk Tests (all)",
+      "program": "${workspaceFolder}/core/imodel-bridge/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/core/imodel-bridge",
+      "args": [
+        "--testDir=${workspaceFolder}/core/imodel-bridge/lib/test/",
+        "--inspect",
+        "--recursive",
+        "--grep",
+        "IModelBridgeFwk"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Run CRUD Performance tests (Offline)",
       "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",

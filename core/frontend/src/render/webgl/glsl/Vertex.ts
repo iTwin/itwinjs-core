@@ -112,10 +112,23 @@ export function addModelViewMatrix(vert: VertexShaderBuilder): void {
   }
 }
 
+const computeNormalMatrix = `
+  g_nmx = mat3(MAT_MV);
+  g_nmx[0][0] *= u_frustumScale.x;
+  g_nmx[1][1] *= u_frustumScale.y;
+`;
+
 /** @internal */
 export function addNormalMatrix(vert: VertexShaderBuilder) {
   vert.addGlobal("g_nmx", VariableType.Mat3);
-  vert.addInitializer("g_nmx = mat3(MAT_MV);");
+  vert.addUniform("u_frustumScale", VariableType.Vec2, (prog) => {
+    prog.addGraphicUniform("u_frustumScale", (uniform, params) => {
+      const scale = params.target.uniforms.branch.top.frustumScale;
+      uniform.setUniform2fv([ scale.x, scale.y ]);
+    });
+  });
+
+  vert.addInitializer(computeNormalMatrix);
 }
 
 const scratchLutParams = new Float32Array(4);

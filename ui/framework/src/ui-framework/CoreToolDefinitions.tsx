@@ -156,7 +156,7 @@ export class CoreTools {
       description: ViewToggleCameraTool.description,
       isHidden: new ConditionalBooleanValue(() => {
         const activeContentControl = ContentViewManager.getActiveContentControl();
-        return !!activeContentControl?.viewport?.view.is2d();
+        return !(activeContentControl?.viewport?.view.is3d() && activeContentControl?.viewport?.view.supportsCamera());
       }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       execute: () => { IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView); },
     });

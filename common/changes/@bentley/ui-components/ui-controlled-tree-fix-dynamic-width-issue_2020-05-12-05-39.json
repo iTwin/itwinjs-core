@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "ControlledTree: Grow virtualized nodes' container width to fit the widest node and do not shrink it to avoid horinzontal scrollbar appearing/disappearing",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "grigas.petraitis@bentley.com"
+}

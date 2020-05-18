@@ -47,10 +47,12 @@ import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DndComponentClass } from 'react-dnd';
+import { Draft } from 'immer';
 import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
+import { FloatingWidgetState } from '@bentley/ui-ninezone';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -127,6 +129,7 @@ import { Store } from 'redux';
 import { StringGetter } from '@bentley/ui-abstract';
 import { Tab } from '@bentley/ui-ninezone';
 import { TabMode } from '@bentley/ui-ninezone';
+import { TabState } from '@bentley/ui-ninezone';
 import { TimelineDataProvider } from '@bentley/ui-components';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
@@ -162,6 +165,7 @@ import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
 import { WidgetState as WidgetState_2 } from '@bentley/ui-abstract';
+import { WidgetState as WidgetState_3 } from '@bentley/ui-ninezone';
 import { WidgetZoneId } from '@bentley/ui-ninezone';
 import { XAndY } from '@bentley/geometry-core';
 import { ZoneManagerProps } from '@bentley/ui-ninezone';
@@ -909,6 +913,8 @@ export interface ConfigurableUiElement {
 // @public
 export class ConfigurableUiManager {
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
+    // @internal (undocumented)
+    static closeUi(): void;
     static createControl(classId: string, uniqueId: string, options?: any): ConfigurableUiElement | undefined;
     static findFrontstageDef(id?: string): FrontstageDef | undefined;
     // @internal
@@ -1164,6 +1170,9 @@ export function createAction<T extends string>(type: T): Action<T>;
 
 // @public
 export function createAction<T extends string, P>(type: T, payload: P): ActionWithPayload<T, DeepReadonly<P>>;
+
+// @internal
+export function createStableWidgetDef(widgetDef: WidgetDef, stableId: string): WidgetDef;
 
 // @alpha
 export const createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element;
@@ -1484,6 +1493,8 @@ export class DialogManagerBase {
     // (undocumented)
     get activeDialog(): React.ReactNode | undefined;
     // (undocumented)
+    closeAll(): void;
+    // (undocumented)
     closeDialog(dialog?: React.ReactNode): void;
     // (undocumented)
     get dialogCount(): number;
@@ -1606,6 +1617,9 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
     // (undocumented)
     static hideTooltip(): void;
     // (undocumented)
+    static get isTooltipHalted(): boolean;
+    static set isTooltipHalted(halt: boolean);
+    // (undocumented)
     static get isTooltipVisible(): boolean;
     // (undocumented)
     static get onElementTooltipChangedEvent(): ElementTooltipChangedEvent;
@@ -1657,6 +1671,9 @@ export interface ExtensibleToolbarProps {
     // (undocumented)
     usage: ToolbarUsage;
 }
+
+// @internal (undocumented)
+export function findTab(state: Draft<NineZoneState>, id: TabState["id"]): FindTabType;
 
 // @public
 export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
@@ -1748,6 +1765,7 @@ export interface FrameworkState {
 export class FrameworkUiAdmin extends UiAdmin {
     get cursorPosition(): XAndY;
     hideCalculator(): boolean;
+    hideCard(): boolean;
     hideHTMLElement(): boolean;
     hideInputEditor(): boolean;
     hideMenuButton(id: string): boolean;
@@ -1756,9 +1774,10 @@ export class FrameworkUiAdmin extends UiAdmin {
     onInitialized(): void;
     showAngleEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showCalculator(initialValue: number, resultIcon: string, location: XAndY, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
+    showCard(content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
     showContextMenu(items: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
     showHeightEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
-    showHTMLElement(displayElement: HTMLElement, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
+    showHTMLElement(displayElement: HTMLElement, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
     showInputEditor(initialValue: Primitives.Value, propertyDescription: PropertyDescription, location: XAndY, onCommit: OnValueCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
@@ -1848,7 +1867,7 @@ export interface FrameworkZoneProps extends CommonProps {
 }
 
 // @public
-export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
+export class Frontstage extends React.Component<FrontstageProps, FrontstageState_2> {
     // @internal
     constructor(props: FrontstageProps);
     // @internal
@@ -1867,13 +1886,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     }
 
 // @internal (undocumented)
-export const FRONTSTAGE_INITIALIZE = "FRONTSTAGE_INITIALIZE";
-
-// @internal (undocumented)
-export const FRONTSTAGE_STATE_SETTING_LOAD = "FRONTSTAGE_STATE_SETTING_LOAD";
-
-// @internal (undocumented)
-export type FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction;
+export type FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction | WidgetTabShowAction | WidgetTabExpandAction;
 
 // @public
 export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> {
@@ -2038,7 +2051,7 @@ export interface FrontstageInitializeAction {
     // (undocumented)
     readonly frontstage: FrontstageDef | undefined;
     // (undocumented)
-    readonly type: typeof FRONTSTAGE_INITIALIZE;
+    readonly type: "FRONTSTAGE_INITIALIZE";
 }
 
 // @public
@@ -2204,11 +2217,22 @@ export interface FrontstageRuntimeProps {
 }
 
 // @internal (undocumented)
+export interface FrontstageState {
+    // (undocumented)
+    setting: FrontstageStateSetting;
+    // (undocumented)
+    status: "LOADING" | "DONE";
+}
+
+// @internal (undocumented)
+export const FrontstageStateReducer: (state: FrontstageState, action: FrontstageActionTypes) => FrontstageState;
+
+// @internal (undocumented)
 export interface FrontstageStateSettingLoadAction {
     // (undocumented)
     readonly setting: FrontstageStateSetting | undefined;
     // (undocumented)
-    readonly type: typeof FRONTSTAGE_STATE_SETTING_LOAD;
+    readonly type: "FRONTSTAGE_STATE_SETTING_LOAD";
 }
 
 // @public
@@ -2274,6 +2298,9 @@ export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedS
 
 // @beta
 export function getSelectionContextSyncEventIds(): string[];
+
+// @internal (undocumented)
+export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps;
 
 // @internal (undocumented)
 export const getStagePanelType: (location: StagePanelLocation_2) => StagePanelType;
@@ -2508,7 +2535,7 @@ export class Indicator extends React.Component<IndicatorProps, any> {
 }
 
 // @internal (undocumented)
-export function initializeFrontstageState({ frontstage }: InitializeFrontstageStateArgs): FrontstageState_2;
+export function initializeFrontstageState({ frontstage }: InitializeFrontstageStateArgs): FrontstageState;
 
 // @alpha (undocumented)
 export class InputEditorCommitHandler {
@@ -2841,6 +2868,22 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
     top: LayoutFragmentProps | number;
 }
 
+// @beta
+export class LayoutManager {
+    expandWidget(widgetId: WidgetDef["id"]): void;
+    // @internal (undocumented)
+    readonly onLayoutManagerDispatchActionEvent: LayoutManagerDispatchActionEvent;
+    restoreLayout(frontstageId: FrontstageDef["id"]): void;
+    showWidget(widgetId: WidgetDef["id"]): void;
+}
+
+// @internal (undocumented)
+export class LayoutManagerDispatchActionEvent extends UiEvent<LayoutManagerDispatchActionEventArgs> {
+}
+
+// @internal (undocumented)
+export type LayoutManagerDispatchActionEventArgs = LayoutManagerShowWidgetAction | LayoutManagerExpandWidgetAction | LayoutManagerRestoreLayoutAction;
+
 // @public
 export interface LayoutSplit {
     // (undocumented)
@@ -3072,6 +3115,8 @@ export class MessageManager {
     static addMessage(message: NotifyMessageDetailsType): void;
     static addToMessageCenter(message: NotifyMessageDetailsType): void;
     static clearMessages(): void;
+    // @internal (undocumented)
+    static closeAllMessages(): void;
     static displayInputFieldMessage(target: HTMLElement, messageText: NotifyMessageType, detailedMessage?: NotifyMessageType, priority?: OutputMessagePriority): void;
     static endActivityMessage(isCompleted: boolean): boolean;
     static getIconClassName(details: NotifyMessageDetailsType): string;
@@ -3112,6 +3157,8 @@ export class ModalDialogChangedEvent extends DialogChangedEvent {
 // @public
 export class ModalDialogManager {
     static get activeDialog(): React.ReactNode | undefined;
+    // @internal (undocumented)
+    static closeAll(): void;
     static closeDialog(dialog?: React.ReactNode): void;
     static get dialogCount(): number;
     // @internal (undocumented)
@@ -3179,6 +3226,8 @@ export class ModelessDialogChangedEvent extends DialogChangedEvent {
 // @public
 export class ModelessDialogManager {
     static get activeDialog(): React.ReactNode | undefined;
+    // @internal (undocumented)
+    static closeAll(): void;
     static closeDialog(id: string): void;
     static get dialogCount(): number;
     // @internal (undocumented)
@@ -3499,6 +3548,8 @@ export class PopupManager {
     // (undocumented)
     static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size: SizeProps): Point;
     // (undocumented)
+    static hideCard(): boolean;
+    // (undocumented)
     static hideHTMLElement(): boolean;
     // (undocumented)
     static hideInputEditor(): boolean;
@@ -3513,6 +3564,8 @@ export class PopupManager {
     static set popups(popups: ReadonlyArray<PopupInfo>);
     // (undocumented)
     static removePopup(id: string): boolean;
+    // (undocumented)
+    static showCard(content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
     static showHTMLElement(displayElement: HTMLElement, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
@@ -3619,7 +3672,7 @@ export interface ProjectServices {
 }
 
 // @public @deprecated
-export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<PromptFieldProps, "style" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<typeof PromptFieldComponent> & PromptFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
 export class PropsHelper {
@@ -3831,10 +3884,10 @@ export class SelectionContextUtilities {
     }
 
 // @public
-export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<SelectionInfoFieldProps, "style" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<typeof SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<SelectionScopeFieldProps, "style" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<typeof SelectionScopeFieldComponent> & SelectionScopeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -4046,7 +4099,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     }
 
 // @public
-export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<SnapModeFieldProps, "style" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<typeof SnapModeFieldComponent> & SnapModeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
@@ -4267,7 +4320,8 @@ export enum StagePanelState {
 
 // @internal (undocumented)
 export class StagePanelZoneDef extends WidgetHost {
-    constructor(props: StagePanelZoneProps);
+    // (undocumented)
+    initializeFromProps(props: StagePanelZoneProps, panelLocation: StagePanelLocation_2, panelZone: StagePanelZoneDefKeys): void;
 }
 
 // @internal (undocumented)
@@ -4283,9 +4337,10 @@ export interface StagePanelZoneProps {
 export class StagePanelZonesDef {
     // (undocumented)
     [Symbol.iterator](): Iterator<[StagePanelZoneDefKeys, StagePanelZoneDef]>;
-    constructor(props: StagePanelZonesProps);
     // (undocumented)
     get end(): StagePanelZoneDef | undefined;
+    // (undocumented)
+    initializeFromProps(props: StagePanelZonesProps, panelLocation: StagePanelLocation_2): void;
     // (undocumented)
     get middle(): StagePanelZoneDef | undefined;
     // (undocumented)
@@ -4622,7 +4677,7 @@ export interface TaskPropsList {
 }
 
 // @public
-export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<ThemeProps, never>>;
+export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<React.ClassAttributes<typeof ThemeManagerComponent> & ThemeProps, "ref" | "children" | "key">>;
 
 // @beta
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
@@ -5056,6 +5111,8 @@ export class UiFramework {
     static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
     // (undocumented)
     static isMobile(): boolean;
+    // @beta
+    static get layoutManager(): LayoutManager;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal
@@ -5093,6 +5150,8 @@ export class UiFramework {
     static terminate(): void;
     // @internal
     static translate(key: string | string[]): string;
+    // @beta
+    static get uiVersion(): string;
     // @alpha (undocumented)
     static get widgetManager(): WidgetManager;
     }
@@ -5173,7 +5232,7 @@ export const useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly 
 export function useFrameworkVersion(): FrameworkVersion;
 
 // @internal (undocumented)
-export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [FrontstageState_2, React.Dispatch<FrontstageActionTypes>];
+export function useFrontstageDefNineZone(frontstage: FrontstageDef | undefined): [FrontstageState, React.Dispatch<FrontstageActionTypes>];
 
 // @internal (undocumented)
 export const useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems;
@@ -5183,6 +5242,9 @@ export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
 
 // @beta
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
+
+// @internal (undocumented)
+export function useLayoutManager(state: FrontstageState, dispatch: React.Dispatch<FrontstageActionTypes>): void;
 
 // @public
 export class UserProfileBackstageItem extends React.PureComponent<UserProfileBackstageItemProps> {
@@ -5199,7 +5261,7 @@ export interface UserProfileBackstageItemProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function useSaveFrontstageSettings(frontstageState: FrontstageState_2): void;
+export function useSaveFrontstageSettings(frontstageState: FrontstageState): void;
 
 // @internal (undocumented)
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
@@ -5892,10 +5954,26 @@ export interface WidgetTab {
     readonly title: string;
 }
 
+// @internal (undocumented)
+export interface WidgetTabExpandAction {
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    readonly type: "WIDGET_TAB_EXPAND";
+}
+
 // @internal
 export type WidgetTabs = {
     readonly [id in WidgetZoneId]: ReadonlyArray<WidgetTab>;
 };
+
+// @internal (undocumented)
+export interface WidgetTabShowAction {
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    readonly type: "WIDGET_TAB_SHOW";
+}
 
 // @public
 export enum WidgetType {

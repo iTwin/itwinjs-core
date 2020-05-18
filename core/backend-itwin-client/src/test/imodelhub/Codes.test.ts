@@ -66,6 +66,19 @@ describe("iModelHub CodeHandler", () => {
     result.forEach((value: HubCode) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
   });
 
+  it("should retrieve codes with special characters in value (#iModelBank|#integration)", async () => {
+    const code = utils.randomCode(briefcaseId);
+    code.value += " Dash- Asterisk* Percent%";
+    utils.mockUpdateCodes(imodelId, code);
+    const createResult = await iModelClient.codes.update(requestContext, imodelId, [code]);
+    chai.expect(createResult).to.have.lengthOf(1);
+    const query = new CodeQuery().byCodes([code]);
+
+    const queryResult = await iModelClient.codes.get(requestContext, imodelId, query);
+
+    chai.expect(queryResult).to.have.lengthOf(1);
+  });
+
   it("should fail on conflicting codes (#iModelBank)", async () => {
     const code1 = utils.randomCode(briefcaseId);
     const code2 = utils.randomCode(briefcaseId);

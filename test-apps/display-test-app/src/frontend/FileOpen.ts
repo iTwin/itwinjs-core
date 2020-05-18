@@ -29,11 +29,11 @@ function selectForElectron(): string | undefined {
 
 export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
   if (ElectronRpcConfiguration.isElectron)
-    return Promise.resolve(selectForElectron());
+    return selectForElectron();
 
   if (undefined === selector || !document.createEvent) {
     const filename = prompt("Enter absolute filename:");
-    return Promise.resolve(null !== filename ? filename : undefined);
+    return null !== filename ? filename : undefined;
   }
 
   const evt = document.createEvent("MouseEvents");

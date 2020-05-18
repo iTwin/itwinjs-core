@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "2.1.0-dev.1",
+  "version": "2.1.0-dev.11",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -34,10 +34,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.1.0-dev.1",
-    "@bentley/geometry-core": "^2.1.0-dev.1",
-    "@bentley/imodeljs-i18n": "^2.1.0-dev.1",
-    "@bentley/ui-abstract": "^2.1.0-dev.1",
+    "@bentley/bentleyjs-core": "^2.1.0-dev.11",
+    "@bentley/geometry-core": "^2.1.0-dev.11",
+    "@bentley/imodeljs-i18n": "^2.1.0-dev.11",
+    "@bentley/ui-abstract": "^2.1.0-dev.11",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -46,12 +46,12 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/geometry-core": "2.1.0-dev.1",
-    "@bentley/build-tools": "2.1.0-dev.1",
-    "@bentley/bentleyjs-core": "2.1.0-dev.1",
-    "@bentley/imodeljs-i18n": "2.1.0-dev.1",
-    "@bentley/ui-abstract": "2.1.0-dev.1",
-    "@bentley/react-scripts": "3.4.1-dev.32",
+    "@bentley/geometry-core": "2.1.0-dev.11",
+    "@bentley/build-tools": "2.1.0-dev.11",
+    "@bentley/bentleyjs-core": "2.1.0-dev.11",
+    "@bentley/imodeljs-i18n": "2.1.0-dev.11",
+    "@bentley/ui-abstract": "2.1.0-dev.11",
+    "@bentley/react-scripts": "3.4.1",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -60,6 +60,7 @@
     "@types/chai-spies": "^1.0.0",
     "@types/classnames": "^2.2.3",
     "@types/enzyme": "3.9.3",
+    "@types/lodash": "^4.14.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/react": "^16.8.0",
@@ -104,6 +105,7 @@
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.5",
     "classnames": "^2.2.5",
+    "lodash": "^4.17.10",
     "prop-types": "^15.7.2",
     "react-autosuggest": "^9.4.3",
     "react-compound-slider": "^2.5.0",

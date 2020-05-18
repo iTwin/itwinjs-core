@@ -86,7 +86,7 @@ export class MultiCode extends CodeBase {
  * @returns Encoded part of a code.
  */
 function encodeForCodeId(str: string): string {
-  return encodeURIComponent(str.replace(/-/g, "_0x2D_"))
+  return encodeURIComponent(str.replace(/-/g, "_2D_"))
     .replace(/~/g, "~7E")
     .replace(/\*/g, "~2A")
     .replace(/%/g, "~");
@@ -140,7 +140,6 @@ export class DefaultCodeUpdateOptionsProvider {
     const clonedOptions: CodeUpdateOptions = { ...options };
     deepAssign(options, this._defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
-    return Promise.resolve();
   }
 }
 
@@ -538,7 +537,7 @@ export class CodeHandler {
               conflictError = ConflictingCodesError.fromError(error);
             }
             if (!updateOptions.continueOnConflict) {
-              return Promise.reject(conflictError);
+              throw conflictError;
             }
           } else {
             aggregateError.errors.push(error);
@@ -548,11 +547,11 @@ export class CodeHandler {
     }
 
     if (conflictError) {
-      return Promise.reject(conflictError);
+      throw conflictError;
     }
 
     if (aggregateError.errors.length > 0) {
-      return Promise.reject(aggregateError.errors.length > 1 ? aggregateError : aggregateError.errors[0]);
+      throw aggregateError.errors.length > 1 ? aggregateError : aggregateError.errors[0];
     }
 
     Logger.logTrace(loggerCategory, `Requested ${codes.length} codes for iModel`, () => ({ iModelId }));

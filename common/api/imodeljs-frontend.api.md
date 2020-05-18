@@ -62,7 +62,6 @@ import { DownloadBriefcaseOptions } from '@bentley/imodeljs-common';
 import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EdgeArgs } from '@bentley/imodeljs-common';
-import { ElementAlignedBox2d } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
 import { Ellipsoid } from '@bentley/geometry-core';
@@ -158,7 +157,6 @@ import { ParseResult } from '@bentley/imodeljs-quantity';
 import { ParseResults } from '@bentley/ui-abstract';
 import { ParserSpec } from '@bentley/imodeljs-quantity';
 import { Path } from '@bentley/geometry-core';
-import { Placement2d } from '@bentley/imodeljs-common';
 import { PlacementProps } from '@bentley/imodeljs-common';
 import { Plane3dByOriginAndUnitNormal } from '@bentley/geometry-core';
 import { Point2d } from '@bentley/geometry-core';
@@ -1027,63 +1025,6 @@ export interface AppearanceOverrideProps {
     overrideType?: FeatureOverrideType;
 }
 
-// @internal (undocumented)
-export abstract class Attachment {
-    protected constructor(props: ViewAttachmentProps, view: ViewState);
-    clearClipping(): void;
-    // (undocumented)
-    clip: ClipVector;
-    static readonly DEBUG_BOUNDING_BOX_COLOR: ColorDef;
-    debugDrawBorder(context: SceneContext): void;
-    // (undocumented)
-    discloseTileTrees(trees: TileTreeSet): void;
-    // (undocumented)
-    displayPriority: number;
-    // (undocumented)
-    draw(context: SceneContext): void;
-    getOrCreateClip(transform?: Transform): ClipVector;
-    // (undocumented)
-    id: Id64String;
-    abstract get is2d(): boolean;
-    get isReady(): boolean;
-    abstract load(sheetView: SheetViewState, sceneContext: SceneContext): AttachmentSceneState;
-    // (undocumented)
-    placement: Placement2d;
-    // (undocumented)
-    scale: number;
-    get tree(): Tree | undefined;
-    set tree(tree: Tree | undefined);
-    // (undocumented)
-    protected _tree?: Tree;
-    // (undocumented)
-    readonly view: ViewState;
-}
-
-// @internal (undocumented)
-export class AttachmentList {
-    constructor();
-    add(attachment: Attachment): void;
-    get allReady(): boolean;
-    clear(): void;
-    drop(attachment: Attachment): void;
-    get length(): number;
-    // (undocumented)
-    readonly list: Attachment[];
-    load(idx: number, sheetView: SheetViewState, sceneContext: SceneContext): AttachmentSceneState;
-    }
-
-// @internal
-export const enum AttachmentSceneState {
-    // (undocumented)
-    Empty = 1,
-    // (undocumented)
-    Loading = 2,
-    // (undocumented)
-    NotLoaded = 0,
-    // (undocumented)
-    Ready = 3
-}
-
 // @public
 export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
     constructor(accessToken: AccessToken, activityId?: string);
@@ -1636,13 +1577,6 @@ export enum ClipEventType {
     NewPlane = 1
 }
 
-// @beta
-export enum ClippingType {
-    Mask = 1,
-    None = 0,
-    Planes = 2
-}
-
 // @internal
 export enum ClipResult {
     NewElements = 1,
@@ -1775,9 +1709,6 @@ export class CoreTools {
     // (undocumented)
     static translate(prompt: string): string;
 }
-
-// @internal (undocumented)
-export function createAttachment(props: ViewAttachmentProps, view: ViewState): Attachment;
 
 // @internal (undocumented)
 export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference;
@@ -2707,7 +2638,7 @@ export class ExternalServerExtensionLoader implements ExtensionLoader {
     // (undocumented)
     getExtensionName(extensionRoot: string): string;
     // (undocumented)
-    loadExtension(extensionName: string, _extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
+    loadExtension(extensionName: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
     // (undocumented)
     resolveResourceUrl(extensionName: string, relativeUrl: string): string;
     // (undocumented)
@@ -3071,6 +3002,13 @@ export class FrontendRequestContext extends ClientRequestContext {
     constructor(activityId?: string);
 }
 
+// @alpha
+export namespace Frustum2d {
+    const minimumZDistance = 1;
+    const minimumZExtents: Readonly<Range1d>;
+    export function depthFromDisplayPriority(priority: number): number;
+}
+
 // @public (undocumented)
 export class FuzzySearch<T> {
     onGetMultiWordSearchOptions(): Fuse.FuseOptions<T>;
@@ -3375,11 +3313,26 @@ export class GraphicBranch implements IDisposable {
 }
 
 // @internal
+export interface GraphicBranchFrustum {
+    // (undocumented)
+    is3d: boolean;
+    // (undocumented)
+    scale: {
+        x: number;
+        y: number;
+    };
+}
+
+// @internal
 export interface GraphicBranchOptions {
     // (undocumented)
     classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
     // (undocumented)
     clipVolume?: RenderClipVolume;
+    // (undocumented)
+    frustum?: GraphicBranchFrustum;
+    // (undocumented)
+    hline?: HiddenLine.Settings;
     // (undocumented)
     iModel?: IModelConnection;
 }
@@ -5210,7 +5163,7 @@ export namespace MockRender {
     }
     // (undocumented)
     export class OffScreenTarget extends Target {
-        constructor(system: System, _viewRect: ViewRect);
+        constructor(system: RenderSystem, _viewRect: ViewRect);
         // (undocumented)
         setViewRect(rect: ViewRect, _temp: boolean): void;
         // (undocumented)
@@ -5218,7 +5171,7 @@ export namespace MockRender {
         }
     // (undocumented)
     export class OnScreenTarget extends Target {
-        constructor(system: System, _canvas: HTMLCanvasElement);
+        constructor(system: RenderSystem, _canvas: HTMLCanvasElement);
         // (undocumented)
         setViewRect(_rect: ViewRect, _temp: boolean): void;
         // (undocumented)
@@ -5260,7 +5213,7 @@ export namespace MockRender {
     export type SystemFactory = () => RenderSystem;
     // (undocumented)
     export abstract class Target extends RenderTarget {
-        protected constructor(_system: System);
+        protected constructor(_system: RenderSystem);
         // (undocumented)
         get analysisFraction(): number;
         set analysisFraction(_fraction: number);
@@ -5543,7 +5496,7 @@ export class OffScreenTarget extends Target {
 // @internal
 export class OffScreenViewport extends Viewport {
     // (undocumented)
-    static create(view: ViewState, viewRect?: ViewRect, lockAspectRatio?: boolean): OffScreenViewport;
+    static create(view: ViewState, viewRect?: ViewRect, lockAspectRatio?: boolean, target?: RenderTarget): OffScreenViewport;
     // (undocumented)
     get isAspectRatioLocked(): boolean;
     // (undocumented)
@@ -6280,7 +6233,6 @@ export abstract class RenderClipVolume implements IDisposable {
     abstract get hasOutsideClipColor(): boolean;
     // @internal (undocumented)
     abstract setClipColors(outsideColor: ColorDef | undefined, insideColor: ColorDef | undefined): void;
-    abstract get type(): ClippingType;
 }
 
 // @public
@@ -6741,10 +6693,6 @@ export abstract class RenderSystem implements IDisposable {
     createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
     createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
-    // @internal (undocumented)
-    createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList;
-    // @internal (undocumented)
-    createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[];
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
@@ -6858,7 +6806,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     cssPixelsToDevicePixels(cssPixels: number): number;
     // (undocumented)
     get debugControl(): RenderTargetDebugControl | undefined;
-    static depthFromDisplayPriority(priority: number): number;
     // (undocumented)
     get devicePixelRatio(): number;
     // (undocumented)
@@ -6866,15 +6813,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     abstract drawFrame(sceneMilSecElapsed?: number): void;
     // (undocumented)
-    static get frustumDepth2d(): number;
-    // (undocumented)
     getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
     getTextureDrape(_id: Id64String): RenderTextureDrape | undefined;
-    // (undocumented)
-    static get maxDisplayPriority(): number;
-    // (undocumented)
-    static get minDisplayPriority(): number;
     // (undocumented)
     onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void;
     // (undocumented)
@@ -7435,14 +7376,6 @@ export class SetupCameraTool extends PrimitiveTool {
     viewport?: ScreenViewport;
 }
 
-// @internal
-export class SheetBorder {
-    addToBuilder(builder: GraphicBuilder): void;
-    static create(width: number, height: number, context?: DecorateContext): SheetBorder;
-    // (undocumented)
-    getRange(): Range2d;
-    }
-
 // @public
 export class SheetModelState extends GeometricModel2dState {
     // @internal (undocumented)
@@ -7453,14 +7386,18 @@ export class SheetModelState extends GeometricModel2dState {
 export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
     // @internal (undocumented)
-    get attachmentIds(): Id64Array;
+    get areAllTileTreesLoaded(): boolean;
+    // (undocumented)
+    readonly attachmentIds: Id64Array;
+    // @internal
+    attachViews(attachments: ViewAttachmentProps[]): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
     computeFitRange(): Range3d;
     // (undocumented)
     static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState;
-    // @internal
+    // @internal (undocumented)
     createScene(context: SceneContext): void;
     // @internal (undocumented)
     decorate(context: DecorateContext): void;
@@ -7470,15 +7407,17 @@ export class SheetViewState extends ViewState2d {
         max: number;
     };
     // @internal
+    detachViews(): void;
+    // @internal
     discloseTileTrees(trees: TileTreeSet): void;
+    // (undocumented)
+    getExtents(): import("@bentley/geometry-core").Vector3d;
+    // (undocumented)
+    getOrigin(): Point3d;
     // @internal (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
     // @internal
     load(): Promise<void>;
-    // @internal
-    markAttachment3dSceneIncomplete(): void;
-    // @internal
-    onRenderFrame(_viewport: Viewport): void;
     readonly sheetSize: Point2d;
     }
 
@@ -7989,9 +7928,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get clipDef(): ClipDef;
     // (undocumented)
-    get clipMask(): TextureHandle | undefined;
-    set clipMask(mask: TextureHandle | undefined);
-    // (undocumented)
     readonly clips: Clips;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
@@ -8000,11 +7936,19 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected _compositor: SceneCompositor;
     // (undocumented)
+    computeEdgeColor(baseColor: ColorInfo): ColorInfo;
+    // (undocumented)
+    computeEdgeLineCode(pass: RenderPass, baseCode: number): number;
+    // (undocumented)
+    computeEdgeWeight(pass: RenderPass, baseWeight: number): number;
+    // (undocumented)
     copyImageToCanvas(): HTMLCanvasElement;
     // (undocumented)
     createPlanarClassifier(properties: SpatialClassificationProps.Classifier): PlanarClassifier;
     // (undocumented)
     protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect;
+    // (undocumented)
+    get currentEdgeSettings(): EdgeSettings;
     // (undocumented)
     get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides;
     // (undocumented)
@@ -8019,6 +7963,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get currentTextureDrape(): TextureDrape | undefined;
     // (undocumented)
     get currentTransform(): Transform;
+    // (undocumented)
+    get currentTransparencyThreshold(): number;
     // (undocumented)
     get currentViewFlags(): ViewFlags;
     // (undocumented)
@@ -8056,8 +8002,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get dynamics(): GraphicList | undefined;
     // (undocumented)
-    get edgeColor(): ColorInfo;
-    // (undocumented)
     protected abstract _endPaint(): void;
     // (undocumented)
     endPerfMetricFrame(readPixels?: boolean): void;
@@ -8074,23 +8018,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     freezeRealityTiles: boolean;
     // (undocumented)
-    getEdgeLineCode(params: ShaderProgramParams, baseCode: number): number;
-    // (undocumented)
-    getEdgeOverrides(pass: RenderPass): EdgeOverrides | undefined;
-    // (undocumented)
-    getEdgeWeight(params: ShaderProgramParams, baseWeight: number): number;
-    // (undocumented)
     getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
     getTextureDrape(id: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
     getWorldDecorations(decs: GraphicList): Branch;
     // (undocumented)
-    get hasClipMask(): boolean;
-    // (undocumented)
     get hasClipVolume(): boolean;
-    // (undocumented)
-    get hiddenEdgeOverrides(): EdgeOverrides | undefined;
     // (undocumented)
     get hilites(): Hilites;
     // (undocumented)
@@ -8103,10 +8037,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get isDisposed(): boolean;
     // (undocumented)
     get isDrawingShadowMap(): boolean;
-    // (undocumented)
-    get isEdgeColorOverridden(): boolean;
-    // (undocumented)
-    get isEdgeWeightOverridden(): boolean;
     // (undocumented)
     isFadeOutActive: boolean;
     // (undocumented)
@@ -8177,8 +8107,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     terrainTransparency: number;
     // (undocumented)
-    get transparencyThreshold(): number;
-    // (undocumented)
     readonly uniforms: TargetUniforms;
     // (undocumented)
     updateSolarShadows(context: SceneContext | undefined): void;
@@ -8186,8 +8114,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     vcSupportIntersectingVolumes: boolean;
     // (undocumented)
     get viewRect(): ViewRect;
-    // (undocumented)
-    get visibleEdgeOverrides(): EdgeOverrides | undefined;
     // (undocumented)
     get wantAmbientOcclusion(): boolean;
     // (undocumented)
@@ -8462,6 +8388,8 @@ export abstract class Tile {
 export abstract class TileAdmin {
     // @internal
     abstract addExternalTilesForViewport(vp: Viewport, statistics: ExternalTileStatistics): void;
+    // @internal
+    addLoadListener(callback: (imodel: IModelConnection) => void): () => void;
     // @internal
     abstract addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void;
     // @internal
@@ -10510,6 +10438,15 @@ export abstract class Viewport implements IDisposable {
     viewToNpcArray(pts: Point3d[]): void;
     viewToWorld(input: XYAndZ, out?: Point3d): Point3d;
     viewToWorldArray(pts: Point3d[]): void;
+    // @internal
+    get wantViewAttachmentBoundaries(): boolean;
+    set wantViewAttachmentBoundaries(want: boolean);
+    // @internal
+    get wantViewAttachmentClipShapes(): boolean;
+    set wantViewAttachmentClipShapes(want: boolean);
+    // @internal
+    get wantViewAttachments(): boolean;
+    set wantViewAttachments(want: boolean);
     worldToNpc(pt: XYAndZ, out?: Point3d): Point3d;
     worldToNpcArray(pts: Point3d[]): void;
     worldToView(input: XYAndZ, out?: Point3d): Point3d;
@@ -10799,7 +10736,7 @@ export abstract class ViewState2d extends ViewState {
     getViewedModel(): GeometricModel2dState | undefined;
     // (undocumented)
     load(): Promise<void>;
-    // (undocumented)
+    // @deprecated
     onRenderFrame(_viewport: Viewport): void;
     // (undocumented)
     readonly origin: Point2d;
@@ -10897,7 +10834,7 @@ export abstract class ViewState3d extends ViewState {
     minimumFrontDistance(): number;
     moveCameraLocal(distance: Vector3d): ViewStatus;
     moveCameraWorld(distance: Vector3d): ViewStatus;
-    // (undocumented)
+    // @deprecated
     onRenderFrame(_viewport: Viewport): void;
     readonly origin: Point3d;
     // (undocumented)

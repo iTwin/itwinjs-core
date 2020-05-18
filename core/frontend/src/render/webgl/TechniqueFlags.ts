@@ -7,7 +7,6 @@
  */
 
 import { RenderMode } from "@bentley/imodeljs-common";
-import { ClippingType } from "../RenderClipVolume";
 import { RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
 
@@ -22,16 +21,13 @@ export const enum FeatureMode {
   Overrides,  // feature table with symbology overrides
 }
 
-/** Meta data for what type of clip volume is being stored (mask or planes).
- * @internal
- */
+/** @internal */
 export class ClipDef {
-  public type: ClippingType;
   public numberOfPlanes: number;
-
-  public constructor(type: ClippingType = ClippingType.None, numberOfPlanes: number = 0) { this.type = type; this.numberOfPlanes = numberOfPlanes; }
-  public static forMask() { return new ClipDef(ClippingType.Mask); }
-  public static forPlanes(numPlanes: number) { return new ClipDef(ClippingType.Planes, numPlanes); }
+  public get isValid() { return 0 < this.numberOfPlanes; }
+  public invalidate() { this.numberOfPlanes = 0; }
+  public constructor(numberOfPlanes: number = 0) { this.numberOfPlanes = numberOfPlanes; }
+  public static forPlanes(numPlanes: number) { return new ClipDef(numPlanes); }
 }
 
 /** @internal */
@@ -71,7 +67,7 @@ export class TechniqueFlags {
     this.isTranslucent = translucent;
   }
 
-  public get hasClip(): boolean { return this.clip.type !== ClippingType.None; }
+  public get hasClip(): boolean { return this.clip.isValid; }
 
   public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No): void {
     if (RenderPass.Hilite === pass || RenderPass.HiliteClassification === pass || RenderPass.HilitePlanarClassification === pass) {
@@ -123,8 +119,7 @@ export class TechniqueFlags {
     this.isInstanced = instanced;
     this.isShadowable = shadowable;
     this.isThematic = thematic;
-    this.clip.type = ClippingType.None;
-    this.clip.numberOfPlanes = 0;
+    this.clip.invalidate();
   }
 
   public get hasFeatures() { return FeatureMode.None !== this.featureMode; }

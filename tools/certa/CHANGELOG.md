@@ -1,6 +1,17 @@
 # Change Log - @bentley/certa
 
-This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- Update to use Electron 8 for the electron test runner
+- order imports.
+- Upgrade to Rush 5.23.2
+- Update to handle an async callback in Electron.
+- Update electron version to ^8.2.1
 
 ## 1.14.1
 Wed, 22 Apr 2020 19:04:00 GMT
@@ -65,7 +76,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 
 ### Updates
 
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -95,14 +106,14 @@ Mon, 03 Jun 2019 18:09:39 GMT
 ### Updates
 
 - Update to puppeteer 1.13.0 (current chrome-stable)
-- Fixed frontend debugging issues.  
+- Fixed frontend debugging issues.
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT
 
 ### Updates
 
-- "Adds copyright header to readme"
+- Adds copyright header to readme
 - Update the version of nyc to 14.0.0
 
 ## 0.190.0

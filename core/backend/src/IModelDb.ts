@@ -595,7 +595,7 @@ export abstract class IModelDb extends IModel {
   public static findByKey(key: string): IModelDb {
     const iModelDb: IModelDb | undefined = IModelDb.tryFindByKey(key);
     if (undefined === iModelDb) {
-      Logger.logError(loggerCategory, "IModelDb not found in the in-memory cache", () => key);
+      Logger.logError(loggerCategory, "IModelDb not found in the in-memory cache", () => ({ key }));
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
     return iModelDb;
@@ -854,7 +854,8 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
-   *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend.
+   *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend,
+   *    or that shared backends export a limited number of elements at a time.
    *  * Vertices are exported in the IModelDb's world coordinate system, which is right-handed with Z pointing up.
    *  * The results of changing [ExportGraphicsOptions]($imodeljs-backend) during the [ExportGraphicsOptions.onGraphics]($imodeljs-backend) callback are not defined.
    *
@@ -2034,7 +2035,7 @@ export class BriefcaseDb extends IModelDb {
   public static findByKey(key: string): BriefcaseDb {
     const briefcaseDb: BriefcaseDb | undefined = BriefcaseDb.tryFindByKey(key);
     if (undefined === briefcaseDb) {
-      Logger.logError(loggerCategory, "BriefcaseDb not found in the in-memory cache", () => key);
+      Logger.logError(loggerCategory, "BriefcaseDb not found in the in-memory cache", () => ({ key }));
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
     return briefcaseDb;
@@ -2082,7 +2083,7 @@ export class BriefcaseDb extends IModelDb {
     if (!this.isPushEnabled)
       throw new IModelError(BentleyStatus.ERROR, "IModel needs to be downloaded with SyncMode.PullAndPush and opened ReadWrite", Logger.logError, loggerCategory, () => this.getRpcProps());
     if (!this.nativeDb.hasPendingTxns())
-      return Promise.resolve(); // nothing to push
+      return; // nothing to push
 
     await this.concurrencyControl.onPushChanges(requestContext);
 

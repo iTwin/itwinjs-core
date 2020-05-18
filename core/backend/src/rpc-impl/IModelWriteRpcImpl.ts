@@ -104,12 +104,10 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     const props: ThumbnailProps = { format: int32Val[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: int32Val[2], height: int32Val[3], image: new Uint8Array(val.buffer, 24, int32Val[0]) };
     const id = Id64.fromLocalAndBriefcaseIds(int32Val[4], int32Val[5]);
     if (!Id64.isValid(id) || props.width === undefined || props.height === undefined || props.image.length <= 0)
-      return Promise.reject(new Error("bad args"));
+      throw new Error("bad args");
 
     if (0 !== IModelDb.findByKey(tokenProps.key).views.saveThumbnail(id, props))
-      return Promise.reject(new Error("failed to save thumbnail"));
-
-    return Promise.resolve();
+      throw new Error("failed to save thumbnail");
   }
 
   public async lockModel(tokenProps: IModelRpcProps, modelId: Id64String, level: LockLevel): Promise<void> {

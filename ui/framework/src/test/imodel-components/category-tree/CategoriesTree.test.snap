@@ -7,7 +7,7 @@ exports[`CategoryTree <CategoryTree /> should match snapshot 1`] = `
       class="ui-fw-categories-tree"
     >
       <div
-        class="core-tree components-tree"
+        class="core-tree components-controlledTree"
       >
         <div
           style="overflow: visible; height: 0px; width: 0px;"
@@ -17,7 +17,7 @@ exports[`CategoryTree <CategoryTree /> should match snapshot 1`] = `
             style="position: relative; height: 200px; width: 200px; overflow: auto; will-change: transform; direction: ltr;"
           >
             <div
-              style="height: 25px; width: 100%;"
+              style="height: 25px; width: 100%; min-width: 200px;"
             >
               <div
                 class="node-wrapper"
@@ -48,7 +48,7 @@ exports[`CategoryTree <CategoryTree /> should match snapshot 1`] = `
                       </span>
                     </label>
                     <div
-                      class="components-tree-node-content"
+                      class="components-controlledTree-node-content"
                     >
                       <span>
                         test-node

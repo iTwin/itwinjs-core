@@ -11,6 +11,13 @@
         "Web: Server (webserver)",
         "Web: Chrome (frontend)"
       ]
+    },
+    {
+      "name": "Electron: All",
+      "configurations": [
+        "Electron: Backend",
+        "Electron: Frontend"
+      ]
     }
   ],
   "configurations": [
@@ -88,7 +95,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "simple-editor-app Electron (backend)",
+      "name": "Electron: Backend",
       "cwd": "${workspaceFolder}",
       "env": {
         "SVT_LOG_LEVEL": "TRACE",
@@ -106,6 +113,14 @@
         "${workspaceRoot}/lib/{backend}/**/*.js",
         "${workspaceRoot}/../../core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
       ]
+    },
+    {
+      "name": "Electron: Frontend",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223,
+      "webRoot": "${workspaceRoot}",
+      "sourceMaps": true
     }
   ]
 }

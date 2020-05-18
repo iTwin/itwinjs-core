@@ -64,7 +64,7 @@ export class DefaultProjectServices implements ProjectServices {
       }
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
 
     const projects: ProjectInfo[] = [];

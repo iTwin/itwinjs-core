@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "Fixed ClipVector.performTransformTo/FromClip() failing to transform the input.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Paul.Connelly@bentley.com"
+}

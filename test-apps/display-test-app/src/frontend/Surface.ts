@@ -156,8 +156,6 @@ export class Surface {
     } catch (err) {
       alert("Error opening iModel: " + err.toString());
     }
-
-    return Promise.resolve();
   }
 
   public get firstViewer(): Viewer | undefined {

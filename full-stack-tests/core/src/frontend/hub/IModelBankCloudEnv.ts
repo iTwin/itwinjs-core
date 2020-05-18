@@ -14,8 +14,8 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return false; }
   public readonly contextMgr: IModelBankFileSystemContextClient;
   public readonly imodelClient: IModelClient;
-  public async startup(): Promise<void> { return Promise.resolve(); }
-  public async shutdown(): Promise<number> { return Promise.resolve(0); }
+  public async startup(): Promise<void> { }
+  public async shutdown(): Promise<number> { return 0; }
 
   public constructor(orchestratorUrl: string, private _basicAuthentication: boolean) {
     this.imodelClient = new IModelBankClient(orchestratorUrl, undefined);

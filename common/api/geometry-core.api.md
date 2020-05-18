@@ -871,6 +871,9 @@ export enum BSplineWrapMode {
 }
 
 // @public
+export type ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined;
+
+// @public
 export enum ClipMaskXYZRangePlanes {
     All = 63,
     None = 0,
@@ -1070,6 +1073,7 @@ export class ClusterableArray extends GrowableBlockedArray {
     addDirect(x0: number, x1: number, x2?: number, x3?: number, x4?: number): void;
     addPoint2d(xy: Point2d, a?: number, b?: number, c?: number): void;
     addPoint3d(xyz: Point3d, a?: number, b?: number, c?: number): void;
+    static clusterGrowablePoint2dArray(source: GrowableXYArray, tolerance?: number): PackedPoint2dsWithIndex;
     static clusterGrowablePoint3dArray(source: GrowableXYZArray, tolerance?: number): PackedPointsWithIndex;
     clusterIndicesLexical(clusterTolerance?: number): Uint32Array;
     static clusterPoint3dArray(data: Point3d[], tolerance?: number): PackedPointsWithIndex;
@@ -1256,10 +1260,11 @@ export abstract class CurveChain extends CurveCollection {
     get children(): CurvePrimitive[];
     abstract cloneStroked(options?: StrokeOptions): AnyCurve;
     protected _curves: CurvePrimitive[];
-    cyclicCurvePrimitive(index: number): CurvePrimitive | undefined;
+    cyclicCurvePrimitive(index: number, cyclic?: boolean): CurvePrimitive | undefined;
     extendRange(range: Range3d, transform?: Transform): void;
     getChild(i: number): CurvePrimitive | undefined;
     getPackedStrokes(options?: StrokeOptions): GrowableXYZArray | undefined;
+    primitiveIndexAndFractionToCurveLocationDetailPointAndDerivative(index: number, fraction: number, cyclic?: boolean, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     reverseChildrenInPlace(): void;
     tryAddChild(child: AnyCurve | undefined): boolean;
 }
@@ -1268,7 +1273,7 @@ export abstract class CurveChain extends CurveCollection {
 export class CurveChainWireOffsetContext {
     constructor();
     static applyBasePoints(cp: CurvePrimitive | undefined, startPoint: Point3d | undefined, endPoint: Point3d | undefined): CurvePrimitive | undefined;
-    static constructCurveXYOffset(curves: Path | Loop, options: JointOptions): CurveCollection | undefined;
+    static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined;
     static createSingleOffsetPrimitiveXY(g: CurvePrimitive, distanceLeft: number): CurvePrimitive | CurvePrimitive[] | undefined;
     }
 
@@ -1316,7 +1321,7 @@ export abstract class CurveCollection extends GeometryQuery {
     abstract cloneStroked(options?: StrokeOptions): AnyCurve;
     cloneTransformed(transform: Transform): CurveCollection | undefined;
     cloneWithExpandedLineStrings(): CurveCollection | undefined;
-    collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean): CurvePrimitive[];
+    collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): CurvePrimitive[];
     static createCurveLocationDetailOnAnyCurvePrimitive(source: GeometryQuery | undefined, fraction?: number): CurveLocationDetail | undefined;
     abstract readonly curveCollectionType: CurveCollectionType;
     abstract dgnBoundaryType(): number;
@@ -1431,6 +1436,7 @@ export class CurveLocationDetail {
     static createConditionalMoveSignedDistance(allowExtension: boolean, curve: CurvePrimitive, startFraction: number, endFraction: number, requestedSignedDistance: number, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveEvaluatedFraction(curve: CurvePrimitive, fraction: number, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveEvaluatedFractionFraction(curve: CurvePrimitive, fraction0: number, fraction1: number, result?: CurveLocationDetail): CurveLocationDetail;
+    static createCurveEvaluatedFractionPointAndDerivative(curve: CurvePrimitive, fraction: number, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveFractionPoint(curve: CurvePrimitive | undefined, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveFractionPointDistance(curve: CurvePrimitive, fraction: number, point: Point3d, a: number, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveFractionPointDistanceCurveSearchStatus(curve: CurvePrimitive | undefined, fraction: number, point: Point3d, distance: number, status: CurveSearchStatus, result?: CurveLocationDetail): CurveLocationDetail;
@@ -1483,8 +1489,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     clonePartialCurve(_fractionA: number, _fractionB: number): CurvePrimitive | undefined;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined;
-    collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean): CurvePrimitive[];
-    collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean): void;
+    collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLinestrings?: boolean): CurvePrimitive[];
+    collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, _explodeLinestrings?: boolean): void;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentMap?: StrokeCountMap): void;
     abstract computeStrokeCountForOptions(options?: StrokeOptions): number;
     curveLength(): number;
@@ -1509,6 +1515,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     abstract isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     protected moveSignedDistanceFromFractionGeneric(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail;
+    parent?: any;
     abstract quickLength(): number;
     abstract reverseInPlace(): void;
     // @internal
@@ -2731,6 +2738,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined;
     cloneTransformed(transform: Transform): CurvePrimitive;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
+    collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, explodeLinestrings?: boolean): void;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap): void;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     computeUVFromXYZTransform(transform: Transform): void;
@@ -4387,6 +4395,20 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
     protected _stack: CurveCollection[];
 }
 
+// @alpha
+export enum RegionBinaryOpType {
+    // (undocumented)
+    AMinusB = 3,
+    // (undocumented)
+    BMinusA = 4,
+    // (undocumented)
+    Intersection = 2,
+    // (undocumented)
+    Parity = 1,
+    // (undocumented)
+    Union = 0
+}
+
 // @internal
 export class RegionMomentsXY extends NullGeometryHandler {
     handleArc3d(arc: Arc3d): void;
@@ -4408,7 +4430,13 @@ export class RegionOps {
     // @internal
     static addLoopsWithEdgeTagToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any): HalfEdge[] | undefined;
     static cloneCurvesWithXYSplitFlags(curvesToCut: CurvePrimitive | CurveCollection | undefined, cutterCurves: CurveCollection): CurveCollection | CurvePrimitive | undefined;
-    static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean): CurvePrimitive[];
+    static collectChains(fragments: GeometryQuery[], gapTolerance: number): ChainTypes;
+    static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLinestrings?: boolean): CurvePrimitive[];
+    static collectInsideAndOutsideOffsets(fragments: GeometryQuery[], offsetDistance: number, gapTolerance: number): {
+        insideOffsets: GeometryQuery[];
+        outsideOffsets: GeometryQuery[];
+        chains: ChainTypes;
+    };
     static computeXYArea(root: AnyRegion): number | undefined;
     static computeXYAreaMoments(root: AnyRegion): MomentData | undefined;
     static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined;
@@ -4424,6 +4452,8 @@ export class RegionOps {
     static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static rectangleEdgeTransform(data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint?: boolean): Transform | undefined;
+    // @alpha
+    static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType): AnyRegion | undefined;
     // @internal
     static setCheckPointFunction(f?: GraphCheckPointFunction): void;
     static sortOuterAndHoleLoopsXY(loops: Array<Loop | IndexedXYZCollection>): AnyRegion;

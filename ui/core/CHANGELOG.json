@@ -2,6 +2,147 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@bentley/ui-core_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "[For Dialog component, support dialogs that disable the default header and want to implement custom move logic by updating the x and y props. This was fixed by only handling the pointer move events when a resize or move operation starts instead of on mount. Also now we only update the relevant state in the pointer move event handler based on if we are moving or resizing]"
+          },
+          {
+            "comment": "Qualified .label & .message CSS classes. Removed .cell CSS class usage. Fixed cell editor sizes."
+          },
+          {
+            "comment": "Removed @deprecated APIs from ui-framework & ui-core and updated NextVersion.md"
+          },
+          {
+            "comment": "Changes to WebFontIcon to support custom font-family icons."
+          },
+          {
+            "comment": "Ensure ui-abstract is listed as peer dependency and not just a dev dependency."
+          },
+          {
+            "comment": "Fix bug 292829 where toolbar border displayed when all items are hidden."
+          },
+          {
+            "comment": "Convert FocusTrap to internal FunctionComponent and ensure no focus processing is done when the trap is not active."
+          },
+          {
+            "comment": "Fixed ReactResizeDetector usage after upgrade. Converted Toggle component to function. Hover/pressed styling in 2.0 Toolbar."
+          },
+          {
+            "comment": "Make resize-observer-polyfill a full dependency"
+          },
+          {
+            "comment": "Fixed Messages window blinking when you tap on it on iOS"
+          },
+          {
+            "comment": "Ui 2.0 - Blur the toolbar item background"
+          },
+          {
+            "comment": "Add a tolerance to check position between render cycles."
+          },
+          {
+            "comment": "Made React functional component specifications consistent across UI packages"
+          },
+          {
+            "comment": "Slider component tooltipBelow prop & tooltip styling"
+          },
+          {
+            "comment": "Added API in MessageManager to display either a Toast or Sticky message using React components."
+          },
+          {
+            "comment": " Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead."
+          },
+          {
+            "comment": "Revert back to using svg-sprite-loader and sprite resourceQuery."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Fixed Safari browser issues"
+          },
+          {
+            "comment": "Copied filter renderers from react-data-grid-addons to ui-components to prevent security error"
+          },
+          {
+            "comment": "Fixed several Tool Assistance issues"
+          },
+          {
+            "comment": "Ui 2.0 - Toolbar display changes"
+          },
+          {
+            "comment": "Updated Toolbar colors/opacity for Ui 2.0"
+          },
+          {
+            "comment": "Move common use hooks from ui-ninezone."
+          },
+          {
+            "comment": "Learning docs for UiAdmin & UiItemsArbiter"
+          },
+          {
+            "comment": "Promoted some @beta to @public in Ui packages & ToolAssistance for 2.0 release."
+          },
+          {
+            "comment": "Fixes to Toggle onBlur handling & ControlledTree error message position"
+          },
+          {
+            "comment": "In source documentation. Some learning docs & API changes."
+          },
+          {
+            "comment": "Move react to peerDependencies."
+          },
+          {
+            "comment": "Learning documentation for ui-core"
+          },
+          {
+            "comment": "TOC for UI 2.0 Docs, @alpha to @beta, Components Examples"
+          },
+          {
+            "comment": "Fix popup position calculation."
+          },
+          {
+            "comment": "Started ui-components Learning doc section"
+          },
+          {
+            "comment": "Make UiSettings asynchronous."
+          },
+          {
+            "comment": "UI: Toggle Component - only use animation on value change"
+          },
+          {
+            "comment": "Add `useOptionalDisposable` hook"
+          },
+          {
+            "comment": "Update auto-generated dialog items to work with the Tool Settings Bar."
+          },
+          {
+            "comment": "Moved Checkbox, Radio, Select, Toggle, Slider & AutoSuggest into their own category"
+          },
+          {
+            "comment": "Defaulting to IModelApp.i18n in UI packages and cascading initialize() calls"
+          },
+          {
+            "comment": "UI: Support for multiple Toast & Sticky messages"
+          },
+          {
+            "comment": "Added UiSetting. Saving/restoring settings in ui-test-app."
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          },
+          {
+            "comment": "Update Select control to allow placeholder text to be re-displayed by setting value to undefined."
+          },
+          {
+            "comment": "set z-index on toolsettings overflow panel"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.14.1",
       "tag": "@bentley/ui-core_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",

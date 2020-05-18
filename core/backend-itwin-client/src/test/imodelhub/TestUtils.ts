@@ -277,7 +277,7 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
   const asset: Asset = await getCloudEnv().contextMgr.queryAssetByName(requestContext, assetName);
 
   if (!asset || !asset.wsgId)
-    return Promise.reject(`Asset with name ${assetName} doesn't exist.`);
+    throw new Error(`Asset with name ${assetName} doesn't exist.`);
 
   return asset.wsgId;
 }
@@ -293,7 +293,7 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
   const project: Project = await getCloudEnv().contextMgr.queryProjectByName(requestContext, projectName);
 
   if (!project || !project.wsgId)
-    return Promise.reject(`Project with name ${TestConfig.projectName} doesn't exist.`);
+    throw new Error(`Project with name ${TestConfig.projectName} doesn't exist.`);
 
   return project.wsgId;
 }
@@ -321,7 +321,7 @@ export async function getIModelId(requestContext: AuthorizedClientRequestContext
   const imodels = await client.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName));
 
   if (!imodels[0] || !imodels[0].id)
-    return Promise.reject(`iModel with name ${imodelName} doesn't exist.`);
+    throw new Error(`iModel with name ${imodelName} doesn't exist.`);
 
   return imodels[0].id!;
 }
@@ -416,15 +416,19 @@ export function generateChangeSet(id?: string): ChangeSet {
 }
 
 export function mockGetChangeSet(imodelId: GuidString, getDownloadUrl: boolean, query?: string, ...changeSets: ChangeSet[]) {
+  mockGetChangeSetChunk(imodelId, getDownloadUrl, query, undefined, ...changeSets);
+}
+
+export function mockGetChangeSetChunk(imodelId: GuidString, getDownloadUrl: boolean, query?: string, headers?: any, ...changeSets: ChangeSet[]) {
   if (!TestConfig.enableMocks)
     return;
 
   let i = 1;
   changeSets.forEach((value) => {
     value.wsgId = value.id!;
+    value.fileSize = getMockFileSize();
     if (getDownloadUrl) {
       value.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
-      value.fileSize = getMockFileSize();
     }
     if (!value.index) {
       value.index = `${i++}`;
@@ -435,7 +439,7 @@ export function mockGetChangeSet(imodelId: GuidString, getDownloadUrl: boolean, 
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId.toString(), "ChangeSet",
     getDownloadUrl ? `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL` + query : query);
   const requestResponse = ResponseBuilder.generateGetArrayResponse<ChangeSet>(changeSets);
-  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
+  ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse, undefined, undefined, headers);
 }
 
 /** Codes */
@@ -967,13 +971,12 @@ export function getCloudEnv(): IModelCloudEnvironment {
 before(async () => {
   if (cloudEnv === undefined) {
     Logger.logError(loggingCategory, "cloudEnv was not defined before tests began");
-    return Promise.reject();
+    throw new Error();
   }
 
   Logger.logInfo(loggingCategory, "Waiting for cloudEnv to startup...");
   await cloudEnv.startup();
   Logger.logInfo(loggingCategory, "cloudEnv started.");
-  return Promise.resolve();
 });
 
 after(async () => {

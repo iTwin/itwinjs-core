@@ -87,6 +87,7 @@ internal;FLOATING_WIDGET_BRING_TO_FRONT = "FLOATING_WIDGET_BRING_TO_FRONT"
 internal;FLOATING_WIDGET_RESIZE = "FLOATING_WIDGET_RESIZE"
 internal;FloatingTab(): JSX.Element
 internal;FloatingWidget: React.NamedExoticComponent
+internal;floatingWidgetBringToFront(state: Draft
 internal;FloatingWidgetBringToFrontAction
 internal;FloatingWidgetIdContext: React.Context
 internal;FloatingWidgetProps

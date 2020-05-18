@@ -10,7 +10,7 @@ import { HubUserInfo, UserInfoQuery, Version } from "@bentley/imodelhub-client";
 import { IModel, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSetToken, PhysicalModel, StandaloneDb } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSetToken, PhysicalModel, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -118,65 +118,56 @@ describe.skip("DebugHubIssues (#integration)", () => {
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
   });
 
+  const iModelExists = async (projectId: string, iModelName: string): Promise<boolean> => {
+    const iModel = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+    return !!iModel;
+  };
+
+  const uploadIModel = async (projectName: string, srcIModelName: string, destIModelName?: string) => {
+    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+
+    const uploadedIModelName = destIModelName || srcIModelName;
+    if (await iModelExists(projectId, uploadedIModelName)) {
+      console.log(`Found test iModel ${uploadedIModelName}. Not uploading it again.`); // tslint:disable-line:no-console
+      return;
+    }
+
+    const iModelDir = path.join(iModelRootDir, srcIModelName);
+    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir, destIModelName);
+    const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, uploadedIModelName);
+    console.log(`Uploaded test iModel ${srcIModelName} to ${uploadedIModelName}: ${iModelId}`); // tslint:disable-line:no-console
+  };
+
   it.skip("should be able to upload required test files to the Hub", async () => {
+    const projectName = "iModelJsIntegrationTest";
     let iModelName: string;
-    let iModelDir: string;
-    let iModelId: GuidString;
     let destIModelName: string;
 
-    const projectName = "iModelJsIntegrationTest";
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    console.log(`Uploading test iModels into ${projectName}: ${projectId}`); // tslint:disable-line:no-console
-
     iModelName = "ReadOnlyTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
+    await uploadIModel(projectName, iModelName);
 
     iModelName = "ReadWriteTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
+    await uploadIModel(projectName, iModelName);
 
     iModelName = "NoVersionsTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
+    await uploadIModel(projectName, iModelName);
 
     iModelName = "ConnectionReadTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
+    await uploadIModel(projectName, iModelName);
 
     iModelName = "Stadium Dataset 1";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
+    await uploadIModel(projectName, iModelName);
 
     iModelName = "PhotoTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
+    await uploadIModel(projectName, iModelName);
 
     iModelName = "seedFileTest";
     destIModelName = "ReadOnlyFullStackTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir, destIModelName);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, destIModelName);
-    console.log(`Uploaded test iModel ${destIModelName}: ${iModelId}`); // tslint:disable-line:no-console
+    await uploadIModel(projectName, iModelName, destIModelName);
 
     iModelName = "seedFileTest";
     destIModelName = "ReadWriteFullStackTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir, destIModelName);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, destIModelName);
-    console.log(`Uploaded test iModel ${destIModelName}: ${iModelId}`); // tslint:disable-line:no-console
+    await uploadIModel(projectName, iModelName, destIModelName);
   });
 
   it.skip("should be able to download required test files from the Hub", async () => {

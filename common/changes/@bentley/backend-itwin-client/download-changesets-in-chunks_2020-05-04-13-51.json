@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/backend-itwin-client",
+      "comment": "Download ChangeSets in chunks",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/backend-itwin-client",
+  "email": "Algirdas.Mikoliunas@bentley.com"
+}

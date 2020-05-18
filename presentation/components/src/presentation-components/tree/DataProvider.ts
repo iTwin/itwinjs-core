@@ -14,7 +14,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@bentley/ui-components";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
-import { createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY } from "./Utils";
+import { CreateTreeNodeItemProps, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY } from "./Utils";
 
 /**
  * Properties for creating a `PresentationTreeDataProvider` instance.
@@ -23,8 +23,10 @@ import { createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NOD
 export interface PresentationTreeDataProviderProps {
   /** IModel to pull data from. */
   imodel: IModelConnection;
+
   /** Id of the ruleset to use when requesting content or a ruleset itself. */
   ruleset: string | Ruleset;
+
   /**
    * Paging size for obtaining nodes.
    *
@@ -44,6 +46,12 @@ export interface PresentationTreeDataProviderProps {
    * ```
    */
   pagingSize?: number;
+
+  /**
+   *
+   * @beta
+   */
+  appendChildrenCountForGroupingNodes?: boolean;
 }
 
 /**
@@ -54,6 +62,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   private _imodel: IModelConnection;
   private _rulesetRegistration: RulesetRegistrationHelper;
   private _pagingSize?: number;
+  private _appendChildrenCountForGroupingNodes?: boolean;
   private _disposeVariablesChangeListener: () => void;
 
   /** Constructor. */
@@ -61,7 +70,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     this._rulesetRegistration = new RulesetRegistrationHelper(props.ruleset);
     this._imodel = props.imodel;
     this._pagingSize = props.pagingSize;
-
+    this._appendChildrenCountForGroupingNodes = props.appendChildrenCountForGroupingNodes;
     this._disposeVariablesChangeListener = Presentation.presentation.vars(this._rulesetRegistration.rulesetId).onVariableChanged.addListener(() => {
       this._getNodesAndCount.cache.values.length = 0;
       this._getNodesAndCount.cache.keys.length = 0;
@@ -130,14 +139,17 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   private _getNodesAndCount = memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<{ nodes: TreeNodeItem[], count: number }> => {
     const requestCount = undefined !== pageOptions && 0 === pageOptions.start && undefined !== pageOptions.size;
     const parentKey = parentNode ? this.getNodeKey(parentNode) : undefined;
+    const nodesCreateProps: CreateTreeNodeItemProps = {
+      appendChildrenCountForGroupingNodes: this._appendChildrenCountForGroupingNodes,
+    };
 
     if (!requestCount) {
       const allNodes = await Presentation.presentation.getNodes({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
-      return { nodes: parentNode ? createTreeNodeItems(allNodes, parentNode.id) : createTreeNodeItems(allNodes), count: allNodes.length };
+      return { nodes: createTreeNodeItems(allNodes, parentNode?.id, nodesCreateProps), count: allNodes.length };
     }
 
     const nodesResponse = await Presentation.presentation.getNodesAndCount({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
-    return { nodes: parentNode ? createTreeNodeItems(nodesResponse.nodes, parentNode.id) : createTreeNodeItems(nodesResponse.nodes), count: nodesResponse.count };
+    return { nodes: createTreeNodeItems(nodesResponse.nodes, parentNode?.id, nodesCreateProps), count: nodesResponse.count };
   }, { isMatchingKey: MemoizationHelpers.areNodesRequestsEqual as any });
 
   /**

@@ -306,7 +306,7 @@ export class KeyboardShortcutManager {
 
   public static closeShortcutsMenu(): void {
     KeyboardShortcutMenu.onKeyboardShortcutMenuEvent.emit({
-      menuVisible: true,
+      menuVisible: false,
       menuX: 0,
       menuY: 0,
       shortcuts: undefined,

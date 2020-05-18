@@ -64,6 +64,22 @@ export class IModelJsConfig {
     throw new Error(`Failed to find an iModel.js configuration file. Either set 'imjs_config_dir' env variable to point to the '${configFolder}' or put the folder '${configFolder}' next to repository that uses it.`);
   }
 
+  private static getEnvFile(repositoryRootDir: string): any {
+    const envFile = path.join(repositoryRootDir, ".env");
+    if (!fs.existsSync(envFile)) {
+      return;
+    }
+
+    const dotenv = require("dotenv");
+    const dotenvExpand = require("dotenv-expand");
+    const envResult = dotenv.config({ path: envFile });
+    if (envResult.error) {
+      throw envResult.error;
+    }
+
+    dotenvExpand(envResult);
+  }
+
   /** During initialization the configuration is searched for across many locations.  If initialization has previously been called, then `process.env` is returned.
    *
    * If the environment variable `imjs_config_dir` is set, that directory will be searched first.  Otherwise, a directory named `imodeljs-config` will attempt to be
@@ -97,21 +113,22 @@ export class IModelJsConfig {
     if (IModelJsConfig._repositoryPath || shellEnv.imjs_config_file_default)
       return shellEnv;
 
+    let configRepository: string = "";
+
+    if (undefined !== shellEnv && undefined !== shellEnv.imjs_config_dir) {
+      const configDir = shellEnv.imjs_config_dir;
+      if ("" !== configDir && fs.existsSync(configDir))
+        configRepository = configDir.replace(/\/$/, "").replace(/\\$/, ""); // removes any trailing '/' or '\'
+    }
+
     try {
-      let configRepository: string = "";
-
-      if (undefined !== shellEnv && undefined !== shellEnv.imjs_config_dir) {
-        const configDir = shellEnv.imjs_config_dir;
-        if ("" !== configDir && fs.existsSync(configDir))
-          configRepository = configDir.replace(/\/$/, "").replace(/\\$/, ""); // removes any trailing '/' or '\'
-      }
-
       if ("" === configRepository)
         configRepository = IModelJsConfig.getConfigurationDir("imodeljs-config");
 
       const configuration: any = IModelJsConfig.getConfiguration(configRepository, shellEnv.imjs_config_env);
       // also set them as shell var
       Object.assign(process.env, configuration);
+
       // tslint:disable-next-line:no-eval
       eval(`process.env.imjs_config_dir="${configRepository}"`);
 
@@ -126,6 +143,18 @@ export class IModelJsConfig {
       if (!suppressException)
         throw err;
     }
+
+    try {
+      IModelJsConfig.getEnvFile(configRepository);
+    } catch (err) {
+      if (!suppressErrorMessage) {
+        // tslint:disable-next-line:no-console
+        console.log(`${chalk.yellowBright(err.message)}`);
+      }
+      if (!suppressException)
+        throw err;
+    }
+
     return shellEnv;
   }
 }

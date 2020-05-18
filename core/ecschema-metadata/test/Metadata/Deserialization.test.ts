@@ -80,6 +80,15 @@ describe("Full Schema Deserialization", () => {
       await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
     });
 
+    it("should throw for invalid schema minor version", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.0.10000000",
+      };
+      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
+    });
+
     it("should throw for invalid schema name", async () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",

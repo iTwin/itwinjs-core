@@ -629,17 +629,16 @@ export const DivWithOutsideClick: {
 };
 
 // @public
-export class ElementSeparator extends React.PureComponent<ElementSeparatorProps> {
-    // (undocumented)
-    static defaultProps: Partial<ElementSeparatorProps>;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export const ElementSeparator: (props: ElementSeparatorProps) => JSX.Element;
 
 // @public
 export interface ElementSeparatorProps extends CommonProps {
+    isResizeHandleBeingDragged?: boolean;
+    isResizeHandleHovered?: boolean;
     movableArea?: number;
-    onRatioChanged: (ratio: number) => void;
+    onRatioChanged?: (ratio: number) => void | RatioChangeResult;
+    onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
+    onResizeHandleHoverChanged?: (isHovered: boolean) => void;
     orientation: Orientation;
     ratio: number;
     separatorSize?: number;
@@ -884,7 +883,7 @@ export interface IconInputProps extends InputProps {
 }
 
 // @public
-export interface IconProps {
+export interface IconProps extends CommonProps {
     iconSpec?: IconSpec;
 }
 
@@ -1364,11 +1363,17 @@ export class Radio extends React.PureComponent<RadioProps> {
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps {
 }
 
+// @public
+export interface RatioChangeResult {
+    // (undocumented)
+    ratio: number;
+}
+
 // @internal (undocumented)
 export class ReactNumericInput extends React.Component<ReactNumericInputProps, ReactNumericInputState> {
     constructor(props: ReactNumericInputProps);
     componentDidMount(): void;
-    componentDidUpdate(_prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void;
+    componentDidUpdate(prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void;
     componentWillUnmount(): void;
     static defaultProps: {
         step: number;
@@ -1389,10 +1394,6 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     refsInput: HTMLInputElement | undefined;
     render(): JSX.Element;
     static SPEED: number;
-    // (undocumented)
-    UNSAFE_componentWillReceiveProps(props: ReactNumericInputProps): void;
-    // (undocumented)
-    UNSAFE_componentWillUpdate(): void;
     }
 
 // @beta
@@ -2019,6 +2020,8 @@ export interface UiSettingsResult {
 
 // @beta
 export enum UiSettingsStatus {
+    // (undocumented)
+    AuthorizationError = 4,
     // (undocumented)
     NotFound = 1,
     // (undocumented)

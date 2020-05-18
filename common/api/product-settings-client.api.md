@@ -6,11 +6,15 @@
 
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { Client } from '@bentley/itwin-client';
+import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { RequestOptions } from '@bentley/itwin-client';
 import { Response } from '@bentley/itwin-client';
 
 // @internal
 export class ConnectSettingsClient extends Client implements SettingsAdmin {
     constructor(applicationId: string);
+    // (undocumented)
+    static readonly apiVersion: string;
     // (undocumented)
     applicationId: string;
     // (undocumented)
@@ -19,7 +23,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     deleteSharedSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
     deleteUserSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-    // (undocumented)
     formErrorResponse(response: Response): SettingsResult;
     // (undocumented)
     getSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
@@ -29,7 +32,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     getSharedSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
     getSharedSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsMapResult>;
-    // (undocumented)
+    getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
     protected getUrlSearchKey(): string;
     // (undocumented)
     getUserSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
@@ -43,6 +46,10 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
     static readonly searchKey: string;
+    // (undocumented)
+    protected setupOptionDefaults(options: RequestOptions): Promise<void>;
+    // (undocumented)
+    protected _url?: string;
 }
 
 // @beta

@@ -11,8 +11,8 @@ import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { WidgetHost } from "../widgets/WidgetHost";
-import { WidgetProps } from "../widgets/WidgetProps";
 import { StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./StagePanel";
+import { getStableWidgetProps } from "../zones/Zone";
 
 /** Enum for StagePanel state.
  * @alpha
@@ -101,12 +101,16 @@ export class StagePanelDef extends WidgetHost {
     this._resizable = props.resizable;
     if (props.applicationData !== undefined)
       this._applicationData = props.applicationData;
-    if (props.panelZones)
-      this._panelZones = new StagePanelZonesDef(props.panelZones);
+    if (props.panelZones) {
+      this._panelZones = new StagePanelZonesDef();
+      this._panelZones.initializeFromProps(props.panelZones, this._location);
+    }
 
     if (props.widgets) {
-      props.widgets.forEach((widgetNode: React.ReactElement<WidgetProps>) => {
-        const widgetDef = new WidgetDef(widgetNode.props);
+      props.widgets.forEach((widgetNode, index) => {
+        const stableId = `uifw-sp-${StagePanelLocation[this._location]}-${index}`;
+        const stableProps = getStableWidgetProps(widgetNode.props, stableId);
+        const widgetDef = new WidgetDef(stableProps);
         this.addWidgetDef(widgetDef);
       });
     }
@@ -137,12 +141,6 @@ export class StagePanelZonesDef {
   private _middle: StagePanelZoneDef | undefined;
   private _end: StagePanelZoneDef | undefined;
 
-  public constructor(props: StagePanelZonesProps) {
-    this._start = props.start ? new StagePanelZoneDef(props.start) : undefined;
-    this._middle = props.middle ? new StagePanelZoneDef(props.middle) : undefined;
-    this._end = props.end ? new StagePanelZoneDef(props.end) : undefined;
-  }
-
   public get start() {
     return this._start;
   }
@@ -153,6 +151,22 @@ export class StagePanelZonesDef {
 
   public get end() {
     return this._end;
+  }
+
+  /** @internal */
+  public initializeFromProps(props: StagePanelZonesProps, panelLocation: StagePanelLocation): void {
+    if (props.start) {
+      this._start = new StagePanelZoneDef();
+      this._start.initializeFromProps(props.start, panelLocation, "start");
+    }
+    if (props.middle) {
+      this._middle = new StagePanelZoneDef();
+      this._middle.initializeFromProps(props.middle, panelLocation, "middle");
+    }
+    if (props.end) {
+      this._end = new StagePanelZoneDef();
+      this._end.initializeFromProps(props.end, panelLocation, "end");
+    }
   }
 
   /** @internal */
@@ -173,11 +187,12 @@ function* definedStagePaneZoneDefs(stagePanelZonesDef: StagePanelZonesDef): Gene
 
 /** @internal */
 export class StagePanelZoneDef extends WidgetHost {
-  public constructor(props: StagePanelZoneProps) {
-    super();
-
-    props.widgets.forEach((widgetNode: React.ReactElement<WidgetProps>) => {
-      const widgetDef = new WidgetDef(widgetNode.props);
+  /** @internal */
+  public initializeFromProps(props: StagePanelZoneProps, panelLocation: StagePanelLocation, panelZone: StagePanelZoneDefKeys): void {
+    props.widgets.forEach((widgetNode, index) => {
+      const stableId = `uifw-spz-${StagePanelLocation[panelLocation]}-${panelZone}-${index}`;
+      const stableProps = getStableWidgetProps(widgetNode.props, stableId);
+      const widgetDef = new WidgetDef(stableProps);
       this.addWidgetDef(widgetDef);
     });
   }

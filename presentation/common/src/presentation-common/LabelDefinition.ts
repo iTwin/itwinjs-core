@@ -96,6 +96,9 @@ export namespace LabelDefinition {
     };
   }
 
+  /** @internal */
+  export const COMPOSITE_DEFINITION_TYPENAME = "composite";
+
   /**
    * Reviver function that can be used as a second argument for
    * `JSON.parse` method when parsing [[LabelDefinition]] objects.
@@ -108,7 +111,7 @@ export namespace LabelDefinition {
 
   /** @internal */
   export function isCompositeDefinition(def: LabelDefinition): def is LabelDefinition & { rawValue: LabelCompositeValue } {
-    return def.typeName === "composite";
+    return def.typeName === COMPOSITE_DEFINITION_TYPENAME;
   }
 
   /** @internal */

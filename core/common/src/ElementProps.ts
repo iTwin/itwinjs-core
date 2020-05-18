@@ -267,6 +267,14 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
   jsonProperties?: any;
 }
 
+/** Properties of an [ChannelRootAspect]($backend) that identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
+ * @public
+ */
+export interface ChannelRootAspectProps extends ElementAspectProps {
+  /** The owner of the channel */
+  owner: string;
+}
+
 /** Properties of a [LineStyle]($backend)
  * @beta
  */

@@ -1,6 +1,25 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- Monitor progress of downloading briefcases, ability to cancel download of briefcases. 
+- Update Config.App documentation to reflect the removal of the config.json file
+- Added ContextDoesNotExist error
+- BUG273249
+- Updated docs. 
+- Updated error text. 
+- added raw log method that bypass catogory check
+- order imports.
+- Add a type guard for `IDisposable`
+- Add Config class previously hosted in imodeljs-clients
+- Upgrade to Rush 5.23.2
+- Added ReadonlySortedArray.
+- Remove support for the iModel.js module system by no longer delivering modules.
 
 ## 1.14.1
 Wed, 22 Apr 2020 19:04:00 GMT
@@ -27,7 +46,7 @@ Wed, 22 Jan 2020 19:24:11 GMT
 
 ### Updates
 
-- VSS$257397: Temporary fix for checking electron renderer.
+- VSS$257397: Temporary fix for checking electron renderer. 
 - Upgrade to TypeScript 3.7.2.
 
 ## 1.10.0
@@ -42,7 +61,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 ### Updates
 
-- Setup OidcDesktopClient for Electron use cases.
+- Setup OidcDesktopClient for Electron use cases. 
 - Added non-static wait and executeAfter to BeDuration
 - Fix warnings from static analysis
 - Added `BeDuration.race` for common timeout operations.
@@ -95,7 +114,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 ### Updates
 
 - Added OneAtATimeActivity class
-- Introduced AsyncMutex - a utility to run async blocks of code in sequence.
+- Introduced AsyncMutex - a utility to run async blocks of code in sequence. 
 - Update to TypeScript 3.5
 
 ## 1.0.0
@@ -122,10 +141,10 @@ Mon, 13 May 2019 15:52:05 GMT
 - Logged the fields in ClientRequestContext
 - Logging fixes.
 - Put sourcemap in npm package.
-- Fixed logger to not mutate incoming objects.
+- Fixed logger to not mutate incoming objects. 
 - Improved performance logging
 - Added functions for iterating and obtaining the number of elements of a collection of Id64s represented as an Id64Arg.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Use TextDecoder to decode binary utf-8 strings if supported.
 - Upgrade TypeDoc dependency to 0.14.2
 
@@ -161,7 +180,7 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
@@ -268,7 +287,7 @@ Fri, 16 Nov 2018 21:45:44 GMT
 
 ### Updates
 
-- Changes to debug utilities.
+- Changes to debug utilities. 
 - Fluentd Bunnyan Logger added
 
 ## 0.166.0

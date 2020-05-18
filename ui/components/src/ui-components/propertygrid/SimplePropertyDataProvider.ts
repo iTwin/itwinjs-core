@@ -71,6 +71,6 @@ export class SimplePropertyDataProvider implements IPropertyDataProvider, Proper
   }
 
   public async getData(): Promise<PropertyData> {
-    return Promise.resolve(this);
+    return this;
   }
 }

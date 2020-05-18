@@ -56,7 +56,7 @@ Potential transformations include:
 - Filtering - excluding data from the target that is contained in the source
 - Augmenting - generating data during transformation for the target that is not part of the source
 - Schema Mapping - mapping classes and properties to a new schema during transformation
-- Change Squashing - each iModel has its own change timeline, so multiple changesets to the source could be *squashed* into a single changeset to the target
+- Change Squashing - each iModel has its own change ledger, so multiple changesets from the source could be *squashed* into a single changeset to the target
 
 ## Logging
 

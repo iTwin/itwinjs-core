@@ -35,7 +35,7 @@ describe("Timeline", () => {
           loop,
         });
 
-        return Promise.resolve(true);
+        return true;
       }
     }
 
@@ -71,7 +71,7 @@ describe("Timeline", () => {
         this.start = startDate;
         this.end = endDate;
 
-        return Promise.resolve(true);
+        return true;
       }
     }
 
@@ -127,7 +127,7 @@ describe("Timeline", () => {
         this.end = endDate;
         this._milestones = milestones;
 
-        return Promise.resolve(true);
+        return true;
       }
     }
 
@@ -200,7 +200,7 @@ describe("Timeline", () => {
         this.end = endDate;
         this._milestones = nestedMilestones;
 
-        return Promise.resolve(true);
+        return true;
       }
     }
 

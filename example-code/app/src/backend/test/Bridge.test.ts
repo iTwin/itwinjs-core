@@ -65,7 +65,7 @@ async function queryIModelByName(requestContext: AuthorizedClientRequestContext,
   if (iModels.length === 0)
     return undefined;
   if (iModels.length > 1)
-    return Promise.reject(`Too many iModels with name ${iModelName} found`);
+    throw new Error(`Too many iModels with name ${iModelName} found`);
   return iModels[0];
 }
 

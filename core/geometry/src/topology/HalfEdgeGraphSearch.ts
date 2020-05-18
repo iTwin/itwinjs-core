@@ -60,12 +60,23 @@ export class HalfEdgeGraphSearch {
     const summary = HalfEdgeGraphSearch.collectFaceAreaSummary(oneCandidateNodePerFace);
     return summary.largestNegativeItem!;
   }
-
+  /**
+   * static method for face area computation -- useful as function parameter in collect FaceAreaSummary.
+   * * This simply calls `node.signedFaceArea ()`
+   * @param node instance for signedFaceArea call.
+   */
+  public static signedFaceArea(node: HalfEdge): number { return node.signedFaceArea(); }
   /**
    *
-   * Return a summary structure data about face areas.
+   * Return a summary structure data about face (or other numeric quantity if the caller's areaFunction returns other value)
+   * * The default areaFunction computes area of polygonal face.
+   * * Callers with curved edge graphs must supply their own area function.
+   * @param source graph or array of nodes to examine
+   * @param collectAllNodes flag to pass to the SignedDataSummary constructor to control collection of nodes.
+   * @param areaFunction function to all to obtain area (or other numeric value)
    */
-  public static collectFaceAreaSummary(source: HalfEdgeGraph | HalfEdge[], collectAllNodes: boolean = false): SignedDataSummary<HalfEdge> {
+  public static collectFaceAreaSummary(source: HalfEdgeGraph | HalfEdge[], collectAllNodes: boolean = false,
+    areaFunction: (node: HalfEdge) => number = HalfEdgeGraphSearch.signedFaceArea): SignedDataSummary<HalfEdge> {
     const result = new SignedDataSummary<HalfEdge>(collectAllNodes);
     let allFaces: HalfEdge[];
 
@@ -75,7 +86,7 @@ export class HalfEdgeGraphSearch {
       allFaces = source;
 
     for (const node of allFaces) {
-      const area = node.signedFaceArea();
+      const area = areaFunction(node);
       result.announceItem(node, area);
     }
     return result;

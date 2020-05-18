@@ -40,10 +40,10 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
         loop: true,
       });
 
-      return Promise.resolve(true);
+      return true;
     }
 
-    return Promise.resolve(false);
+    return false;
   }
 
   public onAnimationFractionChanged = (animationFraction: number) => {

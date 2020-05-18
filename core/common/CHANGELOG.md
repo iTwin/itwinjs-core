@@ -1,6 +1,67 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Wed, 22 Apr 2020 19:04:00 GMT and should not be manually modified.
+This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- add freeze method and degrees accessors to Cartographic class
+- Show min/max window error for mouse wheel zoom.
+- Show min/max window error for mouse wheel zoom.
+- Make animation state of a display style persistent.
+- Send a default pending message since Azure strips content-type header if no data is present
+- Monitor progress of downloading briefcases, ability to cancel download of briefcases. 
+- Added to DisplayStyle3dSettings: MonochromeMode, LightSettings.
+- Simplify GeometryStreamIteratorEntry (breaking API change).
+- constructor of ColorDef wasn't setting transparency properly for rgba() strings
+- added ColorDef.toRgbaString
+- Deprecate members of SectionLocationProps pending refactor.
+- Support for progress/cancel from ios
+- EcefLocation can now optionally preserve a meaningful cartographic origin.
+- Fix for electron request lifecycle.
+- IModelTokenProps.key is now a required member
+- Include model extents with ViewStateProps for drawing views.
+- hsl color conversion wasn't working if s===0
+- Remove deprecated APIs; see NextVersion.md for details.
+- Fix documentation of RenderSchedule time units.
+- Fix for EcefLocation.createFromCartographicOrigin.
+- ColorDef, HSVColor, and HSLColor are immutable types.
+- react to changes in imodeljs-clients
+- Promote properties from IModelToken onto IModel
+- Support suspend/resume in mobile apps.
+- Store current mobile RPC port in protocol.
+- Added file size.
+- Supply RPC routing props for SnapshotIModelRpcInterface open methods"
+- MobileRpcConfiguration throws exception
+- Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline. 
+- Refactored NativeApp API and RPC interfaces. This continues to be WIP. 
+- Added DownloadBriefcaseOptions and OpenBriefcaseOptions as parameters to the download/open calls for a briefcase. 
+- Added new interface for native app
+- VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP). 
+- Handle null JSON in ViewDetails.
+- Renamed OIDC constructs for consistency; Removed SAML support.
+- OrbitGT point cloud interface.
+- Support OrbitGT Point Clouds
+- Fix BackgroundMapSettings.toJSON() discarding the 'useDepthBuffer' flag.
+- Add mechanism for preloading reality tiles by frustum.
+- react to new clients packages from imodeljs-clients
+- IModelRpcProps replaces IModelToken and IModelTokenProps
+- Change RenderTexture.Type to a non-const enum
+- Remove 'const' from exported enums.
+- Remove check for contextId in BentleyCloudRpcProtocol since remote snapshots are now possible.
+- "Default to text if no content-type in RPC request handling.
+- React to BentleyCloudRpcManager change.
+- Track active RPC requests
+- RPC fix
+- Upgrade to Rush 5.23.2
+- support for editing
+- Add API for thematic display.
+- Alpha feature: thematic sensor display.
+- Rename GlobeMode: ThreeD => Ellipsoid, Columbus => Plane.
+- Remove support for the iModel.js module system by no longer delivering modules.
+- Add a ViewFlag to control white-on-white reversal.
 
 ## 1.14.1
 Wed, 22 Apr 2020 19:04:00 GMT
@@ -28,7 +89,7 @@ Wed, 12 Feb 2020 17:45:50 GMT
 - iModel write API development
 - Fix issue with constructing the tile cache URL() on Safari.
 - Prevent reuse of cached tiles after project extents change.
-- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests.
+- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. 
 - Define ViewDetails for manipulating optional detail settings of ViewDefinition and ViewState.
 - Add support for plan projection models with 3d display priority.
 - Add settings to control display of plan projection models.
@@ -190,7 +251,7 @@ Mon, 13 May 2019 15:52:05 GMT
 
 ### Updates
 
-- Support spatial classification of context reality models.
+- Support spatial classification of context reality models. 
 - Added OpenAPIInfo to the barrel file
 - Adds parameter for api-extractor to validate missing release tags
 - Adds ignoreMissingTags flag
@@ -203,14 +264,14 @@ Mon, 13 May 2019 15:52:05 GMT
 - LoggerCategory -> CommonLoggerCategory
 - Fix default line pattern for hidden edges.
 - Introduce LoggerCategory enum to advertise logger categories used by this package.
-- Logging fixes.
+- Logging fixes. 
 - Put sourcemap in npm package.
 - Add SVG to ImageSourceFormat
 - Add imodeljs-markup
 - New tile cache naming scheme.
 - queryPage use memoization/pending pattern
 - Remove StandaloneIModelRpcInterface
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Prefer the IModelToken values in the url (if different from values in JSON body -- should never happen except in a malicious request).
 - Exports interface MarshalingBinaryMarker to prevent errors in api-extractor V7
 - Add SnapshotIModelRpcInterface

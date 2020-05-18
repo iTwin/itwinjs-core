@@ -178,13 +178,13 @@ export class CheckpointHandler {
     ArgumentCheck.defined("path", path);
 
     if (typeof window !== "undefined")
-      return Promise.reject(IModelHubClientError.browser());
+      throw IModelHubClientError.browser();
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubClientError.fileHandler());
+      throw IModelHubClientError.fileHandler();
 
     if (!checkpoint.downloadUrl)
-      return Promise.reject(IModelHubClientError.missingDownloadUrl("checkpoint"));
+      throw IModelHubClientError.missingDownloadUrl("checkpoint");
 
     const checkpointForLog: Checkpoint = new Checkpoint();
     Object.assign(checkpointForLog, checkpoint);

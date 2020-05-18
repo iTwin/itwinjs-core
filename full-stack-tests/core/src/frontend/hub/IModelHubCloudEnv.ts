@@ -12,8 +12,8 @@ export class IModelHubCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return true; }
   public readonly contextMgr = new ContextRegistryClientWrapper();
   public readonly imodelClient = new IModelHubClient(undefined);
-  public async startup(): Promise<void> { return Promise.resolve(); }
-  public async shutdown(): Promise<number> { return Promise.resolve(0); }
+  public async startup(): Promise<void> { }
+  public async shutdown(): Promise<number> { return 0; }
 
   public getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient {
     return new IModelHubUserMgr(userInfo, userCredentials);

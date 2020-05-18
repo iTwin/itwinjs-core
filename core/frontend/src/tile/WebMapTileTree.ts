@@ -131,9 +131,12 @@ export class WebMapTileLoader extends MapTileLoaderBase {
       const type = this._filterTextures ? RenderTexture.Type.FilteredTileSection : RenderTexture.Type.TileSection;
       const textureParams = new RenderTexture.Params(undefined, type, isOwned);
 
-      return imageElementFromImageSource(imageSource)
-        .then((image) => isCanceled() ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
-        .catch((_) => undefined);
+      try {
+        const image = await imageElementFromImageSource(imageSource);
+        return isCanceled() ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams);
+      } catch (_) {
+        return undefined;
+      }
     } catch (e) {
       return undefined;
     }

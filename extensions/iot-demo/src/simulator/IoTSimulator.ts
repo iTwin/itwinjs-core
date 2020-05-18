@@ -1421,7 +1421,7 @@ export class IoTSimulator {
       this._setupProps = response.body;
     } catch (error) {
       // this shouldn't happen
-      return Promise.resolve();
+      return;
     }
 
     this.readFromFile();

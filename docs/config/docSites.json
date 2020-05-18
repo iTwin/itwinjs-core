@@ -42,11 +42,11 @@
       "BIS": "bis",
       "Learning": "learning",
       "API Reference": "reference",
-      "v1.14.0": "changehistory"
+      "v2.0.0": "changehistory"
     },
     "archivedVersions": [
       {
-        "version": "v1.13.0",
+        "version": "v1.14.0",
         "archivedPath": "/v1"
       }
     ],

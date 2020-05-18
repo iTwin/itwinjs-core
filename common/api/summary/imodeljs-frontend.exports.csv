@@ -32,9 +32,6 @@ internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
 beta;AppearanceOverrideProps
-internal;class Attachment
-internal;AttachmentList
-internal;enum AttachmentSceneState
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -70,7 +67,6 @@ beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
 alpha;ClipEventType
-beta;ClippingType
 internal;ClipResult
 internal;Clips
 public;Cluster
@@ -82,7 +78,6 @@ public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
 internal;CoreTools
-internal;createAttachment(props: ViewAttachmentProps, view: ViewState): Attachment
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference
@@ -159,6 +154,7 @@ internal;FrameCameraViewData
 internal;FrameRenderData
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
+alpha;Frustum2d
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
@@ -181,6 +177,7 @@ internal;GltfReaderResult
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GraphicBranch 
+internal;GraphicBranchFrustum
 internal;GraphicBranchOptions
 public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
@@ -366,7 +363,6 @@ internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
 alpha;SetupCameraTool 
-internal;SheetBorder
 public;SheetModelState 
 public;SheetViewState 
 internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean

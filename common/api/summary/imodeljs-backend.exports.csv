@@ -43,6 +43,7 @@ beta;ChangeSummary
 beta;ChangeSummaryExtractContext
 beta;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
+public;ChannelRootAspect 
 public;ClassRegistry
 beta;class CloudStorageService
 beta;CloudStorageServiceCredentials
@@ -51,6 +52,10 @@ beta;CloudStorageUploadOptions
 public;CodeSpecs
 beta;ConcurrencyControl
 beta;ConcurrencyControl
+alpha;Channel
+alpha;ChannelInfo
+alpha;ChannelRootInfo 
+alpha;RepositoryChannelInfo 
 internal;StateCache
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair

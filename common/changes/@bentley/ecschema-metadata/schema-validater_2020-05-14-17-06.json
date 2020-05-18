@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-metadata",
+      "comment": "SchemaValidater implementation for applying EC rules to in memory EC Schemas.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Chris.Lawson@bentley.com"
+}

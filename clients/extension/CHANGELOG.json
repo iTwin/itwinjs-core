@@ -1,0 +1,29 @@
+{
+  "name": "@bentley/extension-client",
+  "entries": [
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/extension-client_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update for new delete extension API"
+          },
+          {
+            "comment": "Initial version"
+          },
+          {
+            "comment": "order imports."
+          },
+          {
+            "comment": "react to creation of context-registry-client"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          }
+        ]
+      }
+    }
+  ]
+}

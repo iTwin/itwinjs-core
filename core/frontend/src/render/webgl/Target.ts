@@ -9,7 +9,7 @@
 import { assert, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { ClipPlaneContainment, ClipUtilities, Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
 import {
-  AmbientOcclusion, AnalysisStyle, ColorDef, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassificationProps,
+  AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassificationProps,
   ViewFlags,
 } from "@bentley/imodeljs-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
@@ -22,7 +22,6 @@ import { Decorations } from "../Decorations";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { AnimationBranchStates } from "../GraphicBranch";
 import { Pixel } from "../Pixel";
-import { ClippingType } from "../RenderClipVolume";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { RenderPlan } from "../RenderPlan";
@@ -33,11 +32,10 @@ import { Scene } from "../Scene";
 import { ViewClipSettings } from "../ViewClipSettings";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
-import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
+import { ClipVolume } from "./ClipVolume";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
-import { EdgeOverrides } from "./EdgeOverrides";
 import { FloatRgba } from "./FloatRGBA";
 import { FrameBuffer } from "./FrameBuffer";
 import { GL } from "./GL";
@@ -61,6 +59,7 @@ import { ClipDef } from "./TechniqueFlags";
 import { TechniqueId } from "./TechniqueId";
 import { TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
+import { EdgeSettings } from "./EdgeSettings";
 
 /** Interface for 3d GPU clipping.
  * @internal
@@ -106,8 +105,6 @@ function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   image.data[i1] = tmp;
 }
 
-type ClipVolume = ClipPlanesVolume | ClipMaskVolume;
-
 /** @internal */
 export interface Hilites {
   readonly elements: Id64.Uint32Set;
@@ -142,12 +139,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _flashed: Id64.Uint32Pair = { lower: 0, upper: 0 };
   private _flashedId = Id64.invalid;
   private _flashIntensity: number = 0;
-  private _transparencyThreshold: number = 0;
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   protected _compositor: SceneCompositor;
   private _activeClipVolume?: ClipVolume;
-  private _clipMask?: TextureHandle;
   public readonly clips = new Clips();
   protected _fbo?: FrameBuffer;
   protected _dcAssigned: boolean = false;
@@ -155,8 +150,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public readonly decorationsState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
   public readonly uniforms = new TargetUniforms(this);
   public readonly renderRect = new ViewRect();
-  private readonly _visibleEdgeOverrides = new EdgeOverrides();
-  private readonly _hiddenEdgeOverrides = new EdgeOverrides();
   public analysisStyle?: AnalysisStyle;
   public analysisTexture?: RenderTexture;
   public ambientOcclusionSettings = AmbientOcclusion.Settings.defaults;
@@ -213,7 +206,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get readPixelsSelector(): Pixel.Selector { return this._readPixelsSelector; }
   public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
 
-  public get transparencyThreshold(): number { return this._transparencyThreshold; }
   public get techniques(): Techniques { return this.renderSystem.techniques!; }
 
   public get hilites(): Hilites { return this._hilites; }
@@ -277,6 +269,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get currentViewFlags(): ViewFlags { return this.uniforms.branch.top.viewFlags; }
   public get currentTransform(): Transform { return this.uniforms.branch.top.transform; }
+  public get currentTransparencyThreshold(): number { return this.currentEdgeSettings.transparencyThreshold; }
+  public get currentEdgeSettings(): EdgeSettings { return this.uniforms.branch.top.edgeSettings; }
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.monochrome ? ShaderFlags.Monochrome : ShaderFlags.None; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this.uniforms.branch.top.symbologyOverrides; }
   public get currentPlanarClassifier(): PlanarClassifier | undefined { return this.uniforms.branch.top.planarClassifier; }
@@ -294,21 +288,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this.uniforms.branch.modelViewMatrix.multiplyPoint3dQuietNormalize(modelPt, result);
   }
 
+  public get hasClipVolume(): boolean { return this.clips.isValid && this.uniforms.branch.top.showClipVolume; }
   public get clipDef(): ClipDef {
     if (this.hasClipVolume)
-      return new ClipDef(ClippingType.Planes, this.clips.count);
-    else if (this.hasClipMask)
-      return new ClipDef(ClippingType.Mask);
+      return new ClipDef(this.clips.count);
     else
       return new ClipDef();
-  }
-  public get hasClipVolume(): boolean { return this.clips.isValid && this.uniforms.branch.top.showClipVolume; }
-  public get hasClipMask(): boolean { return undefined !== this.clipMask; }
-  public get clipMask(): TextureHandle | undefined { return this._clipMask; }
-  public set clipMask(mask: TextureHandle | undefined) {
-    assert((mask === undefined) === this.hasClipMask);
-    assert(this.is2d);
-    this._clipMask = mask;
   }
 
   public get is2d(): boolean { return this.uniforms.frustum.is2d; }
@@ -561,68 +546,23 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         this.updateSolarShadows(undefined);
     }
 
+    if (plan.is3d !== this.decorationsState.is3d)
+      this.decorationsState.changeRenderPlan(this.decorationsState.viewFlags, plan.is3d, undefined);
+
     if (!this.assignDC())
       return;
 
     this.terrainTransparency = plan.terrainTransparency;
 
-    this.uniforms.updateRenderPlan(plan);
     this.isFadeOutActive = plan.isFadeOutActive;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;
 
-    // used by HiddenLine, SolidFill, and determining shadow casting
-    this._transparencyThreshold = 0.0;
-    if (undefined !== plan.hline) {
-      // The threshold in HiddenLineParams ranges from 0.0 (hide anything that's not 100% opaque)
-      // to 1.0 (don't hide anything regardless of transparency). Convert it to an alpha value.
-      let threshold = plan.hline.transparencyThreshold;
-      threshold = Math.min(1.0, Math.max(0.0, threshold));
-      this._transparencyThreshold = 1.0 - threshold;
-    }
-
     this.updateActiveVolume(plan.activeClipSettings);
-
-    let visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible : undefined;
-    let hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden : undefined;
 
     const vf = ViewFlags.createFrom(plan.viewFlags, this._scratchViewFlags);
     if (!plan.is3d)
       vf.renderMode = RenderMode.Wireframe;
-
-    let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
-    switch (vf.renderMode) {
-      case RenderMode.Wireframe: {
-        // Edge overrides never apply in wireframe mode
-        vf.visibleEdges = false;
-        vf.hiddenEdges = false;
-        forceEdgesOpaque = false;
-        break;
-      }
-      case RenderMode.SmoothShade: {
-        // Hidden edges require visible edges
-        if (!vf.visibleEdges)
-          vf.hiddenEdges = false;
-
-        break;
-      }
-      case RenderMode.SolidFill: {
-        // In solid fill, if the edge color is not overridden, the edges do not use the element's line color
-        if (undefined !== visEdgeOvrs && !visEdgeOvrs.ovrColor) {
-          // ###TODO? Probably supposed to be contrast with fill and/or background color...
-          assert(undefined !== hidEdgeOvrs);
-          visEdgeOvrs = visEdgeOvrs.overrideColor(ColorDef.white);
-          hidEdgeOvrs = hidEdgeOvrs!.overrideColor(ColorDef.white);
-        }
-      }
-      /* falls through */
-      case RenderMode.HiddenLine: {
-        // In solid fill and hidden line mode, visible edges always rendered and edge overrides always apply
-        vf.visibleEdges = true;
-        vf.transparency = false;
-        break;
-      }
-    }
 
     if (RenderMode.SmoothShade === vf.renderMode && plan.is3d && undefined !== plan.ao && vf.ambientOcclusion) {
       this._wantAmbientOcclusion = true;
@@ -633,12 +573,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.uniforms.thematic.update(plan);
 
-    this._visibleEdgeOverrides.init(forceEdgesOpaque, visEdgeOvrs);
-    this._hiddenEdgeOverrides.init(forceEdgesOpaque, hidEdgeOvrs);
-
-    this.uniforms.branch.changeViewFlags(vf);
+    this.uniforms.branch.changeRenderPlan(vf, plan.is3d, plan.hline);
 
     this.changeFrustum(plan.frustum, plan.fraction, plan.is3d);
+
+    // NB: This must be done after changeFrustum() as some of the uniforms depend on the frustum.
+    this.uniforms.updateRenderPlan(plan);
   }
 
   public drawFrame(sceneMilSecElapsed?: number): void {
@@ -695,40 +635,15 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get wantInvertBlackBackground(): boolean { return false; }
 
-  public get visibleEdgeOverrides(): EdgeOverrides | undefined { return this.getEdgeOverrides(RenderPass.OpaqueLinear); }
-  public get hiddenEdgeOverrides(): EdgeOverrides | undefined { return this.getEdgeOverrides(RenderPass.HiddenEdge); }
-  public get isEdgeColorOverridden(): boolean {
-    const ovrs = this.visibleEdgeOverrides;
-    return undefined !== ovrs && ovrs.overridesColor;
+  public computeEdgeWeight(pass: RenderPass, baseWeight: number): number {
+    return this.currentEdgeSettings.getWeight(pass, this.currentViewFlags) ?? baseWeight;
   }
-  public get isEdgeWeightOverridden(): boolean {
-    const ovrs = this.visibleEdgeOverrides;
-    return undefined !== ovrs && ovrs.overridesWeight;
+  public computeEdgeLineCode(pass: RenderPass, baseCode: number): number {
+    return this.currentEdgeSettings.getLineCode(pass, this.currentViewFlags) ?? baseCode;
   }
-  public getEdgeOverrides(pass: RenderPass): EdgeOverrides | undefined {
-    let ovrs: EdgeOverrides | undefined;
-    let enabled = false;
-    if (RenderPass.HiddenEdge === pass) {
-      ovrs = this._hiddenEdgeOverrides;
-      enabled = this.currentViewFlags.hiddenEdges;
-    } else {
-      ovrs = this._visibleEdgeOverrides;
-      enabled = this.currentViewFlags.visibleEdges;
-    }
-
-    return enabled ? ovrs : undefined;
-  }
-  public getEdgeWeight(params: ShaderProgramParams, baseWeight: number): number {
-    const ovrs = this.getEdgeOverrides(params.renderPass);
-    return undefined !== ovrs && undefined !== ovrs.weight ? ovrs.weight : baseWeight;
-  }
-  public getEdgeLineCode(params: ShaderProgramParams, baseCode: number): number {
-    const ovrs = this.getEdgeOverrides(params.renderPass);
-    return undefined !== ovrs && undefined !== ovrs.lineCode ? ovrs.lineCode : baseCode;
-  }
-  public get edgeColor(): ColorInfo {
-    assert(this.isEdgeColorOverridden);
-    return ColorInfo.createUniform(this._visibleEdgeOverrides.color!);
+  public computeEdgeColor(baseColor: ColorInfo): ColorInfo {
+    const color = this.currentEdgeSettings.getColor(this.currentViewFlags);
+    return undefined !== color ? ColorInfo.createUniform(color) : baseColor;
   }
 
   public beginPerfMetricFrame(sceneMilSecElapsed?: number, readPixels = false) {
@@ -791,7 +706,15 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._readPixelsSelector = Pixel.Selector.Feature;
 
       const vf = this.getViewFlagsForReadPixels();
-      const state = BranchState.create(this.uniforms.branch.top.symbologyOverrides, vf);
+      const top = this.uniforms.branch.top;
+      const state = new BranchState({
+        viewFlags: vf,
+        symbologyOverrides: top.symbologyOverrides,
+        is3d: top.is3d,
+        edgeSettings: top.edgeSettings,
+        transform: Transform.createIdentity(),
+      });
+
       this.pushState(state);
 
       this.beginPerfMetricRecord("Init Commands", this.drawForReadPixels);
@@ -939,7 +862,15 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
     const vf = this.getViewFlagsForReadPixels();
-    const state = BranchState.create(this.uniforms.branch.top.symbologyOverrides, vf);
+    const top = this.uniforms.branch.top;
+    const state = new BranchState({
+      viewFlags: vf,
+      symbologyOverrides: top.symbologyOverrides,
+      is3d: top.is3d,
+      edgeSettings: top.edgeSettings,
+      transform: Transform.createIdentity(),
+    });
+
     this.pushState(state);
 
     // Create a culling frustum based on the input rect.

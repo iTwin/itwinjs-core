@@ -13,7 +13,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop, SignedLoops } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
-import { RegionOps } from "../../curve/RegionOps";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -27,6 +27,7 @@ import { HalfEdgeGraph } from "../../topology/Graph";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GraphChecker } from "../topology/Graph.test";
+import { Sample } from "../../serialization/GeometrySamples";
 
 /* tslint:disable:no-console */
 
@@ -328,3 +329,119 @@ function runRegionTest(allGeometry: GeometryQuery[], pointArrayA: number[][], po
   const fixedRegions = RegionOps.constructAllXYRegionLoops(region);
   saveShiftedLoops(allGeometry, fixedRegions, x0, y0, 15.0);
 }
+/*
+ * Intersect a plane with each primitive of a loop.
+ * If any intersection is coincident, or at an endpoint, return undefined.
+ * Otherwise (the good case!) return the intersection sorted as in-out pairs.
+function findSimpleLoopPlaneCuts(loop: Loop, plane: Plane3dByOriginAndUnitNormal, fractionTol: number = 0.001): CurveLocationDetail[] | undefined {
+  const cuts: CurveLocationDetail[] = [];
+  let farDetail: CurveLocationDetail | undefined;
+  const origin = plane.getOriginRef();
+  for (const p of loop.children) {
+    const num0 = cuts.length;
+    p.appendPlaneIntersectionPoints(plane, cuts);
+    for (let i = num0; i < cuts.length; i++) {
+      const f = cuts[i].fraction;
+      if (f < fractionTol || f + fractionTol > 1.0)
+        return undefined;
+      const tangentRay = cuts[i].curve?.fractionToPointAndDerivative(f)!;
+      if (plane.getNormalRef().isPerpendicularTo(tangentRay.direction))
+        return undefined;
+      cuts[i].a = origin.distance(cuts[i].point);
+      if (farDetail === undefined || cuts[i].a > farDetail.a)
+        farDetail = cuts[i];
+    }
+  }
+  if (cuts.length >= 2 && !Geometry.isOdd(cuts.length) && farDetail) {
+    const sortVector = Vector3d.createStartEnd(plane.getOriginRef(), farDetail.point);
+    for (const cut of cuts)
+      cut.a = sortVector.dotProductStartEnd(origin, cut.point);
+    cuts.sort((cutA: CurveLocationDetail, cutB: CurveLocationDetail) => (cutB.a - cutA.a));
+    for (let i = 0; i + 1 < cuts.length; i += 2) {
+      if (Geometry.isSameCoordinate(cuts[i].a, cuts[i + 1].a))
+        return undefined;
+    }
+    // ah, the cuts have been poked an prodded and appear to be simple pairs . .
+    return cuts;
+  }
+  return undefined;
+}
+*/
+/*
+ * * Construct (by some unspecified means) a point that is inside the loop.
+ * * Pass that point to the `accept` function.
+ * * If the function returns a value (other than undefined) return that value.
+ * * If the function returns undefined, try further points.
+ * * The point selection process is unspecified.   For instance,
+ * @param loop
+ * @param accept
+function classifyLoopByAnyInternalPoint<T>(loop: Loop, accept: (loop: Loop, testPoint: Point3d) => T | undefined): T | undefined {
+  const testFractions = [0.321345, 0.921341276, 0.5, 0.25];
+  for (const f of testFractions) {
+    for (let primitiveIndex = 0; primitiveIndex < loop.children.length; primitiveIndex++) {
+      const detail = loop.primitiveIndexAndFractionToCurveLocationDetailPointAndDerivative(primitiveIndex, f, false);
+      if (detail) {
+        const cutPlane = Plane3dByOriginAndUnitNormal.create(detail.point, detail.vectorInCurveLocationDetail!);
+        if (cutPlane) {
+          const cuts = findSimpleLoopPlaneCuts(loop, cutPlane);
+          if (cuts && cuts.length >= 2) {
+            const q = accept(loop, cuts[0].point.interpolate(0.5, cuts[1].point));
+            if (q !== undefined)
+              return q;
+          }
+        }
+      }
+    }
+  }
+  return undefined;
+}
+/*
+/*
+function classifyAreasByAnyInternalPoint(candidates: Loop[], accept: (loop: Loop, testPoint: Point3d) => boolean): Loop[] {
+  const acceptedLoops: Loop[] = [];
+  const testFractions = [0.321345, 0.921341276, 0.5, 0.25];
+  for (const loop of candidates) {
+    if (classifyLoopByAnyInternalPoint(loop, accept) !== undefined)
+      acceptedLoops.push(loop);
+  }
+  return acceptedLoops;
+}
+*/
+describe("GeneralSweepBooleans", () => {
+  it("Rectangles", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const rectangle1 = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 4, 7, 0, true)));
+    const rectangle2 = Loop.create(LineString3d.create(Sample.createRectangle(1, 1, 6, 2, 0, true)));
+    const area3 = Loop.create(
+      LineSegment3d.createXYXY(2, 1.5, 5, 2.5), LineSegment3d.createXYXY(5, 2.5, 5, 3),
+      Arc3d.createCircularStartMiddleEnd(Point3d.create(5, 3, 0), Point3d.create(4, 4, 0), Point3d.create(2, 3, 0))!,
+      LineSegment3d.createXYXY(2, 3, 2, 1.5));
+
+    let x0 = 0;
+    const dataB = [];
+    for (const areaB of [rectangle2, area3]) {
+      dataB.push(areaB);
+      // each pass adds to the groupB (which is union among its members)
+      let y0 = 0;
+      const areas = [];
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangle1, x0, y0);
+      for (const member of dataB) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, member, x0, y0);
+      }
+      for (const opType of [RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA]) {
+        y0 += 10.0;
+        const result = RegionOps.regionBooleanXY(rectangle1, dataB, opType);
+        areas.push(RegionOps.computeXYArea(result!)!);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, y0);
+      }
+      const area0 = areas[0]; // union
+      const area123 = areas[1] + areas[2] + areas[3];
+      ck.testCoordinate(area0, area123, " UnionArea = sum of parts");
+      x0 += 20.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "Rectangles");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+});

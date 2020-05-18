@@ -10,11 +10,11 @@ import {
 } from "./_helpers/random";
 
 const createRandomCompositeLabelDefinition = (): LabelDefinition => {
-  return { displayValue: faker.random.word(), rawValue: createRandomLabelCompositeValue(), typeName: "composite" };
+  return { displayValue: faker.random.word(), rawValue: createRandomLabelCompositeValue(), typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME };
 };
 
 const createRandomCompositeLabelDefinitionJSON = (): LabelDefinitionJSON => {
-  return { displayValue: faker.random.word(), rawValue: createRandomLabelCompositeValueJSON(), typeName: "composite" };
+  return { displayValue: faker.random.word(), rawValue: createRandomLabelCompositeValueJSON(), typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME };
 };
 
 describe("LabelDefinition", () => {

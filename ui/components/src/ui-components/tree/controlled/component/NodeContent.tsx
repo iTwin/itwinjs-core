@@ -56,13 +56,13 @@ export function TreeNodeContent(props: TreeNodeContentProps) {
   const isDescriptionEnabled = props.node.item.description && props.showDescription;
 
   const containerClassName = classnames(
-    "components-tree-node-content",
+    "components-controlledTree-node-content",
     isDescriptionEnabled ? "with-description" : undefined,
     props.className,
   );
 
   const descriptionClassName = classnames(
-    "components-tree-node-description",
+    "components-controlledTree-node-description",
     editor ? "with-editor" : undefined,
   );
 

@@ -34,7 +34,8 @@ export class PrimitivePropertyRenderer extends React.Component<PrimitiveRenderer
   /** @internal */
   public render() {
     const { children, indentation, ...props } = this.props;
-    const offset = PropertyRenderer.getLabelOffset(this.props.indentation);
+    const offset = PropertyRenderer.getLabelOffset(indentation, props.orientation, props.width, props.columnRatio, props.columnInfo?.minLabelWidth);
+
     return (
       <PropertyView
         {...props}
