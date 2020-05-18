@@ -39,8 +39,8 @@ export class InvertedUnit extends SchemaItem {
    */
   public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): InvertedUnitProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
-    schemaJson.invertsUnit = this.invertsUnit!.name;
-    schemaJson.unitSystem = this.unitSystem!.name;
+    schemaJson.invertsUnit = this.invertsUnit!.fullName;
+    schemaJson.unitSystem = this.unitSystem!.fullName;
     return schemaJson;
   }
 
