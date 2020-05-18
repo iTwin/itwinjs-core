@@ -712,7 +712,7 @@
     },
     {
       "name": "react-select",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-split-pane",

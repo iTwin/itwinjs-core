@@ -149,6 +149,7 @@ internal;NumericInputDefaultProps = Pick
 beta;NumericInputProps 
 public;Omit
 public;OmitChildrenProp
+beta;OptionType
 public;Orientation
 internal;Point 
 public;PointProps
@@ -203,6 +204,7 @@ public;TabsProps
 public;Textarea 
 public;TextareaProps 
 public;TextProps 
+beta;ThemedSelect
 internal;TildeFinder
 beta;Tile 
 internal;TileDefaultProps = Pick

@@ -124,7 +124,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     if (event.key === "Enter") {
       event.preventDefault();
       event.stopPropagation();
-      const weightButton = document.activeElement as HTMLElement;
+      const weightButton = document.activeElement  as HTMLElement;
       // istanbul ignore else
       if (weightButton.tagName === "BUTTON") {
         try {
