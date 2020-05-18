@@ -23,10 +23,12 @@ export namespace Frustum2d {
   /** The minimum total z extents for a 2d frustum, in meters. */
   export const minimumZExtents: Readonly<Range1d> = Range1d.createXX(-minimumZDistance, minimumZDistance);
 
+  const maxPriorityAbs = 500;
+  const priorityToZDistanceRatio = minimumZDistance / maxPriorityAbs;
+
   /** Convert display priority to Z. */
   export function depthFromDisplayPriority(priority: number): number {
-    const maxPriorityAbs = 500;
     priority = Math.max(-maxPriorityAbs, Math.min(maxPriorityAbs, priority));
-    return priority / minimumZExtents.length();
+    return priority * priorityToZDistanceRatio;
   }
 }
