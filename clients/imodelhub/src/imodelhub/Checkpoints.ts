@@ -189,7 +189,7 @@ export class CheckpointHandler {
     const checkpointForLog: Checkpoint = new Checkpoint();
     Object.assign(checkpointForLog, checkpoint);
     checkpointForLog.downloadUrl = CheckpointHandler.getSafeUrlForLogging(checkpointForLog.downloadUrl!);
-    const perfLogger = new PerfLogger("Downloading checkpoint", () => ({ ...checkpointForLog, path }));
+    const perfLogger = new PerfLogger("Downloading checkpoint", () => ({ ...checkpointForLog, path, iModelId: checkpoint.fileId }));
     await this._fileHandler.downloadFile(requestContext, checkpoint.downloadUrl, path, parseInt(checkpoint.fileSize!, 10), progressCallback, cancelRequest);
     requestContext.enter();
     perfLogger.dispose();

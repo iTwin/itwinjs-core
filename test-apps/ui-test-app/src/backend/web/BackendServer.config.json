@@ -19,6 +19,14 @@
         "logLevel": "Trace"
       },
       {
+        "category": "imodeljs-backend.IModelHost",
+        "logLevel": "Trace"
+      },
+      {
+        "category": "backend-itwin-client.FileHandlers",
+        "logLevel": "Trace"
+      },
+      {
         "category": "Presentation",
         "logLevel": "Warning"
       },
@@ -77,14 +85,6 @@
       {
         "category": "DgnCore",
         "logLevel": "Error"
-      },
-      {
-        "category": "IModelDb.open",
-        "logLevel": "Trace"
-      },
-      {
-        "category": "backend-itwin-client.FileHandlers",
-        "logLevel": "Trace"
       }
     ]
   },

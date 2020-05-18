@@ -30,6 +30,7 @@ export class RpcBriefcaseUtility {
    */
   public static async openWithTimeout(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode): Promise<IModelConnectionProps> {
     requestContext.enter();
+    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Received open request", () => ({ ...tokenProps, syncMode }));
 
     /*
      * Download the briefcase
@@ -42,7 +43,7 @@ export class RpcBriefcaseUtility {
     requestContext.enter();
 
     if (briefcaseProps === undefined) {
-      Logger.logTrace(loggerCategory, "Issuing pending status in BriefcaseOpenUtility.openWithTimeout", () => ({ ...tokenProps, syncMode }));
+      Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Issued pending status", () => ({ ...tokenProps, syncMode }));
       throw new RpcPendingResponse();
     }
 
@@ -51,6 +52,7 @@ export class RpcBriefcaseUtility {
      * Note: This call must be made even if the briefcase is already open - this is to ensure the usage is logged
      */
     const briefcaseDb: BriefcaseDb = await BriefcaseDb.open(requestContext, briefcaseProps.key);
+    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Opened briefcase", () => ({ ...tokenProps, syncMode }));
     return briefcaseDb.getConnectionProps();
   }
 
