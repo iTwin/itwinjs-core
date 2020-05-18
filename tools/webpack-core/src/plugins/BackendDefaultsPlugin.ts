@@ -33,7 +33,6 @@ export class BackendDefaultsPlugin {
       "electron",
       "debug",
       "@bentley/imodeljs-native/package.json",
-      "@bentley/imodeljs-native/loadNativePlatform.js",
       "dtrace-provider",
       "node-report/api",
       "applicationinsights-native-metrics",

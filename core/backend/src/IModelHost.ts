@@ -12,7 +12,7 @@ import * as semver from "semver";
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -322,7 +322,7 @@ export class IModelHost {
   }
 
   /** @internal */
-  public static loadNative(region: number, dir?: string): void { this.registerPlatform(Platform.load(dir), region); }
+  public static loadNative(region: number): void { this.registerPlatform(Platform.load(), region); }
 
   /**
    * @beta
@@ -558,9 +558,8 @@ export class Platform {
   public static get isNodeJs(): boolean { return !Platform.isMobile; } // currently we use nodejs for all non-mobile backend apps
 
   /** @internal */
-  public static load(dir?: string): typeof IModelJsNative {
-    return this.isMobile ? this.imodeljsMobile.imodeljsNative : // we are running on a mobile platform
-      require("@bentley/imodeljs-native/loadNativePlatform.js").loadNativePlatform(dir); // We are running in node or electron.
+  public static load(): typeof IModelJsNative {
+    return this.isMobile ? this.imodeljsMobile.imodeljsNative : NativeLibrary.load();
   }
 }
 
