@@ -596,13 +596,15 @@ class ChangedInstanceIds {
       if (undefined !== statusOrResult.error) {
         throw new IModelError(statusOrResult.error.status, "Error processing changeSet", Logger.logError, loggerCategory);
       }
-      const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
-      changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
-      changedInstanceIds.model.addFromJson(result.model);
-      changedInstanceIds.element.addFromJson(result.element);
-      changedInstanceIds.aspect.addFromJson(result.aspect);
-      changedInstanceIds.relationship.addFromJson(result.relationship);
-      changedInstanceIds.font.addFromJson(result.font);
+      if ("" !== statusOrResult.result) {
+        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
+        changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
+        changedInstanceIds.model.addFromJson(result.model);
+        changedInstanceIds.element.addFromJson(result.element);
+        changedInstanceIds.aspect.addFromJson(result.aspect);
+        changedInstanceIds.relationship.addFromJson(result.relationship);
+        changedInstanceIds.font.addFromJson(result.font);
+      }
     });
     return changedInstanceIds;
   }

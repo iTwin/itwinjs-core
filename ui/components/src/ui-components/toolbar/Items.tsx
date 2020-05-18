@@ -61,7 +61,7 @@ export function ToolbarItems(props: ToolbarItemsProps) {
   const className = classnames(
     "components-toolbar-items-container",
     OrthogonalDirectionHelpers.getCssClassName(props.direction),
-    showSeparators && "components-toolbar-show-group-separators",
+    showSeparators && "components-toolbar-show-decorators",
     props.className);
 
   return (

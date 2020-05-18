@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Config } from "@bentley/bentleyjs-core";
-import { IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { IModelData } from "../../common/Settings";
 
 // tslint:disable:ter-indent
 
@@ -15,9 +18,38 @@ export class IModelSession {
 
   private _iModel?: IModelConnection;
 
-  public constructor(iModelId: string, contextId: string) {
+  private constructor(contextId: string, imodelId: string) {
     this.contextId = contextId;
-    this.iModelId = iModelId;
+    this.iModelId = imodelId;
+  }
+
+  public static async create(requestContext: AuthorizedFrontendRequestContext, iModelData: IModelData): Promise<IModelSession> {
+    let contextId;
+    let imodelId;
+
+    // Turn the project name into an id
+    if (iModelData.useProjectName) {
+      const client = new ContextRegistryClient();
+      const project: Project = await client.getProject(requestContext, {
+        $select: "*",
+        $filter: `Name+eq+'${iModelData.projectName}'`,
+      });
+      contextId = project.wsgId;
+    } else
+      contextId = iModelData.projectId!;
+
+    if (iModelData.useName) {
+      const imodelClient = new IModelHubClient();
+      const imodels = await imodelClient.iModels.get(requestContext, contextId, new IModelQuery().byName(iModelData.name!));
+      if (undefined === imodels || imodels.length === 0)
+        throw new Error(`The iModel ${iModelData.name} does not exist in project ${contextId}.`);
+      imodelId = imodels[0].wsgId;
+    } else
+      imodelId = iModelData.id!;
+
+    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // tslint:disable-line
+
+    return new IModelSession(contextId, imodelId);
   }
 
   public async getConnection(): Promise<IModelConnection> {

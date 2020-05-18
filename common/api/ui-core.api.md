@@ -10,6 +10,7 @@ import { ConditionalStringValue } from '@bentley/ui-abstract';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { Matrix3d } from '@bentley/geometry-core';
+import { Props as Props_2 } from 'react-select/base/index';
 import * as React from 'react';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { SliderModeFunction } from 'react-compound-slider';
@@ -1221,6 +1222,14 @@ export type OmitChildrenProp<T extends {
     children?: React.ReactNode;
 }> = Omit<T, "children">;
 
+// @beta
+export interface OptionType {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    value: string;
+}
+
 // @public
 export enum Orientation {
     // (undocumented)
@@ -1767,6 +1776,9 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 // @public
 export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement>, CommonProps {
 }
+
+// @beta
+export function ThemedSelect<OptionType>(props: Props_2<OptionType>): JSX.Element;
 
 // @internal
 export class TildeFinder {

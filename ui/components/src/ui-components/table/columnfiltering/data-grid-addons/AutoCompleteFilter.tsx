@@ -8,7 +8,6 @@
 * [react-data-grid-addons](https://github.com/adazzle/react-data-grid/tree/master/packages/react-data-grid-addons).
 *--------------------------------------------------------------------------------------------*/
 
-import "react-select/dist/react-select.css";
 import * as _ from "lodash";
 import React from "react";
 import Select from "react-select";

@@ -1937,7 +1937,7 @@ export class BriefcaseDb extends IModelDb {
     if (briefcaseEntry.downloadStatus !== DownloadBriefcaseStatus.Complete)
       throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that has not been completely downloaded", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
 
-    Logger.logTrace(loggerCategory, "Opening briefcase", () => briefcaseEntry.getDebugInfo());
+    Logger.logTrace(loggerCategory, "BriefcaseDb.open: Opening briefcase", () => briefcaseEntry.getDebugInfo());
 
     let briefcaseProps = briefcaseEntry.getBriefcaseProps();
     BriefcaseDb.onOpen.raiseEvent(requestContext, briefcaseProps);
