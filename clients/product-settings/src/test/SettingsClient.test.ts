@@ -551,6 +551,14 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
     chai.assert.isDefined(projectId);
     iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
     chai.assert.isDefined(iModelId);
+
+    // Setup settings if they do not already exist -- We do not delete these settings since they will be shared by multiple concurrent test runs.
+    const adminContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.super);
+    await settingsClient.saveSetting(adminContext, { appString: "new Application String" }, "TestSettings", "AppSetting", true);
+    await settingsClient.saveSetting(adminContext, { projAppString: "new Project Application String" }, "TestSettings", "AppProjectSetting", true, projectId);
+    await settingsClient.saveSetting(adminContext, { iModelAppString: "new IModel Application String" }, "TestSettings", "AppIModelSettings", true, projectId, iModelId);
+    await settingsClient.saveSetting(adminContext, { projString: "new Project String" }, "TestSettings", "ProjectSettings", false, projectId);
+    await settingsClient.saveSetting(adminContext, { iModelString: "new IModel String" }, "TestSettings", "IModelSettings", false, projectId, iModelId);
   });
 
   // Application Setting
