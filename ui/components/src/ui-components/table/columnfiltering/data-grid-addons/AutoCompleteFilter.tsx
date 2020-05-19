@@ -10,10 +10,12 @@
 
 import * as _ from "lodash";
 import React from "react";
-import Select from "react-select";
+import { ThemedSelect } from "@bentley/ui-core";
 import { UiComponents } from "../../../UiComponents";
 import { ReactDataGridColumn } from "../../component/TableColumn";
 import { TableDistinctValue } from "../../TableDataProvider";
+
+// cspell:ignore autosize
 
 /** @internal */
 export interface AutoCompleteFilterProps {
@@ -68,14 +70,15 @@ export class AutoCompleteFilter extends React.Component<AutoCompleteFilterProps,
 
   public render() {
     return (
-      <Select
+      <ThemedSelect
         autosize={false}
         name={`filter-${this.props.column.key}`}
         options={this.state.options}
         placeholder={this.props.placeholder || this._placeholder}
         onChange={this._handleChange}
         escapeClearsValue={true}
-        multi={this.props.multiSelection !== undefined && this.props.multiSelection !== null ? this.props.multiSelection : true}
+        isMulti={this.props.multiSelection !== undefined ? this.props.multiSelection : false}
+        isClearable={true}
         value={this.state.filters} />
     );
   }
