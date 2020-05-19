@@ -327,8 +327,8 @@
       "program": "${workspaceFolder}/test-apps/imjs-importer/lib/byDirectory.js",
       "cwd": "${workspaceFolder}/test-apps/imjs-importer",
       "args": [
-        "--input=PipeConnections",
-        "--output=abc"
+        "--input=d:/tmp/shaunSpaces/",
+        "--output=d:/tmp/shaun.bim"
       ],
       "protocol": "inspector",
       "outputCapture": "std"

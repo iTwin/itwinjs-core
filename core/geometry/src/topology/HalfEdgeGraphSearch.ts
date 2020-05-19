@@ -11,6 +11,8 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { SignedDataSummary } from "./SignedDataSummary";
 import { XYParitySearchContext } from "./XYParitySearchContext";
 
+type NodeToNumberFunction = (node: HalfEdge) => number;
+
 /**
  * Interface for an object that executes boolean tests on edges.
  */
@@ -56,8 +58,9 @@ export class HalfEdgeGraphSearch {
    * Search an array of faceSeed nodes for the face with the most negative area.
    * @param oneCandidateNodePerFace array containing one node from each face to be considered.
    */
-  public static findMinimumAreaFace(oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[]): HalfEdge {
-    const summary = HalfEdgeGraphSearch.collectFaceAreaSummary(oneCandidateNodePerFace);
+  public static findMinimumAreaFace(oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[],
+    faceAreaFunction?: NodeToNumberFunction): HalfEdge {
+    const summary = HalfEdgeGraphSearch.collectFaceAreaSummary(oneCandidateNodePerFace, false, faceAreaFunction);
     return summary.largestNegativeItem!;
   }
   /**
@@ -76,7 +79,7 @@ export class HalfEdgeGraphSearch {
    * @param areaFunction function to all to obtain area (or other numeric value)
    */
   public static collectFaceAreaSummary(source: HalfEdgeGraph | HalfEdge[], collectAllNodes: boolean = false,
-    areaFunction: (node: HalfEdge) => number = HalfEdgeGraphSearch.signedFaceArea): SignedDataSummary<HalfEdge> {
+    areaFunction: NodeToNumberFunction = HalfEdgeGraphSearch.signedFaceArea): SignedDataSummary<HalfEdge> {
     const result = new SignedDataSummary<HalfEdge>(collectAllNodes);
     let allFaces: HalfEdge[];
 

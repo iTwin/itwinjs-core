@@ -571,7 +571,7 @@ export interface PolyfaceVisitor extends PolyfaceData {
   /** Return the aux data index of vertex i within the currently loaded facet */
   clientAuxIndex(i: number): number;
   /** return the client polyface */
-  clientPolyface(): Polyface;
+  clientPolyface(): Polyface | undefined;
   /** Set the number of vertices to replicate in visitor arrays. */
   setNumWrap(numWrap: number): void;
 

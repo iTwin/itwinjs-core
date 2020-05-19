@@ -20,6 +20,10 @@ import { PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { Geometry } from "../Geometry";
 import { AnyRegion } from "./CurveChain";
 import { UnionRegion } from "./UnionRegion";
+import { CurveLocationDetail } from "./CurveLocationDetail";
+import { XAndY } from "../geometry3d/XYZProps";
+import { LineSegment3d } from "./LineSegment3d";
+import { Arc3d } from "./Arc3d";
 
 /**
  * base class for callbacks during region sweeps.
@@ -408,7 +412,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     }
     const faceHasBeenVisitedMask = this.graph.grabMask();
     const nodeHasBeenVisitedMask = this.graph.grabMask();
-    const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(this.graph);  // NON NO NO -- needs curved face variant.  Needs multi components
+    const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(this.graph, faceAreaFunction);
     const exteriorMask = HalfEdgeMask.EXTERIOR;
     const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
     this.graph.clearMask(allMasksToClear);
@@ -476,4 +480,35 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     this.recordTransitionAcrossEdge(_oldFaceNode, -1);
     return true;
   }
+}
+/** return xy area between a (part of a) curve and the x axis through a reference point.
+ * If detail is undefined or does not have both start and end fractions, just do trapezoid area
+ */
+function areaUnderPartialCurveXY(detail: CurveLocationDetail | undefined, xyStart: XAndY, xyEnd: XAndY, referencePoint: XAndY): number {
+  // area between trapezoid and axis
+  let trapezoidArea;
+  if (detail && detail.point1) {
+    trapezoidArea = -(detail.point1.x - detail.point.x) * (0.5 * (detail.point.y + detail.point1.y) - referencePoint.y);
+  } else {
+    trapezoidArea = -(xyEnd.x - xyStart.x) * (0.5 * (xyStart.y + xyEnd.y) - referencePoint.y);
+  }
+  let areaToChord = 0.0;
+  if (detail && detail.curve && detail.hasFraction1) {
+
+    if (detail.curve instanceof LineSegment3d) {
+      // ah .. nothing to do for a line segment
+    } else if (detail.curve instanceof Arc3d) {
+      areaToChord = detail.curve.areaToChordXY(detail.fraction, detail.fraction1!);
+    }
+  }
+  return trapezoidArea + areaToChord;
+}
+/** Compute face area for a face whose edges are decorated with CurveLocationDetail for their (partial) curves */
+function faceAreaFunction(faceSeed: HalfEdge): number {
+  let area = 0.0;
+  let edge = faceSeed;
+  do {
+    area += (edge.sortData as number) * areaUnderPartialCurveXY((edge.edgeTag! as CurveLocationDetail), edge, edge.faceSuccessor, faceSeed);
+  } while ((edge = edge.faceSuccessor) !== faceSeed);
+  return area;
 }
