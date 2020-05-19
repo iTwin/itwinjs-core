@@ -37,6 +37,12 @@ export interface PanelStateChangedEventArgs {
  */
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> { }
 
+/** @internal */
+export interface StagePanelTrySetCurrentSizeEventArgs {
+  panelDef: StagePanelDef;
+  size: number;
+}
+
 /**
  * A StagePanelDef represents each Stage Panel within a Frontstage.
  * @alpha
@@ -76,6 +82,17 @@ export class StagePanelDef extends WidgetHost {
     FrontstageManager.onPanelStateChangedEvent.emit({
       panelDef: this,
       panelState,
+    });
+  }
+
+  /** Tries to set current size of the stage panel.
+   * Actual panel size might differ, since min/max size is respected.
+   * @alpha
+   */
+  public trySetCurrentSize(size: number) {
+    FrontstageManager.onStagePanelTrySetCurrentSizeEvent.emit({
+      panelDef: this,
+      size,
     });
   }
 
