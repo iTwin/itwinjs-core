@@ -5,15 +5,14 @@
 import * as chai from "chai";
 import { GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolder, ProjectShareFolderQuery } from "../../ProjectShareClient";
-import { TestConfig } from "../TestConfig";
+import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolder, ProjectShareFolderQuery } from "../ProjectShareClient";
+import { TestConfig } from "./TestConfig";
 
 chai.should();
 
 /**
  * Project Share Client API TODOs:
  * + Add an id field, and replace all wsgIds with ids - including parentFolderWsgId
- * + Setup OIDC authentication for tests instead of IMS
  */
 
 describe("ProjectShareClient (#integration)", () => {
@@ -32,7 +31,7 @@ describe("ProjectShareClient (#integration)", () => {
   it("should be able to query folders with different options", async () => {
     // inRootFolder
     let folders: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    chai.assert.strictEqual(1, folders.length);
+    chai.assert.strictEqual(2, folders.length);
     const folder360Images = folders[0];
     chai.assert.strictEqual(folder360Images.name, "360-Images");
 
