@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="ToyTile" alias="toyTile" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+
+    <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+
+    <!--__PUBLISH_EXTRACT_START__ ToyTileECSchema_ToyTilePhysicalElement.sampleCode-->
+    <ECEntityClass typeName="ToyTilePhysicalElement" modifier="Abstract">
+        <BaseClass>bis:PhysicalElement</BaseClass>
+        <ECProperty propertyName="Condition" typeName="int">
+        </ECProperty>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="SmallSquareTile">
+        <BaseClass>ToyTilePhysicalElement</BaseClass>
+    </ECEntityClass>
+    <!--__PUBLISH_EXTRACT_END__-->
+
+    <ECEntityClass typeName="LargeSquareTile">
+        <BaseClass>ToyTilePhysicalElement</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="RectangleTile">
+        <BaseClass>ToyTilePhysicalElement</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="EquilateralTriangleTile">
+        <BaseClass>ToyTilePhysicalElement</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="RightTriangleTile">
+        <BaseClass>ToyTilePhysicalElement</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="IsoscelesTriangleTile">
+        <BaseClass>ToyTilePhysicalElement</BaseClass>
+    </ECEntityClass>
+
+    <!--__PUBLISH_EXTRACT_START__ ToyTileECSchema_ToyTileGroupModel.sampleCode-->
+    <ECEntityClass typeName="ToyTileGroupModel">
+        <BaseClass>bis:GroupInformationModel</BaseClass>
+    </ECEntityClass>
+    <!--__PUBLISH_EXTRACT_END__-->
+
+    <ECEntityClass typeName="ToyTileGroup">
+        <BaseClass>bis:GroupInformationElement</BaseClass>
+        <ECProperty propertyName="GroupType" typeName="string">
+        </ECProperty>
+        <ECProperty propertyName="ManufactureLocation" typeName="string">
+        </ECProperty>
+        <ECProperty propertyName="ManufactureDate" typeName="dateTime">
+        </ECProperty>
+      </ECEntityClass>
+
+</ECSchema>

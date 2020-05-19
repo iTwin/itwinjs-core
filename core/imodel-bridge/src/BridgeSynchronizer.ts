@@ -349,8 +349,8 @@ export class BridgeSynchronizer {
 
   // Get a schema lock from iModelHub before calling the bridge.
   private async initDomainSchema() {
-    await this._bridge!.importDomainSchema();
-    await this._bridge!.importDynamicSchema();
+    await this._bridge!.importDomainSchema(this._requestContext!);
+    await this._bridge!.importDynamicSchema(this._requestContext!);
   }
 
   private async updateExistingData(sourcePath: string) {

@@ -5,6 +5,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelBridgeBase } from "../../IModelBridge";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 class TestBridge extends IModelBridgeBase {
   public initialize(_params: any) {
@@ -20,11 +21,13 @@ class TestBridge extends IModelBridgeBase {
   public async importDefinitions() {
 
   }
-  public async importDynamicSchema() {
-
+  public async importDynamicSchema(requestContext: AuthorizedClientRequestContext): Promise<any> {
+    if (null === requestContext)
+      return;
   }
-  public async importDomainSchema(): Promise<BentleyStatus> {
-    return BentleyStatus.SUCCESS;
+  public async importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<void> {
+    const fileName = "@lib/test/assets/TestDomain.ecschema.xml";
+    await this._iModelDb!.importSchemas(requestContext, [fileName]);
   }
 
   public getApplicationId(): string {

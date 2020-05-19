@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodel-bridge",
-      "comment": "New package for IModelBridge support",
+      "comment": "Need to pass requestContext in order to call importSchemas",
       "type": "none"
     }
   ],

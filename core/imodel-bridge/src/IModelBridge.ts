@@ -8,6 +8,7 @@
 
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 /** Defines the base set of features that an IModelBridge needs to implement
  * @alpha
@@ -18,8 +19,8 @@ export interface IModelBridge {
   openSource(sourcePath: string, dmsAccessToken: string | undefined): Promise<BentleyStatus>;
   updateExistingData(sourcePath: string): Promise<any>;
   importDefinitions(): Promise<any>;
-  importDynamicSchema(): Promise<any>;
-  importDomainSchema(): Promise<any>;
+  importDynamicSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
+  importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
   getDgnDb(): IModelDb;
   getApplicationId(): string;
   getApplicationVersion(): string;
@@ -38,8 +39,8 @@ export abstract class IModelBridgeBase implements IModelBridge {
   public abstract async openSource(sourcePath: string, dmsAccessToken: string | undefined): Promise<BentleyStatus>;
   public abstract async updateExistingData(sourcePath: string): Promise<any>;
   public abstract async importDefinitions(): Promise<any>;
-  public abstract async importDynamicSchema(): Promise<any>;
-  public abstract async importDomainSchema(): Promise<BentleyStatus>;
+  public abstract async importDynamicSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
+  public abstract async importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<void>;
   public getDgnDb(): IModelDb { return this._iModelDb!; }
   public abstract getApplicationId(): string;
   public abstract getApplicationVersion(): string;

@@ -5,6 +5,7 @@
 ```ts
 
 import { AccessToken } from '@bentley/itwin-client';
+import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { ChangesType } from '@bentley/imodelhub-client';
 import { IModelDb } from '@bentley/imodeljs-backend';
@@ -44,9 +45,9 @@ export interface IModelBridge {
     // (undocumented)
     importDefinitions(): Promise<any>;
     // (undocumented)
-    importDomainSchema(): Promise<any>;
+    importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
     // (undocumented)
-    importDynamicSchema(): Promise<any>;
+    importDynamicSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
     // (undocumented)
     initialize(params: any): any;
     // (undocumented)
@@ -70,9 +71,9 @@ export abstract class IModelBridgeBase implements IModelBridge {
     // (undocumented)
     abstract importDefinitions(): Promise<any>;
     // (undocumented)
-    abstract importDomainSchema(): Promise<BentleyStatus>;
+    abstract importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // (undocumented)
-    abstract importDynamicSchema(): Promise<any>;
+    abstract importDynamicSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
     // (undocumented)
     abstract initialize(params: any): any;
     // (undocumented)
