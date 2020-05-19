@@ -559,8 +559,8 @@ export async function calculateEcefToDb(iModel: IModelConnection, bimElevationBi
 
   const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
   const geoNorth = Point3d.fromJSON(response.geoCoords[1].p);
-  const ecefOrigin = Cartographic.fromDegrees(geoOrigin.x, geoOrigin.y, 0).toEcef()!;
-  const ecefNorth = Cartographic.fromDegrees(geoNorth.x, geoNorth.y, 0).toEcef()!;
+  const ecefOrigin = Cartographic.fromDegrees(geoOrigin.x, geoOrigin.y, geoOrigin.z).toEcef()!;
+  const ecefNorth = Cartographic.fromDegrees(geoNorth.x, geoNorth.y, geoOrigin.z).toEcef()!;
 
   const zVector = Vector3d.createFrom(ecefOrigin);
   const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
