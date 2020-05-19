@@ -11,6 +11,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
+import { StopWatch } from "@bentley/bentleyjs-core";
 
 // cspell:ignore blockcache blocksize cachesize polltime
 
@@ -24,8 +25,8 @@ export interface DaemonProps {
   cacheDir?: string;
   /** port number. Default 22002 */
   portNumber?: number;
-  /** maximum cache Size, in megabytes. Default is 1Gb */
-  maxCacheSizeMb?: number;
+  /** maximum cache Size. Must be a number followed by either M (for megabytes) or G (for gigabytes.) Default is 1G */
+  maxCacheSize?: string;
   /** block size, in megabytes. Default is 4MB. */
   blockSizeMb?: number;
   /** How often cloud storage is polled for database changes made by other daemon processes, in seconds. Default is 60. */
@@ -59,6 +60,9 @@ export class Daemon {
   private static containerArg(props: BlobContainerProps) {
     return `-container ${props.name}`;
   }
+  private static sasArg(props: BlobContainerProps) {
+    return `-sas ${props.sasKey}`;
+  }
 
   public static start(props: DaemonProps): child_process.ChildProcess {
     const args = ["daemon", this.accountArg(props), `-directory ${this.cacheDir(props)}`, `-polltime ${props.pollTime ?? 60}`];
@@ -66,8 +70,8 @@ export class Daemon {
       args.push(`-port ${props.portNumber}`);
     if (props.blockSizeMb)
       args.push(`-blocksize ${props.blockSizeMb}M`);
-    if (props.maxCacheSizeMb)
-      args.push(`-cachesize ${props.maxCacheSizeMb}M`);
+    if (props.maxCacheSize)
+      args.push(`-cachesize ${props.maxCacheSize}`);
     if (props.log)
       args.push(`-log ${props.log}`);
     const daemon = child_process.spawn(this.exeName(props), args, {
@@ -81,13 +85,24 @@ export class Daemon {
   }
 
   private static runDaemon(daemonProps: DaemonProps, command: string, args: string[]) {
-    return child_process.execFileSync(this.exeName(daemonProps), [command, ...args]);
+    console.log(`running ${this.exeName(daemonProps)} ${command} ${args}`);
+    const timer = new StopWatch(command, true);
+    const out = child_process.spawnSync(this.exeName(daemonProps), [command, ...args], {
+      windowsVerbatimArguments: true,
+    });
+    console.log(out.stdout);
+    console.log(out.stderr);
+    console.log(`${timer.description}=${timer.elapsedSeconds}s`);
+    return out;
   }
   public static createContainer(daemonProps: DaemonProps, container: BlobContainerProps) {
     return this.runDaemon(daemonProps, "create", [this.accountArg(daemonProps), container.name]);
   }
   public static upload(daemonProps: DaemonProps, container: BlobContainerProps, fileName: string, alias: string) {
     return this.runDaemon(daemonProps, "upload", [this.accountArg(daemonProps), this.containerArg(container), fileName, alias]);
+  }
+  public static download(daemonProps: DaemonProps, container: BlobContainerProps, alias: string, localFile: string) {
+    return this.runDaemon(daemonProps, "download", [this.accountArg(daemonProps), this.containerArg(container), this.sasArg(container), alias, localFile]);
   }
   public static delete(daemonProps: DaemonProps, container: BlobContainerProps, alias: string) {
     return this.runDaemon(daemonProps, "delete", [this.accountArg(daemonProps), this.containerArg(container), alias]);
@@ -96,6 +111,6 @@ export class Daemon {
     return this.runDaemon(daemonProps, "copy", [this.containerArg(container), from, to]);
   }
   public static attach(daemonProps: DaemonProps, container: BlobContainerProps) {
-    return this.runDaemon(daemonProps, "attach", [this.cacheDir(daemonProps), `${container.name}`]);
+    return this.runDaemon(daemonProps, "attach", [this.cacheDir(daemonProps), `${container.name}?${container.sasKey}`]);
   }
 }
