@@ -862,15 +862,18 @@ export namespace IModelJson {
         && data.hasOwnProperty("pointIndex") && Array.isArray(data.pointIndex)) {
         const polyface = IndexedPolyface.create();
         if (data.hasOwnProperty("normal") && Array.isArray(data.normal)) {
+          // for normals, addNormal() is overeager to detect the (common) case of duplicate normals in sequence.
+          // use addNormalXYZ which always creates a new one.
+          // likewise for params
           for (const uvw of data.normal) {
             if (Geometry.isNumberArray(uvw, 3))
-              polyface.addNormal(Vector3d.create(uvw[0], uvw[1], uvw[2]));
+              polyface.addNormalXYZ(uvw[0], uvw[1], uvw[2]);
           }
         }
         if (data.hasOwnProperty("param") && Array.isArray(data.param)) {
           for (const uv of data.param) {
             if (Geometry.isNumberArray(uv, 2))
-              polyface.addParam(Point2d.create(uv[0], uv[1]));
+              polyface.addParamUV(uv[0], uv[1]);
           }
         }
         if (data.hasOwnProperty("color") && Array.isArray(data.color)) {
@@ -879,7 +882,7 @@ export namespace IModelJson {
           }
         }
 
-        for (const p of data.point) polyface.addPoint(Point3d.fromJSON(p));
+        for (const p of data.point) polyface.addPointXYZ(p[0], p[1], p[2]);
 
         for (const p of data.pointIndex) {
           if (p === 0)

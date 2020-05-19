@@ -9,13 +9,14 @@ import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { DeepCompare } from "../../serialization/DeepCompare";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
+import { IndexedPolyface } from "../../polyface/Polyface";
 
 // directory containing imjs files produced by native geomlibs tests:
 const iModelJsonNativeSamplesDirectory = "./src/test/iModelJsonSamples/fromNative/";
@@ -197,6 +198,31 @@ describe("CreateIModelJsonSamples", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  // make a mesh with identical normals present redundantly.
+  // This was incorrectly compressed by the reader.
+  it("MeshWithDuplicateNormals", () => {
+    const ck = new Checker();
+    const mesh = IndexedPolyface.create(true, false, false, true);
+    mesh.data.point.pushXYZ(0, 0, 0);
+    mesh.data.point.pushXYZ(1, 0, 0);
+    mesh.data.point.pushXYZ(0, 1, 0);
+    mesh.data.pointIndex.push(0, 1, 2);
+    mesh.data.edgeVisible.push(true, true, true);
+    mesh.addNormalXYZ(0, 0, 1);
+    mesh.addNormal(Vector3d.create(0, 0, 1));    // in bug state, this reuses the first normal
+    mesh.addNormalXYZ(0, 0, 1);
+    mesh.addNormalIndex(0);
+    mesh.addNormalIndex(1);
+    mesh.addNormalIndex(2);
+    mesh.terminateFacet();
+    ck.testExactNumber(mesh.data.pointIndex.length, 3);
+    ck.testExactNumber(mesh.data.point.length, 3);
+    ck.testExactNumber(mesh.data.normal!.length, 3);
+    ck.testExactNumber(mesh.data.normalIndex!.length, 3);
+    const meshJson = IModelJson.Writer.toIModelJson(mesh);
+    const meshB = IModelJson.Reader.parse(meshJson);
+    ck.testTrue(mesh.isAlmostEqual(meshB), "confirm json round trip");
+  });
   /* reread the files from several known sources */
   it("ReadIModelJson", () => {
     const ck = new Checker();
