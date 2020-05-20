@@ -184,7 +184,7 @@ describe("BackgroundMapSettings", () => {
         input = {};
 
       if ("input" === expected)
-        expected = input;
+        expected = JSON.parse(JSON.stringify(input)) as BackgroundMapProps;
 
       const settings = BackgroundMapSettings.fromJSON(input);
       const output = settings.toJSON();
@@ -197,10 +197,17 @@ describe("BackgroundMapSettings", () => {
       expect(output.applyTerrain).to.equal(expected.applyTerrain);
       expect(output.globeMode).to.equal(expected.globeMode);
 
+      // We used to omit the terrain settings entirely if they matched the defaults. Now we always include them.
       const outTerrain = output.terrainSettings;
-      const expTerrain = expected.terrainSettings;
-      expect(undefined === outTerrain).to.equal(undefined === expTerrain);
-      if (outTerrain && expTerrain) {
+      expect(outTerrain).not.to.be.undefined;
+      const expTerrain = expected.terrainSettings ?? { };
+
+      if (outTerrain) {
+        if (undefined === expTerrain.heightOriginMode) {
+          // We used to omit the height origin mode if it matched the default. Then we changed the default, and stopped omitting it.
+          expTerrain.heightOriginMode = TerrainHeightOriginMode.Geodetic;
+        }
+
         expect(outTerrain.providerName).to.equal(expTerrain.providerName);
         expect(outTerrain.exaggeration).to.equal(expTerrain.exaggeration);
         expect(outTerrain.applyLighting).to.equal(expTerrain.applyLighting);
@@ -259,7 +266,7 @@ describe("BackgroundMapSettings", () => {
     roundTrip({ terrainSettings: { heightOrigin: 0 } }, {});
     roundTrip({ terrainSettings: { heightOrigin: 42 } }, "input");
 
-    roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }, {});
+    roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geodetic } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: -99 } }, {});
@@ -276,7 +283,7 @@ describe("BackgroundMapSettings", () => {
         applyLighting: false,
         exaggeration: 1,
         heightOrigin: 0,
-        heightOriginMode: TerrainHeightOriginMode.Ground,
+        heightOriginMode: TerrainHeightOriginMode.Geodetic,
       },
     }, {});
   });
