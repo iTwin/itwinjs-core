@@ -18,7 +18,8 @@
       "modelName": "CS_ALL_2.1.0.227",
       "csStart": 0,
       "csEnd": "",
-      "csType": "All"
+      "csType": "All",
+      "setup": false
     }
   ]
 }
