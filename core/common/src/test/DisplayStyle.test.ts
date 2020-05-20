@@ -410,6 +410,7 @@ describe("ThematicDisplay", () => {
       expect(thematicDisplay.range).to.deep.equal(Range1d.createNull());
       expect(thematicDisplay.sensorSettings).to.deep.equal(ThematicDisplaySensorSettings.fromJSON());
       expect(thematicDisplay.sensorSettings.sensors).to.deep.equal([]);
+      expect(thematicDisplay.sensorSettings.distanceCutoff).to.equal(0);
     }
 
     // check if the creation and back-and-forth via JSON works
@@ -446,6 +447,7 @@ describe("ThematicDisplay", () => {
         { position: [10.0, 11.0, 12.0], value: -1.0 },
         { position: [13.0, 14.0, 15.0], value: 2.0 },
       ],
+      distanceCutoff: 5.0,
     };
     td = ThematicDisplay.fromJSON({ sensorSettings: sensorSettingsProps });
     expect(td.sensorSettings.sensors!.length).to.equal(5);
@@ -459,6 +461,7 @@ describe("ThematicDisplay", () => {
     expect(td.sensorSettings.sensors![3].value).to.equal(0); // verify that the 'bad' value of -1 gets clamped to 0
     expect(td.sensorSettings.sensors![4].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[4].position));
     expect(td.sensorSettings.sensors![4].value).to.equal(1); // verify that the 'bad' value of 2 gets clamped to 1
+    expect(td.sensorSettings.distanceCutoff).to.equal(sensorSettingsProps.distanceCutoff);
     verifyBackAndForth(td); // verify round-trip
 
     // check if configuring custom color scheme incorrectly is resolved as expected

@@ -237,11 +237,12 @@ class Texture2DCreateParams {
   private static getImageProperties(isTranslucent: boolean, type: RenderTexture.Type): TextureImageProperties {
     const isSky = RenderTexture.Type.SkyBox === type;
     const isTile = RenderTexture.Type.TileSection === type;
+    const isThematic = RenderTexture.Type.ThematicGradient === type;
     const isFilteredTile = RenderTexture.Type.FilteredTileSection === type;
     const maxAnisotropicFilterLevel = 16;
 
     const wrapMode = RenderTexture.Type.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
-    const useMipMaps: TextureFlag = (!isSky && !isTile) ? true : undefined;
+    const useMipMaps: TextureFlag = (!isSky && !isTile && !isThematic) ? true : undefined;
     const interpolate: TextureFlag = true;
     const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
     const anisotropicFilter = isFilteredTile ? maxAnisotropicFilterLevel : undefined;

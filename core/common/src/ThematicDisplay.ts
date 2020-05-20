@@ -214,6 +214,12 @@ export class ThematicDisplaySensor {
 export interface ThematicDisplaySensorSettingsProps {
   /** This is the list of sensors. Defaults to an empty array. */
   sensors?: ThematicDisplaySensorProps[];
+  /** This is the distance cutoff in meters. For a position on screen to be affected by a sensor, it must be at least this close to the sensor.
+   * If this is zero or negative, then no distance cutoff is applied (all sensors affect all positions regardless of nearness).
+   * Defaults to zero.
+   * @note Using a suitable distance cutoff imparts a significant performance benefit. The larger this value becomes, performance will degrade.
+   */
+  distanceCutoff?: number;
 }
 
 /** Settings for sensor-based thematic display for [[ThematicDisplayMode.InverseDistanceWeightedSensors]].
@@ -222,6 +228,12 @@ export interface ThematicDisplaySensorSettingsProps {
 export class ThematicDisplaySensorSettings {
   /** This is the list of sensors. Defaults to an empty array. */
   public readonly sensors: ThematicDisplaySensor[];
+  /** This is the distance cutoff in meters. For a position on screen to be affected by a sensor, it must be at least this close to the sensor.
+   * If this is zero or negative, then no distance cutoff is applied (all sensors affect all positions regardless of nearness).
+   * Defaults to zero.
+   * @note Using a suitable distance cutoff imparts a significant performance benefit. The larger this value becomes, performance will degrade.
+   */
+  public readonly distanceCutoff: number;
 
   private constructor(json?: ThematicDisplaySensorSettingsProps) {
     this.sensors = [];
@@ -229,10 +241,16 @@ export class ThematicDisplaySensorSettings {
       if (json.sensors !== undefined && json.sensors !== null) {
         json.sensors.forEach((sensorJSON) => this.sensors!.push(ThematicDisplaySensor.fromJSON(sensorJSON)));
       }
+      this.distanceCutoff = (typeof json.distanceCutoff === "number") ? json.distanceCutoff : 0;
+    } else {
+      this.distanceCutoff = 0;
     }
   }
 
   public equals(other: ThematicDisplaySensorSettings): boolean {
+    if (this.distanceCutoff !== other.distanceCutoff)
+      return false;
+
     const thisSensors = this.sensors;
     const otherSensors = other.sensors;
 
@@ -256,6 +274,8 @@ export class ThematicDisplaySensorSettings {
 
     json.sensors = [];
     this.sensors.forEach((sensor) => json.sensors!.push(sensor.toJSON()));
+
+    json.distanceCutoff = this.distanceCutoff;
 
     return json;
   }

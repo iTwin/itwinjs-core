@@ -4916,6 +4916,7 @@ export namespace RenderTexture {
         Glyph = 1,
         Normal = 0,
         SkyBox = 3,
+        ThematicGradient = 5,
         TileSection = 2
     }
 }
@@ -6161,6 +6162,7 @@ export interface ThematicDisplaySensorProps {
 
 // @alpha
 export class ThematicDisplaySensorSettings {
+    readonly distanceCutoff: number;
     // (undocumented)
     equals(other: ThematicDisplaySensorSettings): boolean;
     // (undocumented)
@@ -6172,6 +6174,7 @@ export class ThematicDisplaySensorSettings {
 
 // @alpha
 export interface ThematicDisplaySensorSettingsProps {
+    distanceCutoff?: number;
     sensors?: ThematicDisplaySensorProps[];
 }
 
