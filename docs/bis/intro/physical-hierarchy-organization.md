@@ -148,7 +148,7 @@ The overall `PhysicalModel` hierarchy strategy is defined in the following table
 
 
 | Classification | Affinity to  | Example Classes |
-|----------------|----------------|--------------|----------|
+|----------------|----------------|--------------|
 | ISite           | ISite *(declared in implementing classes)* | Site     |
 | IFacility       | ISite, IFacility, ISystem  *(declared in implementing classes)*           | Building, Bridge, Tunnel     |
 | ISystem         | ISite, IFacility, ISystem *(declared in implementing classes)*           | SewerSystem, StructuralSystem, etc.     |

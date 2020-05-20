@@ -108,6 +108,7 @@ X(f) = C + cos (theta(f)) * U + sin(theta(f)) * V
 * Angle theta1 can be less than theta0
 
 Examples of arc sweep
+
 | start and end angles | CCW signed sweep angle | image |
 |----|----|---|
 | (0 to 360) | 360 | ![>](./figs/CurvePrimitives/EFull.png) |
@@ -171,9 +172,10 @@ The `order` of the bspline is the number of control points that are "in effect" 
 ## Summary
 
 The required data for a bspline curve is:
-|-----|-----|------|
+
 | name | type | remarks |
-| control points | array of N points |
+|-----|-----|------|
+| control points | array of N points | |
 | order | number | the most common orders are 2 through 4;  higher order gives smoother curves, but with performance cost. |
 |  | | Order higher than 10 is discouraged |
 | | |  3 (quadratic curve, degree 2)
