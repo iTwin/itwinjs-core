@@ -39,6 +39,7 @@ export class BridgeJobDefArgs {
   public sourcePath?: string;
   /** Path to the staging directory */
   public stagingdir?: string;
+  public documentGuid?: string;
 }
 
 /** Arguments that describe the server environment used for the job
@@ -83,6 +84,8 @@ export class BridgeSynchronizer {
   private _bridgeArgs: BridgeJobDefArgs;
   private _serverArgs: ServerArgs;
 
+  public getCacheDirectory () { return this._bridgeArgs.stagingdir; }
+
   private static parseArguments(args: string[], bridgeJobDef: BridgeJobDefArgs, serverArgs: ServerArgs): [BridgeJobDefArgs, ServerArgs] {
     for (const line of args) {
       if (!line)
@@ -112,6 +115,7 @@ export class BridgeSynchronizer {
         }
         case "--dms-inputFileUrn=": serverArgs.dmsServerUrl = keyVal[1].trim(); break;
         case "--dms-accessToken=": serverArgs.dmsAccessToken = keyVal[1].trim(); break;
+        case "--dms-documentGuid=": bridgeJobDef.documentGuid = keyVal[1].trim(); break;
         default:
           {
             /** Unsupported options
@@ -200,7 +204,7 @@ export class BridgeSynchronizer {
     if (this._briefcaseDb === undefined)
       throw new Error("Unable to acquire briefcase");
 
-    await this._bridge.openSource(this._bridgeArgs.sourcePath, this._serverArgs.dmsAccessToken);
+    await this._bridge.openSource(this._bridgeArgs.sourcePath, this._serverArgs.dmsAccessToken, this._bridgeArgs.documentGuid);
     await this._bridge.onOpenBim(this._briefcaseDb);
 
     await this.updateExistingIModel(this._bridgeArgs.sourcePath);
@@ -316,6 +320,11 @@ export class BridgeSynchronizer {
     // Import futureon BIS schema into the iModel.
     await this.initDomainSchema();
     await this.importDefinitions();
+    try {
+      await this.pushDataChanges("Data changes", ChangesType.Schema);
+    } catch (error) {
+      Logger.logError(loggerCategory, `${error} was thrown from pushDataChanges`);
+    }
     await this.updateExistingData(sourcePath);
   }
 
@@ -350,7 +359,17 @@ export class BridgeSynchronizer {
   // Get a schema lock from iModelHub before calling the bridge.
   private async initDomainSchema() {
     await this._bridge!.importDomainSchema(this._requestContext!);
+    try {
+      await this.pushDataChanges("Schema changes", ChangesType.Schema);
+    } catch (error) {
+      Logger.logError(loggerCategory, `${error} was thrown from pushDataChanges`);
+    }
     await this._bridge!.importDynamicSchema(this._requestContext!);
+    try {
+      await this.pushDataChanges("Dynamic schema changes", ChangesType.Schema);
+    } catch (error) {
+      Logger.logError(loggerCategory, `${error} was thrown from pushDataChanges`);
+    }
   }
 
   private async updateExistingData(sourcePath: string) {

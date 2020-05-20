@@ -14,6 +14,8 @@ import { IModelDb } from '@bentley/imodeljs-backend';
 export class BridgeJobDefArgs {
     allDocsProcessed: boolean;
     bridgeModule?: string;
+    // (undocumented)
+    documentGuid?: string;
     revisionComments?: string;
     sourcePath?: string;
     stagingdir?: string;
@@ -30,6 +32,8 @@ export enum BridgeLoggerCategory {
 export class BridgeSynchronizer {
     constructor(_jobDefArgs: BridgeJobDefArgs, _serverArgs: ServerArgs);
     static fromArgs(args: string[]): BridgeSynchronizer;
+    // (undocumented)
+    getCacheDirectory(): string | undefined;
     pushDataChanges(pushComments: string, type: ChangesType): Promise<void>;
     synchronize(): Promise<BentleyStatus>;
     }
@@ -53,7 +57,7 @@ export interface IModelBridge {
     // (undocumented)
     onOpenBim(db: IModelDb): Promise<BentleyStatus>;
     // (undocumented)
-    openSource(sourcePath: string, dmsAccessToken: string | undefined): Promise<BentleyStatus>;
+    openSource(sourcePath: string, dmsAccessToken: string | undefined, documentGuid: string | undefined): Promise<BentleyStatus>;
     // (undocumented)
     updateExistingData(sourcePath: string): Promise<any>;
 }
@@ -71,7 +75,7 @@ export abstract class IModelBridgeBase implements IModelBridge {
     // (undocumented)
     abstract importDefinitions(): Promise<any>;
     // (undocumented)
-    abstract importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<void>;
+    abstract importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
     // (undocumented)
     abstract importDynamicSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
     // (undocumented)
@@ -79,7 +83,7 @@ export abstract class IModelBridgeBase implements IModelBridge {
     // (undocumented)
     onOpenBim(db: IModelDb): Promise<BentleyStatus>;
     // (undocumented)
-    abstract openSource(sourcePath: string, dmsAccessToken: string | undefined): Promise<BentleyStatus>;
+    abstract openSource(sourcePath: string, dmsAccessToken: string | undefined, documentGuid: string | undefined): Promise<BentleyStatus>;
     // (undocumented)
     abstract updateExistingData(sourcePath: string): Promise<any>;
 }

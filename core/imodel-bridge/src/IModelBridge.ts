@@ -16,7 +16,7 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 export interface IModelBridge {
   initialize(params: any): any;
   onOpenBim(db: IModelDb): Promise<BentleyStatus>;
-  openSource(sourcePath: string, dmsAccessToken: string | undefined): Promise<BentleyStatus>;
+  openSource(sourcePath: string, dmsAccessToken: string | undefined, documentGuid: string | undefined): Promise<BentleyStatus>;
   updateExistingData(sourcePath: string): Promise<any>;
   importDefinitions(): Promise<any>;
   importDynamicSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
@@ -36,11 +36,11 @@ export abstract class IModelBridgeBase implements IModelBridge {
     this._iModelDb = db;
     return BentleyStatus.SUCCESS;
   }
-  public abstract async openSource(sourcePath: string, dmsAccessToken: string | undefined): Promise<BentleyStatus>;
+  public abstract async openSource(sourcePath: string, dmsAccessToken: string | undefined, documentGuid: string | undefined): Promise<BentleyStatus>;
   public abstract async updateExistingData(sourcePath: string): Promise<any>;
   public abstract async importDefinitions(): Promise<any>;
   public abstract async importDynamicSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
-  public abstract async importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<void>;
+  public abstract async importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
   public getDgnDb(): IModelDb { return this._iModelDb!; }
   public abstract getApplicationId(): string;
   public abstract getApplicationVersion(): string;

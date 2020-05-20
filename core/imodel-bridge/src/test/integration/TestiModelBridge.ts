@@ -25,7 +25,7 @@ class TestBridge extends IModelBridgeBase {
     if (null === requestContext)
       return;
   }
-  public async importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<void> {
+  public async importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<any> {
     const fileName = "@lib/test/assets/TestDomain.ecschema.xml";
     await this._iModelDb!.importSchemas(requestContext, [fileName]);
   }
