@@ -29,7 +29,7 @@ describe("IModel Read/Write Connection", () => {
     if (!testContext.settings.runiModelWriteRpcTests)
       this.skip();
 
-    const iModelId = testContext.settings.writeIModel.id;
+    const iModelId = testContext.iModelForWrite!.iModelId;
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const briefcases: HubBriefcase[] = await IModelApp.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
     if (briefcases.length > 16) {
@@ -44,28 +44,26 @@ describe("IModel Read/Write Connection", () => {
   });
 
   it("should successfully open an IModelConnection for read/write", async () => {
-    const contextId = testContext.settings.writeIModel.projectId;
-    const openMode = OpenMode.ReadWrite;
-    const iModelId = testContext.settings.writeIModel.id;
+    const contextId = testContext.iModelForWrite!.contextId;
+    const iModelId = testContext.iModelForWrite!.iModelId;
 
-    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode);
+    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
     expect(iModel).to.exist.and.be.not.empty;
     expect(iModel.getRpcProps()).to.exist.and.be.not.empty;
   });
   it("should successfully close an open read/write IModelConnection", async () => {
-    const contextId = testContext.settings.writeIModel.projectId;
-    const openMode = OpenMode.ReadWrite;
-    const iModelId = testContext.settings.writeIModel.id;
-    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode);
+    const contextId = testContext.iModelForWrite!.contextId;
+    const iModelId = testContext.iModelForWrite!.iModelId;
+    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
     expect(iModel).to.exist;
     return expect(iModel.close()).to.eventually.be.fulfilled;
   });
 
   it("should successfully update the project extents", async () => {
-    const contextId = testContext.settings.writeIModel.projectId;
-    const iModelId = testContext.settings.writeIModel.id;
+    const contextId = testContext.iModelForWrite!.contextId;
+    const iModelId = testContext.iModelForWrite!.iModelId;
 
     const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
@@ -84,8 +82,8 @@ describe("IModel Read/Write Connection", () => {
   });
 
   it("should successfully save a thumbnail", async () => {
-    const contextId = testContext.settings.writeIModel.projectId;
-    const iModelId = testContext.settings.writeIModel.id;
+    const contextId = testContext.iModelForWrite!.contextId;
+    const iModelId = testContext.iModelForWrite!.iModelId;
 
     const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 

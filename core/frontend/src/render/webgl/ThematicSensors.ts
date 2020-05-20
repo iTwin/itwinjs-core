@@ -6,13 +6,16 @@
  * @module WebGL
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { ThematicDisplaySensor, ThematicDisplaySensorSettings } from "@bentley/imodeljs-common";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { System } from "./System";
 import { Texture2DData, Texture2DHandle } from "./Texture";
+import { UniformHandle } from "./Handle";
+import { TextureUnit } from "./RenderFlags";
+import { Target } from "./Target";
 
 /** @internal */
 interface ThematicSensorsTexture {
@@ -30,11 +33,31 @@ export abstract class ThematicSensors implements WebGLDisposable {
   /** Position at which to write next texture data. */
   private _curPos: number = 0;
 
-  public static create(sensorSettings: ThematicDisplaySensorSettings): ThematicSensors | undefined {
-    const obj = System.instance.capabilities.supportsTextureFloat ? FloatSensors.create(sensorSettings) : PackedSensors.create(sensorSettings);
-    if (obj !== undefined) {
-      obj.update(sensorSettings.sensors);
+  public readonly target: Target;
+  public readonly range: Range3d;
+  public readonly sensorSettings?: ThematicDisplaySensorSettings;
+
+  public get numSensors(): number { return this._sensors.length; }
+
+  private _sensors: ThematicDisplaySensor[];
+
+  public matchesTarget(target: Target): boolean {
+    return target === this.target && this.sensorSettings === target.plan.thematic?.sensorSettings;
+  }
+
+  public static create(target: Target, range: Range3d): ThematicSensors {
+    let sensors: ThematicDisplaySensor[] = [];
+
+    if (target.plan.thematic !== undefined) {
+      sensors = _accumulateSensorsInRange(
+        target.plan.thematic.sensorSettings.sensors,
+        range,
+        target.currentTransform,
+        target.plan.thematic.sensorSettings.distanceCutoff);
     }
+
+    const obj = System.instance.capabilities.supportsTextureFloat ? FloatSensors.createFloat(target, range, sensors) : PackedSensors.createPacked(target, range, sensors);
+    obj.update();
     return obj;
   }
 
@@ -44,14 +67,22 @@ export abstract class ThematicSensors implements WebGLDisposable {
     dispose(this._texture.handle);
   }
 
+  public bindNumSensors(uniform: UniformHandle): void {
+    uniform.setUniform1i(this.numSensors);
+  }
+
+  public bindTexture(uniform: UniformHandle): void {
+    this._texture.handle.bindSampler(uniform, TextureUnit.ThematicSensors);
+  }
+
   public get bytesUsed(): number { return this._texture.handle.bytesUsed; }
 
   public get texture(): Texture2DHandle { return this._texture.handle; }
 
-  private update(sensors: ThematicDisplaySensor[]) {
+  private update() {
     this.reset();
 
-    for (const sensor of sensors) {
+    for (const sensor of this._sensors) {
       const position = sensor.position;
       const value = sensor.value;
 
@@ -64,7 +95,11 @@ export abstract class ThematicSensors implements WebGLDisposable {
     return this._texture.handle;
   }
 
-  protected constructor(texture: ThematicSensorsTexture) {
+  protected constructor(texture: ThematicSensorsTexture, target: Target, range: Range3d, sensors: ThematicDisplaySensor[]) {
+    this.target = target;
+    this.range = range;
+    this.sensorSettings = target.plan.thematic?.sensorSettings;
+    this._sensors = sensors;
     this._texture = texture;
     this._view = new DataView(texture.data.buffer);
   }
@@ -91,27 +126,29 @@ export abstract class ThematicSensors implements WebGLDisposable {
  * @internal
  */
 class FloatSensors extends ThematicSensors {
-  public static create(sensorSettings: ThematicDisplaySensorSettings): ThematicSensors | undefined {
-    const totalNumSensors = sensorSettings.sensors.length;
-    const data = new Float32Array(totalNumSensors * 4);
-    const handle = Texture2DHandle.createForData(1, totalNumSensors, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
-    return undefined !== handle ? new FloatSensors({ handle, data }) : undefined;
+  public static createFloat(target: Target, range: Range3d, sensors: ThematicDisplaySensor[]): ThematicSensors {
+    const data = new Float32Array(sensors.length * 4);
+    const handle = Texture2DHandle.createForData(1, sensors.length, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+    assert(undefined !== handle);
+    return new FloatSensors({ handle, data }, target, range, sensors);
   }
 
   protected append(value: number) { this.appendFloat(value); }
 
-  private constructor(texture: ThematicSensorsTexture) { super(texture); }
+  private constructor(texture: ThematicSensorsTexture, target: Target, range: Range3d, sensors: ThematicDisplaySensor[]) {
+    super(texture, target, range, sensors);
+  }
 }
 
-/** Stores clip planes packed into RGBA texture.
+/** Stores thematic sensors packed into RGBA texture.
  * @internal
  */
 class PackedSensors extends ThematicSensors {
-  public static create(sensorSettings: ThematicDisplaySensorSettings): ThematicSensors | undefined {
-    const totalNumSensors = sensorSettings.sensors.length;
-    const data = new Uint8Array(totalNumSensors * 4 * 4);
-    const handle = Texture2DHandle.createForData(4, totalNumSensors, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
-    return undefined !== handle ? new PackedSensors({ handle, data }) : undefined;
+  public static createPacked(target: Target, range: Range3d, sensors: ThematicDisplaySensor[]): ThematicSensors {
+    const data = new Uint8Array(sensors.length * 4 * 4);
+    const handle = Texture2DHandle.createForData(4, sensors.length, data, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+    assert(undefined !== handle);
+    return new PackedSensors({ handle, data }, target, range, sensors);
   }
 
   protected append(value: number) {
@@ -135,5 +172,31 @@ class PackedSensors extends ThematicSensors {
     this.appendUint8(b3);
   }
 
-  private constructor(texture: ThematicSensorsTexture) { super(texture); }
+  private constructor(texture: ThematicSensorsTexture, target: Target, range: Range3d, sensors: ThematicDisplaySensor[]) {
+    super(texture, target, range, sensors);
+  }
+}
+
+function _sensorRadiusAffectsRange(sensor: ThematicDisplaySensor, sensorRadius: number, range: Range3d) {
+  const distance = range.distanceToPoint(sensor.position);
+  return !(distance > sensorRadius);
+}
+
+const _scratchRange = Range3d.createNull();
+
+function _accumulateSensorsInRange(sensors: ThematicDisplaySensor[], range: Range3d, transform: Transform, distanceCutoff: number): ThematicDisplaySensor[] {
+  const retSensors: ThematicDisplaySensor[] = [];
+
+  transform.multiplyRange(range, _scratchRange);
+
+  for (const sensor of sensors) {
+    const position = sensor.position;
+
+    if (distanceCutoff <= 0 || _sensorRadiusAffectsRange(sensor, distanceCutoff, _scratchRange)) {
+      const value = sensor.value;
+      retSensors.push(ThematicDisplaySensor.fromJSON({ position, value }));
+    }
+  }
+
+  return retSensors;
 }

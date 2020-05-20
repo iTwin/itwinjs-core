@@ -16,7 +16,7 @@ import { ContentControlActivatedEvent } from "../content/ContentControl";
 import { ContentGroup } from "../content/ContentGroup";
 import { ContentLayoutActivatedEvent, ContentLayoutDef } from "../content/ContentLayout";
 import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
-import { PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
+import { PanelStateChangedEvent, StagePanelTrySetCurrentSizeEventArgs } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { WidgetDef, WidgetStateChangedEvent } from "../widgets/WidgetDef";
@@ -235,6 +235,9 @@ export class FrontstageManager {
    * @alpha
    */
   public static readonly onPanelStateChangedEvent = new PanelStateChangedEvent();
+
+  /** @internal */
+  public static readonly onStagePanelTrySetCurrentSizeEvent = new UiEvent<StagePanelTrySetCurrentSizeEventArgs>();
 
   /** Clears the Frontstage map.
    */

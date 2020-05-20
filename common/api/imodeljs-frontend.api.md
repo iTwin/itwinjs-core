@@ -214,6 +214,8 @@ import { SubCategoryOverride } from '@bentley/imodeljs-common';
 import { TerrainSettings } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
 import { ThematicDisplay } from '@bentley/imodeljs-common';
+import { ThematicDisplaySensor } from '@bentley/imodeljs-common';
+import { ThematicDisplaySensorSettings } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
 import { TileProps } from '@bentley/imodeljs-common';
 import { TileReadStatus } from '@bentley/imodeljs-common';
@@ -6352,7 +6354,7 @@ export namespace RenderMemory {
         // (undocumented)
         ClipVolumes = 4,
         // (undocumented)
-        COUNT = 8,
+        COUNT = 9,
         // (undocumented)
         FeatureOverrides = 3,
         // (undocumented)
@@ -6365,6 +6367,8 @@ export namespace RenderMemory {
         TextureAttachments = 7,
         // (undocumented)
         Textures = 0,
+        // (undocumented)
+        ThematicTextures = 8,
         // (undocumented)
         VertexTables = 1
     }
@@ -6406,6 +6410,8 @@ export namespace RenderMemory {
         // (undocumented)
         addTextureAttachment(numBytes: number): void;
         // (undocumented)
+        addThematicTexture(numBytes: number): void;
+        // (undocumented)
         addVertexTable(numBytes: number): void;
         // (undocumented)
         addVisibleEdges(numBytes: number): void;
@@ -6429,6 +6435,8 @@ export namespace RenderMemory {
         get textureAttachments(): Consumers;
         // (undocumented)
         get textures(): Consumers;
+        // (undocumented)
+        get thematicTextures(): Consumers;
         // (undocumented)
         get totalBytes(): number;
         // (undocumented)
@@ -6981,8 +6989,10 @@ export class SceneContext extends RenderContext {
     // @internal (undocumented)
     get graphicType(): TileGraphicType;
     // @internal (undocumented)
-    hasMissingTiles: boolean;
+    get hasMissingTiles(): boolean;
     insertMissingTile(tile: Tile): void;
+    // @internal (undocumented)
+    markChildrenLoading(): void;
     // @internal (undocumented)
     readonly missingTiles: Set<Tile>;
     // @internal (undocumented)
@@ -7393,6 +7403,8 @@ export class SheetViewState extends ViewState2d {
     attachViews(attachments: ViewAttachmentProps[]): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
+    // @internal (undocumented)
+    collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
     computeFitRange(): Range3d;
     // (undocumented)
@@ -8120,6 +8132,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get wantInvertBlackBackground(): boolean;
     // (undocumented)
     get wantThematicDisplay(): boolean;
+    // (undocumented)
+    get wantThematicSensors(): boolean;
     }
 
 // @internal (undocumented)
@@ -10593,6 +10607,10 @@ export abstract class ViewState extends ElementState {
     categorySelector: CategorySelectorState;
     // @internal (undocumented)
     static get className(): string;
+    // @internal
+    collectNonTileTreeStatistics(_stats: RenderMemory.Statistics): void;
+    // @internal
+    collectStatistics(stats: RenderMemory.Statistics): void;
     abstract computeFitRange(): Range3d;
     // @internal (undocumented)
     computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio?: boolean): {

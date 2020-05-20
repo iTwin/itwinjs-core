@@ -1886,7 +1886,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     }
 
 // @internal (undocumented)
-export type FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction | WidgetTabShowAction | WidgetTabExpandAction;
+export type FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction | WidgetTabShowAction | WidgetTabExpandAction | PanelSetSizeAction;
 
 // @public
 export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> {
@@ -2111,6 +2111,8 @@ export class FrontstageManager {
     static readonly onNavigationAidActivatedEvent: NavigationAidActivatedEvent;
     // @alpha
     static readonly onPanelStateChangedEvent: PanelStateChangedEvent;
+    // @internal (undocumented)
+    static readonly onStagePanelTrySetCurrentSizeEvent: UiEvent<StagePanelTrySetCurrentSizeEventArgs>;
     static readonly onToolActivatedEvent: ToolActivatedEvent;
     static readonly onToolIconChangedEvent: ToolIconChangedEvent;
     // @internal
@@ -2295,6 +2297,9 @@ export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue;
 
 // @internal (undocumented)
 export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
+
+// @internal (undocumented)
+export function getPanelSide(location: StagePanelLocation_2): PanelSide;
 
 // @beta
 export function getSelectionContextSyncEventIds(): string[];
@@ -3428,6 +3433,16 @@ export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessage
 // @public
 export type NotifyMessageType = string | HTMLElement | ReactMessage;
 
+// @internal (undocumented)
+export interface PanelSetSizeAction {
+    // (undocumented)
+    readonly panel: PanelSide;
+    // (undocumented)
+    readonly size: number;
+    // (undocumented)
+    readonly type: "PANEL_SET_SIZE";
+}
+
 // @alpha
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
 }
@@ -4219,7 +4234,8 @@ export class StagePanelDef extends WidgetHost {
     get panelZones(): StagePanelZonesDef | undefined;
     get resizable(): boolean;
     get size(): number | undefined;
-    }
+    trySetCurrentSize(size: number): void;
+}
 
 // @alpha
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
@@ -4316,6 +4332,14 @@ export enum StagePanelState {
     Open = 2,
     // (undocumented)
     Popup = 3
+}
+
+// @internal (undocumented)
+export interface StagePanelTrySetCurrentSizeEventArgs {
+    // (undocumented)
+    panelDef: StagePanelDef;
+    // (undocumented)
+    size: number;
 }
 
 // @internal (undocumented)
@@ -5233,6 +5257,9 @@ export function useFrameworkVersion(): FrameworkVersion;
 
 // @internal (undocumented)
 export function useFrontstageDefNineZone(frontstage: FrontstageDef | undefined): [FrontstageState, React.Dispatch<FrontstageActionTypes>];
+
+// @internal (undocumented)
+export function useFrontstageManager(dispatch: React.Dispatch<FrontstageActionTypes>): void;
 
 // @internal (undocumented)
 export const useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems;

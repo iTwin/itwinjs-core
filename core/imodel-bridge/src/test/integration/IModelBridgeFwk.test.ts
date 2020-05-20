@@ -7,8 +7,8 @@ import { expect } from "chai";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 
 import { BridgeTestUtils, TestIModelInfo } from "../BridgeTestUtils";
-import { AuthorizedBackendRequestContext, IModelJsFs } from "@bentley/imodeljs-backend";
-import { AccessToken } from "@bentley/itwin-client";
+import { IModelJsFs } from "@bentley/imodeljs-backend";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BentleyStatus, Logger } from "@bentley/bentleyjs-core";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { BridgeJobDefArgs, BridgeSynchronizer, ServerArgs } from "../../BridgeSynchronizer";
@@ -19,8 +19,8 @@ describe("IModelBridgeFwk (#integration)", () => {
 
   let readWriteTestIModel: TestIModelInfo;
 
-  let requestContext: AuthorizedBackendRequestContext;
-  let managerRequestContext: AuthorizedBackendRequestContext;
+  let requestContext: AuthorizedClientRequestContext;
+  let managerRequestContext: AuthorizedClientRequestContext;
 
   before(async () => {
     BridgeTestUtils.setupLogging();

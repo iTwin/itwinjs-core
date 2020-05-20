@@ -30,7 +30,7 @@
 ## Constructor and full update methods
 
 | category | Matrix3d | |Transform | |
-|---|---|---|---|---|---|---|
+|---|---|---|---|---|
 | create identity | newMatrix = Matrix3d.createIdentity () | | newTransform = Transform.createIdentity () |
 |  | matrix.setIdentity () | | transform.setIdentity () |
 | all zero | newMatrix = Matrix3d.createZero () | | | |
@@ -61,7 +61,7 @@
 # Simple Queries with matrix rows and columns
 
 | category | Matrix3d |
-|---|---|---|---|---|---|---|
+|---|---|
 | clone individual columns | vector = matrix.columnX () |
 |                          | vector = matrix.columnY () |
 |                          | vector = matrix.columnZ () |

@@ -94,6 +94,7 @@ export function PopupItem(props: PopupItemProps) {
     ToolbarPanelAlignmentHelpers.getCssClassName(panelAlignment),
   );
 
+  const { hideIndicator, panel } = props;
   return (
     <ToolbarPopupContext.Provider value={{
       closePanel: () => processPanelOpenClose(false),
@@ -115,9 +116,9 @@ export function PopupItem(props: PopupItemProps) {
             {props.badge}
           </div>
         }
-        {props.hideIndicator ? undefined : <div className="components-triangle" />}
+        {hideIndicator ? undefined : <div className="components-triangle" />}
       </button>
-      {isPanelShown && <div ref={panelRef} className={panelClassName}>{props.panel}</div>}
+      {isPanelShown && <div ref={panelRef} className={panelClassName}>{panel}</div>}
     </ToolbarPopupContext.Provider>
   );
 }

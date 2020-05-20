@@ -15,10 +15,12 @@ interface AttachmentProps {
   origin: { x: number; y: number; };
   rotation: number;
   sizeRatio: number;
+  drawAsRaster: boolean;
+  preserveBackground: boolean;
 }
 
 async function attachView(opts: AttachmentProps): Promise<void> {
-  const { viewId, categoryId, priority } = { ...opts };
+  const { viewId, categoryId, priority, drawAsRaster, preserveBackground } = { ...opts };
   const vp = IModelApp.viewManager.selectedView;
   if (!vp || !viewId || !Id64.isValidId64(viewId) || !categoryId || !Id64.isValidId64(categoryId) || !(vp.view instanceof SheetViewState))
     return;
@@ -64,6 +66,10 @@ async function attachView(opts: AttachmentProps): Promise<void> {
     },
     jsonProperties: {
       displayPriority: priority,
+      displayOptions: {
+        drawAsRaster,
+        preserveBackground,
+      },
     },
     category: categoryId,
     placement,
@@ -83,6 +89,8 @@ async function attachView(opts: AttachmentProps): Promise<void> {
  * rotation rotation in degrees. Default zero.
  * size Ratio of the width or height of the sheet's area that the attachment should occupy. Default 1.
  * p display priority in [-500,500]. Default zero.
+ * i Draw as raster image.
+ * b Preserve background color.
  */
 export class AttachViewTool extends Tool {
   public static toolId = "AttachView";
@@ -128,6 +136,8 @@ export class AttachViewTool extends Tool {
       },
       rotation: args.getFloat("r") ?? 0,
       sizeRatio: args.getFloat("s") ?? 1,
+      drawAsRaster: args.getBoolean("i") ?? false,
+      preserveBackground: args.getBoolean("b") ?? false,
     };
 
     return this.run(props);

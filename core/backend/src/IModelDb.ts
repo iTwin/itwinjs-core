@@ -10,7 +10,7 @@
 
 import * as os from "os";
 import {
-  assert, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils,
+  BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils,
   Logger, OpenMode, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
@@ -1933,19 +1933,23 @@ export class BriefcaseDb extends IModelDb {
 
     const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(briefcaseKey);
     if (briefcaseEntry === undefined)
-      throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that has not been downloaded", Logger.logError, loggerCategory, () => briefcaseKey);
+      throw new IModelError(IModelStatus.BadRequest, "BriefcaseDb.open: Cannot open a briefcase that has not been downloaded", Logger.logError, loggerCategory, () => briefcaseKey);
     if (briefcaseEntry.downloadStatus !== DownloadBriefcaseStatus.Complete)
-      throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that has not been completely downloaded", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+      throw new IModelError(IModelStatus.BadRequest, "BriefcaseDb.open: Cannot open a briefcase that has not been completely downloaded", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
 
-    Logger.logTrace(loggerCategory, "Opening briefcase", () => briefcaseEntry.getDebugInfo());
+    Logger.logTrace(loggerCategory, "BriefcaseDb.open: Processing call to open briefcase", () => briefcaseEntry.getDebugInfo());
 
     let briefcaseProps = briefcaseEntry.getBriefcaseProps();
     BriefcaseDb.onOpen.raiseEvent(requestContext, briefcaseProps);
 
     let briefcaseDb: BriefcaseDb;
-    if (briefcaseEntry.iModelDb === undefined) {
-      assert(!briefcaseEntry.isOpen); // All open briefcases should have an iModelDb associated with it
+    const isOpen = briefcaseEntry.iModelDb !== undefined;
+    if (isOpen !== briefcaseEntry.isOpen) {
+      // All open briefcases should have the iModelDb property setup - eventually turn this into an assertion.
+      Logger.logError(loggerCategory, "BriefcaseDb.open: Open state was not expected", () => briefcaseEntry.getDebugInfo());
+    }
 
+    if (briefcaseEntry.iModelDb === undefined) {
       briefcaseEntry.openMode = openOptions?.openAsReadOnly ? OpenMode.Readonly : briefcaseEntry.openMode; // Override default openMode if user has requested it
       BriefcaseManager.openBriefcase(briefcaseEntry);
 
@@ -1962,19 +1966,20 @@ export class BriefcaseDb extends IModelDb {
 
       if (briefcaseDb.isPushEnabled) {
         if (!(requestContext instanceof AuthorizedClientRequestContext))
-          throw new IModelError(BentleyStatus.ERROR, "Opening a briefcase with SyncMode = PullPush requires authorization - pass AuthorizedClientRequestContext instead of ClientRequestContext");
+          throw new IModelError(BentleyStatus.ERROR, "BriefcaseDb.open: Opening a briefcase with SyncMode = PullPush requires authorization - pass AuthorizedClientRequestContext instead of ClientRequestContext", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
         await briefcaseDb.concurrencyControl.onOpened(requestContext);
       }
       this.onOpened.raiseEvent(requestContext, briefcaseDb);
     } else {
-      assert(briefcaseEntry.isOpen); // All open briefcases should have an iModelDb associated with it
       if (openOptions?.openAsReadOnly && briefcaseEntry.openMode === OpenMode.ReadWrite)
-        throw new IModelError(IModelStatus.AlreadyOpen, "The briefcase is already open ReadWrite. Cannot re-open it Readonly now", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+        throw new IModelError(IModelStatus.AlreadyOpen, "BriefcaseDb.open: The briefcase is already open ReadWrite. Cannot re-open it Readonly now", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+      Logger.logTrace(loggerCategory, "BriefcaseDb.open: Reusing an existing open briefcase", () => briefcaseEntry.getDebugInfo());
       briefcaseDb = briefcaseEntry.iModelDb as BriefcaseDb; // WIP: change iModelDb type in BriefcaseEntry
     }
 
     if (requestContext instanceof AuthorizedClientRequestContext) {
       // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
+      Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
       await briefcaseDb.logUsage(requestContext, briefcaseProps.contextId);
     }
     return briefcaseDb;

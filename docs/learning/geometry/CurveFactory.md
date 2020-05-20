@@ -14,6 +14,7 @@ A parameter `allowBackupAlongEdge` indicates how to handle edges where the incom
 
 The arc constructions are full 3D -- each arc is in the plane of its two line segments.
 (In the figures below, the linestring is slightly out-of-plane, and the visible fillets appear slightly elliptic because of being viewed at an angle.)
+
 | | |
 |-----|-----|
 | original linestring | ![>](./figs/CurveFactory/FilletLineStringA.png)  |
@@ -29,7 +30,7 @@ Unit Test
   * output: imodeljs/core/geometry/src/test/output/CurveFactory/FilletsInLineString.imjs
 
 
-## `CurveFactory.createPipeSegments(centerline, radius)
+## `CurveFactory.createPipeSegments(centerline, radius)`
 
 Given a centerline (segments and arcs) and radius, construct pipe segments of given radius.
 

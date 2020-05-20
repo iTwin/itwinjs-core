@@ -6,10 +6,10 @@
  * @module Views
  */
 
-import { assert, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
+import { assert, dispose, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, SheetProps, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, RenderMaterial, RenderTexture, SheetProps, TextureMapping, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
@@ -19,15 +19,18 @@ import { RenderGraphic } from "./render/RenderGraphic";
 import { GraphicBranch } from "./render/GraphicBranch";
 import { Frustum2d } from "./Frustum2d";
 import { Scene } from "./render/Scene";
+import { Decorations } from "./render/Decorations";
 import { MockRender } from "./render/MockRender";
 import { RenderClipVolume } from "./render/RenderClipVolume";
+import { RenderMemory } from "./render/RenderMemory";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { ViewRect } from "./ViewRect";
 import { IModelApp } from "./IModelApp";
 import { CoordSystem, OffScreenViewport, Viewport } from "./Viewport";
 import { ViewState, ViewState2d } from "./ViewState";
-import { TileGraphicType, TileTreeSet } from "./tile/internal";
+import { createDefaultViewFlagOverrides, TileGraphicType, TileTreeSet } from "./tile/internal";
+import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
 
 // cSpell:ignore ovrs
 
@@ -181,6 +184,13 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
+  public collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void {
+    super.collectNonTileTreeStatistics(stats);
+    if (this._attachments)
+      this._attachments.collectStatistics(stats);
+  }
+
+  /** @internal */
   public get defaultExtentLimits() {
     return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 };
   }
@@ -280,9 +290,9 @@ export class SheetViewState extends ViewState2d {
  * its Scene and symbology overrides.
  */
 class AttachmentTarget extends MockRender.OffScreenTarget {
-  private readonly _attachment: Attachment;
+  private readonly _attachment: OrthographicAttachment;
 
-  public constructor(attachment: Attachment) {
+  public constructor(attachment: OrthographicAttachment) {
     // The dimensions don't matter - we're not drawing anything.
     const rect = new ViewRect(1, 1);
     super(IModelApp.renderSystem, rect);
@@ -298,10 +308,22 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
   }
 }
 
-/** A viewport with a no-op RenderTarget, associated with a ViewAttachment's ViewState.
- * We select tiles for the view in the context of this viewport, to be drawn in the context of the sheet view.
+/** Draws the contents of a view attachment into a sheet view. */
+interface Attachment {
+  invalidateScene: () => void;
+  readonly areAllTileTreesLoaded: boolean;
+  addToScene: (context: SceneContext) => void;
+  discloseTileTrees: (trees: TileTreeSet) => void;
+  readonly zDepth: number;
+  clone: (sheetView: SheetViewState) => Attachment;
+  collectStatistics: (stats: RenderMemory.Statistics) => void;
+}
+
+/** Draws the contents a 2d or orthographic 3d view directly into a sheet view.
+ * We select tiles for the view in the context of a light-weight offscreen viewport with a no-op RenderTarget, then
+ * collect the resultant graphics and add them to the sheet view's scene.
  */
-class Attachment {
+class OrthographicAttachment {
   private readonly _viewport: OffScreenViewport;
   private readonly _props: ViewAttachmentProps;
   private readonly _sheetModelId: Id64String;
@@ -389,8 +411,8 @@ class Attachment {
       viewClip = ClipVector.createEmpty();
 
     let sheetClip;
-    if (undefined !== props.jsonProperties.clip)
-      sheetClip = ClipVector.fromJSON(props.jsonProperties.clip);
+    if (undefined !== props.jsonProperties?.clip)
+      sheetClip = ClipVector.fromJSON(props.jsonProperties?.clip);
 
     if (sheetClip && sheetClip.isValid) {
       // Clip to view attachment's clip. NB: clip is in sheet coordinate space.
@@ -418,8 +440,8 @@ class Attachment {
       this._hiddenLineSettings = style.settings.hiddenLineSettings;
   }
 
-  public clone(sheetView: SheetViewState): Attachment {
-    return new Attachment(this._originalView, this._props, sheetView);
+  public clone(sheetView: SheetViewState): OrthographicAttachment {
+    return new OrthographicAttachment(this._originalView, this._props, sheetView);
   }
 
   public discloseTileTrees(trees: TileTreeSet): void {
@@ -556,6 +578,224 @@ class Attachment {
   public invalidateScene(): void {
     this._viewport.invalidateScene();
   }
+
+  public get areAllTileTreesLoaded(): boolean {
+    return this.view.areAllTileTreesLoaded;
+  }
+
+  public collectStatistics(_stats: RenderMemory.Statistics): void {
+    // Handled by discloseTileTrees()
+  }
+}
+
+function createRasterAttachmentViewport(_view: ViewState, _rect: ViewRect, _attachment: RasterAttachment): OffScreenViewport {
+  class RasterAttachmentViewport extends OffScreenViewport {
+    private _sceneContext?: SceneContext;
+    private _isSceneReady = false;
+    private readonly _attachment: RasterAttachment;
+
+    public constructor(view: ViewState, rect: ViewRect, attachment: RasterAttachment) {
+      super(IModelApp.renderSystem.createOffscreenTarget(rect));
+      this._attachment = attachment;
+      this._isAspectRatioLocked = true;
+      this.changeView(view);
+    }
+
+    public createSceneContext(): SceneContext {
+      assert(!this._isSceneReady);
+
+      this._sceneContext = super.createSceneContext();
+      return this._sceneContext;
+    }
+
+    public renderFrame(): void {
+      assert(!this._isSceneReady);
+
+      this.clearSceneContext();
+      super.renderFrame();
+
+      if (undefined !== this._sceneContext) {
+        this._isSceneReady = !this._sceneContext.hasMissingTiles && this.view.areAllTileTreesLoaded;
+        if (this._isSceneReady)
+          this._attachment.produceGraphics(this._sceneContext);
+
+        this._sceneContext = undefined;
+      }
+    }
+
+    private clearSceneContext(): void {
+      this._sceneContext = undefined;
+    }
+
+    public addDecorations(_decorations: Decorations): void {
+      // ###TODO: skybox, ground plane, possibly grid. DecorateContext requires a ScreenViewport...
+    }
+  }
+
+  return new RasterAttachmentViewport(_view, _rect, _attachment);
+}
+
+/** Draws a 3d view with camera enabled into a sheet view by producing an image of the view's contents offscreen. */
+class RasterAttachment {
+  private readonly _props: ViewAttachmentProps;
+  private readonly _placement: Placement2d;
+  private readonly _transform: Transform;
+  public readonly zDepth: number;
+  private _viewport?: OffScreenViewport;
+  private _graphics?: RenderGraphic;
+
+  public constructor(view: ViewState, props: ViewAttachmentProps, sheetView: SheetViewState) {
+    // Render to a 2048x2048 view rect. Scale in Y to preserve aspect ratio.
+    const maxSize = 2048;
+    const rect = new ViewRect(0, 0, maxSize, maxSize);
+    const height = maxSize * view.getAspectRatio() * view.getAspectRatioSkew();
+    const skew = maxSize / height;
+    view.setAspectRatioSkew(skew);
+
+    if (true !== props.jsonProperties?.displayOptions?.preserveBackground) {
+      // Make background color 100% transparent so that Viewport.readImage() will discard transparent pixels.
+      const bgColor = sheetView.displayStyle.backgroundColor.withAlpha(0);
+      view.displayStyle.backgroundColor = bgColor;
+    }
+
+    this._viewport = createRasterAttachmentViewport(view, rect, this);
+    this._props = props;
+    this._placement = Placement2d.fromJSON(props.placement);
+    this._transform = this._placement.transform;
+    this.zDepth = Frustum2d.depthFromDisplayPriority(props.jsonProperties?.displayPriority ?? 0);
+  }
+
+  public invalidateScene() {
+    this._viewport?.invalidateScene();
+  }
+
+  public get areAllTileTreesLoaded() {
+    return this._viewport?.view.areAllTileTreesLoaded ?? true;
+  }
+
+  public addToScene(context: SceneContext): void {
+    // ###TODO: check viewport.wantViewAttachmentClipShapes
+    if (!context.viewport.view.viewsCategory(this._props.category))
+      return;
+
+    if (context.viewport.wantViewAttachmentBoundaries) {
+      const builder = context.createSceneGraphicBuilder(this._transform);
+      builder.setSymbology(ColorDef.red, ColorDef.red, 2);
+      builder.addRangeBox(Range3d.createRange2d(this._placement.bbox));
+      context.outputGraphic(builder.finish());
+    }
+
+    if (!context.viewport.wantViewAttachments)
+      return;
+
+    if (this._graphics) {
+      context.outputGraphic(this._graphics);
+      return;
+    }
+
+    if (undefined === this._viewport)
+      return;
+
+    this._viewport.debugBoundingBoxes = context.viewport.debugBoundingBoxes;
+    this._viewport.setTileSizeModifier(context.viewport.tileSizeModifier);
+
+    this._viewport.renderFrame();
+  }
+
+  public discloseTileTrees(trees: TileTreeSet) {
+    if (this._viewport)
+      trees.disclose(this._viewport);
+  }
+
+  public clone(_sheetView: SheetViewState): RasterAttachment {
+    return this;
+  }
+
+  public produceGraphics(context: SceneContext): void {
+    assert(context.viewport === this._viewport);
+    this._graphics = this.createGraphics(this._viewport);
+    this._viewport = dispose(this._viewport);
+
+    if (undefined !== this._graphics)
+      context.outputGraphic(this._graphics);
+  }
+
+  private createGraphics(vp: Viewport): RenderGraphic | undefined {
+    // Create a texture from the contents of the view.
+    const image = vp.readImage(vp.viewRect, undefined, false);
+    if (undefined === image)
+      return undefined;
+
+    const debugImage = false; // set to true to open a window displaying the captured image.
+    if (debugImage) {
+      const url = imageBufferToPngDataUrl(image, false);
+      if (url)
+        openImageDataUrlInNewWindow(url, "Attachment");
+    }
+
+    const textureParams = new RenderTexture.Params();
+    const texture = IModelApp.renderSystem.createTextureFromImageBuffer(image, vp.iModel, textureParams);
+    if (undefined === texture)
+      return undefined;
+
+    // Create a material for the texture
+    const graphicParams = new GraphicParams();
+    const materialParams = new RenderMaterial.Params();
+    materialParams.textureMapping = new TextureMapping(texture, new TextureMapping.Params());
+    graphicParams.material = IModelApp.renderSystem.createMaterial(materialParams, vp.iModel);
+
+    // Apply the texture to a rectangular polyface.
+    const depth = this.zDepth;
+    const east = this._placement.bbox.low.x;
+    const west = this._placement.bbox.high.x;
+    const north = this._placement.bbox.low.y;
+    const south = this._placement.bbox.high.y;
+    const corners = [
+      Point3d.create(east, north, depth),
+      Point3d.create(west, north, depth),
+      Point3d.create(west, south, depth),
+      Point3d.create(east, south, depth),
+    ];
+    const params = [
+      Point2d.create(0, 0),
+      Point2d.create(1, 0),
+      Point2d.create(1, 1),
+      Point2d.create(0, 1),
+    ];
+
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.needParams = strokeOptions.shouldTriangulate = true;
+    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+    polyfaceBuilder.addQuadFacet(corners, params);
+    const polyface = polyfaceBuilder.claimPolyface();
+
+    const graphicBuilder = IModelApp.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.Scene, vp, this._props.id);
+    graphicBuilder.activateGraphicParams(graphicParams);
+    graphicBuilder.addPolyface(polyface, false);
+    const graphic = graphicBuilder.finish();
+
+    // Wrap the polyface in a GraphicBranch.
+    const branch = new GraphicBranch();
+    const vfOvrs = createDefaultViewFlagOverrides({ clipVolume: true, shadows: false, lighting: false, thematic: false });
+    branch.setViewFlagOverrides(vfOvrs);
+    branch.symbologyOverrides = new FeatureSymbology.Overrides();
+    branch.entries.push(graphic);
+
+    // Apply the attachment's clip, if any.
+    let clipVolume;
+    if (this._props.jsonProperties?.clip) {
+      const clipVector = ClipVector.fromJSON(this._props.jsonProperties?.clip);
+      if (clipVector.isValid)
+        clipVolume = IModelApp.renderSystem.createClipVolume(clipVector);
+    }
+
+    return IModelApp.renderSystem.createGraphicBranch(branch, this._transform, { clipVolume });
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    if (this._graphics)
+      this._graphics.collectStatistics(stats);
+  }
 }
 
 async function createAttachments(attachmentProps: ViewAttachmentProps[], sheetView: SheetViewState): Promise<Attachment[]> {
@@ -564,11 +804,6 @@ async function createAttachments(attachmentProps: ViewAttachmentProps[], sheetVi
     const loadView = async () => {
       try {
         const view = await sheetView.iModel.views.load(attachment.view.id);
-        if (view.isCameraEnabled()) {
-          // ###TODO handle perspective views (render off-screen as raster tiles)
-          return undefined;
-        }
-
         return view;
       } catch (_) {
         return undefined;
@@ -582,10 +817,16 @@ async function createAttachments(attachmentProps: ViewAttachmentProps[], sheetVi
   assert(views.length === attachmentProps.length);
 
   const attachments = [];
+  const alwaysUseRaster = false; // set true for testing.
   for (let i = 0; i < views.length; i++) {
     const view = views[i];
-    if (view && !(view instanceof SheetViewState))
-      attachments.push(new Attachment(view, attachmentProps[i], sheetView));
+    if (view && !(view instanceof SheetViewState)) {
+      const props = attachmentProps[i];
+      const drawAsRaster = true === props.jsonProperties?.displayOptions?.drawAsRaster || view.isCameraEnabled() || alwaysUseRaster;
+      const ctor = drawAsRaster ? RasterAttachment : OrthographicAttachment;
+      const attach = new ctor(view, props, sheetView);
+      attachments.push(attach);
+    }
   }
 
   return attachments;
@@ -604,7 +845,7 @@ class Attachments {
 
   public get areAllTileTreesLoaded(): boolean {
     for (const attachment of this._attachments)
-      if (!attachment.view.areAllTileTreesLoaded)
+      if (!attachment.areAllTileTreesLoaded)
         return false;
 
     return true;
@@ -613,6 +854,11 @@ class Attachments {
   public discloseTileTrees(trees: TileTreeSet): void {
     for (const attachment of this._attachments)
       trees.disclose(attachment);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const attachment of this._attachments)
+      attachment.collectStatistics(stats);
   }
 
   public addToScene(context: SceneContext): void {

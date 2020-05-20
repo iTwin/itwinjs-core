@@ -185,3 +185,5 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
   * `rotation=`: Rotation of the attachment on the sheet in degrees. Defaults to zero.
   * `size=`: Ratio of the sheet's area that the attachment should occupy. Defaults to 1, making the attachment fill the entire sheet.
   * `priority=`: Display priority of the attachment in [-500,500]. Defaults to zero.
+  * `image=`: Display as a raster image, even if view is orthographic. Perspective views always draw as raster images.
+  * `background=`: Preserve background color when drawing as a raster image.

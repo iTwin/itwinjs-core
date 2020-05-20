@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "2.1.0-dev.11",
+  "version": "2.1.0-dev.15",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -34,23 +34,24 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.1.0-dev.11",
-    "@bentley/geometry-core": "^2.1.0-dev.11",
-    "@bentley/imodeljs-i18n": "^2.1.0-dev.11",
-    "@bentley/ui-abstract": "^2.1.0-dev.11",
+    "@bentley/bentleyjs-core": "^2.1.0-dev.15",
+    "@bentley/geometry-core": "^2.1.0-dev.15",
+    "@bentley/imodeljs-i18n": "^2.1.0-dev.15",
+    "@bentley/ui-abstract": "^2.1.0-dev.15",
     "react": "^16.8.0",
-    "react-dom": "^16.8.0"
+    "react-dom": "^16.8.0",
+    "react-select": "^3.0.4"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/geometry-core": "2.1.0-dev.11",
-    "@bentley/build-tools": "2.1.0-dev.11",
-    "@bentley/bentleyjs-core": "2.1.0-dev.11",
-    "@bentley/imodeljs-i18n": "2.1.0-dev.11",
-    "@bentley/ui-abstract": "2.1.0-dev.11",
+    "@bentley/geometry-core": "2.1.0-dev.15",
+    "@bentley/build-tools": "2.1.0-dev.15",
+    "@bentley/bentleyjs-core": "2.1.0-dev.15",
+    "@bentley/imodeljs-i18n": "2.1.0-dev.15",
+    "@bentley/ui-abstract": "2.1.0-dev.15",
     "@bentley/react-scripts": "3.4.1",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
@@ -66,6 +67,7 @@
     "@types/react": "^16.8.0",
     "@types/react-autosuggest": "^9.3.11",
     "@types/react-dom": "^16.8.0",
+    "@types/react-select":"^3.0.4",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "@types/testing-library__react-hooks": "^3.1.0",

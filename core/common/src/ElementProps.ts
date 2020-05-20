@@ -168,6 +168,21 @@ export interface GeometryPartProps extends ElementProps {
  */
 export interface ViewAttachmentProps extends GeometricElement2dProps {
   view: RelatedElementProps;
+  jsonProperties?: {
+    /** Integer priority in [-500,500]. Where two attachments overlap, the one with the higher priority draws in front of the other. Default: 0. */
+    displayPriority?: number;
+    /** JSON representation of a [ClipVector]($geometry-core] in sheet coordinate space, used to clip the attachment's graphics on the sheet. */
+    clip?: any;
+    /** Options for customizing how the view attachment is displayed on the sheet. */
+    displayOptions?: {
+      /** If true, the view attachment is always drawn as a raster image. By default, only 3d perspective views are drawn this way (they always *must* be). Default: false. */
+      drawAsRaster?: boolean;
+      /** If true, and the view attachment is drawn as a raster image, the background color of the view will be preserved. By default the background color of the
+       * sheet is used and any background pixels become transparent, allowing the contents of the sheet to show through. Default: false.
+       */
+      preserveBackground?: boolean;
+    };
+  };
 }
 
 /** Properties of a [Subject]($backend)

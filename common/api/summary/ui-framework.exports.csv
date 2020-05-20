@@ -185,7 +185,7 @@ internal;FrameworkVersionSwitchProps
 internal;FrameworkZone 
 internal;FrameworkZoneProps 
 public;Frontstage 
-internal;FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction | WidgetTabShowAction | WidgetTabExpandAction
+internal;FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction | WidgetTabShowAction | WidgetTabExpandAction | PanelSetSizeAction
 public;FrontstageActivatedEvent 
 public;FrontstageActivatedEventArgs
 public;FrontstageComposer 
@@ -215,6 +215,7 @@ internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
 internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
+internal;getPanelSide(location: StagePanelLocation_2): PanelSide
 beta;getSelectionContextSyncEventIds(): string[]
 internal;getStableWidgetProps(widgetProps: WidgetProps, stableId: string): WidgetProps
 internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
@@ -343,6 +344,7 @@ public;NestedFrontstage
 public;NineZoneChangeHandler
 public;NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessageDetails
 public;NotifyMessageType = string | HTMLElement | ReactMessage
+internal;PanelSetSizeAction
 alpha;PanelStateChangedEvent 
 alpha;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
@@ -433,6 +435,7 @@ alpha;StagePanelProps
 internal;StagePanelRuntimeProps
 alpha;StagePanelSection
 alpha;StagePanelState
+internal;StagePanelTrySetCurrentSizeEventArgs
 internal;StagePanelZoneDef 
 internal;StagePanelZoneDefKeys = keyof Pick
 alpha;StagePanelZoneProps
@@ -542,6 +545,7 @@ beta;useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly Co
 beta;useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[]
 internal;useFrameworkVersion(): FrameworkVersion
 internal;useFrontstageDefNineZone(frontstage: FrontstageDef | undefined): [FrontstageState, React.Dispatch
+internal;useFrontstageManager(dispatch: React.Dispatch
 internal;useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems
 internal;useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean

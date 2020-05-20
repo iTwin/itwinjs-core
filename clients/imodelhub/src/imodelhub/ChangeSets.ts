@@ -408,14 +408,13 @@ export class ChangeSetHandler {
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
     requestContext.enter();
-    Logger.logInfo(loggerCategory, `Started querying ChangeSets`, () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
+    Logger.logTrace(loggerCategory, `Querying ChangeSets`, () => ({ iModelId }));
 
     const id = query.getId();
     const changeSets = await this._handler.getInstances<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId, id), query.getQueryOptions());
     requestContext.enter();
-    Logger.logTrace(loggerCategory, `Finished querying ChangeSets`, () => ({ iModelId, count: changeSets.length }));
 
     return changeSets;
   }
@@ -432,11 +431,9 @@ export class ChangeSetHandler {
    */
   private async getChunk(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, queryOptions: RequestQueryOptions): Promise<ChangeSet[]> {
     requestContext.enter();
-    Logger.logInfo(loggerCategory, `Started querying ChangeSets chunk`, () => ({ iModelId }));
+    Logger.logTrace(loggerCategory, `Querying ChangeSets chunk`, () => ({ iModelId }));
     const changeSets = await this._handler.getInstancesChunk<ChangeSet>(requestContext, url, chunkedQueryContext, ChangeSet, queryOptions);
     requestContext.enter();
-    Logger.logTrace(loggerCategory, `Finished querying ChangeSets chunk`, () => ({ iModelId, count: changeSets.length }));
-
     return changeSets;
   }
 

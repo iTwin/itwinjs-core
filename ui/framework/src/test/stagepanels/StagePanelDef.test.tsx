@@ -56,6 +56,14 @@ describe("StagePanelDef", () => {
     panelDef.initializeFromProps({ resizable: false, panelZones: {} });
     expect(panelDef.panelZones).to.exist;
   });
+
+  it("should emit onStagePanelTrySetCurrentSizeEvent", () => {
+    const spy = sinon.spy();
+    FrontstageManager.onStagePanelTrySetCurrentSizeEvent.addListener(spy);
+    const panelDef = new StagePanelDef();
+    panelDef.trySetCurrentSize(200);
+    expect(spy).to.be.calledOnceWithExactly(sinon.match({ panelDef, size: 200 }));
+  });
 });
 
 describe("StagePanelZonesDef", () => {

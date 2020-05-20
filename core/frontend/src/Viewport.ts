@@ -2545,6 +2545,8 @@ export abstract class Viewport implements IDisposable {
     this.discloseTileTrees(trees);
     for (const tree of trees.trees)
       tree.collectStatistics(stats);
+
+    this.view.collectNonTileTreeStatistics(stats);
   }
 
   /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.

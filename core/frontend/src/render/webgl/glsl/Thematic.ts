@@ -7,12 +7,12 @@
  */
 
 import { ThematicDisplayMode } from "@bentley/imodeljs-common";
-import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { unpackFloat } from "./Clipping";
 import { addRenderPass } from "./RenderPass";
 import { addInstancedRtcMatrix, addProjectionMatrix } from "./Vertex";
+import { TextureUnit } from "../RenderFlags";
 
 const getSensorFloat = `
   vec4 getSensor(int index) {
@@ -60,12 +60,17 @@ if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
     vec4 sensor = getSensor(i);
 
     float dist = distance(v_thematicIndex, sensor.xyz);
-    float contribution = 1.0 / pow(dist, 2.0);
-    sensorSum += sensor.w * contribution;
-    contributionSum += contribution;
+
+    bool skipThisSensor = (u_distanceCutoff > 0.0 && dist > u_distanceCutoff);
+    if (!skipThisSensor) {
+      float contribution = 1.0 / pow(dist, 2.0);
+      sensorSum += sensor.w * contribution;
+      contributionSum += contribution;
+    }
   }
 
-  ndx = sensorSum / contributionSum;
+  if (contributionSum > 0.0) // avoid division by zero
+    ndx = sensorSum / contributionSum;
 }
 
 return vec4(TEXTURE(s_texture, vec2(0.0, ndx)).rgb, baseColor.a);
@@ -142,15 +147,36 @@ export function addThematicDisplay(builder: ProgramBuilder) {
     });
   });
 
+  frag.addUniform("u_distanceCutoff", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_distanceCutoff", (uniform, params) => {
+      params.target.uniforms.thematic.bindDistanceCutoff(uniform);
+    });
+  });
+
   frag.addUniform("u_numSensors", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_numSensors", (uniform, params) => {
-      params.target.uniforms.thematic.bindNumSensors(uniform);
+      if (params.target.wantThematicSensors) {
+        if (params.target.uniforms.thematic.wantGlobalSensorTexture)
+          params.target.uniforms.thematic.bindNumSensors(uniform);
+        else // we are batching separate sensor textures per-tile; use the number of sensors from the batch
+          params.target.uniforms.batch.bindNumThematicSensors(uniform);
+      } else {
+        uniform.setUniform1i(0);
+      }
     });
   });
 
   frag.addUniform("s_sensorSampler", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_sensorSampler", (uniform, params) => {
-      params.target.uniforms.thematic.bindSensors(uniform, TextureUnit.ThematicSensors);
+      if (params.target.wantThematicSensors) {
+        if (params.target.uniforms.thematic.wantGlobalSensorTexture) {
+          params.target.uniforms.thematic.bindSensors(uniform);
+        } else { // we are batching separate sensor textures per-tile; bind the batch's sensor texture
+          params.target.uniforms.batch.bindThematicSensors(uniform);
+        }
+      } else {
+        System.instance.ensureSamplerBound(uniform, TextureUnit.ThematicSensors);
+      }
     });
   });
 

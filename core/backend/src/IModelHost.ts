@@ -9,7 +9,7 @@
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
-import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -344,7 +344,11 @@ export class IModelHost {
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggerCategory, () => (configuration));
 
+    if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
+    if (!IModelHost.applicationVersion) IModelHost.applicationVersion = this.getApplicationVersion(); // Default to version of this package
     IModelHost.sessionId = Guid.createValue();
+    this.logStartup();
+
     if (configuration.applicationType && configuration.applicationType === ApplicationType.NativeApp) {
       this._nativeAppBackend = true;
     }
@@ -377,6 +381,13 @@ export class IModelHost {
     if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
 
+      Logger.logTrace(loggerCategory, "Configured crash reporting", () => ({
+        enableCrashDumps: configuration.crashReportingConfig?.enableCrashDumps,
+        wantFullMemoryDumps: configuration.crashReportingConfig?.wantFullMemoryDumps,
+        enableNodeReport: configuration.crashReportingConfig?.enableNodeReport,
+        uploadToBentley: configuration.crashReportingConfig?.uploadToBentley,
+      }));
+
       if (configuration.crashReportingConfig.enableNodeReport) {
         try {
           // node-report reports on V8 fatal errors and unhandled exceptions/Promise rejections.
@@ -384,6 +395,7 @@ export class IModelHost {
           nodereport.setEvents("exception+fatalerror+apicall");
           nodereport.setDirectory(configuration.crashReportingConfig.crashDir);
           nodereport.setVerbose("yes");
+          Logger.logTrace(loggerCategory, "Configured native crash reporting (node-report)");
         } catch (err) {
           Logger.logWarning(loggerCategory, "node-report is not installed.");
         }
@@ -416,8 +428,6 @@ export class IModelHost {
 
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
-    if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
-    if (!IModelHost.applicationVersion) IModelHost.applicationVersion = this.getApplicationVersion(); // Default to version of this package
 
     if (undefined !== this._platform) {
       this._platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
@@ -427,6 +437,29 @@ export class IModelHost {
   }
 
   private static _briefcaseCacheDir: string;
+
+  private static logStartup() {
+    if (!Logger.isEnabled(loggerCategory, LogLevel.Trace))
+      return;
+
+    // Extract the iModel details from environment - note this is very specific to Bentley hosted backends, but is quite useful for tracing
+    let startupInfo: any = {};
+    const serviceName = process.env.FABRIC_SERVICE_NAME;
+    if (serviceName) {
+      // e.g., fabric:/iModelWebViewer3.0/iModelJSGuest/1/08daaeb3-b56f-480b-9051-7efc834d18ae/512d971d-b641-4735-bb1c-c07ab3e44ce7/c1315fcce125ca40b2d405bb7809214daf8b4c85
+      const serviceNameComponents = serviceName.split("/");
+      if (serviceNameComponents.length === 7) {
+        startupInfo = {
+          ...startupInfo,
+          contextId: serviceNameComponents[4],
+          iModelId: serviceNameComponents[5],
+          changeSetId: serviceNameComponents[6],
+        };
+      }
+    }
+
+    Logger.logTrace(loggerCategory, "IModelHost.startup", () => startupInfo);
+  }
 
   // Get a platform specific default cache dir
   private static getDefaultCacheDir(): string {

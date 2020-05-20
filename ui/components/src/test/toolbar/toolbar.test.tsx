@@ -82,6 +82,8 @@ describe("<Toolbar (No Overflow) />", () => {
       // renderedComponent.debug();
       // since group priorities are not defined no separator class should be found.
       expect(renderedComponent.container.querySelectorAll(".components-toolbar-button-add-gap-before").length).to.be.eq(0);
+      // badges should not be displayed when toolbar is transparent
+      expect(renderedComponent.container.querySelectorAll(".components-badge").length).to.be.eq(0);
     });
 
     it("will render with separators when group priority changes ", () => {
@@ -89,14 +91,17 @@ describe("<Toolbar (No Overflow) />", () => {
         ToolbarItemUtilities.createActionButton("Entry1", 10, "icon-developer", "Entry1", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", (): void => { }, { groupPriority: 5 }),
         ToolbarItemUtilities.createActionButton("Entry3", 30, "icon-developer", "Entry3", (): void => { }, { groupPriority: 5 }),
-        ToolbarItemUtilities.createActionButton("Entry4", 40, "icon-developer", "Entry4", (): void => { }, { groupPriority: 10 }),
+        ToolbarItemUtilities.createActionButton("Entry4", 40, "icon-developer", "Entry4", (): void => { }, { groupPriority: 10, badgeType: BadgeType.New }),
         ToolbarItemUtilities.createActionButton("Entry5", 50, "icon-developer", "Entry5", (): void => { }, { groupPriority: 10 }),
       ];
 
       const renderedComponent = render(<Toolbar items={toolbarItemsWithGroupPriority} toolbarOpacitySetting={ToolbarOpacitySetting.Defaults} />);
       expect(renderedComponent).not.to.be.undefined;
+      // renderedComponent.debug();
 
-      expect(renderedComponent.container.querySelectorAll(".components-toolbar-show-group-separators").length).to.be.eq(1);
+      expect(renderedComponent.container.querySelectorAll(".components-toolbar-show-decorators").length).to.be.eq(1);
+      // badges should be displayed when toolbar is NOT transparent
+      expect(renderedComponent.container.querySelectorAll(".components-badge").length).to.be.eq(1);
       expect(renderedComponent.container.querySelectorAll(".components-toolbar-item-container.components-horizontal.components-toolbar-button-add-gap-before").length).to.be.eq(2);
     });
 
@@ -113,7 +118,7 @@ describe("<Toolbar (No Overflow) />", () => {
       expect(renderedComponent).not.to.be.undefined;
       // renderedComponent.debug();
 
-      expect(renderedComponent.container.querySelectorAll(".components-toolbar-show-group-separators").length).to.be.eq(0);
+      expect(renderedComponent.container.querySelectorAll(".components-toolbar-show-decorators").length).to.be.eq(0);
     });
 
     it("will render transparent background", () => {

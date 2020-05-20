@@ -297,6 +297,7 @@ The former `@bentley/imodeljs-clients` package contained clients for various Ben
 The `@bentley/itwin-client` package contains the base functionality that all other clients leverage. Update your imports to use specific packages as necessary.
 
 The logger categories setup in `@bentley/imodeljs-clients` have now migrated to the individual packages, with names consistent with their new location:
+
 | Old code                           | New package name                | New code                                 |
 | ---------------------------------- | ------------------------------- | ---------------------------------------- |
 | `ClientsLoggerCategory.Clients`    | `@bentley/itwin-client`         | ITwinClientLoggerCategory.Clients        |
