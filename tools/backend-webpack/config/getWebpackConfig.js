@@ -27,6 +27,7 @@ function getWebpackConfig(srcFile, outDir, profile) {
       chunkFilename: "[name].chunk.js",
     },
     target: "electron-main",
+    devtool: "source-map",
     plugins: [
       new BackendDefaultsPlugin(),
       // Watcher doesn't work well if you mistype casing in a path so we use
