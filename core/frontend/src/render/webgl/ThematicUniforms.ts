@@ -16,6 +16,7 @@ import { TextureHandle } from "./Texture";
 import { ThematicSensors } from "./ThematicSensors";
 import { Range3d } from "@bentley/geometry-core";
 import { Target } from "./Target";
+import { System } from "./System";
 
 /** Maintains state for uniforms related to thematic display.
  * @internal
@@ -28,6 +29,7 @@ export class ThematicUniforms implements WebGLDisposable {
   private readonly _displayMode = new Float32Array(1);
   private readonly _distanceCutoff = new Float32Array(1);
   private _numSensors: number = 0;
+  private _gradientDimension = _getGradientDimension();
 
   private _thematicDisplay?: ThematicDisplay;
 
@@ -78,7 +80,7 @@ export class ThematicUniforms implements WebGLDisposable {
     }
 
     const symb = Gradient.Symb.createThematic(this.thematicDisplay.gradientSettings);
-    const image = symb.getImage(1, 8192);
+    const image = symb.getImage(1, this._gradientDimension);
     this._texture = TextureHandle.createForImageBuffer(image, RenderTexture.Type.ThematicGradient);
   }
 
@@ -125,4 +127,10 @@ export class ThematicUniforms implements WebGLDisposable {
     this._texture = dispose(this._texture);
     this._sensors = dispose(this._sensors);
   }
+}
+
+function _getGradientDimension(): number {
+  const preferDimension = 8192;
+  const maxDimension = System.instance.capabilities.maxTextureSize;
+  return (preferDimension > maxDimension) ? maxDimension : preferDimension;
 }
