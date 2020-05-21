@@ -887,15 +887,15 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   public set(id: FragmentShaderComponent, component: string) { this.addComponent(id, component); }
   public unset(id: FragmentShaderComponent) { this.removeComponent(id); }
 
-  public addDrawBuffersExtension(): void {
+  public addDrawBuffersExtension(n: number): void {
     if (System.instance.capabilities.isWebGL2) {
       this.clearFragOutput();
-      for (let i = 0; i < 4; i++)
+      for (let i = 0; i < n; i++)
         this.addFragOutput("FragColor" + i, i);
     } else {
       assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
       this.addExtension("GL_EXT_draw_buffers");
-      for (let i = 0; i < 4; i++)
+      for (let i = 0; i < n; i++)
         this.addDefine("FragColor" + i, "gl_FragData[" + i + "]");
     }
   }

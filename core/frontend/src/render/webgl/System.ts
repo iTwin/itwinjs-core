@@ -341,7 +341,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
-  public static createContext(canvas: HTMLCanvasElement, inputContextAttributes?: WebGLContextAttributes, useWebGL2?: boolean): WebGLRenderingContext | WebGL2RenderingContext | undefined {
+  public static createContext(canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLRenderingContext | WebGL2RenderingContext | undefined {
     let contextAttributes: WebGLContextAttributes = { powerPreference: "high-performance" };
     if (undefined !== inputContextAttributes) {
       // NOTE: Order matters with spread operator - if caller wants to override powerPreference, he should be able to.
@@ -369,8 +369,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     if (null === canvas)
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
 
-    const useWebGL2 = (undefined === options.useWebGL2 ? false : options.useWebGL2);
-    const context = System.createContext(canvas, optionsIn?.contextAttributes, useWebGL2);
+    const useWebGL2 = (undefined === options.useWebGL2 ? true : options.useWebGL2);
+    const context = System.createContext(canvas, useWebGL2, optionsIn?.contextAttributes);
     if (undefined === context) {
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain WebGL context");
     }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webgl-compatibility",
+      "comment": "default to WebGL2",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webgl-compatibility",
+  "email": "Marc.Neely@bentley.com"
+}

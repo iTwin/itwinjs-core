@@ -36,7 +36,7 @@ describe("Test VAO creation", () => {
 
 describe("Test VBO creation", () => {
   before(async () => {
-    const renderSysOpts: RenderSystem.Options = {};
+    const renderSysOpts: RenderSystem.Options = { useWebGL2: false };
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
     await IModelApp.startup({ renderSys: renderSysOpts });
   });
@@ -61,7 +61,7 @@ describe("Render mirukuru with VAOs disabled", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    const renderSysOpts: RenderSystem.Options = {};
+    const renderSysOpts: RenderSystem.Options = { useWebGL2: false };
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
     await IModelApp.startup({ renderSys: renderSysOpts });

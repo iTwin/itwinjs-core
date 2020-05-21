@@ -61,12 +61,12 @@ function addTextures(builder: ProgramBuilder) {
       }
     });
   });
-  builder.frag.addUniform("u_texTransform", VariableType.Mat4, (prog) => {
+  builder.addUniformArray("u_texTransform", VariableType.Vec4, 4, (prog) => {
     prog.addGraphicUniform("u_texTransform", (uniform, params) => {
       const terrainMesh = params.geometry.asTerrainMesh!;
       const textureParams = terrainMesh.textureParams;
       if (undefined !== textureParams) {
-        uniform.setMatrix4(textureParams.matrix);
+        uniform.setUniform4fv(textureParams.matrix.data);
       }
     });
   });

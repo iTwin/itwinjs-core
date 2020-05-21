@@ -19,19 +19,20 @@ function _createCanvas(): HTMLCanvasElement | undefined {
 describe("Render Compatibility", () => {
   // NB: We assume software rendering for these tests because puppeteer only supports software rendering.
   // Further, we run in the context of Chrome, whose Swift software renderer fully supports our renderer.
+  // We will run this test using WebGL1 since you cannot disable frag_depth in WebGL2.
   it("should turn off logarithmicZBuffer if the gl frag depth extension is not available", () => {
     const canvas = _createCanvas();
     expect(canvas).to.not.be.undefined;
-    const context = System.createContext(canvas!);
+    const context = System.createContext(canvas!, false);
     expect(context).to.not.be.undefined;
 
-    let renderSysOpts: RenderSystem.Options = { logarithmicDepthBuffer: false };
+    let renderSysOpts: RenderSystem.Options = { logarithmicDepthBuffer: false, useWebGL2: false };
     let testSys = System.create(renderSysOpts);
     expect(testSys.options.logarithmicDepthBuffer).to.be.false;
-    renderSysOpts = { logarithmicDepthBuffer: true };
+    renderSysOpts = { logarithmicDepthBuffer: true, useWebGL2: false };
     testSys = System.create(renderSysOpts);
     expect(testSys.options.logarithmicDepthBuffer).to.equal(testSys.capabilities.supportsFragDepth);
-    renderSysOpts = { logarithmicDepthBuffer: true, disabledExtensions: ["EXT_frag_depth"] };
+    renderSysOpts = { logarithmicDepthBuffer: true, disabledExtensions: ["EXT_frag_depth"], useWebGL2: false };
     testSys = System.create(renderSysOpts);
     expect(testSys.options.logarithmicDepthBuffer).to.be.false;
   });
@@ -41,7 +42,7 @@ describe("Instancing", () => {
   class TestApp extends MockRender.App {
     public static async test(enableInstancing: boolean, supportsInstancing: boolean, expectEnabled: boolean): Promise<void> {
       const tileAdminProps: TileAdmin.Props = { enableInstancing };
-      const renderSysOpts: RenderSystem.Options = {};
+      const renderSysOpts: RenderSystem.Options = { useWebGL2: false }; // use WebGL1 since insdtanced arrays connot be disabled in WebGL2
       if (!supportsInstancing)
         renderSysOpts.disabledExtensions = ["ANGLE_instanced_arrays"];
 
