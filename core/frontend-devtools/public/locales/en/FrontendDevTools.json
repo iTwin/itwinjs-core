@@ -96,11 +96,8 @@
     "FadeOut": {
       "keyin": "fdt fadeout"
     },
-    "VCIntersectOn": {
-      "keyin": "fdt vcintersect on"
-    },
-    "VCIntersectOff": {
-      "keyin": "fdt vcintersect off"
+    "ToggleVCIntersect": {
+      "keyin": "fdt vcintersect"
     },
     "ToggleTileRequestDecoration": {
       "keyin": "fdt tile requests"

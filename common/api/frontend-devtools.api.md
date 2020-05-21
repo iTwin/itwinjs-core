@@ -822,6 +822,20 @@ export abstract class RenderSystemDebugControlTool extends Tool {
 }
 
 // @beta
+export abstract class RenderTargetDebugControlToggleTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    protected abstract get aspect(): DebugControlBoolean;
+    // (undocumented)
+    protected execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+}
+
+// @beta
 export abstract class RenderTargetDebugControlTool extends Tool {
     // (undocumented)
     protected abstract execute(_control: RenderTargetDebugControl, _vp: ScreenViewport): void;
@@ -886,22 +900,6 @@ export class SetAspectRatioSkewTool extends Tool {
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
     run(skew?: number): boolean;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @internal
-export class SetVolClassIntersectOff extends RenderTargetDebugControlTool {
-    // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @internal
-export class SetVolClassIntersectOn extends RenderTargetDebugControlTool {
-    // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
     // (undocumented)
     static toolId: string;
 }
@@ -1026,9 +1024,9 @@ export class Toggle3dManipulationsTool extends ViewportToggleTool {
 }
 
 // @alpha
-export class ToggleDrapeFrustumTool extends RenderTargetDebugControlTool {
+export class ToggleDrapeFrustumTool extends RenderTargetDebugControlToggleTool {
     // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    get aspect(): DebugControlBoolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1079,41 +1077,41 @@ export class ToggleProjectExtentsTool extends Tool {
 }
 
 // @beta
-export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
+export class ToggleReadPixelsTool extends RenderTargetDebugControlToggleTool {
     // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @alpha
-export class ToggleRealityTileBounds extends RenderTargetDebugControlTool {
-    // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    get aspect(): DebugControlBoolean;
     // (undocumented)
     static toolId: string;
 }
 
 // @alpha
-export class ToggleRealityTileFreeze extends RenderTargetDebugControlTool {
+export class ToggleRealityTileBounds extends RenderTargetDebugControlToggleTool {
     // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @alpha
-export class ToggleRealityTileLogging extends RenderTargetDebugControlTool {
-    // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    get aspect(): DebugControlBoolean;
     // (undocumented)
     static toolId: string;
 }
 
 // @alpha
-export class ToggleRealityTilePreload extends RenderTargetDebugControlTool {
+export class ToggleRealityTileFreeze extends RenderTargetDebugControlToggleTool {
     // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    get aspect(): DebugControlBoolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleRealityTileLogging extends RenderTargetDebugControlToggleTool {
+    // (undocumented)
+    get aspect(): DebugControlBoolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleRealityTilePreload extends RenderTargetDebugControlToggleTool {
+    // (undocumented)
+    get aspect(): DebugControlBoolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1206,6 +1204,14 @@ export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
 export class ToggleViewAttachmentsTool extends ViewportToggleTool {
     // (undocumented)
     protected toggle(vp: Viewport, enable?: boolean): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class ToggleVolClassIntersect extends RenderTargetDebugControlToggleTool {
+    // (undocumented)
+    get aspect(): DebugControlBoolean;
     // (undocumented)
     static toolId: string;
 }

@@ -8,6 +8,7 @@
  */
 
 import { IModelApp, PrimitiveVisibility, RenderTargetDebugControl, ScreenViewport, Tool } from "@bentley/imodeljs-frontend";
+import { parseToggle } from "./parseToggle";
 
 /** Executes some code against a RenderTargetDebugControl obtained from the selected viewport.
  * @beta
@@ -25,26 +26,51 @@ export abstract class RenderTargetDebugControlTool extends Tool {
   protected abstract execute(_control: RenderTargetDebugControl, _vp: ScreenViewport): void;
 }
 
+type DebugControlBoolean = "displayDrapeFrustum" | "drawForReadPixels" | "displayRealityTileRanges" | "displayRealityTileRanges" |
+  "displayRealityTilePreload" | "freezeRealityTiles" | "logRealityTiles" | "vcSupportIntersectingVolumes";
+
+/** Toggles some aspect of a RenderTargetDebugControl for the selected viewport.
+ * @beta
+ */
+export abstract class RenderTargetDebugControlToggleTool extends RenderTargetDebugControlTool {
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  private _enable?: boolean;
+
+  protected abstract get aspect(): DebugControlBoolean;
+
+  protected execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    const value = undefined !== this._enable ? this._enable : !control[this.aspect];
+    control[this.aspect] = value;
+    vp.invalidateRenderPlan();
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const enable = parseToggle(args[0]);
+    if (typeof enable !== "string") {
+      this._enable = enable;
+      this.run([]);
+    }
+
+    return true;
+  }
+}
+
 /** Toggles between normal rendering and rendering as if drawing to an off-screen framebuffer for element locate. Useful for debugging locate issues.
  * @beta
  */
-export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
+export class ToggleReadPixelsTool extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleReadPixels";
-  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    control.drawForReadPixels = !control.drawForReadPixels;
-    vp.invalidateScene();
-  }
+  public get aspect(): DebugControlBoolean { return "drawForReadPixels"; }
 }
 
 /** Turn on the display of the draping frustum.
  * @alpha
  */
-export class ToggleDrapeFrustumTool extends RenderTargetDebugControlTool {
+export class ToggleDrapeFrustumTool extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleDrapeFrustum";
-  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    control.displayDrapeFrustum = !control.displayDrapeFrustum;
-    vp.invalidateRenderPlan();
-  }
+  public get aspect(): DebugControlBoolean { return "displayDrapeFrustum"; }
 }
 /** Control whether all geometry renders, or only instanced or batched geometry.
  * Allowed argument: "instanced", "batched", "all". Defaults to "all" if no arguments supplied.
@@ -85,64 +111,38 @@ export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool 
 /** Turn on display of reality tile boundaies.
  * @alpha
  */
-export class ToggleRealityTileBounds extends RenderTargetDebugControlTool {
+export class ToggleRealityTileBounds extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleRealityTileBounds";
-  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    control.displayRealityTileRanges = !control.displayRealityTileRanges;
-    vp.invalidateScene();
-  }
+  public get aspect(): DebugControlBoolean { return "displayRealityTileRanges"; }
 }
 
 /** Turn on display of reality tile preload debugging.
  * @alpha
  */
-export class ToggleRealityTilePreload extends RenderTargetDebugControlTool {
+export class ToggleRealityTilePreload extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleRealityTilePreload";
-  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    control.displayRealityTilePreload = !control.displayRealityTilePreload;
-    vp.invalidateScene();
-  }
+  public get aspect(): DebugControlBoolean { return "displayRealityTilePreload"; }
 }
 /** Freeze loading of reality tiles.
  * @alpha
  */
-export class ToggleRealityTileFreeze extends RenderTargetDebugControlTool {
+export class ToggleRealityTileFreeze extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleRealityTileFreeze";
-  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    control.freezeRealityTiles = !control.freezeRealityTiles;
-    vp.invalidateScene();
-  }
+  public get aspect(): DebugControlBoolean { return "freezeRealityTiles"; }
 }
 
 /** Turn on logging of console tile selection and loadding (to console).
  * @alpha
  */
-export class ToggleRealityTileLogging extends RenderTargetDebugControlTool {
+export class ToggleRealityTileLogging extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleRealityTileLogging";
-  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    control.logRealityTiles = !control.logRealityTiles;
-    vp.invalidateScene();
-  }
+  public get aspect(): DebugControlBoolean { return "logRealityTiles"; }
 }
 
-/** Sets support for intersecting volume classifiers.
+/** Toggles support for intersecting volume classifiers.
  * @internal
  */
-export class SetVolClassIntersectOn extends RenderTargetDebugControlTool {
-  public static toolId = "VCIntersectOn";
-  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    control.vcSupportIntersectingVolumes = true;
-    vp.invalidateRenderPlan();
-  }
-}
-
-/** Sets support for intersecting volume classifiers.
- * @internal
- */
-export class SetVolClassIntersectOff extends RenderTargetDebugControlTool {
-  public static toolId = "VCIntersectOff";
-  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    control.vcSupportIntersectingVolumes = false;
-    vp.invalidateRenderPlan();
-  }
+export class ToggleVolClassIntersect extends RenderTargetDebugControlToggleTool {
+  public static toolId = "ToggleVCIntersect";
+  public get aspect(): DebugControlBoolean { return "vcSupportIntersectingVolumes"; }
 }
