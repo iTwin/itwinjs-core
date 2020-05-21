@@ -213,6 +213,7 @@ class GeoNameUpdateTool extends GeoNameTool {
 
 export class GeoNameExtension extends Extension {
   private _i18NNamespace?: I18NNamespace;
+  protected _defaultNs = "geoNames";
   public static extension: GeoNameExtension | undefined;
 
   /** Invoked the first time this extension is loaded. */
@@ -220,7 +221,7 @@ export class GeoNameExtension extends Extension {
     // store the extension in the tool prototype.
     GeoNameExtension.extension = this;
 
-    this._i18NNamespace = this.i18n.registerNamespace("geoNames");
+    this._i18NNamespace = this.i18n.getNamespace(this._defaultNs);
     await this._i18NNamespace!.readFinished;
     IModelApp.tools.register(GeoNameOnTool, this._i18NNamespace, this.i18n);
     IModelApp.tools.register(GeoNameOffTool, this._i18NNamespace, this.i18n);

@@ -12,6 +12,7 @@ export class I18N {
     constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: i18next.Callback);
     // @internal
     getEnglishTranslation(namespace: string, key: string | string[], options?: i18next.TranslationOptions): string;
+    getNamespace(name: string): I18NNamespace | undefined;
     // @internal (undocumented)
     languageList(): string[];
     // @internal (undocumented)

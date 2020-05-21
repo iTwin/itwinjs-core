@@ -150,12 +150,13 @@ export class SectionMarkerDisplayTool extends Tool {
  */
 export class HyperModelingExtension extends Extension {
   private _i18NNamespace?: I18NNamespace;
+  protected _defaultNs = "HyperModeling";
   public static extension: HyperModelingExtension | undefined;
 
   /** Invoked the first time this extension is loaded. */
   public async onLoad(_args: string[]): Promise<void> {
     HyperModelingExtension.extension = this; // store the extension.
-    this._i18NNamespace = this.i18n.registerNamespace("HyperModeling");
+    this._i18NNamespace = this.i18n.getNamespace(this._defaultNs);
     await this._i18NNamespace!.readFinished;
     IModelApp.tools.register(SectionMarkerDisplayTool, this._i18NNamespace, this.i18n);
     IModelApp.tools.register(SectionMarkerFilterCategoryTool, this._i18NNamespace, this.i18n);

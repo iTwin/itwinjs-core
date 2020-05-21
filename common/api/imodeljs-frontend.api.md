@@ -2577,6 +2577,7 @@ export interface EventSourceOptions {
 // @beta
 export abstract class Extension {
     constructor(name: string);
+    protected _defaultNs: string;
     get i18n(): I18N;
     // @internal (undocumented)
     get loader(): ExtensionLoader | undefined;
@@ -2586,6 +2587,7 @@ export abstract class Extension {
     abstract onExecute(_args: string[]): Promise<void>;
     onLoad(_args: string[]): Promise<void>;
     resolveResourceUrl(relativeUrl: string): string;
+    // @deprecated
     setI18n(defaultNamespace?: string, options?: I18NOptions): void;
 }
 
