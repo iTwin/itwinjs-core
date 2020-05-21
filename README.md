@@ -62,16 +62,10 @@ Each package creates its own **node_modules** directory that contains symbolic l
 2. Install dependencies: `rush install`
 3. Clean: `rush clean`
 4. Rebuild source: `rush rebuild`
-5. Run tests:
-    * All tests: `rush test`
-    * Core tests: `npm test -s`
-    * UI tests: `npm run test:ui -s`
-    * Presentation tests: `npm run test:presentation -s`
+5. Run tests: `rush test`
 
-The `-s` option for `npm` is short for `--silent` which results in a less verbose command.
-That part of the command is optional depending on the desired verbosity level.
+The `-v` option for `rush` is short for `--verbose` which results in a more verbose command.
 
-Note that all build instructions are designed to run from the imodeljs-core root directory.
 The above commands iterate and perform their action against each package in the monorepo.
 
 For incremental builds, the `rush build` command can be used to only build packages that have changes versus `rush rebuild` which always rebuilds all packages.
