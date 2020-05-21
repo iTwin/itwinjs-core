@@ -2457,20 +2457,20 @@ export abstract class HideIsolateEmphasizeActionHandler {
 // @alpha
 export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {
     areFeatureOverridesActive(vp: Viewport): boolean;
-    clearEmphasize(vp: Viewport | undefined): void;
-    emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
-    emphasizeSelectedCategory(vp: Viewport): Promise<void>;
-    hideCommand(vp: Viewport): Promise<void>;
-    hideSelected(vp: Viewport): void;
-    hideSelectedElementsCategory(vp: Viewport): Promise<void>;
-    hideSelectedElementsModel(vp: Viewport): Promise<void>;
-    initializeSubjectModelCache(iModelConnection: IModelConnection): void;
-    isolateCommand(vp: Viewport): Promise<void>;
-    isolateSelected(vp: Viewport): void;
-    isolateSelectedElementsCategory(vp: Viewport): Promise<void>;
-    isolateSelectedElementsModel(vp: Viewport): Promise<void>;
-    isolateSelectedModel(vp: Viewport): Promise<void>;
-    isolateSelectedSubject(vp: Viewport): Promise<void>;
+    static clearEmphasize(vp: Viewport | undefined): void;
+    static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
+    static emphasizeSelectedCategory(vp: Viewport): Promise<void>;
+    static hideCommand(vp: Viewport): Promise<void>;
+    static hideSelected(vp: Viewport): void;
+    static hideSelectedElementsCategory(vp: Viewport): Promise<void>;
+    static hideSelectedElementsModel(vp: Viewport): Promise<void>;
+    static initializeSubjectModelCache(iModelConnection: IModelConnection): void;
+    static isolateCommand(vp: Viewport): Promise<void>;
+    static isolateSelected(vp: Viewport): void;
+    static isolateSelectedElementsCategory(vp: Viewport): Promise<void>;
+    static isolateSelectedElementsModel(vp: Viewport): Promise<void>;
+    static isolateSelectedModel(vp: Viewport): Promise<void>;
+    static isolateSelectedSubject(vp: Viewport): Promise<void>;
     processClearEmphasize(): Promise<void>;
     processEmphasizeSelected(): Promise<void>;
     processHideSelected(): Promise<void>;

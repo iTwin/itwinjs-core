@@ -210,21 +210,21 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   private static _categoryClassName = "BisCore:SpatialCategory";
   private static _subjectClassName = "BisCore:Subject";
   private static _modelClassName = "BisCore:PhysicalModel";
-  private _subjectModelIdsCache: SubjectModelIdsCache | undefined = undefined;
+  private static _subjectModelIdsCache: SubjectModelIdsCache | undefined = undefined;
 
   /**
    * Initialize the subject model cache
    * @param iModelConnection iModel to use for querying subject's models
    */
-  public initializeSubjectModelCache(iModelConnection: IModelConnection) {
-    this._subjectModelIdsCache = new SubjectModelIdsCache(iModelConnection);
+  public static initializeSubjectModelCache(iModelConnection: IModelConnection) {
+    HideIsolateEmphasizeManager._subjectModelIdsCache = new SubjectModelIdsCache(iModelConnection);
   }
 
   /**
    * Returns true if the selection in presentation layer only has a single selection class and it is the given one
    * @param className ECClass name to check for
    */
-  private _checkClassSelected(className: string) {
+  private static _checkClassSelected(className: string) {
     if (!UiFramework.getIModelConnection())
       throw new Error("Undefined iModelConnection");
 
@@ -236,7 +236,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Gets the Ids of all elements selected that have the given class name
    * @param className ECClass name to check for
    */
-  private _getIdsOfClassName(className: string) {
+  private static _getIdsOfClassName(className: string) {
     if (!UiFramework.getIModelConnection())
       throw new Error("Undefined iModelConnection");
 
@@ -250,31 +250,31 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   }
 
   /** Returns true if there are only categories selected in presentation's logical selection */
-  private categorySelected() {
-    return this._checkClassSelected(HideIsolateEmphasizeManager._categoryClassName);
+  private static categorySelected() {
+    return HideIsolateEmphasizeManager._checkClassSelected(HideIsolateEmphasizeManager._categoryClassName);
   }
 
   /** Returns true if there are only subjects selected in presentation's logical selection */
-  private subjectSelected() {
-    return this._checkClassSelected(HideIsolateEmphasizeManager._subjectClassName);
+  private static subjectSelected() {
+    return HideIsolateEmphasizeManager._checkClassSelected(HideIsolateEmphasizeManager._subjectClassName);
   }
 
   /** Returns true if a model is selected in presentation's logical selection */
-  private modelSelected() {
-    return this._checkClassSelected(HideIsolateEmphasizeManager._modelClassName);
+  private static modelSelected() {
+    return HideIsolateEmphasizeManager._checkClassSelected(HideIsolateEmphasizeManager._modelClassName);
   }
 
   /**
    * Hide the selected category found in presentation layer's logical selection
    * @param vp Viewport to affect
    */
-  private hideSelectedCategory(vp: Viewport) {
-    const ids = this._getIdsOfClassName(HideIsolateEmphasizeManager._categoryClassName);
+  private static hideSelectedCategory(vp: Viewport) {
+    const ids = HideIsolateEmphasizeManager._getIdsOfClassName(HideIsolateEmphasizeManager._categoryClassName);
     vp.changeCategoryDisplay(ids, false);
   }
 
   /** Get sub categories that relate to the category Id */
-  private async _getSubCategories(iModelConnection: IModelConnection, categoryIds: string[]) {
+  private static async _getSubCategories(iModelConnection: IModelConnection, categoryIds: string[]) {
     const allSubcats: string[] = [];
     const request = iModelConnection.subcategories.load(categoryIds);
     if (request)
@@ -292,14 +292,14 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Emphasize the selected category found in presentation layer's logical selection
    * @param vp Viewport to affect
    */
-  public async emphasizeSelectedCategory(vp: Viewport) {
-    const ids = this._getIdsOfClassName(HideIsolateEmphasizeManager._categoryClassName);
+  public static async emphasizeSelectedCategory(vp: Viewport) {
+    const ids = HideIsolateEmphasizeManager._getIdsOfClassName(HideIsolateEmphasizeManager._categoryClassName);
     if (ids.length === 0)
       return;
 
     const defaultAppearance = EmphasizeElements.getOrCreate(vp).createDefaultAppearance();
     EmphasizeElements.clear(vp);
-    const subcats = await this._getSubCategories(vp.iModel, ids);
+    const subcats = await HideIsolateEmphasizeManager._getSubCategories(vp.iModel, ids);
     vp.featureOverrideProvider = new SubCategoryOverrideProvider(subcats, defaultAppearance);
   }
 
@@ -307,20 +307,20 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Query the model Id that models a subject
    * @param subjectId Subject Id to use in query
    */
-  private async _getModelIds(_subjectId: string): Promise<string[]> {
-    return this._subjectModelIdsCache!.getSubjectModelIds(_subjectId);
+  private static async _getModelIds(_subjectId: string): Promise<string[]> {
+    return HideIsolateEmphasizeManager._subjectModelIdsCache!.getSubjectModelIds(_subjectId);
   }
 
   /**
    * Hide the selected subject's model found in the presentation layer's logical selection
    * @param vp Viewport to affect
    */
-  private async hideSelectedSubject(vp: Viewport) {
-    const ids = this._getIdsOfClassName(HideIsolateEmphasizeManager._subjectClassName);
+  private static async hideSelectedSubject(vp: Viewport) {
+    const ids = HideIsolateEmphasizeManager._getIdsOfClassName(HideIsolateEmphasizeManager._subjectClassName);
     if (ids.length === 0)
       return;
 
-    const modelIds = await this._getModelIds(ids[0]);
+    const modelIds = await HideIsolateEmphasizeManager._getModelIds(ids[0]);
     vp.changeModelDisplay(modelIds, false);
   }
 
@@ -328,12 +328,12 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Isolate the selected subject's model found in the presentation layer's logical selection
    * @param vp Viewport to affect
    */
-  private async emphasizeSelectedSubject(vp: Viewport) {
-    const ids = this._getIdsOfClassName(HideIsolateEmphasizeManager._subjectClassName);
+  private static async emphasizeSelectedSubject(vp: Viewport) {
+    const ids = HideIsolateEmphasizeManager._getIdsOfClassName(HideIsolateEmphasizeManager._subjectClassName);
     if (ids.length === 0)
       return;
 
-    const modelIds = await this._getModelIds(ids[0]);
+    const modelIds = await HideIsolateEmphasizeManager._getModelIds(ids[0]);
     const defaultAppearance = EmphasizeElements.getOrCreate(vp).createDefaultAppearance();
     EmphasizeElements.clear(vp);
     vp.featureOverrideProvider = new ModelOverrideProvider(modelIds, defaultAppearance);
@@ -343,8 +343,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Hide the selected model
    * @param vp Viewport to affect
    */
-  private hideSelectedModel(vp: Viewport) {
-    const ids = this._getIdsOfClassName(HideIsolateEmphasizeManager._modelClassName);
+  private static hideSelectedModel(vp: Viewport) {
+    const ids = HideIsolateEmphasizeManager._getIdsOfClassName(HideIsolateEmphasizeManager._modelClassName);
     if (ids.length === 0)
       return;
 
@@ -355,8 +355,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Isolate the selected model
    * @param vp Viewport to affect
    */
-  private emphasizeSelectedModel(vp: Viewport) {
-    const ids = this._getIdsOfClassName(HideIsolateEmphasizeManager._modelClassName);
+  private static emphasizeSelectedModel(vp: Viewport) {
+    const ids = HideIsolateEmphasizeManager._getIdsOfClassName(HideIsolateEmphasizeManager._modelClassName);
     if (ids.length === 0)
       return;
 
@@ -369,7 +369,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Isolate the selected elements
    * @param vp Viewport to affect
    */
-  public isolateSelected(vp: Viewport) {
+  public static isolateSelected(vp: Viewport) {
     EmphasizeElements.getOrCreate(vp).isolateSelectedElements(vp); // Hide all but selected elements
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.IsolateSelectedElements });
     IModelApp.features.track(HideIsolateEmphasizeAction.IsolateSelectedElements);
@@ -380,7 +380,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Hide the selected elements
    * @param vp Viewport to affect
    */
-  public hideSelected(vp: Viewport) {
+  public static hideSelected(vp: Viewport) {
     EmphasizeElements.getOrCreate(vp).hideSelectedElements(vp); // Hide all selected elements
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.HideSelectedElements });
     IModelApp.features.track(HideIsolateEmphasizeAction.HideSelectedElements);
@@ -392,7 +392,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * @param vp Viewport to affect
    *
    */
-  public clearEmphasize(vp: Viewport | undefined) {
+  public static clearEmphasize(vp: Viewport | undefined) {
     if (vp) {
       EmphasizeElements.clear(vp);
       HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.ClearHiddenIsolatedEmphasized });
@@ -406,22 +406,22 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * @param vp Viewport to affect
    * @param emphasisSilhouette defaults to true
    */
-  public async emphasizeSelected(vp: Viewport, emphasisSilhouette = true) {
+  public static async emphasizeSelected(vp: Viewport, emphasisSilhouette = true) {
     let usingSingleSelectionCategory: string | undefined;
     let usingSingleSelectionSubject: string | undefined;
     let usingSingleSelectionModel: string | undefined;
 
-    if (this.categorySelected()) {
+    if (HideIsolateEmphasizeManager.categorySelected()) {
       usingSingleSelectionCategory = HideIsolateEmphasizeManager._categoryClassName;
-      await this.emphasizeSelectedCategory(vp);
+      await HideIsolateEmphasizeManager.emphasizeSelectedCategory(vp);
       return;
-    } else if (this.modelSelected()) {
+    } else if (HideIsolateEmphasizeManager.modelSelected()) {
       usingSingleSelectionModel = HideIsolateEmphasizeManager._modelClassName;
-      this.emphasizeSelectedModel(vp);
+      HideIsolateEmphasizeManager.emphasizeSelectedModel(vp);
       return;
-    } else if (this.subjectSelected()) {
+    } else if (HideIsolateEmphasizeManager.subjectSelected()) {
       usingSingleSelectionSubject = HideIsolateEmphasizeManager._subjectClassName;
-      await this.emphasizeSelectedSubject(vp);
+      await HideIsolateEmphasizeManager.emphasizeSelectedSubject(vp);
       return;
     }
 
@@ -442,12 +442,12 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Isolate the selected subject's model found in the presentation layer's logical selection
    * @param vp Viewport to affect
    */
-  public async isolateSelectedSubject(vp: Viewport) {
-    const ids = this._getIdsOfClassName(HideIsolateEmphasizeManager._subjectClassName);
+  public static async isolateSelectedSubject(vp: Viewport) {
+    const ids = HideIsolateEmphasizeManager._getIdsOfClassName(HideIsolateEmphasizeManager._subjectClassName);
     if (ids.length === 0)
       return;
 
-    const modelIds = await this._getModelIds(ids[0]);
+    const modelIds = await HideIsolateEmphasizeManager._getModelIds(ids[0]);
     await vp.replaceViewedModels(modelIds);
   }
 
@@ -455,8 +455,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Isolate the selected model
    * @param vp Viewport to affect
    */
-  public async isolateSelectedModel(vp: Viewport) {
-    const ids = this._getIdsOfClassName(HideIsolateEmphasizeManager._modelClassName);
+  public static async isolateSelectedModel(vp: Viewport) {
+    const ids = HideIsolateEmphasizeManager._getIdsOfClassName(HideIsolateEmphasizeManager._modelClassName);
     if (ids.length === 0)
       return;
 
@@ -467,8 +467,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Isolate the selected category found in presentation layer's logical selection
    * @param vp Viewport to affect
    */
-  private isolateSelectedCategory(vp: Viewport) {
-    const ids = new Set(this._getIdsOfClassName(HideIsolateEmphasizeManager._categoryClassName));
+  private static isolateSelectedCategory(vp: Viewport) {
+    const ids = new Set(HideIsolateEmphasizeManager._getIdsOfClassName(HideIsolateEmphasizeManager._categoryClassName));
     const categoriesToDrop: string[] = [];
     vp.view.categorySelector.categories.forEach((categoryId: string) => {
       if (!ids.has(categoryId))
@@ -478,7 +478,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     vp.changeCategoryDisplay(ids, true);
   }
 
-  private async getSelectionSetElementModels(iModel: IModelConnection) {
+  private static async getSelectionSetElementModels(iModel: IModelConnection) {
     const props = (await iModel.elements.getProps(iModel.selectionSet.elements)) as ElementProps[];
     const modelIds = new Set<string>();
     for (const prop of props)
@@ -487,7 +487,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     return modelIds;
   }
 
-  private async getSelectionSetElementCategories(iModel: IModelConnection) {
+  private static async getSelectionSetElementCategories(iModel: IModelConnection) {
     const props = (await iModel.elements.getProps(iModel.selectionSet.elements)) as GeometricElementProps[];
     const categoryIds = new Set<string>();
     for (const prop of props)
@@ -500,22 +500,22 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Isolate either based on Presentation selection, if defined, else the selected graphic elements
    * @param vp Viewport to affect
    */
-  public async isolateCommand(vp: Viewport) {
+  public static async isolateCommand(vp: Viewport) {
     let usingSingleSelectionCategory: string | undefined;
     let usingSingleSelectionSubject: string | undefined;
     let usingSingleSelectionModel: string | undefined;
 
-    if (this.categorySelected()) {
+    if (HideIsolateEmphasizeManager.categorySelected()) {
       usingSingleSelectionCategory = HideIsolateEmphasizeManager._categoryClassName;
-      this.isolateSelectedCategory(vp);
+      HideIsolateEmphasizeManager.isolateSelectedCategory(vp);
       return;
-    } else if (this.modelSelected()) {
+    } else if (HideIsolateEmphasizeManager.modelSelected()) {
       usingSingleSelectionModel = HideIsolateEmphasizeManager._modelClassName;
-      await this.isolateSelectedModel(vp);
+      await HideIsolateEmphasizeManager.isolateSelectedModel(vp);
       return;
-    } else if (this.subjectSelected()) {
+    } else if (HideIsolateEmphasizeManager.subjectSelected()) {
       usingSingleSelectionSubject = HideIsolateEmphasizeManager._subjectClassName;
-      await this.isolateSelectedSubject(vp);
+      await HideIsolateEmphasizeManager.isolateSelectedSubject(vp);
       return;
     }
 
@@ -532,8 +532,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Isolate model from selected elements
    * @param vp Viewport to affect
    */
-  public async isolateSelectedElementsModel(vp: Viewport) {
-    const modelsToKeep = new Set(await this.getSelectionSetElementModels(vp.iModel));
+  public static async isolateSelectedElementsModel(vp: Viewport) {
+    const modelsToKeep = new Set(await HideIsolateEmphasizeManager.getSelectionSetElementModels(vp.iModel));
     await vp.replaceViewedModels(modelsToKeep);
 
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.IsolateSelectedModels });
@@ -545,8 +545,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Isolate the selected category found in SelectionSet elements
    * @param vp Viewport to affect
    */
-  public async isolateSelectedElementsCategory(vp: Viewport) {
-    const categoriesToKeep = new Set(await this.getSelectionSetElementCategories(vp.iModel));
+  public static async isolateSelectedElementsCategory(vp: Viewport) {
+    const categoriesToKeep = new Set(await HideIsolateEmphasizeManager.getSelectionSetElementCategories(vp.iModel));
     const categoriesToTurnOff = [...vp.view.categorySelector.categories].filter((categoryId: string) => !categoriesToKeep.has(categoryId));
     vp.changeCategoryDisplay(categoriesToTurnOff, false);
     vp.changeCategoryDisplay(categoriesToKeep, true);
@@ -560,22 +560,22 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Hide either based on Presentation selection, if defined, else the selected graphic elements
    * @param vp Viewport to affect
    */
-  public async hideCommand(vp: Viewport) {
+  public static async hideCommand(vp: Viewport) {
     let usingSingleSelectionCategory: string | undefined;
     let usingSingleSelectionSubject: string | undefined;
     let usingSingleSelectionModel: string | undefined;
 
-    if (this.categorySelected()) {
+    if (HideIsolateEmphasizeManager.categorySelected()) {
       usingSingleSelectionCategory = HideIsolateEmphasizeManager._categoryClassName;
-      this.hideSelectedCategory(vp);
+      HideIsolateEmphasizeManager.hideSelectedCategory(vp);
       return;
-    } else if (this.modelSelected()) {
+    } else if (HideIsolateEmphasizeManager.modelSelected()) {
       usingSingleSelectionModel = HideIsolateEmphasizeManager._modelClassName;
-      this.hideSelectedModel(vp);
+      HideIsolateEmphasizeManager.hideSelectedModel(vp);
       return;
-    } else if (this.subjectSelected()) {
+    } else if (HideIsolateEmphasizeManager.subjectSelected()) {
       usingSingleSelectionSubject = HideIsolateEmphasizeManager._subjectClassName;
-      await this.hideSelectedSubject(vp);
+      await HideIsolateEmphasizeManager.hideSelectedSubject(vp);
       return;
     }
 
@@ -593,8 +593,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Hide the models defined by the elements in the current SelectionSet
    * @param vp Viewport to affect
    */
-  public async hideSelectedElementsModel(vp: Viewport) {
-    const modelIds = await this.getSelectionSetElementModels(vp.iModel);
+  public static async hideSelectedElementsModel(vp: Viewport) {
+    const modelIds = await HideIsolateEmphasizeManager.getSelectionSetElementModels(vp.iModel);
     vp.changeModelDisplay(modelIds, false);
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.HideSelectedModels });
     IModelApp.features.track(HideIsolateEmphasizeAction.HideSelectedModels);
@@ -605,8 +605,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Hide the categories defined by the elements in the current SelectionSet
    * @param vp Viewport to affect
    */
-  public async hideSelectedElementsCategory(vp: Viewport) {
-    const categoryIds = await this.getSelectionSetElementCategories(vp.iModel);
+  public static async hideSelectedElementsCategory(vp: Viewport) {
+    const categoryIds = await HideIsolateEmphasizeManager.getSelectionSetElementCategories(vp.iModel);
     vp.changeCategoryDisplay(categoryIds, false);
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.HideSelectedCategories });
     IModelApp.features.track(HideIsolateEmphasizeAction.HideSelectedCategories);
@@ -640,7 +640,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     if (!vp)
       return;
 
-    await this.isolateSelectedElementsModel(vp);
+    await HideIsolateEmphasizeManager.isolateSelectedElementsModel(vp);
   }
 
   /**
@@ -651,7 +651,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     if (!vp)
       return;
 
-    await this.isolateSelectedElementsCategory(vp);
+    await HideIsolateEmphasizeManager.isolateSelectedElementsCategory(vp);
   }
 
   /**
@@ -661,7 +661,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return;
-    this.isolateSelected(vp);
+    HideIsolateEmphasizeManager.isolateSelected(vp);
   }
 
   /**
@@ -672,7 +672,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     if (!vp)
       return;
 
-    await this.hideSelectedElementsModel(vp);
+    await HideIsolateEmphasizeManager.hideSelectedElementsModel(vp);
   }
 
   /**
@@ -683,7 +683,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     if (!vp)
       return;
 
-    await this.hideSelectedElementsCategory(vp);
+    await HideIsolateEmphasizeManager.hideSelectedElementsCategory(vp);
   }
 
   /**
@@ -694,7 +694,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     if (!vp)
       return;
 
-    this.hideSelected(vp);
+    HideIsolateEmphasizeManager.hideSelected(vp);
   }
 
   /**
@@ -705,7 +705,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     if (!vp)
       return;
 
-    await this.emphasizeSelected(vp);
+    await HideIsolateEmphasizeManager.emphasizeSelected(vp);
   }
 
   /**
@@ -715,6 +715,6 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return;
-    this.clearEmphasize(vp);
+    HideIsolateEmphasizeManager.clearEmphasize(vp);
   }
 }
