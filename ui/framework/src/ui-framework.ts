@@ -127,7 +127,7 @@ export * from "./ui-framework/redux/redux-ts";
 export * from "./ui-framework/safearea/SafeAreaContext";
 
 export * from "./ui-framework/selection/SelectionContextItemDef";
-export * from "./ui-framework/selection/SelectionContextUtilities";
+export * from "./ui-framework/selection/HideIsolateEmphasizeManager";
 export * from "./ui-framework/selection/ClearEmphasisStatusField";
 
 export * from "./ui-framework/shared/ActionButtonItemDef";

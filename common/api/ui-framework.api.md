@@ -336,6 +336,9 @@ export class AppNotificationManager extends NotificationManager {
     updatePointerMessage(displayPoint: XAndY, relativePosition: RelativePosition): void;
 }
 
+// @beta
+export function areNoFeatureOverridesActive(): boolean;
+
 // @public @deprecated
 export class Backstage extends React.Component<BackstageProps, BackstageState> {
     constructor(props: BackstageProps);
@@ -1649,6 +1652,15 @@ export interface ElementTooltipChangedEventArgs {
     pt?: XAndY;
 }
 
+// @alpha
+export interface EmphasizeElementsChangedArgs {
+    readonly action: HideIsolateEmphasizeAction;
+    readonly usingSingleSelectionCategory?: string;
+    readonly usingSingleSelectionModel?: string;
+    readonly usingSingleSelectionSubject?: string;
+    readonly viewport: ScreenViewport;
+}
+
 // @beta
 export class ExpandableSection extends React.PureComponent<ExpandableSectionProps, ExpandableSectionState> {
     constructor(props: ExpandableSectionProps);
@@ -2277,6 +2289,9 @@ export function getCategories(imodel: IModelConnection, viewport?: Viewport, fil
 // @internal (undocumented)
 export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps;
 
+// @beta
+export function getFeatureOverrideSyncEventIds(): string[];
+
 // @internal (undocumented)
 export const getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined;
 
@@ -2291,6 +2306,9 @@ export const getFloatingZoneStyle: (props: ZoneManagerProps) => {
     zIndex: number;
     position: "relative";
 } | undefined;
+
+// @beta
+export function getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue;
 
 // @beta
 export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue;
@@ -2397,6 +2415,71 @@ export interface GroupItemProps extends ItemProps {
     panelLabel?: string | StringGetter;
     panelLabelKey?: string;
 }
+
+// @alpha
+export enum HideIsolateEmphasizeAction {
+    // (undocumented)
+    ClearHiddenIsolatedEmphasized = "clearHiddenIsolatedEmphasized",
+    // (undocumented)
+    EmphasizeSelectedElements = "emphasizeSelectedElements",
+    // (undocumented)
+    HideSelected = "hideSelected",
+    // (undocumented)
+    HideSelectedCategories = "hideSelectedCategories",
+    // (undocumented)
+    HideSelectedElements = "hideSelectedElements",
+    // (undocumented)
+    HideSelectedModels = "hideSelectedModels",
+    // (undocumented)
+    IsolateSelectedCategories = "isolateSelectedCategories",
+    // (undocumented)
+    IsolateSelectedElements = "isolateSelectedElements",
+    // (undocumented)
+    IsolateSelectedModels = "isolateSelectedModels"
+}
+
+// @alpha
+export abstract class HideIsolateEmphasizeActionHandler {
+    abstract areFeatureOverridesActive(vp: Viewport): boolean;
+    // (undocumented)
+    static emphasizeElementsChanged: BeEvent<() => void>;
+    static get hideIsolateEmphasizeUiSyncId(): string;
+    abstract processClearEmphasize(): Promise<void>;
+    abstract processEmphasizeSelected(): Promise<void>;
+    abstract processHideSelected(): Promise<void>;
+    abstract processHideSelectedElementsCategory(): Promise<void>;
+    abstract processHideSelectedElementsModel(): Promise<void>;
+    abstract processIsolateSelected(): Promise<void>;
+    abstract processIsolateSelectedElementsCategory(): Promise<void>;
+    abstract processIsolateSelectedElementsModel(): Promise<void>;
+}
+
+// @alpha
+export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {
+    areFeatureOverridesActive(vp: Viewport): boolean;
+    clearEmphasize(vp: Viewport | undefined): void;
+    emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
+    emphasizeSelectedCategory(vp: Viewport): Promise<void>;
+    hideCommand(vp: Viewport): Promise<void>;
+    hideSelected(vp: Viewport): void;
+    hideSelectedElementsCategory(vp: Viewport): Promise<void>;
+    hideSelectedElementsModel(vp: Viewport): Promise<void>;
+    initializeSubjectModelCache(iModelConnection: IModelConnection): void;
+    isolateCommand(vp: Viewport): Promise<void>;
+    isolateSelected(vp: Viewport): void;
+    isolateSelectedElementsCategory(vp: Viewport): Promise<void>;
+    isolateSelectedElementsModel(vp: Viewport): Promise<void>;
+    isolateSelectedModel(vp: Viewport): Promise<void>;
+    isolateSelectedSubject(vp: Viewport): Promise<void>;
+    processClearEmphasize(): Promise<void>;
+    processEmphasizeSelected(): Promise<void>;
+    processHideSelected(): Promise<void>;
+    processHideSelectedElementsCategory(): Promise<void>;
+    processHideSelectedElementsModel(): Promise<void>;
+    processIsolateSelected(): Promise<void>;
+    processIsolateSelectedElementsCategory(): Promise<void>;
+    processIsolateSelectedElementsModel(): Promise<void>;
+    }
 
 // @alpha
 export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps, HTMLElementPopupState> {
@@ -3858,6 +3941,8 @@ export function selectionContextStateFunc(state: Readonly<BaseItemState>): BaseI
 // @beta
 export class SelectionContextToolDefinitions {
     // (undocumented)
+    static get clearHideIsolateEmphasizeElementsItemDef(): CommandItemDef;
+    // (undocumented)
     static get emphasizeElementsItemDef(): CommandItemDef;
     // (undocumented)
     static get hideCategoriesInSelectionItemDef(): CommandItemDef;
@@ -3876,27 +3961,6 @@ export class SelectionContextToolDefinitions {
     // (undocumented)
     static get isolateSelectionToolGroup(): GroupItemDef;
 }
-
-// @alpha
-export class SelectionContextUtilities {
-    static areFeatureOverridesActive(vp: Viewport): boolean;
-    static clearEmphasize(vp: Viewport | undefined): void;
-    // (undocumented)
-    static emphasizeElementsChanged: BeEvent<() => void>;
-    static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
-    static emphasizeSelectedCategory(vp: Viewport): Promise<void>;
-    static hideCommand(vp: Viewport): Promise<void>;
-    static hideSelected(vp: Viewport): void;
-    static hideSelectedElementsCategory(vp: Viewport): Promise<void>;
-    static hideSelectedElementsModel(vp: Viewport): Promise<void>;
-    static initializeSubjectModelCache(iModelConnection: IModelConnection): void;
-    static isolateCommand(vp: Viewport): Promise<void>;
-    static isolateSelected(vp: Viewport): void;
-    static isolateSelectedElementsCategory(vp: Viewport): Promise<void>;
-    static isolateSelectedElementsModel(vp: Viewport): Promise<void>;
-    static isolateSelectedModel(vp: Viewport): Promise<void>;
-    static isolateSelectedSubject(vp: Viewport): Promise<void>;
-    }
 
 // @public
 export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
@@ -5125,6 +5189,8 @@ export class UiFramework {
     static getUserInfo(): UserInfo | undefined;
     // (undocumented)
     static getWidgetOpacity(): number;
+    // @alpha (undocumented)
+    static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler;
     static get i18n(): I18N;
     static get i18nNamespace(): string;
     // @internal (undocumented)
@@ -5162,6 +5228,8 @@ export class UiFramework {
     static setDefaultViewId(viewId: string, immediateSync?: boolean): void;
     // (undocumented)
     static setDefaultViewState(viewState: ViewState, immediateSync?: boolean): void;
+    // @alpha (undocumented)
+    static setHideIsolateEmphasizeActionHandler(handler: HideIsolateEmphasizeActionHandler | undefined): void;
     // (undocumented)
     static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
     // (undocumented)
