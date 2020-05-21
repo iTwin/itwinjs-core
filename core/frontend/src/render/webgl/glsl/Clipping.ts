@@ -10,7 +10,6 @@ import { assert } from "@bentley/bentleyjs-core";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
-import { ClipDef } from "../TechniqueFlags";
 import { addEyeSpace } from "./Common";
 import { addModelViewMatrix } from "./Vertex";
 
@@ -59,14 +58,23 @@ const calcClipPlaneDist = `
   }
 `;
 
-const applyClipPlanes = `
+const applyClipPlanesPrelude = `
   int numPlaneSets = 1;
   int numSetsClippedBy = 0;
   bool clippedByCurrentPlaneSet = false;
+`;
+
+const applyClipPlanesLoopWebGL1 = `
   for (int i = 0; i < MAX_CLIPPING_PLANES; i++) {
     if (i >= u_numClips)
       break;
+`;
 
+const applyClipPlanesLoopWebGL2 = `
+  for (int i = 0; i < u_numClips; i++) {
+`;
+
+const applyClipPlanesPostlude = `
     vec4 plane = getClipPlane(i);
     if (plane.x == 2.0) { // indicates start of new UnionOfConvexClipPlaneSets
       if (numSetsClippedBy + int(clippedByCurrentPlaneSet) == numPlaneSets)
@@ -100,14 +108,11 @@ const applyClipPlanes = `
   return false;
 `;
 
-/** @internal */
-export function addClipping(prog: ProgramBuilder, clipDef: ClipDef) {
-  if (clipDef.isValid)
-    addClippingPlanes(prog, clipDef.numberOfPlanes);
-}
+const applyClipPlanesWebGL1 = applyClipPlanesPrelude + applyClipPlanesLoopWebGL1 + applyClipPlanesPostlude;
+const applyClipPlanesWebGL2 = applyClipPlanesPrelude + applyClipPlanesLoopWebGL2 + applyClipPlanesPostlude;
 
-function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
-  assert(maxClipPlanes > 0);
+/** @internal */
+export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
   const frag = prog.frag;
   const vert = prog.vert;
 
@@ -143,7 +148,6 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   }
 
   frag.addFunction(calcClipPlaneDist);
-  frag.maxClippingPlanes = maxClipPlanes;
   frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
     program.addGraphicUniform("s_clipSampler", (uniform, params) => {
       const texture = params.target.clips.texture;
@@ -152,5 +156,6 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
         texture.bindSampler(uniform, TextureUnit.ClipVolume);
     });
   }, VariablePrecision.High);
-  frag.set(FragmentShaderComponent.ApplyClipping, applyClipPlanes);
+
+  frag.set(FragmentShaderComponent.ApplyClipping, isWebGL2 ? applyClipPlanesWebGL2 : applyClipPlanesWebGL1);
 }

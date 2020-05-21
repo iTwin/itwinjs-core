@@ -114,7 +114,7 @@ describe("Techniques", () => {
 
   it("should successfully compile surface shader with clipping planes", () => {
     const flags = new TechniqueFlags(true);
-    flags.clip.numberOfPlanes = 6;
+    flags.numClipPlanes = 6;
     flags.featureMode = FeatureMode.Overrides;
 
     const tech = System.instance.techniques.getTechnique(TechniqueId.Surface);

@@ -8,13 +8,11 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { AttributeDetails } from "./AttributeMap";
-import { addClipping } from "./glsl/Clipping";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { volClassOpaqueColor } from "./glsl/PlanarClassification";
 import { addPosition, earlyVertexDiscard, lateVertexDiscard, vertexDiscard } from "./glsl/Vertex";
 import { ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";
-import { ClipDef } from "./TechniqueFlags";
 
 // tslint:disable:no-const-enum
 
@@ -545,8 +543,14 @@ export class ShaderBuilder extends ShaderVariables {
   }
 
   public addDefine(name: string, value: string): void {
-    const macro = "#define " + name + " " + value;
-    this.addMacro(macro);
+    const defineName = "#define " + name + " ";
+    const macro = defineName + value;
+
+    const index = this._macros.findIndex((x) => x.startsWith(defineName));
+    if (-1 !== index)
+      this._macros[index] = macro;
+    else
+      this._macros.push(defineName + value);
   }
 
   public clearFragOutput(): void {
@@ -870,20 +874,6 @@ export const enum FragmentShaderComponent {
  * @internal
  */
 export class FragmentShaderBuilder extends ShaderBuilder {
-  private _maxClippingPlanes = 0;
-  public get maxClippingPlanes() { return this._maxClippingPlanes; }
-  public set maxClippingPlanes(max: number) {
-    if (max === this._maxClippingPlanes)
-      return;
-
-    this._maxClippingPlanes = max;
-    const macroIndex = this._macros.findIndex((x) => x.startsWith("#define MAX_CLIPPING_PLANES"));
-    if (-1 !== macroIndex)
-      this._macros[macroIndex] = "#define MAX_CLIPPING_PLANES " + max;
-    else
-      this.addDefine("MAX_CLIPPING_PLANES", max.toString());
-  }
-
   public constructor(flags: ShaderBuilderFlags) {
     super(FragmentShaderComponent.COUNT, flags);
 
@@ -1055,65 +1045,6 @@ export class FragmentShaderBuilder extends ShaderBuilder {
 
   public copyFrom(src: FragmentShaderBuilder): void {
     this.copyCommon(src);
-    this.maxClippingPlanes = src.maxClippingPlanes;
-  }
-}
-
-/** A collection of shader programs with clipping that vary based on the max number of clipping planes each supports.
- * @internal
- */
-export class ClippingShaders {
-  public builder: ProgramBuilder;
-  public shaders: ShaderProgram[] = [];
-
-  public constructor(prog: ProgramBuilder) {
-    this.builder = prog.clone();
-    this.builder.vert.headerComment += "-ClipPlanes";
-    this.builder.frag.headerComment += "-ClipPlanes";
-    addClipping(this.builder, ClipDef.forPlanes(6));
-  }
-
-  private static roundUpToNearestMultipleOf(value: number, factor: number): number {
-    const maxPlanes = Math.ceil(value / factor) * factor;
-    assert(maxPlanes >= value);
-    return maxPlanes;
-  }
-
-  private static roundNumPlanes(minPlanes: number): number {
-    // We want to avoid making the shader do too much extra work, but we also want to avoid creating separate clipping shaders for
-    // every unique # of planes
-    if (minPlanes <= 2)
-      return minPlanes;   // 1 or 2 planes fairly common (ex - section cut)
-    else if (minPlanes <= 6)
-      return 6;           // cuboid volume
-    else if (minPlanes <= 120)
-      return this.roundUpToNearestMultipleOf(minPlanes, 20);
-    else
-      return this.roundUpToNearestMultipleOf(minPlanes, 50);
-  }
-
-  public getProgram(clipDef: ClipDef): ShaderProgram | undefined {
-    if (clipDef.isValid) {
-      assert(clipDef.numberOfPlanes > 0);
-      const numClips = ClippingShaders.roundNumPlanes(clipDef.numberOfPlanes);
-      for (const shader of this.shaders)
-        if (shader.maxClippingPlanes === numClips)
-          return shader;
-
-      this.builder.frag.maxClippingPlanes = numClips;
-      const saveVHeader = this.builder.vert.headerComment;
-      const saveFHeader = this.builder.frag.headerComment;
-      this.builder.vert.headerComment += numClips.toString();
-      this.builder.frag.headerComment += numClips.toString();
-      const newProgram = this.builder.buildProgram(System.instance.context);
-      this.builder.vert.headerComment = saveVHeader;
-      this.builder.frag.headerComment = saveFHeader;
-      this.shaders.push(newProgram);
-      return newProgram;
-    } else {
-      assert(false);
-      return undefined;
-    }
   }
 }
 
@@ -1215,7 +1146,7 @@ export class ProgramBuilder {
       }
     }
 
-    const prog = new ShaderProgram(gl, vertSource, fragSource, this._attrMap, this.vert.headerComment, this.frag.headerComment, this.frag.maxClippingPlanes);
+    const prog = new ShaderProgram(gl, vertSource, fragSource, this._attrMap, this.vert.headerComment, this.frag.headerComment);
     this.vert.addBindings(prog);
     this.frag.addBindings(prog, this.vert);
     return prog;

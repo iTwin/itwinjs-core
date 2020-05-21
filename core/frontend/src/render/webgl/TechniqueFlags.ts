@@ -22,15 +22,6 @@ export const enum FeatureMode {
 }
 
 /** @internal */
-export class ClipDef {
-  public numberOfPlanes: number;
-  public get isValid() { return 0 < this.numberOfPlanes; }
-  public invalidate() { this.numberOfPlanes = 0; }
-  public constructor(numberOfPlanes: number = 0) { this.numberOfPlanes = numberOfPlanes; }
-  public static forPlanes(numPlanes: number) { return new ClipDef(numPlanes); }
-}
-
-/** @internal */
 export const enum IsInstanced { No, Yes }
 
 /** @internal */
@@ -52,7 +43,7 @@ export const enum IsThematic { No, Yes }
  * @internal
  */
 export class TechniqueFlags {
-  public clip: ClipDef = new ClipDef();
+  public numClipPlanes = 0;
   public featureMode = FeatureMode.None;
   public isTranslucent: boolean;
   public isEdgeTestNeeded: IsEdgeTestNeeded = IsEdgeTestNeeded.No;
@@ -67,16 +58,18 @@ export class TechniqueFlags {
     this.isTranslucent = translucent;
   }
 
-  public get hasClip(): boolean { return this.clip.isValid; }
+  public get hasClip(): boolean {
+    return this.numClipPlanes > 0;
+  }
 
   public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No): void {
     if (RenderPass.Hilite === pass || RenderPass.HiliteClassification === pass || RenderPass.HilitePlanarClassification === pass) {
       const isClassified = (classified === IsClassified.Yes && RenderPass.HilitePlanarClassification === pass) ? IsClassified.Yes : IsClassified.No;
-      this.initForHilite(target.clipDef, instanced, isClassified);
+      this.initForHilite(target.numClipPlanes, instanced, isClassified);
     } else {
       this._isHilite = false;
       this.isTranslucent = RenderPass.Translucent === pass;
-      this.clip = target.clipDef;
+      this.numClipPlanes = target.numClipPlanes;
       this.isAnimated = animated;
       this.isInstanced = instanced;
       this.isClassified = classified;
@@ -119,7 +112,7 @@ export class TechniqueFlags {
     this.isInstanced = instanced;
     this.isShadowable = shadowable;
     this.isThematic = thematic;
-    this.clip.invalidate();
+    this.numClipPlanes = 0;
   }
 
   public get hasFeatures() { return FeatureMode.None !== this.featureMode; }
@@ -131,7 +124,7 @@ export class TechniqueFlags {
   }
 
   public get isHilite() { return this._isHilite; }
-  public initForHilite(clip: ClipDef, instanced: IsInstanced, classified: IsClassified) {
+  public initForHilite(numClipPlanes: number, instanced: IsInstanced, classified: IsClassified) {
     this.featureMode = classified ? FeatureMode.None : FeatureMode.Overrides;
     this._isHilite = true;
     this.isTranslucent = false;
@@ -139,7 +132,7 @@ export class TechniqueFlags {
     this.isAnimated = IsAnimated.No;
     this.isInstanced = instanced;
     this.isClassified = classified;
-    this.clip = clip;
+    this.numClipPlanes = numClipPlanes;
   }
 
   public buildDescription(): string {

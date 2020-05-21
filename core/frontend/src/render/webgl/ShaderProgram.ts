@@ -122,7 +122,6 @@ export const enum CompileStatus {
 export class ShaderProgram implements WebGLDisposable {
   public vertSource: string;
   public fragSource: string;
-  public readonly maxClippingPlanes: number;
   private _glProgram?: WebGLProgram;
   private _inUse: boolean = false;
   private _status: CompileStatus = CompileStatus.Uncompiled;
@@ -137,13 +136,12 @@ export class ShaderProgram implements WebGLDisposable {
   private _vertHNdx: number = -1;
   private _fragHNdx: number = -1;
 
-  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, fragDescription: string, maxClippingPlanes: number) {
+  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, fragDescription: string) {
     this._description = description;
     this._fragDescription = fragDescription;
     this.vertSource = vertSource;
     this.fragSource = fragSource;
     this._attrMap = attrMap;
-    this.maxClippingPlanes = maxClippingPlanes;
 
     const glProgram = gl.createProgram();
     this._glProgram = (null === glProgram) ? undefined : glProgram;

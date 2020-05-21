@@ -52,7 +52,6 @@ import { desync, SyncTarget } from "./Sync";
 import { System } from "./System";
 import { TargetUniforms } from "./TargetUniforms";
 import { Techniques } from "./Technique";
-import { ClipDef } from "./TechniqueFlags";
 import { TechniqueId } from "./TechniqueId";
 import { TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
@@ -286,11 +285,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public get hasClipVolume(): boolean { return this.clips.isValid && this.uniforms.branch.top.showClipVolume; }
-  public get clipDef(): ClipDef {
-    if (this.hasClipVolume)
-      return new ClipDef(this.clips.count);
-    else
-      return new ClipDef();
+  public get numClipPlanes(): number {
+    return this.hasClipVolume ? this.clips.count : 0;
   }
 
   public get is2d(): boolean { return this.uniforms.frustum.is2d; }

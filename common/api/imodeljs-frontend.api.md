@@ -7938,8 +7938,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     changeTextureDrapes(textureDrapes: TextureDrapeMap | undefined): void;
     // (undocumented)
-    get clipDef(): ClipDef;
-    // (undocumented)
     readonly clips: Clips;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
@@ -8061,6 +8059,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     logRealityTiles: boolean;
     // (undocumented)
     modelToView(modelPt: XYZ, result?: Point3d): Point3d;
+    // (undocumented)
+    get numClipPlanes(): number;
     // (undocumented)
     onBatchDisposed(batch: Batch): void;
     // (undocumented)
