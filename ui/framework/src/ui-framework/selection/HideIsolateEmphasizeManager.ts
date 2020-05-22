@@ -13,19 +13,19 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { UiFramework } from "../UiFramework";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
-/** Different Selection Context Action Types
+/** Supported Hide, Isolate, and Emphasize Actions. These also serve as FeatureTracking Ids.
  * @alpha
  */
 export enum HideIsolateEmphasizeAction {
-  HideSelected = "hideSelected",
-  EmphasizeSelectedElements = "emphasizeSelectedElements",
-  IsolateSelectedElements = "isolateSelectedElements",
-  IsolateSelectedCategories = "isolateSelectedCategories",
-  IsolateSelectedModels = "isolateSelectedModels",
-  HideSelectedElements = "hideSelectedElements",
-  HideSelectedModels = "hideSelectedModels",
-  HideSelectedCategories = "hideSelectedCategories",
-  ClearHiddenIsolatedEmphasized = "clearHiddenIsolatedEmphasized",
+  HideSelected = "HideSelected",
+  EmphasizeSelectedElements = "EmphasizeSelectedElements",
+  IsolateSelectedElements = "IsolateSelectedElements",
+  IsolateSelectedCategories = "IsolateSelectedCategories",
+  IsolateSelectedModels = "IsolateSelectedModels",
+  HideSelectedElements = "HideSelectedElements",
+  HideSelectedModels = "HideSelectedModels",
+  HideSelectedCategories = "HideSelectedCategories",
+  ClearHiddenIsolatedEmphasized = "ClearHiddenIsolatedEmphasized",
 }
 
 /** Selection Context Action Event Argument

@@ -2419,23 +2419,23 @@ export interface GroupItemProps extends ItemProps {
 // @alpha
 export enum HideIsolateEmphasizeAction {
     // (undocumented)
-    ClearHiddenIsolatedEmphasized = "clearHiddenIsolatedEmphasized",
+    ClearHiddenIsolatedEmphasized = "ClearHiddenIsolatedEmphasized",
     // (undocumented)
-    EmphasizeSelectedElements = "emphasizeSelectedElements",
+    EmphasizeSelectedElements = "EmphasizeSelectedElements",
     // (undocumented)
-    HideSelected = "hideSelected",
+    HideSelected = "HideSelected",
     // (undocumented)
-    HideSelectedCategories = "hideSelectedCategories",
+    HideSelectedCategories = "HideSelectedCategories",
     // (undocumented)
-    HideSelectedElements = "hideSelectedElements",
+    HideSelectedElements = "HideSelectedElements",
     // (undocumented)
-    HideSelectedModels = "hideSelectedModels",
+    HideSelectedModels = "HideSelectedModels",
     // (undocumented)
-    IsolateSelectedCategories = "isolateSelectedCategories",
+    IsolateSelectedCategories = "IsolateSelectedCategories",
     // (undocumented)
-    IsolateSelectedElements = "isolateSelectedElements",
+    IsolateSelectedElements = "IsolateSelectedElements",
     // (undocumented)
-    IsolateSelectedModels = "isolateSelectedModels"
+    IsolateSelectedModels = "IsolateSelectedModels"
 }
 
 // @alpha
