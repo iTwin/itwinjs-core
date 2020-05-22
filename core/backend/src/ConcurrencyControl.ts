@@ -830,7 +830,7 @@ export namespace ConcurrencyControl {
     public getChannelRootInfo0(props: ElementProps): any {
       // special case of legacy *bridges*
       if (props.classFullName === Subject.classFullName) {
-        if ((props.jsonProperties !== undefined) && (props.jsonProperties.Subject !== undefined) && (props.jsonProperties.Subject.Job !== undefined)) {
+        if (props.jsonProperties?.Subject?.Job !== undefined) {
           return props.jsonProperties.Subject.Job;
         }
       }
