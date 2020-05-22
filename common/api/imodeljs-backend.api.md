@@ -2015,6 +2015,10 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     checksum?: string;
     // @internal (undocumented)
     static get className(): string;
+    static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): {
+        elementId?: Id64String;
+        aspectId?: Id64String;
+    };
     identifier: string;
     jsonProperties?: string;
     kind: string;

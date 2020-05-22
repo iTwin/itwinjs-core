@@ -8,6 +8,7 @@ import { AccessToken } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { ChangesType } from '@bentley/imodelhub-client';
+import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelDb } from '@bentley/imodeljs-backend';
 
 // @alpha
@@ -29,9 +30,9 @@ export enum BridgeLoggerCategory {
 }
 
 // @alpha
-export class BridgeSynchronizer {
+export class BridgeRunner {
     constructor(_jobDefArgs: BridgeJobDefArgs, _serverArgs: ServerArgs);
-    static fromArgs(args: string[]): BridgeSynchronizer;
+    static fromArgs(args: string[]): BridgeRunner;
     // (undocumented)
     getCacheDirectory(): string | undefined;
     pushDataChanges(pushComments: string, type: ChangesType): Promise<void>;
@@ -45,8 +46,6 @@ export interface IModelBridge {
     // (undocumented)
     getApplicationVersion(): string;
     // (undocumented)
-    getDgnDb(): IModelDb;
-    // (undocumented)
     importDefinitions(): Promise<any>;
     // (undocumented)
     importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
@@ -55,7 +54,7 @@ export interface IModelBridge {
     // (undocumented)
     initialize(params: any): any;
     // (undocumented)
-    onOpenBim(db: IModelDb): Promise<BentleyStatus>;
+    onOpenBim(sync: Synchronizer): Promise<BentleyStatus>;
     // (undocumented)
     openSource(sourcePath: string, dmsAccessToken: string | undefined, documentGuid: string | undefined): Promise<BentleyStatus>;
     // (undocumented)
@@ -69,10 +68,6 @@ export abstract class IModelBridgeBase implements IModelBridge {
     // (undocumented)
     abstract getApplicationVersion(): string;
     // (undocumented)
-    getDgnDb(): IModelDb;
-    // (undocumented)
-    protected _iModelDb: IModelDb | undefined;
-    // (undocumented)
     abstract importDefinitions(): Promise<any>;
     // (undocumented)
     abstract importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
@@ -81,9 +76,11 @@ export abstract class IModelBridgeBase implements IModelBridge {
     // (undocumented)
     abstract initialize(params: any): any;
     // (undocumented)
-    onOpenBim(db: IModelDb): Promise<BentleyStatus>;
+    onOpenBim(sync: Synchronizer): Promise<BentleyStatus>;
     // (undocumented)
     abstract openSource(sourcePath: string, dmsAccessToken: string | undefined, documentGuid: string | undefined): Promise<BentleyStatus>;
+    // (undocumented)
+    protected _synchronizer: Synchronizer | undefined;
     // (undocumented)
     abstract updateExistingData(sourcePath: string): Promise<any>;
 }

@@ -11,7 +11,7 @@ import { IModelJsFs } from "@bentley/imodeljs-backend";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BentleyStatus, Logger } from "@bentley/bentleyjs-core";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { BridgeJobDefArgs, BridgeSynchronizer, ServerArgs } from "../../BridgeSynchronizer";
+import { BridgeJobDefArgs, BridgeRunner, ServerArgs } from "../../BridgeRunner";
 import { HubUtility } from "./HubUtility";
 
 describe("IModelBridgeFwk (#integration)", () => {
@@ -57,7 +57,7 @@ describe("IModelBridgeFwk (#integration)", () => {
     serverArgs.getToken = async (): Promise<AccessToken> => {
       return requestContext.accessToken;
     };
-    const fwk = new BridgeSynchronizer(bridgeJobDef, serverArgs);
+    const fwk = new BridgeRunner(bridgeJobDef, serverArgs);
     const status = await fwk.synchronize();
     expect(BentleyStatus.SUCCESS === status);
   });

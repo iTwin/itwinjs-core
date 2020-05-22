@@ -17,6 +17,8 @@ import * as fs from "fs";
 
 import { IModelBridge } from "./IModelBridge";
 import { BridgeLoggerCategory } from "./BridgeLoggerCategory";
+import { Synchronizer } from "./Synchronizer";
+
 // import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 
 const loggerCategory: string = BridgeLoggerCategory.Framework;
@@ -73,7 +75,7 @@ class StaticTokenStore {
 /** The driver for synchronizer content to an iModel.
  * @alpha
  */
-export class BridgeSynchronizer {
+export class BridgeRunner {
   private _bridge?: IModelBridge;
   // private _ldClient: iModelBridgeLDClient;
   private _activityId: GuidString;
@@ -95,7 +97,7 @@ export class BridgeSynchronizer {
         const argFile = keyVal[0].substr(1);
         if (!fs.existsSync(argFile))
           throw new Error("Error file {argFile} does not exist.");
-        BridgeSynchronizer.parseArgumentFile(argFile, bridgeJobDef, serverArgs);
+        BridgeRunner.parseArgumentFile(argFile, bridgeJobDef, serverArgs);
         continue;
       }
       const argName = keyVal[0].trim();
@@ -135,11 +137,11 @@ export class BridgeSynchronizer {
   }
 
   /** Create a new instance of BridgeSynchronizer from command line arguments */
-  public static fromArgs(args: string[]): BridgeSynchronizer {
+  public static fromArgs(args: string[]): BridgeRunner {
     const bridgeJobDef = new BridgeJobDefArgs();
     const serverArgs = new ServerArgs();
-    const argValues = BridgeSynchronizer.parseArguments(args, bridgeJobDef, serverArgs);
-    return new BridgeSynchronizer(argValues[0], argValues[1]);
+    const argValues = BridgeRunner.parseArguments(args, bridgeJobDef, serverArgs);
+    return new BridgeRunner(argValues[0], argValues[1]);
   }
 
   /** Create a new instance with the given arguments. */
@@ -204,8 +206,10 @@ export class BridgeSynchronizer {
     if (this._briefcaseDb === undefined)
       throw new Error("Unable to acquire briefcase");
 
+    const synchronizer = new Synchronizer(this._briefcaseDb, this._requestContext);
+
     await this._bridge.openSource(this._bridgeArgs.sourcePath, this._serverArgs.dmsAccessToken, this._bridgeArgs.documentGuid);
-    await this._bridge.onOpenBim(this._briefcaseDb);
+    await this._bridge.onOpenBim(synchronizer);
 
     await this.updateExistingIModel(this._bridgeArgs.sourcePath);
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BridgeSynchronizer } from "./BridgeSynchronizer";
+import { BridgeRunner } from "./BridgeRunner";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { ChangesType } from "@bentley/imodelhub-client";
 import { Logger } from "@bentley/bentleyjs-core";
@@ -11,7 +11,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 async function run(inputParams: string[]) {
   try {
     await IModelHost.startup();
-    const fwk = BridgeSynchronizer.fromArgs(inputParams);
+    const fwk = BridgeRunner.fromArgs(inputParams);
     await fwk.synchronize();
     await fwk.pushDataChanges("", ChangesType.Regular);
     await IModelHost.shutdown();

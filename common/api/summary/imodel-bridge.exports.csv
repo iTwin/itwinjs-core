@@ -2,7 +2,7 @@ sep=;
 Release Tag;API Item
 alpha;BridgeJobDefArgs
 public;BridgeLoggerCategory
-alpha;BridgeSynchronizer
+alpha;BridgeRunner
 alpha;IModelBridge
 alpha;class IModelBridgeBase 
 alpha;ServerArgs
