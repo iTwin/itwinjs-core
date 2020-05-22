@@ -1655,9 +1655,6 @@ export interface ElementTooltipChangedEventArgs {
 // @alpha
 export interface EmphasizeElementsChangedArgs {
     readonly action: HideIsolateEmphasizeAction;
-    readonly usingSingleSelectionCategory?: string;
-    readonly usingSingleSelectionModel?: string;
-    readonly usingSingleSelectionSubject?: string;
     readonly viewport: ScreenViewport;
 }
 
@@ -2423,8 +2420,6 @@ export enum HideIsolateEmphasizeAction {
     // (undocumented)
     EmphasizeSelectedElements = "EmphasizeSelectedElements",
     // (undocumented)
-    HideSelected = "HideSelected",
-    // (undocumented)
     HideSelectedCategories = "HideSelectedCategories",
     // (undocumented)
     HideSelectedElements = "HideSelectedElements",
@@ -2442,7 +2437,7 @@ export enum HideIsolateEmphasizeAction {
 export abstract class HideIsolateEmphasizeActionHandler {
     abstract areFeatureOverridesActive(vp: Viewport): boolean;
     // (undocumented)
-    static emphasizeElementsChanged: BeEvent<() => void>;
+    static emphasizeElementsChanged: BeEvent<(args: EmphasizeElementsChangedArgs) => void>;
     static get hideIsolateEmphasizeUiSyncId(): string;
     abstract processClearEmphasize(): Promise<void>;
     abstract processEmphasizeSelected(): Promise<void>;

@@ -6,7 +6,7 @@ import * as React from "react";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
-  ViewState,
+  ScreenViewport, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import {
@@ -17,10 +17,10 @@ import { Point, ScrollView } from "@bentley/ui-core";
 import {
   BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager,
   ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
-  CustomItemDef, Frontstage, FrontstageManager, FrontstageProvider, GroupItemDef, IModelConnectedViewSelector, MessageManager, ModalDialogManager,
-  ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel, StagePanelHeader,
-  StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework, VisibilityComponentHierarchy, VisibilityWidget, Widget, WIDGET_OPACITY_DEFAULT,
-  WidgetState, Zone, ZoneLocation, ZoneState,
+  CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef, HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler,
+  HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager, ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType,
+  SavedViewLayout, SavedViewLayoutProps, StagePanel, StagePanelHeader, StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework,
+  VisibilityComponentHierarchy, VisibilityWidget, Widget, WIDGET_OPACITY_DEFAULT, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
 // SVG Support - SvgPath or SvgSprite
@@ -46,6 +46,7 @@ import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 
 export class ViewsFrontstage extends FrontstageProvider {
+  public static stageId = "ViewsFrontstage";
   public static unifiedSelectionPropertyGridId = "UnifiedSelectionPropertyGrid";
   private _additionalTools = new AdditionalTools();
 
@@ -68,8 +69,51 @@ export class ViewsFrontstage extends FrontstageProvider {
     allowedZones: [2, 7],
   };
 
+  private async applyVisibilityOverrideToSpatialViewports(frontstageDef: FrontstageDef, processedViewport: ScreenViewport, action: HideIsolateEmphasizeAction) {
+    frontstageDef?.contentControls?.forEach(async (cc) => {
+      const vp = cc.viewport;
+      if (vp !== processedViewport && vp?.view?.isSpatialView() && vp.iModel === processedViewport.iModel) {
+        switch (action) {
+          case HideIsolateEmphasizeAction.ClearHiddenIsolatedEmphasized:
+            HideIsolateEmphasizeManager.clearEmphasize(vp);
+            break;
+          case HideIsolateEmphasizeAction.EmphasizeSelectedElements:
+            await HideIsolateEmphasizeManager.emphasizeSelected(vp);
+            break;
+          case HideIsolateEmphasizeAction.HideSelectedCategories:
+            await HideIsolateEmphasizeManager.hideSelectedElementsCategory(vp);
+            break;
+          case HideIsolateEmphasizeAction.HideSelectedElements:
+            HideIsolateEmphasizeManager.hideSelected(vp);
+            break;
+          case HideIsolateEmphasizeAction.HideSelectedModels:
+            await HideIsolateEmphasizeManager.hideSelectedElementsModel(vp);
+            break;
+          case HideIsolateEmphasizeAction.IsolateSelectedCategories:
+            await HideIsolateEmphasizeManager.isolateSelectedElementsCategory(vp);
+            break;
+          case HideIsolateEmphasizeAction.IsolateSelectedElements:
+            HideIsolateEmphasizeManager.isolateSelected(vp);
+            break;
+          case HideIsolateEmphasizeAction.IsolateSelectedModels:
+            await HideIsolateEmphasizeManager.isolateSelectedElementsModel(vp);
+            break;
+          default:
+            break;
+        }
+      }
+    });
+  }
+
+  private _onEmphasizeElementsChangedHandler = (args: EmphasizeElementsChangedArgs) => {
+    if (FrontstageManager.activeFrontstageDef && FrontstageManager.activeFrontstageId === ViewsFrontstage.stageId)
+      this.applyVisibilityOverrideToSpatialViewports(FrontstageManager.activeFrontstageDef, args.viewport, args.action); // tslint:disable-line: no-floating-promises
+  }
+
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
     super();
+
+    HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(this._onEmphasizeElementsChangedHandler);
   }
 
   /** Get the CustomItemDef for ViewSelector  */
@@ -109,7 +153,7 @@ export class ViewsFrontstage extends FrontstageProvider {
     }
     const myContentGroup: ContentGroup = new ContentGroup({ contents: contentProps });
     return (
-      <Frontstage id="ViewsFrontstage"
+      <Frontstage id={ViewsFrontstage.stageId}
         defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
