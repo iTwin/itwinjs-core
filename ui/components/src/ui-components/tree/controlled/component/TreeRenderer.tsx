@@ -138,6 +138,14 @@ export function TreeRenderer(props: TreeRendererProps) {
     },
   }), [props.nodeRenderer, props.treeActions, props.nodeLoader, props.visibleNodes, onLabelRendered, highlightingEngine]);
 
+  const prevTreeWidth = React.useRef<number>(0);
+  const onTreeSizeChanged = React.useCallback((width: number) => {
+    if (width !== prevTreeWidth.current) {
+      minContainerWidth.current = 0;
+      prevTreeWidth.current = width;
+    }
+  }, []);
+
   const itemKey = React.useCallback(
     (index: number) => getNodeKey(props.visibleNodes.getAtIndex(index)!),
     [props.visibleNodes],
@@ -177,22 +185,25 @@ export function TreeRenderer(props: TreeRendererProps) {
     <TreeRendererContextProvider value={rendererContext}>
       <CoreTree ref={coreTreeRef} className="components-controlledTree">
         <AutoSizer>
-          {({ width, height }: Size) => (
-            <VariableSizeList
-              ref={variableSizeListRef}
-              className={"ReactWindow__VariableSizeList"}
-              width={width}
-              height={height}
-              itemCount={props.visibleNodes.getNumNodes()}
-              itemSize={itemSize}
-              estimatedItemSize={25}
-              overscanCount={10}
-              itemKey={itemKey}
-              innerElementType={innerElementType}
-            >
-              {Node}
-            </VariableSizeList>
-          )}
+          {({ width, height }: Size) => {
+            onTreeSizeChanged(width);
+            return (
+              <VariableSizeList
+                ref={variableSizeListRef}
+                className={"ReactWindow__VariableSizeList"}
+                width={width}
+                height={height}
+                itemCount={props.visibleNodes.getNumNodes()}
+                itemSize={itemSize}
+                estimatedItemSize={25}
+                overscanCount={10}
+                itemKey={itemKey}
+                innerElementType={innerElementType}
+              >
+                {Node}
+              </VariableSizeList>
+            );
+          }}
         </AutoSizer>
       </CoreTree>
     </TreeRendererContextProvider>
