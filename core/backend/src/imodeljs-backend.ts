@@ -41,7 +41,7 @@ export * from "./domains/AnalyticalSchema";
 export * from "./domains/AnalyticalElements";
 export * from "./domains/AnalyticalModels";
 export * from "./domains/AnalyticalRelationships";
-export * from "@bentley/imodeljs-native/IModelJsNative";
+export { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
 export * from "./NativeAppBackend";

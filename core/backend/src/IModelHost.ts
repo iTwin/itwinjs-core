@@ -461,30 +461,8 @@ export class IModelHost {
     Logger.logTrace(loggerCategory, "IModelHost.startup", () => startupInfo);
   }
 
-  // Get a platform specific default cache dir
-  private static getDefaultCacheDir(): string {
-    let baseDir: string;
-    const homedir = os.homedir();
-    const platform = os.platform() as string;
-    switch (platform) {
-      case "win32":
-        baseDir = path.join(homedir, "AppData", "Local");
-        break;
-      case "darwin":
-      case "ios":
-        baseDir = path.join(homedir, "Library", "Caches");
-        break;
-      case "linux":
-        baseDir = path.join(homedir, ".cache");
-        break;
-      default:
-        throw new BentleyError(BentleyStatus.ERROR, "Unknown platform that does not support iModel.js backends", () => ({ platform }));
-    }
-    return path.join(baseDir, "iModelJs");
-  }
-
   private static setupCacheDirs(configuration: IModelHostConfiguration) {
-    this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : this.getDefaultCacheDir();
+    this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
 
     // Setup the briefcaseCacheDir, defaulting to the the legacy/deprecated value
     if (configuration.briefcaseCacheDir) // tslint:disable-line:deprecation

@@ -14,13 +14,14 @@ import {
   BriefcaseProps, Code, CodeProps, ElementProps, GeometricElement3dProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, RelatedElement,
   RpcConfiguration, RpcManager, SyncMode,
 } from "@bentley/imodeljs-common";
+import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ClassRegistry } from "../ClassRegistry";
 import { PhysicalElement, Subject } from "../Element";
 import {
-  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, InformationPartitionElement,
-  Model, NativeLoggerCategory, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
+  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, InformationPartitionElement, Model,
+  PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { Schema, Schemas } from "../Schema";
