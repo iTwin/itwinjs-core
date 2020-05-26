@@ -50,7 +50,7 @@
     "istanbul-instrumenter-loader": "^3.0.1",
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
-    "source-map-loader": "^0.2.3",
+    "source-map-loader": "^1.0.0",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",

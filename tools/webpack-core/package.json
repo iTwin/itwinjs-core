@@ -24,7 +24,7 @@
     "chalk": "^3.0.0",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.2",
-    "source-map-loader": "^0.2.3",
+    "source-map-loader": "^1.0.0",
     "webpack-sources": "^1.4.3",
     "webpack-filter-warnings-plugin": "^1.2.1"
   },
