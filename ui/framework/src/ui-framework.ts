@@ -216,6 +216,7 @@ export * from "./ui-framework/widget-panels/LayoutManager";
 export * from "./ui-framework/widget-panels/StatusBar";
 export * from "./ui-framework/widget-panels/Toolbars";
 export * from "./ui-framework/widget-panels/ToolSettings";
+export * from "./ui-framework/widget-panels/useWidgetDirection";
 
 export * from "./ui-framework/widgets/BasicNavigationWidget";
 export * from "./ui-framework/widgets/BasicToolWidget";

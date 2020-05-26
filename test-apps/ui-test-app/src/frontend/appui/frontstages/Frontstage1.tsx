@@ -6,7 +6,7 @@ import * as React from "react";
 import { TimelineComponent } from "@bentley/ui-components";
 import {
   ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
-  NavigationWidget, StagePanel, ToolButton, ToolWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
+  NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -18,6 +18,7 @@ import { NestedFrontstage1 } from "./NestedFrontstage1";
 
 function RightPanel() {
   const [collapsed, setCollapsed] = React.useState(true);
+  const direction = useWidgetDirection();
   return (
     <>
       <h2>Right panel</h2>
@@ -28,6 +29,7 @@ function RightPanel() {
         panel.trySetCurrentSize(size);
         setCollapsed((prev) => !prev);
       }}>{collapsed ? "<" : ">"}</button>
+      {direction}
     </>
   );
 }

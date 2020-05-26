@@ -408,7 +408,7 @@ type FindTabType = undefined |
 { widgetId: WidgetState["id"], floatingWidgetId: FloatingWidgetState["id"] };
 
 /** @internal */
-export function findTab(state: Draft<NineZoneState>, id: TabState["id"]): FindTabType {
+export function findTab(state: NineZoneState, id: TabState["id"]): FindTabType {
   let widgetId;
   for (const [, widget] of Object.entries(state.widgets)) {
     const index = widget.tabs.indexOf(id);
