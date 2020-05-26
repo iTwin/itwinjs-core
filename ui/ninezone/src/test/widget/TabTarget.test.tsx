@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, CursorTypeContext, NineZoneProvider, WidgetIdContext, WidgetTabTarget } from "../../ui-ninezone";
+import { addPanelWidget, createNineZoneState, CursorTypeContext, WidgetIdContext, WidgetTabTarget } from "../../ui-ninezone";
+import { NineZoneProvider } from "../Providers";
 
 describe("WidgetTabTarget ", () => {
   it("should render with cursor type", () => {
@@ -14,7 +14,6 @@ describe("WidgetTabTarget ", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <WidgetIdContext.Provider value="w1">
           <CursorTypeContext.Provider value="grabbing">

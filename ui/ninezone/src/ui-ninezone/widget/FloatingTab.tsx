@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { isTabTarget, useDragTab, UseDragTabArgs } from "../base/DragManager";
 import { DraggedTabStateContext, getUniqueId, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
-import { TabTargetState, WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END } from "../base/NineZoneState";
+import { TabTargetState } from "../base/NineZoneState";
 import { CssProperties } from "../utilities/Css";
 
 /** Component that displays a floating tab.
@@ -24,7 +24,7 @@ export function FloatingTab() {
   const id = draggedTab?.tabId;
   const onDrag = React.useCallback<NonNullable<UseDragTabArgs["onDrag"]>>((dragBy) => {
     id && dispatch({
-      type: WIDGET_TAB_DRAG,
+      type: "WIDGET_TAB_DRAG",
       dragBy,
     });
   }, [dispatch, id]);
@@ -47,7 +47,7 @@ export function FloatingTab() {
       };
     }
     id && dispatch({
-      type: WIDGET_TAB_DRAG_END,
+      type: "WIDGET_TAB_DRAG_END",
       id,
       target,
     });

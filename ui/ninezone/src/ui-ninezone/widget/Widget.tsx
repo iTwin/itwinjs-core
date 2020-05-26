@@ -12,8 +12,8 @@ import * as React from "react";
 import { CommonProps, Rectangle, SizeProps } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
-import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
-import { FLOATING_WIDGET_BRING_TO_FRONT, PANEL_WIDGET_DRAG_START, WidgetState } from "../base/NineZoneState";
+import { getUniqueId, MeasureContext, NineZoneDispatchContext } from "../base/NineZone";
+import { WidgetState } from "../base/NineZoneState";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 
@@ -48,24 +48,38 @@ export const Widget = React.memo<WidgetProps>(function Widget(props) { // tslint
   const id = React.useContext(WidgetIdContext);
   assert(id !== undefined);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
+  const measureNz = React.useContext(MeasureContext);
   const ref = React.useRef<HTMLDivElement>(null);
   const widgetId = floatingWidgetId === undefined ? id : floatingWidgetId;
-  const onDragStart = React.useCallback<NonNullable<UseDragWidgetArgs["onDragStart"]>>((updateId) => {
+  const onDragStart = React.useCallback<NonNullable<UseDragWidgetArgs["onDragStart"]>>((updateId, initialPointerPosition) => {
     assert(ref.current);
-    const bounds = Rectangle.create(ref.current.getBoundingClientRect()).toProps();
-    let newFloatingWidgetId;
-    if (floatingWidgetId === undefined) {
-      newFloatingWidgetId = getUniqueId();
-      updateId(newFloatingWidgetId);
+    if (floatingWidgetId !== undefined)
+      return;
+    const nzBounds = measureNz();
+    const bounds = Rectangle.create(ref.current.getBoundingClientRect());
+
+    const size = restrainInitialWidgetSize(bounds.getSize(), nzBounds.getSize());
+    let adjustedBounds = bounds.setSize(size);
+
+    // Pointer is outside of tab area. Need to re-adjust widget bounds so that tab is behind pointer
+    if (initialPointerPosition.x > adjustedBounds.right) {
+      const offset = initialPointerPosition.x - adjustedBounds.right + 20;
+      adjustedBounds = adjustedBounds.offsetX(offset);
     }
-    newFloatingWidgetId && side && dispatch({
-      type: PANEL_WIDGET_DRAG_START,
+
+    // Adjust bounds to be relative to 9z origin
+    adjustedBounds = adjustedBounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
+
+    const newFloatingWidgetId = getUniqueId();
+    updateId(newFloatingWidgetId);
+    side && dispatch({
+      type: "PANEL_WIDGET_DRAG_START",
       newFloatingWidgetId,
       id,
-      bounds,
+      bounds: adjustedBounds.toProps(),
       side,
     });
-  }, [dispatch, floatingWidgetId, id, side]);
+  }, [dispatch, floatingWidgetId, id, side, measureNz]);
   useDragWidget({
     widgetId,
     onDragStart,
@@ -73,7 +87,7 @@ export const Widget = React.memo<WidgetProps>(function Widget(props) { // tslint
   React.useEffect(() => {
     const listener = () => {
       floatingWidgetId && dispatch({
-        type: FLOATING_WIDGET_BRING_TO_FRONT,
+        type: "FLOATING_WIDGET_BRING_TO_FRONT",
         id: floatingWidgetId,
       });
     };
@@ -127,3 +141,16 @@ export interface WidgetContextArgs {
 /** @internal */
 export const WidgetContext = React.createContext<WidgetContextArgs>(null!); // tslint:disable-line: variable-name
 WidgetContext.displayName = "nz:WidgetContext";
+
+const minWidth = 200;
+const minHeight = 200;
+
+/** @internal */
+export function restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): SizeProps {
+  const width = Math.max(Math.min(nzSize.width / 3, size.width), minWidth);
+  const height = Math.max(Math.min(nzSize.height / 3, size.height), minHeight);
+  return {
+    width,
+    height,
+  };
+}

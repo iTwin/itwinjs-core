@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import produce, { castDraft } from "immer";
 import { Rectangle, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
-import { addPanelWidget, addTab, createNineZoneState, createWidgetState, PANEL_INITIALIZE } from "@bentley/ui-ninezone";
+import { addPanelWidget, addTab, createNineZoneState, createWidgetState } from "@bentley/ui-ninezone";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
   addPanelWidgets, addWidgets, FrontstageDef, FrontstageManager, FrontstageProvider, FrontstageState, getWidgetId, initializeFrontstageState,
@@ -146,7 +146,7 @@ describe("useFrontstageDefNineZone", () => {
     const { result } = renderHook(() => useFrontstageDefNineZone(frontstage));
     act(() => {
       result.current[1]({
-        type: PANEL_INITIALIZE,
+        type: "PANEL_INITIALIZE",
         side: "left",
         size: 200,
       });
@@ -157,7 +157,7 @@ describe("useFrontstageDefNineZone", () => {
   it("should dispatch FRONTSTAGE_STATE_LOAD", async () => {
     const setting = {
       version: 0,
-      stateVersion: 1,
+      stateVersion: 2,
     };
     const uiSettings = new UiSettingsStub();
     sinon.stub(uiSettings, "getSetting").returns(Promise.resolve<UiSettingsResult>({

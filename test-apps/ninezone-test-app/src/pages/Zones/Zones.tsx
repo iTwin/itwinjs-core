@@ -11,14 +11,11 @@ import { Point } from "@bentley/ui-core";
 import {
   assert,
   NineZoneDispatchContext,
-  NineZoneProvider,
+  NineZone,
   addPanelWidget,
   addTab,
   createNineZoneState,
   NineZoneStateReducer,
-  PANEL_TOGGLE_COLLAPSED,
-  PANEL_TOGGLE_PINNED,
-  PANEL_TOGGLE_SPAN,
   Footer,
   ToolbarPanelAlignment,
   Direction,
@@ -325,9 +322,7 @@ export default function Zones() {
     <button onClick={removeFromStart}>Remove From Start</button>
     <button onClick={update}>Update</button>
   </>, [add, addToStart, remove, removeFromStart, update]);
-  const nineZone = React.useMemo(() => <div
-    className="nzdemo-zones-zones"
-  >
+  const nineZone = React.useMemo(() => <>
     <WidgetPanels
       className="nzdemo-widgetPanels"
       centerContent={ui}
@@ -342,17 +337,24 @@ export default function Zones() {
       <div className="nzdemo-footer-content">Status Bar</div>
     </Footer>
     <FloatingWidgets />
-  </div>, [content, ui, settings]);
+  </>, [content, ui, settings]);
   return (
     <React.StrictMode>
-      <NineZoneProvider
-        dispatch={dispatch}
-        state={state}
-        widgetContent={widget}
-        toolSettingsContent={toolSettings}
+      <div className="nzdemo-header">
+        HEADER
+      </div>
+      <div
+        className="nzdemo-zones-zones"
       >
-        {nineZone}
-      </NineZoneProvider>
+        <NineZone
+          dispatch={dispatch}
+          state={state}
+          widgetContent={widget}
+          toolSettingsContent={toolSettings}
+        >
+          {nineZone}
+        </NineZone>
+      </div>
     </React.StrictMode >
   );
 }
@@ -399,7 +401,7 @@ export function WidgetContent() {
       {side && <>
         <button
           onClick={() => dispatch({
-            type: PANEL_TOGGLE_PINNED,
+            type: "PANEL_TOGGLE_PINNED",
             side,
           })}
         >
@@ -407,7 +409,7 @@ export function WidgetContent() {
         </button>
         <button
           onClick={() => dispatch({
-            type: PANEL_TOGGLE_COLLAPSED,
+            type: "PANEL_TOGGLE_COLLAPSED",
             side,
           })}
         >
@@ -415,7 +417,7 @@ export function WidgetContent() {
         </button>
         {isHorizontalPanelSide(side) && <button
           onClick={() => dispatch({
-            type: PANEL_TOGGLE_SPAN,
+            type: "PANEL_TOGGLE_SPAN",
             side,
           })}
         >

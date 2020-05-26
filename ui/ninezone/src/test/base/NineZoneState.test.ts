@@ -6,10 +6,7 @@ import { castDraft, produce } from "immer";
 import { Point, Rectangle } from "@bentley/ui-core";
 import {
   addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createVerticalPanelState, createWidgetState,
-  FLOATING_WIDGET_BRING_TO_FRONT, FLOATING_WIDGET_RESIZE, FloatingWidgetState, isHorizontalPanelState, NineZoneState, NineZoneStateReducer,
-  PANEL_INITIALIZE, PANEL_RESIZE, PANEL_TOGGLE_COLLAPSED, PANEL_TOGGLE_PINNED, PANEL_TOGGLE_SPAN, PANEL_WIDGET_DRAG_START, TOOL_SETTINGS_DRAG_START,
-  WIDGET_DRAG, WIDGET_DRAG_END, WIDGET_SEND_BACK, WIDGET_TAB_CLICK, WIDGET_TAB_DOUBLE_CLICK, WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END,
-  WIDGET_TAB_DRAG_START, WidgetState,
+  FloatingWidgetState, isHorizontalPanelState, NineZoneState, NineZoneStateReducer, WidgetState,
 } from "../../ui-ninezone";
 
 /** @internal */
@@ -43,11 +40,55 @@ describe("isHorizontalPanelState", () => {
 });
 
 describe("NineZoneStateReducer", () => {
+  describe("RESIZE", () => {
+    it("should toggle collapsed property of panel", () => {
+      const state = createNineZoneState();
+      const newState = NineZoneStateReducer(state, {
+        type: "RESIZE",
+        size: {
+          height: 200,
+          width: 300,
+        },
+      });
+      newState.size.should.eql({ height: 200, width: 300 });
+    });
+
+    it("should contain floating widgets", () => {
+      let state = createNineZoneState({
+        size: {
+          height: 200,
+          width: 300,
+        },
+      });
+      state = addFloatingWidget(state, "fw1", {
+        bounds: {
+          top: 0,
+          bottom: 150,
+          left: 100,
+          right: 200,
+        },
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: "RESIZE",
+        size: {
+          height: 200,
+          width: 160,
+        },
+      });
+      newState.floatingWidgets.byId.fw1.bounds.should.eql({
+        top: 0,
+        bottom: 150,
+        left: 60,
+        right: 160,
+      });
+    });
+  });
+
   describe("PANEL_TOGGLE_COLLAPSED", () => {
     it("should toggle collapsed property of panel", () => {
       const state = createNineZoneState();
       const newState = NineZoneStateReducer(state, {
-        type: PANEL_TOGGLE_COLLAPSED,
+        type: "PANEL_TOGGLE_COLLAPSED",
         side: "left",
       });
       newState.panels.left.collapsed.should.not.eq(state.panels.left.collapsed);
@@ -58,7 +99,7 @@ describe("NineZoneStateReducer", () => {
     it("should toggle span property of panel", () => {
       const state = createNineZoneState();
       const newState = NineZoneStateReducer(state, {
-        type: PANEL_TOGGLE_SPAN,
+        type: "PANEL_TOGGLE_SPAN",
         side: "top",
       });
       newState.panels.top.span.should.not.eq(state.panels.top.span);
@@ -69,7 +110,7 @@ describe("NineZoneStateReducer", () => {
     it("should toggle pinned property of panel", () => {
       const state = createNineZoneState();
       const newState = NineZoneStateReducer(state, {
-        type: PANEL_TOGGLE_PINNED,
+        type: "PANEL_TOGGLE_PINNED",
         side: "top",
       });
       newState.panels.top.pinned.should.not.eq(state.panels.top.pinned);
@@ -80,7 +121,7 @@ describe("NineZoneStateReducer", () => {
     it("should not resize if panel size is not set", () => {
       const state = createNineZoneState();
       const newState = NineZoneStateReducer(state, {
-        type: PANEL_RESIZE,
+        type: "PANEL_RESIZE",
         side: "left",
         resizeBy: 50,
       });
@@ -94,7 +135,7 @@ describe("NineZoneStateReducer", () => {
         stateDraft.panels.left.collapsed = true;
       });
       const newState = NineZoneStateReducer(state, {
-        type: PANEL_RESIZE,
+        type: "PANEL_RESIZE",
         side: "left",
         resizeBy: 150,
       });
@@ -108,7 +149,7 @@ describe("NineZoneStateReducer", () => {
         stateDraft.panels.left.collapsed = true;
       });
       const newState = NineZoneStateReducer(state, {
-        type: PANEL_RESIZE,
+        type: "PANEL_RESIZE",
         side: "left",
         resizeBy: 50,
       });
@@ -121,7 +162,7 @@ describe("NineZoneStateReducer", () => {
         stateDraft.panels.left.size = 200;
       });
       const newState = NineZoneStateReducer(state, {
-        type: PANEL_RESIZE,
+        type: "PANEL_RESIZE",
         side: "left",
         resizeBy: -100,
       });
@@ -134,7 +175,7 @@ describe("NineZoneStateReducer", () => {
         stateDraft.panels.left.size = 200;
       });
       const newState = NineZoneStateReducer(state, {
-        type: PANEL_RESIZE,
+        type: "PANEL_RESIZE",
         side: "left",
         resizeBy: 50,
       });
@@ -146,7 +187,7 @@ describe("NineZoneStateReducer", () => {
     it("should initialize", () => {
       const state = createNineZoneState();
       const newState = NineZoneStateReducer(state, {
-        type: PANEL_INITIALIZE,
+        type: "PANEL_INITIALIZE",
         side: "left",
         size: 300,
       });
@@ -160,7 +201,7 @@ describe("NineZoneStateReducer", () => {
       state = addPanelWidget(state, "left", "w1");
       state = addTab(state, "w1", "t1");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_CLICK,
+        type: "WIDGET_TAB_CLICK",
         side: "left",
         widgetId: "w1",
         id: "t1",
@@ -173,7 +214,7 @@ describe("NineZoneStateReducer", () => {
       state = addPanelWidget(state, "left", "w1", { minimized: true });
       state = addTab(state, "w1", "t1");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_CLICK,
+        type: "WIDGET_TAB_CLICK",
         side: "left",
         widgetId: "w1",
         id: "t1",
@@ -190,7 +231,7 @@ describe("NineZoneStateReducer", () => {
       state = addTab(state, "w2", "t2");
       state = addTab(state, "w3", "t3");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_CLICK,
+        type: "WIDGET_TAB_CLICK",
         side: "left",
         widgetId: "w1",
         id: "t1",
@@ -205,7 +246,7 @@ describe("NineZoneStateReducer", () => {
       state = addFloatingWidget(state, "w1", undefined, { activeTabId: "t1", minimized: true });
       state = addTab(state, "w1", "t1");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_CLICK,
+        type: "WIDGET_TAB_CLICK",
         side: undefined,
         widgetId: "w1",
         id: "t1",
@@ -218,7 +259,7 @@ describe("NineZoneStateReducer", () => {
       state = addFloatingWidget(state, "w1", undefined, { activeTabId: "t1" });
       state = addTab(state, "w1", "t1");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_CLICK,
+        type: "WIDGET_TAB_CLICK",
         side: undefined,
         widgetId: "w1",
         id: "t1",
@@ -237,7 +278,7 @@ describe("NineZoneStateReducer", () => {
       state = addTab(state, "w1", "t2");
       state = addTab(state, "w1", "t3");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DOUBLE_CLICK,
+        type: "WIDGET_TAB_DOUBLE_CLICK",
         side: "left",
         widgetId: "w1",
         id: "t1",
@@ -257,7 +298,7 @@ describe("NineZoneStateReducer", () => {
       state = addTab(state, "w1", "t2");
       state = addTab(state, "w1", "t3");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DOUBLE_CLICK,
+        type: "WIDGET_TAB_DOUBLE_CLICK",
         side: "left",
         widgetId: "w1",
         id: "t1",
@@ -275,7 +316,7 @@ describe("NineZoneStateReducer", () => {
       state = addTab(state, "w1", "t2");
       state = addTab(state, "w1", "t3");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DOUBLE_CLICK,
+        type: "WIDGET_TAB_DOUBLE_CLICK",
         side: "left",
         widgetId: "w1",
         id: "t1",
@@ -293,7 +334,7 @@ describe("NineZoneStateReducer", () => {
       state = addTab(state, "w1", "t2");
       state = addTab(state, "w1", "t3");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DOUBLE_CLICK,
+        type: "WIDGET_TAB_DOUBLE_CLICK",
         side: "left",
         widgetId: "w1",
         id: "t1",
@@ -307,7 +348,7 @@ describe("NineZoneStateReducer", () => {
       state = addFloatingWidget(state, "fw1", undefined, { activeTabId: "t1" });
       state = addTab(state, "fw1", "t1");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DOUBLE_CLICK,
+        type: "WIDGET_TAB_DOUBLE_CLICK",
         id: "t1",
         side: undefined,
         widgetId: "fw1",
@@ -322,7 +363,7 @@ describe("NineZoneStateReducer", () => {
       state = addTab(state, "fw1", "t1");
       state = addTab(state, "fw1", "t2");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DOUBLE_CLICK,
+        type: "WIDGET_TAB_DOUBLE_CLICK",
         id: "t2",
         side: undefined,
         widgetId: "fw1",
@@ -337,7 +378,7 @@ describe("NineZoneStateReducer", () => {
       let state = createNineZoneState();
       state = addPanelWidget(state, "left", "w1");
       const newState = NineZoneStateReducer(state, {
-        type: PANEL_WIDGET_DRAG_START,
+        type: "PANEL_WIDGET_DRAG_START",
         bounds: new Rectangle().toProps(),
         id: "w1",
         newFloatingWidgetId: "newId",
@@ -352,7 +393,7 @@ describe("NineZoneStateReducer", () => {
       state = addPanelWidget(state, "left", "w1");
       state = addPanelWidget(state, "left", "w2", { minimized: true });
       const newState = NineZoneStateReducer(state, {
-        type: PANEL_WIDGET_DRAG_START,
+        type: "PANEL_WIDGET_DRAG_START",
         bounds: new Rectangle().toProps(),
         id: "w1",
         newFloatingWidgetId: "newId",
@@ -372,7 +413,7 @@ describe("NineZoneStateReducer", () => {
         };
       });
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_DRAG,
+        type: "WIDGET_DRAG",
         dragBy: new Point(10, 20).toProps(),
         floatingWidgetId: "fw1",
       });
@@ -391,9 +432,11 @@ describe("NineZoneStateReducer", () => {
         let state = createNineZoneState();
         state = addFloatingWidget(state, "fw1");
         const newState = NineZoneStateReducer(state, {
-          type: WIDGET_DRAG_END,
+          type: "WIDGET_DRAG_END",
           floatingWidgetId: "fw1",
-          target: undefined,
+          target: {
+            type: "floatingWidget",
+          },
         });
         (!!newState.floatingWidgets.byId.fw1).should.true;
       });
@@ -409,7 +452,7 @@ describe("NineZoneStateReducer", () => {
         state = addFloatingWidget(state, "fw1");
         state = addTab(state, "fw1", "fwt1");
         const newState = NineZoneStateReducer(state, {
-          type: WIDGET_DRAG_END,
+          type: "WIDGET_DRAG_END",
           floatingWidgetId: "fw1",
           target: {
             type: "tab",
@@ -429,7 +472,7 @@ describe("NineZoneStateReducer", () => {
         state = addPanelWidget(state, "left", "w2");
         state = addFloatingWidget(state, "fw1");
         const newState = NineZoneStateReducer(state, {
-          type: WIDGET_DRAG_END,
+          type: "WIDGET_DRAG_END",
           floatingWidgetId: "fw1",
           target: {
             type: "widget",
@@ -448,7 +491,7 @@ describe("NineZoneStateReducer", () => {
         let state = createNineZoneState();
         state = addFloatingWidget(state, "fw1");
         const newState = NineZoneStateReducer(state, {
-          type: WIDGET_DRAG_END,
+          type: "WIDGET_DRAG_END",
           floatingWidgetId: "fw1",
           target: {
             type: "panel",
@@ -467,7 +510,7 @@ describe("NineZoneStateReducer", () => {
       let state = createNineZoneState();
       state = addFloatingWidget(state, "fw1");
       const newState = NineZoneStateReducer(state, {
-        type: FLOATING_WIDGET_RESIZE,
+        type: "FLOATING_WIDGET_RESIZE",
         id: "fw1",
         resizeBy: new Rectangle(0, 10, 20, 40).toProps(),
       });
@@ -486,7 +529,7 @@ describe("NineZoneStateReducer", () => {
       state = addFloatingWidget(state, "fw1");
       state = addFloatingWidget(state, "fw2");
       const newState = NineZoneStateReducer(state, {
-        type: FLOATING_WIDGET_BRING_TO_FRONT,
+        type: "FLOATING_WIDGET_BRING_TO_FRONT",
         id: "fw1",
       });
       newState.floatingWidgets.allIds.should.eql(["fw2", "fw1"]);
@@ -498,7 +541,7 @@ describe("NineZoneStateReducer", () => {
       let state = createNineZoneState();
       state = addPanelWidget(state, "left", "w1");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DRAG_START,
+        type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: undefined,
         id: "t1",
         position: new Point(100, 200).toProps(),
@@ -514,7 +557,7 @@ describe("NineZoneStateReducer", () => {
       state = addTab(state, "w1", "t1");
       state = addTab(state, "w1", "t2");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DRAG_START,
+        type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: undefined,
         id: "t1",
         position: new Point(100, 200).toProps(),
@@ -529,7 +572,7 @@ describe("NineZoneStateReducer", () => {
       state = addPanelWidget(state, "left", "w1");
       state = addTab(state, "w1", "t1");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DRAG_START,
+        type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: undefined,
         id: "t1",
         position: new Point(100, 200).toProps(),
@@ -544,7 +587,7 @@ describe("NineZoneStateReducer", () => {
       state = addFloatingWidget(state, "fw1");
       state = addTab(state, "fw1", "t1");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DRAG_START,
+        type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: "fw1",
         id: "t1",
         position: new Point(100, 200).toProps(),
@@ -560,7 +603,7 @@ describe("NineZoneStateReducer", () => {
       state = addTab(state, "fw1", "t1");
       state = addTab(state, "fw1", "t2");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DRAG_START,
+        type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: "fw1",
         id: "t2",
         position: new Point(100, 200).toProps(),
@@ -576,7 +619,7 @@ describe("NineZoneStateReducer", () => {
       state = addPanelWidget(state, "left", "w2", { minimized: true });
       state = addTab(state, "w1", "t1");
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DRAG_START,
+        type: "WIDGET_TAB_DRAG_START",
         floatingWidgetId: undefined,
         id: "t1",
         position: new Point(100, 200).toProps(),
@@ -598,7 +641,7 @@ describe("NineZoneStateReducer", () => {
         };
       });
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_TAB_DRAG,
+        type: "WIDGET_TAB_DRAG",
         dragBy: new Point(10, 20).toProps(),
       });
       newState.draggedTab!.position.should.eql({
@@ -622,7 +665,7 @@ describe("NineZoneStateReducer", () => {
           };
         });
         const newState = NineZoneStateReducer(state, {
-          type: WIDGET_TAB_DRAG_END,
+          type: "WIDGET_TAB_DRAG_END",
           id: "dt",
           target: {
             type: "tab",
@@ -646,7 +689,7 @@ describe("NineZoneStateReducer", () => {
           };
         });
         const newState = NineZoneStateReducer(state, {
-          type: WIDGET_TAB_DRAG_END,
+          type: "WIDGET_TAB_DRAG_END",
           id: "dt",
           target: {
             type: "widget",
@@ -670,7 +713,7 @@ describe("NineZoneStateReducer", () => {
           };
         });
         const newState = NineZoneStateReducer(state, {
-          type: WIDGET_TAB_DRAG_END,
+          type: "WIDGET_TAB_DRAG_END",
           id: "dt",
           target: {
             type: "panel",
@@ -693,7 +736,7 @@ describe("NineZoneStateReducer", () => {
           };
         });
         const newState = NineZoneStateReducer(state, {
-          type: WIDGET_TAB_DRAG_END,
+          type: "WIDGET_TAB_DRAG_END",
           id: "dt",
           target: {
             type: "floatingWidget",
@@ -719,7 +762,7 @@ describe("NineZoneStateReducer", () => {
         };
       });
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_SEND_BACK,
+        type: "WIDGET_SEND_BACK",
         floatingWidgetId: undefined,
         side: "left",
         widgetId: "w1",
@@ -736,7 +779,7 @@ describe("NineZoneStateReducer", () => {
         };
       });
       const newState = NineZoneStateReducer(state, {
-        type: WIDGET_SEND_BACK,
+        type: "WIDGET_SEND_BACK",
         floatingWidgetId: undefined,
         side: "left",
         widgetId: "w1",
@@ -749,7 +792,7 @@ describe("NineZoneStateReducer", () => {
     it("should convert to floating widget", () => {
       const state = createNineZoneState();
       const newState = NineZoneStateReducer(state, {
-        type: TOOL_SETTINGS_DRAG_START,
+        type: "TOOL_SETTINGS_DRAG_START",
         newFloatingWidgetId: "new-fw1",
       });
       newState.toolSettings.type.should.eq("widget");
@@ -761,7 +804,7 @@ describe("NineZoneStateReducer", () => {
         draft.toolSettings.type = "widget";
       });
       const newState = NineZoneStateReducer(state, {
-        type: TOOL_SETTINGS_DRAG_START,
+        type: "TOOL_SETTINGS_DRAG_START",
         newFloatingWidgetId: "new-fw1",
       });
       newState.should.eq(state);

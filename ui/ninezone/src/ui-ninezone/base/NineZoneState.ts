@@ -82,7 +82,21 @@ export interface TabTargetFloatingWidgetState {
 export type TabTargetState = TabTargetPanelState | TabTargetWidgetState | TabTargetTabState | TabTargetFloatingWidgetState;
 
 /** @internal future */
-export type WidgetTargetState = TabTargetPanelState | TabTargetWidgetState | TabTargetTabState;
+export type WidgetTargetPanelState = TabTargetPanelState;
+
+/** @internal future */
+export type WidgetTargetWidgetState = TabTargetWidgetState;
+
+/** @internal future */
+export type WidgetTargetTabState = TabTargetTabState;
+
+/** @internal future */
+export interface WidgetTargetFloatingWidgetState {
+  readonly type: "floatingWidget";
+}
+
+/** @internal future */
+export type WidgetTargetState = WidgetTargetPanelState | WidgetTargetWidgetState | WidgetTargetTabState | WidgetTargetFloatingWidgetState;
 
 /** @internal future */
 export interface PanelsState {
@@ -136,91 +150,63 @@ export interface NineZoneState {
   readonly tabs: TabsState;
   readonly toolSettings: ToolSettingsState;
   readonly widgets: WidgetsState;
+  readonly size: SizeProps;
 }
 
 /** @internal future */
-export const PANEL_TOGGLE_COLLAPSED = "PANEL_TOGGLE_COLLAPSED";
-/** @internal future */
-export const PANEL_TOGGLE_SPAN = "PANEL_TOGGLE_SPAN";
-/** @internal future */
-export const PANEL_TOGGLE_PINNED = "PANEL_TOGGLE_PINNED";
-/** @internal future */
-export const PANEL_RESIZE = "PANEL_RESIZE";
-/** @internal future */
-export const PANEL_INITIALIZE = "PANEL_INITIALIZE";
-/** @internal future */
-export const FLOATING_WIDGET_RESIZE = "FLOATING_WIDGET_RESIZE";
-/** @internal future */
-export const FLOATING_WIDGET_BRING_TO_FRONT = "FLOATING_WIDGET_BRING_TO_FRONT";
-/** @internal future */
-export const PANEL_WIDGET_DRAG_START = "PANEL_WIDGET_DRAG_START";
-/** @internal future */
-export const WIDGET_DRAG = "WIDGET_DRAG";
-/** @internal future */
-export const WIDGET_DRAG_END = "WIDGET_DRAG_END";
-/** @internal future */
-export const WIDGET_SEND_BACK = "WIDGET_SEND_BACK";
-/** @internal future */
-export const WIDGET_TAB_CLICK = "WIDGET_TAB_CLICK";
-/** @internal future */
-export const WIDGET_TAB_DOUBLE_CLICK = "WIDGET_TAB_DOUBLE_CLICK";
-/** @internal future */
-export const WIDGET_TAB_DRAG_START = "WIDGET_TAB_DRAG_START";
-/** @internal future */
-export const WIDGET_TAB_DRAG = "WIDGET_TAB_DRAG";
-/** @internal future */
-export const WIDGET_TAB_DRAG_END = "WIDGET_TAB_DRAG_END";
-/** @internal future */
-export const TOOL_SETTINGS_DRAG_START = "TOOL_SETTINGS_DRAG_START";
+export interface ResizeAction {
+  readonly type: "RESIZE";
+  readonly size: SizeProps;
+}
 
 /** @internal future */
 export interface PanelToggleCollapsedAction {
-  readonly type: typeof PANEL_TOGGLE_COLLAPSED;
+  readonly type: "PANEL_TOGGLE_COLLAPSED";
   readonly side: PanelSide;
 }
 
 /** @internal future */
 export interface PanelToggleSpanAction {
-  readonly type: typeof PANEL_TOGGLE_SPAN;
+  readonly type: "PANEL_TOGGLE_SPAN";
   readonly side: HorizontalPanelSide;
 }
 
 /** @internal future */
 export interface PanelTogglePinnedAction {
-  readonly type: typeof PANEL_TOGGLE_PINNED;
+  readonly type: "PANEL_TOGGLE_PINNED";
   readonly side: PanelSide;
 }
 
 /** @internal future */
 export interface PanelResizeAction {
-  readonly type: typeof PANEL_RESIZE;
+  readonly type: "PANEL_RESIZE";
   readonly side: PanelSide;
   readonly resizeBy: number;
 }
 
 /** @internal future */
 export interface PanelInitializeAction {
-  readonly type: typeof PANEL_INITIALIZE;
+  readonly type: "PANEL_INITIALIZE";
   readonly side: PanelSide;
   readonly size: number;
 }
 
 /** @internal future */
 export interface FloatingWidgetResizeAction {
-  readonly type: typeof FLOATING_WIDGET_RESIZE;
+  readonly type: "FLOATING_WIDGET_RESIZE";
   readonly id: FloatingWidgetState["id"];
   readonly resizeBy: RectangleProps;
 }
 
 /** @internal future */
 export interface FloatingWidgetBringToFrontAction {
-  readonly type: typeof FLOATING_WIDGET_BRING_TO_FRONT;
+  readonly type: "FLOATING_WIDGET_BRING_TO_FRONT";
   readonly id: FloatingWidgetState["id"];
 }
 
 /** @internal future */
 export interface PanelWidgetDragStartAction {
-  readonly type: typeof PANEL_WIDGET_DRAG_START;
+  readonly type: "PANEL_WIDGET_DRAG_START";
   readonly newFloatingWidgetId: FloatingWidgetState["id"];
   readonly id: WidgetState["id"];
   readonly bounds: RectangleProps;
@@ -229,21 +215,21 @@ export interface PanelWidgetDragStartAction {
 
 /** @internal future */
 export interface WidgetDragAction {
-  readonly type: typeof WIDGET_DRAG;
+  readonly type: "WIDGET_DRAG";
   readonly dragBy: PointProps;
   readonly floatingWidgetId: FloatingWidgetState["id"];
 }
 
 /** @internal future */
 export interface WidgetDragEndAction {
-  readonly type: typeof WIDGET_DRAG_END;
+  readonly type: "WIDGET_DRAG_END";
   readonly floatingWidgetId: FloatingWidgetState["id"];
-  readonly target: WidgetTargetState | undefined;
+  readonly target: WidgetTargetState;
 }
 
 /** @internal future */
 export interface WidgetSendBackAction {
-  readonly type: typeof WIDGET_SEND_BACK;
+  readonly type: "WIDGET_SEND_BACK";
   readonly floatingWidgetId: FloatingWidgetState["id"] | undefined;
   readonly side: PanelSide | undefined;
   readonly widgetId: WidgetState["id"];
@@ -251,7 +237,7 @@ export interface WidgetSendBackAction {
 
 /** @internal future */
 export interface WidgetTabClickAction {
-  readonly type: typeof WIDGET_TAB_CLICK;
+  readonly type: "WIDGET_TAB_CLICK";
   readonly side: PanelSide | undefined;
   readonly widgetId: WidgetState["id"];
   readonly id: TabState["id"];
@@ -259,7 +245,7 @@ export interface WidgetTabClickAction {
 
 /** @internal future */
 export interface WidgetTabDoubleClickAction {
-  readonly type: typeof WIDGET_TAB_DOUBLE_CLICK;
+  readonly type: "WIDGET_TAB_DOUBLE_CLICK";
   readonly side: PanelSide | undefined;
   readonly widgetId: WidgetState["id"];
   readonly floatingWidgetId: FloatingWidgetState["id"] | undefined;
@@ -268,7 +254,7 @@ export interface WidgetTabDoubleClickAction {
 
 /** @internal future */
 export interface WidgetTabDragStartAction {
-  readonly type: typeof WIDGET_TAB_DRAG_START;
+  readonly type: "WIDGET_TAB_DRAG_START";
   readonly side: PanelSide | undefined;
   readonly widgetId: WidgetState["id"];
   readonly floatingWidgetId: FloatingWidgetState["id"] | undefined;
@@ -278,25 +264,26 @@ export interface WidgetTabDragStartAction {
 
 /** @internal future */
 export interface WidgetTabDragAction {
-  readonly type: typeof WIDGET_TAB_DRAG;
+  readonly type: "WIDGET_TAB_DRAG";
   readonly dragBy: PointProps;
 }
 
 /** @internal future */
 export interface WidgetTabDragEndAction {
-  readonly type: typeof WIDGET_TAB_DRAG_END;
+  readonly type: "WIDGET_TAB_DRAG_END";
   readonly id: TabState["id"];
   readonly target: TabTargetState;
 }
 
 /** @internal future */
 export interface ToolSettingsDragStartAction {
-  readonly type: typeof TOOL_SETTINGS_DRAG_START;
+  readonly type: "TOOL_SETTINGS_DRAG_START";
   readonly newFloatingWidgetId: FloatingWidgetState["id"];
 }
 
 /** @internal future */
 export type NineZoneActionTypes =
+  ResizeAction |
   PanelToggleCollapsedAction |
   PanelToggleSpanAction |
   PanelTogglePinnedAction |
@@ -324,22 +311,33 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
   action: NineZoneActionTypes,
 ) => {
   switch (action.type) {
-    case PANEL_TOGGLE_COLLAPSED: {
+    case "RESIZE": {
+      setSizeProps(state.size, action.size);
+      const nzBounds = Rectangle.createFromSize(action.size);
+      for (const id of state.floatingWidgets.allIds) {
+        const floatingWidget = state.floatingWidgets.byId[id];
+        const bounds = Rectangle.create(floatingWidget.bounds);
+        const containedBounds = bounds.containIn(nzBounds);
+        setRectangleProps(floatingWidget.bounds, containedBounds);
+      }
+      return;
+    }
+    case "PANEL_TOGGLE_COLLAPSED": {
       const panel = state.panels[action.side];
       state.panels[action.side].collapsed = !panel.collapsed;
       return;
     }
-    case PANEL_TOGGLE_SPAN: {
+    case "PANEL_TOGGLE_SPAN": {
       const panel = state.panels[action.side];
       state.panels[action.side].span = !panel.span;
       return;
     }
-    case PANEL_TOGGLE_PINNED: {
+    case "PANEL_TOGGLE_PINNED": {
       const panel = state.panels[action.side];
       state.panels[action.side].pinned = !panel.pinned;
       return;
     }
-    case PANEL_RESIZE: {
+    case "PANEL_RESIZE": {
       const panel = state.panels[action.side];
       if (panel.size === undefined)
         return;
@@ -364,13 +362,13 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       state.panels[action.side].size = size;
       return;
     }
-    case PANEL_INITIALIZE: {
+    case "PANEL_INITIALIZE": {
       const panel = state.panels[action.side];
       const newSize = Math.min(Math.max(action.size, panel.minSize), panel.maxSize);
       state.panels[action.side].size = newSize;
       return;
     }
-    case PANEL_WIDGET_DRAG_START: {
+    case "PANEL_WIDGET_DRAG_START": {
       state.floatingWidgets.allIds.push(action.newFloatingWidgetId);
       state.floatingWidgets.byId[action.newFloatingWidgetId] = {
         bounds: action.bounds,
@@ -393,22 +391,28 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       }
       return;
     }
-    case WIDGET_DRAG: {
+    case "WIDGET_DRAG": {
       const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
       assert(floatingWidget);
       const newBounds = Rectangle.create(floatingWidget.bounds).offset(action.dragBy);
       setRectangleProps(floatingWidget.bounds, newBounds);
       return;
     }
-    case WIDGET_DRAG_END: {
+    case "WIDGET_DRAG_END": {
       const target = action.target;
-      if (!target)
+      const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
+      if (isWidgetTargetFloatingWidgetState(target)) {
+        const nzBounds = Rectangle.createFromSize(state.size);
+        const containedBounds = Rectangle.create(floatingWidget.bounds).containIn(nzBounds);
+        setRectangleProps(floatingWidget.bounds, containedBounds);
+        floatingWidgetBringToFront(state, action.floatingWidgetId);
         return;
+      }
       const draggedWidget = state.widgets[action.floatingWidgetId];
-      if (isTabTargetTabState(target)) {
+      if (isWidgetTargetTabState(target)) {
         const targetWidget = state.widgets[target.widgetId];
         targetWidget.tabs.splice(target.tabIndex, 0, ...draggedWidget.tabs);
-      } else if (isTabTargetWidgetState(target)) {
+      } else if (isWidgetTargetWidgetState(target)) {
         state.panels[target.side].widgets.splice(target.widgetIndex, 0, target.newWidgetId);
         state.widgets[target.newWidgetId] = {
           ...draggedWidget,
@@ -427,7 +431,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       state.floatingWidgets.allIds.splice(idIndex, 1);
       return;
     }
-    case WIDGET_SEND_BACK: {
+    case "WIDGET_SEND_BACK": {
       if (isWidgetToolSettingsState(state.toolSettings)) {
         removeWidgetTab(state, action.widgetId, action.floatingWidgetId, action.side, toolSettingsTabId);
         state.toolSettings = {
@@ -436,7 +440,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       }
       return;
     }
-    case FLOATING_WIDGET_RESIZE: {
+    case "FLOATING_WIDGET_RESIZE": {
       const { resizeBy } = action;
       const floatingWidget = state.floatingWidgets.byId[action.id];
       assert(floatingWidget);
@@ -445,11 +449,11 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       setRectangleProps(floatingWidget.bounds, newBounds);
       return;
     }
-    case FLOATING_WIDGET_BRING_TO_FRONT: {
+    case "FLOATING_WIDGET_BRING_TO_FRONT": {
       floatingWidgetBringToFront(state, action.id);
       return;
     }
-    case WIDGET_TAB_CLICK: {
+    case "WIDGET_TAB_CLICK": {
       const panel = action.side ? state.panels[action.side] : undefined;
       const widget = state.widgets[action.widgetId];
       const active = action.id === widget.activeTabId;
@@ -469,7 +473,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       }
       return;
     }
-    case WIDGET_TAB_DOUBLE_CLICK: {
+    case "WIDGET_TAB_DOUBLE_CLICK": {
       const panel = action.side ? state.panels[action.side] : undefined;
       const widget = state.widgets[action.widgetId];
       const active = action.id === widget.activeTabId;
@@ -495,7 +499,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         widget.minimized = true;
       return;
     }
-    case WIDGET_TAB_DRAG_START: {
+    case "WIDGET_TAB_DRAG_START": {
       const tabId = action.id;
       state.draggedTab = {
         tabId,
@@ -504,14 +508,14 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       removeWidgetTab(state, action.widgetId, action.floatingWidgetId, action.side, action.id);
       return;
     }
-    case WIDGET_TAB_DRAG: {
+    case "WIDGET_TAB_DRAG": {
       const draggedTab = state.draggedTab;
       assert(draggedTab);
       const newPosition = Point.create(draggedTab.position).offset(action.dragBy);
       setPointProps(draggedTab.position, newPosition);
       return;
     }
-    case WIDGET_TAB_DRAG_END: {
+    case "WIDGET_TAB_DRAG_END": {
       assert(state.draggedTab);
       const target = action.target;
       if (isTabTargetTabState(target)) {
@@ -533,8 +537,11 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           tabs: [action.id],
         };
       } else {
+        const nzBounds = Rectangle.createFromSize(state.size);
+        const bounds = Rectangle.createFromSize(target.size).offset(state.draggedTab.position);
+        const containedBounds = bounds.containIn(nzBounds);
         state.floatingWidgets.byId[target.newFloatingWidgetId] = {
-          bounds: Rectangle.createFromSize(target.size).offset(state.draggedTab.position).toProps(),
+          bounds: containedBounds.toProps(),
           id: target.newFloatingWidgetId,
         };
         state.floatingWidgets.allIds.push(target.newFloatingWidgetId);
@@ -548,7 +555,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       state.draggedTab = undefined;
       return;
     }
-    case TOOL_SETTINGS_DRAG_START: {
+    case "TOOL_SETTINGS_DRAG_START": {
       if (isDockedToolSettingsState(state.toolSettings)) {
         state.toolSettings = {
           type: "widget",
@@ -628,7 +635,7 @@ export function createPanelsState(): PanelsState {
 }
 
 /** @internal future */
-export function createNineZoneState(): NineZoneState {
+export function createNineZoneState(args?: Partial<NineZoneState>): NineZoneState {
   return {
     draggedTab: undefined,
     floatingWidgets: {
@@ -646,6 +653,11 @@ export function createNineZoneState(): NineZoneState {
     toolSettings: {
       type: "docked",
     },
+    size: {
+      height: Number.NaN,
+      width: Number.NaN,
+    },
+    ...args,
   };
 }
 
@@ -721,32 +733,39 @@ export function createHorizontalPanelState(side: HorizontalPanelSide): Horizonta
 }
 
 /** @internal */
-export function isTabTargetTabState(state: TabTargetState): state is TabTargetTabState {
-  return state.type === "tab";
-}
-
-/** @internal */
-export function isTabTargetPanelState(state: TabTargetState): state is TabTargetPanelState {
-  return state.type === "panel";
-}
-
-/** @internal */
-export function isTabTargetWidgetState(state: TabTargetState): state is TabTargetWidgetState {
-  return state.type === "widget";
-}
-
-/** @internal */
 export function isHorizontalPanelState(state: PanelState): state is HorizontalPanelState {
   return isHorizontalPanelSide(state.side);
 }
 
-/** @internal */
-export function isDockedToolSettingsState(state: ToolSettingsState): state is DockedToolSettingsState {
+function isTabTargetTabState(state: TabTargetState): state is TabTargetTabState {
+  return state.type === "tab";
+}
+
+function isTabTargetPanelState(state: TabTargetState): state is TabTargetPanelState {
+  return state.type === "panel";
+}
+
+function isTabTargetWidgetState(state: TabTargetState): state is TabTargetWidgetState {
+  return state.type === "widget";
+}
+
+function isWidgetTargetFloatingWidgetState(state: WidgetTargetState): state is WidgetTargetFloatingWidgetState {
+  return state.type === "floatingWidget";
+}
+
+function isWidgetTargetTabState(state: WidgetTargetState): state is WidgetTargetTabState {
+  return state.type === "tab";
+}
+
+function isWidgetTargetWidgetState(state: WidgetTargetState): state is WidgetTargetWidgetState {
+  return state.type === "widget";
+}
+
+function isDockedToolSettingsState(state: ToolSettingsState): state is DockedToolSettingsState {
   return state.type === "docked";
 }
 
-/** @internal */
-export function isWidgetToolSettingsState(state: ToolSettingsState): state is WidgetToolSettingsState {
+function isWidgetToolSettingsState(state: ToolSettingsState): state is WidgetToolSettingsState {
   return state.type === "widget";
 }
 
@@ -760,4 +779,9 @@ function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps)
 function setPointProps(props: Draft<PointProps>, point: PointProps) {
   props.x = point.x;
   props.y = point.y;
+}
+
+function setSizeProps(props: Draft<SizeProps>, size: SizeProps) {
+  props.height = size.height;
+  props.width = size.width;
 }

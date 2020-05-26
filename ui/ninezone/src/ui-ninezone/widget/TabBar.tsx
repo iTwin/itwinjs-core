@@ -12,7 +12,7 @@ import { Point, Timer } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { isTabTarget, useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
-import { WIDGET_DRAG, WIDGET_DRAG_END, WidgetDragEndAction } from "../base/NineZoneState";
+import { WidgetTargetState } from "../base/NineZoneState";
 import { usePointerCaptor } from "../base/PointerCaptor";
 import { TabBarButtons } from "./Buttons";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
@@ -43,14 +43,16 @@ export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disab
   }, [handleWidgetDragStart]);
   const onDrag = React.useCallback<NonNullable<UseDragWidgetArgs["onDrag"]>>((dragBy) => {
     floatingWidgetId !== undefined && dispatch({
-      type: WIDGET_DRAG,
+      type: "WIDGET_DRAG",
       dragBy,
       floatingWidgetId,
     });
   }, [dispatch, floatingWidgetId]);
   const onDragEnd = React.useCallback<NonNullable<UseDragWidgetArgs["onDragEnd"]>>((dragTarget) => {
     dragging.current = false;
-    let target: WidgetDragEndAction["target"];
+    let target: WidgetTargetState = {
+      type: "floatingWidget",
+    };
     if (dragTarget && isTabTarget(dragTarget)) {
       target = dragTarget;
     } else if (dragTarget) {
@@ -60,7 +62,7 @@ export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disab
       };
     }
     floatingWidgetId !== undefined && dispatch({
-      type: WIDGET_DRAG_END,
+      type: "WIDGET_DRAG_END",
       floatingWidgetId,
       target,
     });

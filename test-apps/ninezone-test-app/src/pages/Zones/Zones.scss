@@ -2,11 +2,14 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+$header-height: 50px;
+
 .nzdemo-zones-zones {
-  height: 100%;
+  height: calc(100% - #{$header-height});
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  position: relative;
 
   ul {
     margin: 0;
@@ -62,4 +65,11 @@
       width: 100%;
     }
   }
+}
+
+.nzdemo-header {
+  height: $header-height;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

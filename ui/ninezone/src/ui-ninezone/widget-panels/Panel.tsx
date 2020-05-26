@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { DraggedPanelSideContext } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
-import { isHorizontalPanelState, PANEL_INITIALIZE, PanelState } from "../base/NineZoneState";
+import { isHorizontalPanelState, PanelState } from "../base/NineZoneState";
 import { PanelWidget } from "../widget/PanelWidget";
 import { WidgetTarget } from "../widget/WidgetTarget";
 import { WidgetPanelGrip } from "./Grip";
@@ -94,7 +94,7 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
     const bounds = ref.current?.getBoundingClientRect();
     const newSize = isHorizontalPanelSide(panel.side) ? bounds?.height : bounds?.width;
     newSize && dispatch({
-      type: PANEL_INITIALIZE,
+      type: "PANEL_INITIALIZE",
       side: panel.side,
       size: newSize,
     });

@@ -1248,6 +1248,8 @@ export class Point implements PointProps {
     getManhattanDistanceTo(other: PointProps): number;
     getOffsetTo(other: PointProps): Point;
     // (undocumented)
+    multiply(factor: number): Point;
+    // (undocumented)
     offset(offset: PointProps): Point;
     // (undocumented)
     offsetX(offset: number): Point;
@@ -2078,7 +2080,7 @@ export function useRefEffect<T>(callback: (instance: T | null) => (void | (() =>
 export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
 
 // @internal
-export function useResizeObserver<T extends Element>(onResize?: (width: number) => void, useHeight?: boolean): (instance: T | null) => void;
+export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
 
 // @internal
 export const useTargeted: (elementRef: React.RefObject<Element>) => boolean;

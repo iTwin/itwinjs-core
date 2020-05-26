@@ -13,7 +13,7 @@ import { CommonProps, Point, PointProps, Rectangle } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
-import { FLOATING_WIDGET_RESIZE, FloatingWidgetState, WidgetState } from "../base/NineZoneState";
+import { FloatingWidgetState, WidgetState } from "../base/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetProvider } from "./Widget";
@@ -109,7 +109,7 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
     const offset = relativePosition.current.getOffsetTo(newRelativePosition);
     const resizeBy = getResizeBy(handle, offset);
     dispatch({
-      type: FLOATING_WIDGET_RESIZE,
+      type: "FLOATING_WIDGET_RESIZE",
       id,
       resizeBy,
     });
@@ -128,7 +128,11 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
     handleDragStart({
       initialPointerPosition,
     });
-  }, [handleDragStart]);
+    dispatch({
+      type: "FLOATING_WIDGET_BRING_TO_FRONT",
+      id,
+    });
+  }, [dispatch, handleDragStart, id]);
   const ref = React.useRef<HTMLDivElement>(null);
   const className = classnames(
     "nz-widget-floatingWidget_handle",

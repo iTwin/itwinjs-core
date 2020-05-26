@@ -73,6 +73,11 @@ export class Point implements PointProps {
     return new Point(this.x, y);
   }
 
+  /** @returns New [[Point]] with coordinates multiplied by specified factor. */
+  public multiply(factor: number) {
+    return new Point(this.x * factor, this.y * factor);
+  }
+
   /** @returns [[PointProps]] object for this point. */
   public toProps(): PointProps {
     return {
