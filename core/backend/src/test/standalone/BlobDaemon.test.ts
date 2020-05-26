@@ -8,7 +8,7 @@ import { BlobDaemon, BlobDbProps, BlobStorageType, BlobDaemonCommand } from "@be
 import { StopWatch } from "@bentley/bentleyjs-core";
 
 describe("Blob Daemon", () => {
-  it.only("should start daemon", () => {
+  it.skip("should start daemon", () => {
 
     const props: BlobDbProps = {
       account: "127.0.0.1:10000",
