@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { BlobDaemon, BlobDbProps, BlobStorageType, BlobDaemonCommand } from "@bentley/imodeljs-native";
 import { StopWatch } from "@bentley/bentleyjs-core";
+import { BlobDaemon, BlobDaemonCommand, BlobDbProps, BlobStorageType } from "@bentley/imodeljs-native";
 
 describe("Blob Daemon", () => {
   it.skip("should start daemon", () => {
@@ -18,7 +18,7 @@ describe("Blob Daemon", () => {
       container: "testcontainer",
       dbAlias: "test133",
       deleteTime: 10,
-      gcTime: 10,
+      writeable: true,
       sasKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
     };
 
@@ -27,17 +27,19 @@ describe("Blob Daemon", () => {
       const result = BlobDaemon.command(command, props);
       console.log(`command ${command}: ${stopWatch.elapsedSeconds}s`);
       assert.equal(result.result, 0, `command "${command}" result is "${result.errMsg}"`);
-    }
+    };
 
     BlobDaemon.start(props);
     runCommand("create", props);
     runCommand("upload", { ...props, localFile: "d:/temp/test123.test.bim" });
     runCommand("attach", props);
     runCommand("copy", { ...props, toAlias: "test123" });
-    runCommand("attach", props);
-    runCommand("delete", { ...props, dbAlias: "test123" });
+    console.log(`local file = "${BlobDaemon.getDbFileName(props)}"`);
     runCommand("attach", props);
     runCommand("delete", props);
+    //runCommand("delete", { ...props, dbAlias: "test123" });
+    runCommand("attach", props);
+    // runCommand("delete", props);
     // runCommand("detach", props);
   });
 });
