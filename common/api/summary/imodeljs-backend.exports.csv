@@ -126,6 +126,7 @@ public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
 public;ExportGraphicsLines
 public;ExportGraphicsMesh
+public;ExportGraphicsMeshVisitor 
 public;ExportGraphicsOptions
 public;ExportLinesFunction = (info: ExportLinesInfo) => void
 public;ExportLinesInfo

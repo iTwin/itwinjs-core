@@ -327,8 +327,8 @@
       "program": "${workspaceFolder}/test-apps/imjs-importer/lib/byDirectory.js",
       "cwd": "${workspaceFolder}/test-apps/imjs-importer",
       "args": [
-        "--input=PipeConnections",
-        "--output=abc"
+        "--input=d:/tmp/shaunSpaces/",
+        "--output=d:/tmp/shaun.bim"
       ],
       "protocol": "inspector",
       "outputCapture": "std"
@@ -785,7 +785,7 @@
       "type": "node",
       "request": "launch",
       "name": "⚠︝Clients Tests (Integration - Certa/Backend)",
-      "cwd": "${workspaceRoot}/core/clients/",
+      "cwd": "${workspaceRoot}/clients/${input:client-lib}",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
       "runtimeArgs": [
         "--max-http-header-size=16000"
@@ -798,6 +798,7 @@
       "smartStep": true,
       "sourceMaps": true,
       "outFiles": [
+        "${workspaceRoot}/clients/${input:client-lib}/lib/**/*.js",
         "${workspaceRoot}/core/*/lib/**/*.js",
         "${workspaceRoot}/tools/certa/lib/**/*.js"
       ],
@@ -807,42 +808,6 @@
     },
     {
       "name": "⚠︝Clients Tests (Integration - Frontend)",
-      "type": "chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
-      "sourceMaps": true,
-      "timeout": 20000,
-      "smartStep": true,
-      "showAsyncStacks": true,
-      "webRoot": "${workspaceFolder}",
-      "internalConsoleOptions": "openOnSessionStart"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "⚠︝GeoPhoto Extensions Tests (Integration - Certa/Backend)",
-      "cwd": "${workspaceRoot}/extensions/geo-photo/",
-      "program": "${workspaceRoot}/tools/certa/bin/certa.js",
-      "runtimeArgs": [
-        "--max-http-header-size=16000"
-      ],
-      "args": [
-        "--debug",
-        "-r",
-        "${input:integrationTestEnvironment}"
-      ],
-      "smartStep": true,
-      "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/core/*/lib/**/*.js",
-        "${workspaceRoot}/tools/certa/lib/**/*.js"
-      ],
-      "protocol": "inspector",
-      "outputCapture": "std",
-      "port": 5858 // NB: This must match ports.debugging in full-stack-tests/core/certa.json
-    },
-    {
-      "name": "⚠︝GeoPhoto Extension Tests (Integration - Frontend)",
       "type": "chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
@@ -1194,13 +1159,6 @@
         "⚠︝Clients Tests (Integration - Certa/Backend)",
         "⚠︝Clients Tests (Integration - Frontend)"
       ]
-    },
-    {
-      "name": "✔GeoPhoto Extension Tests (Integration)",
-      "configurations": [
-        "⚠︝GeoPhoto Extension Tests (Integration - Certa/Backend)",
-        "⚠︝GeoPhoto Extension Tests (Integration - Frontend)"
-      ]
     }
   ],
   "inputs": [
@@ -1223,6 +1181,16 @@
         "chrome",
         "electron",
         "direct"
+      ]
+    },
+    {
+      "id": "client-lib",
+      "description": "Select client library to debug",
+      "type": "pickString",
+      "options": [
+        "product-settings",
+        "projectshare",
+        "rbac"
       ]
     }
   ]

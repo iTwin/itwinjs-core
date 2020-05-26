@@ -336,6 +336,9 @@ export class AppNotificationManager extends NotificationManager {
     updatePointerMessage(displayPoint: XAndY, relativePosition: RelativePosition): void;
 }
 
+// @beta
+export function areNoFeatureOverridesActive(): boolean;
+
 // @public @deprecated
 export class Backstage extends React.Component<BackstageProps, BackstageState> {
     constructor(props: BackstageProps);
@@ -1649,6 +1652,12 @@ export interface ElementTooltipChangedEventArgs {
     pt?: XAndY;
 }
 
+// @alpha
+export interface EmphasizeElementsChangedArgs {
+    readonly action: HideIsolateEmphasizeAction;
+    readonly viewport: ScreenViewport;
+}
+
 // @beta
 export class ExpandableSection extends React.PureComponent<ExpandableSectionProps, ExpandableSectionState> {
     constructor(props: ExpandableSectionProps);
@@ -1886,7 +1895,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     }
 
 // @internal (undocumented)
-export type FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction | WidgetTabShowAction | WidgetTabExpandAction;
+export type FrontstageActionTypes = NineZoneActionTypes | FrontstageInitializeAction | FrontstageStateSettingLoadAction | WidgetTabShowAction | WidgetTabExpandAction | PanelSetSizeAction;
 
 // @public
 export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> {
@@ -2111,6 +2120,8 @@ export class FrontstageManager {
     static readonly onNavigationAidActivatedEvent: NavigationAidActivatedEvent;
     // @alpha
     static readonly onPanelStateChangedEvent: PanelStateChangedEvent;
+    // @internal (undocumented)
+    static readonly onStagePanelTrySetCurrentSizeEvent: UiEvent<StagePanelTrySetCurrentSizeEventArgs>;
     static readonly onToolActivatedEvent: ToolActivatedEvent;
     static readonly onToolIconChangedEvent: ToolIconChangedEvent;
     // @internal
@@ -2275,6 +2286,9 @@ export function getCategories(imodel: IModelConnection, viewport?: Viewport, fil
 // @internal (undocumented)
 export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps;
 
+// @beta
+export function getFeatureOverrideSyncEventIds(): string[];
+
 // @internal (undocumented)
 export const getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined;
 
@@ -2291,10 +2305,16 @@ export const getFloatingZoneStyle: (props: ZoneManagerProps) => {
 } | undefined;
 
 // @beta
+export function getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue;
+
+// @beta
 export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue;
 
 // @internal (undocumented)
 export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
+
+// @internal (undocumented)
+export function getPanelSide(location: StagePanelLocation_2): PanelSide;
 
 // @beta
 export function getSelectionContextSyncEventIds(): string[];
@@ -2392,6 +2412,69 @@ export interface GroupItemProps extends ItemProps {
     panelLabel?: string | StringGetter;
     panelLabelKey?: string;
 }
+
+// @alpha
+export enum HideIsolateEmphasizeAction {
+    // (undocumented)
+    ClearHiddenIsolatedEmphasized = "ClearHiddenIsolatedEmphasized",
+    // (undocumented)
+    EmphasizeSelectedElements = "EmphasizeSelectedElements",
+    // (undocumented)
+    HideSelectedCategories = "HideSelectedCategories",
+    // (undocumented)
+    HideSelectedElements = "HideSelectedElements",
+    // (undocumented)
+    HideSelectedModels = "HideSelectedModels",
+    // (undocumented)
+    IsolateSelectedCategories = "IsolateSelectedCategories",
+    // (undocumented)
+    IsolateSelectedElements = "IsolateSelectedElements",
+    // (undocumented)
+    IsolateSelectedModels = "IsolateSelectedModels"
+}
+
+// @alpha
+export abstract class HideIsolateEmphasizeActionHandler {
+    abstract areFeatureOverridesActive(vp: Viewport): boolean;
+    // (undocumented)
+    static emphasizeElementsChanged: BeEvent<(args: EmphasizeElementsChangedArgs) => void>;
+    static get hideIsolateEmphasizeUiSyncId(): string;
+    abstract processClearEmphasize(): Promise<void>;
+    abstract processEmphasizeSelected(): Promise<void>;
+    abstract processHideSelected(): Promise<void>;
+    abstract processHideSelectedElementsCategory(): Promise<void>;
+    abstract processHideSelectedElementsModel(): Promise<void>;
+    abstract processIsolateSelected(): Promise<void>;
+    abstract processIsolateSelectedElementsCategory(): Promise<void>;
+    abstract processIsolateSelectedElementsModel(): Promise<void>;
+}
+
+// @alpha
+export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {
+    areFeatureOverridesActive(vp: Viewport): boolean;
+    static clearEmphasize(vp: Viewport | undefined): void;
+    static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
+    static emphasizeSelectedCategory(vp: Viewport): Promise<void>;
+    static hideCommand(vp: Viewport): Promise<void>;
+    static hideSelected(vp: Viewport): void;
+    static hideSelectedElementsCategory(vp: Viewport): Promise<void>;
+    static hideSelectedElementsModel(vp: Viewport): Promise<void>;
+    static initializeSubjectModelCache(iModelConnection: IModelConnection): void;
+    static isolateCommand(vp: Viewport): Promise<void>;
+    static isolateSelected(vp: Viewport): void;
+    static isolateSelectedElementsCategory(vp: Viewport): Promise<void>;
+    static isolateSelectedElementsModel(vp: Viewport): Promise<void>;
+    static isolateSelectedModel(vp: Viewport): Promise<void>;
+    static isolateSelectedSubject(vp: Viewport): Promise<void>;
+    processClearEmphasize(): Promise<void>;
+    processEmphasizeSelected(): Promise<void>;
+    processHideSelected(): Promise<void>;
+    processHideSelectedElementsCategory(): Promise<void>;
+    processHideSelectedElementsModel(): Promise<void>;
+    processIsolateSelected(): Promise<void>;
+    processIsolateSelectedElementsCategory(): Promise<void>;
+    processIsolateSelectedElementsModel(): Promise<void>;
+    }
 
 // @alpha
 export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps, HTMLElementPopupState> {
@@ -3428,6 +3511,16 @@ export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessage
 // @public
 export type NotifyMessageType = string | HTMLElement | ReactMessage;
 
+// @internal (undocumented)
+export interface PanelSetSizeAction {
+    // (undocumented)
+    readonly panel: PanelSide;
+    // (undocumented)
+    readonly size: number;
+    // (undocumented)
+    readonly type: "PANEL_SET_SIZE";
+}
+
 // @alpha
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
 }
@@ -3672,7 +3765,7 @@ export interface ProjectServices {
 }
 
 // @public @deprecated
-export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<typeof PromptFieldComponent> & PromptFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
 export class PropsHelper {
@@ -3843,6 +3936,8 @@ export function selectionContextStateFunc(state: Readonly<BaseItemState>): BaseI
 // @beta
 export class SelectionContextToolDefinitions {
     // (undocumented)
+    static get clearHideIsolateEmphasizeElementsItemDef(): CommandItemDef;
+    // (undocumented)
     static get emphasizeElementsItemDef(): CommandItemDef;
     // (undocumented)
     static get hideCategoriesInSelectionItemDef(): CommandItemDef;
@@ -3862,32 +3957,11 @@ export class SelectionContextToolDefinitions {
     static get isolateSelectionToolGroup(): GroupItemDef;
 }
 
-// @alpha
-export class SelectionContextUtilities {
-    static areFeatureOverridesActive(vp: Viewport): boolean;
-    static clearEmphasize(vp: Viewport | undefined): void;
-    // (undocumented)
-    static emphasizeElementsChanged: BeEvent<() => void>;
-    static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
-    static emphasizeSelectedCategory(vp: Viewport): Promise<void>;
-    static hideCommand(vp: Viewport): Promise<void>;
-    static hideSelected(vp: Viewport): void;
-    static hideSelectedElementsCategory(vp: Viewport): Promise<void>;
-    static hideSelectedElementsModel(vp: Viewport): Promise<void>;
-    static initializeSubjectModelCache(iModelConnection: IModelConnection): void;
-    static isolateCommand(vp: Viewport): Promise<void>;
-    static isolateSelected(vp: Viewport): void;
-    static isolateSelectedElementsCategory(vp: Viewport): Promise<void>;
-    static isolateSelectedElementsModel(vp: Viewport): Promise<void>;
-    static isolateSelectedModel(vp: Viewport): Promise<void>;
-    static isolateSelectedSubject(vp: Viewport): Promise<void>;
-    }
+// @public
+export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
-export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<typeof SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
-
-// @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<typeof SelectionScopeFieldComponent> & SelectionScopeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @public
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -4099,7 +4173,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     }
 
 // @public
-export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<typeof SnapModeFieldComponent> & SnapModeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
 
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
@@ -4219,7 +4293,8 @@ export class StagePanelDef extends WidgetHost {
     get panelZones(): StagePanelZonesDef | undefined;
     get resizable(): boolean;
     get size(): number | undefined;
-    }
+    trySetCurrentSize(size: number): void;
+}
 
 // @alpha
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
@@ -4316,6 +4391,14 @@ export enum StagePanelState {
     Open = 2,
     // (undocumented)
     Popup = 3
+}
+
+// @internal (undocumented)
+export interface StagePanelTrySetCurrentSizeEventArgs {
+    // (undocumented)
+    panelDef: StagePanelDef;
+    // (undocumented)
+    size: number;
 }
 
 // @internal (undocumented)
@@ -4677,7 +4760,7 @@ export interface TaskPropsList {
 }
 
 // @public
-export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<React.ClassAttributes<typeof ThemeManagerComponent> & ThemeProps, "ref" | "children" | "key">>;
+export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<React.ClassAttributes<ThemeManagerComponent> & ThemeProps, "ref" | "children" | "key">>;
 
 // @beta
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
@@ -5101,6 +5184,8 @@ export class UiFramework {
     static getUserInfo(): UserInfo | undefined;
     // (undocumented)
     static getWidgetOpacity(): number;
+    // @alpha (undocumented)
+    static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler;
     static get i18n(): I18N;
     static get i18nNamespace(): string;
     // @internal (undocumented)
@@ -5138,6 +5223,8 @@ export class UiFramework {
     static setDefaultViewId(viewId: string, immediateSync?: boolean): void;
     // (undocumented)
     static setDefaultViewState(viewState: ViewState, immediateSync?: boolean): void;
+    // @alpha (undocumented)
+    static setHideIsolateEmphasizeActionHandler(handler: HideIsolateEmphasizeActionHandler | undefined): void;
     // (undocumented)
     static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
     // (undocumented)
@@ -5233,6 +5320,9 @@ export function useFrameworkVersion(): FrameworkVersion;
 
 // @internal (undocumented)
 export function useFrontstageDefNineZone(frontstage: FrontstageDef | undefined): [FrontstageState, React.Dispatch<FrontstageActionTypes>];
+
+// @internal (undocumented)
+export function useFrontstageManager(dispatch: React.Dispatch<FrontstageActionTypes>): void;
 
 // @internal (undocumented)
 export const useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems;

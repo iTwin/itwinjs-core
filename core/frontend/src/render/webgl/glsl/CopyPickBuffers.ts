@@ -44,7 +44,7 @@ export function createCopyPickBuffersProgram(context: WebGLRenderingContext | We
       });
     }, VariablePrecision.High);
 
-    frag.addDrawBuffersExtension();
+    frag.addDrawBuffersExtension(2);
     frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
   }
 

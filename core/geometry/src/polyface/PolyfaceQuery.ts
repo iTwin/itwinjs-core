@@ -383,7 +383,7 @@ export class PolyfaceQuery {
       return this.partitionFacetIndicesByVertexConnectedComponent(polyface.createVisitor(0));
     }
     // The polyface is really a visitor !!!
-    const context = new UnionFindContext(polyface.clientPolyface().data.point.length);
+    const context = new UnionFindContext(this.visitorClientPointCount (polyface));
     for (polyface.reset(); polyface.moveToNextFacet();) {
       const firstVertexIndexOnThisFacet = polyface.pointIndex[0];
       for (const vertexIndex of polyface.pointIndex)
@@ -468,6 +468,23 @@ export class PolyfaceQuery {
       polyfaces.push(builder.claimPolyface(true));
     }
     return polyfaces;
+  }
+
+  /** If the visitor's client is a polyface, simply return its point array length.
+   * If not a polyface, visit all facets to find the largest index.
+   */
+  private static visitorClientPointCount(visitor: PolyfaceVisitor): number {
+    const polyface = visitor.clientPolyface();
+    if (polyface !== undefined)
+      return polyface.data.point.length;
+    visitor.reset();
+    let maxIndex = -1;
+    while (visitor.moveToNextFacet()) {
+      for (const pointIndex of visitor.pointIndex)
+        if (pointIndex > maxIndex)
+          maxIndex = pointIndex;
+    }
+    return maxIndex + 1;
   }
 
   /** Search the facets for facet subsets that are connected with at least edge contact.

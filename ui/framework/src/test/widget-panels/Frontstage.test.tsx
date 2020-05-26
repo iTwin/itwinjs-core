@@ -17,7 +17,8 @@ import {
 } from "../../ui-framework";
 import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "../../ui-framework/widget-panels/ModalFrontstageComposer";
 import TestUtils, { storageMock, UiSettingsStub } from "../TestUtils";
-import { FrontstageActionTypes, FrontstageStateReducer } from "../../ui-framework/widget-panels/Frontstage";
+import { FrontstageActionTypes, FrontstageStateReducer, getPanelSide, useFrontstageManager } from "../../ui-framework/widget-panels/Frontstage";
+import { StagePanelLocation } from "@bentley/ui-abstract";
 
 function createFrontstageState(nineZone = createNineZoneState()): FrontstageState {
   return {
@@ -236,6 +237,23 @@ describe("useLayoutManager", () => {
   });
 });
 
+describe("useFrontstageManager", () => {
+  it("should dispatch PANEL_SET_SIZE", () => {
+    const dispatch = sinon.stub<React.Dispatch<FrontstageActionTypes>>();
+    renderHook(() => useFrontstageManager(dispatch));
+    const panelDef = new StagePanelDef();
+    FrontstageManager.onStagePanelTrySetCurrentSizeEvent.emit({
+      panelDef,
+      size: 200,
+    });
+    dispatch.calledOnceWithExactly({
+      type: "PANEL_SET_SIZE",
+      panel: "left",
+      size: 200,
+    }).should.true;
+  });
+});
+
 describe("initializeFrontstageState", () => {
   it("should initialize widgets", () => {
     const frontstage = new FrontstageDef();
@@ -426,5 +444,43 @@ describe("FrontstageStateReducer", () => {
       });
       newState.setting.nineZone.widgets.w1.minimized.should.false;
     });
+  });
+
+  describe("PANEL_SET_SIZE", () => {
+    it("should set size", () => {
+      const state = createFrontstageState();
+      const newState = FrontstageStateReducer(state, {
+        type: "PANEL_SET_SIZE",
+        panel: "left",
+        size: 200,
+      });
+      newState.setting.nineZone.panels.left.size!.should.eq(200);
+    });
+  });
+});
+
+describe("getPanelSide", () => {
+  it("should return 'left'", () => {
+    getPanelSide(StagePanelLocation.Left).should.eq("left");
+  });
+
+  it("should return 'right'", () => {
+    getPanelSide(StagePanelLocation.Right).should.eq("right");
+  });
+
+  it("should return 'bottom'", () => {
+    getPanelSide(StagePanelLocation.Bottom).should.eq("bottom");
+  });
+
+  it("should return 'bottom'", () => {
+    getPanelSide(StagePanelLocation.BottomMost).should.eq("bottom");
+  });
+
+  it("should return 'top'", () => {
+    getPanelSide(StagePanelLocation.Top).should.eq("top");
+  });
+
+  it("should return 'top'", () => {
+    getPanelSide(StagePanelLocation.TopMost).should.eq("top");
   });
 });

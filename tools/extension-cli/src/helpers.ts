@@ -5,6 +5,7 @@
 import { AccessToken } from "@bentley/itwin-client";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { DesktopAuthorizationClient } from "@bentley/imodeljs-backend";
+import { ExtensionProps } from "@bentley/extension-client";
 
 export async function signIn(): Promise<AccessToken> {
   const clientId = "imodeljs-extension-publisher";
@@ -26,4 +27,17 @@ export async function signIn(): Promise<AccessToken> {
     });
     client.signIn(requestContext).catch((err) => reject(err));
   });
+}
+
+export function prettyPrint(extensions: ExtensionProps[]): string {
+  let result: string = "";
+  for (const extension of extensions) {
+    result += `    Name:        ${extension.extensionName}
+    Version:     ${extension.version}
+    Context ID:  ${extension.contextId}
+    Uploaded by: ${extension.uploadedBy}
+    Uploaded at: ${extension.timestamp.toLocaleString()}
+    Status:      ${extension.status.status}\n\n`;
+  }
+  return result.slice(0, -2);
 }

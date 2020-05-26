@@ -17,6 +17,8 @@ import * as fs from "fs";
 
 import { IModelBridge } from "./IModelBridge";
 import { BridgeLoggerCategory } from "./BridgeLoggerCategory";
+import { Synchronizer } from "./Synchronizer";
+
 // import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 
 const loggerCategory: string = BridgeLoggerCategory.Framework;
@@ -39,6 +41,7 @@ export class BridgeJobDefArgs {
   public sourcePath?: string;
   /** Path to the staging directory */
   public stagingdir?: string;
+  public documentGuid?: string;
 }
 
 /** Arguments that describe the server environment used for the job
@@ -72,7 +75,7 @@ class StaticTokenStore {
 /** The driver for synchronizer content to an iModel.
  * @alpha
  */
-export class BridgeSynchronizer {
+export class BridgeRunner {
   private _bridge?: IModelBridge;
   // private _ldClient: iModelBridgeLDClient;
   private _activityId: GuidString;
@@ -83,6 +86,8 @@ export class BridgeSynchronizer {
   private _bridgeArgs: BridgeJobDefArgs;
   private _serverArgs: ServerArgs;
 
+  public getCacheDirectory () { return this._bridgeArgs.stagingdir; }
+
   private static parseArguments(args: string[], bridgeJobDef: BridgeJobDefArgs, serverArgs: ServerArgs): [BridgeJobDefArgs, ServerArgs] {
     for (const line of args) {
       if (!line)
@@ -92,7 +97,7 @@ export class BridgeSynchronizer {
         const argFile = keyVal[0].substr(1);
         if (!fs.existsSync(argFile))
           throw new Error("Error file {argFile} does not exist.");
-        BridgeSynchronizer.parseArgumentFile(argFile, bridgeJobDef, serverArgs);
+        BridgeRunner.parseArgumentFile(argFile, bridgeJobDef, serverArgs);
         continue;
       }
       const argName = keyVal[0].trim();
@@ -112,6 +117,7 @@ export class BridgeSynchronizer {
         }
         case "--dms-inputFileUrn=": serverArgs.dmsServerUrl = keyVal[1].trim(); break;
         case "--dms-accessToken=": serverArgs.dmsAccessToken = keyVal[1].trim(); break;
+        case "--dms-documentGuid=": bridgeJobDef.documentGuid = keyVal[1].trim(); break;
         default:
           {
             /** Unsupported options
@@ -131,11 +137,11 @@ export class BridgeSynchronizer {
   }
 
   /** Create a new instance of BridgeSynchronizer from command line arguments */
-  public static fromArgs(args: string[]): BridgeSynchronizer {
+  public static fromArgs(args: string[]): BridgeRunner {
     const bridgeJobDef = new BridgeJobDefArgs();
     const serverArgs = new ServerArgs();
-    const argValues = BridgeSynchronizer.parseArguments(args, bridgeJobDef, serverArgs);
-    return new BridgeSynchronizer(argValues[0], argValues[1]);
+    const argValues = BridgeRunner.parseArguments(args, bridgeJobDef, serverArgs);
+    return new BridgeRunner(argValues[0], argValues[1]);
   }
 
   /** Create a new instance with the given arguments. */
@@ -200,8 +206,10 @@ export class BridgeSynchronizer {
     if (this._briefcaseDb === undefined)
       throw new Error("Unable to acquire briefcase");
 
-    await this._bridge.openSource(this._bridgeArgs.sourcePath, this._serverArgs.dmsAccessToken);
-    await this._bridge.onOpenBim(this._briefcaseDb);
+    const synchronizer = new Synchronizer(this._briefcaseDb, this._requestContext);
+
+    await this._bridge.openSource(this._bridgeArgs.sourcePath, this._serverArgs.dmsAccessToken, this._bridgeArgs.documentGuid);
+    await this._bridge.onOpenBim(synchronizer);
 
     await this.updateExistingIModel(this._bridgeArgs.sourcePath);
 
@@ -316,6 +324,11 @@ export class BridgeSynchronizer {
     // Import futureon BIS schema into the iModel.
     await this.initDomainSchema();
     await this.importDefinitions();
+    try {
+      await this.pushDataChanges("Data changes", ChangesType.Schema);
+    } catch (error) {
+      Logger.logError(loggerCategory, `${error} was thrown from pushDataChanges`);
+    }
     await this.updateExistingData(sourcePath);
   }
 
@@ -349,8 +362,18 @@ export class BridgeSynchronizer {
 
   // Get a schema lock from iModelHub before calling the bridge.
   private async initDomainSchema() {
-    await this._bridge!.importDomainSchema();
-    await this._bridge!.importDynamicSchema();
+    await this._bridge!.importDomainSchema(this._requestContext!);
+    try {
+      await this.pushDataChanges("Schema changes", ChangesType.Schema);
+    } catch (error) {
+      Logger.logError(loggerCategory, `${error} was thrown from pushDataChanges`);
+    }
+    await this._bridge!.importDynamicSchema(this._requestContext!);
+    try {
+      await this.pushDataChanges("Dynamic schema changes", ChangesType.Schema);
+    } catch (error) {
+      Logger.logError(loggerCategory, `${error} was thrown from pushDataChanges`);
+    }
   }
 
   private async updateExistingData(sourcePath: string) {

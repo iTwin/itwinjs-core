@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyCurve } from "../../curve/CurveChain";
+import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -411,37 +411,44 @@ describe("GeneralSweepBooleans", () => {
   it("Rectangles", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const rectangle1 = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 4, 7, 0, true)));
+    const rectangle1 = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 5, 7, 0, true)));
     const rectangle2 = Loop.create(LineString3d.create(Sample.createRectangle(1, 1, 6, 2, 0, true)));
     const area3 = Loop.create(
       LineSegment3d.createXYXY(2, 1.5, 5, 2.5), LineSegment3d.createXYXY(5, 2.5, 5, 3),
       Arc3d.createCircularStartMiddleEnd(Point3d.create(5, 3, 0), Point3d.create(4, 4, 0), Point3d.create(2, 3, 0))!,
       LineSegment3d.createXYXY(2, 3, 2, 1.5));
-
-    let x0 = 0;
-    const dataB = [];
-    for (const areaB of [rectangle2, area3]) {
-      dataB.push(areaB);
-      // each pass adds to the groupB (which is union among its members)
-      let y0 = 0;
-      const areas = [];
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangle1, x0, y0);
-      for (const member of dataB) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, member, x0, y0);
-      }
-      for (const opType of [RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA]) {
-        y0 += 10.0;
-        const result = RegionOps.regionBooleanXY(rectangle1, dataB, opType);
-        areas.push(RegionOps.computeXYArea(result!)!);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, y0);
-      }
-      const area0 = areas[0]; // union
-      const area123 = areas[1] + areas[2] + areas[3];
-      ck.testCoordinate(area0, area123, " UnionArea = sum of parts");
-      x0 += 20.0;
-    }
+    const area4 = Loop.create(
+      LineSegment3d.createXYXY(-1, -1, -1, 9),
+      Arc3d.createCircularStartMiddleEnd(Point3d.create(-1, 9), Point3d.create(4, 4, 0), Point3d.create(-1, -1))!);
+    const area5 = Loop.create(
+      LineSegment3d.createXYXY(-1, 1, -1, 6),
+      Arc3d.createCircularStartMiddleEnd(Point3d.create(-1, 6), Point3d.create(1, 3.5), Point3d.create(-1, 1))!);
+    const xStep = 20.0;
+    let x0 = -xStep;
+    exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep);
+    exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep);
+    exerciseAreaBooleans([rectangle1], [rectangle2], ck, allGeometry, x0 += xStep);
+    exerciseAreaBooleans([rectangle1], [rectangle2, area3], ck, allGeometry, x0 += xStep);
+    exerciseAreaBooleans([rectangle1], [area4], ck, allGeometry, x0 += xStep);
+    exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep);
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "Rectangles");
     expect(ck.getNumErrors()).equals(0);
   });
-
 });
+
+function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
+  ck: Checker, allGeometry: GeometryQuery[], x0: number) {
+  const areas = [];
+  let y0 = 0;
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, dataA, x0, y0);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, dataB, x0, y0);
+  for (const opType of [RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA]) {
+    y0 += 10.0;
+    const result = RegionOps.regionBooleanXY(dataA, dataB, opType);
+    areas.push(RegionOps.computeXYArea(result!)!);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, y0);
+  }
+  const area0 = areas[0]; // union
+  const area123 = areas[1] + areas[2] + areas[3];
+  ck.testCoordinate(area0, area123, " UnionArea = sum of parts");
+}

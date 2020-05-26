@@ -8,7 +8,7 @@ const assert = chai.assert;
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { DesktopAuthorizationClient, IModelHost } from "@bentley/imodeljs-backend";
-import { signIn } from "../signIn";
+import { signIn } from "../helpers";
 
 describe.skip("ExtensionClient CLI (#integration)", () => {
   it("gets token", async () => {

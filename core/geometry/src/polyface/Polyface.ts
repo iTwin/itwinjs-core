@@ -323,7 +323,7 @@ export class IndexedPolyface extends Polyface {
   /** add a point.
    * @returns Returns the zero-based index of the added point.
    */
-  public addPointXYZ(x: number, y: number, z: number): number { this.data.point.push(Point3d.create(x, y, z)); return this.data.point.length - 1; }
+  public addPointXYZ(x: number, y: number, z: number): number { this.data.point.pushXYZ(x, y, z); return this.data.point.length - 1; }
   /** Add a uv param.
    * @returns 0-based index of the added param.
    */
@@ -343,7 +343,7 @@ export class IndexedPolyface extends Polyface {
       return priorIndexA;
     if (priorIndexB !== undefined && this.data.isAlmostEqualParamIndexUV(priorIndexB, u, v))
       return priorIndexB;
-    this.data.param.push(Point2d.create(u, v));
+    this.data.param.pushXY(u, v);
     return this.data.param.length - 1;
   }
 
@@ -366,10 +366,14 @@ export class IndexedPolyface extends Polyface {
         if (distance !== undefined && Geometry.isSmallMetricDistance(distance))
           return priorIndexB;
       }
-      const tailIndex = this.data.normal.length - 1;
-      distance = this.data.normal.distanceIndexToPoint(tailIndex, normal);
-      if (distance !== undefined && Geometry.isSmallMetricDistance(distance))
-        return tailIndex;
+      // Note: Do NOT attempt to chain to tail if no prior indices given.
+      // But if they are, look also to the tail.
+      if (priorIndexA !== undefined || priorIndexB !== undefined) {
+        const tailIndex = this.data.normal.length - 1;
+        distance = this.data.normal.distanceIndexToPoint(tailIndex, normal);
+        if (distance !== undefined && Geometry.isSmallMetricDistance(distance))
+          return tailIndex;
+      }
     }
 
     return this.addNormalXYZ(normal.x, normal.y, normal.z);
@@ -567,7 +571,7 @@ export interface PolyfaceVisitor extends PolyfaceData {
   /** Return the aux data index of vertex i within the currently loaded facet */
   clientAuxIndex(i: number): number;
   /** return the client polyface */
-  clientPolyface(): Polyface;
+  clientPolyface(): Polyface | undefined;
   /** Set the number of vertices to replicate in visitor arrays. */
   setNumWrap(numWrap: number): void;
 

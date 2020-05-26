@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export * from "./BridgeLoggerCategory";
-export * from "./BridgeSynchronizer";
+export * from "./BridgeRunner";
 export * from "./IModelBridge";
 
 /** @docs-package-description

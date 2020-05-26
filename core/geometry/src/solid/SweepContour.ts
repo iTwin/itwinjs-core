@@ -220,16 +220,30 @@ export class SweepContour {
   /**
    * Triangulate the region.
    * Create a UnionOfConvexClipPlaneSets that clips to the swept region.
+   * * If sweepVector is not given, the sweep direction is perpendicular to the plane of the contour.
+   * * If sweepVector is given, it is the sweep direction and does not have to be perpendicular to the contour.
+   * * cap0 and cap1 indicate construction of clip planes parallel to the contour plane.
+   * * If cap1 is true, the cap plane is at `anyPointOnPlane + sweepVector`.  That is, the sweep vector indicates both direction and distance.
+   * * caps are NOT created of sweepVector is not given.
    */
-  public sweepToUnionOfConvexClipPlaneSets(): UnionOfConvexClipPlaneSets | undefined {
+  public sweepToUnionOfConvexClipPlaneSets(sweepVector?: Vector3d, cap0: boolean = false, cap1: boolean = false): UnionOfConvexClipPlaneSets | undefined {
     const builder = PolyfaceBuilder.create();
     // It's a trip around the barn, but it's easy to make a polyface and scan it . . .
+    if (!sweepVector)
+      cap0 = cap1 = false;
     this.buildFacets(builder.options);
-    const vectorZ = this.localToWorld.matrix.columnZ();
+    if (sweepVector === undefined)
+      sweepVector = this.localToWorld.matrix.columnZ();
+    const zVector = this.localToWorld.matrix.columnZ();
     const facets = this._facets;
     const point0 = Point3d.create();
     const point1 = Point3d.create();
     if (facets) {
+      const plane0Origin = this.localToWorld.getOrigin();
+      const plane1Origin = plane0Origin.plus(sweepVector);
+      const inwardNormal0 = zVector.clone();
+      const inwardNormal1 = zVector.negate();
+
       const result = UnionOfConvexClipPlaneSets.createEmpty();
       const visitor = facets.createVisitor(1);
       for (visitor.reset(); visitor.moveToNextFacet();) {
@@ -238,11 +252,15 @@ export class SweepContour {
         for (let i = 0; i < numEdges; i++) {
           visitor.point.getPoint3dAtUncheckedPointIndex(i, point0);
           visitor.point.getPoint3dAtUncheckedPointIndex(i + 1, point1);
-          const plane = ClipPlane.createEdgeAndUpVector(point1, point0, vectorZ);
+          const plane = ClipPlane.createEdgeAndUpVector(point1, point0, sweepVector);
           const visible = visitor.edgeVisible[i];
           plane?.setFlags(!visible, !visible);
           clipper.addPlaneToConvexSet(plane);
         }
+        if (cap0)
+          clipper.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(inwardNormal0, plane0Origin));
+        if (cap1)
+          clipper.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(inwardNormal1, plane1Origin));
         result.addConvexSet(clipper);
       }
       return result;

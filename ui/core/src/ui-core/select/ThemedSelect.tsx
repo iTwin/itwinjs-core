@@ -17,17 +17,19 @@ import { UiCore } from "../UiCore";
 
 import "./themed-select.scss";
 
+// cspell:ignore reactselect
+
 /** OptionType for react-select 2.0 and above. which only accepts pairs of value & label strings
  * @beta
  */
-export interface OptionType { // tslint:disable-line:variable-name
+export interface OptionType {
   value: string;
   label: string;
 }
 
 const ThemedMenu = (props: MenuProps<any>) => { // tslint:disable-line:variable-name
   return (
-    <div className={"reactSelectTop"}>
+    <div className="reactSelectTop">
       <components.Menu {...props} />
     </div>
   );
@@ -35,7 +37,7 @@ const ThemedMenu = (props: MenuProps<any>) => { // tslint:disable-line:variable-
 /** ThemedSelect is a wrapper for react-select with iModel.js UI theming applied
  * @beta
  */
-// tslint:disable-next-line:variable-name no-shadowed-variable
+// tslint:disable-next-line: no-shadowed-variable
 export function ThemedSelect<OptionType>(props: Props<OptionType>) {
   const [noOptionLabel] = React.useState(UiCore.translate("reactselect.noSelectOption"));
   const noOptionFunction = React.useCallback(() => noOptionLabel, [noOptionLabel]);

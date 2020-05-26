@@ -249,7 +249,8 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       // 3: both
       vert.addUniform("u_transparencyDiscardFlags", VariableType.Int, (prog) => {
         prog.addGraphicUniform("u_transparencyDiscardFlags", (uniform, params) => {
-          let flags = params.target.currentViewFlags.transparency ? 1 : 0;
+          // During readPixels() we force transparency off. Make sure to ignore a Branch that turns it back on.
+          let flags = params.target.currentViewFlags.transparency && !params.target.isReadPixelsInProgress ? 1 : 0;
           if (!params.geometry.alwaysRenderTranslucent)
             flags += 2;
 

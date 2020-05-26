@@ -915,7 +915,7 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) {
     super(props, iModel);
     this.view = new RelatedElement(props.view);
-    // ###NOTE: scale, displayPriority, and clipping vectors are stored in jsonProperties...
+    // ###NOTE: scale, displayPriority, and clipping vectors are stored in ViewAttachmentProps.jsonProperties.
   }
   /** @alpha */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {

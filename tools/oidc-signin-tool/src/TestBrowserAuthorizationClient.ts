@@ -350,9 +350,6 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     if (page.url().startsWith(consentUrl))
       await page.click("button[value=yes]");
 
-    if (-1 === page.url().indexOf("signin-callback?code="))
-      return;
-
     // New consent page acceptance
     if (await page.title() === "Request for Approval") {
       await page.waitForSelector(".allow");

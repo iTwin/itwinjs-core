@@ -20,15 +20,18 @@
       },
       "Line": {
         "keyin": "Markup Line",
-        "description": "Draw line"
+        "description": "Draw line",
+        "flyover": "Line"
       },
       "Rectangle": {
         "keyin": "Markup Rectangle",
-        "description": "Draw rectangle"
+        "description": "Draw rectangle",
+        "flyover": "Rectangle"
       },
       "Polygon": {
         "keyin": "Markup Polygon",
         "description": "Draw polygon",
+        "flyover": "Polygon",
         "Prompts": {
           "FirstPoint": "Identify center",
           "NextPoint": "Define point on edge"
@@ -37,6 +40,7 @@
       "Circle": {
         "keyin": "Markup Circle",
         "description": "Draw circle",
+        "flyover": "Circle",
         "Prompts": {
           "FirstPoint": "Identify center",
           "NextPoint": "Define radius"
@@ -44,11 +48,13 @@
       },
       "Ellipse": {
         "keyin": "Markup Ellipse",
-        "description": "Draw ellipse"
+        "description": "Draw ellipse",
+        "flyover": "Ellipse"
       },
       "Arrow": {
         "keyin": "Markup Arrow",
-        "description": "Draw arrow"
+        "description": "Draw arrow",
+        "flyover": "Arrow"
       },
       "Distance": {
         "keyin": "Markup Distance",
@@ -56,11 +62,13 @@
       },
       "Cloud": {
         "keyin": "Markup Cloud",
-        "description": "Draw cloud"
+        "description": "Draw cloud",
+        "flyover": "Cloud"
       },
       "Sketch": {
         "keyin": "Markup Sketch",
-        "description": "Draw freehand sketch"
+        "description": "Draw freehand sketch",
+        "flyover": "Sketch"
       },
       "Symbol": {
         "keyin": "Markup Symbol",

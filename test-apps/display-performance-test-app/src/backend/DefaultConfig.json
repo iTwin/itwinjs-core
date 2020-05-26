@@ -1188,6 +1188,7 @@
     {
       "testName": "Force Multi-Pass Rendering",
       "renderOptions": {
+        "useWebGL2": false,
         "disabledExtensions": [
           "WEBGL_draw_buffers"
         ]

@@ -7,8 +7,10 @@ import { IModelJsOptionsDefaulter } from "../utils/IModelJsOptionsDefaulter";
 import { CopyAppAssetsPlugin, CopyBentleyStaticResourcesPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 
-// tslint:disable-next-line:no-var-requires variable-name
+// tslint:disable:no-var-requires variable-name
+const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
 const ExternalsPlugin = require("webpack/lib/ExternalsPlugin");
+// tslint:enable:no-var-requires variable-name
 
 export class BackendDefaultsPlugin {
   public apply(compiler: Compiler) {
@@ -29,6 +31,7 @@ export class BackendDefaultsPlugin {
     new DefinePlugin({
       "global.GENTLY": false,
     }).apply(compiler);
+    new FilterWarningsPlugin({ exclude: /Cannot find source file/ }).apply(compiler);
     new ExternalsPlugin("commonjs", [
       "electron",
       "debug",

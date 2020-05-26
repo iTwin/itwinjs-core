@@ -20,6 +20,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 
 /* tslint:disable:no-console */
 
@@ -355,4 +356,75 @@ describe("Arc3d", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+  it("CodeCheckerArcTransition", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let y0 = 0;
+    for (const offsetFactor of [0.33, 0.75, 1.0, 1.5]) {
+      let x0 = 0;
+      for (const e of [0.0, 0.1, -0.1]) {
+        const b = 1.0;
+        const a = offsetFactor * b;
+        const offset = [a, b, a, b];
+        const points = [
+          Point3d.create(0, 0, 0),
+          Point3d.create(2, e, 0),
+          Point3d.create(2, 2 - e, 0),
+          Point3d.create(-e, 2, 0)];
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(points[points.length - 1], points[0]), x0, y0);
+        let arc0: Arc3d | undefined;
+        for (let i = 0; i <= points.length; i++) {
+          const i0 = (i % points.length);
+          const i1 = (i + 1) % points.length;
+          const i2 = (i + 2) % points.length;
+          const arc = createArc3dForLeftTurnOffsetRadiusChange(points[i0], points[i1], points[i2], offset[i0], offset[i1]);
+          if (arc0 && arc) {
+            GeometryCoreTestIO.captureGeometry(allGeometry,
+              LineSegment3d.create(arc0.endPoint(), arc.startPoint()), x0, y0);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0, y0);
+          }
+          arc0 = arc;
+        }
+        x0 += 10.0;
+      }
+      y0 += 10.0;
+    }
+    expect(ck.getNumErrors()).equals(0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CodeCheckerArcTransition");
+  });
 });
+/**
+ *
+ * @param pointA start point of incoming edge
+ * @param pointB common point of two edges
+ * @param pointC end point of outgoing edge
+ * @param offsetAB offset along edge from pointA to pointB
+ * @param offsetBC offset along edge from pointB to pointC
+ */
+function createArc3dForLeftTurnOffsetRadiusChange(pointA: Point3d, pointB: Point3d, pointC: Point3d, offsetAB: number, offsetBC: number): Arc3d | undefined {
+  if (offsetAB <= 0.0 || offsetBC <= 0.0)
+    return undefined;
+  const vectorAB = Vector3d.createStartEnd(pointA, pointB);
+  const vectorBC = Vector3d.createStartEnd(pointB, pointC);
+  const perpAB = vectorAB.rotate90CCWXY(); perpAB.scaleInPlace(-1.0);
+  const perpBC = vectorBC.rotate90CCWXY(); perpBC.scaleInPlace(-1.0);
+  const totalTurn = vectorAB.angleTo(vectorBC);
+  let arcVector0, arcVector90;
+  let chopRadians;
+  let arc: Arc3d | undefined;
+  // for equal axes, the arc would sweep the total turn.
+  // for unequal, the large arc sweeps until it hits the (earlier) intersection with the other line's nearer offset.
+  if (offsetBC > offsetAB) {
+    chopRadians = Math.acos(offsetAB / offsetBC);
+    arcVector0 = perpBC.scaleToLength(offsetBC)!;
+    arcVector90 = vectorBC.scaleToLength(offsetBC)!;
+    arc = Arc3d.create(pointB, arcVector0, arcVector90, AngleSweep.createStartEndRadians(-(totalTurn.radians - chopRadians), 0.0));
+  } else {
+    chopRadians = Math.asin(offsetBC / offsetAB);
+    arcVector0 = perpAB.scaleToLength(offsetAB)!;
+    arcVector90 = vectorAB.scaleToLength(offsetAB)!;
+    arc = Arc3d.create(pointB, arcVector0, arcVector90, AngleSweep.createStartEndRadians(0, chopRadians));
+  }
+  return arc;
+}

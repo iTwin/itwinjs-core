@@ -821,6 +821,7 @@ export class BriefcaseManager {
    * @internal
    */
   public static openBriefcase(briefcase: BriefcaseEntry) {
+    Logger.logTrace(loggerCategory, "BriefcaseManager.openBriefcase: Opening a new NativeDb connection to a briefcase", () => briefcase.getDebugInfo());
     const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openMode, briefcase.upgrade);
     briefcase.isOpen = true;
     if (DbResult.BE_SQLITE_OK !== res)

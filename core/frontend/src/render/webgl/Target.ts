@@ -8,10 +8,7 @@
 
 import { assert, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { ClipPlaneContainment, ClipUtilities, Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
-import {
-  AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassificationProps,
-  ViewFlags,
-} from "@bentley/imodeljs-common";
+import { AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassificationProps, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
@@ -55,7 +52,6 @@ import { desync, SyncTarget } from "./Sync";
 import { System } from "./System";
 import { TargetUniforms } from "./TargetUniforms";
 import { Techniques } from "./Technique";
-import { ClipDef } from "./TechniqueFlags";
 import { TechniqueId } from "./TechniqueId";
 import { TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
@@ -289,11 +285,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public get hasClipVolume(): boolean { return this.clips.isValid && this.uniforms.branch.top.showClipVolume; }
-  public get clipDef(): ClipDef {
-    if (this.hasClipVolume)
-      return new ClipDef(this.clips.count);
-    else
-      return new ClipDef();
+  public get numClipPlanes(): number {
+    return this.hasClipVolume ? this.clips.count : 0;
   }
 
   public get is2d(): boolean { return this.uniforms.frustum.is2d; }
@@ -442,6 +435,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this.currentViewFlags.thematicDisplay && this.is3d && undefined !== this.uniforms.thematic.thematicDisplay;
   }
 
+  public get wantThematicSensors(): boolean {
+    const thematic = this.plan.thematic;
+    return this.wantThematicDisplay && undefined !== thematic && ThematicDisplayMode.InverseDistanceWeightedSensors === thematic.displayMode && thematic.sensorSettings.sensors.length > 0;
+  }
+
   public updateSolarShadows(context: SceneContext | undefined): void {
     this.compositor.updateSolarShadows(context);
   }
@@ -571,11 +569,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._wantAmbientOcclusion = vf.ambientOcclusion = false;
     }
 
-    this.uniforms.thematic.update(plan);
-
     this.uniforms.branch.changeRenderPlan(vf, plan.is3d, plan.hline);
 
     this.changeFrustum(plan.frustum, plan.fraction, plan.is3d);
+
+    this.uniforms.thematic.update(this);
 
     // NB: This must be done after changeFrustum() as some of the uniforms depend on the frustum.
     this.uniforms.updateRenderPlan(plan);
@@ -1096,6 +1094,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this._compositor.collectStatistics(stats);
+    const thematicBytes = this.uniforms.thematic.bytesUsed;
+    if (0 < thematicBytes)
+      stats.addThematicTexture(thematicBytes);
   }
 
   protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect {

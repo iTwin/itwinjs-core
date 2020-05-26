@@ -184,7 +184,7 @@ describe("BackgroundMapSettings", () => {
         input = {};
 
       if ("input" === expected)
-        expected = input;
+        expected = JSON.parse(JSON.stringify(input)) as BackgroundMapProps;
 
       const settings = BackgroundMapSettings.fromJSON(input);
       const output = settings.toJSON();
@@ -197,10 +197,17 @@ describe("BackgroundMapSettings", () => {
       expect(output.applyTerrain).to.equal(expected.applyTerrain);
       expect(output.globeMode).to.equal(expected.globeMode);
 
+      // We used to omit the terrain settings entirely if they matched the defaults. Now we always include them.
       const outTerrain = output.terrainSettings;
-      const expTerrain = expected.terrainSettings;
-      expect(undefined === outTerrain).to.equal(undefined === expTerrain);
-      if (outTerrain && expTerrain) {
+      expect(outTerrain).not.to.be.undefined;
+      const expTerrain = expected.terrainSettings ?? { };
+
+      if (outTerrain) {
+        if (undefined === expTerrain.heightOriginMode) {
+          // We used to omit the height origin mode if it matched the default. Then we changed the default, and stopped omitting it.
+          expTerrain.heightOriginMode = TerrainHeightOriginMode.Geodetic;
+        }
+
         expect(outTerrain.providerName).to.equal(expTerrain.providerName);
         expect(outTerrain.exaggeration).to.equal(expTerrain.exaggeration);
         expect(outTerrain.applyLighting).to.equal(expTerrain.applyLighting);
@@ -259,7 +266,7 @@ describe("BackgroundMapSettings", () => {
     roundTrip({ terrainSettings: { heightOrigin: 0 } }, {});
     roundTrip({ terrainSettings: { heightOrigin: 42 } }, "input");
 
-    roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }, {});
+    roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geodetic } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: -99 } }, {});
@@ -276,7 +283,7 @@ describe("BackgroundMapSettings", () => {
         applyLighting: false,
         exaggeration: 1,
         heightOrigin: 0,
-        heightOriginMode: TerrainHeightOriginMode.Ground,
+        heightOriginMode: TerrainHeightOriginMode.Geodetic,
       },
     }, {});
   });
@@ -403,6 +410,7 @@ describe("ThematicDisplay", () => {
       expect(thematicDisplay.range).to.deep.equal(Range1d.createNull());
       expect(thematicDisplay.sensorSettings).to.deep.equal(ThematicDisplaySensorSettings.fromJSON());
       expect(thematicDisplay.sensorSettings.sensors).to.deep.equal([]);
+      expect(thematicDisplay.sensorSettings.distanceCutoff).to.equal(0);
     }
 
     // check if the creation and back-and-forth via JSON works
@@ -439,6 +447,7 @@ describe("ThematicDisplay", () => {
         { position: [10.0, 11.0, 12.0], value: -1.0 },
         { position: [13.0, 14.0, 15.0], value: 2.0 },
       ],
+      distanceCutoff: 5.0,
     };
     td = ThematicDisplay.fromJSON({ sensorSettings: sensorSettingsProps });
     expect(td.sensorSettings.sensors!.length).to.equal(5);
@@ -452,6 +461,7 @@ describe("ThematicDisplay", () => {
     expect(td.sensorSettings.sensors![3].value).to.equal(0); // verify that the 'bad' value of -1 gets clamped to 0
     expect(td.sensorSettings.sensors![4].position).to.deep.equal(Point3d.fromJSON(sensorSettingsProps.sensors[4].position));
     expect(td.sensorSettings.sensors![4].value).to.equal(1); // verify that the 'bad' value of 2 gets clamped to 1
+    expect(td.sensorSettings.distanceCutoff).to.equal(sensorSettingsProps.distanceCutoff);
     verifyBackAndForth(td); // verify round-trip
 
     // check if configuring custom color scheme incorrectly is resolved as expected

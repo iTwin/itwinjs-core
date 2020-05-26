@@ -7,11 +7,11 @@ import { expect } from "chai";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 
 import { BridgeTestUtils, TestIModelInfo } from "../BridgeTestUtils";
-import { AuthorizedBackendRequestContext, IModelJsFs } from "@bentley/imodeljs-backend";
-import { AccessToken } from "@bentley/itwin-client";
+import { IModelJsFs } from "@bentley/imodeljs-backend";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BentleyStatus, Logger } from "@bentley/bentleyjs-core";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { BridgeJobDefArgs, BridgeSynchronizer, ServerArgs } from "../../BridgeSynchronizer";
+import { BridgeJobDefArgs, BridgeRunner, ServerArgs } from "../../BridgeRunner";
 import { HubUtility } from "./HubUtility";
 
 describe("IModelBridgeFwk (#integration)", () => {
@@ -19,8 +19,8 @@ describe("IModelBridgeFwk (#integration)", () => {
 
   let readWriteTestIModel: TestIModelInfo;
 
-  let requestContext: AuthorizedBackendRequestContext;
-  let managerRequestContext: AuthorizedBackendRequestContext;
+  let requestContext: AuthorizedClientRequestContext;
+  let managerRequestContext: AuthorizedClientRequestContext;
 
   before(async () => {
     BridgeTestUtils.setupLogging();
@@ -57,7 +57,7 @@ describe("IModelBridgeFwk (#integration)", () => {
     serverArgs.getToken = async (): Promise<AccessToken> => {
       return requestContext.accessToken;
     };
-    const fwk = new BridgeSynchronizer(bridgeJobDef, serverArgs);
+    const fwk = new BridgeRunner(bridgeJobDef, serverArgs);
     const status = await fwk.synchronize();
     expect(BentleyStatus.SUCCESS === status);
   });

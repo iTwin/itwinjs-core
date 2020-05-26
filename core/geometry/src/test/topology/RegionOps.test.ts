@@ -41,6 +41,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
+import * as fs from "fs";
 
 const diegoPathA = [
   {
@@ -900,6 +901,43 @@ describe("RectangleRecognizer", () => {
     ck.testUndefined(RegionOps.rectangleEdgeTransform(Path.create(Arc3d.createUnitCircle())));
     ck.testUndefined(RegionOps.rectangleEdgeTransform(BagOfCurves.create()));
     expect(ck.getNumErrors()).equals(0);
+  });
+  it("3PointTurnChecks", () => {
+    // const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const road = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
+      "./src/test/testInputs/intersections/WilsonShapes/roadShape.imjs", "utf8")));
+    const badShape = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
+      "./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_overlaps.imjs", "utf8")));
+    const goodShape = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
+      "./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_fits.imjs", "utf8")));
+
+    if (road instanceof Loop) {
+      const roadRange = road.range ();
+
+      let  x0 = -roadRange.low.x;
+      const xStep = 2.0 * roadRange.xLength ();
+      const yStep = 1.2 * roadRange.yLength ();
+
+      for (const shape of [badShape, goodShape]) {
+        if (shape instanceof Loop) {
+          let y0 = -roadRange.low.y;
+          const splitParts = RegionOps.splitPathsByRegionInOnOutXY(shape, road);
+          GeometryCoreTestIO.captureCloneGeometry (allGeometry, road, x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry (allGeometry, shape, x0, y0);
+          const dz = 0.1;
+          for (const outputArray of [splitParts.insideParts, splitParts.outsideParts]) {
+            y0 += yStep;
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, road, x0, y0);
+            for (const fragment of outputArray) {
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragment, x0, y0, dz);
+            }
+          }
+        }
+        x0 += xStep;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "3PointTurnChecks");
   });
 
 });

@@ -84,6 +84,7 @@ alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
 alpha;RadioBoxProps
 alpha;RealityTransitionTool 
 beta;class RenderSystemDebugControlTool 
+beta;class RenderTargetDebugControlToggleTool 
 beta;class RenderTargetDebugControlTool 
 beta;ReportWebGLCompatibilityTool 
 alpha;SaveRealityModelTool 
@@ -91,8 +92,6 @@ beta;SaveViewTool
 beta;SelectElementsByIdTool 
 beta;serializeViewState(view: ViewState): ViewStateProps
 alpha;SetAspectRatioSkewTool 
-internal;SetVolClassIntersectOff 
-internal;SetVolClassIntersectOn 
 beta;ShowTileVolumesTool 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
@@ -123,6 +122,7 @@ beta;ToggleTileTreeBoundsDecorationTool
 beta;ToggleViewAttachmentBoundariesTool 
 beta;ToggleViewAttachmentClipShapesTool 
 beta;ToggleViewAttachmentsTool 
+internal;ToggleVolClassIntersect 
 beta;ToggleWiremeshTool 
 beta;ToolArgs
 alpha;ToolSettingsTracker

@@ -40,7 +40,7 @@ export const createVisibilityTreeNodeRenderer = (iconsEnabled: boolean, descript
       checkboxRenderer={visibilityTreeNodeCheckboxRenderer}
       descriptionEnabled={descriptionEnabled}
       imageLoader={iconsEnabled ? imageLoader : undefined}
-      className={props.node.checkbox.isVisible ? "with-checkbox" : undefined}
+      className="with-checkbox"
     />
   );
 };

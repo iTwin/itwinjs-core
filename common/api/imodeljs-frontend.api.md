@@ -214,6 +214,8 @@ import { SubCategoryOverride } from '@bentley/imodeljs-common';
 import { TerrainSettings } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
 import { ThematicDisplay } from '@bentley/imodeljs-common';
+import { ThematicDisplaySensor } from '@bentley/imodeljs-common';
+import { ThematicDisplaySensorSettings } from '@bentley/imodeljs-common';
 import { ThumbnailProps } from '@bentley/imodeljs-common';
 import { TileProps } from '@bentley/imodeljs-common';
 import { TileReadStatus } from '@bentley/imodeljs-common';
@@ -2575,6 +2577,7 @@ export interface EventSourceOptions {
 // @beta
 export abstract class Extension {
     constructor(name: string);
+    protected _defaultNs: string;
     get i18n(): I18N;
     // @internal (undocumented)
     get loader(): ExtensionLoader | undefined;
@@ -2584,6 +2587,7 @@ export abstract class Extension {
     abstract onExecute(_args: string[]): Promise<void>;
     onLoad(_args: string[]): Promise<void>;
     resolveResourceUrl(relativeUrl: string): string;
+    // @deprecated
     setI18n(defaultNamespace?: string, options?: I18NOptions): void;
 }
 
@@ -6352,7 +6356,7 @@ export namespace RenderMemory {
         // (undocumented)
         ClipVolumes = 4,
         // (undocumented)
-        COUNT = 8,
+        COUNT = 9,
         // (undocumented)
         FeatureOverrides = 3,
         // (undocumented)
@@ -6365,6 +6369,8 @@ export namespace RenderMemory {
         TextureAttachments = 7,
         // (undocumented)
         Textures = 0,
+        // (undocumented)
+        ThematicTextures = 8,
         // (undocumented)
         VertexTables = 1
     }
@@ -6406,6 +6412,8 @@ export namespace RenderMemory {
         // (undocumented)
         addTextureAttachment(numBytes: number): void;
         // (undocumented)
+        addThematicTexture(numBytes: number): void;
+        // (undocumented)
         addVertexTable(numBytes: number): void;
         // (undocumented)
         addVisibleEdges(numBytes: number): void;
@@ -6429,6 +6437,8 @@ export namespace RenderMemory {
         get textureAttachments(): Consumers;
         // (undocumented)
         get textures(): Consumers;
+        // (undocumented)
+        get thematicTextures(): Consumers;
         // (undocumented)
         get totalBytes(): number;
         // (undocumented)
@@ -6981,8 +6991,10 @@ export class SceneContext extends RenderContext {
     // @internal (undocumented)
     get graphicType(): TileGraphicType;
     // @internal (undocumented)
-    hasMissingTiles: boolean;
+    get hasMissingTiles(): boolean;
     insertMissingTile(tile: Tile): void;
+    // @internal (undocumented)
+    markChildrenLoading(): void;
     // @internal (undocumented)
     readonly missingTiles: Set<Tile>;
     // @internal (undocumented)
@@ -7393,6 +7405,8 @@ export class SheetViewState extends ViewState2d {
     attachViews(attachments: ViewAttachmentProps[]): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
+    // @internal (undocumented)
+    collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
     computeFitRange(): Range3d;
     // (undocumented)
@@ -7926,8 +7940,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     changeTextureDrapes(textureDrapes: TextureDrapeMap | undefined): void;
     // (undocumented)
-    get clipDef(): ClipDef;
-    // (undocumented)
     readonly clips: Clips;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
@@ -8050,6 +8062,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     modelToView(modelPt: XYZ, result?: Point3d): Point3d;
     // (undocumented)
+    get numClipPlanes(): number;
+    // (undocumented)
     onBatchDisposed(batch: Batch): void;
     // (undocumented)
     onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void): void;
@@ -8120,6 +8134,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get wantInvertBlackBackground(): boolean;
     // (undocumented)
     get wantThematicDisplay(): boolean;
+    // (undocumented)
+    get wantThematicSensors(): boolean;
     }
 
 // @internal (undocumented)
@@ -10593,6 +10609,10 @@ export abstract class ViewState extends ElementState {
     categorySelector: CategorySelectorState;
     // @internal (undocumented)
     static get className(): string;
+    // @internal
+    collectNonTileTreeStatistics(_stats: RenderMemory.Statistics): void;
+    // @internal
+    collectStatistics(stats: RenderMemory.Statistics): void;
     abstract computeFitRange(): Range3d;
     // @internal (undocumented)
     computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio?: boolean): {

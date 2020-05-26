@@ -203,7 +203,7 @@ export class TileDrawArgs {
 
   /** @internal */
   public markChildrenLoading(): void {
-    this.context.hasMissingTiles = true;
+    this.context.markChildrenLoading();
   }
 
   /** Indicate that the specified tile is being used for some purpose by the [[SceneContext]]'s [[Viewport]]. Typically "used" means "displayed", but the exact meaning is up to the [[TileTree]] - for example, "used" might also mean that the tile's children are being used. A tile that is "in use" by any [[Viewport]] will not be discarded. */

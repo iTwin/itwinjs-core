@@ -15,7 +15,7 @@ import {
   WidgetZoneId, widgetZoneIds, ZoneTargetType,
 } from "@bentley/ui-ninezone";
 import { getNestedStagePanelKey } from "../stagepanels/StagePanel";
-import { PanelStateChangedEventArgs, StagePanelState } from "../stagepanels/StagePanelDef";
+import { PanelStateChangedEventArgs, StagePanelState, StagePanelTrySetCurrentSizeEventArgs } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { WidgetTab, WidgetTabs } from "../widgets/WidgetStack";
@@ -373,6 +373,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onModalFrontstageChangedEvent.addListener(this._handleModalFrontstageChangedEvent);
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
+    FrontstageManager.onStagePanelTrySetCurrentSizeEvent.addListener(this._handleStagePanelTrySetCurrentSizeEvent);
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
     FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
@@ -383,6 +384,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onFrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
     FrontstageManager.onModalFrontstageChangedEvent.removeListener(this._handleModalFrontstageChangedEvent);
     FrontstageManager.onPanelStateChangedEvent.removeListener(this._handlePanelStateChangedEvent);
+    FrontstageManager.onStagePanelTrySetCurrentSizeEvent.removeListener(this._handleStagePanelTrySetCurrentSizeEvent);
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
     FrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
   }
@@ -685,6 +687,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   private _handlePanelStateChangedEvent = ({ panelDef, panelState }: PanelStateChangedEventArgs) => {
     this.setPanelState(panelDef.location, panelState);
+  }
+
+  private _handleStagePanelTrySetCurrentSizeEvent = ({ panelDef, size }: StagePanelTrySetCurrentSizeEventArgs) => {
+    this.handlePanelInitialize(panelDef.location, size);
   }
 
   private _handleToolActivatedEvent = () => {

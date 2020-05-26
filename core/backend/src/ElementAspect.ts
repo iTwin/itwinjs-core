@@ -9,7 +9,8 @@
 import { ChannelRootAspectProps, ElementAspectProps, ExternalSourceAspectProps, RelatedElement } from "@bentley/imodeljs-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { ECSqlStatement } from "./ECSqlStatement";
+import { DbResult, Id64String } from "@bentley/bentleyjs-core";
 
 /** An Element Aspect is a class that defines a set of properties that are related to (and owned by) a single element.
  * Semantically, an ElementAspect can be considered part of the Element. Thus, an ElementAspect is deleted if its owning Element is deleted.
@@ -150,6 +151,24 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     this.checksum = props.checksum;
     this.version = props.version;
     this.jsonProperties = props.jsonProperties;
+  }
+
+  /**  Look up the ElementId of the element that contains an aspect with the specified Scope, Kind, and Identifier
+   */
+  public static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): { elementId?: Id64String, aspectId?: Id64String } {
+    const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
+    let elementId: Id64String | undefined;
+    let aspectId: Id64String | undefined;
+    iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+      statement.bindId("scope", scope);
+      statement.bindString("kind", kind);
+      statement.bindString("identifier", identifier);
+      if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        elementId = statement.getValue(0).getId();
+        aspectId = statement.getValue(1).getId();
+      }
+    });
+    return { elementId, aspectId };
   }
 
   /** @internal */

@@ -25,8 +25,8 @@ interface ModelessDialogInfo {
   zIndex: number;
 }
 
-/** TODO: Need to synch up with _z-index.scss in ui-core */
-const ZINDEX_DEFAULT = 13000;
+/** TODO: Need to synch up with "dialog" in _z-index.scss in ui-core */
+const ZINDEX_DEFAULT = 12000;
 
 /** Modeless Dialog Manager class.
  * @public

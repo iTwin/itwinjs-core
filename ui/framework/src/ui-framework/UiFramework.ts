@@ -32,6 +32,7 @@ import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { LayoutManager } from "./widget-panels/LayoutManager";
 import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
+import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "./selection/HideIsolateEmphasizeManager";
 
 // cSpell:ignore Mobi
 
@@ -77,6 +78,7 @@ export class UiFramework {
   private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
   private static _layoutManager = new LayoutManager();
   private static _uiVersion = "";
+  private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
 
   /** Get Show Ui event.
    * @public
@@ -127,6 +129,7 @@ export class UiFramework {
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
     UiFramework._backstageManager = new BackstageManager();
+    UiFramework._hideIsolateEmphasizeActionHandler = new HideIsolateEmphasizeManager();  // this allows user to override the default HideIsolateEmphasizeManager implementation.
     UiFramework._widgetManager = new WidgetManager();
 
     UiFramework.onFrameworkVersionChangedEvent.addListener(UiFramework._handleFrameworkVersionChangedEvent);
@@ -162,6 +165,7 @@ export class UiFramework {
     UiFramework._iModelServices = undefined;
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
+    UiFramework._hideIsolateEmphasizeActionHandler = undefined;
 
     UiFramework.onFrameworkVersionChangedEvent.removeListener(UiFramework._handleFrameworkVersionChangedEvent);
 
@@ -214,6 +218,22 @@ export class UiFramework {
     if (!UiFramework._backstageManager)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
     return UiFramework._backstageManager;
+  }
+
+  /** @alpha */
+  public static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler {
+    // istanbul ignore next
+    if (!UiFramework._hideIsolateEmphasizeActionHandler)
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
+    return UiFramework._hideIsolateEmphasizeActionHandler;
+  }
+
+  /** @alpha */
+  public static setHideIsolateEmphasizeActionHandler(handler: HideIsolateEmphasizeActionHandler | undefined) {
+    if (handler)
+      UiFramework._hideIsolateEmphasizeActionHandler = handler;
+    else
+      UiFramework._hideIsolateEmphasizeActionHandler = new HideIsolateEmphasizeManager();
   }
 
   /** @alpha */

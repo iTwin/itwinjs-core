@@ -25,7 +25,7 @@ export function createClearTranslucentProgram(context: WebGLRenderingContext | W
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   if (System.instance.capabilities.supportsMRTTransparency) {
-    frag.addDrawBuffersExtension();
+    frag.addDrawBuffersExtension(2);
     frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
   } else {
     // NB: This shader is never used - we just gl.clear() directly

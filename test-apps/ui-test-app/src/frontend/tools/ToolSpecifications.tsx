@@ -27,6 +27,8 @@ import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "../tools/ToolWithSettings";
+import { Presentation } from "@bentley/presentation-frontend";
+import { PresentationUnitSystem } from "@bentley/presentation-common";
 
 // tslint:disable-next-line: variable-name
 const SampleStatus = withStatusFieldProps(SampleStatusField);
@@ -231,6 +233,7 @@ export class AppTools {
       labelKey: "SampleApp:buttons.setLengthFormatMetric",
       execute: () => {
         IModelApp.quantityFormatter.useImperialFormats = false;
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
       },
     });
@@ -244,6 +247,7 @@ export class AppTools {
       labelKey: "SampleApp:buttons.setLengthFormatImperial",
       execute: () => {
         IModelApp.quantityFormatter.useImperialFormats = true;
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
       },
     });
@@ -255,7 +259,11 @@ export class AppTools {
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.toggleLengthFormat",
       execute: () => {
-        IModelApp.quantityFormatter.useImperialFormats = !IModelApp.quantityFormatter.useImperialFormats;
+        const useImperialFormats = !IModelApp.quantityFormatter.useImperialFormats;
+        IModelApp.quantityFormatter.useImperialFormats = useImperialFormats;
+        Presentation.presentation.activeUnitSystem = useImperialFormats
+          ? PresentationUnitSystem.BritishImperial
+          : PresentationUnitSystem.Metric;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.quantityFormatter.useImperialFormats ? "Set Length Format to Imperial" : "Set Length Format to Metric"));
       },
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],

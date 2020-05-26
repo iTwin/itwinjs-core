@@ -16,7 +16,7 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DefinitionPartition, Element, GeometricElement3d, InformationPartitionElement, Subject } from "./Element";
-import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
+import { ChannelRootAspect, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
@@ -83,7 +83,8 @@ export class IModelTransformer extends IModelExportHandler {
     }
     this.sourceDb = this.exporter.sourceDb;
     this.exporter.registerHandler(this);
-    this.exporter.excludeElementAspectClass(ExternalSourceAspect.classFullName);
+    this.exporter.excludeElementAspectClass(ExternalSourceAspect.classFullName); // Provenance specific to the source iModel is not relevant to the target iModel
+    this.exporter.excludeElementAspectClass(ChannelRootAspect.classFullName); // Channel boundaries within the source iModel are not relevant to the target iModel
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
     // initialize importer and targetDb
     if (target instanceof IModelDb) {
@@ -213,7 +214,14 @@ export class IModelTransformer extends IModelExportHandler {
    * @note A subclass can override this method to provide custom transform behavior.
    */
   protected onTransformElement(sourceElement: Element): ElementProps {
-    return this.context.cloneElement(sourceElement);
+    const targetElementProps: ElementProps = this.context.cloneElement(sourceElement);
+    if (sourceElement instanceof Subject) {
+      if (targetElementProps.jsonProperties?.Subject?.Job) {
+        // don't propagate source channels into target (legacy bridge case)
+        targetElementProps.jsonProperties.Subject.Job = undefined;
+      }
+    }
+    return targetElementProps;
   }
 
   /** Returns true if a change within sourceElement is detected.

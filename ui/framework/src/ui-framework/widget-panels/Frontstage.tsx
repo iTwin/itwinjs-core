@@ -9,6 +9,7 @@
 import "./Frontstage.scss";
 import produce, { castDraft, Draft } from "immer";
 import * as React from "react";
+import { StagePanelLocation } from "@bentley/ui-abstract";
 import { UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
   addPanelWidget, addTab, createNineZoneState, floatingWidgetBringToFront, FloatingWidgets, FloatingWidgetState, NineZoneActionTypes, NineZoneProvider,
@@ -16,7 +17,7 @@ import {
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef } from "../frontstage/FrontstageDef";
-import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
+import { StagePanelState, StagePanelTrySetCurrentSizeEventArgs, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
 import { useUiSettingsContext } from "../uisettings/useUiSettings";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { ZoneState } from "../zones/ZoneDef";
@@ -61,6 +62,7 @@ export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage
   const [state, dispatch] = useFrontstageDefNineZone(frontstageDef);
   useSaveFrontstageSettings(state);
   useLayoutManager(state, dispatch);
+  useFrontstageManager(dispatch);
   if (!frontstageDef)
     return null;
   return (
@@ -117,6 +119,22 @@ function getPanelDefKey(side: PanelSide): FrontstagePanelDefKeys {
       return "rightPanel";
     case "top":
       return "topPanel";
+  }
+}
+
+/** @internal */
+export function getPanelSide(location: StagePanelLocation): PanelSide {
+  switch (location) {
+    case StagePanelLocation.Bottom:
+    case StagePanelLocation.BottomMost:
+      return "bottom";
+    case StagePanelLocation.Left:
+      return "left";
+    case StagePanelLocation.Right:
+      return "right";
+    case StagePanelLocation.Top:
+    case StagePanelLocation.TopMost:
+      return "top";
   }
 }
 
@@ -290,12 +308,20 @@ export interface WidgetTabExpandAction {
 }
 
 /** @internal */
+export interface PanelSetSizeAction {
+  readonly type: "PANEL_SET_SIZE";
+  readonly panel: PanelSide;
+  readonly size: number;
+}
+
+/** @internal */
 export type FrontstageActionTypes =
   NineZoneActionTypes |
   FrontstageInitializeAction |
   FrontstageStateSettingLoadAction |
   WidgetTabShowAction |
-  WidgetTabExpandAction;
+  WidgetTabExpandAction |
+  PanelSetSizeAction;
 
 /** @internal */
 export interface FrontstageState {
@@ -357,6 +383,12 @@ export const FrontstageStateReducer: (state: FrontstageState, action: Frontstage
         return;
       }
       widget.minimized = false;
+      return;
+    }
+    case "PANEL_SET_SIZE": {
+      const nineZone = state.setting.nineZone;
+      const panel = nineZone.panels[action.panel];
+      panel.size = Math.min(Math.max(action.size, panel.minSize), panel.maxSize);
       return;
     }
     default: {
@@ -532,4 +564,22 @@ export function useLayoutManager(state: FrontstageState, dispatch: React.Dispatc
       UiFramework.layoutManager.onLayoutManagerDispatchActionEvent.removeListener(listener);
     };
   }, [dispatch, uiSettings, state]);
+}
+
+/** @internal */
+export function useFrontstageManager(dispatch: React.Dispatch<FrontstageActionTypes>) {
+  React.useEffect(() => {
+    const listener = ({ panelDef, size }: StagePanelTrySetCurrentSizeEventArgs) => {
+      const panel = getPanelSide(panelDef.location);
+      dispatch({
+        type: "PANEL_SET_SIZE",
+        size,
+        panel,
+      });
+    };
+    FrontstageManager.onStagePanelTrySetCurrentSizeEvent.addListener(listener);
+    return () => {
+      FrontstageManager.onStagePanelTrySetCurrentSizeEvent.removeListener(listener);
+    };
+  }, [dispatch]);
 }

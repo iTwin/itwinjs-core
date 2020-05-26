@@ -400,7 +400,9 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   /** @internal */
   public async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
-    itemElement.setAttribute("typeName", this.enumeration!.fullName);
+    const enumeration = await this.enumeration;
+    const enumerationName = XmlSerializationUtils.createXmlTypedName(this.schema, enumeration!.schema, enumeration!.name);
+    itemElement.setAttribute("typeName", enumerationName);
     return itemElement;
   }
 

@@ -294,7 +294,12 @@ export class IModelApp {
    * and/or performance.
    * @beta
    */
-  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return queryRenderCompatibility(System.createContext); }
+  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
+    if (undefined === System.instance || undefined === System.instance.options.useWebGL2)
+      return queryRenderCompatibility(true, System.createContext);
+    else
+      return queryRenderCompatibility(System.instance.options.useWebGL2, System.createContext);
+  }
 
   /**
    * This method must be called before any iModel.js frontend services are used.

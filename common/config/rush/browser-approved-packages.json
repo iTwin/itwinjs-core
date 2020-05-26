@@ -915,6 +915,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "webpack-filter-warnings-plugin",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "webpack-sources",
       "allowedCategories": [ "tools" ]
     },

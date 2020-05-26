@@ -38,12 +38,13 @@ import createTerrainMeshBuilder from "./glsl/TerrainMesh";
 import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { RenderPass } from "./RenderFlags";
-import { ClippingShaders, ProgramBuilder } from "./ShaderBuilder";
+import { ProgramBuilder } from "./ShaderBuilder";
+import { ClippingProgram, createClippingProgram } from "./ClippingProgram";
 import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
 import {
-  ClipDef, FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, TechniqueFlags,
+  FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, TechniqueFlags,
 } from "./TechniqueFlags";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
 
@@ -91,7 +92,7 @@ const scratchHiliteFlags = new TechniqueFlags();
  */
 export abstract class VariedTechnique implements Technique {
   private readonly _basicPrograms: ShaderProgram[] = [];
-  private readonly _clippingPrograms: ClippingShaders[] = [];
+  private readonly _clippingPrograms: ClippingProgram[] = [];
 
   public compileShaders(): boolean {
     let allCompiled = true;
@@ -99,6 +100,10 @@ export abstract class VariedTechnique implements Technique {
       if (program.compile() !== CompileStatus.Success)
         allCompiled = false;
     }
+
+    for (const clipper of this._clippingPrograms)
+      if (!clipper.compile())
+        allCompiled = false;
 
     return allCompiled;
   }
@@ -114,6 +119,7 @@ export abstract class VariedTechnique implements Technique {
   public dispose(): void {
     if (this._isDisposed)
       return;
+
     for (const program of this._basicPrograms) {
       assert(undefined !== program);
       dispose(program);
@@ -122,15 +128,11 @@ export abstract class VariedTechnique implements Technique {
     this._basicPrograms.length = 0;
     for (const clipShaderObj of this._clippingPrograms) {
       assert(undefined !== clipShaderObj);
-
-      for (const clipShader of clipShaderObj.shaders) {
-        assert(undefined !== clipShader);
-        dispose(clipShader);
-      }
-
-      clipShaderObj.shaders.length = 0;
-      this._isDisposed = true;
+      clipShaderObj.dispose();
     }
+
+    this._clippingPrograms.length = 0;
+    this._isDisposed = true;
   }
 
   protected constructor(numPrograms: number) {
@@ -157,13 +159,13 @@ export abstract class VariedTechnique implements Technique {
     assert(this._basicPrograms[index] !== undefined);
 
     assert(this._clippingPrograms[index] === undefined);
-    this._clippingPrograms[index] = new ClippingShaders(builder);
+    this._clippingPrograms[index] = createClippingProgram(builder);
     assert(this._clippingPrograms[index] !== undefined);
   }
 
   protected addHiliteShader(gl: WebGLRenderingContext | WebGL2RenderingContext, instanced: IsInstanced, classified: IsClassified, create: (instanced: IsInstanced, classified: IsClassified) => ProgramBuilder): void {
     const builder = create(instanced, classified);
-    scratchHiliteFlags.initForHilite(new ClipDef(), instanced, classified);
+    scratchHiliteFlags.initForHilite(0, instanced, classified);
     this.addShader(builder, scratchHiliteFlags, gl);
   }
 
@@ -202,7 +204,7 @@ export abstract class VariedTechnique implements Technique {
     if (flags.hasClip) {
       const entry = this._clippingPrograms[index];
       assert(undefined !== entry);
-      program = entry.getProgram(flags.clip);
+      program = entry.getProgram(flags.numClipPlanes);
     }
 
     if (program === undefined)

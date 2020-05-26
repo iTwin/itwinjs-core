@@ -60,7 +60,7 @@ const boundingVolumeNames = [
 ];
 
 /** Set the tile bounding volume decorations to display in the selected viewport.
- * Omitting the argument turns on Volume bounding boxes.
+ * Omitting the argument turns on Volume bounding boxes if bounding boxes are currently off; otherwise, toggles them off.
  * Allowed inputs are "none", "volume", "content", "both" (volume and content), "children", and "sphere".
  * @beta
  */
@@ -75,7 +75,7 @@ export class ShowTileVolumesTool extends Tool {
       return true;
 
     if (undefined === boxes)
-      boxes = TileBoundingBoxes.Volume;
+      boxes = TileBoundingBoxes.None === vp.debugBoundingBoxes ? TileBoundingBoxes.Volume : TileBoundingBoxes.None;
 
     vp.debugBoundingBoxes = boxes;
     return true;

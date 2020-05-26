@@ -106,7 +106,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       sortable: true,
       resizable: true,
       editable: true,
-      // filterable: true,
+      filterable: true,
       filterRenderer: FilterRenderer.MultiSelect,
     },
     {

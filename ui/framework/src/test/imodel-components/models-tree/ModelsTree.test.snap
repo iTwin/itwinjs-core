@@ -23,7 +23,7 @@ exports[`ModelsTree #integration renders component with real data and no active 
               style="position: absolute; left: 0px; top: 0px; height: 25px; width: 100%;"
             >
               <div
-                class="core-tree-node"
+                class="core-tree-node with-checkbox"
                 data-testid="tree-node"
               >
                 <div
@@ -61,7 +61,7 @@ exports[`ModelsTree #integration renders component with real data and no active 
               style="position: absolute; left: 0px; top: 25px; height: 25px; width: 100%;"
             >
               <div
-                class="core-tree-node"
+                class="core-tree-node with-checkbox"
                 data-testid="tree-node"
               >
                 <div

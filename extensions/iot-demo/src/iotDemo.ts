@@ -397,6 +397,7 @@ class IotToolTipProvider implements ToolTipProvider {
 
 export class IoTDemoExtension extends Extension {
   private _i18NNamespace?: I18NNamespace;
+  protected _defaultNs = "iotDemo";
   public iotMonitor: IoTMonitor | undefined;
   public iotUiProvider?: IotUiProvider;
   public simulationUrl: string | undefined;
@@ -480,7 +481,7 @@ export class IoTDemoExtension extends Extension {
 
   /** Invoked the first time this extension is loaded. */
   public async onLoad(args: string[]): Promise<void> {
-    this._i18NNamespace = this.i18n.registerNamespace("iotDemo");
+    this._i18NNamespace = this.i18n.getNamespace(this._defaultNs);
     await this._i18NNamespace!.readFinished;
     const message: string = this.i18n.translate("iotDemo:Messages.Start");
     const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);

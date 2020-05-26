@@ -238,8 +238,8 @@ export class RegionOps {
     context.addMembers(loopsA, loopsB);
     context.createGraph();
     context.runClassificationSweep(operation, (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1) => {
-      if (face.countEdgesAroundFace () < 3)
-        return;
+     // if (face.countEdgesAroundFace () < 3)
+     //   return;
       if (faceType === 1) {
         const loop = PlanarSubdivision.createLoopInFace(face);
         if (loop)

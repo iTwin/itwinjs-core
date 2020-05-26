@@ -26,6 +26,7 @@ import { ModelSelectorState } from "./ModelSelectorState";
 import { GeometricModel2dState, GeometricModel3dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
+import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { TileTreeReference, TileTreeSet } from "./tile/internal";
@@ -382,6 +383,25 @@ export abstract class ViewState extends ElementState {
    */
   public discloseTileTrees(trees: TileTreeSet): void {
     this.forEachTileTreeRef((ref) => trees.disclose(ref));
+  }
+
+  /** Discloses graphics memory consumed by viewed tile trees and other consumers like view attachments.
+   * @internal
+   */
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    const trees = new TileTreeSet();
+    this.discloseTileTrees(trees);
+    for (const tree of trees.trees)
+      tree.collectStatistics(stats);
+
+    this.collectNonTileTreeStatistics(stats);
+  }
+
+  /** Discloses graphics memory consumed by any consumers *other* than viewed tile trees, like view attachments.
+   * @internal
+   */
+  public collectNonTileTreeStatistics(_stats: RenderMemory.Statistics): void {
+    //
   }
 
   /** @internal */

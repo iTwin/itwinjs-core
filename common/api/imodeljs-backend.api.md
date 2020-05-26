@@ -134,6 +134,9 @@ import { Placement2d } from '@bentley/imodeljs-common';
 import { Placement3d } from '@bentley/imodeljs-common';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
+import { Polyface } from '@bentley/geometry-core';
+import { PolyfaceData } from '@bentley/geometry-core';
+import { PolyfaceVisitor } from '@bentley/geometry-core';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { PropertyCallback } from '@bentley/imodeljs-common';
 import { QueryLimit } from '@bentley/imodeljs-common';
@@ -1909,6 +1912,26 @@ export interface ExportGraphicsMesh {
 }
 
 // @public
+export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceVisitor {
+    clearArrays(): void;
+    clientAuxIndex(_i: number): number;
+    clientColorIndex(_i: number): number;
+    clientNormalIndex(i: number): number;
+    clientParamIndex(i: number): number;
+    clientPointIndex(i: number): number;
+    clientPolyface(): Polyface;
+    static create(polyface: ExportGraphicsMesh, numWrap: number): ExportGraphicsMeshVisitor;
+    currentReadIndex(): number;
+    // (undocumented)
+    moveToNextFacet(): boolean;
+    moveToReadIndex(facetIndex: number): boolean;
+    pushDataFrom(other: PolyfaceVisitor, index: number): void;
+    pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void;
+    reset(): void;
+    setNumWrap(numWrap: number): void;
+}
+
+// @public
 export interface ExportGraphicsOptions {
     angleTol?: number;
     chordTol?: number;
@@ -1992,6 +2015,10 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     checksum?: string;
     // @internal (undocumented)
     static get className(): string;
+    static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): {
+        elementId?: Id64String;
+        aspectId?: Id64String;
+    };
     identifier: string;
     jsonProperties?: string;
     kind: string;

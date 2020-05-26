@@ -23,10 +23,46 @@ export class ThematicDisplayEditor {
     axis: [0.0, 0.0, 1.0],
     sensorSettings: {
       sensors: [],
+      distanceCutoff: 0,
     },
   };
 
-  private _pushNewSensor(sensors: ThematicDisplaySensorProps[]) {
+  // create a 32x32 grid of sensors spread evenly within the extents of the project
+  private _createSensorGrid(sensors: ThematicDisplaySensorProps[]) {
+    const sensorGridXLength = 32;
+    const sensorGridYLength = 32;
+
+    const sensorValues: number[] = [0.1, 0.9, 0.25, 0.15, 0.8, 0.34, 0.78, 0.32, 0.15, 0.29, 0.878, 0.95, 0.5, 0.278, 0.44, 0.33, 0.71];
+
+    const extents = this._vp.view.iModel.projectExtents;
+    const xRange = Range1d.createXX(extents.xLow, extents.xHigh);
+    const yRange = Range1d.createXX(extents.yLow, extents.yHigh);
+    const sensorZ = extents.low.z + (extents.high.z - extents.low.z) / 2.0;
+
+    let sensorValueIndex = 0;
+
+    for (let y = 0; y < sensorGridYLength; y++) {
+      const sensorY = yRange.fractionToPoint(y / (sensorGridYLength - 1));
+
+      for (let x = 0; x < sensorGridXLength; x++) {
+        const sensorX = xRange.fractionToPoint(x / (sensorGridXLength - 1));
+
+        const sensorPos = Point3d.create(sensorX, sensorY, sensorZ);
+        this._pushNewSensor(sensors, { position: sensorPos, value: sensorValues[sensorValueIndex] });
+
+        sensorValueIndex++;
+        if (sensorValueIndex >= sensorValues.length)
+          sensorValueIndex = 0;
+      }
+    }
+  }
+
+  private _pushNewSensor(sensors: ThematicDisplaySensorProps[], sensorProps?: ThematicDisplaySensorProps) {
+    if (undefined !== sensorProps) {
+      sensors.push(sensorProps);
+      return;
+    }
+
     const extents = this._vp.view.iModel.projectExtents;
     ThematicDisplayEditor._defaultSettings.range = { low: extents.zLow, high: extents.zHigh };
 
@@ -65,6 +101,7 @@ export class ThematicDisplayEditor {
   private readonly _thematicAxisX: LabeledNumericInput;
   private readonly _thematicAxisY: LabeledNumericInput;
   private readonly _thematicAxisZ: LabeledNumericInput;
+  private readonly _thematicDistanceCutoff: LabeledNumericInput;
   private readonly _thematicSensor: ComboBox;
   private readonly _thematicSensorX: LabeledNumericInput;
   private readonly _thematicSensorY: LabeledNumericInput;
@@ -91,6 +128,8 @@ export class ThematicDisplayEditor {
       ThematicDisplayEditor._defaultSettings.range = { low: extents.zLow, high: extents.zHigh };
 
       const sensors = ThematicDisplayEditor._defaultSettings.sensorSettings!.sensors!;
+
+      ThematicDisplayEditor._defaultSettings.sensorSettings!.distanceCutoff = extents.xLength() / 25.0;
 
       const sensorZ = extents.low.z + (extents.high.z - extents.low.z) / 2.0;
       const sensorLow = extents.low.cloneAsPoint3d();
@@ -262,6 +301,22 @@ export class ThematicDisplayEditor {
       name: "Axis Z: ",
     });
 
+    this._thematicDistanceCutoff = createLabeledNumericInput({
+      id: "thematic_distanceCutoff",
+      parent: thematicControlsDiv,
+      value: 0.0,
+      handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
+        const props = this.getThematicSettingsProps(view);
+        props.sensorSettings!.distanceCutoff = value;
+        return props;
+      }),
+      min: -999999.0,
+      max: 999999.0,
+      step: 0.1,
+      parseAsFloat: true,
+      name: "Distance Cutoff: ",
+    });
+
     this._thematicSensor = createComboBox({
       parent: thematicControlsDiv,
       name: "Selected Sensor: ",
@@ -381,6 +436,23 @@ export class ThematicDisplayEditor {
     });
     deleteSensorButton.div.style.textAlign = "center";
 
+    const createSensorGridButton = createButton({
+      parent: thematicControlsDiv,
+      id: "thematic_createSensorGrid",
+      value: "Create Sensor Grid",
+      handler: () => this.updateThematicDisplay((view): ThematicDisplayProps => {
+        const props = this.getThematicSettingsProps(view);
+        if (props.sensorSettings!.sensors !== undefined) {
+          props.sensorSettings!.sensors = [];
+          this._createSensorGrid(props.sensorSettings!.sensors);
+          this._resetSensorEntries(props.sensorSettings!.sensors.length);
+          this._thematicSensor.select.selectedIndex = props.sensorSettings!.sensors.length - 1;
+        }
+        return props;
+      }),
+    });
+    createSensorGridButton.div.style.textAlign = "center";
+
     const resetButton = createButton({
       parent: thematicControlsDiv,
       id: "thematic_reset",
@@ -430,6 +502,8 @@ export class ThematicDisplayEditor {
     this._thematicAxisZ.input.value = axis.z.toString();
 
     if (undefined !== props.sensorSettings) {
+      if (undefined !== props.sensorSettings.distanceCutoff)
+        this._thematicDistanceCutoff.input.value = props.sensorSettings.distanceCutoff!.toString();
       const sensors = props.sensorSettings.sensors;
       if (undefined !== sensors && sensors.length > 0) {
         if (this._thematicSensor.select.length < 1)

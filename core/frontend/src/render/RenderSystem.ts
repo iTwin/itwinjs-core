@@ -508,7 +508,7 @@ export namespace RenderSystem {
 
     /** If true will attempt to create a WebGL2 context.
      *
-     * Default value: false
+     * Default value: true
      *
      * @internal
      */

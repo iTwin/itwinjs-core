@@ -55,16 +55,18 @@ export function BasicToolWidget(props: BasicToolWidgetProps) {
       if (useCategoryAndModelsContextTools) {
         items.push(
           ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.clearSelectionItemDef),
-          ToolbarHelper.createToolbarItemFromItemDef(20, SelectionContextToolDefinitions.hideSectionToolGroup),
-          ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.isolateSelectionToolGroup),
-          ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.emphasizeElementsItemDef),
+          ToolbarHelper.createToolbarItemFromItemDef(20, SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef),
+          ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.hideSectionToolGroup),
+          ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.isolateSelectionToolGroup),
+          ToolbarHelper.createToolbarItemFromItemDef(50, SelectionContextToolDefinitions.emphasizeElementsItemDef),
         );
       } else {
         items.push(
           ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.clearSelectionItemDef),
-          ToolbarHelper.createToolbarItemFromItemDef(20, SelectionContextToolDefinitions.hideElementsItemDef),
-          ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.isolateElementsItemDef),
-          ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.emphasizeElementsItemDef),
+          ToolbarHelper.createToolbarItemFromItemDef(20, SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef),
+          ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.hideElementsItemDef),
+          ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.isolateElementsItemDef),
+          ToolbarHelper.createToolbarItemFromItemDef(50, SelectionContextToolDefinitions.emphasizeElementsItemDef),
         );
       }
       if (props.additionalHorizontalItems)
