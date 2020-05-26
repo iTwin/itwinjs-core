@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { desync, isSynchronized, sync, SyncObserver } from "../webgl";
+import { desync, isSynchronized, sync, SyncObserver } from "../../../webgl";
 
 describe("SyncObserver", () => {
   it("should synchronize with Sync", () => {

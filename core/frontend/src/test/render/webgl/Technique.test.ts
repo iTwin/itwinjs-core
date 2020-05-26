@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { IModelApp } from "../IModelApp";
-import { RenderSystem } from "../render/RenderSystem";
+import { IModelApp } from "../../../IModelApp";
+import { RenderSystem } from "../../../render/RenderSystem";
 import {
   AttributeMap, CompileStatus, DrawParams, FeatureMode, FragmentShaderComponent, ProgramBuilder, ShaderProgramParams, SingularTechnique, System,
   Target, TechniqueFlags, TechniqueId, VariableType, VertexShaderComponent, ViewportQuadGeometry,
-} from "../webgl";
+} from "../../../webgl";
 
 function createPurpleQuadBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));

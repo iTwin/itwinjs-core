@@ -63,13 +63,14 @@ export class TechniqueFlags {
   }
 
   public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No): void {
+    const numClipPlanes = target.currentClipVolume?.texture?.height ?? 0;
     if (RenderPass.Hilite === pass || RenderPass.HiliteClassification === pass || RenderPass.HilitePlanarClassification === pass) {
       const isClassified = (classified === IsClassified.Yes && RenderPass.HilitePlanarClassification === pass) ? IsClassified.Yes : IsClassified.No;
-      this.initForHilite(target.numClipPlanes, instanced, isClassified);
+      this.initForHilite(numClipPlanes, instanced, isClassified);
     } else {
       this._isHilite = false;
       this.isTranslucent = RenderPass.Translucent === pass;
-      this.numClipPlanes = target.numClipPlanes;
+      this.numClipPlanes = numClipPlanes;
       this.isAnimated = animated;
       this.isInstanced = instanced;
       this.isClassified = classified;

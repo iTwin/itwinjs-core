@@ -5,9 +5,9 @@
 
 import { expect } from "chai";
 import { ColorDef, HiddenLine, LinePixels, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
-import { EdgeSettings } from "../../render/webgl/EdgeSettings";
-import { OvrFlags, RenderPass } from "../../render/webgl/RenderFlags";
-import { LineCode } from "../../render/webgl/LineCode";
+import { EdgeSettings } from "../../../render/webgl/EdgeSettings";
+import { OvrFlags, RenderPass } from "../../../render/webgl/RenderFlags";
+import { LineCode } from "../../../render/webgl/LineCode";
 
 describe("EdgeSettings", () => {
   it("defaults to overriding nothing", () => {

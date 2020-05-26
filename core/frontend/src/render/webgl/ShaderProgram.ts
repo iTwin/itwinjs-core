@@ -675,7 +675,7 @@ export class ShaderProgramExecutor {
     }
   }
 
-  public pushBranch(branch: Branch): void { this.target.pushBranch(this, branch); }
+  public pushBranch(branch: Branch): void { this.target.pushBranch(branch); }
   public popBranch(): void { this.target.popBranch(); }
   public pushBatch(batch: Batch): void { this.target.pushBatch(batch); }
   public popBatch(): void { this.target.popBatch(); }

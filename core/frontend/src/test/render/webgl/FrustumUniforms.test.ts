@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ClipShape, ClipVector, Point3d } from "@bentley/geometry-core";
-import { IModelApp } from "../IModelApp";
-import { Clips, ClipVolume, FrustumUniforms, FrustumUniformType } from "../webgl";
+import { FrustumUniforms, FrustumUniformType } from "../../../webgl";
 
 class TestUniforms extends FrustumUniforms {
   public constructor() {
@@ -44,46 +42,5 @@ describe("FrustumUniforms", () => {
 
     fu.testSetPlanes(1.0, 2.0, 3.0, 4.0);
     fu.testSetFrustum(5.0, 6.0, FrustumUniformType.Perspective);
-  });
-});
-
-describe("Clips", () => {
-  before(async () => {
-    await IModelApp.startup();
-  });
-
-  after(async () => {
-    await IModelApp.shutdown();
-  });
-
-  it("should create, store, and retrieve Clips", () => {
-    const points: Point3d[] = [];
-    points[0] = Point3d.create(1.0, 1.0, 0.0);
-    points[1] = Point3d.create(2.0, 1.0, 0.0);
-    points[2] = Point3d.create(2.0, 2.0, 0.0);
-    points[3] = Point3d.create(1.0, 2.0, 0.0);
-    const s = ClipShape.createShape(points, 1.0, 2.0);
-    assert.isTrue(undefined !== s, "should be able to create ClipShape");
-    if (undefined !== s) {
-      const clipShapes: ClipShape[] = [];
-      clipShapes[0] = s;
-      const clipVector: ClipVector = ClipVector.create(clipShapes);
-      assert.isTrue(clipVector.isValid, "should be able to create valid clipVector");
-
-      const clips: Clips = new Clips();
-      expect(clips.isValid).to.equal(false);
-      expect(clips.count).to.equal(0);
-      const clipVolume = ClipVolume.create(clipVector);
-      expect(clipVolume).to.not.be.undefined;
-
-      const data = clipVolume!.getTextureData() as Float32Array;
-      expect(data).not.to.be.undefined;
-      expect(data instanceof Float32Array).to.be.true;
-
-      const expectedData = [0, 1, 0, -1, -1, 0, 0, 2, 0, -1, 0, 2, 1, 0, 0, -1, 0, 0, 1, -1, 0, 0, -1, 2];
-      expect(data.length).to.equal(expectedData.length);
-      for (let i = 0; i < data.length; i++)
-        expect(data[i]).to.equal(expectedData[i]);
-    }
   });
 });

@@ -766,7 +766,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Enable clipping
     this.target.beginPerfMetricRecord("Enable Clipping");
-    this.target.pushActiveVolume();
+    this.target.pushViewClip();
     this.target.endPerfMetricRecord();
 
     // Render volume classification first so that we only classify the reality data
@@ -819,7 +819,7 @@ abstract class Compositor extends SceneCompositor {
     this.renderLayers(commands, false, RenderPass.OverlayLayers);
     this.target.endPerfMetricRecord();
 
-    this.target.popActiveVolume();
+    this.target.popViewClip();
   }
 
   public get fullHeight(): number { return this.target.viewRect.height; }
@@ -840,7 +840,7 @@ abstract class Compositor extends SceneCompositor {
     const haveRenderCommands = !commands.isEmpty;
     if (haveRenderCommands) {
       this.target.beginPerfMetricRecord("Enable Clipping", true);
-      this.target.pushActiveVolume();
+      this.target.pushViewClip();
       this.target.endPerfMetricRecord(true);
 
       this.target.beginPerfMetricRecord("Render VolumeClassification", true);
@@ -863,7 +863,7 @@ abstract class Compositor extends SceneCompositor {
       this.renderLayers(commands, false, RenderPass.OverlayLayers);
       this.target.endPerfMetricRecord();
 
-      this.target.popActiveVolume();
+      this.target.popViewClip();
     }
 
     if (0 === sceneOverlays.length && (undefined === overlayDecorations || 0 === overlayDecorations.length))

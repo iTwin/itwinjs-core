@@ -1586,24 +1586,6 @@ export enum ClipResult {
     OriginalElements = 2
 }
 
-// @internal
-export class Clips {
-    // (undocumented)
-    clear(): void;
-    // (undocumented)
-    get count(): number;
-    // (undocumented)
-    get insideRgba(): FloatRgba;
-    // (undocumented)
-    get isValid(): boolean;
-    // (undocumented)
-    get outsideRgba(): FloatRgba;
-    // (undocumented)
-    set(numPlanes: number, texture: TextureHandle, outsideRgba: FloatRgba, insideRgba: FloatRgba): void;
-    // (undocumented)
-    get texture(): TextureHandle | undefined;
-    }
-
 // @public
 export class Cluster<T extends Marker> {
     constructor(markers: T[]);
@@ -1724,6 +1706,9 @@ export function createDefaultViewFlagOverrides(options: {
 }): ViewFlagOverrides;
 
 // @internal (undocumented)
+export function createEmptyRenderPlan(): RenderPlan;
+
+// @internal (undocumented)
 export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference;
 
 // @internal (undocumented)
@@ -1731,6 +1716,9 @@ export function createPrimaryTileTreeReference(view: ViewState, model: Geometric
 
 // @internal (undocumented)
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference;
+
+// @internal (undocumented)
+export function createRenderPlanFromViewport(vp: Viewport): RenderPlan;
 
 // @internal
 export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, useDepthBuffer: boolean, iModel: IModelConnection, forDrape?: boolean): Promise<TileTree | undefined>;
@@ -6447,7 +6435,7 @@ export namespace RenderMemory {
 }
 
 // @internal
-export class RenderPlan {
+export interface RenderPlan {
     // (undocumented)
     readonly activeClipSettings?: ViewClipSettings;
     // (undocumented)
@@ -6460,12 +6448,6 @@ export class RenderPlan {
     readonly backgroundMapOn: boolean;
     // (undocumented)
     readonly bgColor: ColorDef;
-    // (undocumented)
-    readonly classificationTextures?: Map<Id64String, RenderTexture>;
-    // (undocumented)
-    static createEmpty(): RenderPlan;
-    // (undocumented)
-    static createFromViewport(vp: Viewport): RenderPlan;
     // (undocumented)
     readonly emphasisSettings: Hilite.Settings;
     // (undocumented)
@@ -7940,8 +7922,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     changeTextureDrapes(textureDrapes: TextureDrapeMap | undefined): void;
     // (undocumented)
-    readonly clips: Clips;
-    // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
     get compositor(): SceneCompositor;
@@ -7959,6 +7939,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     createPlanarClassifier(properties: SpatialClassificationProps.Classifier): PlanarClassifier;
     // (undocumented)
     protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect;
+    // (undocumented)
+    get currentClipVolume(): ClipVolume | undefined;
     // (undocumented)
     get currentEdgeSettings(): EdgeSettings;
     // (undocumented)
@@ -8036,8 +8018,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     getWorldDecorations(decs: GraphicList): Branch;
     // (undocumented)
-    get hasClipVolume(): boolean;
-    // (undocumented)
     get hilites(): Hilites;
     // (undocumented)
     get hiliteSyncTarget(): SyncTarget;
@@ -8062,8 +8042,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     modelToView(modelPt: XYZ, result?: Point3d): Point3d;
     // (undocumented)
-    get numClipPlanes(): number;
-    // (undocumented)
     onBatchDisposed(batch: Batch): void;
     // (undocumented)
     onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void): void;
@@ -8078,21 +8056,21 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get planFrustum(): Frustum;
     // (undocumented)
-    popActiveVolume(): void;
-    // (undocumented)
     popBatch(): void;
     // (undocumented)
     popBranch(): void;
     // (undocumented)
-    primitiveVisibility: PrimitiveVisibility;
+    popViewClip(): void;
     // (undocumented)
-    pushActiveVolume(): void;
+    primitiveVisibility: PrimitiveVisibility;
     // (undocumented)
     pushBatch(batch: Batch): void;
     // (undocumented)
-    pushBranch(exec: ShaderProgramExecutor, branch: Branch): void;
+    pushBranch(branch: Branch): void;
     // (undocumented)
     pushState(state: BranchState): void;
+    // (undocumented)
+    pushViewClip(): void;
     readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined;
     // (undocumented)
     protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean;

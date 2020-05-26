@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { LinePixels } from "@bentley/imodeljs-common";
-import { LineCode } from "../../render/webgl/LineCode";
+import { LineCode } from "../../../render/webgl/LineCode";
 
 describe("LineCode", () => {
   it("valueFromLinePixels correctly converts a LinePixel into a LineCode", () => {

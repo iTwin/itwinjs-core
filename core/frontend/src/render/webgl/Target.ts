@@ -21,19 +21,17 @@ import { AnimationBranchStates } from "../GraphicBranch";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { RenderPlan } from "../RenderPlan";
+import { createEmptyRenderPlan, RenderPlan } from "../RenderPlan";
 import { PlanarClassifierMap, RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { RenderTextureDrape, TextureDrapeMap } from "../RenderSystem";
 import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../RenderTarget";
 import { Scene } from "../Scene";
-import { ViewClipSettings } from "../ViewClipSettings";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
-import { FloatRgba } from "./FloatRGBA";
 import { FrameBuffer } from "./FrameBuffer";
 import { GL } from "./GL";
 import { Batch, Branch, WorldDecorations } from "./Graphic";
@@ -56,44 +54,6 @@ import { TechniqueId } from "./TechniqueId";
 import { TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
-
-/** Interface for 3d GPU clipping.
- * @internal
- */
-export class Clips {
-  private _texture?: TextureHandle;
-  private _clipActive: number = 0;   // count of SetActiveClip nesting (only outermost used)
-  private _clipCount: number = 0;
-  private _outsideRgba: FloatRgba = FloatRgba.from(0.0, 0.0, 0.0, 0.0); // 0 alpha means disabled
-  private _insideRgba: FloatRgba = FloatRgba.from(0.0, 0.0, 0.0, 0.0); // 0 alpha means disabled
-
-  public get outsideRgba(): FloatRgba { return this._outsideRgba; }
-  public get insideRgba(): FloatRgba { return this._insideRgba; }
-
-  public get texture(): TextureHandle | undefined { return this._texture; }
-  public get count(): number { return this._clipCount; }
-  public get isValid(): boolean { return this._clipCount > 0; }
-
-  public set(numPlanes: number, texture: TextureHandle, outsideRgba: FloatRgba, insideRgba: FloatRgba) {
-    this._clipActive++;
-    if (this._clipActive !== 1)
-      return;
-
-    this._clipCount = numPlanes;
-    this._texture = texture;
-    this._outsideRgba = outsideRgba;
-    this._insideRgba = insideRgba;
-  }
-
-  public clear() {
-    if (this._clipActive === 1) {
-      this._clipCount = 0;
-      this._texture = undefined;
-    }
-    if (this._clipActive > 0)
-      this._clipActive--;
-  }
-}
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -138,8 +98,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   protected _compositor: SceneCompositor;
-  private _activeClipVolume?: ClipVolume;
-  public readonly clips = new Clips();
   protected _fbo?: FrameBuffer;
   protected _dcAssigned: boolean = false;
   public performanceMetrics?: PerformanceMetrics;
@@ -151,7 +109,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public ambientOcclusionSettings = AmbientOcclusion.Settings.defaults;
   private _wantAmbientOcclusion = false;
   private _batches: Batch[] = [];
-  public plan = RenderPlan.createEmpty();
+  public plan = createEmptyRenderPlan();
   private _animationBranches?: AnimationBranchStates;
   private _isReadPixelsInProgress = false;
   private _readPixelsSelector = Pixel.Selector.None;
@@ -265,6 +223,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get currentViewFlags(): ViewFlags { return this.uniforms.branch.top.viewFlags; }
   public get currentTransform(): Transform { return this.uniforms.branch.top.transform; }
+  public get currentClipVolume(): ClipVolume | undefined { return this.uniforms.branch.clipVolume; }
   public get currentTransparencyThreshold(): number { return this.currentEdgeSettings.transparencyThreshold; }
   public get currentEdgeSettings(): EdgeSettings { return this.uniforms.branch.top.edgeSettings; }
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.monochrome ? ShaderFlags.Monochrome : ShaderFlags.None; }
@@ -284,11 +243,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this.uniforms.branch.modelViewMatrix.multiplyPoint3dQuietNormalize(modelPt, result);
   }
 
-  public get hasClipVolume(): boolean { return this.clips.isValid && this.uniforms.branch.top.showClipVolume; }
-  public get numClipPlanes(): number {
-    return this.hasClipVolume ? this.clips.count : 0;
-  }
-
   public get is2d(): boolean { return this.uniforms.frustum.is2d; }
   public get is3d(): boolean { return !this.is2d; }
 
@@ -302,7 +256,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       && undefined === this._textureDrapes
       && this._renderCommands.isEmpty
       && 0 === this._batches.length
-      && undefined === this._activeClipVolume
       && this.uniforms.thematic.isDisposed
       && this._isDisposed;
   }
@@ -316,50 +269,22 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._isDisposed = true;
   }
 
-  public pushBranch(exec: ShaderProgramExecutor, branch: Branch): void {
+  public pushBranch(branch: Branch): void {
     this.uniforms.branch.pushBranch(branch);
-    const clip = this.uniforms.branch.top.clipVolume;
-    if (undefined !== clip)
-      clip.pushToShaderExecutor(exec);
   }
   public pushState(state: BranchState) {
-    assert(undefined === state.clipVolume);
     this.uniforms.branch.pushState(state);
-
   }
   public popBranch(): void {
-    const clip = this.uniforms.branch.top.clipVolume;
-    if (undefined !== clip)
-      clip.pop(this);
-
     this.uniforms.branch.pop();
   }
 
-  public pushActiveVolume(): void {
-    if (this._activeClipVolume !== undefined)
-      this._activeClipVolume.pushToTarget(this);
+  public pushViewClip(): void {
+    this.uniforms.branch.pushViewClip();
   }
 
-  public popActiveVolume(): void {
-    if (this._activeClipVolume !== undefined)
-      this._activeClipVolume.pop(this);
-  }
-
-  private updateActiveVolume(clipSettings?: ViewClipSettings): void {
-    if (undefined === clipSettings) {
-      this._activeClipVolume = dispose(this._activeClipVolume);
-      return;
-    }
-
-    // ###TODO: Currently we assume the active view ClipVector is never mutated in place.
-    // ###TODO: We may want to compare differing ClipVectors to determine if they are logically equivalent to avoid reallocating clip volume.
-    if (undefined === this._activeClipVolume || this._activeClipVolume.clipVector !== clipSettings.clipVector) {
-      this._activeClipVolume = dispose(this._activeClipVolume);
-      this._activeClipVolume = this.renderSystem.createClipVolume(clipSettings.clipVector) as ClipVolume;
-    }
-    if (undefined !== this._activeClipVolume) {
-      this._activeClipVolume.setClipColors(clipSettings.outsideColor, clipSettings.insideColor);
-    }
+  public popViewClip(): void {
+    this.uniforms.branch.popViewClip();
   }
 
   private _scratchRangeCorners: Point3d[] = [
@@ -382,7 +307,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   /** @internal */
   public isRangeOutsideActiveVolume(range: Range3d): boolean {
-    if (undefined === this._activeClipVolume || !this.uniforms.branch.top.showClipVolume || !this.clips.isValid || this._activeClipVolume.hasOutsideClipColor)
+    const clip = this.uniforms.branch.clipVolume;
+    if (!clip || clip.hasOutsideClipColor)
       return false;
 
     range = this.currentTransform.multiplyRange(range, range);
@@ -391,18 +317,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (testIntersection) {
       // ###TODO: Avoid allocation of Range3d inside called function...
       // ###TODO: Use some not-yet-existent API which will return as soon as it determines ANY intersection (we don't care about the actual intersection range).
-      const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(this._activeClipVolume.clipVector, range);
+      const clippedRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clip.clipVector, range);
       return clippedRange.isNull;
     } else {
       // Do the cheap, imprecise check. The above is far too slow and allocates way too many objects, especially for clips produced from non-convex shapes.
-      return ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(this._getRangeCorners(range));
+      return ClipPlaneContainment.StronglyOutside === clip.clipVector.classifyPointContainment(this._getRangeCorners(range));
     }
   }
 
   private readonly _scratchRange = new Range3d();
   /** @internal */
   public isGeometryOutsideActiveVolume(geom: CachedGeometry): boolean {
-    if (undefined === this._activeClipVolume || !this.uniforms.branch.top.showClipVolume || !this.clips.isValid)
+    if (!this.uniforms.branch.clipVolume)
       return false;
 
     const range = geom.computeRange(this._scratchRange);
@@ -556,7 +482,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;
 
-    this.updateActiveVolume(plan.activeClipSettings);
+    this.uniforms.branch.updateViewClip(plan.activeClipSettings);
 
     const vf = ViewFlags.createFrom(plan.viewFlags, this._scratchViewFlags);
     if (!plan.is3d)
@@ -623,7 +549,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       batch.onTargetDisposed(this);
 
     this._batches = [];
-    this._activeClipVolume = dispose(this._activeClipVolume);
     this.disposeAnimationBranches();
 
     freeDrawParams();
@@ -711,6 +636,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         is3d: top.is3d,
         edgeSettings: top.edgeSettings,
         transform: Transform.createIdentity(),
+        clipVolume: top.clipVolume,
       });
 
       this.pushState(state);
@@ -867,6 +793,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       is3d: top.is3d,
       edgeSettings: top.edgeSettings,
       transform: Transform.createIdentity(),
+      clipVolume: top.clipVolume,
     });
 
     this.pushState(state);
@@ -900,9 +827,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
 
     // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
-    if (undefined !== this._activeClipVolume && this.uniforms.branch.top.showClipVolume && this.clips.isValid)
-      if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
-        return undefined;
+    // ###TODO: This was never right, was it? Some branches in the scene ignore the clip volume...
+    // if (undefined !== this._activeClipVolume && this.uniforms.branch.top.showClipVolume && this.clips.isValid)
+    //   if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
+    //     return undefined;
 
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
     this._renderCommands.clear();
