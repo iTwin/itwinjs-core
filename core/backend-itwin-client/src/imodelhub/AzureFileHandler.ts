@@ -274,7 +274,7 @@ export class AzureFileHandler implements FileHandler {
       safeToLogDownloadUrl.search = "...";
     if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
       safeToLogDownloadUrl.hash = "...";
-    return safeToLogDownloadUrl.toString();
+    return urllib.format(safeToLogDownloadUrl);
   }
 
   /**
