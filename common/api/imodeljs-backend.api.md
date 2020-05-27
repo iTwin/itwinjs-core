@@ -2436,6 +2436,8 @@ export abstract class IModelDb extends IModel {
     getMetaData(classFullName: string): EntityMetaData;
     get iModelId(): GuidString;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
+    // @alpha
+    importSchemaStrings(requestContext: ClientRequestContext | AuthorizedClientRequestContext, serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(): void;
     // @internal (undocumented)

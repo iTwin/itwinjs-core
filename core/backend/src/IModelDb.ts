@@ -588,6 +588,58 @@ export abstract class IModelDb extends IModel {
     }
   }
 
+  /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
+   * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
+   * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
+   * @param requestContext The client request context
+   * @param serializedXmlSchemas  The xml string(s) created from a serialized ECSchema.
+   * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
+   * @note Changes are saved if importSchemaStrings is successful and abandoned if not successful.
+   * @see querySchemaVersion
+   * @alpha
+   */
+  public async importSchemaStrings(requestContext: ClientRequestContext | AuthorizedClientRequestContext, serializedXmlSchemas: string[]): Promise<void> {
+    requestContext.enter();
+    if (this.isSnapshot || this.isStandalone) {
+      const status = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
+      if (DbResult.BE_SQLITE_OK !== status) {
+        throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ serializedXmlSchemas }));
+      }
+      this.clearStatementCache();
+      this.clearSqliteStatementCache();
+      return;
+    }
+
+    if (!(requestContext instanceof AuthorizedClientRequestContext)) {
+      throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
+    }
+    if (this.isBriefcaseDb() && this.isPushEnabled) {
+      await this.concurrencyControl.lockSchema(requestContext);
+      requestContext.enter();
+    }
+
+    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
+    if (DbResult.BE_SQLITE_OK !== stat) {
+      throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ serializedXmlSchemas }));
+    }
+
+    this.clearStatementCache();
+    this.clearSqliteStatementCache();
+
+    try {
+      // The schema import logic and/or imported Domains may have created new elements and models.
+      // Make sure we have the supporting locks and codes.
+      if (this.isBriefcaseDb() && this.isPushEnabled) {
+        await this.concurrencyControl.request(requestContext);
+        requestContext.enter();
+      }
+    } catch (err) {
+      requestContext.enter();
+      this.abandonChanges();
+      throw err;
+    }
+  }
+
   /** Find an already open IModelDb (considers all subclasses).
    * @note This method is intended for use by RPC implementations.
    * @throws [[IModelNotFoundResponse]] if an open IModelDb matching the token is not found.
