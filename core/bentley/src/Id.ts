@@ -671,23 +671,22 @@ export namespace Guid {
   }
 
   /**
-   * Normalize a Guid value if possible. Normalization converts the Guid string to a standard format. The following processing is done -
-   * - Trim any leading or trailing whitespace characters
+   * Normalize a Guid string if possible. Normalization consists of:
    * - Convert to lower case
-   * - Convert to the standard Guid format "8-4-4-4-12". Note that each of the numbers in the format represents a group of characters of that size. These groups are separated by dashes to make up the entire Guid string.
-   * - If the above conversion fails, return the *original* string that was passed in as-is.
+   * - Trim any leading or trailing whitespace
+   * - Convert to the standard Guid format "8-4-4-4-12", repositioning the '-' characters as necessary, presuming there are exactly 32 hexadecimal digits.
    * @param value Input value that represents a Guid
-   * @returns Normalized representation of the Guid string
-   * @internal
+   * @returns Normalized representation of the Guid string. If the normalization fails, return the *original* value unmodified (Note: it is *not* a valid Guid)
+   * @public
    */
   export function normalize(value: GuidString): GuidString {
     const lowerValue = value.toLowerCase().trim();
 
-    // Return if it's already formatted to be a Guid or a V4Guid
+    // Return if it's already formatted to be a Guid
     if (isGuid(lowerValue))
       return lowerValue;
 
-    // Remove any existing "-" in-between and try to parse the string as a guid
+    // Remove any existing "-" characters and position them properly, if there remains exactly 32 hexadecimal digits
     const noDashValue = lowerValue.replace(/-/g, "");
     const noDashPattern = /^([0-9a-f]{8})([0-9a-f]{4})([0-9a-f]{4})([0-9a-f]{4})([0-9a-f]{12})$/;
     if (noDashPattern.test(noDashValue)) {
@@ -696,7 +695,7 @@ export namespace Guid {
           p1 + "-" + p2 + "-" + p3 + "-" + p4 + "-" + p5);
     }
 
-    // Return original string if it cannot be normalized
+    // Return unmodified string - (note: it is *not* a valid Guid)
     return value;
   }
 }
