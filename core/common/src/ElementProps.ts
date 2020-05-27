@@ -334,3 +334,18 @@ export interface SubCategoryProps extends DefinitionElementProps {
   appearance?: SubCategoryAppearance.Props;
   description?: string;
 }
+
+/** Parameters of a [UrlLink]($backend)
+ * @public
+ */
+export interface UrlLinkProps extends ElementProps {
+  description?: string;
+  url?: string;
+}
+
+/** Parameters of a [RepositoryLink]($backend)
+ * @public
+ */
+export interface RepositoryLinkProps extends UrlLinkProps {
+  repositoryGuid?: GuidString;
+}

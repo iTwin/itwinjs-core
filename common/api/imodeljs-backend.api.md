@@ -152,6 +152,7 @@ import { Readable } from 'stream';
 import { ReferentElementProps } from '@bentley/imodeljs-common';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
+import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { SectionLocationProps } from '@bentley/imodeljs-common';
 import { SectionType } from '@bentley/imodeljs-common';
 import { SheetBorderTemplateProps } from '@bentley/imodeljs-common';
@@ -174,6 +175,7 @@ import { TileTreeProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
+import { UrlLinkProps } from '@bentley/imodeljs-common';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentLabelProps } from '@bentley/imodeljs-common';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -3596,9 +3598,15 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
 }
 
 // @public
-export class RepositoryLink extends UrlLink {
+export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
+    // @internal
+    constructor(props: RepositoryLinkProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    // (undocumented)
+    repositoryGuid?: GuidString;
+    // @internal (undocumented)
+    toJSON(): RepositoryLinkProps;
 }
 
 // @public
@@ -4145,9 +4153,17 @@ export interface UpdateModelOptions extends ModelProps {
 }
 
 // @public
-export class UrlLink extends LinkElement {
+export class UrlLink extends LinkElement implements UrlLinkProps {
+    // @internal
+    constructor(props: UrlLinkProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    // (undocumented)
+    description?: string;
+    // @internal (undocumented)
+    toJSON(): UrlLinkProps;
+    // (undocumented)
+    url?: string;
 }
 
 // @internal (undocumented)

@@ -12,8 +12,8 @@ import { LockLevel } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel,
-  InformationPartitionElementProps, LineStyleProps, Placement2d, Placement3d, RelatedElement, SectionLocationProps, SectionType,
-  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps,
+  InformationPartitionElementProps, LineStyleProps, Placement2d, Placement3d, RelatedElement, RepositoryLinkProps, SectionLocationProps, SectionType,
+  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { Entity } from "./Entity";
@@ -1053,9 +1053,26 @@ export abstract class LinkElement extends InformationReferenceElement {
 /** An information element that specifies a URL link.
  * @public
  */
-export class UrlLink extends LinkElement {
+export class UrlLink extends LinkElement implements UrlLinkProps {
   /** @internal */
   public static get className(): string { return "UrlLink"; }
+  public description?: string;
+  public url?: string;
+
+  /** @internal */
+  public constructor(props: UrlLinkProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.description = props.description;
+    this.url = props.url;
+  }
+
+  /** @internal */
+  public toJSON(): UrlLinkProps {
+    const val = super.toJSON() as UrlLinkProps;
+    val.description = this.description;
+    val.url = this.url;
+    return val;
+  }
 }
 
 /** An information element that links to an embedded file.
@@ -1069,9 +1086,23 @@ export class EmbeddedFileLink extends LinkElement {
 /** An information element that links to a repository.
  * @public
  */
-export class RepositoryLink extends UrlLink {
+export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
   /** @internal */
   public static get className(): string { return "RepositoryLink"; }
+  public repositoryGuid?: GuidString;
+
+  /** @internal */
+  public constructor(props: RepositoryLinkProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.repositoryGuid = props.repositoryGuid;
+  }
+
+  /** @internal */
+  public toJSON(): RepositoryLinkProps {
+    const val = super.toJSON() as RepositoryLinkProps;
+    val.repositoryGuid = this.repositoryGuid;
+    return val;
+  }
 }
 
 /** A real world entity is modeled as a Role Element when a set of external circumstances define an important
