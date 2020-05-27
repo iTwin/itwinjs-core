@@ -227,6 +227,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     getFractionToDistanceScale(): number | undefined;
+    // @internal
+    getPlaneAltitudeSineCosinePolynomial(plane: PlaneAltitudeEvaluator, result?: SineCosinePolynomial): SineCosinePolynomial;
     isAlmostEqual(otherGeometry: GeometryQuery): boolean;
     get isCircular(): boolean;
     get isExtensibleFractionSpace(): boolean;
@@ -242,6 +244,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     static readonly quadratureIntervalAngleDegrees = 10;
     quickEccentricity(): number;
     quickLength(): number;
+    radiansToPoint(radians: number, result?: Point3d): Point3d;
     radiansToPointAndDerivative(radians: number, result?: Ray3d): Ray3d;
     radiansToRotatedBasis(radians: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     reverseInPlace(): void;
@@ -4056,6 +4059,8 @@ export class Range1d extends RangeBase {
     expandInPlace(delta: number): void;
     extendArray(values: Float64Array | number[]): void;
     extendArraySubset(values: Float64Array | number[], beginIndex: number, numValue: number): void;
+    extendHigh(x: number): boolean;
+    extendLow(x: number): boolean;
     extendRange(other: Range1d): void;
     extendX(x: number): void;
     fractionToPoint(fraction: number): number;
@@ -4653,6 +4658,7 @@ export class SineCosinePolynomial {
     range(result?: Range1d): Range1d;
     rangeInStartEndRadians(radians0: number, radians1: number, result?: Range1d): Range1d;
     rangeInSweep(sweep: AngleSweep, result?: Range1d): Range1d;
+    referenceMinMaxRadians(): number;
     set(a: number, cosCoff: number, sinCoff: number): void;
     sineCoff: number;
 }

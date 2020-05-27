@@ -1049,6 +1049,24 @@ export class Range1d extends RangeBase {
     }
   }
 
+  /** Extend only the low limit to x.  Return true if the low limit is changed. */
+  public extendLow(x: number): boolean {
+    if (this.isNull || x < this.low) {
+      this.low = x;
+      return true;
+    }
+    return false;
+  }
+
+  /** Extend only the high limit to x.  Return true if the high limit is changed. */
+  public extendHigh(x: number): boolean {
+    if (this.isNull || x > this.high) {
+      this.high = x;
+      return true;
+    }
+    return false;
+  }
+
   /** Return the intersection of ranges. */
   public intersect(other: Range1d, result?: Range1d): Range1d {
     if (!this.intersectsRange(other))

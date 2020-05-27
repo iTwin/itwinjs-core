@@ -38,7 +38,7 @@ import { PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { RegionMomentsXY } from "./RegionMomentsXY";
 import { OffsetHelpers } from "./internalContexts/MultiChainCollector";
 import { GeometryQuery } from "./GeometryQuery";
-import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsFaceToFaceSearchCallbacks";
+import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { UnionRegion } from "./UnionRegion";
 /**
  * Possible return types from
@@ -141,6 +141,11 @@ export class RegionOps {
             if (loopSeed !== undefined)
               announceIsolatedLoop(graph, loopSeed);
           }
+        } else {
+          for (const child of data) {
+            if (Array.isArray(child))
+              this.addLoopsToGraph(graph, child as MultiLineStringDataVariant, announceIsolatedLoop);
+          }
         }
       }
     }
@@ -237,9 +242,9 @@ export class RegionOps {
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
     context.createGraph();
-    context.runClassificationSweep(operation, (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1) => {
-     // if (face.countEdgesAroundFace () < 3)
-     //   return;
+    context.runClassificationSweep(operation, (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
+      if (face.countEdgesAroundFace () < 3 && Geometry.isSameCoordinate (area, 0)) // NEED BETTER TOLERANCE
+        return;
       if (faceType === 1) {
         const loop = PlanarSubdivision.createLoopInFace(face);
         if (loop)
