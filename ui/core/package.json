@@ -39,8 +39,7 @@
     "@bentley/imodeljs-i18n": "^2.2.0-dev.0",
     "@bentley/ui-abstract": "^2.2.0-dev.0",
     "react": "^16.8.0",
-    "react-dom": "^16.8.0",
-    "react-select": "^3.0.4"
+    "react-dom": "^16.8.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -67,7 +66,7 @@
     "@types/react": "^16.8.0",
     "@types/react-autosuggest": "^9.3.11",
     "@types/react-dom": "^16.8.0",
-    "@types/react-select":"^3.0.4",
+    "@types/react-select": "^3.0.4",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "@types/testing-library__react-hooks": "^3.1.0",
@@ -111,6 +110,7 @@
     "prop-types": "^15.7.2",
     "react-autosuggest": "^9.4.3",
     "react-compound-slider": "^2.5.0",
+    "react-select": "^3.0.4",
     "resize-observer-polyfill": "1.5.1",
     "svg-sprite-loader": "4.2.1"
   },
