@@ -16,9 +16,7 @@ import { RenderMemory } from "../RenderMemory";
 import { WebGLDisposable } from "./Disposable";
 import { FloatRgba } from "./FloatRGBA";
 import { GL } from "./GL";
-import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
-import { Target } from "./Target";
 import { Texture2DData, Texture2DHandle } from "./Texture";
 
 /** @internal */
@@ -54,6 +52,10 @@ abstract class ClippingPlanes implements WebGLDisposable {
 
   public dispose(): void {
     dispose(this._texture.handle);
+  }
+
+  public get texture(): Texture2DHandle {
+    return this._texture.handle;
   }
 
   public get bytesUsed(): number {
@@ -205,6 +207,14 @@ export class ClipVolume extends RenderClipVolume implements RenderMemory.Consume
   private _outsideRgba: FloatRgba = FloatRgba.from(0.0, 0.0, 0.0, 0.0); // 0 alpha means disabled
   private _insideRgba: FloatRgba = FloatRgba.from(0.0, 0.0, 0.0, 0.0); // 0 alpha means disabled
 
+  public get insideRgba(): FloatRgba {
+    return this._insideRgba;
+  }
+
+  public get outsideRgba(): FloatRgba {
+    return this._outsideRgba;
+  }
+
   public get numPlanes(): number {
     return this._planes?.numPlanes ?? 0;
   }
@@ -278,22 +288,16 @@ export class ClipVolume extends RenderClipVolume implements RenderMemory.Consume
     return 0.0 !== this._outsideRgba.alpha;
   }
 
-  /** Push this ClipVolume clipping onto a target. */
-  public pushToTarget(target: Target) {
-    if (undefined !== this._planes) {
-      const texture = this._planes.getTexture(target.uniforms.frustum.viewMatrix);
-      target.clips.set(texture.height, texture, this._outsideRgba, this._insideRgba);
-    }
+  public syncWithView(viewMatrix: Transform): boolean {
+    return undefined !== this.getTexture(viewMatrix);
   }
 
-  /** Push this ClipVolume clipping onto the target of a shader program executor. */
-  public pushToShaderExecutor(shader: ShaderProgramExecutor) {
-    this.pushToTarget(shader.target);
+  public get texture(): Texture2DHandle | undefined {
+    return this._planes?.texture;
   }
 
-  /** Pop this ClipVolume clipping from a target. */
-  public pop(target: Target) {
-    target.clips.clear();
+  public getTexture(viewMatrix: Transform): Texture2DHandle | undefined {
+    return this._planes?.getTexture(viewMatrix);
   }
 
   /** Exposed for testing purposes. */

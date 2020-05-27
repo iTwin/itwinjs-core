@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-webpack-tools",
-  "version": "2.1.0-dev.22",
+  "version": "2.2.0-dev.0",
   "description": "Configuration and scripts for iModel.js agents and backends.",
   "license": "MIT",
   "repository": {
@@ -23,7 +23,7 @@
     "backend-webpack-tools": "./bin/backend-webpack-tools.js"
   },
   "dependencies": {
-    "@bentley/webpack-tools-core": "2.1.0-dev.22",
+    "@bentley/webpack-tools-core": "2.2.0-dev.0",
     "case-sensitive-paths-webpack-plugin": "^2.1.2",
     "chalk": "^3.0.0",
     "concurrently": "^3.6.1",
@@ -32,7 +32,7 @@
     "nodemon": "^1.18.3",
     "null-loader": "^0.1.1",
     "readline": "^1.3.0",
-    "source-map-loader": "^0.2.3",
+    "source-map-loader": "^1.0.0",
     "webpack": "4.42.0",
     "yargonaut": "^1.1.2",
     "yargs": "^15.0.0"

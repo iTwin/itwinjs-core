@@ -120,7 +120,8 @@ export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
   prog.addUniform("u_numClips", VariableType.Int, (program) => {
     program.addGraphicUniform("u_numClips", (uniform, params) => {
       const doClipping = true; // set to false to visualize pre-shader culling of geometry...
-      const numClips = (doClipping && params.target.hasClipVolume) ? params.target.clips.count : 0;
+      const clip = doClipping ? params.target.currentClipVolume : undefined;
+      const numClips = clip?.texture?.height ?? 0;
       assert(numClips > 0 || !doClipping);
       uniform.setUniform1i(numClips);
     });
@@ -128,13 +129,17 @@ export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
 
   prog.addUniform("u_outsideRgba", VariableType.Vec4, (program) => {
     program.addGraphicUniform("u_outsideRgba", (uniform, params) => {
-      params.target.clips.outsideRgba.bind(uniform);
+      const clip = params.target.currentClipVolume;
+      if (clip)
+        clip.outsideRgba.bind(uniform);
     });
   });
 
   prog.addUniform("u_insideRgba", VariableType.Vec4, (program) => {
     program.addGraphicUniform("u_insideRgba", (uniform, params) => {
-      params.target.clips.insideRgba.bind(uniform);
+      const clip = params.target.currentClipVolume;
+      if (clip)
+        clip.insideRgba.bind(uniform);
     });
   });
 
@@ -150,7 +155,7 @@ export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
   frag.addFunction(calcClipPlaneDist);
   frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
     program.addGraphicUniform("s_clipSampler", (uniform, params) => {
-      const texture = params.target.clips.texture;
+      const texture = params.target.currentClipVolume?.texture;
       assert(texture !== undefined);
       if (texture !== undefined)
         texture.bindSampler(uniform, TextureUnit.ClipVolume);

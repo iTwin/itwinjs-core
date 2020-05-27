@@ -354,6 +354,19 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return result;
   }
   /**
+   * Evaluate the point and derivative with respect to the angle (in radians)
+   * @param radians angular position
+   * @param result optional preallocated ray.
+   */
+  public radiansToPoint(radians: number, result?: Point3d): Point3d {
+    result = result ? result : Point3d.create();
+    const c = Math.cos(radians);
+    const s = Math.sin(radians);
+    this._matrix.originPlusMatrixTimesXY(this._center, c, s, result);
+    return result;
+  }
+
+  /**
    * Return a parametric plane with
    * * origin at arc center
    * * vectorU from center to arc at angle (in radians)
@@ -655,6 +668,21 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     range.extend(lowPoint);
     range.extend(highPoint);
 
+  }
+  /**
+   * Set up a SineCosinePolynomial as the function c+u*cos(theta)+v*sin(theta) where
+   *  c,u,v are coefficients obtained by evaluating altitude and velocity relative to the plane.
+   * @param plane plane for altitude calculation.
+   * @param result optional result.
+   * @internal
+   */
+  public getPlaneAltitudeSineCosinePolynomial(plane: PlaneAltitudeEvaluator, result?: SineCosinePolynomial): SineCosinePolynomial {
+    if (!result)
+      result = new SineCosinePolynomial(0, 0, 0);
+    result.set(plane.altitude(this._center),
+      plane.altitudeXYZ(this._matrix.coffs[0], this._matrix.coffs[3], this._matrix.coffs[6]),
+      plane.altitudeXYZ(this._matrix.coffs[1], this._matrix.coffs[4], this._matrix.coffs[7]));
+    return result;
   }
   /**
    * Create a new arc which is a unit circle centered at the origin.

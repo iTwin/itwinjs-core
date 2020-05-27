@@ -168,7 +168,7 @@ alpha;EmphasizeElementsChangedArgs
 beta;ExpandableSection 
 beta;ExpandableSectionProps 
 beta;ExtensibleToolbarProps
-internal;findTab(state: Draft
+internal;findTab(state: NineZoneState, id: TabState["id"]): FindTabType
 public;FooterModeField 
 public;FooterModeFieldProps 
 beta;FrameworkRootState
@@ -568,6 +568,7 @@ internal;useUiVisibility(): boolean
 alpha;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider
 alpha;useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element
 internal;useWidgetDef(): WidgetDef | undefined
+alpha;useWidgetDirection(): "horizontal" | "vertical"
 alpha;ValidationTextbox 
 internal;VersionInfo
 beta;ViewAttributesStatusField 

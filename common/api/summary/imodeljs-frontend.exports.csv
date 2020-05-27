@@ -68,7 +68,6 @@ beta;ChangeFlags
 public;ChangeViewedModel2dOptions
 alpha;ClipEventType
 internal;ClipResult
-internal;Clips
 public;Cluster
 internal;CompassMode
 internal;ContextMode
@@ -80,9 +79,11 @@ public;CoordSystem
 internal;CoreTools
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
+internal;createEmptyRenderPlan(): RenderPlan
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
+internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, useDepthBuffer: boolean, iModel: IModelConnection, forDrape?: boolean): Promise
 internal;CurrentInputState
 internal;CurrentState

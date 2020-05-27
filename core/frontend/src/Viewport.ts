@@ -32,7 +32,7 @@ import { GraphicType } from "./render/GraphicBuilder";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
-import { RenderPlan } from "./render/RenderPlan";
+import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
@@ -2324,7 +2324,7 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   protected validateRenderPlan() {
-    this.target.changeRenderPlan(RenderPlan.createFromViewport(this));
+    this.target.changeRenderPlan(createRenderPlanFromViewport(this));
     this._renderPlanValid = true;
   }
 

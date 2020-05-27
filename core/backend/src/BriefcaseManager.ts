@@ -10,7 +10,7 @@ import * as glob from "glob";
 import * as path from "path";
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/backend-itwin-client";
 import {
-  assert, AsyncMutex, BeDuration, BeEvent, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, GuidString, Id64,
+  assert, AsyncMutex, BeDuration, BeEvent, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64,
   IModelHubStatus, IModelStatus, Logger, LogLevel, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
@@ -463,7 +463,7 @@ export class BriefcaseManager {
       throw new IModelError(res, "Cannot open briefcase offline", Logger.logError, loggerCategory, () => ({ iModelId, syncMode, briefcasePathname: bcPathname, openMode }));
 
     const contextId: GuidString = nativeDb.queryProjectGuid();
-    const iModelId: GuidString = nativeDb.getDbGuid();
+    const iModelId: GuidString = iModelIdSubDir;
     const parentChangeSetId = nativeDb.getParentChangeSetId();
     const reversedChangeSetId = nativeDb.getReversedChangeSetId();
     const briefcaseId = nativeDb.getBriefcaseId();
@@ -471,12 +471,6 @@ export class BriefcaseManager {
 
     /* Validate briefcase information in the Db against the location in the cache folder structure */
     try {
-      if (iModelId !== iModelIdSubDir) {
-        throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOffline: The briefcase found doesn't have the expected iModelId", Logger.logError, loggerCategory, () => ({
-          pathname: bcPathname, iModelId, iModelIdSubDir,
-        }));
-      }
-
       if (syncMode === SyncMode.FixedVersion) {
         // Validate that the sub directory name matches the changeSetId stored in the db
         const changeSetIdFromSubDir = this.getChangeSetIdFromFolderName(bcSubDir);
@@ -1184,11 +1178,16 @@ export class BriefcaseManager {
       if (nativeDb.getBriefcaseId() !== briefcase.briefcaseId)
         nativeDb.resetBriefcaseId(briefcase.briefcaseId);
 
-      // verify that all following values were set correctly
-      assert(nativeDb.getParentChangeSetId() === checkpoint.mergedChangeSetId, "The parentChangeSetId of the checkpoint was not correctly set by iModelHub");
-      assert(nativeDb.getBriefcaseId() === briefcase.briefcaseId);
-      assert(nativeDb.getDbGuid() === briefcase.iModelId);
-      assert(nativeDb.queryProjectGuid() === briefcase.contextId);
+      // Validate the native briefcase against the checkpoint meta-data
+      const dbChangeSetId = nativeDb.getParentChangeSetId();
+      if (dbChangeSetId !== checkpoint.mergedChangeSetId)
+        throw new IModelError(IModelStatus.ValidationFailed, "BriefcaseManager.finishCreateBriefcase: ParentChangeSetId of the checkpoint was not correctly setup", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), ...checkpoint, dbChangeSetId }));
+      const dbBriefcaseId = nativeDb.getBriefcaseId();
+      if (dbBriefcaseId !== briefcase.briefcaseId)
+        throw new IModelError(IModelStatus.ValidationFailed, "BriefcaseManager.finishCreateBriefcase: BriefcaseId was not correctly setup in the briefcase", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), dbBriefcaseId }));
+      const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
+      if (dbContextGuid !== Guid.normalize(briefcase.contextId))
+        throw new IModelError(IModelStatus.ValidationFailed, "BriefcaseManager.finishCreateBriefcase: ContextId was not properly setup in the briefcase", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), dbContextGuid }));
 
       briefcase.setNativeDb(nativeDb);
       await this.initBriefcaseChangeSetIndexes(requestContext, briefcase);

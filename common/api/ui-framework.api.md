@@ -47,7 +47,6 @@ import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DndComponentClass } from 'react-dnd';
-import { Draft } from 'immer';
 import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
@@ -1682,7 +1681,7 @@ export interface ExtensibleToolbarProps {
 }
 
 // @internal (undocumented)
-export function findTab(state: Draft<NineZoneState>, id: TabState["id"]): FindTabType;
+export function findTab(state: NineZoneState, id: TabState["id"]): FindTabType;
 
 // @public
 export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
@@ -5383,6 +5382,9 @@ export const useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnab
 
 // @internal (undocumented)
 export function useWidgetDef(): WidgetDef | undefined;
+
+// @alpha
+export function useWidgetDirection(): "horizontal" | "vertical";
 
 // @alpha
 export class ValidationTextbox extends React.PureComponent<ValidationTextboxProps, ValidationTextboxState> {

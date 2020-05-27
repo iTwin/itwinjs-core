@@ -105,7 +105,14 @@ describe("Point", () => {
     result.y.should.eq(10);
   });
 
-  it("should set y by returning a new point", () => {
+  it("should multiply point by a given factor", () => {
+    const sut = new Point(2, 3);
+    const result = sut.multiply(4);
+    result.x.should.eq(8);
+    result.y.should.eq(12);
+  });
+
+  it("should return {x,y} object", () => {
     const sut = new Point(1, 2);
     const props = sut.toProps();
     Object.keys(props).length.should.eq(2);

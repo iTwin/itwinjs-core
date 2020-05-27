@@ -282,6 +282,8 @@ export class ExtensionClient extends Client {
         throw new IModelError(ExtensionStatus.UnknownError, "Unknown error");
       if (error.status === 400)
         throw new IModelError(ExtensionStatus.BadRequest, (error as any)._data?.message);
+      if (error.status === 404)
+        throw new IModelError(ExtensionStatus.ExtensionNotFound, (error as any)._data?.message);
 
       throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + error.status + ", message: " + (error as any)._data?.message);
     }

@@ -62,11 +62,22 @@ export class I18N {
       this._i18next = this._i18next.use(i18nextBrowserLanguageDetector);
     }
 
-    // call the changeLanguage method right away, before any calls to I18NNamespace.register. Otherwise, the call doesn't happen until the deferred load of the default namespace
-    this._i18next.use(XHR)
-      .use(BentleyLogger)
-      .init(initOptions, renderFunction)
-      .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
+    const initPromise = new Promise<void>((resolve) => {
+      this._i18next.use(XHR)
+        .use(BentleyLogger)
+        .init(initOptions, (error, t) => {
+          if (renderFunction !== undefined)
+            renderFunction(error, t);
+          resolve();
+        })
+        .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
+      // call the changeLanguage method right away, before any calls to I18NNamespace.register. Otherwise, the call doesn't happen until the deferred load of the default namespace
+    });
+
+    for (const nameSpace of nameSpaces) {
+      const i18nNameSpace = new I18NNamespace(nameSpace, initPromise);
+      this._namespaceRegistry.set(nameSpace, i18nNameSpace);
+    }
   }
 
   /** Replace all instances of `%{key}` within a string with the translations of those keys.

@@ -39,8 +39,9 @@ Allows downloading, uploading and deleting iModel.js extensions from the Extensi
 ### `delete`
 
 - `--extensionName` (`--en`, `-n`) - extension name.
-- `--extensionVersion` (`--ev`, `-v`) - [Optional] extension version. If not provided, will delete all versions of the extension.
+- `--extensionVersion` (`--ev`, `-v`) - extension version.
 - `--contextId` (`--cid`) - [Optional] context Id to delete the extension from. Should be a Team Id for private extensions. If not provided, will attempt to delete a public extension.
+- `--force` - [Optional] add this flag to confirm the operation and avoid interactive prompts (should only be used in automated scripts).
 
 ### `view`
 

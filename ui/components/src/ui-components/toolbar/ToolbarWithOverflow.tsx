@@ -13,10 +13,10 @@ import {
   ActionButton, CommonToolbarItem, ConditionalBooleanValue, ConditionalStringValue, CustomButtonDefinition,
   GroupButton, OnItemExecutedFunc, ToolbarItemUtilities,
 } from "@bentley/ui-abstract";
-import { BadgeUtilities, CommonProps, IconHelper, NoChildrenProps, useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { BadgeUtilities, CommonProps, IconHelper, NoChildrenProps, useOnOutsideClick, useRefs } from "@bentley/ui-core";
 import { ToolbarButtonItem } from "./Item";
 import { ToolbarItems } from "./Items";
-import { ItemWrapper } from "./ItemWrapper";
+import { ItemWrapper, useResizeObserverSingleDimension } from "./ItemWrapper";
 import { ToolbarOverflowButton } from "./Overflow";
 import { ToolbarOverflowPanel } from "./OverflowPanel";
 import { PopupItem } from "./PopupItem";
@@ -303,7 +303,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
     width.current = w;
     width.current !== undefined && handleContainerResize(width.current);
   }, [handleContainerResize]);
-  const resizeObserverRef = useResizeObserver(handleResize, useHeight);
+  const resizeObserverRef = useResizeObserverSingleDimension(handleResize, useHeight);
   // handle open and closing overflow panel
   const onOverflowClick = React.useCallback(() => {
     setIsOverflowPanelOpen((prev) => !prev);

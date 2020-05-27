@@ -350,5 +350,21 @@ describe("Ids", () => {
     assert.isTrue(Guid.isGuid(id1));
     assert.isTrue(Guid.isV4Guid(id2));
     assert.notEqual(id1, id2);
+
+    // Cases that can be normalized
+    assert.equal(Guid.normalize(v1), v1);
+    assert.equal(Guid.normalize(v1.toUpperCase()), v1);
+    assert.equal(Guid.normalize(v1.replace(/-/g, "")), v1);
+    assert.equal(Guid.normalize("12345678123412341234123456789ABC"), "12345678-1234-1234-1234-123456789abc");
+    assert.equal(Guid.normalize("1-234567812-341-234-123412345-67-89A-BC"), "12345678-1234-1234-1234-123456789abc");
+    assert.equal(Guid.normalize("  1-234567812-341-234-123412345-67-89A-BC  "), "12345678-1234-1234-1234-123456789abc");
+
+    // Cases that cannot be normalized - string left unchanged
+    assert.equal(Guid.normalize("12345678"), "12345678");
+    assert.equal(Guid.normalize("12345678-1"), "12345678-1");
+    assert.equal(Guid.normalize("123456781234"), "123456781234");
+    assert.equal(Guid.normalize("12345678-1234-1"), "12345678-1234-1");
+    assert.equal(Guid.normalize("12345678123412341234123456789ABCD"), "12345678123412341234123456789ABCD");
+    assert.equal(Guid.normalize("12345678-1234-1234-1234-123456789ABCDEFG"), "12345678-1234-1234-1234-123456789ABCDEFG");
   });
 });

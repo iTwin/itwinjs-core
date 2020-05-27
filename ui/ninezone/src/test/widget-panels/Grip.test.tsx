@@ -8,9 +8,9 @@ import { Point } from "@bentley/ui-core";
 import { act, fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
-  addPanelWidget, createNineZoneState, NineZoneDispatch, NineZoneProvider, PANEL_RESIZE, PANEL_TOGGLE_COLLAPSED, PanelStateContext, useResizeGrip,
-  WidgetPanelGrip,
+  addPanelWidget, createNineZoneState, NineZoneDispatch, PanelStateContext, useResizeGrip, WidgetPanelGrip,
 } from "../../ui-ninezone";
+import { NineZoneProvider } from "../Providers";
 
 describe("WidgetPanelGrip", () => {
   const sandbox = sinon.createSandbox();
@@ -24,7 +24,6 @@ describe("WidgetPanelGrip", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <WidgetPanelGrip />
@@ -58,7 +57,7 @@ describe("WidgetPanelGrip", () => {
       fireEvent.doubleClick(grip);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: PANEL_TOGGLE_COLLAPSED,
+      type: "PANEL_TOGGLE_COLLAPSED",
       side: "left",
     })).should.true;
   });
@@ -92,7 +91,7 @@ describe("WidgetPanelGrip", () => {
       fireEvent(document, event);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: PANEL_RESIZE,
+      type: "PANEL_RESIZE",
       side: "left",
       resizeBy: 10,
     })).should.true;
@@ -104,7 +103,6 @@ describe("WidgetPanelGrip", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <WidgetPanelGrip />
@@ -124,7 +122,6 @@ describe("WidgetPanelGrip", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <WidgetPanelGrip />
@@ -142,22 +139,12 @@ describe("WidgetPanelGrip", () => {
 });
 
 describe("useResizeGrip", () => {
-  function Wrapper(props: { children?: React.ReactNode }) {
-    const nineZone = createNineZoneState();
-    return (
-      <NineZoneProvider
-        state={nineZone}
-        dispatch={sinon.spy()}
-      >
-        {props.children}
-      </NineZoneProvider>
-    );
-  }
+  const wrapper = NineZoneProvider;
 
   it("should invoke onResize for top grip", () => {
     const spy = sinon.stub<NonNullable<Parameters<typeof useResizeGrip>[1]>>();
     const { result } = renderHook(() => useResizeGrip("top", spy), {
-      wrapper: Wrapper,
+      wrapper,
     });
     const element = document.createElement("div");
     act(() => {
@@ -174,7 +161,7 @@ describe("useResizeGrip", () => {
   it("should invoke onResize for bottom grip", () => {
     const spy = sinon.stub<NonNullable<Parameters<typeof useResizeGrip>[1]>>();
     const { result } = renderHook(() => useResizeGrip("bottom", spy), {
-      wrapper: Wrapper,
+      wrapper,
     });
     const element = document.createElement("div");
     act(() => {

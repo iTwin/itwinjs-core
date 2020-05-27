@@ -5,7 +5,8 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, CursorTypeContext, NineZoneProvider, PanelSideContext, WidgetTarget } from "../../ui-ninezone";
+import { addPanelWidget, createNineZoneState, CursorTypeContext, PanelSideContext, WidgetTarget } from "../../ui-ninezone";
+import { NineZoneProvider } from "../Providers";
 
 describe("WidgetTarget", () => {
   it("should render with cursor type", () => {

@@ -13,7 +13,6 @@ import { Point, Rectangle, Timer } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { useDragPanelGrip, UseDragPanelGripArgs } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
-import { PANEL_RESIZE, PANEL_TOGGLE_COLLAPSED } from "../base/NineZoneState";
 import { isHorizontalPanelSide, PanelSide, PanelStateContext } from "./Panel";
 
 /** Resize grip of [[WidgetPanel]] component.
@@ -27,7 +26,7 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint
   const initialPointerPosition = React.useRef<Point>();
   const handleResize = React.useCallback((resizeBy: number) => {
     dispatch({
-      type: PANEL_RESIZE,
+      type: "PANEL_RESIZE",
       side,
       resizeBy,
     });
@@ -35,7 +34,7 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint
   const dragStartTimer = React.useRef(new Timer(300));
   const handleDoubleClick = React.useCallback(() => {
     dispatch({
-      type: PANEL_TOGGLE_COLLAPSED,
+      type: "PANEL_TOGGLE_COLLAPSED",
       side,
     });
   }, [dispatch, side]);

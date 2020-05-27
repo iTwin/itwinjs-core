@@ -1,6 +1,14 @@
+#---------------------------------------------------------------------------------------------
+# Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+# Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+#--------------------------------------------------------------------------------------------*/
+
+# Docker container to run the RPC Interface tests against a given configuration.  See [sample .env](./template.env) for details.
+
 ### Stage 1: Base
 FROM node:10.15.3
-# adding every possible package for puppetter (TODO)
+
+# adding every possible package for puppeteer
 RUN apt update && apt install -y \
     apt-utils gconf-service libasound2 libatk1.0-0 libc6 \
     libcairo2 libcups2 libdbus-1-3 libexpat1 \
@@ -20,17 +28,14 @@ USER node
 # Copy relevant folder and packages
 RUN mkdir /home/node/rpctests
 WORKDIR /home/node/rpctests
-RUN mkdir ./integration_test_results
-COPY ./package.json .
-COPY ./multi-report-config.json .
-ADD test-settings ./test-settings
-ADD test-rulesets ./test-rulesets
-ADD node_modules ./node_modules
-ADD lib ./lib
+
+RUN npm install @bentley/rpcinterface-full-stack-tests@latest
 
 # Export node modules path
 RUN export PATH="$PATH:/home/node/rpctests/node_modules/.bin"
 
-# Run tests on start up. Need to attach Settings.xml as docker volume to /rpctests
-# Run volume like this : "--mount type=bind,source=/C/Settings.xml,target=/rpctests/Settings.xml"
-CMD [ "npm", "run", "test-runner"]
+# ./node_modules/.bin/certa -r chrome -c ./node_modules/@bentley/$(TestPackageName)/certa.json
+
+# Run tests on start up. Need to attach a ".env" as docker volume to /rpctests
+# Run volume like this : "docker run --mount type=bind,source="$(pwd)"/.env,target=/home/node/rpctests/.env "
+CMD [ "npx", "@bentley/certa", "-r", "chrome", "-c", "./node_modules/@bentley/rpcinterface-full-stack-tests/certa.json" ]

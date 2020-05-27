@@ -12,7 +12,7 @@ import * as React from "react";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import { UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, createNineZoneState, floatingWidgetBringToFront, FloatingWidgets, FloatingWidgetState, NineZoneActionTypes, NineZoneProvider,
+  addPanelWidget, addTab, createNineZoneState, floatingWidgetBringToFront, FloatingWidgets, FloatingWidgetState, NineZone, NineZoneActionTypes,
   NineZoneState, NineZoneStateReducer, PanelSide, TabState, WidgetPanels, WidgetState,
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
@@ -35,9 +35,7 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // tslint:disable-line: variable-name no-shadowed-variable
   const activeModalFrontstageInfo = useActiveModalFrontstageInfo();
   return (
-    <div
-      className="uifw-widgetPanels-frontstage"
-    >
+    <>
       <ModalFrontstageComposer stageInfo={activeModalFrontstageInfo} />
       <WidgetPanels
         className="uifw-widgetPanels"
@@ -48,7 +46,7 @@ const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontsta
       <WidgetPanelsToolSettings />
       <WidgetPanelsStatusBar className="uifw-statusBar" />
       <FloatingWidgets />
-    </div>
+    </>
   );
 });
 
@@ -66,14 +64,18 @@ export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage
   if (!frontstageDef)
     return null;
   return (
-    <NineZoneProvider
-      dispatch={dispatch}
-      state={state.setting.nineZone}
-      widgetContent={widgetContent}
-      toolSettingsContent={toolSettingsContent}
+    <div
+      className="uifw-widgetPanels-frontstage"
     >
-      {widgetPanelsFrontstage}
-    </NineZoneProvider >
+      <NineZone
+        dispatch={dispatch}
+        state={state.setting.nineZone}
+        widgetContent={widgetContent}
+        toolSettingsContent={toolSettingsContent}
+      >
+        {widgetPanelsFrontstage}
+      </NineZone>
+    </div>
   );
 });
 
@@ -230,7 +232,7 @@ function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): setti
   return false;
 }
 
-const stateVersion = 1; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+const stateVersion = 2; // this needs to be bumped when NineZoneState is changed (to recreate layout).
 
 /** @internal */
 export function initializeFrontstageState({ frontstage }: InitializeFrontstageStateArgs): FrontstageState {
@@ -364,6 +366,7 @@ export const FrontstageStateReducer: (state: FrontstageState, action: Frontstage
         return;
       }
       widget.minimized = false;
+      widget.activeTabId = action.id;
       floatingWidgetBringToFront(nineZone, location.floatingWidgetId);
       return;
     }
@@ -405,7 +408,7 @@ type FindTabType = undefined |
 { widgetId: WidgetState["id"], floatingWidgetId: FloatingWidgetState["id"] };
 
 /** @internal */
-export function findTab(state: Draft<NineZoneState>, id: TabState["id"]): FindTabType {
+export function findTab(state: NineZoneState, id: TabState["id"]): FindTabType {
   let widgetId;
   for (const [, widget] of Object.entries(state.widgets)) {
     const index = widget.tabs.indexOf(id);

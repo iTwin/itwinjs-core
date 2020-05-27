@@ -923,7 +923,7 @@ export class AnalyticRoots {
       // Don't know if improveRoots is needed.
       // Breaks in AnalyticRoots.test.ts checkQuartic suggest it indeed converts many e-16 errors to zero.
       //  e-13 cases are unaffected
-      this.improveRoots (c, 3, results, false);
+      this.improveRoots(c, 3, results, false);
     } else {
       this.appendQuadraticRoots(c, results);
     }
@@ -1840,5 +1840,12 @@ export class SineCosinePolynomial {
   public rangeInSweep(sweep: AngleSweep, result?: Range1d): Range1d {
     return this.rangeInStartEndRadians(sweep.startRadians, sweep.endRadians, result);
   }
-
+  /**
+   * Return a representative angle (in radians) for min and max values.
+   * * The radians value is atan2(sineCoff, cosineCoff)
+   * * Hence the candidates for min and max of the function are at this value and this value plus PI
+   */
+  public referenceMinMaxRadians(): number {
+    return Math.atan2(this.sineCoff, this.cosineCoff);
+  }
 }

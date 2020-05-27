@@ -9,6 +9,7 @@ import * as tar from "tar";
 import * as rimraf from "rimraf";
 import * as sha256 from "fast-sha256";
 import * as semver from "semver";
+import * as readline from "readline";
 import { ExtensionClient, ExtensionProps } from "@bentley/extension-client";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { BentleyError, ExtensionStatus } from "@bentley/bentleyjs-core";
@@ -50,7 +51,13 @@ const argv = yargs.strict(true)
       filePath = a.savePath;
     })
   .command("delete", "Deletes an extension",
-    (ya) => ya.demandOption("extensionName"),
+    (ya) => ya
+      .demandOption("extensionName")
+      .demandOption("extensionVersion")
+      .option("force", {
+        describe: "Force confirmation and silence interactive prompt",
+        requiresArg: false,
+      }),
     () => { command = "delete"; })
   .command("view", "Shows data about an extension, or list of extensions if only the context is provided.",
     (ya) => ya
@@ -143,7 +150,23 @@ const argv = yargs.strict(true)
       }
       break;
     case "delete":
-      await client.deleteExtension(requestContext, contextId, argv.extensionName!, argv.extensionVersion);
+      const rl = readline.createInterface(process.stdin, process.stdout);
+      const input = argv.force ? "Yes" : await new Promise<string>((resolve) => {
+        rl.question(
+          `Are you sure you want to delete extension "${argv.extensionName}" version "${argv.extensionVersion}"?\nType "Yes" to confirm: `,
+          (ans) => {
+            rl.close();
+            resolve(ans);
+          },
+        );
+      });
+
+      if (input === "Yes") {
+        await client.deleteExtension(requestContext, contextId, argv.extensionName!, argv.extensionVersion);
+        process.stdout.write("Extension deleted.\n");
+      } else {
+        process.stdout.write("Extension not deleted.\n");
+      }
       break;
     case "view":
       let extensions: ExtensionProps[];
@@ -168,11 +191,13 @@ const argv = yargs.strict(true)
   }
 
   await IModelHost.shutdown();
+  process.exit(0);
 })().catch((err) => {
   if (err instanceof BentleyError)
     process.stderr.write("Error: " + err.name + ": " + err.message);
   else
     process.stderr.write("Unknown error " + err.message);
+  process.exit(err.errorNumber ?? -1);
 });
 
 function mkdir(dirPath: string) {

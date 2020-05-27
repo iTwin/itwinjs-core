@@ -27,8 +27,7 @@ export interface ItemWrapperProps extends CommonProps {
 export function ItemWrapper(props: ItemWrapperProps) {
   const { expandsTo, direction, overflowExpandsTo, overflowDirection } = useToolbarWithOverflowDirectionContext();
   const { hasOverflow, onResize, useHeight } = useToolItemEntryContext();
-
-  const ref = useResizeObserver<HTMLDivElement>(onResize, useHeight);
+  const ref = useResizeObserverSingleDimension<HTMLDivElement>(onResize, useHeight);
   const className = classnames(
     "components-toolbar-item-container",
     hasOverflow && "components-overflown",
@@ -45,4 +44,14 @@ export function ItemWrapper(props: ItemWrapperProps) {
       {props.children}
     </div>
   );
+}
+
+/** @internal */
+export function useResizeObserverSingleDimension<T extends Element>(onResize: (size: number) => void, useHeight: boolean) {
+  const handleResize = React.useCallback((w: number, h: number) => {
+    if (useHeight)
+      return onResize(h);
+    return onResize(w);
+  }, [useHeight, onResize]);
+  return useResizeObserver<T>(handleResize);
 }

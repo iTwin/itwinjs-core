@@ -3,25 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { createNineZoneState, NineZoneProvider, WidgetPanels } from "../../ui-ninezone";
-import { addPanelWidget, addTab } from "../../ui-ninezone/base/NineZoneState";
+import { addPanelWidget, addTab, createNineZoneState, WidgetPanels } from "../../ui-ninezone";
+import { NineZoneProvider } from "../Providers";
 
 describe("WidgetPanels", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
   it("should render", () => {
-    const nineZone = createNineZoneState();
     const { container } = render(
-      <NineZoneProvider
-        state={nineZone}
-        dispatch={sinon.spy()}
-      >
+      <NineZoneProvider>
         <WidgetPanels />
       </NineZoneProvider>,
     );
@@ -35,7 +24,6 @@ describe("WidgetPanels", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
         widgetContent={<div>Hello World!</div>}
       >
         <WidgetPanels />

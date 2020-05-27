@@ -3,12 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { PanelTarget } from "../../ui-ninezone";
-import { CursorTypeContext, NineZoneProvider } from "../../ui-ninezone/base/NineZone";
-import { createNineZoneState } from "../../ui-ninezone/base/NineZoneState";
-import { PanelStateContext } from "../../ui-ninezone/widget-panels/Panel";
+import { createNineZoneState, CursorTypeContext, PanelStateContext, PanelTarget } from "../../ui-ninezone";
+import { NineZoneProvider } from "../Providers";
 
 describe("PanelTarget", () => {
   it("should render targeted", () => {
@@ -16,7 +13,6 @@ describe("PanelTarget", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <PanelTarget />
@@ -35,7 +31,6 @@ describe("PanelTarget", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <CursorTypeContext.Provider value="grabbing">

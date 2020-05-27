@@ -9,7 +9,7 @@ import {
   BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, Cartographic, ColorDef, Feature, FontMap, FontType, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
-  ChangeFlag, ChangeFlags, CompassMode, FeatureSymbology, IModelApp, IModelConnection, MockRender, PanViewTool, PerModelCategoryVisibility,
+  ChangeFlag, ChangeFlags, CompassMode, createRenderPlanFromViewport, FeatureSymbology, IModelApp, IModelConnection, MockRender, PanViewTool, PerModelCategoryVisibility,
   RenderPlan, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, TwoWayViewportSync, Viewport,
 } from "@bentley/imodeljs-frontend";
 
@@ -140,7 +140,7 @@ describe("Viewport", () => {
     const vp = ScreenViewport.create(viewDiv!, vpView);
     let plan: RenderPlan | undefined;
     try {
-      plan = RenderPlan.createFromViewport(vp);
+      plan = createRenderPlanFromViewport(vp);
     } catch (e) {
       plan = undefined;
     }

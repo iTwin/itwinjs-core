@@ -67,7 +67,7 @@ type UpdateWidgetDragItemFn = (id: WidgetDragItem["id"]) => void;
 /** @internal */
 export interface UseDragWidgetArgs {
   widgetId: WidgetState["id"];
-  onDragStart?: (updateWidgetId: UpdateWidgetDragItemFn) => void;
+  onDragStart?: (updateWidgetId: UpdateWidgetDragItemFn, initialPointerPosition: PointProps) => void;
   onDrag?: (dragBy: PointProps) => void;
   onDragEnd?: (target: DragTarget | undefined) => void;
 }
@@ -81,10 +81,10 @@ export function useDragWidget(args: UseDragWidgetArgs) {
       id: widgetId,
     };
   }, [widgetId]);
-  const handleDragStart = React.useCallback<DragEventHandler>((item) => {
+  const handleDragStart = React.useCallback<DragEventHandler>((item, info) => {
     onDragStart && onDragStart((id) => {
       item.id = id;
-    });
+    }, info.initialPointerPosition);
   }, [onDragStart]);
   const handleDrag = React.useCallback<DragEventHandler>((_, info) => {
     const dragBy = info.lastPointerPosition.getOffsetTo(info.pointerPosition);

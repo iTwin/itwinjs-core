@@ -8,10 +8,10 @@ import * as sinon from "sinon";
 import { Rectangle } from "@bentley/ui-core";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, createNineZoneState, FloatingWidget, NineZoneDispatch, NineZoneProvider, PanelStateContext, PanelTarget, WIDGET_DRAG_END,
-  WidgetIdContext, WidgetTabTarget,
+  addPanelWidget, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext, PanelTarget, WidgetIdContext, WidgetTabTarget,
 } from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
+import { NineZoneProvider } from "../Providers";
 
 describe("WidgetTitleBar", () => {
   const sandbox = sinon.createSandbox();
@@ -51,9 +51,11 @@ describe("WidgetTitleBar", () => {
       fireEvent.pointerUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_DRAG_END,
+      type: "WIDGET_DRAG_END",
       floatingWidgetId: "w1",
-      target: undefined,
+      target: {
+        type: "floatingWidget",
+      },
     })).should.true;
   });
 
@@ -93,7 +95,7 @@ describe("WidgetTitleBar", () => {
       fireEvent.pointerUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_DRAG_END,
+      type: "WIDGET_DRAG_END",
       floatingWidgetId: "w1",
       target: {
         tabIndex: 0,
@@ -139,7 +141,7 @@ describe("WidgetTitleBar", () => {
       fireEvent.pointerUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_DRAG_END,
+      type: "WIDGET_DRAG_END",
       floatingWidgetId: "w1",
       target: {
         newWidgetId: "newId",

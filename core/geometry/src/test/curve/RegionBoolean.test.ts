@@ -411,7 +411,8 @@ describe("GeneralSweepBooleans", () => {
   it("Rectangles", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const rectangle1 = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 5, 7, 0, true)));
+    const rectangle1A = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 5, 7, 0, true)));
+    const rectangle1B = Loop.create(LineString3d.create(Sample.createRectangle(-2, -2, 8, 7, 0, true)));
     const rectangle2 = Loop.create(LineString3d.create(Sample.createRectangle(1, 1, 6, 2, 0, true)));
     const area3 = Loop.create(
       LineSegment3d.createXYXY(2, 1.5, 5, 2.5), LineSegment3d.createXYXY(5, 2.5, 5, 3),
@@ -424,26 +425,69 @@ describe("GeneralSweepBooleans", () => {
       LineSegment3d.createXYXY(-1, 1, -1, 6),
       Arc3d.createCircularStartMiddleEnd(Point3d.create(-1, 6), Point3d.create(1, 3.5), Point3d.create(-1, 1))!);
     const xStep = 20.0;
-    let x0 = -xStep;
-    exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep);
-    exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep);
-    exerciseAreaBooleans([rectangle1], [rectangle2], ck, allGeometry, x0 += xStep);
-    exerciseAreaBooleans([rectangle1], [rectangle2, area3], ck, allGeometry, x0 += xStep);
-    exerciseAreaBooleans([rectangle1], [area4], ck, allGeometry, x0 += xStep);
-    exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep);
+    let y0 = 0;
+    for (const rectangle1 of [rectangle1B, rectangle1A, rectangle1B]) {
+      let x0 = -xStep;
+      exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep, y0);
+      exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep, y0);
+      exerciseAreaBooleans([rectangle1], [area5], ck, allGeometry, x0 += xStep, y0);
+      exerciseAreaBooleans([rectangle1], [rectangle2], ck, allGeometry, x0 += xStep, y0);
+      exerciseAreaBooleans([rectangle1], [rectangle2, area3], ck, allGeometry, x0 += xStep, y0);
+      exerciseAreaBooleans([rectangle1], [area4], ck, allGeometry, x0 += xStep, y0);
+      y0 += 100;
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "Rectangles");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("HighParityRectangles", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const outerLoop = [[0, 0, 1], [0, 4, 1], [0, 4, 1], [0, 8, 1], [0, 8, 1], [0, 12, 1], [0, 12, 1], [0, 16, 1], [0, 16, 1], [0, 20, 1], [0, 20, 1], [0, 24, 1], [0, 24, 1], [4, 24, 1], [4, 24, 1], [4, 20, 1], [4, 20, 1], [4, 16, 1], [4, 16, 1], [4, 12, 1], [4, 12, 1], [4, 8, 1], [4, 8, 1], [4, 4, 1], [4, 4, 1], [4, 0, 1], [4, 0, 1], [0, 0, 1]];
+    const inner1 = [[0, 4, 1], [4, 4, 1], [4, 4, 1], [4, 8, 1], [4, 8, 1], [4, 12, 1], [4, 12, 1], [4, 16, 1], [4, 16, 1], [4, 20, 1], [4, 20, 1], [0, 20, 1], [0, 20, 1], [0, 16, 1], [0, 16, 1], [0, 12, 1], [0, 12, 1], [0, 8, 1], [0, 8, 1], [0, 4, 1]];
+    const inner2 = [[0, 8, 1], [4, 8, 1], [4, 8, 1], [4, 12, 1], [4, 12, 1], [0, 12, 1], [0, 12, 1], [0, 8, 1]];
+    //   const inner3 = [[0, 12, 1], [4, 12, 1], [4, 12, 1], [4, 16, 1], [4, 16, 1], [0, 16, 1], [0, 16, 1], [0, 12, 1]];
+    const inner3 = [[0, 12, 1], [3, 12, 1], [3, 12, 1], [3, 16, 1], [3, 16, 1], [0, 16, 1], [0, 16, 1], [0, 12, 1]];
+    let x0 = 0;
+    for (const innerLoops of [[inner1], [inner2], [inner3], [inner1, inner2], [inner1, inner3], [inner1, inner2, inner3]]) {
+      const x1 = x0 + 10;
+      const x2 = x0 + 20;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(outerLoop), x0, 0);
+      for (const inner of innerLoops)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(inner), x0, 0);
+
+      const regionDiff = RegionOps.polygonXYAreaDifferenceLoopsToPolyface(outerLoop, innerLoops);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, regionDiff, x1, 0);
+      const regionParity = RegionOps.polygonXYAreaDifferenceLoopsToPolyface(outerLoop, innerLoops);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, regionParity, x2, 0);
+      x0 += 50;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "HighParityRectangles");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("Disjoints", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const lowRectangle = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 3, 1, 0, true)));
+    const highRectangle = Loop.create(LineString3d.create(Sample.createRectangle(0, 3, 2, 4, 0, true)));
+    const tallRectangleA = Loop.create(LineString3d.create(Sample.createRectangle(1, -1, 2, 5, 0, true)));
+    const tallRectangleB = Loop.create(LineString3d.create(Sample.createRectangle(1, -1, 1.5, 5, 0, true)));
+    exerciseAreaBooleans([lowRectangle], [highRectangle], ck, allGeometry, 0, 0);
+    exerciseAreaBooleans([tallRectangleA], [lowRectangle, highRectangle], ck, allGeometry, 10, 0);
+    exerciseAreaBooleans([tallRectangleB], [lowRectangle, highRectangle], ck, allGeometry, 20, 0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "Disjoints");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
 
 function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
-  ck: Checker, allGeometry: GeometryQuery[], x0: number) {
+  ck: Checker, allGeometry: GeometryQuery[], x0: number, y0Start: number) {
   const areas = [];
-  let y0 = 0;
+  let y0 = y0Start;
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, dataA, x0, y0);
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, dataB, x0, y0);
   for (const opType of [RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA]) {
-    y0 += 10.0;
+    y0 += 15.0;
     const result = RegionOps.regionBooleanXY(dataA, dataB, opType);
     areas.push(RegionOps.computeXYArea(result!)!);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, y0);

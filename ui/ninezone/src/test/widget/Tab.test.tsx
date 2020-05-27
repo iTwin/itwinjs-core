@@ -6,12 +6,9 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, addTab, createNineZoneState, NineZoneDispatch, NineZoneProvider, WIDGET_TAB_CLICK, WIDGET_TAB_DOUBLE_CLICK, WIDGET_TAB_DRAG_START,
-  WidgetStateContext, WidgetTab,
+  addPanelWidget, addTab, createNineZoneState, NineZoneDispatch, PanelSideContext, WidgetContext, WidgetStateContext, WidgetTab, WidgetTabsEntryContext,
 } from "../../ui-ninezone";
-import { PanelSideContext } from "../../ui-ninezone/widget-panels/Panel";
-import { WidgetTabsEntryContext } from "../../ui-ninezone/widget/Tabs";
-import { WidgetContext } from "../../ui-ninezone/widget/Widget";
+import { NineZoneProvider } from "../Providers";
 
 describe("WidgetTab", () => {
   const sandbox = sinon.createSandbox();
@@ -27,7 +24,6 @@ describe("WidgetTab", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.w1}>
           <WidgetTabsEntryContext.Provider value={{
@@ -48,7 +44,6 @@ describe("WidgetTab", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.w1}>
           <WidgetTabsEntryContext.Provider value={{
@@ -69,7 +64,6 @@ describe("WidgetTab", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.w1}>
           <WidgetTabsEntryContext.Provider value={{
@@ -90,7 +84,6 @@ describe("WidgetTab", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.w1}>
           <WidgetTabsEntryContext.Provider value={{
@@ -111,7 +104,6 @@ describe("WidgetTab", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.w1}>
           <WidgetTabsEntryContext.Provider value={{
@@ -154,7 +146,7 @@ describe("WidgetTab", () => {
       fakeTimers.tick(300);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_TAB_CLICK,
+      type: "WIDGET_TAB_CLICK",
       side: "left",
       widgetId: "w1",
       id: "t1",
@@ -192,7 +184,7 @@ describe("WidgetTab", () => {
       fakeTimers.tick(300);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_TAB_DOUBLE_CLICK,
+      type: "WIDGET_TAB_DOUBLE_CLICK",
       side: "left",
       widgetId: "w1",
       id: "t1",
@@ -227,7 +219,7 @@ describe("WidgetTab", () => {
       fireEvent(document, moveEvent);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_TAB_DRAG_START,
+      type: "WIDGET_TAB_DRAG_START",
       widgetId: "w1",
       id: "t1",
     })).should.true;

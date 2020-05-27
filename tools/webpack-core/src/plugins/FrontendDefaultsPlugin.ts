@@ -19,7 +19,7 @@ export class FrontendDefaultsPlugin {
     new DefinePlugin({
       "global.GENTLY": false,
     }).apply(compiler);
-    new FilterWarningsPlugin({ exclude: /Cannot find source file/ }).apply(compiler);
+    new FilterWarningsPlugin({ exclude: /Failed to parse source map/ }).apply(compiler);
     new ExternalsPlugin("commonjs", [
       "electron",
     ]).apply(compiler);
