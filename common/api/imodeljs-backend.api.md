@@ -868,7 +868,11 @@ export class ConcurrencyControl {
     get hasCodeSpecsLock(): boolean;
     get hasPendingRequests(): boolean;
     // @alpha
+    hasReservedCode(code: CodeProps): boolean;
+    // @alpha
     get hasSchemaLock(): boolean;
+    // @alpha
+    holdsLock(lock: ConcurrencyControl.LockProps): boolean;
     // @internal (undocumented)
     get iModel(): BriefcaseDb;
     // @internal (undocumented)
@@ -899,6 +903,8 @@ export class ConcurrencyControl {
     onPushChanges(_requestContext: AuthorizedClientRequestContext): Promise<void>;
     // (undocumented)
     onPushedChanges(requestContext: AuthorizedClientRequestContext): Promise<void>;
+    // (undocumented)
+    onPushEmpty(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal (undocumented)
     onSaveChanges(): void;
     // @internal (undocumented)
@@ -1086,11 +1092,13 @@ export namespace ConcurrencyControl {
         // (undocumented)
         deleteFile(): void;
         // (undocumented)
+        deleteLocksForTxn(txnId: string): void;
+        // (undocumented)
         getHeldLock(type: LockType, objectId: string): LockLevel;
         // (undocumented)
         insertCodes(codes: CodeProps[]): void;
         // (undocumented)
-        insertLocks(locks: LockProps[]): void;
+        insertLocks(locks: LockProps[], txnId?: string): void;
         // (undocumented)
         isCodeReserved(code: CodeProps): boolean;
         // (undocumented)

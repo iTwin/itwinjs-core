@@ -43,7 +43,7 @@ export class ErrorHandling {
       // Various special cases:
       const owner = this.parseChannelConstraintError(err);
       if (owner !== undefined) {
-        this.displayError(IModelApp.i18n.translate("error:ChannelConstraintViolation", { owner }));
+        this.displayError(IModelApp.i18n.translate("SampleApp:error:ChannelConstraintViolation", { owner }));
         return;
       }
 
