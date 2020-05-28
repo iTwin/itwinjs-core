@@ -4733,6 +4733,8 @@ export class RelatedElement implements RelatedElementProps {
     static idFromJson(json: any): Id64String;
     static readonly none: RelatedElement;
     readonly relClassName?: string;
+    // (undocumented)
+    toJSON(): RelatedElementProps;
 }
 
 // @public
@@ -5520,7 +5522,23 @@ export namespace RpcSerializedValue {
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
 }
 
-// @alpha
+// @beta
+export interface SectionDrawingLocationProps extends GeometricElement3dProps {
+    sectionView?: RelatedElementProps;
+}
+
+// @beta
+export interface SectionDrawingProps extends ElementProps {
+    // (undocumented)
+    jsonProperties?: {
+        drawingToSpatialTransform?: TransformProps;
+        sheetToSpatialTransform?: TransformProps;
+    };
+    sectionType?: SectionType;
+    spatialView?: RelatedElementProps;
+}
+
+// @alpha @deprecated
 export interface SectionLocationProps extends GeometricElement3dProps {
     // @internal @deprecated
     categorySelectorId?: Id64String;

@@ -7,7 +7,7 @@
  */
 
 import { GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { AngleProps, LowAndHighXY, LowAndHighXYZ, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
+import { AngleProps, LowAndHighXY, LowAndHighXYZ, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { CodeProps } from "./Code";
 import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { EntityProps } from "./EntityProps";
@@ -49,10 +49,19 @@ export interface ElementProps extends EntityProps {
 export class RelatedElement implements RelatedElementProps {
   /** The Id of the element to which this element is related. */
   public readonly id: Id64String;
+
   /** The full className of the relationship class. */
   public readonly relClassName?: string;
-  constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
-  public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined { return json ? new RelatedElement(json) : undefined; }
+
+  constructor(props: RelatedElementProps) {
+    this.id = Id64.fromJSON(props.id);
+    this.relClassName = props.relClassName;
+  }
+
+  public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined {
+    return json ? new RelatedElement(json) : undefined;
+  }
+
   /** Used to *null out* an existing navigation relationship. */
   public static readonly none = new RelatedElement({ id: Id64.invalid });
 
@@ -65,6 +74,13 @@ export class RelatedElement implements RelatedElementProps {
       return r.id;
     }
     return Id64.fromJSON(json);
+  }
+
+  public toJSON(): RelatedElementProps {
+    return {
+      id: this.id,
+      relClassName: this.relClassName,
+    };
   }
 }
 
@@ -112,7 +128,7 @@ export interface GeometricElement3dProps extends GeometricElementProps {
   typeDefinition?: RelatedElementProps;
 }
 
-/** An enumeration of the different types of sections.
+/** An enumeration of the different types of [SectionDrawing]($backend)s.
  * @public
  */
 export enum SectionType {
@@ -124,6 +140,7 @@ export enum SectionType {
 
 /** Properties that define a [SectionLocation]($backend)
  * @alpha
+ * @deprecated Use [[SectionDrawingLocationProps]] instead.
  */
 export interface SectionLocationProps extends GeometricElement3dProps {
   /** Section type */
@@ -145,6 +162,35 @@ export interface SectionLocationProps extends GeometricElement3dProps {
    * @internal
    */
   categorySelectorId?: Id64String;
+}
+
+/** Properties that define a [SectionDrawing]($backend).
+ * @beta
+ */
+export interface SectionDrawingProps extends ElementProps {
+  /** The type of section used to generate the drawing. Default: Section. */
+  sectionType?: SectionType;
+  /** The spatial view from which the section was generated. */
+  spatialView?: RelatedElementProps;
+  jsonProperties?: {
+    /** A transform from the section drawing model's coordinates to spatial coordinates.
+     * @alpha
+     */
+    drawingToSpatialTransform?: TransformProps;
+    /** If the section drawing is placed onto a [Sheet]($backend) via a [ViewAttachment($backend), a transform from the sheet's coordinates to spatial coordinates.
+     * @alpha
+     */
+    sheetToSpatialTransform?: TransformProps;
+    // ###TODO: Excluded spatial elements; flag to say "exclude all spatial elements" (i.e., don't draw the spatial view at all).
+  };
+}
+
+/** Properties that define a [SectionDrawingLocation]($backend)
+ * @beta
+ */
+export interface SectionDrawingLocationProps extends GeometricElement3dProps {
+  /** The [ViewDefinition]($backend) to which this location refers. */
+  sectionView?: RelatedElementProps;
 }
 
 /** Properties that define a [GeometricElement2d]($backend)
