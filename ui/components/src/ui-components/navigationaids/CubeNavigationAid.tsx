@@ -232,6 +232,11 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
       }
     }
 
+    const cubeClassNames = classnames(
+      "nav-cube",
+      this.state.dragging && "cube-dragging",
+    );
+
     return (
       <div className={classnames("components-cube-container", this.props.className)}
         style={this.props.style}
@@ -240,7 +245,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
         onTouchStart={this._handleBoxTouchStart} >
         <div className={"cube-element-container"}>
           <Cube
-            className={classnames("nav-cube", { dragging: this.state.dragging })}
+            className={cubeClassNames}
             rotMatrix={rotMatrix}
             faces={faces} />
         </div>
@@ -565,7 +570,11 @@ interface FaceRowProps extends React.AllHTMLAttributes<HTMLDivElement> {
 class FaceRow extends React.Component<FaceRowProps> {
   public render(): React.ReactNode {
     const { center, children, ...props } = this.props;
-    return <div className={classnames("face-row", { center })} {...props}>{children}</div>;
+    const classNames = classnames(
+      "face-row",
+      center && "cube-center",
+    );
+    return <div className={classNames} {...props}>{children}</div>;
   }
 }
 
@@ -588,6 +597,13 @@ export class FaceCell extends React.Component<FaceCellProps> {
     const n = `${x}-${y}-${z}`;
     const hover = hoverMap[n] === CubeHover.Hover;
     const active = hoverMap[n] === CubeHover.Active;
+    const classNames = classnames(
+      "face-cell",
+      center && "cube-center",
+      hover && "cube-hover",
+      active && "cube-active",
+    );
+
     return <div
       onMouseDown={this._handleMouseDown}
       onMouseUp={this._handleMouseUp}
@@ -596,7 +612,7 @@ export class FaceCell extends React.Component<FaceCellProps> {
       onTouchStart={this._handleTouchStart}
       onTouchEnd={this._handleTouchEnd}
       data-testid={"nav-cube-face-cell-" + face + "-" + n}
-      className={classnames("face-cell", { center, hover, active })}
+      className={classNames}
       {...props}>{children}</div>;
   }
   private _handleMouseOver = () => {
@@ -659,10 +675,10 @@ const pointerIconClass: { [key: number]: string } = {
 };
 
 const pointerClass: { [key: number]: string } = {
-  [Pointer.Up]: "up",
-  [Pointer.Down]: "down",
-  [Pointer.Left]: "left",
-  [Pointer.Right]: "right",
+  [Pointer.Up]: "cube-up",
+  [Pointer.Down]: "cube-down",
+  [Pointer.Left]: "cube-left",
+  [Pointer.Right]: "cube-right",
 };
 
 interface PointerProps extends React.AllHTMLAttributes<HTMLDivElement> {
@@ -679,7 +695,7 @@ class PointerButton extends React.Component<PointerProps> {
       "cube-pointer", "icon",
       pointerClass[pointerType],
       pointerIconClass[pointerType],
-      { visible },
+      visible && "cube-visible",
     );
     return (
       <div className={classes} {...props}

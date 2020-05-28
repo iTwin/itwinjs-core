@@ -147,11 +147,11 @@ describe("CubeNavigationAid", () => {
 
       const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
 
-      expect(topCenterCell.classList.contains("hover")).to.be.false;
+      expect(topCenterCell.classList.contains("cube-hover")).to.be.false;
 
       topCenterCell.dispatchEvent(new MouseEvent("mouseover", { bubbles: true, cancelable: true, view: window }));
 
-      expect(topCenterCell.classList.contains("hover")).to.be.true;
+      expect(topCenterCell.classList.contains("cube-hover")).to.be.true;
     });
     it("should click center cell", async () => {
       const component = render(<CubeNavigationAid iModelConnection={connection.object} />);
@@ -159,12 +159,12 @@ describe("CubeNavigationAid", () => {
       const topFace = component.getByTestId("core-cube-face-top");
       const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
 
-      expect(topCenterCell.classList.contains("active")).to.be.false;
+      expect(topCenterCell.classList.contains("cube-active")).to.be.false;
 
       const mat = cssMatrix3dToBentleyTransform(topFace.style.transform!)!;
       expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
       topCenterCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
-      expect(topCenterCell.classList.contains("active")).to.be.true;
+      expect(topCenterCell.classList.contains("cube-active")).to.be.true;
       topCenterCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
       const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform!)!;
       expect(mat2.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
@@ -176,12 +176,12 @@ describe("CubeNavigationAid", () => {
       const topFace = component.getByTestId("core-cube-face-top");
       const topCornerCell = component.getByTestId("nav-cube-face-cell-top-1-0-1");
 
-      expect(topCornerCell.classList.contains("active")).to.be.false;
+      expect(topCornerCell.classList.contains("cube-active")).to.be.false;
 
       const mat = cssMatrix3dToBentleyTransform(topFace.style.transform!)!;
       expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
       topCornerCell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window }));
-      expect(topCornerCell.classList.contains("active")).to.be.true;
+      expect(topCornerCell.classList.contains("cube-active")).to.be.true;
       topCornerCell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window }));
       await waitForSpy(animationEnd);
       const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform!)!;
@@ -241,7 +241,7 @@ describe("CubeNavigationAid", () => {
       const topFace = component.getByTestId("core-cube-face-top");
       const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
 
-      expect(topCenterCell.classList.contains("active")).to.be.false;
+      expect(topCenterCell.classList.contains("cube-active")).to.be.false;
 
       const mat = cssMatrix3dToBentleyTransform(topFace.style.transform!)!;
       expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
@@ -258,7 +258,7 @@ describe("CubeNavigationAid", () => {
       const topFace = component.getByTestId("core-cube-face-top");
       const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
 
-      expect(topCenterCell.classList.contains("active")).to.be.false;
+      expect(topCenterCell.classList.contains("cube-active")).to.be.false;
 
       const mat = cssMatrix3dToBentleyTransform(topFace.style.transform!)!;
       expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;

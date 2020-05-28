@@ -71,7 +71,7 @@ export class CubeFace extends React.Component<CubeFaceProps> {
     const { rotMatrix, face, style, children, ...props } = this.props;
     if (face === Face.None)
       return null;
-    const classes = classnames("face", face);
+    const classes = classnames("face", this.getCSSClassNameFromFace(face));
     // orient face (flip because of y axis reversal, rotate as necessary)
     let reorient: Matrix3d = Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, 1);
     // Position face correctly (applies to rotation, as well as translation)
@@ -123,5 +123,14 @@ export class CubeFace extends React.Component<CubeFaceProps> {
         {children}
       </div>
     );
+  }
+
+  private getCSSClassNameFromFace(face: Face): string {
+    let className = "";
+
+    if (face !== Face.None)
+      className = `cube-${face}`;
+
+    return className;
   }
 }
