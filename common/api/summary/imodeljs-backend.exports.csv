@@ -59,9 +59,13 @@ alpha;RepositoryChannelInfo
 internal;StateCache
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
+public;DefinitionContainer 
 public;class DefinitionElement 
+public;DefinitionGroup 
+public;DefinitionGroupGroupsDefinitions 
 public;DefinitionModel 
 public;DefinitionPartition 
+public;class DefinitionSet 
 alpha;DesktopAuthorizationClient 
 public;DetailCallout 
 public;class DetailingSymbol 
@@ -169,6 +173,7 @@ public;class GraphicalModel3d
 public;GraphicalPartition3d 
 public;class GraphicalType2d 
 public;Group 
+public;GroupImpartsToMembers 
 public;class GroupInformationElement 
 public;class GroupInformationModel 
 public;GroupInformationPartition 

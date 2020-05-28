@@ -1137,6 +1137,14 @@ export interface CrashReportingConfigNameValuePair {
 }
 
 // @public
+export class DefinitionContainer extends DefinitionSet {
+    // @internal (undocumented)
+    static get className(): string;
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): DefinitionContainer;
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
+}
+
+// @public
 export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
     // @internal
     constructor(props: DefinitionElementProps, iModel: IModelDb);
@@ -1148,6 +1156,19 @@ export abstract class DefinitionElement extends InformationContentElement implem
 }
 
 // @public
+export class DefinitionGroup extends DefinitionSet {
+    // @internal (undocumented)
+    static get className(): string;
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): DefinitionGroup;
+}
+
+// @public
+export class DefinitionGroupGroupsDefinitions extends ElementGroupsMembers {
+    // @internal (undocumented)
+    static get className(): string;
+}
+
+// @public
 export class DefinitionModel extends InformationModel {
     // @internal (undocumented)
     static get className(): string;
@@ -1156,6 +1177,12 @@ export class DefinitionModel extends InformationModel {
 
 // @public
 export class DefinitionPartition extends InformationPartitionElement {
+    // @internal (undocumented)
+    static get className(): string;
+}
+
+// @public
+export abstract class DefinitionSet extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
 }
@@ -2325,6 +2352,12 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
 // @public (undocumented)
 export class Group extends GroupInformationElement {
     constructor(props: ElementProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+}
+
+// @public
+export class GroupImpartsToMembers extends ElementGroupsMembers {
     // @internal (undocumented)
     static get className(): string;
 }

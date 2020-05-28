@@ -12,14 +12,14 @@ import { LockLevel } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel,
-  InformationPartitionElementProps, LineStyleProps, Placement2d, Placement3d, RelatedElement, RepositoryLinkProps, SectionLocationProps, SectionType,
-  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  InformationPartitionElementProps, LineStyleProps, ModelProps, Placement2d, Placement3d, RelatedElement, RepositoryLinkProps, SectionLocationProps,
+  SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
-import { DrawingModel, PhysicalModel } from "./Model";
+import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 
 /** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
@@ -770,6 +770,89 @@ export abstract class DefinitionElement extends InformationContentElement implem
     const val = super.toJSON() as DefinitionElementProps;
     val.isPrivate = this.isPrivate;
     return val;
+  }
+}
+
+/** This abstract class unifies DefinitionGroup and DefinitionContainer for relationship endpoint purposes.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.10
+ * @public
+ */
+export abstract class DefinitionSet extends DefinitionElement {
+  /** @internal */
+  public static get className(): string { return "DefinitionSet"; }
+}
+
+/** A DefinitionContainer exclusively owns a set of DefinitionElements contained within its sub-model (of type DefinitionModel).
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.10
+ * @public
+ */
+export class DefinitionContainer extends DefinitionSet {
+  /** @internal */
+  public static get className(): string { return "DefinitionContainer"; }
+  /** Create a DefinitionContainer
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that will contain this DefinitionContainer element.
+   * @param code The Code for this DefinitionContainer.
+   * @param isPrivate The optional hint, that if `true` means it should not be displayed in the UI.
+   * @returns The newly constructed DefinitionContainer
+   * @note There is not a predefined CodeSpec for DefinitionContainer elements, so it is the responsibility of the domain or application to create one.
+   * @throws [[IModelError]] if there is a problem creating the DefinitionContainer
+   */
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): DefinitionContainer {
+    const elementProps: DefinitionElementProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code,
+      isPrivate,
+    };
+    return new DefinitionContainer(elementProps, iModelDb);
+  }
+  /** Insert a DefinitionContainer and its sub-model.
+   * @param iModelDb Insert into this IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that will contain this DefinitionContainer element.
+   * @param code The Code for this DefinitionContainer.
+   * @param isPrivate The optional hint, that if `true` means it should not be displayed in the UI.
+   * @returns The Id of the newly inserted DefinitionContainer and its newly inserted sub-model (of type DefinitionModel).
+   * @note There is not a predefined CodeSpec for DefinitionContainer elements, so it is the responsibility of the domain or application to create one.
+   * @throws [[IModelError]] if there is a problem inserting the DefinitionContainer
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
+    const containerElement = this.create(iModelDb, definitionModelId, code, isPrivate);
+    const containerElementId = iModelDb.elements.insertElement(containerElement);
+    const containerSubModelProps: ModelProps = {
+      classFullName: DefinitionModel.classFullName,
+      modeledElement: { id: containerElementId },
+      isPrivate,
+    };
+    iModelDb.models.insertModel(containerSubModelProps);
+    return containerElementId;
+  }
+}
+
+/** A non-exclusive set of DefinitionElements grouped using the DefinitionGroupGroupsDefinitions relationship.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.10
+ * @public
+ */
+export class DefinitionGroup extends DefinitionSet {
+  /** @internal */
+  public static get className(): string { return "DefinitionGroup"; }
+  /** Create a DefinitionGroup
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that will contain this DefinitionGroup element.
+   * @param code The Code for this DefinitionGroup
+   * @param isPrivate The optional hint, that if `true` means it should not be displayed in the UI.
+   * @returns The newly constructed DefinitionGroup
+   * @note There is not a predefined CodeSpec for DefinitionGroup elements, so it is the responsibility of the domain or application to create one.
+   * @throws [[IModelError]] if there is a problem creating the DefinitionGroup
+   */
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): DefinitionGroup {
+    const elementProps: DefinitionElementProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code,
+      isPrivate,
+    };
+    return new DefinitionGroup(elementProps, iModelDb);
   }
 }
 
