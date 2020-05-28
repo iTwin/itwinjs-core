@@ -139,7 +139,7 @@ function generateActionStatusBarItem(item: AbstractStatusBarActionItem, isInFoot
     isInFooterMode={isInFooterMode} />;
 }
 
-/** local function to combine items from Stage and from Plugins */
+/** local function to combine items from Stage and from Extensions */
 function combineItems(stageItems: ReadonlyArray<CommonStatusBarItem>, addonItems: ReadonlyArray<CommonStatusBarItem>) {
   const items: CommonStatusBarItem[] = [];
   if (stageItems.length)

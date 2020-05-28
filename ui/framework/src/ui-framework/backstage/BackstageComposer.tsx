@@ -48,7 +48,7 @@ function useBackstageItemSyncEffect(itemsManager: BackstageItemsManager, syncIds
   }, [itemsManager, itemsManager.items, syncIdsOfInterest]);
 }
 
-/** local function to combine items from Stage and from Plugins */
+/** local function to combine items from Stage and from Extensions */
 function combineItems(stageItems: ReadonlyArray<BackstageItem>, addonItems: ReadonlyArray<BackstageItem>) {
   const items: BackstageItem[] = [];
   if (stageItems.length)

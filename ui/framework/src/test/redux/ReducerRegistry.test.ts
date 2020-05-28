@@ -7,47 +7,47 @@ import { expect } from "chai";
 import { UiError } from "@bentley/ui-abstract";
 import { ActionCreatorsObject, ActionsUnion, createAction, NameToReducerMap, ReducerRegistryInstance } from "../../ui-framework";
 
-// Manages the state for plugin
-interface IPluginState {
+// Manages the state for extension
+interface ExtensionState {
   selectedItem?: string;
   dialogVisible?: boolean;
 }
 
-class PluginStateManager {
-  private static _initialState: IPluginState = {
+class ExtensionStateManager {
+  private static _initialState: ExtensionState = {
     dialogVisible: false,
   };
 
-  private static _reducerName = "plugin_state";
+  private static _reducerName = "extension_state";
 
-  public static SET_PLUGIN_DIALOG_VISIBLE = PluginStateManager.createActionName("SET_PLUGIN_DIALOG_VISIBLE");
-  public static SET_PLUGIN_SELECTED_ITEM = PluginStateManager.createActionName("SET_PLUGIN_SELECTED");
+  public static SET_EXTENSION_DIALOG_VISIBLE = ExtensionStateManager.createActionName("SET_EXTENSION_DIALOG_VISIBLE");
+  public static SET_EXTENSION_SELECTED_ITEM = ExtensionStateManager.createActionName("SET_EXTENSION_SELECTED");
 
-  private static _pluginActions: ActionCreatorsObject = {
+  private static _extensionActions: ActionCreatorsObject = {
     setDialogVisible: (dialogVisible: boolean) =>
-      createAction(PluginStateManager.SET_PLUGIN_DIALOG_VISIBLE, dialogVisible),
+      createAction(ExtensionStateManager.SET_EXTENSION_DIALOG_VISIBLE, dialogVisible),
     setSelectedItem: (selectedItem: string) =>
-      createAction(PluginStateManager.SET_PLUGIN_SELECTED_ITEM, selectedItem),
+      createAction(ExtensionStateManager.SET_EXTENSION_SELECTED_ITEM, selectedItem),
   };
 
   private static createActionName(name: string) {
     // convert to lower case so it can serve as a sync event when called via UiFramework.dispatchActionToStore
-    return `${PluginStateManager._reducerName}:${name}`.toLowerCase();
+    return `${ExtensionStateManager._reducerName}:${name}`.toLowerCase();
   }
 
   // reducer
-  public static pluginReducer(
-    state: IPluginState = PluginStateManager._initialState,
+  public static extensionReducer(
+    state: ExtensionState = ExtensionStateManager._initialState,
     action: any,
-  ): IPluginState {
-    type PluginActionsUnion = ActionsUnion<typeof PluginStateManager._pluginActions>;
+  ): ExtensionState {
+    type ExtensionActionsUnion = ActionsUnion<typeof ExtensionStateManager._extensionActions>;
 
-    const pluginActionsParam = action as PluginActionsUnion;
+    const extensionActionsParam = action as ExtensionActionsUnion;
 
-    switch (pluginActionsParam.type) {
-      case PluginStateManager.SET_PLUGIN_DIALOG_VISIBLE:
+    switch (extensionActionsParam.type) {
+      case ExtensionStateManager.SET_EXTENSION_DIALOG_VISIBLE:
         return { ...state, dialogVisible: action.payload };
-      case PluginStateManager.SET_PLUGIN_SELECTED_ITEM:
+      case ExtensionStateManager.SET_EXTENSION_SELECTED_ITEM:
         return { ...state, selectedItem: action.payload };
       default:
         return state;
@@ -56,8 +56,8 @@ class PluginStateManager {
 
   public static initialize() {
     ReducerRegistryInstance.registerReducer(
-      PluginStateManager._reducerName,
-      PluginStateManager.pluginReducer,
+      ExtensionStateManager._reducerName,
+      ExtensionStateManager.extensionReducer,
     );
   }
 }
@@ -79,18 +79,18 @@ describe("ReducerRegistry", () => {
 
     expect(reducerRegistryHasEntries).to.be.false;
 
-    expect(ReducerRegistryInstance.getReducers().plugin_state).not.to.exist;
+    expect(ReducerRegistryInstance.getReducers().extension_state).not.to.exist;
 
-    PluginStateManager.initialize();
+    ExtensionStateManager.initialize();
 
     expect(reducerRegistryHasEntries).to.be.true;
-    expect(ReducerRegistryInstance.getReducers().plugin_state).to.exist;
+    expect(ReducerRegistryInstance.getReducers().extension_state).to.exist;
 
-    const myCurrentState: IPluginState = { selectedItem: "selected", dialogVisible: false };
-    let outState = ReducerRegistryInstance.getReducers().plugin_state(myCurrentState, { type: PluginStateManager.SET_PLUGIN_DIALOG_VISIBLE, payload: true });
+    const myCurrentState: ExtensionState = { selectedItem: "selected", dialogVisible: false };
+    let outState = ReducerRegistryInstance.getReducers().extension_state(myCurrentState, { type: ExtensionStateManager.SET_EXTENSION_DIALOG_VISIBLE, payload: true });
     expect(outState.dialogVisible).to.be.true;
     expect(outState.selectedItem).to.be.equal("selected");
-    outState = ReducerRegistryInstance.getReducers().plugin_state(outState, { type: PluginStateManager.SET_PLUGIN_SELECTED_ITEM, payload: "new-selection" });
+    outState = ReducerRegistryInstance.getReducers().extension_state(outState, { type: ExtensionStateManager.SET_EXTENSION_SELECTED_ITEM, payload: "new-selection" });
     expect(outState.selectedItem).to.be.equal("new-selection");
 
     ReducerRegistryInstance.clearReducers();
@@ -98,10 +98,10 @@ describe("ReducerRegistry", () => {
   });
 
   it("should not be able to register duplicate reducer name ", () => {
-    PluginStateManager.initialize();
+    ExtensionStateManager.initialize();
     let keys = (Object.keys(ReducerRegistryInstance.getReducers()));
     expect(keys.length).to.be.equal(1);
-    expect(() => PluginStateManager.initialize()).to.throw(UiError);
+    expect(() => ExtensionStateManager.initialize()).to.throw(UiError);
     keys = (Object.keys(ReducerRegistryInstance.getReducers()));
     expect(keys.length).to.be.equal(1);
   });
