@@ -152,6 +152,8 @@ import { Readable } from 'stream';
 import { ReferentElementProps } from '@bentley/imodeljs-common';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
+import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
+import { SectionDrawingProps } from '@bentley/imodeljs-common';
 import { SectionLocationProps } from '@bentley/imodeljs-common';
 import { SectionType } from '@bentley/imodeljs-common';
 import { SheetBorderTemplateProps } from '@bentley/imodeljs-common';
@@ -471,8 +473,8 @@ export class BriefcaseDb extends IModelDb {
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onCreated: BeEvent<(_imodelDb: BriefcaseDb) => void>;
-    static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _briefcaseProps: BriefcaseProps) => void>;
-    static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
+    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _briefcaseProps: BriefcaseProps) => void>;
+    static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void>;
@@ -3642,9 +3644,23 @@ export class SectionCallout extends Callout {
 // @public
 export class SectionDrawing extends Drawing {
     // @internal
-    constructor(props: ElementProps, iModel: IModelDb);
+    constructor(props: SectionDrawingProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    sectionType: SectionType;
+    spatialView: RelatedElement;
+    // @internal (undocumented)
+    toJSON(): SectionDrawingProps;
+}
+
+// @beta
+export class SectionDrawingLocation extends SpatialLocationElement {
+    constructor(props: SectionDrawingLocationProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+    sectionView: RelatedElement;
+    // @internal (undocumented)
+    toJSON(): SectionDrawingLocationProps;
 }
 
 // @public
@@ -3653,7 +3669,7 @@ export class SectionDrawingModel extends DrawingModel {
     static get className(): string;
 }
 
-// @alpha
+// @alpha @deprecated
 export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
     // @internal
     constructor(props: SectionLocationProps, iModel: IModelDb);

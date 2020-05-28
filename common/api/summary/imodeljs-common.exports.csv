@@ -407,6 +407,8 @@ public;RpcResponseCacheControl
 public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 public;RpcSerializedValue
 public;RpcSerializedValue
+beta;SectionDrawingLocationProps 
+beta;SectionDrawingProps 
 alpha;SectionLocationProps 
 public;SectionType
 public;SerializedRpcOperation
