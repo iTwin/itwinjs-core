@@ -12,8 +12,8 @@ import { LockLevel } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel,
-  InformationPartitionElementProps, LineStyleProps, ModelProps, Placement2d, Placement3d, RelatedElement, RepositoryLinkProps, SectionLocationProps,
-  SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  InformationPartitionElementProps, LineStyleProps, ModelProps, Placement2d, Placement3d, RelatedElement, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionLocationProps, SectionType,
+  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { Entity } from "./Entity";
@@ -482,6 +482,7 @@ export class VolumeElement extends SpatialLocationElement {
 /** A SectionLocation element defines how a section drawing should be generated in a 3d view.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.6
  * @alpha
+ * @deprecated use [[SectionDrawingLocation]].
  */
 export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
   /** Section type */
@@ -501,6 +502,31 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
     return {
       ...super.toJSON(),
       sectionType: this.sectionType,
+    };
+  }
+}
+
+/** A SectionDrawingLocation element identifies the location of a [[SectionDrawing]] in the context of a [[SpatialModel]].
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.11.
+ * @beta
+ */
+export class SectionDrawingLocation extends SpatialLocationElement {
+  /** The Id of the [[ViewDefinition]] to which this location refers. */
+  public sectionView: RelatedElement;
+
+  /** @internal */
+  public static get className(): string { return "SectionDrawingLocation"; }
+
+  public constructor(props: SectionDrawingLocationProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.sectionView = RelatedElement.fromJSON(props.sectionView) ?? RelatedElement.none;
+  }
+
+  /** @internal */
+  public toJSON(): SectionDrawingLocationProps {
+    return {
+      ...super.toJSON(),
+      sectionView: this.sectionView.toJSON(),
     };
   }
 }
@@ -603,7 +629,7 @@ export abstract class Document extends InformationContentElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** A document that represents a drawing, that is, 2-D graphical representation of engineering data. A Drawing element is modelled by a [[DrawingModel]].
+/** A document that represents a drawing, that is, a two-dimensional graphical representation of engineering data. A Drawing element is usually modelled by a [[DrawingModel]].
  * @public
  */
 export class Drawing extends Document {
@@ -644,15 +670,34 @@ export class Drawing extends Document {
   }
 }
 
-/** A document that represents a section drawing, that is, 2-D graphical documentation derived from a planar
- * section of some other spatial model. A SectionDrawing element is modelled by a [[SectionDrawingModel]].
+/** A document that represents a section drawing, that is, a graphical documentation derived from a planar
+ * section of a spatial view. A SectionDrawing element is modelled by a [[SectionDrawingModel]] or a [[GraphicalModel3d]].
  * @public
  */
 export class SectionDrawing extends Drawing {
+  /** The type of section used to generate the drawing. */
+  public sectionType: SectionType;
+  /** The spatial view from which the section was generated. */
+  public spatialView: RelatedElement;
+
   /** @internal */
   public static get className(): string { return "SectionDrawing"; }
+
   /** @internal */
-  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+  constructor(props: SectionDrawingProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
+    this.spatialView = RelatedElement.fromJSON(props.spatialView) ?? RelatedElement.none;
+  }
+
+  /** @internal */
+  public toJSON(): SectionDrawingProps {
+    return {
+      ...super.toJSON(),
+      sectionType: this.sectionType,
+      spatialView: this.spatialView.toJSON(),
+    };
+  }
 }
 
 /** The template for a SheetBorder
