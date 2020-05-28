@@ -18,7 +18,7 @@ describe.skip("Blob Daemon", () => {
       container: "test-container",
       dbAlias: "test133",
       deleteTime: 10,
-      pollTime: 10,
+      pollTime: 600,
       writeable: true,
       shell: true,
       onProgress: (nDone: number, nTotal: number) => { console.log(`progress ${(nDone / nTotal) * 100.}%`); return 0; },
@@ -38,10 +38,14 @@ describe.skip("Blob Daemon", () => {
     runCommand("upload", { ...props, localFile: "d:/temp/test123.test.bim" });
     runCommand("attach", props);
     runCommand("copy", { ...props, toAlias: "test123" });
+    runCommand("attach", props);
+    runCommand("attach", { ...props, sasKey: "bogus" });
     console.log(`local file = "${BlobDaemon.getDbFileName(props)}"`);
     runCommand("download", { ...props, localFile: "d:/temp/downloaded.bim" });
     runCommand("delete", { ...props, dbAlias: "test123" });
+    runCommand("attach", props);
     runCommand("delete", props);
+    runCommand("attach", props);
     runCommand("detach", props);
     runCommand("destroy", props);
   });

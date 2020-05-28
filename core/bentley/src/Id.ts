@@ -672,12 +672,11 @@ export namespace Guid {
 
   /**
    * Normalize a Guid string if possible. Normalization consists of:
-   * - Convert to lower case
+   * - Convert all characters to lower case
    * - Trim any leading or trailing whitespace
    * - Convert to the standard Guid format "8-4-4-4-12", repositioning the '-' characters as necessary, presuming there are exactly 32 hexadecimal digits.
    * @param value Input value that represents a Guid
    * @returns Normalized representation of the Guid string. If the normalization fails, return the *original* value unmodified (Note: it is *not* a valid Guid)
-   * @public
    */
   export function normalize(value: GuidString): GuidString {
     const lowerValue = value.toLowerCase().trim();
