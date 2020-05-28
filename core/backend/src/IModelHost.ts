@@ -12,7 +12,7 @@ import * as semver from "semver";
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -322,7 +322,7 @@ export class IModelHost {
   }
 
   /** @internal */
-  public static loadNative(region: number, dir?: string): void { this.registerPlatform(Platform.load(dir), region); }
+  public static loadNative(region: number): void { this.registerPlatform(Platform.load(), region); }
 
   /**
    * @beta
@@ -461,30 +461,8 @@ export class IModelHost {
     Logger.logTrace(loggerCategory, "IModelHost.startup", () => startupInfo);
   }
 
-  // Get a platform specific default cache dir
-  private static getDefaultCacheDir(): string {
-    let baseDir: string;
-    const homedir = os.homedir();
-    const platform = os.platform() as string;
-    switch (platform) {
-      case "win32":
-        baseDir = path.join(homedir, "AppData", "Local");
-        break;
-      case "darwin":
-      case "ios":
-        baseDir = path.join(homedir, "Library", "Caches");
-        break;
-      case "linux":
-        baseDir = path.join(homedir, ".cache");
-        break;
-      default:
-        throw new BentleyError(BentleyStatus.ERROR, "Unknown platform that does not support iModel.js backends", () => ({ platform }));
-    }
-    return path.join(baseDir, "iModelJs");
-  }
-
   private static setupCacheDirs(configuration: IModelHostConfiguration) {
-    this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : this.getDefaultCacheDir();
+    this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
 
     // Setup the briefcaseCacheDir, defaulting to the the legacy/deprecated value
     if (configuration.briefcaseCacheDir) // tslint:disable-line:deprecation
@@ -591,9 +569,8 @@ export class Platform {
   public static get isNodeJs(): boolean { return !Platform.isMobile; } // currently we use nodejs for all non-mobile backend apps
 
   /** @internal */
-  public static load(dir?: string): typeof IModelJsNative {
-    return this.isMobile ? this.imodeljsMobile.imodeljsNative : // we are running on a mobile platform
-      require("@bentley/imodeljs-native/loadNativePlatform.js").loadNativePlatform(dir); // We are running in node or electron.
+  public static load(): typeof IModelJsNative {
+    return this.isMobile ? this.imodeljsMobile.imodeljsNative : NativeLibrary.load();
   }
 }
 
