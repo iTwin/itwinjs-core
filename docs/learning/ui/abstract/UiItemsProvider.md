@@ -61,17 +61,17 @@ class TestUiProvider implements UiItemsProvider {
             console.log("Got Here!");
           }));
 
-      const isHidden = new ConditionalBooleanValue(() => !SamplePluginStateManager.isPluginUiVisible, [SamplePluginStateManager.SET_PLUGIN_UI_VISIBLE]);
+      const isHidden = new ConditionalBooleanValue(() => !SampleExtensionStateManager.isExtensionUiVisible, [SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE]);
       const statusBarItem = AbstractStatusBarItemUtilities.createLabelItem("PluginTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello", undefined, { isHidden });
       statusBarItems.push(statusBarItem);
 
-      const labelCondition = new ConditionalStringValue(() => SamplePluginStateManager.isPluginUiVisible ? "Click to Hide" : "Click to Show", [SamplePluginStateManager.SET_PLUGIN_UI_VISIBLE]);
-      const iconCondition = new ConditionalStringValue(() => SamplePluginStateManager.isPluginUiVisible ? "icon-visibility-hide-2" : "icon-visibility", [SamplePluginStateManager.SET_PLUGIN_UI_VISIBLE]);
+      const labelCondition = new ConditionalStringValue(() => SampleExtensionStateManager.isExtensionUiVisible ? "Click to Hide" : "Click to Show", [SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE]);
+      const iconCondition = new ConditionalStringValue(() => SampleExtensionStateManager.isExtensionUiVisible ? "icon-visibility-hide-2" : "icon-visibility", [SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE]);
 
       statusBarItems.push(
         AbstractStatusBarItemUtilities.createActionItem("PluginTest:StatusBarItem2", StatusBarSection.Center, 110, iconCondition, labelCondition,
           () => {
-            SamplePluginStateManager.isPluginUiVisible = !SamplePluginStateManager.isPluginUiVisible;
+            SampleExtensionStateManager.isExtensionUiVisible = !SampleExtensionStateManager.isExtensionUiVisible;
           }));
 
       // add entry that supplies react component

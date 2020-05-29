@@ -56,47 +56,47 @@ class AppStateManager {
   }
 }
 
-// Fake state for a plugin
-interface IPluginState {
+// Fake state for a extension
+interface ExtensionState {
   selectedItem?: string;
   dialogVisible?: boolean;
 }
 
-class PluginStateManager {
-  private static _initialState: IPluginState = {
+class ExtensionStateManager {
+  private static _initialState: ExtensionState = {
     dialogVisible: false,
   };
 
-  private static _reducerName = "plugin_state";
+  private static _reducerName = "extension_state";
 
-  public static SET_PLUGIN_DIALOG_VISIBLE = PluginStateManager.createActionName("SET_PLUGIN_DIALOG_VISIBLE");
-  public static SET_PLUGIN_SELECTED_ITEM = PluginStateManager.createActionName("SET_PLUGIN_SELECTED");
+  public static SET_EXTENSION_DIALOG_VISIBLE = ExtensionStateManager.createActionName("SET_EXTENSION_DIALOG_VISIBLE");
+  public static SET_EXTENSION_SELECTED_ITEM = ExtensionStateManager.createActionName("SET_EXTENSION_SELECTED");
 
-  private static _pluginActions: ActionCreatorsObject = {
+  private static _extensionActions: ActionCreatorsObject = {
     setDialogVisible: (dialogVisible: boolean) =>
-      createAction(PluginStateManager.SET_PLUGIN_DIALOG_VISIBLE, dialogVisible),
+      createAction(ExtensionStateManager.SET_EXTENSION_DIALOG_VISIBLE, dialogVisible),
     setSelectedItem: (selectedItem: string) =>
-      createAction(PluginStateManager.SET_PLUGIN_SELECTED_ITEM, selectedItem),
+      createAction(ExtensionStateManager.SET_EXTENSION_SELECTED_ITEM, selectedItem),
   };
 
   private static createActionName(name: string) {
     // convert to lower case so it can serve as a sync event when called via UiFramework.dispatchActionToStore
-    return `${PluginStateManager._reducerName}:${name}`.toLowerCase();
+    return `${ExtensionStateManager._reducerName}:${name}`.toLowerCase();
   }
 
   // reducer
-  public static pluginReducer(
-    state: IPluginState = PluginStateManager._initialState,
+  public static extensionReducer(
+    state: ExtensionState = ExtensionStateManager._initialState,
     action: any,
-  ): IPluginState {
-    type PluginActionsUnion = ActionsUnion<typeof PluginStateManager._pluginActions>;
+  ): ExtensionState {
+    type ExtensionActionsUnion = ActionsUnion<typeof ExtensionStateManager._extensionActions>;
 
-    const pluginActionsParam = action as PluginActionsUnion;
+    const extensionActionsParam = action as ExtensionActionsUnion;
 
-    switch (pluginActionsParam.type) {
-      case PluginStateManager.SET_PLUGIN_DIALOG_VISIBLE:
+    switch (extensionActionsParam.type) {
+      case ExtensionStateManager.SET_EXTENSION_DIALOG_VISIBLE:
         return { ...state, dialogVisible: action.payload };
-      case PluginStateManager.SET_PLUGIN_SELECTED_ITEM:
+      case ExtensionStateManager.SET_EXTENSION_SELECTED_ITEM:
         return { ...state, selectedItem: action.payload };
       default:
         return state;
@@ -105,8 +105,8 @@ class PluginStateManager {
 
   public static initialize() {
     ReducerRegistryInstance.registerReducer(
-      PluginStateManager._reducerName,
-      PluginStateManager.pluginReducer,
+      ExtensionStateManager._reducerName,
+      ExtensionStateManager.extensionReducer,
     );
   }
 }
@@ -148,32 +148,32 @@ describe("StateManager", () => {
     expect(currentState!.hasOwnProperty("appState")).to.be.true;
   });
 
-  it("should see plugin state once plugin reducer is registered", () => {
+  it("should see extension state once extension reducer is registered", () => {
     const testState = new StateManager({ appState: AppStateManager.appReducer });
     expect(testState).to.exist;
     let currentState = StateManager.state;
     expect(currentState!.hasOwnProperty("frameworkState")).to.be.true;
     expect(currentState!.hasOwnProperty("appState")).to.be.true;
 
-    PluginStateManager.initialize();
+    ExtensionStateManager.initialize();
     currentState = StateManager.state;
     expect(currentState!.hasOwnProperty("frameworkState")).to.be.true;
     expect(currentState!.hasOwnProperty("appState")).to.be.true;
-    expect(currentState!.hasOwnProperty("plugin_state")).to.be.true;
+    expect(currentState!.hasOwnProperty("extension_state")).to.be.true;
   });
 
-  it("should see plugin state once plugin reducer is registered (using store property)", () => {
+  it("should see extension state once extension reducer is registered (using store property)", () => {
     const testState = new StateManager({ appState: AppStateManager.appReducer });
     expect(testState).to.exist;
     let currentState = StateManager.store.getState();
     expect(currentState!.hasOwnProperty("frameworkState")).to.be.true;
     expect(currentState!.hasOwnProperty("appState")).to.be.true;
 
-    PluginStateManager.initialize();
+    ExtensionStateManager.initialize();
     currentState = StateManager.store.getState();
     expect(currentState!.hasOwnProperty("frameworkState")).to.be.true;
     expect(currentState!.hasOwnProperty("appState")).to.be.true;
-    expect(currentState!.hasOwnProperty("plugin_state")).to.be.true;
+    expect(currentState!.hasOwnProperty("extension_state")).to.be.true;
   });
 
 });

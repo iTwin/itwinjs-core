@@ -6,7 +6,7 @@
     "ChannelConstraintViolation": "You do not have permission to write to this portion of the iModel. It is managed by {{owner}}."
   },
   "Header": {
-    "welcome": "Welcome to UI Test App"
+    "welcome": "Welcome to Simple Editor App"
   },
   "IModelListHeader": {
     "projects": "Projects"
@@ -140,7 +140,6 @@
     "pullButtonDisabledTitle": "No server changes to pull.",
     "pullMergePushFailed": "Pull or push failed.",
     "pullMergeFailed": "Failed to pull changes from server",
-    "sampleButton": "Sample Button",
     "unnamedDisplayStyle": "unnamed"
   },
   "properties": {

@@ -146,6 +146,25 @@ export class ElementGroupsMembers extends ElementRefersToElements {
   }
 }
 
+/** Relates a [[DefinitionGroup]] to its [[DefinitionElement]] members.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.10
+ * @public
+ */
+export class DefinitionGroupGroupsDefinitions extends ElementGroupsMembers {
+  /** @internal */
+  public static get className(): string { return "DefinitionGroupGroupsDefinitions"; }
+}
+
+/** Represents group membership where the group Element (and its properties) impart information about the member Elements above mere membership.
+ * Implies that properties of the group should be considered as properties of its members.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.11
+ * @public
+ */
+export class GroupImpartsToMembers extends ElementGroupsMembers {
+  /** @internal */
+  public static get className(): string { return "GroupImpartsToMembers"; }
+}
+
 /** Properties that are common to all types of ElementDrivesElements
  * @beta
  */

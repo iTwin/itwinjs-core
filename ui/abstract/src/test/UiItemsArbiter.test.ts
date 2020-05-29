@@ -128,7 +128,7 @@ describe("UiItemsArbiter", () => {
 
         if (stageUsage === StageUsage.General) {
           statusBarItems.push(
-            AbstractStatusBarItemUtilities.createActionItem("test1", StatusBarSection.Center, 100, "icon-developer", "test status bar from plugin", () => { }));
+            AbstractStatusBarItemUtilities.createActionItem("test1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension", () => { }));
           statusBarItems.push(
             AbstractStatusBarItemUtilities.createLabelItem("test2", StatusBarSection.Center, 105, "icon-hand-2-condition", "Hello"));
         }

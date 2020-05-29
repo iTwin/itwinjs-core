@@ -4923,6 +4923,12 @@ export namespace RenderTexture {
     }
 }
 
+// @public
+export interface RepositoryLinkProps extends UrlLinkProps {
+    // (undocumented)
+    repositoryGuid?: GuidString;
+}
+
 export { RepositoryStatus }
 
 // @internal
@@ -6526,6 +6532,14 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
 
 // @beta (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
+
+// @public
+export interface UrlLinkProps extends ElementProps {
+    // (undocumented)
+    description?: string;
+    // (undocumented)
+    url?: string;
+}
 
 // @public (undocumented)
 export interface ViewAttachmentLabelProps extends GeometricElement2dProps {

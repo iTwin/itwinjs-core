@@ -2128,6 +2128,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Push changes to iModelHub. Locks are released and codes are marked as used as part of a successful push.
+   * If there are no changes, then locks are released and reserved codes are released.
    * @param requestContext The client request context.
    * @param description The changeset description
    * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
@@ -2139,8 +2140,10 @@ export class BriefcaseDb extends IModelDb {
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes", Logger.logError, loggerCategory, () => this.getRpcProps());
     if (!this.isPushEnabled)
       throw new IModelError(BentleyStatus.ERROR, "IModel needs to be downloaded with SyncMode.PullAndPush and opened ReadWrite", Logger.logError, loggerCategory, () => this.getRpcProps());
-    if (!this.nativeDb.hasPendingTxns())
+    if (!this.nativeDb.hasPendingTxns()) {
+      await this.concurrencyControl.onPushEmpty(requestContext);
       return; // nothing to push
+    }
 
     await this.concurrencyControl.onPushChanges(requestContext);
 

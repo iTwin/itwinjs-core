@@ -281,7 +281,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.equal(sourceDb.nativeDb.hasPendingTxns(), expectedHasPendingTxns, "Expect importSchemas to have saved changes");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
       await sourceDb.pushChanges(requestContext, "Import schemas to upgrade BisCore"); // may push schema changes
-      assert.equal(sourceDb.concurrencyControl.hasSchemaLock, !expectedHasPendingTxns); // NOTE - pushChanges does not currently release locks if there are no changes to push. It probably should.
+      assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
 
       // import schemas again to test common scenario of not knowing whether schemas are up-to-date or not..
       await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
@@ -291,7 +291,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect importSchemas to be a no-op");
       sourceDb.saveChanges(); // will be no changes to save in this case
       await sourceDb.pushChanges(requestContext, "Import schemas again"); // will be no changes to push in this case
-      assert.isTrue(sourceDb.concurrencyControl.hasSchemaLock); // NOTE - pushChanges does not currently release locks if there are no changes to push. It probably should.
+      assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
 
       // populate sourceDb
       IModelTransformerUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);

@@ -27,7 +27,7 @@ const backstageToggleCommand =
 
 describe("ToolWidget", () => {
 
-  describe("Not Plugin-compatible", () => {
+  describe("Not Extension-compatible", () => {
     let horizontalToolbar: React.ReactNode;
     let verticalToolbar: React.ReactNode;
 
@@ -170,7 +170,7 @@ describe("ToolWidget", () => {
     });
   });
 
-  describe("Test Plugin items", () => {
+  describe("Test Extension items", () => {
 
     before(async () => {
       await TestUtils.initializeUiFramework();

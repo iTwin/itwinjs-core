@@ -34,7 +34,7 @@ class TestUiItemsProvider implements UiItemsProvider {
 
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
-        AbstractStatusBarItemUtilities.createActionItem("UiItemsProviderTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from plugin",
+        AbstractStatusBarItemUtilities.createActionItem("UiItemsProviderTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension",
           () => {
             // tslint:disable-next-line: no-console
             console.log("Got Here!");

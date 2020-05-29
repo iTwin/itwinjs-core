@@ -149,7 +149,7 @@ function getSortedChildren(group: GroupButton): ReadonlyArray<ActionButton | Gro
   return sortedChildren;
 }
 
-/** local function to combine items from Stage and from Plugins */
+/** local function to combine items from Stage and from Extensions */
 function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems: ReadonlyArray<CommonToolbarItem>) {
   let items: CommonToolbarItem[] = [];
   const groupChildren: Array<ActionButton | GroupButton> = [];

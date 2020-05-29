@@ -152,6 +152,7 @@ import { Readable } from 'stream';
 import { ReferentElementProps } from '@bentley/imodeljs-common';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
+import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
 import { SectionDrawingProps } from '@bentley/imodeljs-common';
 import { SectionLocationProps } from '@bentley/imodeljs-common';
@@ -176,6 +177,7 @@ import { TileTreeProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
+import { UrlLinkProps } from '@bentley/imodeljs-common';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentLabelProps } from '@bentley/imodeljs-common';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -473,8 +475,8 @@ export class BriefcaseDb extends IModelDb {
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onCreated: BeEvent<(_imodelDb: BriefcaseDb) => void>;
-    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _briefcaseProps: BriefcaseProps) => void>;
-    static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _imodelDb: BriefcaseDb) => void>;
+    static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _briefcaseProps: BriefcaseProps) => void>;
+    static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void>;
@@ -870,7 +872,11 @@ export class ConcurrencyControl {
     get hasCodeSpecsLock(): boolean;
     get hasPendingRequests(): boolean;
     // @alpha
+    hasReservedCode(code: CodeProps): boolean;
+    // @alpha
     get hasSchemaLock(): boolean;
+    // @alpha
+    holdsLock(lock: ConcurrencyControl.LockProps): boolean;
     // @internal (undocumented)
     get iModel(): BriefcaseDb;
     // @internal (undocumented)
@@ -901,6 +907,8 @@ export class ConcurrencyControl {
     onPushChanges(_requestContext: AuthorizedClientRequestContext): Promise<void>;
     // (undocumented)
     onPushedChanges(requestContext: AuthorizedClientRequestContext): Promise<void>;
+    // (undocumented)
+    onPushEmpty(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal (undocumented)
     onSaveChanges(): void;
     // @internal (undocumented)
@@ -1088,11 +1096,13 @@ export namespace ConcurrencyControl {
         // (undocumented)
         deleteFile(): void;
         // (undocumented)
+        deleteLocksForTxn(txnId: string): void;
+        // (undocumented)
         getHeldLock(type: LockType, objectId: string): LockLevel;
         // (undocumented)
         insertCodes(codes: CodeProps[]): void;
         // (undocumented)
-        insertLocks(locks: LockProps[]): void;
+        insertLocks(locks: LockProps[], txnId?: string): void;
         // (undocumented)
         isCodeReserved(code: CodeProps): boolean;
         // (undocumented)
@@ -1129,6 +1139,14 @@ export interface CrashReportingConfigNameValuePair {
 }
 
 // @public
+export class DefinitionContainer extends DefinitionSet {
+    // @internal (undocumented)
+    static get className(): string;
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): DefinitionContainer;
+    static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
+}
+
+// @public
 export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
     // @internal
     constructor(props: DefinitionElementProps, iModel: IModelDb);
@@ -1140,6 +1158,19 @@ export abstract class DefinitionElement extends InformationContentElement implem
 }
 
 // @public
+export class DefinitionGroup extends DefinitionSet {
+    // @internal (undocumented)
+    static get className(): string;
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): DefinitionGroup;
+}
+
+// @public
+export class DefinitionGroupGroupsDefinitions extends ElementGroupsMembers {
+    // @internal (undocumented)
+    static get className(): string;
+}
+
+// @public
 export class DefinitionModel extends InformationModel {
     // @internal (undocumented)
     static get className(): string;
@@ -1148,6 +1179,12 @@ export class DefinitionModel extends InformationModel {
 
 // @public
 export class DefinitionPartition extends InformationPartitionElement {
+    // @internal (undocumented)
+    static get className(): string;
+}
+
+// @public
+export abstract class DefinitionSet extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
 }
@@ -2317,6 +2354,12 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
 // @public (undocumented)
 export class Group extends GroupInformationElement {
     constructor(props: ElementProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+}
+
+// @public
+export class GroupImpartsToMembers extends ElementGroupsMembers {
     // @internal (undocumented)
     static get className(): string;
 }
@@ -3590,9 +3633,15 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
 }
 
 // @public
-export class RepositoryLink extends UrlLink {
+export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
+    // @internal
+    constructor(props: RepositoryLinkProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    // (undocumented)
+    repositoryGuid?: GuidString;
+    // @internal (undocumented)
+    toJSON(): RepositoryLinkProps;
 }
 
 // @public
@@ -4153,9 +4202,17 @@ export interface UpdateModelOptions extends ModelProps {
 }
 
 // @public
-export class UrlLink extends LinkElement {
+export class UrlLink extends LinkElement implements UrlLinkProps {
+    // @internal
+    constructor(props: UrlLinkProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    // (undocumented)
+    description?: string;
+    // @internal (undocumented)
+    toJSON(): UrlLinkProps;
+    // (undocumented)
+    url?: string;
 }
 
 // @internal (undocumented)
