@@ -19,6 +19,7 @@ import { UiFramework } from "../UiFramework";
 import { HTMLElementPopup } from "./HTMLElementPopup";
 import { InputEditorCommitHandler, InputEditorPopup } from "./InputEditorPopup";
 import { ToolbarPopup } from "./ToolbarPopup";
+import { CardPopup } from "./CardPopup";
 
 /** Information maintained by PopupManager about a Popup
  * @alpha
@@ -57,6 +58,7 @@ export class PopupManager {
   private static _editorId = "InputEditor";
   private static _toolbarId = "Toolbar";
   private static _htmlElementId = "HTMLElement";
+  private static _cardId = "Card";
   private static _defaultOffset = { x: 8, y: 8 };
 
   public static readonly onPopupsChangedEvent = new PopupsChangedEvent();
@@ -193,6 +195,34 @@ export class PopupManager {
 
   public static hideHTMLElement(): boolean {
     return PopupManager.removePopup(PopupManager._htmlElementId);
+  }
+
+  public static showCard(
+    content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined,
+    el: HTMLElement, pt: XAndY, offset: XAndY,
+    onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition,
+  ): boolean {
+
+    const id = PopupManager._cardId;
+    const component = (
+      <CardPopup id={id} el={el} pt={pt} offset={offset}
+        content={content} title={title} items={toolbarProps ? toolbarProps.items : undefined}
+        relativePosition={relativePosition} orientation={Orientation.Horizontal} onCancel={onCancel} onItemExecuted={onItemExecuted} />
+    );
+
+    const popupInfo: PopupInfo = {
+      id, pt, component,
+    };
+    PopupManager.addOrUpdatePopup(popupInfo);
+
+    return true;
+  }
+
+  public static hideCard(): boolean {
+    const index = PopupManager._popups.findIndex((info: PopupInfo) => PopupManager._cardId === info.id);
+    if (index >= 0)
+      return PopupManager.removePopup(PopupManager._cardId);
+    return false;
   }
 
   public static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size: SizeProps): Point {

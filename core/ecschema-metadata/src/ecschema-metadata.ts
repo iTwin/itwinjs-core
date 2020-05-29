@@ -51,3 +51,4 @@ export * from "./Validation/SchemaComparer";
 export * from "./Validation/SchemaChanges";
 export * from "./Validation/SchemaCompareReporter";
 export { ISuppressionRule, IRuleSuppressionSet, IRuleSuppressionMap } from "./Validation/RuleSuppressionSet";
+export { SchemaValidater } from "./Validation/SchemaValidater";

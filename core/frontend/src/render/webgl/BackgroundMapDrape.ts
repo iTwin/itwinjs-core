@@ -15,7 +15,8 @@ import { SceneContext } from "../../ViewContext";
 import { ViewState3d } from "../../ViewState";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { RenderGraphic } from "../RenderGraphic";
-import { BatchState, BranchStack } from "./BranchState";
+import { BranchStack } from "./BranchStack";
+import { BatchState } from "./BatchState";
 import { FrameBuffer } from "./FrameBuffer"; import { GL } from "./GL";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
 import { RenderCommands } from "./RenderCommands";
@@ -139,14 +140,14 @@ export class BackgroundMapDrape extends TextureDrape {
     const prevState = System.instance.currentRenderState.clone();
     System.instance.context.viewport(0, 0, this._width, this._height);
 
+    const prevPlan = target.plan;
     const drawingParams = PlanarTextureProjection.getTextureDrawingParams(target);
     const stack = new BranchStack();
-    stack.setViewFlags(drawingParams.viewFlags);
+    stack.changeRenderPlan(drawingParams.viewFlags, prevPlan.is3d, prevPlan.hline);
     stack.setSymbologyOverrides(this._symbologyOverrides);
 
     const batchState = new BatchState(stack);
     System.instance.applyRenderState(drawingParams.state);
-    const prevPlan = target.plan;
 
     target.uniforms.style.changeBackgroundColor(this._bgColor); // Avoid white on white reversal. Will be reset below in changeRenderPlan().
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);

@@ -21,13 +21,12 @@ function cleanGeneratedTsFile(outputDir: string, schemaName: string) {
 
 async function testFileConverterFailure(context: SchemaContext, schemaFileName: string, outputDir: string, referenceDir: string[]): Promise<void> {
   const writer = new ECSchemaToTsXmlWriter(outputDir);
-  await writer.convertSchemaFile(context, schemaFileName, referenceDir)
-    .then(() => {
-      assert.fail();
-    })
-    .catch((err) => {
-      assert.isTrue(err instanceof Error);
-    });
+  try {
+    await writer.convertSchemaFile(context, schemaFileName, referenceDir);
+    assert.fail();
+  } catch (err) {
+    assert.isTrue(err instanceof Error);
+  }
 }
 
 async function testFileConverterSuccess(context: SchemaContext, schemaFileName: string, schemaName: string, outputDir: string, referenceDir: string[]): Promise<void> {

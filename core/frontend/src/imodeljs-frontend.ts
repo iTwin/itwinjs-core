@@ -26,6 +26,7 @@ export * from "./NativeApp";
 export * from "./NativeAppLogger";
 export * from "./IModelConnection";
 export * from "./ElementEditor";
+export * from "./Frustum2d";
 export * from "./ImageUtil";
 export * from "./Marker";
 export * from "./ModelSelectorState";

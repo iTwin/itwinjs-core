@@ -20,9 +20,6 @@ import { MomentData } from "../geometry4d/MomentData";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
-import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
-import { HalfEdgeGraphMerge } from "../topology/Merging";
-import { RegularizationContext } from "../topology/RegularizeFace";
 import { LineStringDataVariant, MultiLineStringDataVariant, Triangulator } from "../topology/Triangulation";
 import { ChainCollectorContext } from "./ChainCollectorContext";
 import { AnyCurve, AnyRegion } from "./CurveChain";
@@ -39,6 +36,15 @@ import { CurveSplitContext } from "./Query/CurveSplitContext";
 import { PointInOnOutContext } from "./Query/InOutTests";
 import { PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { RegionMomentsXY } from "./RegionMomentsXY";
+import { OffsetHelpers } from "./internalContexts/MultiChainCollector";
+import { GeometryQuery } from "./GeometryQuery";
+import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
+import { UnionRegion } from "./UnionRegion";
+/**
+ * Possible return types from
+ * @public
+ */
+export type ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined;
 
 /**
  * * `properties` is a string with special characters indicating
@@ -49,213 +55,16 @@ import { RegionMomentsXY } from "./RegionMomentsXY";
  * @internal
  */
 export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any;
-
 /**
- * base class for callbacks during region sweeps.
- * * At start of a component, `startComponent(node)` is called announcing a representative node on the outermost face.
- *   * A Component in this usage is a component that is edge connected when ignoring "exterior bridge edges".
- * * As each face is entered, `enterFace(facePathStack, newFaceNode)` is called
- *   * facePathStack[0] is the outermost node of the path from the outer face.
- *   * facePathStack[1] is its inside mate.
- *   * facePathStack[2k] is the outside node at crossing to face at depth k.
- *   * facePathStack[2k+1] is the node where face at depth k was entered.
- *   * newFaceNode is the entry node (redundant of stack tip)
- *  * On retreat from a face, `leaveFace(facePathStack, faceNode)` is called.
- *  * At end of component, `finishComponent (node)` is called.
- * * The base class is fully implemented to do nothing during the sweep.
+ * Enumeration of the binary operation types for a booleans among regions
+ * @alpha
  */
-abstract class RegionOpsFaceToFaceSearchCallbacks {
-  /** Announce a representative node on the outer face of a component */
-  public startComponent(_node: HalfEdge): boolean { return true; }
-  /** Announce return to outer face */
-  public finishComponent(_node: HalfEdge): boolean { return true; }
-  /** Announce face entry */
-  public enterFace(_facePathStack: HalfEdge[], _newFaceNode: HalfEdge): boolean { return true; }
-  /** Announce face exit */
-  public leaveFace(_facePathStack: HalfEdge[], _newFaceNode: HalfEdge): boolean { return true; }
-}
-/** Function signature to test if a pair of boolean states is to be accepted by area booleans (during face-to-face sweeps) */
-type BinaryBooleanAcceptFunction = (stateA: boolean, stateB: boolean) => boolean;
-/**
- * Implementations of `RegionOpsFaceToFaceSearchCallbacks` for binary boolean sweep.
- * * This assumes the each node in the graph has edgeTag set to:
- *   * `edgeTag === undefined` if the edge crossing the edge does not change classification.
- *     * for example, an edge added by regularization
- *   * `edgeTag === 1` if this is a boundary for the first of the boolean input regions
- *   * `edgeTag === 2` if this is a boundary for the first of the boolean input regions
- * * constructor
- *    * takes caller-supplied function to decide whether to accept a face given its state relative to the two boolean terms.
- *    * sets the in/out status of both terms to false.
- * * `startComponent` marks the entire outer face as `EXTERIOR`
- * * `enterFace`
- *    * if this is a bounding edge (according to `node.faceTag`) toggle the in/out status if this boolean term.
- *    * ask the faceAcceptFunction if the current term states combine to in/out for the result
- *    * if out, set the `EXTERIOR` mask around the face.
- * * `leaveFace`
- *    * if this is a bounding edge (according to `node.faceTag`) toggle the in/out status if this boolean term.
- * * `finishComponent` is not reimplemented.
- */
-class RegionOpsBooleanSweepCallbacks extends RegionOpsFaceToFaceSearchCallbacks {
-  private _faceSelectFunction: BinaryBooleanAcceptFunction;
-  private _inComponent: boolean[];
-  private _exteriorMask: HalfEdgeMask;
-  public constructor(acceptFaceFunction: BinaryBooleanAcceptFunction, exteriorMask: HalfEdgeMask) {
-    super();
-    this._inComponent = [false, false, false]; // entry 0 is never reused.
-    this._exteriorMask = exteriorMask;
-    this._faceSelectFunction = acceptFaceFunction;
-  }
-  /** Mark this face as exterior */
-  public startComponent(node: HalfEdge): boolean { node.setMaskAroundFace(this._exteriorMask); return true; }
-  /**
-   * * If necessary, toggle a term state.
-   * * if indicated, mark this face exterior.
-   */
-  public enterFace(_facePathStack: HalfEdge[], node: HalfEdge): boolean {
-    const thisFaceIndex = node.edgeTag;
-    if (node.edgeTag === 1 || node.edgeTag === 2) this._inComponent[thisFaceIndex] = !this._inComponent[thisFaceIndex];
-    if (!this._faceSelectFunction(this._inComponent[1], this._inComponent[2]))
-      node.setMaskAroundFace(this._exteriorMask);
-
-    return true;
-  }
-  /**
-   * * If necessary, toggle a term state.
-   */
-  public leaveFace(_facePathStack: HalfEdge[], node: HalfEdge): boolean {
-    const thisFaceIndex = node.edgeTag;
-    if (node.edgeTag === 1 || node.edgeTag === 2) this._inComponent[thisFaceIndex] = !this._inComponent[thisFaceIndex];
-    return true;
-  }
-}
-
-/**
- * run a DFS with face-to-face step announcements.
- * * false return from any function terminates search immediately.
- * * all reachable nodes assumed to have both visit masks clear.
- * @param graph containing graph.
- * @param seed first node to visit.
- * @param faceHasBeenVisited mask marking faces that have been seen.
- * @param nodeHasBeenVisited mask marking node-to-node step around face.
- *
- */
-function faceToFaceSearchFromOuterLoop(_graph: HalfEdgeGraph,
-  seed: HalfEdge,
-  faceHasBeenVisited: HalfEdgeMask,
-  nodeHasBeenVisited: HalfEdgeMask,
-  callbacks: RegionOpsFaceToFaceSearchCallbacks) {
-  if (seed.isMaskSet(faceHasBeenVisited))
-    return;
-  if (!callbacks.startComponent(seed))
-    return;
-
-  const facePathStack = [];
-  seed.setMaskAroundFace(faceHasBeenVisited);
-  let faceWalker = seed;
-  do {
-    let entryNode = faceWalker;
-    let mate = faceWalker.edgeMate;
-    if (!mate.isMaskSet(faceHasBeenVisited)) {
-
-      // the faceWalker seed is always on the base of the stack.
-      // the stack then contains even-odd pairs of (entryNode, currentNode)
-      // * entryNode is the node where a face was entered.
-      // * faceNode is another node around that face.
-
-      facePathStack.push(faceWalker);
-      facePathStack.push(mate);
-      let faceNode = mate.faceSuccessor;
-      mate.setMaskAroundFace(faceHasBeenVisited);
-      if (callbacks.enterFace(facePathStack, mate)) {
-        for (; ;) {
-          mate = faceNode.edgeMate;
-          if (!mate.isMaskSet(faceHasBeenVisited)) {
-            mate.setMaskAroundFace(faceHasBeenVisited);
-            if (!callbacks.enterFace(facePathStack, mate))
-              return;
-            facePathStack.push(faceNode);
-            facePathStack.push(mate);
-            faceNode = mate;
-            entryNode = mate;
-          }
-          faceNode.setMask(nodeHasBeenVisited);
-          faceNode = faceNode.faceSuccessor;
-          if (faceNode === entryNode) {
-            callbacks.leaveFace(facePathStack, faceNode);
-            if (facePathStack.length <= 2) {
-              break;
-            }
-            facePathStack.pop();
-            faceNode = facePathStack[facePathStack.length - 1];
-            facePathStack.pop();
-            entryNode = facePathStack[facePathStack.length - 1];
-          }
-          if (faceNode.isMaskSet(nodeHasBeenVisited)) {
-            // this is disaster !!!
-            return;
-          }
-        }
-      }
-    }
-    // continue at outermost level .....
-    faceWalker = faceWalker.faceSuccessor;
-  }
-  while (faceWalker !== seed);
-
-  callbacks.finishComponent(seed);
-}
-/** Complete multi-step process for polygon binary booleans starting with arrays of coordinates.
- * * Each of the binary input terms is a collection of loops
- *   * Within the binary term, in/out is determined by edge-crossing parity rules.
- * * Processing steps are
- *   * Build the loops for each set.
- *      * Each edge labeled with 1 or 2 as binary term identifier.
- *   * find crossings among the edges.
- *      * Edges are split as needed, but split preserves the edgeTag
- *   * sort edges around vertices
- *   * add regularization edges so holes are connected to their parent.
- */
-function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, faceSelectFunction: (inA: boolean, inB: boolean) => boolean, graphCheckPoint?: GraphCheckPointFunction): HalfEdgeGraph | undefined {
-  const graph = new HalfEdgeGraph();
-  const baseMask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
-  const seedA = RegionOps.addLoopsWithEdgeTagToGraph(graph, loopsA, baseMask, 1);
-  const seedB = RegionOps.addLoopsWithEdgeTagToGraph(graph, loopsB, baseMask, 2);
-  if (graphCheckPoint)
-    graphCheckPoint("unmerged loops", graph, "U");
-  if (seedA || seedB) {
-    // split edges where they cross . . .
-    HalfEdgeGraphMerge.splitIntersectingEdges(graph);
-    if (graphCheckPoint)
-      graphCheckPoint("After splitIntersectingEdges", graph, "S");
-    // sort radially around vertices.
-    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
-    if (graphCheckPoint)
-      graphCheckPoint("After clusterAndMergeXYTheta", graph, "M");
-    // add edges to connect various components  (e.g. holes!!!)
-    const context = new RegularizationContext(graph);
-    context.regularizeGraph(true, true);
-    if (graphCheckPoint)
-      graphCheckPoint("After regularize", graph, "MR");
-    const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(graph);
-    const exteriorMask = HalfEdgeMask.EXTERIOR;
-    const faceVisitedMask = graph.grabMask();
-
-    const nodeVisitedMask = graph.grabMask();
-    const allMasksToClear = exteriorMask | faceVisitedMask | nodeVisitedMask;
-    graph.clearMask(allMasksToClear);
-    const callbacks = new RegionOpsBooleanSweepCallbacks(faceSelectFunction, exteriorMask);
-    faceToFaceSearchFromOuterLoop(graph,
-      exteriorHalfEdge,
-      faceVisitedMask,
-      nodeVisitedMask,
-      callbacks);
-    if (graphCheckPoint)
-      graphCheckPoint("After faceToFaceSearchFromOuterLoop", graph, "MRX");
-    graph.dropMask(faceVisitedMask);
-    graph.dropMask(nodeVisitedMask);
-    return graph;
-  }
-  return undefined;
+export enum RegionBinaryOpType {
+  Union = 0,
+  Parity = 1,
+  Intersection = 2,
+  AMinusB = 3,
+  BMinusA = 4,
 }
 
 /**
@@ -332,6 +141,11 @@ export class RegionOps {
             if (loopSeed !== undefined)
               announceIsolatedLoop(graph, loopSeed);
           }
+        } else {
+          for (const child of data) {
+            if (Array.isArray(child))
+              this.addLoopsToGraph(graph, child as MultiLineStringDataVariant, announceIsolatedLoop);
+          }
         }
       }
     }
@@ -352,13 +166,13 @@ export class RegionOps {
       return loopSeeds;
     return undefined;
   }
-/**
- * Given a graph just produced by booleans, convert to a polyface
- * * "just produced" implies exterior face markup.
- *
- * @param graph
- * @param triangulate
- */
+  /**
+   * Given a graph just produced by booleans, convert to a polyface
+   * * "just produced" implies exterior face markup.
+   *
+   * @param graph
+   * @param triangulate
+   */
   private static finishGraphToPolyface(graph: HalfEdgeGraph | undefined, triangulate: boolean): Polyface | undefined {
     if (graph) {
       if (triangulate) {
@@ -378,7 +192,7 @@ export class RegionOps {
    * @param loopsB second set of loops
    */
   public static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false): Polyface | undefined {
-    const graph = doPolygonBoolean(loopsA, loopsB,
+    const graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(loopsA, loopsB,
       (inA: boolean, inB: boolean) => (inA && inB),
       this._graphCheckPointFunction);
     return this.finishGraphToPolyface(graph, triangulate);
@@ -393,7 +207,7 @@ export class RegionOps {
    * @param loopsB second set of loops
    */
   public static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false): Polyface | undefined {
-    const graph = doPolygonBoolean(loopsA, loopsB,
+    const graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(loopsA, loopsB,
       (inA: boolean, inB: boolean) => (inA || inB),
       this._graphCheckPointFunction);
     return this.finishGraphToPolyface(graph, triangulate);
@@ -407,10 +221,37 @@ export class RegionOps {
    * @param loopsB second set of loops
    */
   public static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false): Polyface | undefined {
-    const graph = doPolygonBoolean(loopsA, loopsB,
+    const graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(loopsA, loopsB,
       (inA: boolean, inB: boolean) => (inA && !inB),
       this._graphCheckPointFunction);
     return this.finishGraphToPolyface(graph, triangulate);
+  }
+
+  /**
+   * return areas defined by a boolean operation.
+   * * If there are multiple regions in loopsA, they are treated as a union.
+   * * If there are multiple regions in loopsB, they are treated as a union.
+   * @param loopsA first set of loops
+   * @param loopsB second set of loops
+   * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
+   * @alpha
+   */
+  public static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType): AnyRegion | undefined {
+    // create and load a context . . .
+    const result = UnionRegion.create();
+    const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
+    context.addMembers(loopsA, loopsB);
+    context.createGraph();
+    context.runClassificationSweep(operation, (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
+      if (face.countEdgesAroundFace () < 3 && Geometry.isSameCoordinate (area, 0)) // NEED BETTER TOLERANCE
+        return;
+      if (faceType === 1) {
+        const loop = PlanarSubdivision.createLoopInFace(face);
+        if (loop)
+          result.tryAddChild(loop);
+      }
+    });
+    return result;
   }
 
   /** Construct a wire (not area!!) that is offset from given polyline or polygon.
@@ -519,6 +360,26 @@ export class RegionOps {
     }
     return chainCollector.grabResult();
   }
+  /**
+   * * Restructure curve fragments as chains and offsets
+   * * Return object with named chains, insideOffsets, outsideOffsets
+   * * BEWARE that if the input is not a loop the classification of outputs is suspect.
+   * @param fragments fragments to be chained
+   * @param offsetDistance offset distance.
+   */
+  public static collectInsideAndOutsideOffsets(fragments: GeometryQuery[], offsetDistance: number, gapTolerance: number): { insideOffsets: GeometryQuery[], outsideOffsets: GeometryQuery[], chains: ChainTypes } {
+    return OffsetHelpers.collectInsideAndOutsideOffsets(fragments, offsetDistance, gapTolerance);
+  }
+  /**
+   * * Restructure curve fragments as chains
+   * * Return the chains, possibly wrapped in BagOfCurves if there multiple chains.
+   * @param fragments fragments to be chained
+   * @param offsetDistance offset distance.
+   */
+  public static collectChains(fragments: GeometryQuery[], gapTolerance: number): ChainTypes {
+    return OffsetHelpers.collectChains(fragments, gapTolerance);
+  }
+
   /**
    * * Find intersections of `curvesToCut` with boundaries of `region`.
    * * Break `curvesToCut` into parts inside, outside, and coincident.
@@ -664,18 +525,21 @@ export class RegionOps {
    * collect all `CurvePrimitives` in loosely typed input.
    * * This (always) recurses into primitives within collections (Path, Loop, ParityRegion, UnionRegion)
    * * It (optionally) recurses to hidden primitives within primitives (i.e. CurveChainWithDistanceIndex)
+   * * If collectorArray is given, it is NOT cleared -- primitives are appended.
    * @param candidates array of various CurvePrimitive and CurveCollection
    * @param smallestPossiblePrimitives if false, leave CurveChainWithDistanceIndex as single primitives.  If true, recurse to their children.
    */
-  public static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false): CurvePrimitive[] {
+  public static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[],
+    smallestPossiblePrimitives: boolean = false,
+    explodeLinestrings: boolean = false): CurvePrimitive[] {
     const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
     if (candidates instanceof CurvePrimitive) {
-      candidates.collectCurvePrimitives(results, smallestPossiblePrimitives);
+      candidates.collectCurvePrimitives(results, smallestPossiblePrimitives, explodeLinestrings);
     } else if (candidates instanceof CurveCollection) {
-      candidates.collectCurvePrimitives(results, smallestPossiblePrimitives);
+      candidates.collectCurvePrimitives(results, smallestPossiblePrimitives, explodeLinestrings);
     } else if (Array.isArray(candidates)) {
       for (const c of candidates) {
-        this.collectCurvePrimitives(c, results, smallestPossiblePrimitives);
+        this.collectCurvePrimitives(c, results, smallestPossiblePrimitives, explodeLinestrings);
       }
     }
     return results;

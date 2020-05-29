@@ -14,7 +14,7 @@ import { RenderMemory } from "../RenderMemory";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
 import { ShaderProgramParams } from "./DrawCommand";
-import { LineCode } from "./EdgeOverrides";
+import { LineCode } from "./LineCode";
 import { GL } from "./GL";
 import { BuffersContainer } from "./Handle";
 import { RenderOrder, RenderPass } from "./RenderFlags";
@@ -109,12 +109,14 @@ export class PolylineGeometry extends LUTGeometry {
   public get hasFeatures() { return this._hasFeatures; }
 
   protected _getLineWeight(params: ShaderProgramParams): number {
-    return this.isEdge ? params.target.getEdgeWeight(params, this.lineWeight) : this.lineWeight;
+    return this.isEdge ? params.target.computeEdgeWeight(params.renderPass, this.lineWeight) : this.lineWeight;
   }
   protected _getLineCode(params: ShaderProgramParams): number {
-    return this.isEdge ? params.target.getEdgeLineCode(params, this.lineCode) : this.lineCode;
+    return this.isEdge ? params.target.computeEdgeLineCode(params.renderPass, this.lineCode) : this.lineCode;
   }
-  public getColor(target: Target): ColorInfo { return this.isEdge && target.isEdgeColorOverridden ? target.edgeColor : this.lut.colorInfo; }
+  public getColor(target: Target): ColorInfo {
+    return this.isEdge ? target.computeEdgeColor(this.lut.colorInfo) : this.lut.colorInfo;
+  }
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const gl = System.instance;

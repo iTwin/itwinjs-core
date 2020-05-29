@@ -160,11 +160,13 @@ export enum InverseMatrixState {
  * * A very common use is to hold a rigid body rotation (which has no scaling or skew), but the 3x3 contents can
  * also hold scaling and skewing.
  * * The matrix with 2-dimensional layout
- * ```equation
+ * ```
+ * equation
  *      \matrixXY{A}
  * ```
  * is stored as 9 numbers in "row-major" order in a `Float64Array`, viz
- * ```equation
+ * ```
+ * equation
  *      \rowMajorMatrixXY{A}
  * ```
  * * If the matrix inverse is known it is stored in the inverseCoffs array.
@@ -245,7 +247,8 @@ export class Matrix3d implements BeJSONFunctions {
     [this.coffs[3], this.coffs[4], this.coffs[5]],
     [this.coffs[6], this.coffs[7], this.coffs[8]]];
   }
-  /** copy data from various input forms to this matrix:
+  /** copy data from various input forms to this matrix.
+   * The source can be:
    * * Another `Matrix3d`
    * * An array of 3 arrays, each of which has the 3 numbers for a row of the matrix.
    * * An array of 9 numbers in row major order.
@@ -451,7 +454,7 @@ export class Matrix3d implements BeJSONFunctions {
     retVal.inverseState = InverseMatrixState.singular;
     return retVal;
   }
-  /** create an identity matrix
+  /** create an identity matrix.
    * * all diagonal entries (xx,yy,zz) are one
    * * all others are zero.
    * * This (rather than all zeros) is the useful state for most graphics transformations.
@@ -468,7 +471,8 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /**
-   * Create a matrix with uniform scale factors, viz (with `s=scaleFactor`)
+   * Create a matrix with uniform scale factors.
+   * For scale factor _s_,
    * ```
    * equation
    * \begin{bmatrix}s & 0 & 0 \\ 0 & s & 0\\ 0 & 0 & s\end{bmatrix}
@@ -478,9 +482,8 @@ export class Matrix3d implements BeJSONFunctions {
     return Matrix3d.createScale(scaleFactor, scaleFactor, scaleFactor);
   }
   /**
-   *
-   * *  use createHeadsUpPerpendicular to generate a vectorV perpendicular to vectorA
-   * *  construct a frame using createRigidFromColumns (vectorA, vectorB, axisOrder)
+   * Construct a rigid matrix using createHeadsUpPerpendicular to generate a vector perpendicular to vectorA..
+   * *
    */
   public static createRigidHeadsUp(vectorA: Vector3d, axisOrder: AxisOrder = AxisOrder.ZXY, result?: Matrix3d): Matrix3d {
     const vectorB = Matrix3d.createPerpendicularVectorFavorXYPlane(vectorA);
@@ -492,8 +495,7 @@ export class Matrix3d implements BeJSONFunctions {
     return Matrix3d.createIdentity(result);
   }
   /**
-   *
-   * * return a vector that is perpendicular to the input direction.
+   * return a vector that is perpendicular to the input direction.
    * * Among the infinite number of perpendiculars possible, this method
    * favors having one in the xy plane.
    * * Hence, when vectorA is NOT close to the Z axis, the returned vector is Z cross vectorA.
@@ -509,8 +511,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /**
-   *
-   * * return a vector that is perpendicular to the input direction.
+   * return a vector that is perpendicular to the input direction.
    * * Among the infinite number of perpendiculars possible, this method
    * favors having one near the Z.
    * That is achieved by crossing "this" vector with the result of createHeadsUpPerpendicularFavorXYPlane.
@@ -601,7 +602,7 @@ export class Matrix3d implements BeJSONFunctions {
     return myResult;
   }
 
-  /** Create a matrix with
+  /** Create a matrix from "as viewed" right and up vectors.
    * * ColumnX points in the rightVector direction
    * * ColumnY points in in the upVectorDirection
    * * ColumnZ is a unit cross product.
@@ -967,7 +968,7 @@ export class Matrix3d implements BeJSONFunctions {
     return Geometry.crossProductXYZXYZ(this.coffs[2], this.coffs[5], this.coffs[8], vector.x, vector.y, vector.z, result);
   }
   /**
-   * Replace current rows Ui Uj with (c*Ui - s*Uj) and (c*Uj + s*Ui)
+   * Replace current rows Ui Uj with (c*Ui - s*Uj) and (c*Uj + s*Ui).
    * @param i first row index.  must be 0,1,2 (unchecked)
    * @param j second row index. must be 0,1,2 (unchecked)
    * @param c fist coefficient
@@ -985,9 +986,8 @@ export class Matrix3d implements BeJSONFunctions {
     }
   }
   /**
-   * Replace current columns Ui Uj with (c*Ui - s*Uj) and (c*Uj + s*Ui)
-   * This is used in compute intensive inner loops -- there is no
-   * checking for i,j being 0,1,2
+   * Replace current columns Ui Uj with (c*Ui - s*Uj) and (c*Uj + s*Ui).
+   * * This is used in compute intensive inner loops -- there is no checking for i,j being 0,1,2.
    * @param i first row index.  must be 0,1,2 (unchecked)
    * @param j second row index. must be 0,1,2 (unchecked)
    * @param c fist coefficient
@@ -1004,7 +1004,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /**
-   * create a rigid coordinate frame with:
+   * create a rigid coordinate frame column z parallel to (_x_,_y_,_z_) and column x in the xy plane.
    * * column z points from origin to x,y,z
    * * column x is perpendicular and in the xy plane
    * * column y is perpendicular to both.  It is the "up" vector on the view plane.
@@ -1201,7 +1201,8 @@ export class Matrix3d implements BeJSONFunctions {
     }
     return false;
   }
-  /** Create a matrix from column vectors, i.e.
+  /**
+   * Create a matrix from column vectors.
    * ```
    * equation
    * \begin{bmatrix}U_x & V_x & W_x \\ U_y & V_y & W_y \\ U_z & V_z & W_z \end{bmatrix}
@@ -1215,7 +1216,7 @@ export class Matrix3d implements BeJSONFunctions {
         vectorU.z, vectorV.z, vectorW.z, result);
   }
 
-  /** Create a matrix with each column's content given as `XAndY` for the first xy rows and separate numeric z values, viz
+  /** Create a matrix with each column's _x,y_ parts given `XAndY` and separate numeric z values.
    * ```
    * equation
    * \begin{bmatrix}U_x & V_x & W_x \\ U_y & V_y & W_y \\ u & v & w \end{bmatrix}
@@ -1304,7 +1305,7 @@ export class Matrix3d implements BeJSONFunctions {
     return target;
   }
 
-  /** Create a matrix from row vectors, viz
+  /** Create a matrix from row vectors.
    * ```
    * equation
    * \begin{bmatrix}U_x & U_y & U_z \\ V_x & V_y & V_z \\ W_x & W_y & W_z \end{bmatrix}
@@ -1351,8 +1352,9 @@ export class Matrix3d implements BeJSONFunctions {
   // static create1Vector(direction: Vector3d, axisIndex: number): Matrix3d;
   // static createFromXYVectors(vectorX: Vector3d, vectorY: Vector3d, axisIndex: number): Matrix3d;
 
-  /** Multiply the matrix * vector, i.e. the vector is a column vector on the right.
-   * ```equation
+  /** Multiply the matrix * vector, treating the vector is a column vector on the right.
+   * ```
+   * equation
    * \matrixXY{A}\columnSubXYZ{U}
    * ```
    * @return the vector result
@@ -1491,7 +1493,6 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Multiply transpose of this matrix times a vector.
    * * This produces the same x,y,z as treating the vector as a row on the left of the (un-transposed) matrix.
-   *
    * ```
    * equation
    * \begin{matrix}
@@ -1600,7 +1601,10 @@ export class Matrix3d implements BeJSONFunctions {
     result.z = (this.coffs[2] * x + this.coffs[5] * y + this.coffs[8] * z);
     return result;
   }
-  /** Solve matrix * result = vector, i.e. multiply result = matrixInverse * rightHandSide  */
+  /** Solve `matrix * result = vector`.
+   * * This is equivalent to multiplication `result = matrixInverse * vector`.
+   * * Result is undefined if the matrix is singular (e.g. has parallel or zero length columns)
+   */
   public multiplyInverse(vector: Vector3d, result?: Vector3d): Vector3d | undefined {
     this.computeCachedInverse(true);
     if (this.inverseCoffs) {
@@ -1616,7 +1620,10 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
 
-  /** Solve matrix * result = vector, i.e. multiply result = matrixInverse * rightHandSide  */
+  /** Solve `matrixTranspose * result = vector`.
+   * * This is equivalent to multiplication `result = matrixInverseTranspose * vector`.
+   * * Result is undefined if the matrix is singular (e.g. has parallel or zero length columns)
+   */
   public multiplyInverseTranspose(vector: Vector3d, result?: Vector3d): Vector3d | undefined {
     this.computeCachedInverse(true);
     if (this.inverseCoffs) {
@@ -1633,10 +1640,9 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /**
-   *
-   * *  multiply matrixInverse * [x,y,z]
-   * *  Equivalent to solving matrix * result = [x,y,z]
-   * *  return as a Vector3d.
+   * multiply `matrixInverse * [x,y,z]`.
+   * *  This is equivalent to solving `matrix * result = [x,y,z]`
+   * *  return as a Vector3d, or undefined if the matrix is singular.
    */
   public multiplyInverseXYZAsVector3d(x: number, y: number, z: number, result?: Vector3d): Vector3d | undefined {
     this.computeCachedInverse(true);
@@ -1651,8 +1657,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /**
-   *
-   * *  multiply matrixInverse * [x,y,z]
+   * multiply `matrixInverse * [x,y,z]` and return packaged as `Point4d` with given weight.
    * *  Equivalent to solving matrix * result = [x,y,z]
    * *  return as a Point4d with the same weight.
    * *  Called by Transform with x,y,z adjusted by subtraction ((xw) - w * origin.x, etc) where xw is the pre-weighted space point.
@@ -1671,7 +1676,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /**
-   *
+   * multiply `matrixInverse * [x,y,z]` and return packaged as `Point3d`.
    * *  multiply matrixInverse * [x,y,z]
    * *  Equivalent to solving matrix * result = [x,y,z]
    * *  return as a Point3d.
@@ -1775,7 +1780,7 @@ export class Matrix3d implements BeJSONFunctions {
     return result;
   }
 
-  /** Matrix multiplication `thisTranspose * other`
+  /** Matrix multiplication `thisTranspose * other`.
    * ```
    * equation
    * \matrixXY{result}=\matrixXY{\text{this}}\matrixTransposeSubXY{\text{other}}
@@ -2349,7 +2354,7 @@ export class Matrix3d implements BeJSONFunctions {
     const product = this.multiplyMatrixMatrixTranspose(this);
     return product.isIdentity;
   }
-  /** create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse)
+  /** create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
    * vectorA is placed in the first column of the axis order.
    * vectorB is projected perpendicular to vectorA within their plane and placed in the second column.
    */
@@ -2373,7 +2378,7 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
 
-  /** create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse)
+  /** create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
    * columns are taken from the source Matrix3d in order indicated by the axis order.
    */
   public static createRigidFromMatrix3d(

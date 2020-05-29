@@ -331,6 +331,20 @@ describe("iModelHub EventHandler", () => {
     chai.expect(typedEvent.versionId!).to.be.equal(versionId);
   });
 
+  it("should receive baseline VersionEvent (#unit)", async () => {
+    const versionId: GuidString = Guid.createValue();
+    const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","VersionId":"${versionId}","VersionName":"ABC","ChangeSetId":""}`;
+    mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "VersionEvent");
+
+    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    chai.expect(event).to.be.instanceof(VersionEvent);
+    chai.assert(!!event!.iModelId);
+    const typedEvent = event as VersionEvent;
+    chai.assert(!!typedEvent);
+    chai.expect(typedEvent.versionId!).to.be.equal(versionId);
+    chai.expect(typedEvent.changeSetId).to.be.eq("");
+  });
+
   it("should delete subscription", async () => {
     mockDeleteEventSubscription(imodelId, subscription.wsgId);
     await imodelHubClient.events.subscriptions.delete(requestContext, imodelId, subscription.wsgId);

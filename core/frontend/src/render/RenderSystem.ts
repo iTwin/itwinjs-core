@@ -7,9 +7,9 @@
  */
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, IndexedPolyface, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
+import { ClipVector, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
 import {
-  ColorDef, ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat,
+  ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat,
   PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps,
 } from "@bentley/imodeljs-common";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
@@ -29,7 +29,7 @@ import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
 import { RenderClipVolume } from "./RenderClipVolume";
-import { GraphicList, RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
+import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 
@@ -249,10 +249,6 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[] { return []; }
-  /** @internal */
-  public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList { return []; }
-  /** @internal */
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
   /** @internal */
   public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
@@ -391,8 +387,8 @@ export abstract class RenderSystem implements IDisposable {
       return undefined;
 
     const imageSource = new ImageSource(base64StringToUint8Array(textureProps.data as string), format);
-    const imagePromise = imageElementFromImageSource(imageSource);
-    return imagePromise.then((image: HTMLImageElement) => ({ image, format }));
+    const image = await imageElementFromImageSource(imageSource);
+    return { image, format };
   }
 
   /** Obtain a texture created from a gradient.
@@ -414,7 +410,8 @@ export abstract class RenderSystem implements IDisposable {
 
   /** Create a new texture from an [[ImageSource]]. */
   public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    return imageElementFromImageSource(source).then((image) => IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined);
+    const image = await imageElementFromImageSource(source);
+    return IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined;
   }
 
   /** Create a new texture from a cube of HTML images.
@@ -511,7 +508,7 @@ export namespace RenderSystem {
 
     /** If true will attempt to create a WebGL2 context.
      *
-     * Default value: false
+     * Default value: true
      *
      * @internal
      */

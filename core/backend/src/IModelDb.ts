@@ -10,7 +10,7 @@
 
 import * as os from "os";
 import {
-  assert, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils,
+  BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils,
   Logger, OpenMode, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
@@ -588,6 +588,58 @@ export abstract class IModelDb extends IModel {
     }
   }
 
+  /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
+   * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
+   * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
+   * @param requestContext The client request context
+   * @param serializedXmlSchemas  The xml string(s) created from a serialized ECSchema.
+   * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
+   * @note Changes are saved if importSchemaStrings is successful and abandoned if not successful.
+   * @see querySchemaVersion
+   * @alpha
+   */
+  public async importSchemaStrings(requestContext: ClientRequestContext | AuthorizedClientRequestContext, serializedXmlSchemas: string[]): Promise<void> {
+    requestContext.enter();
+    if (this.isSnapshot || this.isStandalone) {
+      const status = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
+      if (DbResult.BE_SQLITE_OK !== status) {
+        throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ serializedXmlSchemas }));
+      }
+      this.clearStatementCache();
+      this.clearSqliteStatementCache();
+      return;
+    }
+
+    if (!(requestContext instanceof AuthorizedClientRequestContext)) {
+      throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
+    }
+    if (this.isBriefcaseDb() && this.isPushEnabled) {
+      await this.concurrencyControl.lockSchema(requestContext);
+      requestContext.enter();
+    }
+
+    const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
+    if (DbResult.BE_SQLITE_OK !== stat) {
+      throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ serializedXmlSchemas }));
+    }
+
+    this.clearStatementCache();
+    this.clearSqliteStatementCache();
+
+    try {
+      // The schema import logic and/or imported Domains may have created new elements and models.
+      // Make sure we have the supporting locks and codes.
+      if (this.isBriefcaseDb() && this.isPushEnabled) {
+        await this.concurrencyControl.request(requestContext);
+        requestContext.enter();
+      }
+    } catch (err) {
+      requestContext.enter();
+      this.abandonChanges();
+      throw err;
+    }
+  }
+
   /** Find an already open IModelDb (considers all subclasses).
    * @note This method is intended for use by RPC implementations.
    * @throws [[IModelNotFoundResponse]] if an open IModelDb matching the token is not found.
@@ -595,7 +647,7 @@ export abstract class IModelDb extends IModel {
   public static findByKey(key: string): IModelDb {
     const iModelDb: IModelDb | undefined = IModelDb.tryFindByKey(key);
     if (undefined === iModelDb) {
-      Logger.logError(loggerCategory, "IModelDb not found in the in-memory cache", () => key);
+      Logger.logError(loggerCategory, "IModelDb not found in the in-memory cache", () => ({ key }));
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
     return iModelDb;
@@ -854,7 +906,8 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
-   *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend.
+   *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend,
+   *    or that shared backends export a limited number of elements at a time.
    *  * Vertices are exported in the IModelDb's world coordinate system, which is right-handed with Z pointing up.
    *  * The results of changing [ExportGraphicsOptions]($imodeljs-backend) during the [ExportGraphicsOptions.onGraphics]($imodeljs-backend) callback are not defined.
    *
@@ -1932,19 +1985,23 @@ export class BriefcaseDb extends IModelDb {
 
     const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(briefcaseKey);
     if (briefcaseEntry === undefined)
-      throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that has not been downloaded", Logger.logError, loggerCategory, () => briefcaseKey);
+      throw new IModelError(IModelStatus.BadRequest, "BriefcaseDb.open: Cannot open a briefcase that has not been downloaded", Logger.logError, loggerCategory, () => briefcaseKey);
     if (briefcaseEntry.downloadStatus !== DownloadBriefcaseStatus.Complete)
-      throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that has not been completely downloaded", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+      throw new IModelError(IModelStatus.BadRequest, "BriefcaseDb.open: Cannot open a briefcase that has not been completely downloaded", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
 
-    Logger.logTrace(loggerCategory, "Opening briefcase", () => briefcaseEntry.getDebugInfo());
+    Logger.logTrace(loggerCategory, "BriefcaseDb.open: Processing call to open briefcase", () => briefcaseEntry.getDebugInfo());
 
     let briefcaseProps = briefcaseEntry.getBriefcaseProps();
     BriefcaseDb.onOpen.raiseEvent(requestContext, briefcaseProps);
 
     let briefcaseDb: BriefcaseDb;
-    if (briefcaseEntry.iModelDb === undefined) {
-      assert(!briefcaseEntry.isOpen); // All open briefcases should have an iModelDb associated with it
+    const isOpen = briefcaseEntry.iModelDb !== undefined;
+    if (isOpen !== briefcaseEntry.isOpen) {
+      // All open briefcases should have the iModelDb property setup - eventually turn this into an assertion.
+      Logger.logError(loggerCategory, "BriefcaseDb.open: Open state was not expected", () => briefcaseEntry.getDebugInfo());
+    }
 
+    if (briefcaseEntry.iModelDb === undefined) {
       briefcaseEntry.openMode = openOptions?.openAsReadOnly ? OpenMode.Readonly : briefcaseEntry.openMode; // Override default openMode if user has requested it
       BriefcaseManager.openBriefcase(briefcaseEntry);
 
@@ -1961,19 +2018,20 @@ export class BriefcaseDb extends IModelDb {
 
       if (briefcaseDb.isPushEnabled) {
         if (!(requestContext instanceof AuthorizedClientRequestContext))
-          throw new IModelError(BentleyStatus.ERROR, "Opening a briefcase with SyncMode = PullPush requires authorization - pass AuthorizedClientRequestContext instead of ClientRequestContext");
+          throw new IModelError(BentleyStatus.ERROR, "BriefcaseDb.open: Opening a briefcase with SyncMode = PullPush requires authorization - pass AuthorizedClientRequestContext instead of ClientRequestContext", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
         await briefcaseDb.concurrencyControl.onOpened(requestContext);
       }
       this.onOpened.raiseEvent(requestContext, briefcaseDb);
     } else {
-      assert(briefcaseEntry.isOpen); // All open briefcases should have an iModelDb associated with it
       if (openOptions?.openAsReadOnly && briefcaseEntry.openMode === OpenMode.ReadWrite)
-        throw new IModelError(IModelStatus.AlreadyOpen, "The briefcase is already open ReadWrite. Cannot re-open it Readonly now", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+        throw new IModelError(IModelStatus.AlreadyOpen, "BriefcaseDb.open: The briefcase is already open ReadWrite. Cannot re-open it Readonly now", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+      Logger.logTrace(loggerCategory, "BriefcaseDb.open: Reusing an existing open briefcase", () => briefcaseEntry.getDebugInfo());
       briefcaseDb = briefcaseEntry.iModelDb as BriefcaseDb; // WIP: change iModelDb type in BriefcaseEntry
     }
 
     if (requestContext instanceof AuthorizedClientRequestContext) {
       // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
+      Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
       await briefcaseDb.logUsage(requestContext, briefcaseProps.contextId);
     }
     return briefcaseDb;
@@ -2034,7 +2092,7 @@ export class BriefcaseDb extends IModelDb {
   public static findByKey(key: string): BriefcaseDb {
     const briefcaseDb: BriefcaseDb | undefined = BriefcaseDb.tryFindByKey(key);
     if (undefined === briefcaseDb) {
-      Logger.logError(loggerCategory, "BriefcaseDb not found in the in-memory cache", () => key);
+      Logger.logError(loggerCategory, "BriefcaseDb not found in the in-memory cache", () => ({ key }));
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
     return briefcaseDb;
@@ -2082,7 +2140,7 @@ export class BriefcaseDb extends IModelDb {
     if (!this.isPushEnabled)
       throw new IModelError(BentleyStatus.ERROR, "IModel needs to be downloaded with SyncMode.PullAndPush and opened ReadWrite", Logger.logError, loggerCategory, () => this.getRpcProps());
     if (!this.nativeDb.hasPendingTxns())
-      return Promise.resolve(); // nothing to push
+      return; // nothing to push
 
     await this.concurrencyControl.onPushChanges(requestContext);
 

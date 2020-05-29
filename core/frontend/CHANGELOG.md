@@ -1,6 +1,29 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Handle height value when calculating ecef transform for maps.
+- RenderClipVolume now supports ClipVectors containing more than one ClipPrimitive.
+- Remove now-unused clipping mask shaders.
+- An unhandled exception no longer closes the electron window.
+- Fix silently-caught exception during asynchronous loading of EntityState constructors."
+- Raise tile load event when map corners are reprojected.
+- Fix incorrect conversion of display priority to frustum depth.
+- ViewState3d.supportsCamera() returns false if 3d manipulations are disallowed.
+- Orthographic view attachments now render directly onto the sheet view.
+- Add support for perspective view attachments.
+- Added support for WebGL2 to shader debug
+- Make thematic gradient texture adhere to max texture size of system.
+- Optimize thematic sensor display by culling sensors based on a distanceCutoff property on ThematicDisplaySensorSettings.
+- Reduce number of shader programs produced for clipping.
+- small improvements to WebGL1 & WebGL2 performance & fix for output of hlsl shaders for debug
+- Some very minor performance improvements to WebGL1 & 2 shaders.
+- improve Terrain shaders; default to WebGL2
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT

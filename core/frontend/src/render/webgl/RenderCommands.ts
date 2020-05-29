@@ -12,7 +12,9 @@ import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@bentley/imodeljs
 import { Decorations } from "../Decorations";
 import { SurfaceType } from "../primitives/VertexTable";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
-import { BatchState, BranchStack, BranchState } from "./BranchState";
+import { BranchStack } from "./BranchStack";
+import { BatchState } from "./BatchState";
+import { BranchState } from "./BranchState";
 import {
   DrawCommand, DrawCommands, getAnimationBranchState, PopBatchCommand, PopBranchCommand, PopCommand, PrimitiveCommand, PushBatchCommand,
   PushBranchCommand, PushCommand, PushStateCommand,

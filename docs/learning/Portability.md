@@ -66,7 +66,7 @@ For example, a backend can use node builtins in guarded code, like this:
 A backend can use the following portable imodeljs-backend classes to avoid unnecessary node dependencies:
 
 |Node builtin|imodeljs-backend portable substitute|
-|---|---|---|
+|---|---|
 |fs|[IModelJsFs]($backend)
 |os|[Platform]($backend)
 |process|[Platform]($backend)

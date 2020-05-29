@@ -44,8 +44,8 @@ describe("ElementAspectPerformance", () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
     const configData = require(path.join(__dirname, "CSPerfConfig.json"));
-    const projectId = configData.projectId;
-    const imodelId = configData.aspectIModelId;
+    const projectId = configData.basicTest.projectId;
+    const imodelId = configData.basicTest.aspectIModelId;
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     iModelDbHub = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.FixedVersion, IModelVersion.latest());

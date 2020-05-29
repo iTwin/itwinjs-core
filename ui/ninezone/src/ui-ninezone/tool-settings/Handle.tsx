@@ -12,7 +12,6 @@ import * as React from "react";
 import { CommonProps, Point, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { useDragToolSettings } from "../base/DragManager";
 import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
-import { TOOL_SETTINGS_DRAG_START } from "../base/NineZoneState";
 import { usePointerCaptor } from "../base/PointerCaptor";
 
 /** Properties of [[DockedToolSettingsHandle]] component.
@@ -38,7 +37,7 @@ export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHa
       initialPointerPosition,
     });
     dispatch({
-      type: TOOL_SETTINGS_DRAG_START,
+      type: "TOOL_SETTINGS_DRAG_START",
       newFloatingWidgetId: newWidgetDragItemId,
     });
   }, [dispatch, newWidgetDragItemId, onDragStart]);

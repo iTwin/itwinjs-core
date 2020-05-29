@@ -32,9 +32,6 @@ internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
 beta;AppearanceOverrideProps
-internal;class Attachment
-internal;AttachmentList
-internal;enum AttachmentSceneState
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -70,9 +67,7 @@ beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
 alpha;ClipEventType
-beta;ClippingType
 internal;ClipResult
-internal;Clips
 public;Cluster
 internal;CompassMode
 internal;ContextMode
@@ -82,12 +77,13 @@ public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
 internal;CoreTools
-internal;createAttachment(props: ViewAttachmentProps, view: ViewState): Attachment
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
+internal;createEmptyRenderPlan(): RenderPlan
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
+internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, useDepthBuffer: boolean, iModel: IModelConnection, forDrape?: boolean): Promise
 internal;CurrentInputState
 internal;CurrentState
@@ -159,6 +155,7 @@ internal;FrameCameraViewData
 internal;FrameRenderData
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
+alpha;Frustum2d
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
@@ -181,6 +178,7 @@ internal;GltfReaderResult
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GraphicBranch 
+internal;GraphicBranchFrustum
 internal;GraphicBranchOptions
 public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
@@ -366,7 +364,6 @@ internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
 alpha;SetupCameraTool 
-internal;SheetBorder
 public;SheetModelState 
 public;SheetViewState 
 internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean

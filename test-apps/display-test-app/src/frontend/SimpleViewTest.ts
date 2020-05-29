@@ -156,7 +156,7 @@ async function main() {
     filterMapDrapeTextures: false !== configuration.filterMapDrapeTextures,
     dpiAwareViewports: false !== configuration.dpiAwareViewports,
     doIdleWork: false !== configuration.doIdleWork,
-    useWebGL2: true === configuration.useWebGL2,
+    useWebGL2: false !== configuration.useWebGL2,
     planProjections: true,
     debugShaders: true === configuration.debugShaders,
   };
@@ -235,7 +235,7 @@ async function main() {
 async function documentLoaded(): Promise<void> {
   const readyState = /^complete$/;
   if (readyState.test(document.readyState))
-    return Promise.resolve();
+    return;
 
   return new Promise<void>((resolve) => {
     const listener = () => {

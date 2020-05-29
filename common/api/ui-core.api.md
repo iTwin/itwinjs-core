@@ -10,6 +10,7 @@ import { ConditionalStringValue } from '@bentley/ui-abstract';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { Matrix3d } from '@bentley/geometry-core';
+import { Props as Props_2 } from 'react-select/base/index';
 import * as React from 'react';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { SliderModeFunction } from 'react-compound-slider';
@@ -629,17 +630,16 @@ export const DivWithOutsideClick: {
 };
 
 // @public
-export class ElementSeparator extends React.PureComponent<ElementSeparatorProps> {
-    // (undocumented)
-    static defaultProps: Partial<ElementSeparatorProps>;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export const ElementSeparator: (props: ElementSeparatorProps) => JSX.Element;
 
 // @public
 export interface ElementSeparatorProps extends CommonProps {
+    isResizeHandleBeingDragged?: boolean;
+    isResizeHandleHovered?: boolean;
     movableArea?: number;
-    onRatioChanged: (ratio: number) => void;
+    onRatioChanged?: (ratio: number) => void | RatioChangeResult;
+    onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
+    onResizeHandleHoverChanged?: (isHovered: boolean) => void;
     orientation: Orientation;
     ratio: number;
     separatorSize?: number;
@@ -884,7 +884,7 @@ export interface IconInputProps extends InputProps {
 }
 
 // @public
-export interface IconProps {
+export interface IconProps extends CommonProps {
     iconSpec?: IconSpec;
 }
 
@@ -1222,6 +1222,14 @@ export type OmitChildrenProp<T extends {
     children?: React.ReactNode;
 }> = Omit<T, "children">;
 
+// @beta
+export interface OptionType {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    value: string;
+}
+
 // @public
 export enum Orientation {
     // (undocumented)
@@ -1239,6 +1247,8 @@ export class Point implements PointProps {
     getDistanceTo(other: PointProps): number;
     getManhattanDistanceTo(other: PointProps): number;
     getOffsetTo(other: PointProps): Point;
+    // (undocumented)
+    multiply(factor: number): Point;
     // (undocumented)
     offset(offset: PointProps): Point;
     // (undocumented)
@@ -1364,11 +1374,17 @@ export class Radio extends React.PureComponent<RadioProps> {
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps {
 }
 
+// @public
+export interface RatioChangeResult {
+    // (undocumented)
+    ratio: number;
+}
+
 // @internal (undocumented)
 export class ReactNumericInput extends React.Component<ReactNumericInputProps, ReactNumericInputState> {
     constructor(props: ReactNumericInputProps);
     componentDidMount(): void;
-    componentDidUpdate(_prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void;
+    componentDidUpdate(prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void;
     componentWillUnmount(): void;
     static defaultProps: {
         step: number;
@@ -1389,10 +1405,6 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     refsInput: HTMLInputElement | undefined;
     render(): JSX.Element;
     static SPEED: number;
-    // (undocumented)
-    UNSAFE_componentWillReceiveProps(props: ReactNumericInputProps): void;
-    // (undocumented)
-    UNSAFE_componentWillUpdate(): void;
     }
 
 // @beta
@@ -1767,6 +1779,9 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement>, CommonProps {
 }
 
+// @beta
+export function ThemedSelect<OptionType>(props: Props_2<OptionType>): JSX.Element;
+
 // @internal
 export class TildeFinder {
     static findAfterTilde: (node: React.ReactNode) => {
@@ -2020,6 +2035,8 @@ export interface UiSettingsResult {
 // @beta
 export enum UiSettingsStatus {
     // (undocumented)
+    AuthorizationError = 4,
+    // (undocumented)
     NotFound = 1,
     // (undocumented)
     Success = 0,
@@ -2063,7 +2080,7 @@ export function useRefEffect<T>(callback: (instance: T | null) => (void | (() =>
 export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
 
 // @internal
-export function useResizeObserver<T extends Element>(onResize?: (width: number) => void, useHeight?: boolean): (instance: T | null) => void;
+export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
 
 // @internal
 export const useTargeted: (elementRef: React.RefObject<Element>) => boolean;

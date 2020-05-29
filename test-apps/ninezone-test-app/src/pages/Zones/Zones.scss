@@ -1,0 +1,75 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+$header-height: 50px;
+
+.nzdemo-zones-zones {
+  height: calc(100% - #{$header-height});
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  position: relative;
+
+  ul {
+    margin: 0;
+    padding: 0;
+  }
+
+  .nzdemo-panel-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 5px;
+  }
+
+  .nzdemo-widgetPanels {
+    flex: 1 1 auto;
+    min-height: 0;
+    order: 2;
+  }
+
+  .nz-widgetPanels-content {
+    background: linear-gradient(45deg, black, transparent, red);
+  }
+
+  .nzdemo-toolbars {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 10px;
+    box-sizing: border-box;
+
+    > div {
+      width: 100%;
+      height: 100%;
+
+      &:last-child {
+        margin-left: auto;
+      }
+    }
+  }
+
+  .nzdemo-scroll-view {
+    background: #66666666;
+    height: 50px;
+    overflow: auto;
+  }
+
+  .nzdemo-footer {
+    order: 3;
+
+    .nzdemo-footer-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+  }
+}
+
+.nzdemo-header {
+  height: $header-height;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

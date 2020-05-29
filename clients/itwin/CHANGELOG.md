@@ -1,6 +1,13 @@
 # Change Log - @bentley/itwin-client
 
-This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Download ChangeSets in chunks
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT

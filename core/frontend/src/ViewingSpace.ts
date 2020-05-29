@@ -14,13 +14,13 @@ import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { CoordSystem, Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
 import { ViewState } from "./ViewState";
+import { Frustum2d } from "./Frustum2d";
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's camera or volume changes.
  * @beta
  */
 export class ViewingSpace {
-  private static get frustumDepth2d() { return Constant.oneMeter; }
   private readonly _viewRange = new ViewRect(); // scratch variable
   private readonly _viewCorners = new Range3d(); // scratch variable
 
@@ -254,8 +254,8 @@ export class ViewingSpace {
 
         const extents = view.getViewedExtents();
         if (extents.isNull) {
-          extents.low.z = -ViewingSpace.frustumDepth2d;
-          extents.high.z = ViewingSpace.frustumDepth2d;
+          extents.low.z = Frustum2d.minimumZExtents.low;
+          extents.high.z = Frustum2d.minimumZExtents.high;
         }
 
         let zMax = Math.max(Math.abs(extents.low.z), Math.abs(extents.high.z));
@@ -294,8 +294,6 @@ export class ViewingSpace {
       }
     } else { // 2d viewport
       this.alignWithRootZ();
-      delta.z = 2 * ViewingSpace.frustumDepth2d;
-      origin.z = -ViewingSpace.frustumDepth2d;
     }
 
     this.viewOrigin.setFrom(origin);

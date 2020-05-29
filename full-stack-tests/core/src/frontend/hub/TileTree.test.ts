@@ -21,7 +21,7 @@ class MockTile extends Tile {
   }
 
   public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _canceled?: () => boolean): Promise<TileContent> {
-    return Promise.resolve({});
+    return {};
   }
 
   public constructor(tree: TileTree) {
@@ -91,7 +91,7 @@ describe("TileTreeSupplier", () => {
       }
 
       public async createTileTree(id: string, iModel: IModelConnection): Promise<TileTree | undefined> {
-        return Promise.resolve(new MockTree(id, iModel));
+        return new MockTree(id, iModel);
       }
     }
 
@@ -197,7 +197,7 @@ describe("requestTileTreeProps", () => {
       }
     };
 
-    const promises = [ getProps("0x1c"), getProps("invalid"), getProps("0x1c"), getProps("notanid"), getProps("0x1c") ];
+    const promises = [getProps("0x1c"), getProps("invalid"), getProps("0x1c"), getProps("notanid"), getProps("0x1c")];
     await Promise.all(promises);
     expect(fulfilled.length).to.equal(3);
     expect(fulfilled.every((x) => x === "0x1c")).to.be.true;
@@ -268,7 +268,7 @@ describe("requestTileTreeProps", () => {
 
     overrideRequestTileTreeProps(async (iModel, treeId) => {
       if (iModel === imodel2)
-        return Promise.resolve({ id: treeId } as TileTreeProps);
+        return { id: treeId } as TileTreeProps;
 
       return new Promise((resolve, _reject) => {
         iModel.onClose.addOnce((_) => setTimeout(resolve, 15));

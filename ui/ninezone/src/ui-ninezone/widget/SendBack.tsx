@@ -10,7 +10,7 @@ import "./SendBack.scss";
 import * as React from "react";
 import { assert } from "../base/assert";
 import { NineZoneDispatchContext } from "../base/NineZone";
-import { toolSettingsTabId, WIDGET_SEND_BACK } from "../base/NineZoneState";
+import { toolSettingsTabId } from "../base/NineZoneState";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { ActiveTabIdContext, WidgetIdContext } from "./Widget";
@@ -30,7 +30,7 @@ export const SendBack = React.memo(function SendBack() { // tslint:disable-line:
       className="nz-widget-sendBack"
       onClick={() => {
         dispatch({
-          type: WIDGET_SEND_BACK,
+          type: "WIDGET_SEND_BACK",
           floatingWidgetId,
           side,
           widgetId,

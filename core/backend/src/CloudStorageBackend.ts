@@ -34,7 +34,7 @@ export abstract class CloudStorageService {
   public abstract id: CloudStorageProvider;
   public abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
   public abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
-  public async download(_name: string): Promise<Readable | undefined> { return Promise.resolve(undefined); }
+  public async download(_name: string): Promise<Readable | undefined> { return undefined; }
 
   protected makeDescriptor(id: CloudStorageContainerDescriptor) {
     return { name: id.name, provider: this.id };

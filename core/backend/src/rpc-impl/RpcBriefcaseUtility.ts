@@ -30,24 +30,29 @@ export class RpcBriefcaseUtility {
    */
   public static async openWithTimeout(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps, syncMode: SyncMode): Promise<IModelConnectionProps> {
     requestContext.enter();
+    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Received open request", () => ({ ...tokenProps, syncMode }));
 
-    /* Sets up a race between the specified timeout period and the open. Throws a RpcPendingResponse exception if the
-     * timeout happens first. If timeout is undefined, simply waits for the open to complete. */
-
+    /*
+     * Download the briefcase
+     * Note: This sets up a race between the specified timeout period and the open. Throws a RpcPendingResponse exception if the
+     * timeout happens first.
+     */
     const timeout = 1000; // 1 second
     const { contextId, iModelId, changeSetId } = tokenProps;
     const briefcaseProps: BriefcaseProps | void = await BeDuration.race(timeout, BriefcaseManager.download(requestContext, contextId!, iModelId!, { syncMode }, IModelVersion.asOfChangeSet(changeSetId!)));
     requestContext.enter();
 
     if (briefcaseProps === undefined) {
-      Logger.logTrace(loggerCategory, "Issuing pending status in BriefcaseOpenUtility.openWithTimeout", () => ({ ...tokenProps, syncMode }));
+      Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Issued pending status", () => ({ ...tokenProps, syncMode }));
       throw new RpcPendingResponse();
     }
 
-    // Find existing or open a new briefcase
-    let briefcaseDb: BriefcaseDb | undefined = BriefcaseDb.tryFindByKey(briefcaseProps.key);
-    if (briefcaseDb === undefined)
-      briefcaseDb = await BriefcaseDb.open(requestContext, briefcaseProps.key);
+    /*
+     * Open the briefcase
+     * Note: This call must be made even if the briefcase is already open - this is to ensure the usage is logged
+     */
+    const briefcaseDb: BriefcaseDb = await BriefcaseDb.open(requestContext, briefcaseProps.key);
+    Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.openWithTimeout: Opened briefcase", () => ({ ...tokenProps, syncMode }));
     return briefcaseDb.getConnectionProps();
   }
 
@@ -55,7 +60,7 @@ export class RpcBriefcaseUtility {
   public static async close(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps): Promise<boolean> {
     // Close is a no-op for ReadOnly connections
     if (OpenMode.Readonly === tokenProps.openMode)
-      return Promise.resolve(true);
+      return true;
 
     // For read-write connections, close the briefcase and delete local copies of it
     const briefcaseDb = BriefcaseDb.findByKey(tokenProps.key);

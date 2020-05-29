@@ -24,7 +24,7 @@ import {
   createRandomLabelDefinitionJSON, createRandomNodePathElementJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON,
   createRandomRuleset,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_PUBLIC_ROOT } from "../presentation-backend/Constants";
+import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
 import { PresentationManager, PresentationManagerMode, PresentationManagerProps } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
@@ -79,7 +79,7 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly(
             "",
-            [getLocalesDirectory(PRESENTATION_COMMON_PUBLIC_ROOT)],
+            [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
             IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             false,
@@ -385,21 +385,6 @@ describe("PresentationManager", () => {
     beforeEach(() => {
       addonMock.reset();
       manager = new PresentationManager({ addon: addonMock.object });
-    });
-
-    it("adds ruleset variables from options", async () => {
-      const rulesetId = faker.random.word();
-      const variable = { id: faker.random.word(), type: VariableValueTypes.String, value: faker.random.word() };
-      const rulesetVariables = [variable];
-      addonMock
-        .setup((x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.isAny()))
-        .returns(async () => "{}")
-        .verifiable(moq.Times.once());
-      addonMock
-        .setup((x) => x.setRulesetVariableValue(rulesetId, variable.id, variable.type, variable.value))
-        .verifiable(moq.Times.once());
-      await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetOrId: rulesetId, rulesetVariables });
-      addonMock.verifyAll();
     });
 
     it("registers ruleset if `rulesetOrId` is a ruleset", async () => {

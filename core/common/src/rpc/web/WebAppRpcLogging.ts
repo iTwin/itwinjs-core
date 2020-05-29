@@ -32,7 +32,7 @@ function getHostname(): string {
 
 /** @internal */
 export class WebAppRpcLogging {
-  public static logProtocolEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): void {
+  public static async logProtocolEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): Promise<void> {
     if (object instanceof WebAppRpcRequest) {
       switch (event) {
         case RpcProtocolEvent.RequestCreated: return WebAppRpcLogging.logRequest(CommonLoggerCategory.RpcInterfaceFrontend, "RpcInterface.frontend.request", object);
@@ -130,15 +130,17 @@ export class WebAppRpcLogging {
     }));
   }
 
-  private static logErrorBackend(message: string, invocation: RpcInvocation): void {
+  private static async logErrorBackend(message: string, invocation: RpcInvocation): Promise<void> {
     const operationDescriptor = WebAppRpcLogging.buildOperationDescriptor(invocation.operation);
     const pathIds = WebAppRpcLogging.findPathIds(invocation.request.path);
+    const result = await invocation.result;
+    const errorMessage = result.message ? result.message : result.objects; // Can be an error or an RpcSerializedValue
 
     Logger.logInfo(CommonLoggerCategory.RpcInterfaceBackend, `${message}.${operationDescriptor}`, () => ({
       method: invocation.request.method,
       path: invocation.request.path,
       status: invocation.status,
-      errorMessage: invocation.result.toString(),
+      errorMessage,
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
       ActivityId: invocation.request.id,
       MachineName: getHostname(),

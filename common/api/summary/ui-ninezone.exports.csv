@@ -32,7 +32,7 @@ alpha;containVertically: (componentBounds: RectangleProps, containerBounds: Rect
 internal;ContentNodeContext: React.Context
 internal;ContentZoneId = 5
 internal;createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelState
-internal;createNineZoneState(): NineZoneState
+internal;createNineZoneState(args?: Partial
 internal;createPanelsState(): PanelsState
 internal;createPanelState(side: PanelSide): PanelState
 internal;createTabState(id: TabState["id"]): TabState
@@ -83,10 +83,9 @@ alpha;ExpandableButton
 alpha;ExpandableButtonProps 
 beta;ExpandableItem 
 beta;ExpandableItemProps 
-internal;FLOATING_WIDGET_BRING_TO_FRONT = "FLOATING_WIDGET_BRING_TO_FRONT"
-internal;FLOATING_WIDGET_RESIZE = "FLOATING_WIDGET_RESIZE"
 internal;FloatingTab(): JSX.Element
 internal;FloatingWidget: React.NamedExoticComponent
+internal;floatingWidgetBringToFront(state: Draft
 internal;FloatingWidgetBringToFrontAction
 internal;FloatingWidgetIdContext: React.Context
 internal;FloatingWidgetProps
@@ -147,19 +146,15 @@ beta;HorizontalAnchor
 internal;HorizontalAnchorHelpers
 internal;HorizontalPanelSide = TopPanelSide | BottomPanelSide
 internal;HorizontalPanelState 
-internal;isDockedToolSettingsState(state: ToolSettingsState): state is DockedToolSettingsState
 internal;isHorizontalPanelSide: (side: PanelSide) => side is HorizontalPanelSide
 internal;isHorizontalPanelState(state: PanelState): state is HorizontalPanelState
 internal;isTabTarget(target: DragTarget): target is TabTarget
-internal;isTabTargetPanelState(state: TabTargetState): state is TabTargetPanelState
-internal;isTabTargetTabState(state: TabTargetState): state is TabTargetTabState
-internal;isTabTargetWidgetState(state: TabTargetState): state is TabTargetWidgetState
-internal;isWidgetToolSettingsState(state: ToolSettingsState): state is WidgetToolSettingsState
 beta;Item 
 beta;ItemProps 
 alpha;Items 
 alpha;ItemsProps 
 internal;LeftPanelSide = "left"
+internal;MeasureContext: React.Context
 beta;MergeTarget 
 beta;MergeTargetProps 
 beta;Message 
@@ -188,7 +183,8 @@ beta;NestedStagePanelsManager
 beta;NestedStagePanelsManagerProps
 beta;NestedToolSettings 
 beta;NestedToolSettingsProps 
-internal;NineZoneActionTypes = PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetSendBackAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction
+internal;NineZone(props: NineZoneProps): JSX.Element
+internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetSendBackAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction
 internal;NineZoneContext: React.Context
 internal;NineZoneDispatch = (action: NineZoneActionTypes) => void
 internal;NineZoneDispatchContext: React.Context
@@ -200,6 +196,7 @@ alpha;NineZoneManagerPaneTarget
 alpha;NineZoneManagerProps
 alpha;NineZoneNestedStagePanelsManager 
 alpha;NineZoneNestedStagePanelsManagerProps 
+internal;NineZoneProps
 internal;NineZoneProvider(props: NineZoneProviderProps): JSX.Element
 internal;NineZoneProviderProps
 alpha;NineZoneStagePanelManager 
@@ -219,12 +216,6 @@ beta;OutlineProps
 beta;Overflow 
 beta;OverflowProps 
 alpha;Panel 
-internal;PANEL_INITIALIZE = "PANEL_INITIALIZE"
-internal;PANEL_RESIZE = "PANEL_RESIZE"
-internal;PANEL_TOGGLE_COLLAPSED = "PANEL_TOGGLE_COLLAPSED"
-internal;PANEL_TOGGLE_PINNED = "PANEL_TOGGLE_PINNED"
-internal;PANEL_TOGGLE_SPAN = "PANEL_TOGGLE_SPAN"
-internal;PANEL_WIDGET_DRAG_START = "PANEL_WIDGET_DRAG_START"
 internal;PanelInitializeAction
 internal;PanelPinnedContext: React.Context
 alpha;PanelProps 
@@ -249,12 +240,14 @@ internal;PanelWidgetProps
 internal;PointerCaptor 
 internal;PointerCaptorProps 
 beta;ProgressProps 
+internal;ResizeAction
 alpha;ResizeDirection
 alpha;ResizeDirectionHelpers
 alpha;ResizeGrip 
 alpha;ResizeGripProps 
 alpha;ResizeGripResizeArgs
 beta;ResizeHandle
+internal;restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): SizeProps
 internal;RightPanelSide = "right"
 beta;SafeAreaInsets
 internal;SafeAreaInsetsHelpers
@@ -319,7 +312,6 @@ alpha;Toast
 alpha;ToastDefaultProps = Pick
 alpha;ToastProps 
 alpha;ToastStyle = Pick
-internal;TOOL_SETTINGS_DRAG_START = "TOOL_SETTINGS_DRAG_START"
 beta;ToolAssistance 
 beta;ToolAssistanceDialog 
 beta;ToolAssistanceDialogProps 
@@ -400,14 +392,6 @@ internal;VerticalAnchorHelpers
 internal;VerticalPanelSide = LeftPanelSide | RightPanelSide
 internal;VerticalPanelState 
 internal;Widget: React.NamedExoticComponent
-internal;WIDGET_DRAG = "WIDGET_DRAG"
-internal;WIDGET_DRAG_END = "WIDGET_DRAG_END"
-internal;WIDGET_SEND_BACK = "WIDGET_SEND_BACK"
-internal;WIDGET_TAB_CLICK = "WIDGET_TAB_CLICK"
-internal;WIDGET_TAB_DOUBLE_CLICK = "WIDGET_TAB_DOUBLE_CLICK"
-internal;WIDGET_TAB_DRAG = "WIDGET_TAB_DRAG"
-internal;WIDGET_TAB_DRAG_END = "WIDGET_TAB_DRAG_END"
-internal;WIDGET_TAB_DRAG_START = "WIDGET_TAB_DRAG_START"
 alpha;WidgetContent 
 internal;WidgetContentContainer: React.NamedExoticComponent
 internal;WidgetContentContainersContext: React.Context
@@ -462,8 +446,12 @@ internal;WidgetTabsEntryProvider: React.NamedExoticComponent
 internal;WidgetTabTarget: React.NamedExoticComponent
 internal;WidgetTabTargetProps
 internal;WidgetTarget: React.NamedExoticComponent
+internal;WidgetTargetFloatingWidgetState
+internal;WidgetTargetPanelState = TabTargetPanelState
 internal;WidgetTargetProps
-internal;WidgetTargetState = TabTargetPanelState | TabTargetWidgetState | TabTargetTabState
+internal;WidgetTargetState = WidgetTargetPanelState | WidgetTargetWidgetState | WidgetTargetTabState | WidgetTargetFloatingWidgetState
+internal;WidgetTargetTabState = TabTargetTabState
+internal;WidgetTargetWidgetState = TabTargetWidgetState
 internal;WidgetToolSettingsState
 internal;widgetZoneColumnIds: ReadonlyArray
 beta;WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9

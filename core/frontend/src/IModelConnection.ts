@@ -202,6 +202,12 @@ export abstract class IModelConnection extends IModel {
     // wait until we get the full list of base classes from backend
     if (this.isOpen) {
       const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.getRpcProps(), className);
+
+      // Make sure some other async code didn't register this class while we were await-ing above
+      ctor = IModelApp.lookupEntityClass(className) as T | undefined;
+      if (undefined !== ctor)
+        return ctor;
+
       // walk through the list until we find a registered base class
       baseClasses.some((baseClass: string) => {
         const test = IModelApp.lookupEntityClass(baseClass) as T | undefined;
@@ -954,7 +960,9 @@ export namespace IModelConnection {
             this.loaded.set(modelState.id, modelState as ModelState); // save it in loaded set
           }
         }
-      } catch (err) { } // ignore error, we had nothing to do.
+      } catch (err) {
+        // ignore error, we had nothing to do.
+      }
     }
 
     /** Query for a set of model ranges by ModelIds. */
@@ -1048,12 +1056,12 @@ export namespace IModelConnection {
      */
     public async getById(codeSpecId: Id64String): Promise<CodeSpec> {
       if (!Id64.isValid(codeSpecId))
-        return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggerCategory, () => ({ codeSpecId })));
+        throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggerCategory, () => ({ codeSpecId }));
 
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
       if (!found)
-        return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory));
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory);
 
       return found;
     }
@@ -1067,7 +1075,7 @@ export namespace IModelConnection {
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.name === name);
       if (!found)
-        return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory));
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory);
 
       return found;
     }
@@ -1132,7 +1140,7 @@ export namespace IModelConnection {
       const className = viewProps.viewDefinitionProps.classFullName;
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
       if (undefined === ctor)
-        return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps));
+        throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps);
 
       const viewState = ctor.createFromProps(viewProps, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector
@@ -1149,7 +1157,7 @@ export namespace IModelConnection {
       const intValues = new Uint32Array(val.buffer, 0, 4);
 
       if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png)
-        return Promise.reject(new Error("Invalid thumbnail"));
+        throw new Error("Invalid thumbnail");
 
       return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
     }

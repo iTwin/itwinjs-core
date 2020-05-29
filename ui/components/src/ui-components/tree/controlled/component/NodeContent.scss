@@ -5,8 +5,8 @@
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/style/typography";
 
-.components-tree-node-description {
-  color: $buic-foreground-disabled;
+.components-controlledTree-node-description {
+  color: $buic-foreground-muted;
   font-size: $uicore-font-size-small;
   margin-top: 4px;
 
@@ -16,7 +16,7 @@
   }
 }
 
-.components-tree-node-content {
+.components-controlledTree-node-content {
   height: 24px;
   line-height: $uicore-font-size-small;
   display: flex;

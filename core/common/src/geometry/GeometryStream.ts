@@ -286,7 +286,7 @@ export class GeometryStreamBuilder {
     const partTrans = Transform.createOriginAndMatrix(instanceOrigin, instanceRotation ? instanceRotation.toMatrix3d() : Matrix3d.createIdentity());
     if (undefined !== instanceScale)
       partTrans.matrix.scaleColumnsInPlace(instanceScale, instanceScale, instanceScale);
-    const resultTrans = partTrans.multiplyTransformTransform(this._worldToLocal);
+    const resultTrans = this._worldToLocal.multiplyTransformTransform(partTrans);
     const scales = new Vector3d();
     if (!resultTrans.matrix.normalizeColumnsInPlace(scales))
       return false;
@@ -489,7 +489,7 @@ class IteratorEntry implements GeometryStreamIteratorEntry {
   public setPartReference(id: Id64String, toLocal?: Transform) {
     this._primitive = {
       type: "partReference",
-      part: {id, toLocal },
+      part: { id, toLocal },
     };
   }
 }
@@ -590,7 +590,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
     if (this._entry.localToWorld === undefined || partToLocal === undefined)
       return this._entry.localToWorld;
 
-    return partToLocal.multiplyTransformTransform(this._entry.localToWorld);
+    return this._entry.localToWorld.multiplyTransformTransform(partToLocal);
   }
 
   /** Advance to next displayable geometric entry while updating the current [[GeometryParams]] from appearance related entries.

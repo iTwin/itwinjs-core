@@ -5,8 +5,9 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { createNineZoneState, FLOATING_WIDGET_RESIZE, FloatingWidget, getResizeBy, NineZoneDispatch, NineZoneProvider } from "../../ui-ninezone";
+import { createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch } from "../../ui-ninezone";
 import { addFloatingWidget } from "../base/NineZoneState.test";
+import { NineZoneProvider } from "../Providers";
 
 describe("FloatingWidget", () => {
   it("should render", () => {
@@ -15,7 +16,6 @@ describe("FloatingWidget", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <FloatingWidget
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
@@ -32,7 +32,6 @@ describe("FloatingWidget", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <FloatingWidget
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
@@ -49,7 +48,6 @@ describe("FloatingWidget", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <FloatingWidget
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
@@ -88,7 +86,7 @@ describe("FloatingWidget", () => {
       fireEvent.pointerMove(handle);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: FLOATING_WIDGET_RESIZE,
+      type: "FLOATING_WIDGET_RESIZE",
       id: "w1",
     })).should.true;
   });

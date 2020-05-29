@@ -56,12 +56,12 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
 
   /** Retrieves the column descriptions */
   public async getColumns(): Promise<ColumnDescription[]> {
-    return Promise.resolve(this._columns);
+    return this._columns;
   }
 
   /** Retrieves the row count */
   public async getRowsCount(): Promise<number> {
-    return Promise.resolve(this._rowItemIndices.length);
+    return this._rowItemIndices.length;
   }
 
   /** Retrieves a specific row by index */

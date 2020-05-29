@@ -9,15 +9,45 @@ Allows downloading, uploading and deleting iModel.js extensions from the Extensi
 `node extension-cli <command> <options>`
 
 - `command` must be one of the following:
-  - `publish`
-  - `get`
-  - `delete`
-- `options` _must_ include:
+  - `publish` - publishes an extension from local files.
+  - `get` - downloads all extension files into a local directory.
+  - `delete` - deletes an extension.
+  - `view` - shows metadata about an extension, in JSON format.
+- `options` described in section below.
   - `--contextId` (`--cid`) - context Id
   - `--extensionName` (`--en`, `-n`) - extension name
   - `--extensionVersion` (`--ev`, `-v`) - extension version
 - For `get` command, `options` must include `--savePath` (`--path`) - path to an empty directory for downloading the extension. If the directory doesn't exist, it will be created.
 - For `publish` command, `options` must include `--filePath` (`--path`) - path to a zip archive containing extension files to be uploaded.
+
+## Command options
+
+### `publish`
+
+- `--extensionName` (`--en`, `-n`) - extension name.
+- `--extensionVersion` (`--ev`, `-v`) - extension version.
+- `--contextId` (`--cid`) - [Optional] context Id to publish to. Should be a Team Id for private extensions. If not provided, will attempt to publish a public extension.
+- `--filePath` (`--path`) - path to a directory containing extension files to be uploaded.
+
+### `get`
+
+- `--extensionName` (`--en`, `-n`) - extension name.
+- `--extensionVersion` (`--ev`, `-v`) - extension version.
+- `--contextId` (`--cid`) - [Optional] context Id to get the extension from. Should be a Project/Asset Id for private extensions. If not provided, will attempt to download from public extensions.
+- `--savePath` (`--path`) - path to an empty directory for downloading the extension. If the directory doesn't exist, it will be created.
+
+### `delete`
+
+- `--extensionName` (`--en`, `-n`) - extension name.
+- `--extensionVersion` (`--ev`, `-v`) - extension version.
+- `--contextId` (`--cid`) - [Optional] context Id to delete the extension from. Should be a Team Id for private extensions. If not provided, will attempt to delete a public extension.
+- `--force` - [Optional] add this flag to confirm the operation and avoid interactive prompts (should only be used in automated scripts).
+
+### `view`
+
+- `--extensionName` (`--en`, `-n`) - [Optional] extension name. If not provided, will show all extensions in the given context.
+- `--extensionVersion` (`--ev`, `-v`) - [Optional] extension version. Should only be provided together with `extensionName`. If only `extensionName` is provided, will show all versions of the requested extension.
+- `--contextId` (`--cid`) - [Optional] context Id. Should be a Project/Asset Id for private extensions. If not provided, will attempt to view a public extension.
 
 ## Examples
 

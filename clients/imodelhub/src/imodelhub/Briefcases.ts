@@ -222,6 +222,7 @@ export class BriefcaseHandler {
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcase Briefcase to update.
    * @returns Updated Briefcase instance from iModelHub.
+   * @throws [[IModelHubError]] with [IModelHubStatus.FailedToGetProductSettings]($bentley) if request to get settings to Product Settings service fails.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcase: Briefcase): Promise<Briefcase> {
@@ -301,13 +302,13 @@ export class BriefcaseHandler {
     ArgumentCheck.defined("path", path);
 
     if (typeof window !== "undefined")
-      return Promise.reject(IModelHubClientError.browser());
+      throw IModelHubClientError.browser();
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubClientError.fileHandler());
+      throw IModelHubClientError.fileHandler();
 
     if (!briefcase.downloadUrl)
-      return Promise.reject(IModelHubClientError.missingDownloadUrl("briefcase"));
+      throw IModelHubClientError.missingDownloadUrl("briefcase");
 
     await this._fileHandler.downloadFile(requestContext, briefcase.downloadUrl, path, parseInt(briefcase.fileSize!, 10), progressCallback, cancelRequest);
     requestContext.enter();

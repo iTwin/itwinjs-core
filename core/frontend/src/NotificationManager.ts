@@ -193,7 +193,7 @@ export class NotificationManager {
    * @param _icon         The MessageBox icon type.
    * @return the response from the user.
    */
-  public async openMessageBox(_mbType: MessageBoxType, _message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> { return Promise.resolve(MessageBoxValue.Ok); }
+  public async openMessageBox(_mbType: MessageBoxType, _message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> { return MessageBoxValue.Ok; }
 
   /**
    * Set up for activity messages.

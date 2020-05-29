@@ -29,6 +29,7 @@ import {
   MapCartoRectangle, MapTileLoaderBase, MapTilingScheme, QuadId, RealityTile, RealityTileTree, RealityTileTreeParams, Tile, TileDrawArgs,
   TileGraphicType, TileParams, TileVisibility, WebMapTileContent, WebMercatorTilingScheme,
 } from "./internal";
+import { IModelApp } from "../IModelApp";
 
 const scratchNormal = Vector3d.create();
 const scratchViewZ = Vector3d.create();
@@ -558,8 +559,8 @@ export async function calculateEcefToDb(iModel: IModelConnection, bimElevationBi
 
   const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
   const geoNorth = Point3d.fromJSON(response.geoCoords[1].p);
-  const ecefOrigin = Cartographic.fromDegrees(geoOrigin.x, geoOrigin.y, 0).toEcef()!;
-  const ecefNorth = Cartographic.fromDegrees(geoNorth.x, geoNorth.y, 0).toEcef()!;
+  const ecefOrigin = Cartographic.fromDegrees(geoOrigin.x, geoOrigin.y, geoOrigin.z).toEcef()!;
+  const ecefNorth = Cartographic.fromDegrees(geoNorth.x, geoNorth.y, geoOrigin.z).toEcef()!;
 
   const zVector = Vector3d.createFrom(ecefOrigin);
   const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
@@ -723,6 +724,7 @@ export class MapTileTree extends RealityTileTree {
     if (undefined !== iModelCoordinates.missing) {
       await this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(iModelCoordinates.missing);
       iModelCoordinates = this._gcsConverter!.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
+      IModelApp.tileAdmin.onTileLoad.raiseEvent(tile); // If we had to wait for backend to reproject then we need to make sure that map is displayed.
       assert(undefined === iModelCoordinates.missing);
     }
     for (let i = 0; i < gridPoints.length; i++)

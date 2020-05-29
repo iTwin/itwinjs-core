@@ -126,7 +126,7 @@ function Loader(props: LoaderProps) {
     return props.spinnerRenderer
       ? props.spinnerRenderer()
       : (
-        <div className="components-tree-loader">
+        <div className="components-controlledTree-loader">
           <Spinner size={SpinnerSize.Large} />
         </div>
       );

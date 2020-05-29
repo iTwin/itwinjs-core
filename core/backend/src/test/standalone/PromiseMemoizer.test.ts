@@ -42,8 +42,8 @@ describe("PromiseMemoizer", () => {
     const startTime = Date.now();
     const qp: QueryablePromise<string> = memoizeTest(requestContextRegular, "contextId2", "iModelId2", SyncMode.FixedVersion, IModelVersion.latest());
     await qp.promise;
-    const endTime = Date.now();
-    assert.isAbove(endTime - startTime, 950);
+    const elapsedTime = Date.now() - startTime;
+    assert.isAbove(elapsedTime, 900);
   });
 
   it("should be able to memoize and deleteMemoized function calls", async () => {

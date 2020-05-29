@@ -37,7 +37,7 @@ export abstract class SourceAspectIdTool extends Tool {
   private async doQuery(queryId: string, copyToClipboard: boolean): Promise<void> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (undefined === imodel)
-      return Promise.resolve();
+      return;
 
     let resultId;
     try {

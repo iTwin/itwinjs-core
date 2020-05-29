@@ -24,6 +24,10 @@ import { TaskManager, TaskPropsList } from "../workflow/Task";
 import { WorkflowManager, WorkflowProps, WorkflowPropsList } from "../workflow/Workflow";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiElement } from "./ConfigurableUiControl";
+import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
+import { ModalDialogManager } from "../dialog/ModalDialogManager";
+import { MessageManager } from "../messages/MessageManager";
+import { PopupManager } from "../popup/PopupManager";
 
 /** Configurable Ui Manager maintains controls, Frontstages, Content Groups, Content Layouts, Tasks and Workflows.
  * @public
@@ -199,6 +203,16 @@ export class ConfigurableUiManager {
     const wrapper = document.getElementById("uifw-configurableui-wrapper");
     const htmlElement = wrapper!;
     return htmlElement;
+  }
+
+  /** @internal */
+  public static closeUi(): void {
+    MessageManager.closeAllMessages();
+    ModelessDialogManager.closeAll();
+    ModalDialogManager.closeAll();
+    KeyboardShortcutManager.closeShortcutsMenu();
+    UiFramework.closeCursorMenu();
+    PopupManager.clearPopups();
   }
 
 }

@@ -129,7 +129,7 @@ export class ThumbnailHandler {
 
     const byteArray = new Uint8Array(response.body);
     if (!byteArray || byteArray.length === 0) {
-      return Promise.reject(new Error("Expected an image to be returned from the query"));
+      throw new Error("Expected an image to be returned from the query");
     }
 
     const base64Data = Base64.btoa(byteArray.reduce((acc, byte) => acc + String.fromCharCode(byte), ""));

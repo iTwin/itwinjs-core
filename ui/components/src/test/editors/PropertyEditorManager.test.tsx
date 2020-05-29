@@ -140,11 +140,11 @@ describe("PropertyEditorManager", () => {
 
   class ErrorDataController extends DataControllerBase {
     public async commitValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return Promise.resolve({ encounteredError: true });
+      return { encounteredError: true };
     }
 
     public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return Promise.resolve({ encounteredError: true });
+      return { encounteredError: true };
     }
   }
 

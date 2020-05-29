@@ -288,9 +288,8 @@ export class NodeLoadingOrchestrator {
 
   private async requestNodeLoad(nodeKey: NodeKey): Promise<BeInspireTreeNode<TreeNodeItem>> {
     const parent = nodeKey.parentId ? this._model.node(nodeKey.parentId) : undefined;
-    const nodeLoadRequest = this._model.requestNodeLoad(parent, nodeKey.childIndex)
-      .then(() => nodeKey.toNode(this._model));
-    return nodeLoadRequest;
+    await this._model.requestNodeLoad(parent, nodeKey.childIndex);
+    return nodeKey.toNode(this._model);
   }
 
   /**

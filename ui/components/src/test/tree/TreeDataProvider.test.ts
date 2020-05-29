@@ -14,7 +14,7 @@ describe("TreeDataProvider", () => {
   const emptyPromiseProvider: TreeDataProviderPromise = Promise.resolve(emptyRawProvider);
   const emptyMethodProvider: TreeDataProviderMethod = async () => emptyPromiseProvider;
   const emptyInterfaceProvider: ITreeDataProvider = {
-    getNodesCount: async () => Promise.resolve(0),
+    getNodesCount: async () => 0,
     getNodes: emptyMethodProvider,
   };
 

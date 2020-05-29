@@ -6,8 +6,8 @@ import { LoremIpsum } from "lorem-ipsum";
 import * as React from "react";
 import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
 import {
-  ColumnDescription, FilterRenderer, PropertyUpdatedArgs, RowItem, SelectionMode, SimpleTableDataProvider, Table, TableCellContextMenuArgs,
-  TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget,
+  ColumnDescription, FilterRenderer, PropertyUpdatedArgs, RowItem, SelectionMode, SimpleTableDataProvider, StandardTypeConverterTypeNames,
+  Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget,
 } from "@bentley/ui-components";
 import { BodyText, Toggle } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
@@ -53,7 +53,7 @@ const createEnumPropertyRecord = (rowIndex: number, column: ColumnDescription) =
     displayValue: value.toString(),
   };
   const pd: PropertyDescription = {
-    typename: "enum",
+    typename: StandardTypeConverterTypeNames.Enum,
     name: column.key,
     displayLabel: column.label,
   };
@@ -79,7 +79,7 @@ const createLoremPropertyRecord = (column: ColumnDescription) => {
     displayValue: value,
   };
   const pd: PropertyDescription = {
-    typename: "text",
+    typename: StandardTypeConverterTypeNames.Text,
     name: column.key,
     displayLabel: column.label,
   };
@@ -136,11 +136,11 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       const row: RowItem = { key: i.toString(), cells: [] };
       row.cells.push({
         key: this._columns[0].key,
-        record: createPropertyRecord(i, this._columns[0], "int"),
+        record: createPropertyRecord(i, this._columns[0], StandardTypeConverterTypeNames.Int),
       });
       row.cells.push({
         key: this._columns[1].key,
-        record: createPropertyRecord("Title " + i, this._columns[1], "text"),
+        record: createPropertyRecord("Title " + i, this._columns[1], StandardTypeConverterTypeNames.String),
       });
       row.cells.push({
         key: this._columns[2].key,
@@ -284,6 +284,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
             scrollToRow={this.state.requestedTopRow}
             onScrollToRow={this._onScrollToRow}
             onCellContextMenu={this._handleCellContextMenu}
+            stripedRows={true}
           />
         </div>
       </div>

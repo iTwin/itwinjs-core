@@ -178,7 +178,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
     const thumbnail = IModelDb.findByKey(tokenProps.key).views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
-      return Promise.reject(new Error("no thumbnail"));
+      throw new Error("no thumbnail");
 
     const val = new Uint8Array(thumbnail.image.length + 16); // allocate a new buffer 16 bytes larger than the image size
     new Uint32Array(val.buffer, 0, 4).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]);    // Put the metadata in the first 16 bytes.

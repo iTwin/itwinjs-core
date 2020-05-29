@@ -80,7 +80,7 @@ export class ImdlReader extends GltfReader {
     // Textures must be loaded asynchronously first...
     await this.loadNamedTextures();
     if (this._isCanceled)
-      return Promise.resolve({ readStatus: TileReadStatus.Canceled, isLeaf: true });
+      return { readStatus: TileReadStatus.Canceled, isLeaf: true };
 
     return this.finishRead(content.isLeaf, featureTable, content.contentRange, content.emptySubRangeMask, content.sizeMultiplier);
   }
@@ -195,61 +195,61 @@ export class ImdlReader extends GltfReader {
 
   private async loadNamedTextures(): Promise<void> {
     if (undefined === this._namedTextures)
-      return Promise.resolve();
+      return;
 
     const promises = new Array<Promise<void>>();
     for (const name of Object.keys(this._namedTextures))
       promises.push(this.loadNamedTexture(name));
 
-    return promises.length > 0 ? Promise.all(promises).then((_) => undefined) : Promise.resolve();
+    if (promises.length > 0)
+      await Promise.all(promises);
   }
 
   private async loadNamedTexture(name: string): Promise<void> {
     if (this._isCanceled)
-      return Promise.resolve();
+      return;
 
     const namedTex = this._namedTextures[name];
     assert(undefined !== namedTex); // we got here by iterating the keys of this.namedTextures...
     if (undefined === namedTex)
-      return Promise.resolve();
+      return;
 
     const texture = this._system.findTexture(name, this._iModel);
     if (undefined !== texture) {
       namedTex.renderTexture = texture;
-      return Promise.resolve();
+      return;
     }
 
-    return this.readNamedTexture(namedTex, name).then((result) => { namedTex.renderTexture = result; });
+    namedTex.renderTexture = await this.readNamedTexture(namedTex, name);
   }
 
   private async readNamedTexture(namedTex: any, name: string): Promise<RenderTexture | undefined> {
     const bufferViewId = JsonUtils.asString(namedTex.bufferView);
     const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
     if (undefined === bufferViewJson)
-      return Promise.resolve(undefined);
+      return undefined;
 
     const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
     const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
     if (0 === byteLength)
-      return Promise.resolve(undefined);
+      return undefined;
 
     const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
     const format = namedTex.format;
     const imageSource = new ImageSource(bytes, format);
 
-    return imageElementFromImageSource(imageSource).then((image) => {
-      if (this._isCanceled)
-        return undefined;
+    const image = await imageElementFromImageSource(imageSource);
+    if (this._isCanceled)
+      return undefined;
 
-      let textureType = RenderTexture.Type.Normal;
-      if (JsonUtils.asBool(namedTex.isGlyph))
-        textureType = RenderTexture.Type.Glyph;
-      else if (JsonUtils.asBool(namedTex.isTileSection))
-        textureType = RenderTexture.Type.TileSection;
+    let textureType = RenderTexture.Type.Normal;
+    if (JsonUtils.asBool(namedTex.isGlyph))
+      textureType = RenderTexture.Type.Glyph;
+    else if (JsonUtils.asBool(namedTex.isTileSection))
+      textureType = RenderTexture.Type.TileSection;
 
-      const params = new RenderTexture.Params(namedTex.isGlyph ? undefined : name, textureType);
-      return this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, params);
-    });
+    const params = new RenderTexture.Params(namedTex.isGlyph ? undefined : name, textureType);
+    return this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, params);
   }
 
   /** @internal */

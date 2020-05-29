@@ -182,7 +182,7 @@ export class AzureFileHandler implements FileHandler {
     // start download by spawning in a azcopy process
     const rc = await azcopy.copy(downloadUrl, downloadToPathname);
     if (rc !== 0) {
-      return Promise.reject(`AzCopy failed with return code: ${rc}`);
+      throw new Error(`AzCopy failed with return code: ${rc}`);
     }
   }
 
@@ -274,7 +274,7 @@ export class AzureFileHandler implements FileHandler {
       safeToLogDownloadUrl.search = "...";
     if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
       safeToLogDownloadUrl.hash = "...";
-    return safeToLogDownloadUrl.toString();
+    return urllib.format(safeToLogDownloadUrl);
   }
 
   /**
@@ -342,7 +342,7 @@ export class AzureFileHandler implements FileHandler {
 
       if (!(err instanceof UserCancelledError))
         Logger.logError(loggerCategory, `Error downloading file`);
-      return Promise.reject(err);
+      throw err;
     }
     if (fileSize && fs.existsSync(downloadToPathname)) {
       if (fs.lstatSync(downloadToPathname).size !== fileSize) {

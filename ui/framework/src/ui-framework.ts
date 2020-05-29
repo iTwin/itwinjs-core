@@ -127,7 +127,7 @@ export * from "./ui-framework/redux/redux-ts";
 export * from "./ui-framework/safearea/SafeAreaContext";
 
 export * from "./ui-framework/selection/SelectionContextItemDef";
-export * from "./ui-framework/selection/SelectionContextUtilities";
+export * from "./ui-framework/selection/HideIsolateEmphasizeManager";
 export * from "./ui-framework/selection/ClearEmphasisStatusField";
 
 export * from "./ui-framework/shared/ActionButtonItemDef";
@@ -212,9 +212,11 @@ export * from "./ui-framework/utils/ToolbarButtonHelper";
 export * from "./ui-framework/widget-panels/Content";
 export * from "./ui-framework/widget-panels/Frontstage";
 export * from "./ui-framework/widget-panels/FrontstageContent";
+export * from "./ui-framework/widget-panels/LayoutManager";
 export * from "./ui-framework/widget-panels/StatusBar";
 export * from "./ui-framework/widget-panels/Toolbars";
 export * from "./ui-framework/widget-panels/ToolSettings";
+export * from "./ui-framework/widget-panels/useWidgetDirection";
 
 export * from "./ui-framework/widgets/BasicNavigationWidget";
 export * from "./ui-framework/widgets/BasicToolWidget";
@@ -222,6 +224,7 @@ export * from "./ui-framework/widgets/DefaultNavigationWidget";
 export * from "./ui-framework/widgets/NavigationWidget";
 export * from "./ui-framework/widgets/NavigationWidgetComposer";
 export * from "./ui-framework/widgets/ReviewToolWidget";
+export * from "./ui-framework/widgets/StableWidgetDef";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";
 export * from "./ui-framework/widgets/ToolWidget";
 export * from "./ui-framework/widgets/ToolWidgetComposer";

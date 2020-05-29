@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
   "rushVersion": "5.23.2",
-  "pnpmVersion": "3.5.3",
+  "pnpmVersion": "4.12.5",
   "nodeSupportedVersionRange": ">=10.16.0 <13.0.0",
   "projectFolderMinDepth": 2,
   "ensureConsistentVersions": true,
@@ -163,6 +163,13 @@
       "packageName": "@bentley/imodeljs-quantity",
       "projectFolder": "core/quantity",
       "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/imodel-bridge",
+      "projectFolder": "core/imodel-bridge",
+      "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -456,6 +463,12 @@
     {
       "packageName": "imodel-from-orbitgt-pointcloud",
       "projectFolder": "test-apps/imodel-from-orbitgt",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "ninezone-test-app",
+      "projectFolder": "test-apps/ninezone-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

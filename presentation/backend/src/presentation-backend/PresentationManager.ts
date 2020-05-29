@@ -16,7 +16,7 @@ import {
   PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority,
   Ruleset, RulesetVariable, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
-import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_PUBLIC_ROOT } from "./Constants";
+import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import { createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
@@ -340,16 +340,10 @@ export class PresentationManager {
     return rulesetOrId;
   }
 
-  /** Registers given ruleset and sets ruleset variables */
-  private handleOptions<TOptions extends { rulesetOrId: Ruleset | string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
-    const { rulesetVariables, rulesetOrId, ...strippedOptions } = options;
+  /** Registers given ruleset */
+  private handleOptions<TOptions extends { rulesetOrId: Ruleset | string }>(options: TOptions) {
+    const { rulesetOrId, ...strippedOptions } = options;
     const registeredRulesetId = this.ensureRulesetRegistered(rulesetOrId);
-    if (rulesetVariables) {
-      const variablesManager = this.vars(registeredRulesetId);
-      for (const variable of rulesetVariables) {
-        variablesManager.setValue(variable.id, variable.type, variable.value);
-      }
-    }
     return { rulesetId: registeredRulesetId, ...strippedOptions };
   }
 
@@ -717,7 +711,7 @@ const getPrevValues = (options: PresentationDataCompareOptions<IModelDb>) => {
 };
 
 const createLocaleDirectoryList = (props?: PresentationManagerProps) => {
-  const localeDirectories = [getLocalesDirectory(props?.presentationAssetsRoot ?? PRESENTATION_COMMON_PUBLIC_ROOT)];
+  const localeDirectories = [getLocalesDirectory(props?.presentationAssetsRoot ?? PRESENTATION_COMMON_ASSETS_ROOT)];
   if (props && props.localeDirectories) {
     props.localeDirectories.forEach((dir) => {
       if (-1 === localeDirectories.indexOf(dir))

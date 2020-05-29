@@ -57,7 +57,7 @@ public;DisabledText(props: TextProps): JSX.Element
 public;Div(props: DivProps): JSX.Element
 public;DivProps 
 public;DivWithOutsideClick:
-public;ElementSeparator 
+public;ElementSeparator: (props: ElementSeparatorProps) => JSX.Element
 public;ElementSeparatorProps 
 public;ExecuteHandler = (this: void) => void
 public;ExpandableBlock 
@@ -98,7 +98,7 @@ public;Icon(props: IconProps): JSX.Element | null
 public;IconHelper
 public;IconInput 
 public;IconInputProps 
-public;IconProps
+public;IconProps 
 public;IconSpec = string | ConditionalStringValue | React.ReactNode
 public;ImageCheckBox 
 public;ImageCheckBoxProps 
@@ -149,6 +149,7 @@ internal;NumericInputDefaultProps = Pick
 beta;NumericInputProps 
 public;Omit
 public;OmitChildrenProp
+beta;OptionType
 public;Orientation
 internal;Point 
 public;PointProps
@@ -161,6 +162,7 @@ beta;RadialMenu
 beta;RadialMenuProps 
 public;Radio 
 public;RadioProps 
+public;RatioChangeResult
 internal;ReactNumericInput 
 beta;ReactNumericInputProps 
 internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
@@ -202,6 +204,7 @@ public;TabsProps
 public;Textarea 
 public;TextareaProps 
 public;TextProps 
+beta;ThemedSelect
 internal;TildeFinder
 beta;Tile 
 internal;TileDefaultProps = Pick

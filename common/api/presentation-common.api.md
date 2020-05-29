@@ -897,6 +897,8 @@ export namespace LabelDefinition {
     export function fromJSON(json: LabelDefinitionJSON | string): LabelDefinition;
     // @internal (undocumented)
     export function fromLabelString(label: string): LabelDefinitionJSON;
+    const // @internal (undocumented)
+    COMPOSITE_DEFINITION_TYPENAME = "composite";
     // @internal (undocumented)
     export function isCompositeDefinition(def: LabelDefinition): def is LabelDefinition & {
         rawValue: LabelCompositeValue;

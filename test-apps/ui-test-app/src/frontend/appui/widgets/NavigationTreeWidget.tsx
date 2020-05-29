@@ -13,7 +13,7 @@ export class NavigationTreeWidgetControl extends WidgetControl {
     super(info, options);
 
     if (options && options.iModelConnection && options.rulesetId)
-      this.reactNode = <NavigationTreeWidget iModelConnection={options.iModelConnection} rulesetId={options.rulesetId} />;
+      this.reactNode = <NavigationTreeWidget iModelConnection={options.iModelConnection} />;
     else
       this.reactNode = <NavigationTreeWidget />;
   }

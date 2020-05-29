@@ -5,9 +5,12 @@
 import * as enzyme from "enzyme";
 import { createStore, Store } from "redux";
 import * as sinon from "sinon";
+
 import { I18N } from "@bentley/imodeljs-i18n";
 import { UserInfo } from "@bentley/itwin-client";
+import { PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
+
 import {
   ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, createAction, DeepReadonly, FrameworkReducer,
   FrameworkState, UiFramework,
@@ -193,6 +196,27 @@ export class TestUtils {
     const event = new Event(type, { bubbles: true });
     Object.assign(event, props);
     return event;
+  }
+
+  public static createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString(), editorInfo?: PropertyEditorInfo) {
+    const value: PrimitiveValue = {
+      displayValue,
+      value: rawValue,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      displayLabel: name,
+      name,
+      typename: "string",
+    };
+
+    if (editorInfo)
+      description.editor = editorInfo;
+
+    const property = new PropertyRecord(value, description);
+    property.isReadonly = false;
+    return property;
   }
 
 }

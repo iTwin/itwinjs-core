@@ -86,9 +86,11 @@ export * from "./ui-components/timeline/SolarTimeline";
 export * from "./ui-components/timeline/BaseSolarDataProvider";
 
 export * from "./ui-components/toolbar/Toolbar";
+export * from "./ui-components/toolbar/ToolbarWithOverflow";
 export * from "./ui-components/toolbar/PopupItem";
 export * from "./ui-components/toolbar/PopupItemWithDrag";
 export * from "./ui-components/toolbar/Item";
+export * from "./ui-components/toolbar/utilities/Direction";
 
 export * from "./ui-components/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 export * from "./ui-components/properties/renderers/label/PrimitivePropertyLabelRenderer";
@@ -126,7 +128,7 @@ export * from "./ui-components/table/component/Table";
 export * from "./ui-components/table/component/TableColumn";
 export * from "./ui-components/table/hocs/withDragDrop";
 
-export * from "./ui-components/tooltip/UITooltipRenderer";
+export * from "./ui-components/favorite/FavoritePropertiesRenderer";
 
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/SimpleTreeDataProvider";
@@ -172,6 +174,10 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
 /**
  * @docs-group-description DragDrop
  * Classes and Higher Order Components for working with the DragDrop API.
+ */
+/**
+ * @docs-group-description Favorite
+ * Classes and components for displaying favorite properties.
  */
 /**
  * @docs-group-description Filtering

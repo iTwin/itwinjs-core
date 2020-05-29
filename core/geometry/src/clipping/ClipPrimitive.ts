@@ -604,14 +604,14 @@ export class ClipShape extends ClipPrimitive {
     const zVector = this._transformFromClip.matrix.columnZ();
     return zVector.magnitudeXY() < 1.0e-8;
   }
-  /** Transform the input point using this instance's transformToClip member */
-  public performTransformToClip(point: Point3d) {
+  /** Transform the input point in place using this instance's `transformToClip` member */
+  public performTransformToClip(point: Point3d): void {
     if (this._transformToClip !== undefined)
-      this._transformToClip.multiplyPoint3d(point);
+      this._transformToClip.multiplyPoint3d(point, point);
   }
-  /** Transform the input point using this instance's transformFromClip member */
-  public performTransformFromClip(point: Point3d) {
+  /** Transform the input point in place using this instance's `transformFromClip` member */
+  public performTransformFromClip(point: Point3d): void {
     if (this._transformFromClip !== undefined)
-      this._transformFromClip.multiplyPoint3d(point);
+      this._transformFromClip.multiplyPoint3d(point, point);
   }
 }

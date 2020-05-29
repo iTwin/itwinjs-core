@@ -13,10 +13,11 @@ import { useRefs } from "./useRefs";
 /** Uses ResizeObserver API to notify about element bound changes.
  * @internal
  */
-export function useResizeObserver<T extends Element>(onResize?: (width: number) => void, useHeight?: boolean) {
+export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void) {
   const observerRef = useRefEffect((instance: T | null) => {
     const resizeObserver = new ResizeObserver((entries) => {
-      entries.length === 1 && onResize && onResize(useHeight ? entries[0].target.getBoundingClientRect().height : entries[0].target.getBoundingClientRect().width);
+      const bounds = entries.length === 1 && entries[0].target.getBoundingClientRect();
+      bounds && onResize && onResize(bounds.width, bounds.height);
     });
     instance && resizeObserver.observe(instance);
     return () => {
@@ -24,8 +25,9 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number) 
     };
   }, [onResize]);
   const handleRef = React.useCallback((instance: T | null) => {
-    instance && onResize && onResize(useHeight ? instance.getBoundingClientRect().height : instance.getBoundingClientRect().width);
-  }, [onResize, useHeight]);
+    const bounds = instance && instance.getBoundingClientRect();
+    bounds && onResize && onResize(bounds.width, bounds.height);
+  }, [onResize]);
   const ref = useRefs(handleRef, observerRef);
   return ref;
 }

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as yargs from "yargs";
+import * as path from "path";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { ImportIMJS } from "./ImportIMJS";
 
@@ -27,17 +28,18 @@ const argv: yargs.Arguments<Args> = yargs
 IModelHost.startup();
 console.log("start ..");
 const directoryTail = argv.input;
+const outputFileName = argv.output;
 console.log("input from" + directoryTail);
 if (directoryTail) {
-  const fullBimName = "d:\\bfiles\\importIMJS\\" + directoryTail + ".bim";
+  const fullBimName = path.isAbsolute(outputFileName) ? outputFileName : "d:\\bfiles\\importIMJS\\" + directoryTail + ".bim";
   const importer = ImportIMJS.create(fullBimName,
     "testSubject");
 
   if (!importer) {
     console.log("Failed to create bim file");
   } else {
-    const modelGroups = importer.importFilesFromDirectory(
-      "..\\..\\core\\geometry\\src\\test\\output\\" + directoryTail + "\\");
+    const inputDirName = path.isAbsolute(directoryTail) ? directoryTail : "..\\..\\core\\geometry\\src\\test\\output\\" + directoryTail + "\\";
+    const modelGroups = importer.importFilesFromDirectory(inputDirName);
     let numModel = 0;
     for (const group of modelGroups) {
       numModel += group.modelNames.length;

@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
-import { NoRenderApp } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
@@ -24,6 +24,7 @@ export class TestContext {
   public adminUserAccessToken!: AccessToken;
 
   public iModelWithChangesets?: IModelSession;
+  public iModelForWrite?: IModelSession;
   public contextId?: string;
 
   public settings: Settings;
@@ -73,12 +74,6 @@ export class TestContext {
       } as TestBrowserAuthorizationClientConfiguration);
     }
 
-    const iModelData = this.settings.iModel;
-    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // tslint:disable-line
-
-    this.contextId = iModelData.projectId;
-    this.iModelWithChangesets = new IModelSession(iModelData.id, this.contextId);
-
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
     await NoRenderApp.startup({
@@ -86,6 +81,12 @@ export class TestContext {
       applicationId: this.settings.gprid,
       authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
     });
+
+    const requestContext = new AuthorizedFrontendRequestContext(this.adminUserAccessToken);
+    this.iModelWithChangesets = await IModelSession.create(requestContext, this.settings.iModel);
+    this.contextId = this.iModelWithChangesets.contextId;
+    if (this.settings.runiModelWriteRpcTests)
+      this.iModelForWrite = await IModelSession.create(requestContext, this.settings.writeIModel);
 
     console.log("TestSetup: Done");
   }

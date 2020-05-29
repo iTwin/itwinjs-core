@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { addPanelWidget, createNineZoneState, NineZoneDispatch, NineZoneProvider, WidgetStateContext } from "@bentley/ui-ninezone";
+import { addPanelWidget, createNineZoneState, NineZoneProvider, WidgetStateContext } from "@bentley/ui-ninezone";
 import { render } from "@testing-library/react";
 import { FrontstageDef, FrontstageManager, WidgetContent } from "../../ui-framework";
 import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import { Rectangle } from "@bentley/ui-core";
 
 describe("WidgetContent", () => {
   const sandbox = sinon.createSandbox();
@@ -28,8 +29,9 @@ describe("WidgetContent", () => {
     sandbox.stub(widget, "reactNode").get(() => <>Content</>);
     const { container } = render(
       <NineZoneProvider
-        dispatch={sinon.stub<NineZoneDispatch>()}
+        dispatch={sinon.stub()}
         state={nineZone}
+        measure={() => new Rectangle()}
       >
         <WidgetStateContext.Provider value={nineZone.widgets.leftStart}>
           <WidgetContent />

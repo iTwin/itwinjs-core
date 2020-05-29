@@ -54,7 +54,10 @@ export interface ZoneProps extends CommonProps {
   /** Describes preferred initial width of the zone. */
   initialWidth?: number;
 
-  /** Properties for the Widgets in this Zone. */
+  /** Properties for the Widgets in this Zone.
+   * @note Stable `WidgetProps["id"]` is generated if id is not provided to correctly save and restore App layout.
+   * [[Frontstage]] version must be increased when Widget location is changed or new widgets are added/removed.
+   */
   widgets?: Array<React.ReactElement<WidgetProps>>;
 
   /** @internal */
@@ -83,6 +86,17 @@ export interface ZoneRuntimeProps {
   zone: ZoneManagerProps;
 }
 
+/** @internal */
+export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string) {
+  let props = widgetProps;
+  if (props.id === undefined)
+    props = {
+      ...props,
+      id: stableId,
+    };
+  return props;
+}
+
 /** Zone React component.
  * A Zone is a standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.
  * @public
@@ -97,24 +111,17 @@ export class Zone extends React.Component<ZoneProps> {
 
     // istanbul ignore else
     if (props.widgets) {
-      props.widgets.forEach((widgetNode: React.ReactElement<WidgetProps>) => {
-        const widgetDef = Zone.createWidgetDef(widgetNode);
-        // istanbul ignore else
-        if (widgetDef) {
-          zoneDef.addWidgetDef(widgetDef);
-        }
+      props.widgets.forEach((widgetNode, index) => {
+        // istanbul ignore if
+        if (!React.isValidElement(widgetNode))
+          return;
+
+        const stableId = `uifw-z-${ZoneLocation[zoneDef.zoneLocation]}-${index}`;
+        const stableProps = getStableWidgetProps(widgetNode.props, stableId);
+        const widgetDef = new WidgetDef(stableProps);
+        zoneDef.addWidgetDef(widgetDef);
       });
     }
-  }
-
-  private static createWidgetDef(widgetNode: React.ReactElement<WidgetProps>): WidgetDef | undefined {
-    let widgetDef: WidgetDef | undefined;
-
-    // istanbul ignore else
-    if (React.isValidElement(widgetNode))
-      widgetDef = new WidgetDef(widgetNode.props);
-
-    return widgetDef;
   }
 
   public componentDidMount(): void {

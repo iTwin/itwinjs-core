@@ -54,10 +54,10 @@ export abstract class IoTAnimation {
 
       try {
         const response: Response = await request(this._requestContext, this._extension.simulationUrl + "/iot/getreadings", requestOptions);
-        return Promise.resolve(response.body.sequence);
+        return response.body.sequence;
       } catch (error) {
         // this shouldn't happen
-        return Promise.resolve(`Can't get IoT Readings: ${error.toString}`);
+        return `Can't get IoT Readings: ${error.toString}`;
       }
     } else {
       await (this._extension.simulationPromise);
@@ -67,7 +67,7 @@ export abstract class IoTAnimation {
       const sequence: any = this._extension.localSimulator!.getReadings(query, this.startMsec, this.duration);
       this._extension.startTime = this._extension.localSimulator!.getStartTime();
       this._extension.endTime = this._extension.localSimulator!.getEndTime();
-      return Promise.resolve(sequence);
+      return sequence;
     }
   }
 
@@ -203,7 +203,7 @@ export abstract class IoTAnimation {
       if (this._floor)
         query.floor = this._floor;
       const thisReading: { readingTime: number, readings: any[] } = this._extension.localSimulator!.getLatestTimeAndReading(query);
-      return Promise.resolve(thisReading);
+      return thisReading;
     }
   }
 
@@ -385,7 +385,7 @@ class IotToolTipProvider implements ToolTipProvider {
         const newDiv: HTMLDivElement = document.createElement("div");
         newDiv.innerHTML = out;
         tooltip.prepend(newDiv);
-        return Promise.resolve(tooltip);
+        return tooltip;
       } else {
         return tooltipPromise;
       }
@@ -397,6 +397,7 @@ class IotToolTipProvider implements ToolTipProvider {
 
 export class IoTDemoExtension extends Extension {
   private _i18NNamespace?: I18NNamespace;
+  protected _defaultNs = "iotDemo";
   public iotMonitor: IoTMonitor | undefined;
   public iotUiProvider?: IotUiProvider;
   public simulationUrl: string | undefined;
@@ -480,7 +481,7 @@ export class IoTDemoExtension extends Extension {
 
   /** Invoked the first time this extension is loaded. */
   public async onLoad(args: string[]): Promise<void> {
-    this._i18NNamespace = this.i18n.registerNamespace("iotDemo");
+    this._i18NNamespace = this.i18n.getNamespace(this._defaultNs);
     await this._i18NNamespace!.readFinished;
     const message: string = this.i18n.translate("iotDemo:Messages.Start");
     const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);

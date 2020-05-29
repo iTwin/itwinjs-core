@@ -52,10 +52,10 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
           this.animationFraction = 0;
       }
 
-      return Promise.resolve(true);
+      return true;
     }
 
-    return Promise.resolve(false);
+    return false;
   }
 
   public onAnimationFractionChanged = (animationFraction: number) => {

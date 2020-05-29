@@ -43,6 +43,11 @@ export class ModalDialogManager {
     ModalDialogManager.dialogManager.closeDialog(dialog);
   }
 
+  /** @internal */
+  public static closeAll(): void {
+    ModalDialogManager.dialogManager.closeAll();
+  }
+
   /** Update the dialogs */
   public static update(): void {
     ModalDialogManager.dialogManager.update();

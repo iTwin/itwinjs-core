@@ -55,13 +55,13 @@ describe("useResizeObserver", () => {
       target: element,
     }], resizeObserverSpy.firstCall.returnValue);
 
-    spy.calledOnceWithExactly(100).should.true;
+    spy.calledOnceWithExactly(100, sinon.match.any).should.true;
   });
 
   it("should call onResize (height)", () => {
     const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
     const spy = sandbox.spy();
-    const { result } = renderHook(() => useResizeObserver(spy, true));
+    const { result } = renderHook(() => useResizeObserver(spy));
     const element = document.createElement("div");
     act(() => {
       result.current(element);
@@ -75,6 +75,6 @@ describe("useResizeObserver", () => {
       target: element,
     }], resizeObserverSpy.firstCall.returnValue);
 
-    spy.calledOnceWithExactly(100).should.true;
+    spy.calledOnceWithExactly(sinon.match.any, 100).should.true;
   });
 });

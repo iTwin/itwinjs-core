@@ -294,7 +294,12 @@ export class IModelApp {
    * and/or performance.
    * @beta
    */
-  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return queryRenderCompatibility(System.createContext); }
+  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
+    if (undefined === System.instance || undefined === System.instance.options.useWebGL2)
+      return queryRenderCompatibility(true, System.createContext);
+    else
+      return queryRenderCompatibility(System.instance.options.useWebGL2, System.createContext);
+  }
 
   /**
    * This method must be called before any iModel.js frontend services are used.
@@ -469,9 +474,7 @@ export class IModelApp {
       IModelApp.viewManager.renderLoop();
       IModelApp.tileAdmin.process();
     } catch (exception) {
-      ToolAdmin.exceptionHandler(exception).then(() => { // tslint:disable-line:no-floating-promises
-        close(); // this does nothing in a web browser, closes electron.
-      });
+      ToolAdmin.exceptionHandler(exception); // tslint:disable-line:no-floating-promises
 
       IModelApp._wantEventLoop = false;
       IModelApp._animationRequested = true; // unrecoverable after exception, don't request any further frames.

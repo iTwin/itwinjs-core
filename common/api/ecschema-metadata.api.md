@@ -3164,6 +3164,11 @@ export interface SchemaReferenceProps {
 }
 
 // @beta
+export class SchemaValidater {
+    static validateSchema(schema: Schema, validaterRuleSet?: IRuleSet): Promise<AnyDiagnostic[]>;
+}
+
+// @beta
 export class SchemaValidationVisitor implements ISchemaPartVisitor {
     // (undocumented)
     applyClassRules(ecClass: AnyClass, ruleSet: IRuleSet): Promise<void>;

@@ -37,9 +37,18 @@
     }
   }
 
+  &:focus {
+    color: $hovered-icon-color;
+    background-color: $buic-background-focus-overlay;
+
+    svg {
+      opacity: 1;
+    }
+  }
+
   &:hover {
     color: $hovered-icon-color;
-    background-color: $buic-background-active-overlay;
+    background-color: $buic-background-hover-overlay;
 
     svg {
       opacity: 1;
@@ -102,8 +111,13 @@
   }
 
   > .components-badge {
-    position: absolute;
-    top: 0;
-    left: 0;
+    display: none;
   }
+}
+
+div.components-toolbar-items-container.components-toolbar-show-decorators .components-toolbar-button-item>.components-badge {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
 }

@@ -285,7 +285,7 @@ describe("PresentationRpcImpl", () => {
           paging: testData.pageOptions,
         };
         presentationManagerMock.setup((x) => x.getNodes(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
-          .returns(() => Promise.resolve(result))
+          .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getNodes(testData.imodelToken, { ...defaultRpcParams, ...options }, NodeKey.toJSON(parentNodeKey));
         presentationManagerMock.verifyAll();
@@ -302,7 +302,7 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getNodesCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, undefined))
-          .returns(() => Promise.resolve(result))
+          .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getNodesCount(testData.imodelToken, { ...defaultRpcParams, ...options });
         presentationManagerMock.verifyAll();
@@ -316,7 +316,7 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getNodesCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
-          .returns(() => Promise.resolve(result))
+          .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getNodesCount(testData.imodelToken, { ...defaultRpcParams, ...options }, NodeKey.toJSON(parentNodeKey));
         presentationManagerMock.verifyAll();
@@ -335,7 +335,7 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: testData.rulesetOrId,
         };
         presentationManagerMock.setup((x) => x.getNodesCount(ClientRequestContext.current, { ...options, imodel: testData.imodelMock.object }, parentNodeKey))
-          .returns(() => Promise.resolve(result))
+          .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getNodesCount(testData.imodelToken, { ...defaultRpcParams, ...options }, NodeKey.toJSON(parentNodeKey));
         presentationManagerMock.verifyAll();

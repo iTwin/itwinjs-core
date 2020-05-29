@@ -46,6 +46,8 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
   }
 
   public sortCompare(valueA: Primitives.String, valueB: Primitives.String, ignoreCase?: boolean): number {
+    if (!this.checkArgTypes(valueA, valueB))
+      return 0;
     if (ignoreCase)
       return valueA.toLocaleLowerCase().localeCompare(valueB.toLocaleLowerCase());
     else
@@ -55,7 +57,7 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
   public get isStringType(): boolean { return true; }
 
   public startsWith(valueA: string, valueB: string, caseSensitive: boolean): boolean {
-    if (!valueA || !valueB)
+    if (!valueA || !valueB || !this.checkArgTypes(valueA, valueB))
       return false;
 
     if (caseSensitive)
@@ -65,7 +67,7 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
   }
 
   public endsWith(valueA: string, valueB: string, caseSensitive: boolean): boolean {
-    if (!valueA || !valueB)
+    if (!valueA || !valueB || !this.checkArgTypes(valueA, valueB))
       return false;
 
     const position = valueA.length - valueB.length;
@@ -82,7 +84,7 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
   }
 
   public contains(valueA: string, valueB: string, caseSensitive: boolean): boolean {
-    if (!valueA || !valueB)
+    if (!valueA || !valueB || !this.checkArgTypes(valueA, valueB))
       return false;
 
     if (valueB.length > valueA.length)
@@ -107,11 +109,21 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
   }
 
   public isEmpty(valueA: string): boolean {
+    if (!this.checkArgTypes(valueA))
+      return true;
     return valueA.length === 0;
   }
 
   public isNotEmpty(valueA: string): boolean {
     return !this.isEmpty(valueA);
+  }
+
+  private checkArgTypes(valueA: string, valueB?: string): boolean {
+    if (typeof valueA !== "string")
+      return false;
+    if (valueB && typeof valueB !== "string")
+      return false;
+    return true;
   }
 }
 

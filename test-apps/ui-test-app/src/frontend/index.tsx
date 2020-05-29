@@ -2,23 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "./index.scss";
-// Mobx demo
-import { configure as mobxConfigure } from "mobx";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { connect, Provider } from "react-redux";
-import { Store } from "redux"; // createStore,
 import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import {
-  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
-  isFrontendAuthorizationClient,
-} from "@bentley/frontend-authorization-client";
+import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import {
-  AccuSnap, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, IModelConnection, RenderSystem, SelectionTool,
-  SnapMode, ViewClipByPlaneTool, ViewState,
-} from "@bentley/imodeljs-frontend";
+import { AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, IModelConnection, RenderSystem, SelectionTool, SnapMode, ViewClipByPlaneTool, ViewState } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AccessToken } from "@bentley/itwin-client";
@@ -26,12 +15,14 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
-import {
-  ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkReducer,
-  FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDef, FrontstageManager, IModelAppUiSettings, IModelInfo, ProjectInfo,
-  SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider,
-} from "@bentley/ui-framework";
+import { ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkReducer, FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDef, FrontstageManager, IModelAppUiSettings, IModelInfo, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
+// Mobx demo
+import { configure as mobxConfigure } from "mobx";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import { connect, Provider } from "react-redux";
+import { Store } from "redux"; // createStore,
 import getSupportedRpcs from "../common/rpcs";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { AppUi } from "./appui/AppUi";
@@ -39,12 +30,17 @@ import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
 import { IModelViewportControl } from "./appui/contentviews/IModelViewport";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
+import { AppUiSettings } from "./AppUiSettings";
+import { AppViewManager } from "./favorites/AppViewManager"; // Favorite Properties Support
+import { ElementSelectionListener } from "./favorites/ElementSelectionListener"; // Favorite Properties Support
+import "./index.scss";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
+import { LayoutManagerRestoreLayoutTool } from "./tools/LayoutManagerTool";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
-import { AppUiSettings } from "./AppUiSettings";
+import { PresentationUnitSystem } from "@bentley/presentation-common";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -169,6 +165,9 @@ export class SampleAppIModelApp {
   private static _uiSettings: UiSettings | undefined;
   private static _appUiSettings = new AppUiSettings();
 
+  // Favorite Properties Support
+  private static _selectionSetListener = new ElementSelectionListener(true);
+
   public static get store(): Store<RootState> {
     return StateManager.store as Store<RootState>;
   }
@@ -187,6 +186,7 @@ export class SampleAppIModelApp {
     opts.accuSnap = new SampleAppAccuSnap();
     opts.notifications = new AppNotificationManager();
     opts.uiAdmin = new FrameworkUiAdmin();
+    opts.viewManager = new AppViewManager(true);  // Favorite Properties Support
     await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
@@ -245,6 +245,7 @@ export class SampleAppIModelApp {
     ToolWithSettings.register(this.sampleAppNamespace);
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     UiProviderTool.register(this.sampleAppNamespace);
+    LayoutManagerRestoreLayoutTool.register(this.sampleAppNamespace);
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
 
@@ -252,6 +253,13 @@ export class SampleAppIModelApp {
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
 
     await MarkupApp.initialize();
+
+    // Favorite Properties Support
+    SampleAppIModelApp._selectionSetListener.initialize();
+
+    // default to showing imperial formatted units
+    IModelApp.quantityFormatter.useImperialFormats = true;
+    Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
   }
 
   // cSpell:enable
@@ -376,41 +384,30 @@ export class SampleAppIModelApp {
 
   // called after the user has signed in (or access token is still valid)
   public static async showSignedIn() {
-    // get the default IModel (from imodejs-config)
-    let defaultImodel: IModelInfo | undefined;
-
     let viewId: string | undefined;
     if (Config.App.has("imjs_uitestapp_imodel_viewId"))
       viewId = Config.App.get("imjs_uitestapp_imodel_viewId");
 
     SampleAppIModelApp.iModelParams = SampleAppIModelApp._usingParams();
 
-    if (Config.App.has("imjs_uitestapp_imodel_name") &&
-      Config.App.has("imjs_uitestapp_imodel_wsgId") &&
-      Config.App.has("imjs_uitestapp_imodel_project_name") &&
-      Config.App.has("imjs_uitestapp_imodel_project_projectNumber") &&
-      Config.App.has("imjs_uitestapp_imodel_project_wsgId")) {
-      const defaultProject = {
-        name: Config.App.get("imjs_uitestapp_imodel_project_name"),
-        projectNumber: Config.App.get("imjs_uitestapp_imodel_project_projectNumber"),
-        wsgId: Config.App.get("imjs_uitestapp_imodel_project_wsgId"),
-        readStatus: 0,
-      } as ProjectInfo;
+    if (Config.App.has("imjs_uitestapp_imodel_name") && Config.App.has("imjs_uitestapp_imodel_project_name")) {
+      const projectName = Config.App.getString("imjs_uitestapp_imodel_project_name");
+      const iModelName = Config.App.getString("imjs_uitestapp_imodel_name");
 
-      defaultImodel = {
-        name: Config.App.get("imjs_uitestapp_imodel_name"),
-        description: Config.App.get("imjs_uitestapp_imodel_name"),
-        wsgId: Config.App.get("imjs_uitestapp_imodel_wsgId"),
-        projectInfo: defaultProject,
-        status: "",
-      } as IModelInfo;
+      const requestContext = await AuthorizedFrontendRequestContext.create();
+      const project = await (new ContextRegistryClient()).getProject(requestContext, {
+        $select: "*",
+        $filter: "Name+eq+'" + projectName + "'",
+      });
+
+      const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.wsgId, new IModelQuery().byName(iModelName)))[0];
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId, [viewId!]);
+        await SampleAppIModelApp.openIModelAndViews(project.wsgId, iModel.wsgId, [viewId!]);
       } else {
         // open to the IModelIndex frontstage
-        await SampleAppIModelApp.showIModelIndex(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId);
+        await SampleAppIModelApp.showIModelIndex(project.wsgId, iModel.wsgId);
       }
     } else if (SampleAppIModelApp.iModelParams) {
       if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {
@@ -507,7 +504,7 @@ const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragIntera
 // tslint:disable-next-line: variable-name
 const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
-export class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
+class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
   constructor(props: any) {
     super(props);
 

@@ -10,7 +10,7 @@ import { HubUserInfo, UserInfoQuery, Version } from "@bentley/imodelhub-client";
 import { IModel, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSetToken, PhysicalModel, StandaloneDb } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSetToken, PhysicalModel, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -118,106 +118,63 @@ describe.skip("DebugHubIssues (#integration)", () => {
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
   });
 
-  it.skip("should be able to upload required test files to the Hub", async () => {
-    let iModelName: string;
-    let iModelDir: string;
-    let iModelId: GuidString;
-    let destIModelName: string;
+  const testIModels: Array<{ src: string, dest?: string }> =
+    [{
+      src: "ReadOnlyTest",
+    }, {
+      src: "ReadWriteTest",
+    }, {
+      src: "NoVersionsTest",
+    }, {
+      src: "ConnectionReadTest",
+    }, {
+      src: "Stadium Dataset 1",
+    }, {
+      src: "PhotoTest",
+    }, {
+      src: "seedFileTest",
+    }, {
+      src: "ReadOnlyFullStackTest",
+    }, {
+      src: "ReadWriteFullStackTest",
+    }];
 
-    const projectName = "iModelJsIntegrationTest";
+  const iModelExists = async (projectId: string, iModelName: string): Promise<boolean> => {
+    const iModel = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+    return !!iModel;
+  };
+
+  const uploadIModel = async (projectName: string, srcIModelName: string, destIModelName?: string) => {
     const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    console.log(`Uploading test iModels into ${projectName}: ${projectId}`); // tslint:disable-line:no-console
 
-    iModelName = "ReadOnlyTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
+    const uploadedIModelName = destIModelName || srcIModelName;
+    if (await iModelExists(projectId, uploadedIModelName)) {
+      console.log(`Found test iModel ${uploadedIModelName}. Not uploading it again.`); // tslint:disable-line:no-console
+      return;
+    }
 
-    iModelName = "ReadWriteTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
-
-    iModelName = "NoVersionsTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
-
-    iModelName = "ConnectionReadTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
-
-    iModelName = "Stadium Dataset 1";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
-
-    iModelName = "PhotoTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
-
-    iModelName = "seedFileTest";
-    destIModelName = "ReadOnlyFullStackTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
+    const iModelDir = path.join(iModelRootDir, srcIModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir, destIModelName);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, destIModelName);
-    console.log(`Uploaded test iModel ${destIModelName}: ${iModelId}`); // tslint:disable-line:no-console
+    const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, uploadedIModelName);
+    console.log(`Uploaded test iModel ${srcIModelName} to ${uploadedIModelName}: ${iModelId}`); // tslint:disable-line:no-console
+  };
 
-    iModelName = "seedFileTest";
-    destIModelName = "ReadWriteFullStackTest";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir, destIModelName);
-    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, destIModelName);
-    console.log(`Uploaded test iModel ${destIModelName}: ${iModelId}`); // tslint:disable-line:no-console
+  it.skip("should be able to upload required test files to the Hub", async () => {
+    const projectName = "iModelJsIntegrationTest";
+    for (const testIModel of testIModels) {
+      await uploadIModel(projectName, testIModel.src, testIModel.dest);
+    }
   });
 
-  it.skip("should be able to download required test files from the Hub", async () => {
-    const projectName = "iModelJsTest";
-
-    let iModelName = "imodeljs-clients Briefcases test";
-    let iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "imodeljs-clients ChangeSets test";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "imodeljs-clients Codes test";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "imodeljs-clients Events test";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "imodeljs-clients Locks test";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "imodeljs-clients Statistics test";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "imodeljs-clients UserInfo test";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "imodeljs-clients Versions test";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "imodeljs-clients Versions test 2";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
+  it.skip("should be able to download required test files to the Hub", async () => {
+    const projectName = "iModelJsIntegrationTest";
+    for (const testIModel of testIModels) {
+      const iModelName = testIModel.dest || testIModel.src;
+      const iModelDir = path.join(iModelRootDir, iModelName);
+      console.log(`Downloading test iModel ${iModelName} to ${iModelDir}`); // tslint:disable-line:no-console
+      await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
+      console.log(`Download of test iModel ${iModelName} complete`); // tslint:disable-line:no-console
+    }
   });
 
   it.skip("should be able to delete any iModel on the Hub", async () => {

@@ -177,3 +177,13 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * **dta refresh tiles** *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
 * **dta shutdown** - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.
 * **dta shadow tiles** - Display in all but the selected viewport the tiles that are selected for generating the shadow map for the selected viewport. Updates each time the shadow map is regenerated. Argument: "toggle", "on", or "off"; defaults to "toggle" if not supplied.
+* **dta detach views** - If the selected viewport is displaying a sheet view, remove all view attachments from it.
+* **dta attach view** - If the selected viewport is displaying a sheet view, add the specified view as a view attachment. Arguments:
+  * `view=` (required): The Id of the persistent view, in hexadecimal format (e.g. `0x1ac`).
+  * `category=`: The Id of the category onto which to place the attachment. Defaults to the first category found in the view's category selector.
+  * `x=`, `y=`: The origin of the attachment on the sheet. Default to zero.
+  * `rotation=`: Rotation of the attachment on the sheet in degrees. Defaults to zero.
+  * `size=`: Ratio of the sheet's area that the attachment should occupy. Defaults to 1, making the attachment fill the entire sheet.
+  * `priority=`: Display priority of the attachment in [-500,500]. Defaults to zero.
+  * `image=`: Display as a raster image, even if view is orthographic. Perspective views always draw as raster images.
+  * `background=`: Preserve background color when drawing as a raster image.

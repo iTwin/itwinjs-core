@@ -6,7 +6,8 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { createRandomECInstancesNode } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { GroupingNodeKey, LabelDefinition, Node } from "@bentley/presentation-common";
+import { createRandomECInstancesNode, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PageOptions } from "@bentley/ui-components";
 import { createTreeNodeItem, createTreeNodeItems, pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 
@@ -37,6 +38,18 @@ describe("Utils", () => {
       const node = createRandomECInstancesNode();
       node.fontStyle = "Bold Italic";
       const treeNode = createTreeNodeItem(node);
+      expect(treeNode).to.matchSnapshot();
+    });
+
+    it("appends grouped nodes count if requested", () => {
+      const node: Node = {
+        key: {
+          ...createRandomGroupingNodeKey(),
+          groupedInstancesCount: 999,
+        } as GroupingNodeKey,
+        label: LabelDefinition.fromLabelString("test"),
+      };
+      const treeNode = createTreeNodeItem(node, undefined, { appendChildrenCountForGroupingNodes: true });
       expect(treeNode).to.matchSnapshot();
     });
 

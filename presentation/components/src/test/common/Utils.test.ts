@@ -9,7 +9,7 @@ import * as faker from "faker";
 import * as React from "react";
 import * as moq from "typemoq";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { LabelCompositeValue } from "@bentley/presentation-common";
+import { LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
 import {
   createRandomDescriptor, createRandomLabelCompositeValue, createRandomLabelDefinition, createRandomNestedContentField, createRandomPropertiesField,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
@@ -146,7 +146,7 @@ describe("Utils", () => {
 
     it("creates PropertyRecord for label with composite value", () => {
       const compositeValue = createRandomLabelCompositeValue();
-      const definition = { ...createRandomLabelDefinition(), rawValue: compositeValue, typeName: "composite" };
+      const definition = { ...createRandomLabelDefinition(), rawValue: compositeValue, typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME };
       const record = utils.createLabelRecord(definition, "test");
       const primitiveValue = record.value as PrimitiveValue;
       validateCompositeValue(primitiveValue.value as Primitives.Composite, definition.rawValue);

@@ -17,7 +17,7 @@ import { CachedGeometry, LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
 import { ShaderProgramParams } from "./DrawCommand";
-import { LineCode } from "./EdgeOverrides";
+import { LineCode } from "./LineCode";
 import { FloatRgba } from "./FloatRGBA";
 import { GL } from "./GL";
 import { Graphic } from "./Graphic";
@@ -207,9 +207,15 @@ export abstract class MeshGeometry extends LUTGeometry {
     this.mesh = mesh;
   }
 
-  protected computeEdgeWeight(params: ShaderProgramParams): number { return params.target.getEdgeWeight(params, this.edgeWidth); }
-  protected computeEdgeLineCode(params: ShaderProgramParams): number { return params.target.getEdgeLineCode(params, this.edgeLineCode); }
-  protected computeEdgeColor(target: Target): ColorInfo { return target.isEdgeColorOverridden ? target.edgeColor : this.colorInfo; }
+  protected computeEdgeWeight(params: ShaderProgramParams): number {
+    return params.target.computeEdgeWeight(params.renderPass, this.edgeWidth);
+  }
+  protected computeEdgeLineCode(params: ShaderProgramParams): number {
+    return params.target.computeEdgeLineCode(params.renderPass, this.edgeLineCode);
+  }
+  protected computeEdgeColor(target: Target): ColorInfo {
+    return target.computeEdgeColor(this.colorInfo);
+  }
   protected computeEdgePass(target: Target): RenderPass {
     if (target.isDrawingShadowMap)
       return RenderPass.None;

@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-markup",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/imodeljs-markup_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added flyover names for drawing tools such as polygon, line, rectangle, cloud, sketch etc to reduce redundant name 'Markup' from flyover label"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.0.0",
       "tag": "@bentley/imodeljs-markup_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",

@@ -221,7 +221,8 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
   }
 
   private isValidToken(tokenResponse: TokenResponse): boolean {
-    return tokenResponse.isValid(this._clientConfiguration.expiryBuffer || defaultDesktopAuthorizationClientExpiryBuffer);
+    const buffer = this._clientConfiguration.expiryBuffer || defaultDesktopAuthorizationClientExpiryBuffer;
+    return tokenResponse.isValid(-buffer);
   }
 
   private async refreshAccessToken(requestContext: ClientRequestContext, refreshToken: string): Promise<AccessToken> {

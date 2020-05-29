@@ -1,5 +1,47 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Utils createTreeNodeItem appends grouped nodes count if requested 1`] = `
+Object {
+  "__presentation-components/key": Object {
+    "className": "CSS",
+    "groupedInstancesCount": 999,
+    "groupingValue": 8424,
+    "pathFromRoot": Array [
+      "6102db55-652c-4aa1-ba19-db173124462c",
+    ],
+    "propertyName": "SMS",
+    "type": "ECPropertyGroupingNode",
+  },
+  "id": "6102db55-652c-4aa1-ba19-db173124462c",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "node_label",
+      "typename": "composite",
+    },
+    "value": Object {
+      "displayValue": "test (999)",
+      "value": Object {
+        "parts": Array [
+          Object {
+            "displayValue": "test",
+            "rawValue": "test",
+            "typeName": "string",
+          },
+          Object {
+            "displayValue": "(999)",
+            "rawValue": "(999)",
+            "typeName": "string",
+          },
+        ],
+        "separator": " ",
+      },
+      "valueFormat": 0,
+    },
+  },
+}
+`;
+
 exports[`Utils createTreeNodeItem creates tree node 1`] = `
 Object {
   "__presentation-components/key": Object {

@@ -205,9 +205,8 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
         let flags = 0.0;
         if (params.geometry.isEdge) {
-          const edgeOvrs = params.target.getEdgeOverrides(params.renderPass);
-          if (undefined !== edgeOvrs)
-            flags = edgeOvrs.computeOvrFlags();
+          const settings = params.target.currentEdgeSettings;
+          flags = settings.computeOvrFlags(params.renderPass, params.target.currentViewFlags);
         }
 
         if (!params.geometry.allowColorOverride)
@@ -250,7 +249,8 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       // 3: both
       vert.addUniform("u_transparencyDiscardFlags", VariableType.Int, (prog) => {
         prog.addGraphicUniform("u_transparencyDiscardFlags", (uniform, params) => {
-          let flags = params.target.currentViewFlags.transparency ? 1 : 0;
+          // During readPixels() we force transparency off. Make sure to ignore a Branch that turns it back on.
+          let flags = params.target.currentViewFlags.transparency && !params.target.isReadPixelsInProgress ? 1 : 0;
           if (!params.geometry.alwaysRenderTranslucent)
             flags += 2;
 
@@ -446,7 +446,7 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
     return true;
 
   // In 2d, display priority controls draw order of different elements.
-  if (kFrustumType_Ortho2d == u_frustum.z)
+  if (!u_checkInterElementDiscard)
     return false;
 
   // Use a tighter tolerance for two different elements since we're only fighting roundoff error.
@@ -536,8 +536,8 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
 
   vert.set(VertexShaderComponent.CheckForLateDiscard, isBelowTransparencyThreshold);
   vert.addUniform("u_transparencyThreshold", VariableType.Float, (prog) => {
-    prog.addProgramUniform("u_transparencyThreshold", (uniform, params) => {
-      uniform.setUniform1f(params.target.transparencyThreshold);
+    prog.addGraphicUniform("u_transparencyThreshold", (uniform, params) => {
+      uniform.setUniform1f(params.target.currentTransparencyThreshold);
     });
   });
 
@@ -552,6 +552,12 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
       addEyeSpace(builder);
       frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscard);
     } else {
+      frag.addUniform("u_checkInterElementDiscard", VariableType.Boolean, (prog) => {
+        prog.addGraphicUniform("u_checkInterElementDiscard", (uniform, params) => {
+          uniform.setUniform1i(params.target.uniforms.branch.top.is3d ? 1 : 0);
+        });
+      });
+
       addFeatureIndex(vert);
       addLineWeight(vert);
 

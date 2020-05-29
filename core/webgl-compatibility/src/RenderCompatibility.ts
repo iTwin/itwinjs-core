@@ -106,19 +106,20 @@ export interface WebGLRenderCompatibilityInfo {
 /** A function that creates and returns a WebGLRenderingContext given a canvas and desired attributes.
  * @beta
  */
-export type ContextCreator = (canvas: HTMLCanvasElement, inputContextAttributes?: WebGLContextAttributes, useWebGL2?: boolean) => WebGLRenderingContext | WebGL2RenderingContext | undefined;
+export type ContextCreator = (canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes) => WebGLRenderingContext | WebGL2RenderingContext | undefined;
 
-function createDefaultContext(canvas: HTMLCanvasElement, attributes?: WebGLContextAttributes, useWebGL2?: boolean): WebGLRenderingContext | WebGL2RenderingContext | undefined {
+function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = true, attributes?: WebGLContextAttributes): WebGLRenderingContext | WebGL2RenderingContext | undefined {
   const context = useWebGL2 ? canvas.getContext("webgl2", attributes) : canvas.getContext("webgl", attributes);
   return context ?? undefined;
 }
 
 /** Produces information about the client's compatibility with the iModel.js rendering system.
+ * @param useWebGL2 passed on to the createContext function to create the desired type of context; true to use WebGL2, false to use WebGL1.
  * @param createContext a function that returns a WebGLRenderingContext. The default uses `canvas.getContext()`.
  * @returns a compatibility summary.
  * @beta
  */
-export function queryRenderCompatibility(createContext?: ContextCreator): WebGLRenderCompatibilityInfo {
+export function queryRenderCompatibility(useWebGL2: boolean, createContext?: ContextCreator): WebGLRenderCompatibilityInfo {
   const canvas = document.createElement("canvas") as HTMLCanvasElement;
   if (null === canvas)
     return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [], userAgent: navigator.userAgent };
@@ -132,10 +133,10 @@ export function queryRenderCompatibility(createContext?: ContextCreator): WebGLR
     createContext = createDefaultContext;
 
   let hasMajorPerformanceCaveat = false;
-  let context = createContext(canvas, { failIfMajorPerformanceCaveat: true });
+  let context = createContext(canvas, useWebGL2, { failIfMajorPerformanceCaveat: true });
   if (undefined === context) {
     hasMajorPerformanceCaveat = true;
-    context = createContext(canvas); // try to create context without black-listed GPU
+    context = createContext(canvas, useWebGL2); // try to create context without black-listed GPU
     if (undefined === context)
       return {
         status: WebGLRenderCompatibilityStatus.CannotCreateContext,

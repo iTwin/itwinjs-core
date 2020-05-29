@@ -9,7 +9,7 @@
 import * as i18next from "i18next";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
-import { BentleyError, Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 
 /** @public */
 export interface I18NOptions {
@@ -62,11 +62,22 @@ export class I18N {
       this._i18next = this._i18next.use(i18nextBrowserLanguageDetector);
     }
 
-    // call the changeLanguage method right away, before any calls to I18NNamespace.register. Otherwise, the call doesn't happen until the deferred load of the default namespace
-    this._i18next.use(XHR)
-      .use(BentleyLogger)
-      .init(initOptions, renderFunction)
-      .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
+    const initPromise = new Promise<void>((resolve) => {
+      this._i18next.use(XHR)
+        .use(BentleyLogger)
+        .init(initOptions, (error, t) => {
+          if (renderFunction !== undefined)
+            renderFunction(error, t);
+          resolve();
+        })
+        .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
+      // call the changeLanguage method right away, before any calls to I18NNamespace.register. Otherwise, the call doesn't happen until the deferred load of the default namespace
+    });
+
+    for (const nameSpace of nameSpaces) {
+      const i18nNameSpace = new I18NNamespace(nameSpace, initPromise);
+      this._namespaceRegistry.set(nameSpace, i18nNameSpace);
+    }
   }
 
   /** Replace all instances of `%{key}` within a string with the translations of those keys.
@@ -148,10 +159,18 @@ export class I18N {
   /** @internal */
   public loadNamespace(name: string, i18nCallback: any) { this._i18next!.loadNamespaces(name, i18nCallback); }
 
+  /** Get an already registered Namespace.
+   * @param name - the name of the namespace
+   * @public
+   */
+  public getNamespace(name: string): I18NNamespace | undefined {
+    return this._namespaceRegistry.get(name);
+  }
+
   /** @internal */
   public languageList(): string[] { return this._i18next.languages; }
 
-  /** Register a new Namespace. The Namespace name must be unique in the system.
+  /** Register a new Namespace and return it. If the namespace is already registered, it will be returned.
    * @param name - the name of the namespace, which is the base name of the JSON file that contains the localization properties.
    * @note - The registerNamespace method starts fetching the appropriate version of the JSON localization file from the server,
    * based on the current locale. To make sure that fetch is complete before performing translations from this namespace, await
@@ -160,8 +179,9 @@ export class I18N {
    * @public
    */
   public registerNamespace(name: string): I18NNamespace {
-    if (this._namespaceRegistry.get(name))
-      throw new BentleyError(-1, "namespace '" + name + "' is not unique");
+    const existing = this._namespaceRegistry.get(name);
+    if (existing !== undefined)
+      return existing;
 
     const theReadPromise = new Promise<void>((resolve: any, _reject: any) => {
       this.loadNamespace(name, (err: any, _t: any) => {

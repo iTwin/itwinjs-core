@@ -31,7 +31,7 @@ export interface SignInProps extends CommonProps {
 
 /**
  * SignIn React component.
- * `this._oidcClient.signIn` is called when the "Sign In" button is pressed,
+ * `IModelApp.authorizationClient.signIn` is called when the "Sign In" button is pressed,
  * then `props.onSignedIn` is called after sign-in has completed.
  * @public
  */

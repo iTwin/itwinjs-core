@@ -5,9 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { ActiveTabIdContext, SendBack, WidgetIdContext } from "../../ui-ninezone";
-import { NineZoneDispatch, NineZoneDispatchContext } from "../../ui-ninezone/base/NineZone";
-import { WIDGET_SEND_BACK } from "../../ui-ninezone/base/NineZoneState";
+import { ActiveTabIdContext, NineZoneDispatch, NineZoneDispatchContext, SendBack, WidgetIdContext } from "../../ui-ninezone";
 
 describe("SendBack", () => {
   it("should render", () => {
@@ -36,7 +34,7 @@ describe("SendBack", () => {
     fireEvent.click(button);
 
     dispatch.calledOnceWithExactly({
-      type: WIDGET_SEND_BACK,
+      type: "WIDGET_SEND_BACK",
       floatingWidgetId: undefined,
       side: undefined,
       widgetId: "w1",

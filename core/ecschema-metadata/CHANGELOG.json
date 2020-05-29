@@ -2,6 +2,27 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/ecschema-metadata_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Extend ECVersion valid numbers"
+          },
+          {
+            "comment": "InvertedUnits.toJSON serialized the names of unitsystem and invertedUnit with their name instead of fullName."
+          },
+          {
+            "comment": "SchemaValidater implementation for applying EC rules to in memory EC Schemas."
+          },
+          {
+            "comment": "changed enum property toXml() to use name and not fullName."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.0.0",
       "tag": "@bentley/ecschema-metadata_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",

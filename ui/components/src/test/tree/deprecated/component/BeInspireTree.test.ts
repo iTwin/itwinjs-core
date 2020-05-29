@@ -175,7 +175,7 @@ describe("BeInspireTree", () => {
   // run tests for every type of supported provider
   const providers = [
     { name: "with raw data provider", createProvider: (h: Node[]) => h, isDelayLoaded: false, supportsPagination: false },
-    { name: "with promise data provider", createProvider: async (h: Node[]) => Promise.resolve(h), isDelayLoaded: false, supportsPagination: false },
+    { name: "with promise data provider", createProvider: async (h: Node[]) => h, isDelayLoaded: false, supportsPagination: false },
     { name: "with method data provider", createProvider: (h: Node[]) => createDataProviderMethod(h), isDelayLoaded: true, supportsPagination: false },
     { name: "with interface data provider", createProvider: (h: Node[]) => createDataProviderInterface(h), isDelayLoaded: true, supportsPagination: true },
   ];

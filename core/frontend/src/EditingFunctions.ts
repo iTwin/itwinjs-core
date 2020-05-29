@@ -90,7 +90,7 @@ export class EditingFunctions {
    */
   public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
     if (OpenMode.ReadWrite !== this._connection.openMode)
-      return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
+      throw new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError);
     return IModelWriteRpcInterface.getClient().updateProjectExtents(this._connection.getRpcProps(), newExtents.toJSON());
   }
 
@@ -101,7 +101,7 @@ export class EditingFunctions {
    */
   public async saveChanges(description?: string): Promise<void> {
     if (OpenMode.ReadWrite !== this._connection.openMode)
-      return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
+      throw new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError);
 
     const affectedModels = await IModelWriteRpcInterface.getClient().getModelsAffectedByWrites(this._connection.getRpcProps()); // TODO: Remove this when we get tile healing
 

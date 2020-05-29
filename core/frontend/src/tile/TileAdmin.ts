@@ -39,7 +39,7 @@ export interface SelectedAndReadyTiles {
    * current view, e.g., because sibling tiles are not yet ready to draw.
    */
   readonly ready: Set<Tile>;
-  /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
+  /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles and tiles for view attachments.
    * @alpha
    */
   readonly external: ExternalTileStatistics;
@@ -247,6 +247,16 @@ export abstract class TileAdmin {
    * @internal
    */
   public readonly onTileChildrenLoad = new BeEvent<(parentTile: Tile) => void>();
+
+  /** Subscribe to onTileLoad, onTileTreeLoad, and onTileChildrenLoad.
+   * @internal
+   */
+  public addLoadListener(callback: (imodel: IModelConnection) => void): () => void {
+    const tileLoad = this.onTileLoad.addListener((tile) => callback(tile.tree.iModel));
+    const treeLoad = this.onTileTreeLoad.addListener((tree) => callback(tree.iModel));
+    const childLoad = this.onTileChildrenLoad.addListener((tile) => callback(tile.tree.iModel));
+    return () => { tileLoad(); treeLoad(); childLoad(); };
+  }
 }
 
 /** @alpha */

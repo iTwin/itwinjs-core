@@ -27,84 +27,39 @@
       height: $filter-height;
     }
 
-    .Select {
+    .reactSelectTop {
+      min-height: $filter-height;
       max-height: $filter-height;
       max-width: calc(100% - 10px);
-      font-size: $uicore-font-size;
-    }
 
-    .Select-control {
-      max-height: $filter-height;
-      color: $buic-foreground-body;
-      background: $buic-background-control;
+      .react-select__control {
+        min-height: $filter-height;
+        max-height: $filter-height;
 
-      .Select-placeholder {
-        padding: 2px;
-        color: $buic-foreground-disabled;
-        background: $buic-background-control;
-      }
+        .react-select__placeholder {
+          padding: 2px;
+        }
 
-      .Select-input {
-        max-height: $filter-height - 2px;
-        padding: 2px;
-      }
+        .react-select__value-container {
+          padding: 0 2px;
 
-      .Select-value {
-        padding: unset;
+          .react-select__multi-value {
+            margin: 0;
 
-        .Select-value-label {
-          color: $buic-foreground-body !important;
+            .react-select__multi-value__label {
+              padding-left: 4px;
+            }
+          }
         }
       }
 
-      .Select-arrow-zone .Select-arrow {
-        border-color: $buic-foreground-muted transparent transparent;
+      .react-select__single-value {
+        margin: 0;
       }
 
-      .Select-arrow-zone:hover > .Select-arrow {
-        border-top-color: $buic-foreground-body;
+      .react-select__indicator {
+        padding: 0 2px;
       }
     }
-
-    .Select.is-open > .Select-control .Select-arrow {
-      border-color: transparent transparent $buic-foreground-muted;
-    }
-
-    .Select-menu-outer  .Select-menu {
-      background: $buic-background-control;
-
-      @include uicore-touch-scrolling;
-      @include uicore-scrollbar();
-
-      .Select-option {
-        color: $buic-foreground-body;
-        background: $buic-background-control;
-
-        &.is-focused {
-          color: $buic-foreground-body;
-          background: $buic-row-hover;
-        }
-      }
-    }
-
-    .Select--multi .Select-control .Select-value {
-      margin-top: 1px;
-      margin-left: 1px;
-
-      background: $buic-background-control;
-      color: $buic-foreground-primary;
-
-      .Select-value-label {
-        padding-left: 4px;
-        color: $buic-foreground-body !important;
-      }
-    }
-
-    .Select.is-focused:not(.is-open) > .Select-control {
-      background:   $buic-background-control;
-      border-color: $buic-inputs-border;
-      box-shadow:   $buic-inputs-boxshadow 0px 1px 1px inset;
-    }
-
   }
 }

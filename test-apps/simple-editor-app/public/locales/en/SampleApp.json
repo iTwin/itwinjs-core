@@ -1,7 +1,9 @@
 {
-  "errors": {
-    "UnableToParseLength": "Unable to parse into a length value",
-    "UnableToParseAngle": "Unable to parse into an angle value"
+  "error": {
+    "missingPermission": "You do not have permission to perform this operation",
+    "expiredLogin": "You must log in again",
+    "authenticationFailure": "Login failed",
+    "ChannelConstraintViolation": "You do not have permission to write to this portion of the iModel. It is managed by {{owner}}."
   },
   "Header": {
     "welcome": "Welcome to UI Test App"

@@ -2,8 +2,9 @@
 containsMetadata: 'AvailableScopes'
 ---
 
-
 # Available scopes
+
+This list contains all the OAuth scopes that are required for an application to interact with various portions of the iTwin Services.
 
 | Name                     | Description                                                                                  |
 |--------------------------|----------------------------------------------------------------------------------------------|
@@ -12,12 +13,12 @@ containsMetadata: 'AvailableScopes'
 | organization             | Required to get the user’s organization information                                          |
 | email                    | Required to get the email of the user                                                        |
 | imodelhub                | Required to access iModelHub, the service that allows access to the iModels                  |
-| rbac-user:external-client |                                                                                             |
-| urlps-third-party        | Third party access to Bentley's usage logging                                                |
-| context-registry-service:read-only | Required to access the Context Registry, the service that allows access to an iTwin project |
-| imodeljs-router          | Access any iModel.js backend hosted by Bentley (i.e. the General Purpose Backend)            |
-| visible-api-scope        |                                                                                              |
-| product-settings-service |                                                                                              |
+| imodeljs-router                     | Access any iModel.js backend hosted by Bentley (i.e. the General Purpose Backend) |
+| general-purpose-imodeljs-backend    | Required to access the iModel.js General Purpose Backend                          |
+| rbac-user:external-client           | Required to get the user's role-based permissions                                 |
+| urlps-third-party                   | Required to report usage data to Bentley's usage logging service                  |
+| context-registry-service:read-only  | Required to access the Context Registry, the service that allows access to an iTwin project |
+| projectwise-share        | Required to view and manage data in ProjectWise Share                                        |
+| product-settings-service | View and manage settings stored in the Product Settings Service                              |
 | components-center-service:external |                                                                                    |
-| imodeljs-appregistry-api |                                                                                              |
-| general-purpose-imodeljs-backend | Required to access the general purpose backend                                       |
+| offline_access | Required to get a refresh_token (only supported in Desktop registration)                               |

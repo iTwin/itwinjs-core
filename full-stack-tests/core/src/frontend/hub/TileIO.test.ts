@@ -506,7 +506,7 @@ describe("TileIO (mock render)", () => {
 
 async function waitUntil(condition: () => boolean): Promise<void> {
   if (condition())
-    return Promise.resolve();
+    return;
 
   await new Promise<void>((resolve: any) => setTimeout(resolve, 100));
   return waitUntil(condition);
@@ -1029,7 +1029,7 @@ describe("TileAdmin", () => {
           else
             expect(guid).to.equal("first_" + qualifier!);
 
-          return Promise.resolve(new Uint8Array(1));
+          return new Uint8Array(1);
         };
 
         await tree.rootTile.requestContent(() => false);

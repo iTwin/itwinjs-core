@@ -8,9 +8,9 @@ import * as sinon from "sinon";
 import { Point } from "@bentley/ui-core";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, addTab, createNineZoneState, DragManagerContext, DragTarget, FloatingTab, NineZoneDispatch, NineZoneProvider, TabState,
-  WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END,
+  addPanelWidget, addTab, createNineZoneState, DragManagerContext, DragTarget, FloatingTab, NineZoneDispatch, TabState,
 } from "../../ui-ninezone";
+import { NineZoneProvider } from "../Providers";
 
 interface DragStarterProps {
   tabId: TabState["id"];
@@ -62,7 +62,6 @@ describe("FloatingTab", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <FloatingTab />
       </NineZoneProvider>,
@@ -94,7 +93,7 @@ describe("FloatingTab", () => {
       fireEvent.pointerMove(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_TAB_DRAG,
+      type: "WIDGET_TAB_DRAG",
     })).should.true;
   });
 
@@ -122,7 +121,7 @@ describe("FloatingTab", () => {
       fireEvent.pointerUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_TAB_DRAG_END,
+      type: "WIDGET_TAB_DRAG_END",
       id: "t1",
       target: {
         type: "floatingWidget",
@@ -158,7 +157,7 @@ describe("FloatingTab", () => {
       fireEvent.pointerUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_TAB_DRAG_END,
+      type: "WIDGET_TAB_DRAG_END",
       id: "t1",
       target: {
         type: "tab",
@@ -193,7 +192,7 @@ describe("FloatingTab", () => {
       fireEvent.pointerUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_TAB_DRAG_END,
+      type: "WIDGET_TAB_DRAG_END",
       id: "t1",
       target: {
         type: "panel",

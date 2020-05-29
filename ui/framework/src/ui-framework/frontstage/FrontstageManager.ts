@@ -16,7 +16,7 @@ import { ContentControlActivatedEvent } from "../content/ContentControl";
 import { ContentGroup } from "../content/ContentGroup";
 import { ContentLayoutActivatedEvent, ContentLayoutDef } from "../content/ContentLayout";
 import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
-import { PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
+import { PanelStateChangedEvent, StagePanelTrySetCurrentSizeEventArgs } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { WidgetDef, WidgetStateChangedEvent } from "../widgets/WidgetDef";
@@ -235,6 +235,9 @@ export class FrontstageManager {
    * @alpha
    */
   public static readonly onPanelStateChangedEvent = new PanelStateChangedEvent();
+
+  /** @internal */
+  public static readonly onStagePanelTrySetCurrentSizeEvent = new UiEvent<StagePanelTrySetCurrentSizeEventArgs>();
 
   /** Clears the Frontstage map.
    */
@@ -468,8 +471,8 @@ export class FrontstageManager {
     return false;
   }
 
-  /** Sets the state of the widget with the given id
-   * @param widgetId  Id of the Widget for which to set the state
+  /** Finds a widget with the given id in the active frontstage
+   * @param widgetId  Id of the Widget to find
    * @returns The WidgetDef with the given id, or undefined if not found.
    */
   public static findWidget(widgetId: string): WidgetDef | undefined {

@@ -120,4 +120,10 @@ export enum BackendLoggerCategory {
    * @internal
    */
   NativeApp = "imodeljs-backend.NativeApp",
+
+  /** The logger category used by the following class:
+   * - [[UsageLoggingUtilities]]
+   * @internal
+   */
+  UsageLogging = "imodeljs-backend.UlasUtilities",
 }

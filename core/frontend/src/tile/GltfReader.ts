@@ -734,7 +734,7 @@ export abstract class GltfReader {
 
   protected async loadTextures(): Promise<void> {
     if (undefined === this._textures)
-      return Promise.resolve();
+      return;
 
     const transparentTextures: Set<string> = new Set<string>();
     for (const name of Object.keys(this._materialValues)) {
@@ -756,7 +756,8 @@ export abstract class GltfReader {
     for (const name of Object.keys(this._textures))
       promises.push(this.loadTexture(name, transparentTextures.has(name)));
 
-    return promises.length > 0 ? Promise.all(promises).then((_) => undefined) : Promise.resolve();
+    if (promises.length > 0)
+      await Promise.all(promises);
   }
 
   protected async loadTextureImage(imageJson: any, samplerJson: any, isTransparent: boolean): Promise<RenderTexture | undefined> {
@@ -779,16 +780,22 @@ export abstract class GltfReader {
           const jpegArray = this._binaryData.slice(offset, offset + bufferView.byteLength);
           const jpegArrayBuffer = jpegArray.buffer;
           const workerOp = new ImageDecodeWorkerOperation(jpegArrayBuffer, mimeType);
-          return GltfReader.webWorkerManager.queueOperation(workerOp)
-            .then((imageBitmap) => this._isCanceled ? undefined : this._system.createTextureFromImage(imageBitmap, isTransparent && ImageSourceFormat.Png === format, this._iModel, textureParams))
-            .catch((_) => undefined);
+          try {
+            const imageBitmap = await GltfReader.webWorkerManager.queueOperation(workerOp)
+            return this._isCanceled ? undefined : this._system.createTextureFromImage(imageBitmap, isTransparent && ImageSourceFormat.Png === format, this._iModel, textureParams))
+          } catch (_) {
+            return undefined;
+          }
         ------------------------------------- */
 
       const bytes = this._binaryData.subarray(offset, offset + bufferView.byteLength);
       const imageSource = new ImageSource(bytes, format);
-      return imageElementFromImageSource(imageSource)
-        .then((image) => this._isCanceled ? undefined : this._system.createTextureFromImage(image, isTransparent && ImageSourceFormat.Png === format, this._iModel, textureParams))
-        .catch((_) => undefined);
+      try {
+        const image = await imageElementFromImageSource(imageSource);
+        return this._isCanceled ? undefined : this._system.createTextureFromImage(image, isTransparent && ImageSourceFormat.Png === format, this._iModel, textureParams);
+      } catch (_) {
+        return undefined;
+      }
     } catch (e) {
       return undefined;
     }
@@ -797,11 +804,10 @@ export abstract class GltfReader {
   protected async loadTexture(textureId: string, isTransparent: boolean): Promise<void> {
     const textureJson = JsonUtils.asObject(this._textures[textureId]);
     if (undefined === textureJson)
-      return Promise.resolve();
+      return;
 
-    return this.loadTextureImage(this._images[textureJson.source], undefined === this._samplers ? undefined : this._samplers[textureJson.sampler], isTransparent).then((texture) => {
-      textureJson.renderTexture = texture;
-    });
+    const texture = await this.loadTextureImage(this._images[textureJson.source], undefined === this._samplers ? undefined : this._samplers[textureJson.sampler], isTransparent);
+    textureJson.renderTexture = texture;
   }
 
   protected findTextureMapping(textureId: string): TextureMapping | undefined {

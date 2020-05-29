@@ -30,6 +30,9 @@ import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
+import { LayoutManager } from "./widget-panels/LayoutManager";
+import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
+import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "./selection/HideIsolateEmphasizeManager";
 
 // cSpell:ignore Mobi
 
@@ -73,6 +76,9 @@ export class UiFramework {
   private static _backstageManager?: BackstageManager;
   private static _widgetManager?: WidgetManager;
   private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
+  private static _layoutManager = new LayoutManager();
+  private static _uiVersion = "";
+  private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
 
   /** Get Show Ui event.
    * @public
@@ -123,6 +129,7 @@ export class UiFramework {
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
     UiFramework._backstageManager = new BackstageManager();
+    UiFramework._hideIsolateEmphasizeActionHandler = new HideIsolateEmphasizeManager();  // this allows user to override the default HideIsolateEmphasizeManager implementation.
     UiFramework._widgetManager = new WidgetManager();
 
     UiFramework.onFrameworkVersionChangedEvent.addListener(UiFramework._handleFrameworkVersionChangedEvent);
@@ -158,6 +165,7 @@ export class UiFramework {
     UiFramework._iModelServices = undefined;
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
+    UiFramework._hideIsolateEmphasizeActionHandler = undefined;
 
     UiFramework.onFrameworkVersionChangedEvent.removeListener(UiFramework._handleFrameworkVersionChangedEvent);
 
@@ -210,6 +218,22 @@ export class UiFramework {
     if (!UiFramework._backstageManager)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
     return UiFramework._backstageManager;
+  }
+
+  /** @alpha */
+  public static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler {
+    // istanbul ignore next
+    if (!UiFramework._hideIsolateEmphasizeActionHandler)
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
+    return UiFramework._hideIsolateEmphasizeActionHandler;
+  }
+
+  /** @alpha */
+  public static setHideIsolateEmphasizeActionHandler(handler: HideIsolateEmphasizeActionHandler | undefined) {
+    if (handler)
+      UiFramework._hideIsolateEmphasizeActionHandler = handler;
+    else
+      UiFramework._hideIsolateEmphasizeActionHandler = new HideIsolateEmphasizeManager();
   }
 
   /** @alpha */
@@ -297,7 +321,7 @@ export class UiFramework {
 
   /** @beta */
   public static getCursorMenuData(): CursorMenuData | undefined {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.cursorMenuData : undefined;
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.cursorMenuData : /* istanbul ignore next */ undefined;
   }
 
   public static getActiveIModelId(): string {
@@ -403,9 +427,24 @@ export class UiFramework {
     return mobile;
   }
 
+  /** Returns layout manager.
+   * @beta
+   */
+  public static get layoutManager(): LayoutManager {
+    return UiFramework._layoutManager;
+  }
+
+  /** Returns the Ui Version.
+   * @beta
+   */
+  public static get uiVersion(): string {
+    return UiFramework._uiVersion;
+  }
+
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
     // Log Ui Version used
     Logger.logInfo(UiFramework.loggerCategory(UiFramework), `Ui Version changed to ${args.version} `);
+    UiFramework._uiVersion = args.version;
 
     // If Ui Version 1, save widget opacity
     if (args.oldVersion === "1")
@@ -419,6 +458,10 @@ export class UiFramework {
   // istanbul ignore next
   private static _handleUserStateChanged = (accessToken: AccessToken | undefined) => {
     UiFramework.setUserInfo(accessToken !== undefined ? accessToken.getUserInfo() : undefined);
+
+    if (accessToken === undefined) {
+      ConfigurableUiManager.closeUi();
+    }
   }
 
 }

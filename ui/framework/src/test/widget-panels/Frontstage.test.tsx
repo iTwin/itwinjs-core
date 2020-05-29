@@ -6,15 +6,31 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
-import { createNineZoneState, PANEL_INITIALIZE } from "@bentley/ui-ninezone";
+import produce, { castDraft } from "immer";
+import { Rectangle, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
+import { addPanelWidget, addTab, createNineZoneState, createWidgetState } from "@bentley/ui-ninezone";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
-  addPanelWidgets, addWidgets, FrontstageDef, FrontstageManager, FrontstageProvider, getWidgetId, initializeFrontstageState, StagePanelDef,
-  StagePanelZoneDef, StagePanelZonesDef, UiSettingsProvider, useFrontstageDefNineZone, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
+  addPanelWidgets, addWidgets, FrontstageDef, FrontstageManager, FrontstageProvider, FrontstageState, getWidgetId, initializeFrontstageState,
+  StagePanelDef, StagePanelZoneDef, StagePanelZonesDef, UiFramework, UiSettingsProvider, useFrontstageDefNineZone, useLayoutManager, WidgetDef,
+  WidgetPanelsFrontstage, WidgetState, ZoneDef,
 } from "../../ui-framework";
 import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "../../ui-framework/widget-panels/ModalFrontstageComposer";
 import TestUtils, { storageMock, UiSettingsStub } from "../TestUtils";
+import { FrontstageActionTypes, FrontstageStateReducer, getPanelSide, useFrontstageManager } from "../../ui-framework/widget-panels/Frontstage";
+import { StagePanelLocation } from "@bentley/ui-abstract";
+
+function createFrontstageState(nineZone = createNineZoneState()): FrontstageState {
+  return {
+    status: "DONE",
+    setting: {
+      id: "frontstage1",
+      nineZone,
+      stateVersion: 100,
+      version: 100,
+    },
+  };
+}
 
 describe("WidgetPanelsFrontstage", () => {
   const sandbox = sinon.createSandbox();
@@ -130,7 +146,7 @@ describe("useFrontstageDefNineZone", () => {
     const { result } = renderHook(() => useFrontstageDefNineZone(frontstage));
     act(() => {
       result.current[1]({
-        type: PANEL_INITIALIZE,
+        type: "PANEL_INITIALIZE",
         side: "left",
         size: 200,
       });
@@ -141,7 +157,7 @@ describe("useFrontstageDefNineZone", () => {
   it("should dispatch FRONTSTAGE_STATE_LOAD", async () => {
     const setting = {
       version: 0,
-      stateVersion: 0,
+      stateVersion: 2,
     };
     const uiSettings = new UiSettingsStub();
     sinon.stub(uiSettings, "getSetting").returns(Promise.resolve<UiSettingsResult>({
@@ -155,6 +171,86 @@ describe("useFrontstageDefNineZone", () => {
     await TestUtils.flushAsyncOperations();
     result.current[0].setting.should.eq(setting);
     result.current[0].status.should.eq("DONE");
+  });
+});
+
+describe("useLayoutManager", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should dispatch WIDGET_TAB_SHOW", () => {
+    const dispatch = sinon.stub<React.Dispatch<FrontstageActionTypes>>();
+    renderHook(() => useLayoutManager(createFrontstageState(), dispatch));
+    act(() => {
+      UiFramework.layoutManager.showWidget("w1");
+    });
+    dispatch.calledOnceWithExactly({
+      type: "WIDGET_TAB_SHOW",
+      id: "w1",
+    }).should.true;
+  });
+
+  it("should dispatch WIDGET_TAB_EXPAND", () => {
+    const dispatch = sinon.stub<React.Dispatch<FrontstageActionTypes>>();
+    renderHook(() => useLayoutManager(createFrontstageState(), dispatch));
+    act(() => {
+      UiFramework.layoutManager.expandWidget("w1");
+    });
+    dispatch.calledOnceWithExactly({
+      type: "WIDGET_TAB_EXPAND",
+      id: "w1",
+    }).should.true;
+  });
+
+  it("should delete saved layout", () => {
+    const dispatch = sinon.stub<React.Dispatch<FrontstageActionTypes>>();
+    const uiSettings = new UiSettingsStub();
+    const deleteSettings = sinon.spy(uiSettings, "deleteSetting");
+    renderHook(() => useLayoutManager(createFrontstageState(), dispatch), {
+      wrapper: (props) => <UiSettingsProvider {...props} uiSettings={uiSettings} />,
+    });
+    act(() => {
+      UiFramework.layoutManager.restoreLayout("f1");
+    });
+    deleteSettings.calledOnce.should.true;
+  });
+
+  it("should restore layout", () => {
+    const dispatch = sinon.stub<React.Dispatch<FrontstageActionTypes>>();
+    const uiSettings = new UiSettingsStub();
+    renderHook(() => useLayoutManager(createFrontstageState(), dispatch), {
+      wrapper: (props) => <UiSettingsProvider {...props} uiSettings={uiSettings} />,
+    });
+    act(() => {
+      UiFramework.layoutManager.restoreLayout("frontstage1");
+    });
+    dispatch.firstCall.calledWithExactly(sinon.match({
+      type: "FRONTSTAGE_INITIALIZE",
+    })).should.true;
+    dispatch.secondCall.calledWithExactly({
+      type: "FRONTSTAGE_STATE_SETTING_LOAD",
+      setting: undefined,
+    }).should.true;
+  });
+});
+
+describe("useFrontstageManager", () => {
+  it("should dispatch PANEL_SET_SIZE", () => {
+    const dispatch = sinon.stub<React.Dispatch<FrontstageActionTypes>>();
+    renderHook(() => useFrontstageManager(dispatch));
+    const panelDef = new StagePanelDef();
+    FrontstageManager.onStagePanelTrySetCurrentSizeEvent.emit({
+      panelDef,
+      size: 200,
+    });
+    dispatch.calledOnceWithExactly({
+      type: "PANEL_SET_SIZE",
+      panel: "left",
+      size: 200,
+    }).should.true;
   });
 });
 
@@ -193,8 +289,8 @@ describe("addPanelWidgets", () => {
     let state = createNineZoneState();
     const frontstage = new FrontstageDef();
     const leftPanel = new StagePanelDef();
-    const panelZones = new StagePanelZonesDef({});
-    const panelZone = new StagePanelZoneDef({ widgets: [] });
+    const panelZones = new StagePanelZonesDef();
+    const panelZone = new StagePanelZoneDef();
     const widgetDef = new WidgetDef({
       id: "w1",
     });
@@ -260,5 +356,131 @@ describe("getWidgetId", () => {
 
   it("should return 'bottom'", () => {
     getWidgetId("bottom", "start").should.eq("bottom");
+  });
+});
+
+describe("FrontstageStateReducer", () => {
+  describe("WIDGET_TAB_SHOW", () => {
+    it("should not modify if tab not found", () => {
+      const state = createFrontstageState();
+      const newState = FrontstageStateReducer(state, {
+        type: "WIDGET_TAB_SHOW",
+        id: "t1",
+      });
+      state.should.eq(newState);
+    });
+
+    it("should open panel", () => {
+      let nineZone = addPanelWidget(createNineZoneState(), "left", "w1");
+      nineZone = addTab(nineZone, "w1", "t1");
+      nineZone = produce(nineZone, (draft) => {
+        draft.panels.left.collapsed = true;
+      });
+      const state = createFrontstageState(nineZone);
+      const newState = FrontstageStateReducer(state, {
+        type: "WIDGET_TAB_SHOW",
+        id: "t1",
+      });
+      newState.setting.nineZone.panels.left.collapsed.should.false;
+    });
+
+    it("should bring floating widget to front", () => {
+      const nineZone = produce(createNineZoneState(), (draft) => {
+        draft.widgets.w1 = castDraft(createWidgetState("w1", { tabs: ["t1"] }));
+        draft.widgets.w2 = castDraft(createWidgetState("w2"));
+        draft.floatingWidgets.byId.w1 = {
+          id: "w1",
+          bounds: new Rectangle(),
+        };
+        draft.floatingWidgets.byId.w2 = {
+          id: "w2",
+          bounds: new Rectangle(),
+        };
+        draft.floatingWidgets.allIds = ["w1", "w2"];
+      });
+      const state = createFrontstageState(nineZone);
+      const newState = FrontstageStateReducer(state, {
+        type: "WIDGET_TAB_SHOW",
+        id: "t1",
+      });
+      newState.setting.nineZone.floatingWidgets.allIds.should.eql(["w2", "w1"]);
+    });
+  });
+
+  describe("WIDGET_TAB_EXPAND", () => {
+    it("should not modify if tab not found", () => {
+      const state = createFrontstageState();
+      const newState = FrontstageStateReducer(state, {
+        type: "WIDGET_TAB_EXPAND",
+        id: "t1",
+      });
+      state.should.eq(newState);
+    });
+
+    it("should expand panel widget", () => {
+      let nineZone = addPanelWidget(createNineZoneState(), "left", "w1", { tabs: ["t1"] });
+      nineZone = addPanelWidget(nineZone, "left", "w2", { tabs: ["t2"] });
+      const state = createFrontstageState(nineZone);
+      const newState = FrontstageStateReducer(state, {
+        type: "WIDGET_TAB_EXPAND",
+        id: "t1",
+      });
+      newState.setting.nineZone.widgets.w2.minimized.should.true;
+    });
+
+    it("should restore minimized flaoting widget", () => {
+      const nineZone = produce(createNineZoneState(), (draft) => {
+        draft.widgets.w1 = castDraft(createWidgetState("w1", { tabs: ["t1"], minimized: true }));
+        draft.floatingWidgets.byId.w1 = {
+          id: "w1",
+          bounds: new Rectangle(),
+        };
+        draft.floatingWidgets.allIds = ["w1"];
+      });
+      const state = createFrontstageState(nineZone);
+      const newState = FrontstageStateReducer(state, {
+        type: "WIDGET_TAB_EXPAND",
+        id: "t1",
+      });
+      newState.setting.nineZone.widgets.w1.minimized.should.false;
+    });
+  });
+
+  describe("PANEL_SET_SIZE", () => {
+    it("should set size", () => {
+      const state = createFrontstageState();
+      const newState = FrontstageStateReducer(state, {
+        type: "PANEL_SET_SIZE",
+        panel: "left",
+        size: 200,
+      });
+      newState.setting.nineZone.panels.left.size!.should.eq(200);
+    });
+  });
+});
+
+describe("getPanelSide", () => {
+  it("should return 'left'", () => {
+    getPanelSide(StagePanelLocation.Left).should.eq("left");
+  });
+
+  it("should return 'right'", () => {
+    getPanelSide(StagePanelLocation.Right).should.eq("right");
+  });
+
+  it("should return 'bottom'", () => {
+    getPanelSide(StagePanelLocation.Bottom).should.eq("bottom");
+  });
+
+  it("should return 'bottom'", () => {
+    getPanelSide(StagePanelLocation.BottomMost).should.eq("bottom");
+  });
+
+  it("should return 'top'", () => {
+    getPanelSide(StagePanelLocation.Top).should.eq("top");
+  });
+
+  it("should return 'top'", () => {
+    getPanelSide(StagePanelLocation.TopMost).should.eq("top");
   });
 });

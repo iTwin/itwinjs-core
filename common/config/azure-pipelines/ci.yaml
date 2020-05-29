@@ -38,10 +38,6 @@ jobs:
           versionSpec: "$(NodeVersion).x"
           checkLatest: true
 
-      # Used for the rush audit step until upgrade to pnpm version that supports audit.
-      - task: geeklearningio.gl-vsts-tasks-yarn.yarn-installer-task.YarnInstaller@3
-        displayName: "Use Yarn 1.x"
-
       - template: templates/core-build.yaml
 
       # Will run if even there is a failure somewhere else in the pipeline.

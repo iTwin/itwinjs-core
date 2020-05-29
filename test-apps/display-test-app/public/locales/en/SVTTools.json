@@ -76,6 +76,12 @@
     },
     "RecordFps": {
       "keyin": "dta record fps"
+    },
+    "AttachView": {
+      "keyin": "dta attach view"
+    },
+    "DetachViews": {
+      "keyin": "dta detach views"
     }
   }
 }

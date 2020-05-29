@@ -420,20 +420,19 @@ export async function request(requestContext: ClientRequestContext, url: string,
   * Superagent rejects network issues, and errors outside the range of 200-299. We are currently using
   * superagent, but may eventually switch to JavaScript's fetch library.
   */
-  return sareq
-    .then(async (response: sarequest.Response) => {
-      const retResponse: Response = {
-        body: response.body,
-        text: response.text,
-        header: response.header,
-        status: response.status,
-      };
-      return Promise.resolve(retResponse);
-    })
-    .catch(async (error: any) => {
-      const parsedError = errorCallback(error);
-      return Promise.reject(parsedError);
-    });
+  try {
+    const response = await sareq;
+    const retResponse: Response = {
+      body: response.body,
+      text: response.text,
+      header: response.header,
+      status: response.status,
+    };
+    return retResponse;
+  } catch (error) {
+    const parsedError = errorCallback(error);
+    throw parsedError;
+  }
 }
 
 /**

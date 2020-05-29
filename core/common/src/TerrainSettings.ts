@@ -28,7 +28,7 @@ export interface TerrainProps {
   applyLighting?: boolean;
   /** Origin value - height of the IModel origin at the project center as defined by heightOriginMode. Default value: 0.0 */
   heightOrigin?: number;
-  /** Determines how/if the heightOrigin is applied to the terrain height. Default value: Ground */
+  /** Determines how/if the heightOrigin is applied to the terrain height. Default value: Geodetic */
   heightOriginMode?: TerrainHeightOriginMode;
 }
 
@@ -57,21 +57,21 @@ export class TerrainSettings {
   public readonly applyLighting: boolean;
   /** Origin value - height of the IModel origin at the project center as defined by heightOriginMode. Default value 0.0 */
   public readonly heightOrigin: number;
-  /** Determines how/if the heightOrigin is applied to the terrain height. Default value: ground */
+  /** Determines how/if the heightOrigin is applied to the terrain height. Default value: Geodetic */
   public readonly heightOriginMode: TerrainHeightOriginMode;
 
-  constructor(providerName: TerrainProviderName = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Ground) {
+  constructor(providerName: TerrainProviderName = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Geodetic) {
     this.providerName = providerName;
     this.exaggeration = Math.min(100, Math.max(0.1, exaggeration));
     this.applyLighting = applyLighting;
     this.heightOrigin = heightOrigin;
     switch (heightOriginMode) {
-      case TerrainHeightOriginMode.Geodetic:
+      case TerrainHeightOriginMode.Ground:
       case TerrainHeightOriginMode.Geoid:
         this.heightOriginMode = heightOriginMode;
         break;
       default:
-        this.heightOriginMode = TerrainHeightOriginMode.Ground;
+        this.heightOriginMode = TerrainHeightOriginMode.Geodetic;
         break;
     }
   }
@@ -90,7 +90,7 @@ export class TerrainSettings {
       exaggeration: 1 !== this.exaggeration ? this.exaggeration : undefined,
       applyLighting: this.applyLighting ? true : undefined,
       heightOrigin: 0 !== this.heightOrigin ? this.heightOrigin : undefined,
-      heightOriginMode: TerrainHeightOriginMode.Ground !== this.heightOriginMode ? this.heightOriginMode : undefined,
+      heightOriginMode: this.heightOriginMode,
     };
   }
 

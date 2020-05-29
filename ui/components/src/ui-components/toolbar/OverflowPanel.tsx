@@ -10,7 +10,7 @@ import "./OverflowPanel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { useToolbarWithOverflowDirectionContext } from "./Toolbar";
+import { useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";
 import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
 
 /** Properties of [[ToolbarOverflowPanel]] component.

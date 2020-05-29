@@ -1,6 +1,20 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Address React warnings about deprecated methods.
+- Element Separator updated with new style and group resize logic.
+- Throttled ElementSeparator to call onRatioChanged a maximum of once every 16ms
+- Fixed breaking change regarding ElementSeparator onRatioChanged
+- Fixed Table filter renderers after react-select version upgrade
+- Support for striped rows in Table
+- Added ability for apps to display Favorite properties in Element Tooltip & Card at Cursor
+- Add ThemedSelect, a react-select component that uses iModel.js UI theming.
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT

@@ -48,6 +48,7 @@ public;BSplineSurface3d
 public;BSplineSurface3dH 
 public;BSplineSurface3dQuery
 public;BSplineWrapMode
+public;ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined
 public;ClipMaskXYZRangePlanes
 public;ClippedPolyfaceBuilders
 public;Clipper
@@ -209,6 +210,7 @@ public;Ray3d
 public;RecurseToCurvesGeometryHandler 
 public;class RecursiveCurveProcessor
 public;class RecursiveCurveProcessorWithStack 
+alpha;RegionBinaryOpType
 internal;RegionMomentsXY 
 beta;RegionOps
 public;RotationalSweep 

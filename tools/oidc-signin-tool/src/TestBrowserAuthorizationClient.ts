@@ -163,13 +163,11 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     const token = await this.tokenSetToAccessToken(tokenSet);
     this._accessToken = token;
     this.onUserStateChanged.raiseEvent(this._accessToken);
-    return Promise.resolve();
   }
 
   public async signOut(): Promise<void> {
     this._accessToken = undefined;
     this.onUserStateChanged.raiseEvent(this._accessToken);
-    return Promise.resolve();
   }
 
   private async tokenSetToAccessToken(tokenSet: TokenSet): Promise<AccessToken> {
@@ -351,9 +349,6 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     const consentUrl = url.resolve(this._issuer.issuer as string, "/consent");
     if (page.url().startsWith(consentUrl))
       await page.click("button[value=yes]");
-
-    if (-1 === page.url().indexOf("signin-callback?code="))
-      return;
 
     // New consent page acceptance
     if (await page.title() === "Request for Approval") {

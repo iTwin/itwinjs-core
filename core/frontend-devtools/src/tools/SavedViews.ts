@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { CodeProps, SheetProps, ViewStateProps } from "@bentley/imodeljs-common";
+import { CodeProps, ViewStateProps } from "@bentley/imodeljs-common";
 import {
   EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, SheetViewState, SpatialViewState, Tool, ViewState,
 } from "@bentley/imodeljs-frontend";
@@ -39,7 +39,7 @@ export function serializeViewState(view: ViewState): ViewStateProps {
   if (view instanceof SheetViewState) {
     // For sheetProps all that is actually used is the size, so just null out everything else.
     const codeProps: CodeProps = { spec: "", scope: "", value: "" };
-    const sp: SheetProps = {
+    props.sheetProps = {
       model: "",
       code: codeProps,
       classFullName: "",
@@ -47,10 +47,8 @@ export function serializeViewState(view: ViewState): ViewStateProps {
       height: view.sheetSize.y,
       scale: 1,
     };
-    props.sheetProps = sp;
-    // Copy the sheet attachment ids.
-    props.sheetAttachments = [];
-    view.attachmentIds.forEach((idProp) => props.sheetAttachments!.push(idProp));
+
+    props.sheetAttachments = [ ...view.attachmentIds ];
   }
 
   return props;
@@ -128,6 +126,34 @@ export class ApplyViewTool extends Tool {
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, err.toString()));
     }
+
+    return true;
+  }
+}
+
+/** Given the Id of a persistent ViewDefinition, applies that view to the active viewport.
+ * @beta
+ */
+export class ApplyViewByIdTool extends Tool {
+  public static toolId = "ApplyViewById";
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return 1; }
+
+  public parseAndRun(...args: string[]): boolean {
+    return this.run(args[0]);
+  }
+
+  public run(viewId?: string): boolean {
+    if (typeof viewId !== "string")
+      return false;
+
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp)
+      return false;
+
+    vp.iModel.views.load(viewId).then((view) => {
+      vp.changeView(view);
+    }).catch();
 
     return true;
   }

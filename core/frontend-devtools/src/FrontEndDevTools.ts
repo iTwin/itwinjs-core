@@ -21,11 +21,11 @@ import { AttachRealityModelTool, SaveRealityModelTool } from "./tools/RealityMod
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { CompileShadersTool, LoseWebGLContextTool, ToggleWiremeshTool } from "./tools/RenderSystemTools";
 import {
-  SetVolClassIntersectOff, SetVolClassIntersectOn, ToggleDrapeFrustumTool, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool,
-  ToggleRealityTileBounds, ToggleRealityTileFreeze, ToggleRealityTileLogging, ToggleRealityTilePreload,
+  ToggleDrapeFrustumTool, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool,
+  ToggleRealityTileBounds, ToggleRealityTileFreeze, ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect,
 } from "./tools/RenderTargetTools";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
-import { ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
+import { ApplyViewByIdTool, ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
 import { SelectElementsByIdTool } from "./tools/SelectionTools";
 import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from "./tools/SourceAspectIdTools";
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
@@ -33,8 +33,9 @@ import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecora
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 import {
   ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool,
-  ShowTileVolumesTool, Toggle3dManipulationsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool,
+  ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool,
 } from "./tools/ViewportTools";
+import { ExtensionServiceTool } from "./tools/ExtensionServiceTool";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -52,13 +53,14 @@ export class FrontendDevTools {
    */
   public static async initialize(): Promise<void> {
     if (this._initialized)
-      return Promise.resolve();
+      return;
 
     this._initialized = true;
 
     const i18n = IModelApp.i18n.registerNamespace("FrontendDevTools");
     const tools = [
       AnimationIntervalTool,
+      ApplyViewByIdTool,
       ApplyViewTool,
       ChangeEmphasisSettingsTool,
       ChangeHiliteSettingsTool,
@@ -72,6 +74,7 @@ export class FrontendDevTools {
       DumpPlanProjectionSettingsTool,
       ElementIdFromSourceAspectIdTool,
       EmphasizeSelectedElementsTool,
+      ExtensionServiceTool,
       FadeOutTool,
       FreezeSceneTool,
       InspectElementTool,
@@ -84,8 +87,7 @@ export class FrontendDevTools {
       SaveViewTool,
       SelectElementsByIdTool,
       SetAspectRatioSkewTool,
-      SetVolClassIntersectOff,
-      SetVolClassIntersectOn,
+      ToggleVolClassIntersect,
       ShowTileVolumesTool,
       SourceAspectIdFromElementIdTool,
       Toggle3dManipulationsTool,
@@ -100,6 +102,9 @@ export class FrontendDevTools {
       ToggleTileRequestDecorationTool,
       ToggleTileTreeBoundsDecorationTool,
       ToggleToolTipsTool,
+      ToggleViewAttachmentBoundariesTool,
+      ToggleViewAttachmentClipShapesTool,
+      ToggleViewAttachmentsTool,
       ToggleWiremeshTool,
       ToggleRealityTileBounds,
       ToggleRealityTilePreload,

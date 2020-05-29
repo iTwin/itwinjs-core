@@ -30,6 +30,7 @@ import { ChangedValueState } from '@bentley/imodeljs-common';
 import { ChangeOpCode } from '@bentley/imodeljs-common';
 import { ChangeSet } from '@bentley/imodelhub-client';
 import { ChangesType } from '@bentley/imodelhub-client';
+import { ChannelRootAspectProps } from '@bentley/imodeljs-common';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
 import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
@@ -102,6 +103,7 @@ import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { ImsAuthorizationClient } from '@bentley/itwin-client';
+import { IndexedPolyface } from '@bentley/geometry-core';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { LightLocationProps } from '@bentley/imodeljs-common';
@@ -132,6 +134,9 @@ import { Placement2d } from '@bentley/imodeljs-common';
 import { Placement3d } from '@bentley/imodeljs-common';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
+import { Polyface } from '@bentley/geometry-core';
+import { PolyfaceData } from '@bentley/geometry-core';
+import { PolyfaceVisitor } from '@bentley/geometry-core';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { PropertyCallback } from '@bentley/imodeljs-common';
 import { QueryLimit } from '@bentley/imodeljs-common';
@@ -425,7 +430,9 @@ export enum BackendLoggerCategory {
     NativeApp = "imodeljs-backend.NativeApp",
     PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
     Relationship = "imodeljs-backend.Relationship",
-    Schemas = "imodeljs-backend.Schemas"
+    Schemas = "imodeljs-backend.Schemas",
+    // @internal
+    UsageLogging = "imodeljs-backend.UlasUtilities"
 }
 
 // @public
@@ -518,6 +525,7 @@ export class BriefcaseEntry {
     syncMode: SyncMode;
     targetChangeSetId: string;
     targetChangeSetIndex?: number;
+    upgrade: IModelJsNative.UpgradeMode;
 }
 
 // @public
@@ -736,6 +744,18 @@ export class ChangeSummaryManager {
 }
 
 // @public
+export class ChannelRootAspect extends ElementUniqueAspect {
+    // @internal
+    constructor(props: ChannelRootAspectProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+    static insert(iModel: IModelDb, ownerId: Id64String, ownerDescription: string): void;
+    owner: string;
+    // @internal (undocumented)
+    toJSON(): ChannelRootAspectProps;
+}
+
+// @public
 export class ClassRegistry {
     static findRegisteredClass(classFullName: string): typeof Entity | undefined;
     static getClass(classFullName: string, iModel: IModelDb): typeof Entity;
@@ -831,6 +851,8 @@ export class ConcurrencyControl {
     buildRequestForModel(model: ModelProps, opcode: DbOpcode): void;
     // @internal
     buildRequestForRelationship(_instance: RelationshipProps, _opcode: DbOpcode): void;
+    // @alpha
+    get channel(): ConcurrencyControl.Channel;
     get codes(): ConcurrencyControl.Codes;
     // @internal (undocumented)
     endBulkMode(rqctx: AuthorizedClientRequestContext): Promise<void>;
@@ -909,6 +931,46 @@ export class ConcurrencyControl {
 
 // @beta (undocumented)
 export namespace ConcurrencyControl {
+    // @alpha
+    export class Channel {
+        constructor(_iModel: BriefcaseDb);
+        // (undocumented)
+        get channelRoot(): Id64String | undefined;
+        set channelRoot(id: Id64String | undefined);
+        // (undocumented)
+        checkCanWriteElementToCurrentChannel(props: ElementProps, req: Request, opcode: DbOpcode): void;
+        // (undocumented)
+        checkLockRequest(locks: Lock[]): void;
+        // (undocumented)
+        checkModelAccess(modelId: Id64String, req: Request, opcode: DbOpcode): void;
+        // (undocumented)
+        getChannelOfElement(props: ElementProps): ChannelInfo;
+        // (undocumented)
+        getChannelOfModel(modelId: Id64String): ChannelInfo;
+        getChannelRootInfo(props: ElementProps): any | undefined;
+        // (undocumented)
+        getChannelRootInfo0(props: ElementProps): any;
+        // (undocumented)
+        isChannelRoot(props: ElementProps): any | undefined;
+        // (undocumented)
+        get isRepositoryChannel(): boolean;
+        // (undocumented)
+        lockChannelRoot(req: AuthorizedClientRequestContext): Promise<void>;
+        // (undocumented)
+        static get repositoryChannelRoot(): Id64String;
+        }
+    // @alpha
+    export interface ChannelInfo {
+        channelRoot: Id64String;
+    }
+    // @alpha
+    export class ChannelRootInfo implements ChannelInfo {
+        constructor(cpid: Id64String, props: any); /** The channel of which the element is the root or a member */
+        // (undocumented)
+        readonly channelRoot: Id64String; /** The channel of which the element is the root or a member */
+        // (undocumented)
+        readonly ownerInfo: any;
+    }
     export class Codes {
         constructor(_iModel: BriefcaseDb);
         query(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]>;
@@ -960,6 +1022,10 @@ export namespace ConcurrencyControl {
         // (undocumented)
         relationship: RelationshipProps;
     }
+    // @alpha
+    export class RepositoryChannelInfo extends ChannelRootInfo {
+        constructor();
+    }
     export class Request {
         // (undocumented)
         addCodes(codes: CodeProps[]): this;
@@ -993,6 +1059,8 @@ export namespace ConcurrencyControl {
         removeCodes(filter: (c: CodeProps) => boolean, context: any): void;
         // (undocumented)
         removeLocks(filter: (l: LockProps) => boolean, context: any): void;
+        // (undocumented)
+        replaceLocksWithChannelLock(channelRootId: Id64String): void;
         // (undocumented)
         static get schemaLock(): LockProps;
         // (undocumented)
@@ -1812,6 +1880,7 @@ export interface EventSinkOptions {
 // @public
 export namespace ExportGraphics {
     export function arePartDisplayInfosEqual(lhs: ExportPartDisplayInfo, rhs: ExportPartDisplayInfo): boolean;
+    export function convertToIndexedPolyface(mesh: ExportGraphicsMesh): IndexedPolyface;
 }
 
 // @public
@@ -1840,6 +1909,26 @@ export interface ExportGraphicsMesh {
     normals: Float32Array;
     params: Float32Array;
     points: Float64Array;
+}
+
+// @public
+export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceVisitor {
+    clearArrays(): void;
+    clientAuxIndex(_i: number): number;
+    clientColorIndex(_i: number): number;
+    clientNormalIndex(i: number): number;
+    clientParamIndex(i: number): number;
+    clientPointIndex(i: number): number;
+    clientPolyface(): Polyface;
+    static create(polyface: ExportGraphicsMesh, numWrap: number): ExportGraphicsMeshVisitor;
+    currentReadIndex(): number;
+    // (undocumented)
+    moveToNextFacet(): boolean;
+    moveToReadIndex(facetIndex: number): boolean;
+    pushDataFrom(other: PolyfaceVisitor, index: number): void;
+    pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void;
+    reset(): void;
+    setNumWrap(numWrap: number): void;
 }
 
 // @public
@@ -1926,6 +2015,10 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     checksum?: string;
     // @internal (undocumented)
     static get className(): string;
+    static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): {
+        elementId?: Id64String;
+        aspectId?: Id64String;
+    };
     identifier: string;
     jsonProperties?: string;
     kind: string;
@@ -2343,6 +2436,8 @@ export abstract class IModelDb extends IModel {
     getMetaData(classFullName: string): EntityMetaData;
     get iModelId(): GuidString;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
+    // @alpha
+    importSchemaStrings(requestContext: ClientRequestContext | AuthorizedClientRequestContext, serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(): void;
     // @internal (undocumented)

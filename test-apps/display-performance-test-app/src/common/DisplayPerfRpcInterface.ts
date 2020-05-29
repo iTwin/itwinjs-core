@@ -5,7 +5,9 @@
 import * as chromeLauncher from "chrome-launcher";
 import * as http from "http";
 import * as https from "https";
-import { RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } from "@bentley/imodeljs-common";
+
+const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({ iModelId: "none", key: "" });
 
 /** Display Performance RPC interface. */
 export default class DisplayPerfRpcInterface extends RpcInterface {
@@ -27,7 +29,9 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
 
   public static getClient(): DisplayPerfRpcInterface { return RpcManager.getClientForInterface(DisplayPerfRpcInterface); }
 
+  @RpcOperation.setRoutingProps(localDeploymentOnly)
   public async getDefaultConfigs(): Promise<string> { return this.forward(arguments); }
+
   public async saveCsv(_outputPath: string, _outputName: string, _rowDataJson: string, _csvFormat?: string): Promise<void> { return this.forward(arguments); }
   public async savePng(_fileName: string, _png: string): Promise<void> { return this.forward(arguments); }
 

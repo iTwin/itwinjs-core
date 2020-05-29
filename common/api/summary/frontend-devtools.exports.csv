@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 beta;AnimationIntervalTool 
 alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
+beta;ApplyViewByIdTool 
 beta;ApplyViewTool 
 alpha;AttachRealityModelTool 
 alpha;Button
@@ -51,6 +52,7 @@ alpha;DumpPlanProjectionSettingsTool
 beta;ElementIdFromSourceAspectIdTool 
 beta;class EmphasizeElementsTool 
 beta;EmphasizeSelectedElementsTool 
+internal;ExtensionServiceTool 
 beta;FadeOutTool 
 beta;FpsTracker
 beta;FreezeSceneTool 
@@ -82,6 +84,7 @@ alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
 alpha;RadioBoxProps
 alpha;RealityTransitionTool 
 beta;class RenderSystemDebugControlTool 
+beta;class RenderTargetDebugControlToggleTool 
 beta;class RenderTargetDebugControlTool 
 beta;ReportWebGLCompatibilityTool 
 alpha;SaveRealityModelTool 
@@ -89,8 +92,6 @@ beta;SaveViewTool
 beta;SelectElementsByIdTool 
 beta;serializeViewState(view: ViewState): ViewStateProps
 alpha;SetAspectRatioSkewTool 
-internal;SetVolClassIntersectOff 
-internal;SetVolClassIntersectOn 
 beta;ShowTileVolumesTool 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
@@ -118,8 +119,13 @@ beta;ToggleShadowFrustumTool
 beta;ToggleSkyboxTool 
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleTileTreeBoundsDecorationTool 
+beta;ToggleViewAttachmentBoundariesTool 
+beta;ToggleViewAttachmentClipShapesTool 
+beta;ToggleViewAttachmentsTool 
+internal;ToggleVolClassIntersect 
 beta;ToggleWiremeshTool 
 beta;ToolArgs
 alpha;ToolSettingsTracker
 alpha;ViewportAddRealityModel 
 alpha;ViewportTileSizeModifierTool 
+beta;class ViewportToggleTool 

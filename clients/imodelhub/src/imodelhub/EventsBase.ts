@@ -73,9 +73,9 @@ export abstract class IModelHubBaseEvent {
       const result = await request(requestContext, this._lockUrl, options);
 
       if (result.status === 200)
-        return Promise.resolve(true);
+        return true;
     }
-    return Promise.resolve(false);
+    return false;
   }
 }
 

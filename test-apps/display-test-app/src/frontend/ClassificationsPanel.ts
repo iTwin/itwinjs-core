@@ -100,7 +100,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     const view = this._vp.view;
     const ecef = this._vp.iModel.ecefLocation;
     if (!view.isSpatialView() || undefined === ecef) {
-      return Promise.resolve();
+      return;
     }
 
     const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());

@@ -117,7 +117,7 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
     }
 
     if (!this.isSelected)
-      return Promise.resolve();
+      return;
 
     this._tiledGraphicsProvider = await createSectionGraphicsProvider(this.props, vp.iModel);
     vp.addTiledGraphicsProvider(this._tiledGraphicsProvider);

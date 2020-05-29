@@ -26,11 +26,13 @@ import { ModelSelectorState } from "./ModelSelectorState";
 import { GeometricModel2dState, GeometricModel3dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
+import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { TileTreeReference, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, GlobalLocation } from "./ViewGlobalLocation";
+import { Frustum2d } from "./Frustum2d";
 import { ViewingSpace } from "./ViewingSpace";
 import { ViewChangeOptions, Viewport } from "./Viewport";
 
@@ -264,8 +266,6 @@ export abstract class ViewState extends ElementState {
     const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
     if (undefined !== subcategories)
       await subcategories.promise;
-
-    return Promise.resolve();
   }
 
   /** @internal */
@@ -383,6 +383,25 @@ export abstract class ViewState extends ElementState {
    */
   public discloseTileTrees(trees: TileTreeSet): void {
     this.forEachTileTreeRef((ref) => trees.disclose(ref));
+  }
+
+  /** Discloses graphics memory consumed by viewed tile trees and other consumers like view attachments.
+   * @internal
+   */
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    const trees = new TileTreeSet();
+    this.discloseTileTrees(trees);
+    for (const tree of trees.trees)
+      tree.collectStatistics(stats);
+
+    this.collectNonTileTreeStatistics(stats);
+  }
+
+  /** Discloses graphics memory consumed by any consumers *other* than viewed tile trees, like view attachments.
+   * @internal
+   */
+  public collectNonTileTreeStatistics(_stats: RenderMemory.Statistics): void {
+    //
   }
 
   /** @internal */
@@ -1015,6 +1034,9 @@ export abstract class ViewState3d extends ViewState {
   public readonly camera: Camera;
   /** Minimum distance for front plane */
   public forceMinFrontDist = 0.0;
+  /** This function is never called.
+   * @deprecated
+   */
   public onRenderFrame(_viewport: Viewport): void { }
 
   /** Provides access to optional detail settings for this view.
@@ -1247,10 +1269,22 @@ export abstract class ViewState3d extends ViewState {
   public setExtents(extents: XYAndZ) { this.extents.setFrom(extents); }
   public setRotation(rot: Matrix3d) { this.rotation.setFrom(rot); }
   /** @internal */
-  protected enableCamera(): void { if (this.supportsCamera()) this._cameraOn = true; }
-  public supportsCamera(): boolean { return true; }
-  public minimumFrontDistance() { return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist); }
-  public isEyePointAbove(elevation: number): boolean { return !this._cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
+  protected enableCamera(): void {
+    if (this.supportsCamera())
+      this._cameraOn = true;
+  }
+
+  public supportsCamera(): boolean {
+    return this.allow3dManipulations();
+  }
+
+  public minimumFrontDistance() {
+    return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist);
+  }
+
+  public isEyePointAbove(elevation: number): boolean {
+    return !this._cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation);
+  }
 
   public getDisplayStyle3d() { return this.displayStyle as DisplayStyle3dState; }
 
@@ -1948,6 +1982,9 @@ export abstract class ViewState2d extends ViewState {
     return this.getViewedExtents();
   }
 
+  /** This function is never called.
+   * @deprecated
+   */
   public onRenderFrame(_viewport: Viewport): void { }
   public async load(): Promise<void> {
     await super.load();
@@ -1962,8 +1999,8 @@ export abstract class ViewState2d extends ViewState {
   }
 
   public allow3dManipulations(): boolean { return false; }
-  public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }
-  public getExtents() { return new Vector3d(this.delta.x, this.delta.y); }
+  public getOrigin() { return new Point3d(this.origin.x, this.origin.y, Frustum2d.minimumZExtents.low); }
+  public getExtents() { return new Vector3d(this.delta.x, this.delta.y, Frustum2d.minimumZExtents.length()); }
   public getRotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
   public setExtents(delta: XAndY) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: XAndY) { this.origin.set(origin.x, origin.y); }

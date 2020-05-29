@@ -11,14 +11,14 @@ import classnames from "classnames";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { DisposeFunc } from "@bentley/bentleyjs-core";
-import { ArrayValue, PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
 import { CommonProps, Orientation, Spinner, SpinnerSize } from "@bentley/ui-core";
-import { matchLinks } from "../../common/Links";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
-import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import { ArrayValue, PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
-import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
+import { ResizeHandlingSelectablePropertyBlock } from "./ResizeHandlingSelectablePropertyBlock";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { matchLinks } from "../../common/Links";
+import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
 
 /** Properties for [[PropertyGrid]] React component
  * @public
@@ -371,7 +371,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
         <div className="components-property-grid">
           {
             this.state.categories.map((gridCategory: PropertyGridCategory) => (
-              <SelectablePropertyBlock
+              <ResizeHandlingSelectablePropertyBlock
                 key={gridCategory.propertyCategory.name}
                 category={gridCategory.propertyCategory}
                 properties={gridCategory.properties}

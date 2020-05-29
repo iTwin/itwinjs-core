@@ -8,18 +8,19 @@
 
 import * as deepAssign from "deep-assign";
 import * as path from "path";
-import { assert, DbOpcode, DbResult, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { assert, DbOpcode, DbResult, Id64, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
-import { CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps, SyncMode } from "@bentley/imodeljs-common";
+import { ChannelConstraintError, CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
-import { Element } from "./Element";
+import { Element, Subject } from "./Element";
 import { BriefcaseDb } from "./IModelDb";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
 import { RelationshipProps } from "./Relationship";
+import { ChannelRootAspect } from "./ElementAspect";
 
 const loggerCategory: string = BackendLoggerCategory.ConcurrencyControl;
 
@@ -33,10 +34,20 @@ export class ConcurrencyControl {
   private _bulkMode: boolean = false;
   private _cache: ConcurrencyControl.StateCache;
   private _modelsAffectedByWrites = new Set<Id64String>(); // TODO: Remove this when we get tile healing
+  private _channel: ConcurrencyControl.Channel;
 
   constructor(private _iModel: BriefcaseDb) {
     this._cache = new ConcurrencyControl.StateCache(this);
     this._policy = ConcurrencyControl.PessimisticPolicy;
+    this._channel = new ConcurrencyControl.Channel(_iModel);
+  }
+
+  /**
+   * Manages channels for this iModel.
+   * @alpha
+   */
+  public get channel(): ConcurrencyControl.Channel {
+    return this._channel;
   }
 
   /** @internal */
@@ -79,7 +90,7 @@ export class ConcurrencyControl {
   /** @internal */
   public onSaveChanges() {
     if (this.hasPendingRequests)
-      throw new IModelError(IModelStatus.TransactionActive, "Call iModelDb.concurrencyControl.request before saving changes", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.TransactionActive, "Call BriefcaseDb.concurrencyControl.request before saving changes", Logger.logError, loggerCategory);
   }
 
   /** @internal */
@@ -95,7 +106,7 @@ export class ConcurrencyControl {
   /** @internal */
   public onMergeChanges() {
     if (this.hasPendingRequests)
-      throw new IModelError(IModelStatus.TransactionActive, "Call iModelDb.concurrencyControl.request and iModelDb.saveChanges before applying changesets", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.TransactionActive, "Call BriefcaseDb.concurrencyControl.request and BriefcaseDb.saveChanges before applying changesets", Logger.logError, loggerCategory);
   }
 
   /** @internal */
@@ -178,6 +189,7 @@ export class ConcurrencyControl {
     }
     const resourcesNeeded = new ConcurrencyControl.Request();
     this.buildRequestForModelTo(resourcesNeeded, model, opcode, modelClass);
+    this._channel.checkCanWriteElementToCurrentChannel(this._iModel.elements.getElement(model.modeledElement), resourcesNeeded, opcode);  // do this first! It may change resourcesNeeded
     this.applyPolicyBeforeWrite(resourcesNeeded);
     this.addToPendingRequestIfNotHeld(resourcesNeeded);
 
@@ -226,6 +238,7 @@ export class ConcurrencyControl {
     }
     const resourcesNeeded = new ConcurrencyControl.Request();
     this.buildRequestForElementTo(resourcesNeeded, element, opcode, elementClass);
+    this._channel.checkCanWriteElementToCurrentChannel(element, resourcesNeeded, opcode); // do this first! It may change resourcesNeeded
     this.applyPolicyBeforeWrite(resourcesNeeded);
     this.addToPendingRequestIfNotHeld(resourcesNeeded);
     this._modelsAffectedByWrites.add(element.model);  // TODO: Remove this when we get tile healing
@@ -289,22 +302,32 @@ export class ConcurrencyControl {
   public async requestResourcesForOpcode(ctx: AuthorizedClientRequestContext, opcode: DbOpcode, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void> {
     ctx.enter();
 
-    for (const e of elements)
-      this.buildRequestForElement(e, opcode);
+    const prevRequest = this.pendingRequest.clone();
 
-    if (models) {
-      for (const m of models)
-        this.buildRequestForModel(m, opcode);
+    try {
+
+      for (const e of elements)
+        this.buildRequestForElement(e, opcode);
+
+      if (models) {
+        for (const m of models)
+          this.buildRequestForModel(m, opcode);
+      }
+
+      if (relationships) {
+        for (const r of relationships)
+          this.buildRequestForRelationship(r, opcode);
+      }
+
+      await this.request(ctx);
+
+      assert(!this._iModel.concurrencyControl.hasPendingRequests);
+
+    } catch (err) {
+      // This operation must be atomic - if we didn't obtain the resources, then we must not leave anything in pendingRequests. Caller must re-try after fixing the underlying problem.
+      this._pendingRequest = prevRequest;
+      throw err;
     }
-
-    if (relationships) {
-      for (const r of relationships)
-        this.buildRequestForRelationship(r, opcode);
-    }
-
-    await this.request(ctx);
-
-    assert(!this._iModel.concurrencyControl.hasPendingRequests);
   }
 
   /** @internal */
@@ -353,7 +376,7 @@ export class ConcurrencyControl {
   public async request(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<void> {
     requestContext.enter();
     if (!this._iModel.isOpen)
-      return Promise.reject(new Error("not open"));
+      throw new Error("not open");
 
     if (req === undefined)
       req = this.pendingRequest;
@@ -504,6 +527,15 @@ export class ConcurrencyControl {
     return this.getHeldLock(LockType.Element, elementId);
   }
 
+  private checkLockRestrictions(locks: ConcurrencyControl.LockProps[]) {
+    for (const lock of locks) {
+      if (lock.type === LockType.Model) {
+        // If the app does not have write access to a channel, then it should not be taking out locks on that model at any level, even shared.
+        // If we allowed that, then some random app could lock out the bridge or app from writing to its own channel. Would want to allow that??
+        this._channel.checkModelAccess(lock.objectId, new ConcurrencyControl.Request(), DbOpcode.Insert); //  throws if app does not have write access to this model.
+      }
+    }
+  }
   private async acquireLocks(requestContext: AuthorizedClientRequestContext, locks: ConcurrencyControl.LockProps[]): Promise<Lock[]> {
     requestContext.enter();
 
@@ -512,6 +544,7 @@ export class ConcurrencyControl {
 
     if (!this.needLocks)
       return [];
+    this.checkLockRestrictions(locks);
 
     const hubLocks = ConcurrencyControl.Request.toHubLocks(this, locks);
 
@@ -533,7 +566,7 @@ export class ConcurrencyControl {
     const hubCodes = ConcurrencyControl.Request.toHubCodes(this, codes);
 
     if (!this._iModel.isOpen)
-      return Promise.reject(new Error("not open"));
+      throw new Error("not open");
 
     Logger.logTrace(loggerCategory, `reserveCodes ${JSON.stringify(hubCodes)}`);
     const codeStates = await BriefcaseManager.imodelClient.codes.update(requestContext, this._iModel.briefcase.iModelId, hubCodes);
@@ -547,7 +580,7 @@ export class ConcurrencyControl {
   public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
     requestContext.enter();
     if (!this._iModel.isOpen)
-      return Promise.reject(new Error("not open"));
+      throw new Error("not open");
 
     const query = new CodeQuery();
 
@@ -586,7 +619,7 @@ export class ConcurrencyControl {
   public async areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
     requestContext.enter();
     if (!this._iModel.isOpen)
-      return Promise.reject(new Error("not open"));
+      throw new Error("not open");
 
     if (req === undefined)
       req = this.pendingRequest;
@@ -620,7 +653,7 @@ export class ConcurrencyControl {
   public async areLocksAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
     requestContext.enter();
     if (!this._iModel.isOpen)
-      return Promise.reject(new Error("not open"));
+      throw new Error("not open");
 
     if (req === undefined)
       req = this.pendingRequest;
@@ -667,7 +700,7 @@ export class ConcurrencyControl {
   public async areAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
     requestContext.enter();
     if (!this._iModel.isOpen)
-      return Promise.reject(new Error("not open"));
+      throw new Error("not open");
 
     if (req === undefined)
       req = this.pendingRequest;
@@ -691,7 +724,7 @@ export class ConcurrencyControl {
 
   /** Set the concurrency control policy.
    * Before changing from optimistic to pessimistic, all local changes must be saved and uploaded to iModelHub.
-   * Before changing the locking policy of the pessimistic concurrency policy, all local changes must be saved to the IModelDb.
+   * Before changing the locking policy of the pessimistic concurrency policy, all local changes must be saved to the BriefcaseDb.
    * Here is an example of setting an optimistic policy:
    * <p><em>Example:</em>
    * ``` ts
@@ -727,6 +760,282 @@ export class ConcurrencyControl {
 
 /** @beta */
 export namespace ConcurrencyControl {
+
+  /**
+   * Information about the channel that an element is in.
+   * @alpha
+   */
+  export interface ChannelInfo {
+    /** The channel of which the element is the root or a member */
+    channelRoot: Id64String;
+  }
+
+  /**
+   * Information about a channel root.
+   * For now, all channel root elements reside in the RepositoryModel.
+   * The rules for channel root elements are special:
+   *  * A channel root element may only be created while in no channel or in the repository channel
+   *  * An existing channel root element may only be modified while in the channel itself.
+   * While, technically, a channel root element is in the repository channel, it simplifies the algorithms if we pretend that the root's channel is itself.
+   * So, ChannelRootInfo.channelRoot will always be the channel root element itself.
+   * @alpha
+   */
+  export class ChannelRootInfo implements ChannelInfo {
+    public readonly channelRoot: Id64String; /** The channel of which the element is the root or a member */
+    public readonly ownerInfo: any; /** Information that may help to identify the purpose or source of the channel. */
+
+    constructor(cpid: Id64String, props: any) {
+      this.channelRoot = cpid;
+      this.ownerInfo = props;
+    }
+  }
+
+  /**
+   * Information about the repository channel. There is only one. It is in its own channel.
+   * @alpha
+   */
+  export class RepositoryChannelInfo extends ChannelRootInfo {
+    constructor() {
+      super(BriefcaseDb.rootSubjectId, { Subject: { repositoryChannel: true } });
+    }
+  }
+
+  /**
+   * Access to the current channel
+   * @alpha
+   */
+  export class Channel {
+    private _channelsOfModels = new Map<Id64String, ChannelInfo | undefined>(); // The accumulated knowledge of what channels various models are in
+    private _channelRoots = new Map<Id64String, any>(); // The elements that are known to be channel roots, along with their info objects
+    private _channelRoot?: Id64String;
+
+    constructor(private _iModel: BriefcaseDb) { }
+
+    public static get repositoryChannelRoot(): Id64String { return BriefcaseDb.rootSubjectId; }
+
+    public async lockChannelRoot(req: AuthorizedClientRequestContext): Promise<void> {
+      req.enter();
+      if (this.channelRoot === undefined)
+        throw new ChannelConstraintError("Not in a channel");
+
+      if (this.channelRoot === Channel.repositoryChannelRoot) {
+        await this._iModel.concurrencyControl.lockSchema(req);
+        req.enter();
+        return;
+      }
+      const channelRoot = this._iModel.elements.getElement(this.channelRoot);
+      return this._iModel.concurrencyControl.requestResourcesForUpdate(req, [channelRoot]);
+    }
+
+    public getChannelRootInfo0(props: ElementProps): any {
+      // special case of legacy *bridges*
+      if (props.classFullName === Subject.classFullName) {
+        if (props.jsonProperties?.Subject?.Job !== undefined) {
+          return props.jsonProperties.Subject.Job;
+        }
+      }
+
+      let info;
+      if (props.id !== undefined) {
+        this._iModel.withPreparedStatement(`SELECT owner from ${ChannelRootAspect.classFullName} where element.id=?`, (stmt) => {
+          stmt.bindId(1, props.id!);
+          if (DbResult.BE_SQLITE_ROW === stmt.step()) {
+            info = stmt.getValue(0).getString();
+          }
+        });
+      }
+      return info;
+    }
+
+    /** If props identifies a channel root element, return information about it. Otherwise, return undefined. */
+    public getChannelRootInfo(props: ElementProps): any | undefined {
+      if (props.id === undefined || Id64.isInvalid(props.id))
+        return undefined;
+
+      let cpi = this._channelRoots.get(props.id);
+      if (cpi !== undefined)
+        return cpi;
+
+      cpi = this.getChannelRootInfo0(props);
+      if (cpi === undefined)
+        return undefined;
+
+      this._channelRoots.set(props.id, cpi);
+      return cpi;
+    }
+
+    public isChannelRoot(props: ElementProps): any | undefined {
+      return this.getChannelRootInfo(props) !== undefined;
+    }
+
+    public getChannelOfModel(modelId: Id64String): ChannelInfo {
+      let info = this._channelsOfModels.get(modelId);
+      if (info !== undefined)
+        return info;
+
+      info = this.getChannelOfElement(this._iModel.elements.getElement(modelId));
+      this._channelsOfModels.set(modelId, info);
+      return info;
+    }
+
+    public getChannelOfElement(props: ElementProps): ChannelInfo {
+
+      // For now, we don't support nested channels, and we require that all channel root elements be in the repository model.
+      // That allows us to make the following optimization:
+
+      // Common case: If an element is *not* in the repository model, then its channel is the channel of its model. We normally have that answer cached.
+      if (props.model !== BriefcaseDb.repositoryModelId) {
+        return this.getChannelOfModel(props.model);
+      }
+
+      // Rare case: The element is in the repository model
+      assert(props.model === BriefcaseDb.repositoryModelId);
+
+      // We must check to see if it is itself a channel root element, or if its parent is, etc.
+
+      if (props.id === BriefcaseDb.rootSubjectId)
+        return new RepositoryChannelInfo();
+
+      const info = this.getChannelRootInfo(props);
+      if (info !== undefined)
+        return new ChannelRootInfo(props.id!, info);   // See comment on ChannelRootInfo for why we pretend that the root's channel is itself.
+
+      if (props.parent !== undefined && Id64.isValidId64(props.parent.id)) {
+        const pc = this.getChannelOfElement(this._iModel.elements.getElement(props.parent));
+        return { channelRoot: pc.channelRoot };
+      }
+
+      // Note that for now we don't support nested channels. => All elements in model#1 are in the repository channel.
+
+      return { channelRoot: Channel.repositoryChannelRoot };
+    }
+
+    public get channelRoot(): Id64String | undefined { return this._channelRoot; }
+    public set channelRoot(id: Id64String | undefined) {
+      if (this._iModel.txns.hasLocalChanges)
+        throw new ChannelConstraintError("Must push changes before changing channel", Logger.logError, loggerCategory);
+      // TODO: Verify that no locks are held.
+      this._channelRoot = id;
+    }
+
+    public get isRepositoryChannel(): boolean {
+      return this.channelRoot === BriefcaseDb.rootSubjectId;
+    }
+
+    public checkLockRequest(locks: Lock[]) {
+      // No channel and repository channel are effectively the same for locking purposes.
+      // onElementWrite will check for repository channel restrictions
+      if (this.channelRoot === undefined || this.isRepositoryChannel) {
+        return;
+      }
+
+      // Normal channel:
+      for (const lock of locks) {
+        if ((lock.lockType === LockType.Schemas) || (lock.type === LockType.CodeSpecs))
+          throw new ChannelConstraintError("Schemas and CodeSpecs Locks are not accessible in a normal channel.", Logger.logError, loggerCategory, () => ({ channel: this._channelRoot, lock }));
+      }
+    }
+
+    public checkModelAccess(modelId: Id64String, req: Request, opcode: DbOpcode) {
+      const modeledElement = this._iModel.elements.getElement(modelId);
+      this.checkCanWriteElementToCurrentChannel(modeledElement, req, opcode);
+    }
+
+    private getChannelRootDescription(info: ChannelRootInfo): string {
+      if (info instanceof RepositoryChannelInfo)
+        return "the repository channel";
+
+      return "the channel owned by " + JSON.stringify(info.ownerInfo);
+    }
+
+    private getChannelRootDescriptionById(channelRootId: Id64String): string {
+      return this.getChannelRootDescription(this.getChannelOfElement(this._iModel.elements.getElement(channelRootId)) as ChannelRootInfo);
+    }
+
+    private throwChannelConstraintError(element: ElementProps, elementChannelInfo: ConcurrencyControl.ChannelInfo, restriction?: string) {
+      let metadata = {};
+
+      let channelRootInfo: ChannelRootInfo;
+      if (elementChannelInfo instanceof ChannelRootInfo)
+        channelRootInfo = elementChannelInfo;
+      else
+        channelRootInfo = this.getChannelOfElement(this._iModel.elements.getElement(elementChannelInfo.channelRoot)) as ChannelRootInfo;
+
+      metadata = { channel: this._channelRoot, element, elementChannelInfo, channelRootInfo };
+
+      const thisChannel = this._channelRoot ? this.getChannelRootDescriptionById(this._channelRoot) : "";
+      const targetChannel = this.getChannelRootDescriptionById(elementChannelInfo.channelRoot);
+      if (restriction === undefined)
+        restriction = "cannot write to";
+      let message;
+      if (thisChannel === "")
+        message = `${restriction} ${targetChannel}`;
+      else
+        message = `${restriction} ${targetChannel} while in ${thisChannel}`;
+
+      throw new ChannelConstraintError(message, Logger.logError, loggerCategory, () => metadata);
+    }
+
+    private checkCodeScopeInCurrentChannel(props: ElementProps) {
+      if (!Id64.isValidId64(props.code.scope))
+        return;
+      const scopeElement = this._iModel.elements.tryGetElement<Element>(props.code.scope);
+      if (scopeElement === undefined)
+        return;
+      const codeScopeChannelInfo = this.getChannelOfElement(scopeElement);
+      if (codeScopeChannelInfo === undefined)
+        return;
+      if (codeScopeChannelInfo.channelRoot === Channel.repositoryChannelRoot) // it's always OK to scope a Code to an element in the repository channel.
+        return;
+      const requiredChannel = this.channelRoot || Channel.repositoryChannelRoot;
+      if (codeScopeChannelInfo.channelRoot !== requiredChannel)
+        this.throwChannelConstraintError(props, codeScopeChannelInfo, "cannot scope Code to an element in");
+    }
+
+    public checkCanWriteElementToCurrentChannel(props: ElementProps, req: Request, opcode: DbOpcode) {
+      this.checkCodeScopeInCurrentChannel(props);
+
+      const elementChannelInfo = this.getChannelOfElement(props);
+
+      if ((elementChannelInfo instanceof ChannelRootInfo) && (opcode === DbOpcode.Insert)) {
+        // Special case: Inserting a new channel. For now, do not support "nested" channels - only allow channel creation while in no channel or in the repository channel.
+        if ((this.channelRoot !== undefined) && !this.isRepositoryChannel)
+          this.throwChannelConstraintError(props, elementChannelInfo);
+        // TODO: Check that root element's Code, if any, is scoped only to one of its parents or the element #1
+        return;
+      }
+
+      // Writing a normal element or updating a channel root.
+
+      const isElementInRepositoryChannel = (elementChannelInfo.channelRoot === Channel.repositoryChannelRoot);
+
+      if (this.channelRoot === undefined) {
+        // The app is in no channel. That means that it wants to be allowed to write to any non-exclusive channel.
+        // TODO: Check if info identifies a channel whose owner is not this app. For now, we will exclude the app from any real channel (thus limiting it to the repository channel).
+        // TODO: Don't let the app write to more than one (non-exclusive) channel. That will require us to set (and clear) a property to track the last-written channel (and then clear it on push.)
+        // For now, restrict the app to the repository channel only.
+        if (!isElementInRepositoryChannel) {
+          this.throwChannelConstraintError(props, elementChannelInfo);
+        }
+        return;
+      }
+
+      if (this.isRepositoryChannel) {
+        // The app is in the repository channel.
+        if (!isElementInRepositoryChannel) // Don't permit writes to any normal channel.
+          this.throwChannelConstraintError(props, elementChannelInfo);
+        return;
+      }
+
+      // The app is in a normal channel.
+      if (elementChannelInfo.channelRoot !== this.channelRoot) // Don't permit writes to any other channel, including normal channels and the repository channel.
+        this.throwChannelConstraintError(props, elementChannelInfo);
+
+      // OK. This element is in the app's channel. The only lock needed by the app is the channel root.
+      req.replaceLocksWithChannelLock(this.channelRoot);
+    }
+
+  }
 
   /**
    * The properties of an iModel server lock.
@@ -794,6 +1103,10 @@ export namespace ConcurrencyControl {
         }
       });
       return this;
+    }
+
+    public replaceLocksWithChannelLock(channelRootId: Id64String) {
+      this._locks = [Request.getElementLock(channelRootId, LockLevel.Exclusive)];
     }
 
     public addCodes(codes: CodeProps[]): this {
@@ -886,7 +1199,7 @@ export namespace ConcurrencyControl {
 
   /**
    * The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
-   * The scenario is that the caller has made some changes to the *local* IModelDb. Now, the caller is attempting to
+   * The scenario is that the caller has made some changes to the *local* BriefcaseDb. Now, the caller is attempting to
    * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
    */
   export class ConflictResolutionPolicy {

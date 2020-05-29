@@ -6,9 +6,20 @@
  * @module Rendering
  */
 
+/** Carries information in a GraphicBranchOptions about a GraphicBranch produced by drawing one view into the context of another.
+ * @internal
+ */
+export interface GraphicBranchFrustum {
+  is3d: boolean;
+  scale: {
+    x: number;
+    y: number;
+  };
+}
+
 import { disposeArray, IDisposable } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { ViewFlagOverrides, ViewFlags } from "@bentley/imodeljs-common";
+import { HiddenLine, ViewFlagOverrides, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { RenderClipVolume } from "./RenderClipVolume";
@@ -75,7 +86,9 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
 export interface GraphicBranchOptions {
   clipVolume?: RenderClipVolume;
   classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
+  hline?: HiddenLine.Settings;
   iModel?: IModelConnection;
+  frustum?: GraphicBranchFrustum;
 }
 
 /** Clip/Transform for a branch that are varied over time.

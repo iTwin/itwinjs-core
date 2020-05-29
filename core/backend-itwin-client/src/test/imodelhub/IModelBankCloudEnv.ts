@@ -45,8 +45,8 @@ export function getIModelBankCloudEnv(): IModelCloudEnvironment {
     contextMgr,
     imodelClient: bankClient,
     getAuthorizationClient,
-    shutdown: () => Promise.resolve(0),
-    startup: () => Promise.resolve(),
+    shutdown: async () => 0,
+    startup: async () => { },
   };
 
   return cloudEnv;
@@ -94,12 +94,12 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
         if (err.errno === "ECONNREFUSED") {
           continue;
         } else {
-          return Promise.reject(err);
+          throw err;
         }
       }
-      return Promise.resolve();
+      return;
     } while (++attempt < maxConnectAttempts);
-    return Promise.reject(new Error("ECONNREFUSED"));
+    throw new Error("ECONNREFUSED");
   }
 
   async function pingServerOnce(url: string, pauseMillis: number): Promise<void> {
@@ -126,10 +126,8 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
       await pingServer(url, 10, 1000);
     } catch (err) {
       Logger.logError(loggingCategory, `Error pinging ${url}, server did not startup in time.`);
-      return Promise.reject(err);
+      throw err;
     }
-
-    return Promise.resolve();
   }
 
   async function doShutdown(): Promise<number> {

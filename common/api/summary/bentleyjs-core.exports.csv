@@ -45,6 +45,7 @@ alpha;EnvMacroSubst
 beta;ExtensionStatus
 public;GetMetaDataFunction = () => any
 public;Guid
+internal;normalize(value: GuidString): GuidString
 public;GuidString = string
 beta;HttpStatus
 public;Id64

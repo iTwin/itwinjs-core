@@ -198,7 +198,8 @@ describe("ElementAspect", () => {
   });
 
   it("should be able to insert ExternalSourceAspects", () => {
-    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementAspect", "ExternalSourceAspect.bim"), { rootSubject: { name: "ExternalSourceAspect" } });
+    const fileName = IModelTestUtils.prepareOutputFile("ElementAspect", "ExternalSourceAspect.bim");
+    let iModelDb = SnapshotDb.createEmpty(fileName, { rootSubject: { name: "ExternalSourceAspect" } });
     const elementId: Id64String = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Category", new SubCategoryAppearance());
     assert.isTrue(Id64.isValidId64(elementId));
 
@@ -219,6 +220,8 @@ describe("ElementAspect", () => {
     assert.equal(aspect.checksum, aspectProps.checksum);
     assert.equal(aspect.version, aspectProps.version);
     iModelDb.elements.insertAspect(aspectProps);
+    iModelDb.close();
+    iModelDb = SnapshotDb.openFile(fileName);
 
     const aspects: ElementAspect[] = iModelDb.elements.getAspects(elementId, aspectProps.classFullName);
     assert.equal(aspects.length, 1);
@@ -238,5 +241,10 @@ describe("ElementAspect", () => {
     assert.equal(aspectJson.kind, aspectProps.kind);
     assert.equal(aspectJson.checksum, aspectProps.checksum);
     assert.equal(aspectJson.version, aspectProps.version);
+
+    const foundAspect = ExternalSourceAspect.findBySource(iModelDb, aspectProps.scope.id, aspectProps.kind, aspectProps.identifier);
+    assert.equal(foundAspect.aspectId, aspects[0].id);
+    assert.equal(foundAspect.elementId, aspect.element.id);
+
   });
 });

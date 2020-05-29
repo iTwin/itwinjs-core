@@ -8,9 +8,12 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@bentley/geometry-core";
-import { ViewFlags } from "@bentley/imodeljs-common";
+import { HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
+import { ViewClipSettings } from "../ViewClipSettings";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { BatchState, BranchStack, BranchState } from "./BranchState";
+import { BranchState } from "./BranchState";
+import { BranchStack } from "./BranchStack";
+import { BatchState } from "./BatchState";
 import { CachedGeometry } from "./CachedGeometry";
 import { Branch } from "./Graphic";
 import { UniformHandle } from "./Handle";
@@ -18,6 +21,7 @@ import { Matrix4 } from "./Matrix";
 import { RenderCommands } from "./RenderCommands";
 import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";
+import { ClipVolume } from "./ClipVolume";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
   if (a === b)
@@ -50,6 +54,7 @@ export class BranchUniforms {
   // CPU state
   private readonly _mv = Matrix4d.createIdentity();
   private readonly _mvp = Matrix4d.createIdentity();
+  private _clipVolume?: ClipVolume;
 
   // GPU state
   private readonly _mv32 = new Matrix4();
@@ -83,23 +88,58 @@ export class BranchUniforms {
     return this._stack.top;
   }
 
+  public get length(): number {
+    return this._stack.length;
+  }
+
   public pushBranch(branch: Branch): void {
     desync(this);
     this._stack.pushBranch(branch);
+    this.updateClipVolume();
   }
 
   public pushState(state: BranchState): void {
     desync(this);
     this._stack.pushState(state);
+    this.updateClipVolume();
   }
 
   public pop(): void {
     desync(this);
     this._stack.pop();
+    this.updateClipVolume();
   }
 
-  public changeViewFlags(vf: ViewFlags): void {
-    this._stack.setViewFlags(vf);
+  public get clipVolume(): ClipVolume | undefined {
+    return this._clipVolume;
+  }
+
+  public pushViewClip(): void {
+    // Target.readPixels() pushes another BranchState before pushing view clip...
+    assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
+    this.updateClipVolume(this._stack.bottom);
+  }
+
+  public popViewClip(): void {
+    assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
+    this._clipVolume = undefined;
+  }
+
+  private updateClipVolume(state?: BranchState): void {
+    if (!state)
+      state = this.top;
+
+    this._clipVolume = undefined;
+    if (state.clipVolume && state.viewFlags.clipVolume && state.clipVolume.syncWithView(this._target.uniforms.frustum.viewMatrix))
+      this._clipVolume = state.clipVolume;
+  }
+
+  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
+    this._stack.changeRenderPlan(vf, is3d, hline);
+  }
+
+  public updateViewClip(settings: ViewClipSettings | undefined): void {
+    this._stack.updateViewClip(settings);
   }
 
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {

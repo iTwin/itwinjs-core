@@ -10,7 +10,9 @@
 @import "../style/typography";
 @import "../z-index";
 
-$uicore-menu-bordered-padding:  $uicore-bordered-padding + 2px;
+// cspell:ignore themecolors unbordered
+
+$uicore-menu-bordered-padding:  $uicore-bordered-padding;
 
 .core-context-menu-global {
   position: fixed;
@@ -46,7 +48,7 @@ $uicore-menu-bordered-padding:  $uicore-bordered-padding + 2px;
     visibility: hidden;
     transform: scaleY(0);
     display: table;
-    border: 1px solid $buic-background-control-stroke;
+    border: 1px solid $buic-background-divider;
     box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
 
     &.core-context-menu-floating {
@@ -143,7 +145,7 @@ $uicore-menu-bordered-padding:  $uicore-bordered-padding + 2px;
     }
 
     &:focus {
-      border: 1px solid $uicore-inputs-border-color;
+      border: 1px solid $buic-background-divider;
       box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
       outline: 0px;
 

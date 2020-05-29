@@ -133,4 +133,23 @@ describe("UiAdmin", () => {
     expect(uiAdmin.hideHTMLElement()).to.be.false;
   });
 
+  it("showCard should return false by default", () => {
+    const html = '<div style="width: 120px; height: 50px; display: flex; justify-content: center; align-items: center; background-color: aqua;">Hello World!</div>';
+    const content = new DOMParser().parseFromString(html, "text/html");
+    const toolbarProps: AbstractToolbarProps = {
+      toolbarId: "test",
+      items: [
+        { id: "tool", itemPriority: 10, label: "tool label", icon: "icon-placeholder", execute: () => { } },
+        { id: "command", itemPriority: 20, label: "command label", icon: "icon-placeholder", execute: () => { } },
+        { id: "command2", itemPriority: 30, label: "command label", icon: "icon-placeholder", execute: () => { } },
+      ],
+    };
+    const spySelect = sinon.fake();
+    const spyCancel = sinon.fake();
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+
+    expect(uiAdmin.showCard(content.documentElement, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.false;
+    expect(uiAdmin.hideCard()).to.be.false;
+  });
+
 });

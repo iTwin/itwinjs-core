@@ -51,14 +51,12 @@ export class IModelBankBasicAuthorizationClient implements FrontendAuthorization
     _requestContext.enter();
     this._token = BasicAccessToken.fromCredentials(this._userCredentials);
     this.onUserStateChanged.raiseEvent(this._token);
-    return Promise.resolve();
   }
 
   public async signOut(_requestContext: ClientRequestContext): Promise<void> {
     _requestContext.enter();
     this._token = undefined;
     this.onUserStateChanged.raiseEvent(this._token);
-    return Promise.resolve();
   }
 
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
@@ -74,8 +72,8 @@ export class IModelBankBasicAuthorizationClient implements FrontendAuthorization
 
   public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
     if (!this._token) {
-      return Promise.reject("User is not signed in.");
+      throw new Error("User is not signed in.");
     }
-    return Promise.resolve(this._token);
+    return this._token;
   }
 }

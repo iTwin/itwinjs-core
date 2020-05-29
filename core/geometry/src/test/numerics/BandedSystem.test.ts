@@ -132,14 +132,16 @@ describe("BandedSystem", () => {
       for (const yy of [1, 3, 5])
         allPoints.push(GrowableXYZArray.create([Point3d.create(0, 0, 0), Point3d.create(0, yy, 0), Point3d.create(4, yFactor * yy + 1, 0), Point3d.create(5, 0, 0)]));
     }
+    allPoints.push(GrowableXYZArray.create([[0, 0], [0, 1], [1, 1], [1, 0], [2, 0], [2, 1], [3, 1]]));
     for (const count of [5, 6, 10])
       allPoints.push(Sample.createGrowableArrayCirclePoints(3, count, true, 0, 0));
     allPoints.push(GrowableXYZArray.create(
-      Sample.createPointSineWave(undefined, 25, 0.25,
+      Sample.createPointSineWave(undefined, 25, 6.25,
         2.0, AngleSweep.createStartEndDegrees(0, 300),
         0.5, AngleSweep.createStartEndDegrees(0, 200))));
     for (const points of allPoints) {
       let y0 = 0;
+      const range = points.getRange();
       for (const order of [4, 3, 5, 7]) {
         if (points.length >= order) {
           for (const q of points.points) GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, q, 0.15, x0, y0);
@@ -148,10 +150,10 @@ describe("BandedSystem", () => {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, x0, y0);
             for (const f of [0.25, 0.50, 0.75]) GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, curve.fractionToPoint(f), 0.10, x0, y0);
           }
-          y0 += 15.0;
+          y0 += 1.5 * range.yLength();
         }
       }
-      x0 += 10.0;
+      x0 += 3.0 * range.xLength();
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BandedSystem", "GrevilleBspline");
     expect(ck.getNumErrors()).equals(0);

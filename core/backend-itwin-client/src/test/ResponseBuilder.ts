@@ -207,7 +207,7 @@ export class ResponseBuilder {
           .get(requestPath)
           .times(times)
           .delayConnection(delay)
-          .reply(responseCode, response);
+          .reply(responseCode, response, headers);
         break;
       case RequestType.Post:
         nock(url)

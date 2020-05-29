@@ -6,8 +6,7 @@
  * @module PropertyGrid
  */
 
-import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 
 /**
@@ -51,14 +50,4 @@ export interface IPropertyDataProvider {
   getData: (() => Promise<PropertyData>);
   /** Property data change event. */
   onDataChanged: PropertyDataChangeEvent;
-}
-
-/**
- * An interface for element property data provider which returns
- * property data for the provided iModel element
- * @beta
- */
-export interface IElementPropertyDataProvider {
-  /** Returns property data. */
-  getData: (imodel: IModelConnection, elementId: Id64String) => Promise<PropertyData>;
 }

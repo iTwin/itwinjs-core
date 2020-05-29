@@ -98,7 +98,7 @@ export class RpcControlChannel {
         endpoints.push(description);
       });
 
-      return Promise.resolve(endpoints);
+      return endpoints;
     }
   };
 

@@ -6,7 +6,7 @@ import * as React from "react";
 import { TimelineComponent } from "@bentley/ui-components";
 import {
   ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
-  NavigationWidget, StagePanel, ToolButton, ToolWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
+  NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -15,6 +15,24 @@ import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
+
+function RightPanel() {
+  const [collapsed, setCollapsed] = React.useState(true);
+  const direction = useWidgetDirection();
+  return (
+    <>
+      <h2>Right panel</h2>
+      <button onClick={() => {
+        const frontstageDef = FrontstageManager.activeFrontstageDef!;
+        const panel = frontstageDef.rightPanel!;
+        const size = collapsed ? 500 : 200;
+        panel.trySetCurrentSize(size);
+        setCollapsed((prev) => !prev);
+      }}>{collapsed ? "<" : ">"}</button>
+      {direction}
+    </>
+  );
+}
 
 function SampleTimelineComponent() {
   const duration = 20 * 1000;
@@ -56,7 +74,7 @@ export class Frontstage1 extends FrontstageProvider {
   private _rightPanel = {
     allowedZones: [2, 9],
     widgets: [
-      <Widget element={<h2>Right panel</h2>} />,
+      <Widget element={<RightPanel />} />,
     ],
   };
 

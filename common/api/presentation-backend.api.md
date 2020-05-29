@@ -49,7 +49,7 @@ export class Presentation {
     static getManager(clientId?: string): PresentationManager;
     static getRequestTimeout(): number;
     static initialize(props?: PresentationProps): void;
-    static get initProps(): PresentationProps | undefined;
+    static get initProps(): PresentationPropsDeprecated | PresentationPropsNew | undefined;
     static terminate(): void;
 }
 
@@ -125,11 +125,21 @@ export interface PresentationManagerProps {
 }
 
 // @public
-export interface PresentationProps extends PresentationManagerProps {
+export type PresentationProps = PresentationPropsDeprecated | PresentationPropsNew;
+
+// @public @deprecated (undocumented)
+export interface PresentationPropsDeprecated extends PresentationManagerProps {
     // @internal
     clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
     requestTimeout?: number;
     unusedClientLifetime?: number;
+}
+
+// @public (undocumented)
+export interface PresentationPropsNew extends PresentationManagerProps {
+    requestTimeout?: number;
+    // @internal
+    useSingleManager?: boolean;
 }
 
 // @beta

@@ -212,6 +212,8 @@ export enum RepositoryStatus {
   LockNotHeld = 0x1500D,
   /** Repository is currently locked, no changes allowed */
   RepositoryIsLocked = 0x1500E,
+  /** Channel write constraint violation, such as an attempt to write outside the designated channel. */
+  ChannelConstraintViolation = 0x1500F,
 }
 
 /** Status from returned HTTP status code
@@ -309,6 +311,7 @@ export enum IModelHubStatus {
   FailedToGetAssetPermissions = IMODELHUBERROR_BASE + 45,
   FailedToGetAssetMembers = IMODELHUBERROR_BASE + 46,
   ContextDoesNotExist = IMODELHUBERROR_BASE + 47,
+  FailedToGetProductSettings = IMODELHUBERROR_BASE + 48,
 
   // Errors that are returned for incorrect iModelHub request.
   UndefinedArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 1,
@@ -605,6 +608,7 @@ export class BentleyError extends Error {
       case RepositoryStatus.CodeUsed: return "CodeUsed";
       case RepositoryStatus.LockNotHeld: return "LockNotHeld";
       case RepositoryStatus.RepositoryIsLocked: return "RepositoryIsLocked";
+      case RepositoryStatus.ChannelConstraintViolation: return "ChannelConstraintViolation";
 
       // HTTP Status
       case HttpStatus.Info: return "HTTP Info";
@@ -673,6 +677,7 @@ export class BentleyError extends Error {
       case IModelHubStatus.JobSchedulingFailed: return "Failed to schedule a background job";
       case IModelHubStatus.ConflictsAggregate: return "Codes or locks are owned by another briefcase";
       case IModelHubStatus.FailedToGetProjectById: return "Failed to query project by its id";
+      case IModelHubStatus.FailedToGetProductSettings: return "Failed to get product settings";
       case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
       case IModelHubStatus.ContextDoesNotExist: return "Context does not exist";
 

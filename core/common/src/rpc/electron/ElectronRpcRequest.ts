@@ -36,10 +36,10 @@ export class ElectronRpcRequest extends RpcRequest {
   protected async load() {
     const fulfillment = this._fulfillment;
     if (!fulfillment) {
-      return Promise.reject("No request fulfillment available.");
+      throw new Error("No request fulfillment available.");
     }
 
-    return Promise.resolve(fulfillment.result);
+    return fulfillment.result;
   }
 
   /** Sets request header values. */

@@ -543,6 +543,8 @@ export namespace Guid {
     export function createValue(): GuidString;
     export function isGuid(value: string): boolean;
     export function isV4Guid(value: string): boolean;
+    // @internal
+    export function normalize(value: GuidString): GuidString;
 }
 
 // @public
@@ -679,6 +681,8 @@ export enum IModelHubStatus {
     FailedToGetAssetMembers = 102446,
     // (undocumented)
     FailedToGetAssetPermissions = 102445,
+    // (undocumented)
+    FailedToGetProductSettings = 102448,
     // (undocumented)
     FailedToGetProjectById = 102442,
     // (undocumented)
@@ -1151,6 +1155,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
     ChangeSetRequired = 86025,
+    ChannelConstraintViolation = 86031,
     CodeNotReserved = 86027,
     CodeUnavailable = 86026,
     CodeUsed = 86028,

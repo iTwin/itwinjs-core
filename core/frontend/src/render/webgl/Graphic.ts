@@ -8,13 +8,13 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, PackedFeatureTable, ViewFlags } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, PackedFeatureTable, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
+import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
+import { ClipVolume } from "./ClipVolume";
 import { WebGLDisposable } from "./Disposable";
 import { FeatureOverrides } from "./FeatureOverrides";
 import { PlanarClassifier } from "./PlanarClassifier";
@@ -23,6 +23,8 @@ import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
 import { TextureDrape } from "./TextureDrape";
+import { EdgeSettings } from "./EdgeSettings";
+import { ThematicSensors } from "./ThematicSensors";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -75,6 +77,17 @@ export interface BatchContext {
   iModel?: IModelConnection;
 }
 
+interface PerTargetBatchData {
+  readonly target: Target;
+  featureOverrides?: FeatureOverrides;
+  thematicSensors?: ThematicSensors;
+}
+
+function disposePerTargetBatchData(ptd: PerTargetBatchData): void {
+  ptd.featureOverrides = dispose(ptd.featureOverrides);
+  ptd.thematicSensors = dispose(ptd.thematicSensors);
+}
+
 /** @internal */
 export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
@@ -82,7 +95,7 @@ export class Batch extends Graphic {
   public readonly range: ElementAlignedBox3d;
   public readonly tileId?: string; // Chiefly for debugging.
   private readonly _context: BatchContext = { batchId: 0 };
-  private _overrides: FeatureOverrides[] = [];
+  private readonly _perTargetData: PerTargetBatchData[] = [];
 
   public get batchId() { return this._context.batchId; }
   public get batchIModel() { return this._context.iModel; }
@@ -102,69 +115,85 @@ export class Batch extends Graphic {
     this.range = range;
     this.tileId = tileId;
   }
+
   private _isDisposed = false;
   public get isDisposed(): boolean {
-    return this._isDisposed && 0 === this._overrides.length;
+    return this._isDisposed && 0 === this._perTargetData.length;
   }
 
   // Note: This does not remove FeatureOverrides from the array, but rather disposes of the WebGL resources they contain
   public dispose() {
     dispose(this.graphic);
-    for (const over of this._overrides) {
-      over.target.onBatchDisposed(this);
-      dispose(over);
+
+    for (const ptd of this._perTargetData) {
+      ptd.target.onBatchDisposed(this);
+      disposePerTargetBatchData(ptd);
     }
+
+    this._perTargetData.length = 0;
     this._isDisposed = true;
-    this._overrides.length = 0;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.graphic.collectStatistics(stats);
     stats.addFeatureTable(this.featureTable.byteLength);
-    for (const ovrs of this._overrides)
-      stats.addFeatureOverrides(ovrs.byteLength);
+    for (const ptd of this._perTargetData) {
+      if (ptd.featureOverrides)
+        stats.addFeatureOverrides(ptd.featureOverrides.byteLength);
+
+      if (ptd.thematicSensors)
+        stats.addThematicTexture(ptd.thematicSensors.bytesUsed);
+    }
   }
 
   public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
   public get isPickable(): boolean { return true; }
 
-  public getOverrides(target: Target): FeatureOverrides {
-    let ret: FeatureOverrides | undefined;
-
-    for (const ovr of this._overrides) {
-      if (ovr.target === target) {
-        ret = ovr;
-        break;
-      }
-    }
-
-    if (undefined === ret) {
-      ret = FeatureOverrides.createFromTarget(target);
-      this._overrides.push(ret);
+  private getPerTargetData(target: Target): PerTargetBatchData {
+    let ptd = this._perTargetData.find((x) => x.target === target);
+    if (!ptd) {
+      ptd = { target };
+      this._perTargetData.push(ptd);
       target.addBatch(this);
-      ret.initFromMap(this.featureTable);
     }
 
-    ret.update(this.featureTable);
-    return ret;
+    return ptd;
+  }
+
+  public getThematicSensors(target: Target): ThematicSensors {
+    assert(target.plan.thematic !== undefined, "thematic display settings must exist");
+    assert(target.plan.thematic.displayMode === ThematicDisplayMode.InverseDistanceWeightedSensors, "thematic display mode must be sensor-based");
+    assert(target.plan.thematic.sensorSettings.sensors.length > 0, "must have at least one sensor to process");
+
+    const ptd = this.getPerTargetData(target);
+    if (ptd.thematicSensors && !ptd.thematicSensors.matchesTarget(target))
+      ptd.thematicSensors = dispose(ptd.thematicSensors);
+
+    if (!ptd.thematicSensors)
+      ptd.thematicSensors = ThematicSensors.create(target, this.range);
+
+    return ptd.thematicSensors;
+  }
+
+  public getOverrides(target: Target): FeatureOverrides {
+    const ptd = this.getPerTargetData(target);
+    if (!ptd.featureOverrides) {
+      ptd.featureOverrides = FeatureOverrides.createFromTarget(target);
+      ptd.featureOverrides.initFromMap(this.featureTable);
+    }
+
+    ptd.featureOverrides.update(this.featureTable);
+    return ptd.featureOverrides;
   }
 
   public onTargetDisposed(target: Target) {
-    let index = 0;
-    let foundIndex = -1;
+    const index = this._perTargetData.findIndex((x) => x.target === target);
+    if (-1 === index)
+      return;
 
-    for (const ovr of this._overrides) {
-      if (ovr.target === target) {
-        foundIndex = index;
-        break;
-      }
-      index++;
-    }
-
-    if (foundIndex > -1) {
-      dispose(this._overrides[foundIndex]);
-      this._overrides.splice(foundIndex, 1);
-    }
+    const ptd = this._perTargetData[index];
+    disposePerTargetBatchData(ptd);
+    this._perTargetData.splice(index, 1);
   }
 }
 
@@ -172,11 +201,12 @@ export class Batch extends Graphic {
 export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
   public localToWorldTransform: Transform;
-  public clips?: ClipPlanesVolume | ClipMaskVolume;
-  public planarClassifier?: PlanarClassifier;
-  public textureDrape?: TextureDrape;
-  public readonly animationId?: number;
+  public clips?: ClipVolume;
+  public readonly planarClassifier?: PlanarClassifier;
+  public readonly textureDrape?: TextureDrape;
+  public readonly edgeSettings?: EdgeSettings;
   public readonly iModel?: IModelConnection; // used chiefly for readPixels to identify context of picked Ids.
+  public readonly frustum?: GraphicBranchFrustum;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -186,29 +216,43 @@ export class Branch extends Graphic {
     if (undefined !== viewFlags)
       branch.setViewFlags(viewFlags);
 
-    if (undefined !== opts) {
-      this.clips = opts.clipVolume as any;
-      this.iModel = opts.iModel;
+    if (!opts)
+      return;
 
-      if (undefined !== opts.classifierOrDrape) {
-        if (opts.classifierOrDrape instanceof PlanarClassifier)
-          this.planarClassifier = opts.classifierOrDrape;
-        else
-          this.textureDrape = opts.classifierOrDrape as TextureDrape;
-      }
-    }
+    this.clips = opts.clipVolume as any;
+    this.iModel = opts.iModel;
+    this.frustum = opts.frustum;
+
+    if (opts.hline)
+      this.edgeSettings = EdgeSettings.create(opts.hline);
+
+    if (opts.classifierOrDrape instanceof PlanarClassifier)
+      this.planarClassifier = opts.classifierOrDrape;
+    else if (opts.classifierOrDrape instanceof TextureDrape)
+      this.textureDrape = opts.classifierOrDrape;
   }
 
-  public get isDisposed(): boolean { return 0 === this.branch.entries.length; }
-  public dispose() { this.branch.dispose(); }
+  public get isDisposed(): boolean {
+    return 0 === this.branch.entries.length;
+  }
+
+  public dispose() {
+    this.branch.dispose();
+  }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.branch.collectStatistics(stats);
     if (undefined !== this.clips)
       this.clips.collectStatistics(stats);
   }
 
-  public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
-  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void { commands.addHiliteBranch(this, pass); }
+  public addCommands(commands: RenderCommands): void {
+    commands.addBranch(this);
+  }
+
+  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+    commands.addHiliteBranch(this, pass);
+  }
 }
 
 /** @internal */

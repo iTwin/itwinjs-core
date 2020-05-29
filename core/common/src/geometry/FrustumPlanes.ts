@@ -25,6 +25,7 @@ export class FrustumPlanes {
 
   public get isValid(): boolean { return undefined !== this._planes; }
 
+  // Order: right, left, top, bottom, back, front
   public get planes() { return this._planes; }
 
   public init(frustum: Frustum) {

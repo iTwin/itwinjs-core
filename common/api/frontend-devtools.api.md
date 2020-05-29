@@ -49,6 +49,20 @@ export class AnimationIntervalTool extends Tool {
 export function appendDataListEntries(dl: DataList, entries: DataListEntry[]): void;
 
 // @beta
+export class ApplyViewByIdTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(viewId?: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ApplyViewTool extends Tool {
     // (undocumented)
     static get maxArgs(): undefined;
@@ -478,16 +492,24 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
     static toolId: string;
     }
 
-// @beta
-export class FadeOutTool extends Tool {
+// @internal
+export class ExtensionServiceTool extends Tool {
     // (undocumented)
-    static get maxArgs(): number;
+    static get maxArgs(): undefined;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean): boolean;
+    run(args: any[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class FadeOutTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -500,15 +522,9 @@ export class FpsTracker {
     }
 
 // @beta
-export class FreezeSceneTool extends Tool {
+export class FreezeSceneTool extends ViewportToggleTool {
     // (undocumented)
-    static get maxArgs(): number;
-    // (undocumented)
-    static get minArgs(): number;
-    // (undocumented)
-    parseAndRun(...args: string[]): boolean;
-    // (undocumented)
-    run(enable?: boolean): boolean;
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -806,6 +822,20 @@ export abstract class RenderSystemDebugControlTool extends Tool {
 }
 
 // @beta
+export abstract class RenderTargetDebugControlToggleTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    protected abstract get aspect(): DebugControlBoolean;
+    // (undocumented)
+    protected execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+}
+
+// @beta
 export abstract class RenderTargetDebugControlTool extends Tool {
     // (undocumented)
     protected abstract execute(_control: RenderTargetDebugControl, _vp: ScreenViewport): void;
@@ -870,22 +900,6 @@ export class SetAspectRatioSkewTool extends Tool {
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
     run(skew?: number): boolean;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @internal
-export class SetVolClassIntersectOff extends RenderTargetDebugControlTool {
-    // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @internal
-export class SetVolClassIntersectOn extends RenderTargetDebugControlTool {
-    // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
     // (undocumented)
     static toolId: string;
 }
@@ -1002,19 +1016,17 @@ export class TileStatisticsTracker {
     }
 
 // @alpha
-export class Toggle3dManipulationsTool extends Tool {
+export class Toggle3dManipulationsTool extends ViewportToggleTool {
     // (undocumented)
-    parseAndRun(...args: string[]): boolean;
-    // (undocumented)
-    run(allow?: boolean): boolean;
+    protected toggle(vp: Viewport, allow?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
 
 // @alpha
-export class ToggleDrapeFrustumTool extends RenderTargetDebugControlTool {
+export class ToggleDrapeFrustumTool extends RenderTargetDebugControlToggleTool {
     // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    get aspect(): DebugControlBoolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1065,41 +1077,41 @@ export class ToggleProjectExtentsTool extends Tool {
 }
 
 // @beta
-export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
+export class ToggleReadPixelsTool extends RenderTargetDebugControlToggleTool {
     // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @alpha
-export class ToggleRealityTileBounds extends RenderTargetDebugControlTool {
-    // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    get aspect(): DebugControlBoolean;
     // (undocumented)
     static toolId: string;
 }
 
 // @alpha
-export class ToggleRealityTileFreeze extends RenderTargetDebugControlTool {
+export class ToggleRealityTileBounds extends RenderTargetDebugControlToggleTool {
     // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @alpha
-export class ToggleRealityTileLogging extends RenderTargetDebugControlTool {
-    // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    get aspect(): DebugControlBoolean;
     // (undocumented)
     static toolId: string;
 }
 
 // @alpha
-export class ToggleRealityTilePreload extends RenderTargetDebugControlTool {
+export class ToggleRealityTileFreeze extends RenderTargetDebugControlToggleTool {
     // (undocumented)
-    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    get aspect(): DebugControlBoolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleRealityTileLogging extends RenderTargetDebugControlToggleTool {
+    // (undocumented)
+    get aspect(): DebugControlBoolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleRealityTilePreload extends RenderTargetDebugControlToggleTool {
+    // (undocumented)
+    get aspect(): DebugControlBoolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1173,6 +1185,38 @@ export class ToggleTileTreeBoundsDecorationTool extends Tool {
 }
 
 // @beta
+export class ToggleViewAttachmentBoundariesTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleViewAttachmentsTool extends ViewportToggleTool {
+    // (undocumented)
+    protected toggle(vp: Viewport, enable?: boolean): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal
+export class ToggleVolClassIntersect extends RenderTargetDebugControlToggleTool {
+    // (undocumented)
+    get aspect(): DebugControlBoolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ToggleWiremeshTool extends RenderSystemDebugControlTool {
     // (undocumented)
     execute(control: RenderSystemDebugControl): void;
@@ -1221,6 +1265,20 @@ export class ViewportTileSizeModifierTool extends Tool {
     run(modifier?: number): boolean;
     // (undocumented)
     static toolId: string;
+}
+
+// @beta
+export abstract class ViewportToggleTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    protected abstract toggle(vp: Viewport, enable?: boolean): void;
 }
 
 

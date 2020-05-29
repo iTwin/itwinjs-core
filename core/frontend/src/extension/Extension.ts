@@ -36,6 +36,11 @@ export interface ExtensionLoader {
  * @beta
  */
 export abstract class Extension {
+  /**
+   * Subclasses should override this with the default I18N namespace name. It will be loaded when initializing I18N.
+   */
+  protected _defaultNs: string = "noDefaultNs";
+
   /** Constructor for base Extension class
    * @param name - the name of the extension.
    * @note Typically, an Extension subclass is instantiated and registered with top-level JavaScript statements like these:
@@ -48,7 +53,7 @@ export abstract class Extension {
 
   // returns an instance of I18N that can be reliably called from the Extension.
   private getI18n(): I18N {
-    return new I18N("noDefaultNs", {
+    return new I18N(this._defaultNs, {
       urlTemplate: (lng: string[], ns: string[]) => {
         if (lng.length < 1 || ns.length < 1)
           throw new Error("No language info provided");
@@ -101,10 +106,12 @@ export abstract class Extension {
   /** Can be used to set up a localization instance. Used only if non-standard treatment is required.
    * @param defaultNamespace
    * @param options
+   * @deprecated Please override _defaultNs instead
    */
   public setI18n(defaultNamespace?: string, options?: I18NOptions) {
     this._i18n = new I18N(defaultNamespace, options);
   }
+
 }
 
 /** Represents an Extension that we are attempting to load.

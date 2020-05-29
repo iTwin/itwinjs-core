@@ -31,6 +31,11 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
+import { Box } from "../../solid/Box";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
+import { LinearSweep } from "../../solid/LinearSweep";
+import { Cone } from "../../solid/Cone";
 
 /* tslint:disable:no-console no-trailing-whitespace */
 
@@ -1076,4 +1081,87 @@ describe("CurveClips", () => {
     expect(ck.getNumErrors()).equals(0);
 
   });
+  it("StairwellClipViaSweptPolyline", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0.0;
+    const x1 = 5.0;
+    const x2 = 10.0;
+    const y0 = 0.0;
+
+    // Outline a rectangle in xz plane at the bottom of the stairwell
+    const a = 1.0;  // stair clearance width.
+    const b = 2.5;  // stair clearance height
+    const baseRectangle = [Point3d.create(0, 0), Point3d.create(a, 0), Point3d.create(a, 0, b), Point3d.create(0, 0, b), Point3d.create(0, 0)];
+    const sweepVector = Vector3d.create(0, 1, 0.8);
+    // create uncapped sweep
+    const clipper = ConvexClipPlaneSet.createSweptPolyline(baseRectangle, sweepVector)!;
+
+    // make a mesh box for something to punch ..
+    const box = Box.createRange(Range3d.createXYZXYZ(-1, 1, 0, 3, 2, 5), true)!;
+    const builder = PolyfaceBuilder.create();
+    builder.addBox(box);
+    const target = builder.claimPolyface();
+    const clipBuilders = ClippedPolyfaceBuilders.create(true, true, true);
+    PolyfaceClip.clipPolyfaceInsideOutside(target, clipper, clipBuilders);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, target, x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseRectangle, x0, y0);
+    GeometryCoreTestIO.captureGeometry(allGeometry,
+      LineSegment3d.create(baseRectangle[0], baseRectangle[0].plusScaled(sweepVector, 5.0)), x0, y0);
+    const clip0 = clipBuilders.claimPolyface(0, false);
+    const clip1 = clipBuilders.claimPolyface(1, true);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip0, x1, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip1, x2, y0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "StairwellClip");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+  it("StairwellClipViaLinearSweep", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0.0;
+    const x0A = 10.0;
+    const x1 = 20.0;
+    const x2 = 30.0;
+    let y0 = 0.0;
+
+    // Outline a rectangle in xz plane at the bottom of the stairwell
+    const a = 1.0;  // stair clearance width.
+    const b = 2.0;  // stair clearance height
+    const baseRectangle = [Point3d.create(0, 0), Point3d.create(a, 0), Point3d.create(a, 0, b), Point3d.create(0, 0, b), Point3d.create(0, 0)];
+    const sweepVector = Vector3d.create(0, 3, 2.4);
+    for (const capped of [false, true]) {
+      const sweptSolid = LinearSweep.create(Loop.create(LineString3d.create(baseRectangle)), sweepVector, true)!;
+      // create uncapped sweep
+      const contour = sweptSolid.getSweepContourRef();
+      const clipper = contour.sweepToUnionOfConvexClipPlaneSets(sweepVector, capped, capped)!;
+
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptSolid, x0A, y0);
+      const builder = PolyfaceBuilder.create();
+      // make a mesh box for something to punch ..
+      /*
+      const box = Box.createRange(Range3d.createXYZXYZ(-1, 1, 0, 3, 5, 4), true)!;
+      builder.addBox(box);
+      */
+      const cone = Cone.createAxisPoints(Point3d.create(0, 4, 0), Point3d.create(0, 3, 4), 3, 2, true)!;
+      builder.addCone(cone);
+      const target = builder.claimPolyface();
+      const clipBuilders = ClippedPolyfaceBuilders.create(true, true, true);
+      PolyfaceClip.clipPolyfaceInsideOutside(target, clipper, clipBuilders);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, target, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseRectangle, x0, y0);
+      GeometryCoreTestIO.captureGeometry(allGeometry,
+        LineSegment3d.create(baseRectangle[0], baseRectangle[0].plusScaled(sweepVector, 5.0)), x0, y0);
+      const clip0 = clipBuilders.claimPolyface(0, false);
+      const clip1 = clipBuilders.claimPolyface(1, true);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip0, x1, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip1, x2, y0);
+      y0 += 15.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "StairwellClipViaLinearSweep");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+
 });

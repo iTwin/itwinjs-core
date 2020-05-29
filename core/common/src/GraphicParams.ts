@@ -46,9 +46,9 @@ export class GraphicParams {
   public material?: RenderMaterial;
   public gradient?: Gradient.Symb;
 
-  public setLineTransparency(transparency: number) { this.lineColor = this.lineColor.withAlpha(transparency); }
+  public setLineTransparency(transparency: number) { this.lineColor = this.lineColor.withTransparency(transparency); }
 
-  public setFillTransparency(transparency: number) { this.fillColor = this.fillColor.withAlpha(transparency); }
+  public setFillTransparency(transparency: number) { this.fillColor = this.fillColor.withTransparency(transparency); }
 
   public static fromSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels = LinePixels.Solid): GraphicParams {
     const graphicParams = new GraphicParams();

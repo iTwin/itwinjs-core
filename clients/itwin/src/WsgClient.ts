@@ -12,6 +12,7 @@ import { AuthenticationError, Client, DefaultRequestOptionsProvider } from "./Cl
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 import { request, RequestOptions, RequestQueryOptions, Response, ResponseError } from "./Request";
+import { ChunkedQueryContext } from "./ChunkedQueryContext";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Clients;
 
@@ -244,17 +245,15 @@ export abstract class WsgClient extends Client {
    */
   public async getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
     if (this._url) {
-      return Promise.resolve(this._url);
+      return this._url;
     }
 
-    return super.getUrl(requestContext)
-      .then(async (url: string): Promise<string> => {
-        this._url = url;
-        if (!excludeApiVersion) {
-          this._url += "/" + this.apiVersion;
-        }
-        return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
-      });
+    const url = await super.getUrl(requestContext);
+    this._url = url;
+    if (!excludeApiVersion) {
+      this._url += "/" + this.apiVersion;
+    }
+    return this._url; // TODO: On the server this really needs a lifetime!!
   }
 
   /** used by clients to delete strongly typed instances through the standard WSG REST API */
@@ -274,7 +273,7 @@ export abstract class WsgClient extends Client {
       options.body.requestOptions = requestOptions;
     }
     await this.setupOptionDefaults(options);
-    return request(requestContext, url, options).then(async () => Promise.resolve());
+    await request(requestContext, url, options);
   }
 
   /**
@@ -307,18 +306,18 @@ export abstract class WsgClient extends Client {
     const res: Response = await request(requestContext, url, options);
     requestContext.enter();
     if (!res.body || !res.body.changedInstance || !res.body.changedInstance.instanceAfterChange) {
-      return Promise.reject(new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`));
+      throw new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`);
     }
     const ecJsonInstance = res.body.changedInstance.instanceAfterChange;
     const typedInstance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg", ecJsonInstance);
 
     // console.log(JSON.stringify(res.body.instances));
     if (!typedInstance) {
-      return Promise.reject(new Error(`POST to URL ${url} executed successfully, but could not convert response to a strongly typed instance.`));
+      throw new Error(`POST to URL ${url} executed successfully, but could not convert response to a strongly typed instance.`);
     }
 
     Logger.logTrace(loggerCategory, "Successful POST request", () => ({ url }));
-    return Promise.resolve(typedInstance);
+    return typedInstance;
   }
 
   /** Used by clients to post multiple strongly typed instances through standard WSG REST API
@@ -352,7 +351,7 @@ export abstract class WsgClient extends Client {
     const res: Response = await request(requestContext, url, options);
     requestContext.enter();
     if (!res.body || !res.body.changedInstances) {
-      return Promise.reject(new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`));
+      throw new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`);
     }
     const changedInstances: T[] = (res.body.changedInstances as any[]).map<T>((value: any) => {
       const untypedInstance = value.instanceAfterChange;
@@ -367,7 +366,7 @@ export abstract class WsgClient extends Client {
     });
 
     Logger.logTrace(loggerCategory, "Successful POST request", () => ({ url }));
-    return Promise.resolve(changedInstances);
+    return changedInstances;
   }
 
   // @todo Use lower level utilities instead of the node based Request API.
@@ -386,76 +385,67 @@ export abstract class WsgClient extends Client {
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending GET request", () => ({ url }));
 
-    let useSkipToken: boolean = false;
-    let instancesLeft: number = -1;
-    if (queryOptions) {
-      if (!queryOptions.$top) {
-        // Top was undefined. All instances must be returned by using SkipToken.
-        queryOptions.$top = queryOptions.$pageSize;
-        useSkipToken = true;
-      } else if (queryOptions.$pageSize) {
-        // Top and PageSize are defined. If Top is less or equal to PageSize then single request should be performed.
-        // Otherwise multiple request should be performed by using SkipToken.
-        if (queryOptions.$top > queryOptions.$pageSize) {
-          instancesLeft = queryOptions.$top;
-          queryOptions.$top = queryOptions.$pageSize;
-          useSkipToken = true;
-        }
-      }
-      // Clear PageSize so that it won't be included in url.
-      queryOptions.$pageSize = undefined;
-    }
-
-    let skipToken: string = "";
+    const chunkedQueryContext = queryOptions ? ChunkedQueryContext.create(queryOptions) : undefined;
     const typedInstances: T[] = new Array<T>();
     do {
-      if (useSkipToken && instancesLeft > 0) {
-        // Top was greater than PageSize. Update Top if this is the last page.
-        if (instancesLeft > queryOptions!.$top!) {
-          instancesLeft -= queryOptions!.$top!;
-        } else {
-          queryOptions!.$top = instancesLeft;
-          useSkipToken = false;
-        }
-      }
-
-      const options: RequestOptions = {
-        method: "GET",
-        qs: queryOptions,
-        accept: "application/json",
-      };
-
-      if (skipToken.length === 0) {
-        options.headers = {
-          authorization: requestContext.accessToken.toTokenString(),
-        };
-      } else {
-        options.headers = {
-          authorization: requestContext.accessToken.toTokenString(),
-          skiptoken: skipToken,
-        };
-      }
-
-      await this.setupOptionDefaults(options);
+      const chunk = await this.getInstancesChunk(requestContext, url, chunkedQueryContext, typedConstructor, queryOptions);
       requestContext.enter();
-
-      const res: Response = await request(requestContext, url, options);
-      requestContext.enter();
-      if (!res.body || !res.body.hasOwnProperty("instances")) {
-        return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`));
-      }
-      // console.log(JSON.stringify(res.body.instances));
-      for (const ecJsonInstance of res.body.instances) {
-        const typedInstance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg", ecJsonInstance);
-        if (typedInstance) {
-          typedInstances.push(typedInstance);
-        }
-      }
-      skipToken = res.header.skiptoken;
-    } while (skipToken && useSkipToken);
+      typedInstances.push(...chunk);
+    } while (chunkedQueryContext && !chunkedQueryContext.isQueryFinished);
 
     Logger.logTrace(loggerCategory, "Successful GET request", () => ({ url }));
-    return Promise.resolve(typedInstances);
+    return typedInstances;
+  }
+
+  /**
+   * Used by clients to get a chunk of strongly typed instances from standard WSG REST queries that return EC JSON instances.
+   * @param requestContext Client request context
+   * @param url Full path to the REST resource.
+   * @param chunkedQueryContext Chunked query context.
+   * @param typedConstructor Constructor function for the type
+   * @param queryOptions Query options.
+   * @returns Array of strongly typed instances.
+   */
+  protected async getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions): Promise<T[]> {
+    requestContext.enter();
+    const resultInstances: T[] = new Array<T>();
+
+    if (chunkedQueryContext)
+      chunkedQueryContext.handleIteration(queryOptions!);
+
+    const options: RequestOptions = {
+      method: "GET",
+      qs: queryOptions,
+      accept: "application/json",
+    };
+
+    options.headers = {
+      authorization: requestContext.accessToken.toTokenString(),
+    };
+
+    if (chunkedQueryContext && chunkedQueryContext.skipToken && chunkedQueryContext.skipToken.length > 0)
+      options.headers.skiptoken = chunkedQueryContext.skipToken;
+
+    await this.setupOptionDefaults(options);
+    requestContext.enter();
+
+    const res: Response = await request(requestContext, url, options);
+    requestContext.enter();
+    if (!res.body || !res.body.hasOwnProperty("instances")) {
+      throw new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`);
+    }
+
+    for (const ecJsonInstance of res.body.instances) {
+      const typedInstance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg", ecJsonInstance);
+      if (typedInstance) {
+        resultInstances.push(typedInstance);
+      }
+    }
+
+    if (chunkedQueryContext)
+      chunkedQueryContext.skipToken = res.header.skiptoken;
+
+    return resultInstances;
   }
 
   private getQueryRequestBody(queryOptions: RequestQueryOptions) {
@@ -508,7 +498,7 @@ export abstract class WsgClient extends Client {
     const res: Response = await request(requestContext, url, options);
     requestContext.enter();
     if (!res.body || !res.body.hasOwnProperty("instances")) {
-      return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`));
+      throw new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`);
     }
     // console.log(JSON.stringify(res.body.instances));
     const typedInstances: T[] = new Array<T>();
@@ -520,6 +510,6 @@ export abstract class WsgClient extends Client {
     }
 
     Logger.logTrace(loggerCategory, "Successful POST request", () => ({ url }));
-    return Promise.resolve(typedInstances);
+    return typedInstances;
   }
 }

@@ -2,6 +2,39 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/ui-core_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Address React warnings about deprecated methods."
+          },
+          {
+            "comment": "Element Separator updated with new style and group resize logic."
+          },
+          {
+            "comment": "Throttled ElementSeparator to call onRatioChanged a maximum of once every 16ms"
+          },
+          {
+            "comment": "Fixed breaking change regarding ElementSeparator onRatioChanged"
+          },
+          {
+            "comment": "Fixed Table filter renderers after react-select version upgrade"
+          },
+          {
+            "comment": "Support for striped rows in Table"
+          },
+          {
+            "comment": "Added ability for apps to display Favorite properties in Element Tooltip & Card at Cursor"
+          },
+          {
+            "comment": "Add ThemedSelect, a react-select component that uses iModel.js UI theming."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.0.0",
       "tag": "@bentley/ui-core_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",

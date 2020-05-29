@@ -9,9 +9,7 @@ import { EnvMacroSubst, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { BentleyCloudRpcManager, IModelError, IModelStatus, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { BunyanLoggerConfig, SeqLoggerConfig } from "@bentley/logger-config";
-import { TestAppConfiguration } from "../../common/TestAppConfiguration";
-
-const loggerCategory = "simple-editor-app";
+import { TestAppConfiguration, loggerCategory } from "../../common/TestAppConfiguration";
 
 // Setup to log to a locally install seq server from https://datalust.co/download
 const defaultConfigValues = {

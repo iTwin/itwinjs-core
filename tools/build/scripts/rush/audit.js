@@ -3,19 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
 const { logBuildError, logBuildWarning, failBuild, throwAfterTimeout } = require("./utils");
 
+const rushCommonDir = path.join(__dirname, "../../../../common/");
+
 (async () => {
-  const commonTempDir = path.join(__dirname, "../../../../common/temp");
+  const commonTempDir = path.join(rushCommonDir, "config/rush");
 
   // Npm audit will occasionally take minutes to respond - we believe this is just the npm registry being terrible and slow.
   // We don't want this to slow down our builds though - we'd rather fail fast and try again later.  So we'll just timeout after 30 seconds.
   let jsonOut = {};
   try {
     console.time("Audit time");
-    jsonOut = await Promise.race([runYarnAuditAsync(commonTempDir), throwAfterTimeout(180000, "Timed out contacting npm registry.")]);
+    jsonOut = await Promise.race([runPnpmAuditAsync(commonTempDir), throwAfterTimeout(180000, "Timed out contacting npm registry.")]);
     console.timeEnd("Audit time");
     console.log();
   } catch (error) {
@@ -33,7 +36,8 @@ const { logBuildError, logBuildWarning, failBuild, throwAfterTimeout } = require
     for (const issue of action.resolves) {
       const advisory = jsonOut.advisories[issue.id];
 
-      const mpath = issue.path.replace("@rush-temp", "@bentley");
+      // TODO: This path no longer resolves to a specific package in the repo.  Need to figure out the best way to handle it
+      const mpath = issue.path; // .replace("@rush-temp", "@bentley");
 
       const severity = advisory.severity.toUpperCase();
       const message = `${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`;
@@ -58,9 +62,15 @@ const { logBuildError, logBuildWarning, failBuild, throwAfterTimeout } = require
   process.exit();
 })();
 
-function runYarnAuditAsync(cwd) {
+function runPnpmAuditAsync(cwd) {
   return new Promise((resolve, reject) => {
-    const child = spawn("yarn", ["audit", "--json"], { cwd, shell: true });
+    // pnpm audit requires a package.json file so we temporarily create one and
+    // then delete it later
+    fs.writeFileSync(path.join(rushCommonDir, "config/rush/package.json"), JSON.stringify("{}", null, 2));
+
+    console.log("Running audit");
+    const pnpmPath = path.join(rushCommonDir, "temp/pnpm-local/node_modules/.bin/pnpm");
+    const child = spawn(pnpmPath, ["audit", "--json"], { cwd, shell: true });
 
     let stdout = "";
     let result = {
@@ -71,18 +81,13 @@ function runYarnAuditAsync(cwd) {
       stdout += data;
     });
 
-    child.on('error', (data) => reject(data));
+    child.on('error', (data) => {
+      fs.unlinkSync(path.join(rushCommonDir, "config/rush/package.json"));
+      reject(data)
+    });
     child.on('close', () => {
-      const objs = JSON.parse("[" + stdout.trim().split("\n").join(",") + "]");
-      for (obj of objs) {
-        if (obj.type && obj.type === "auditAdvisory") {
-          result.actions[0].resolves.push(obj.data.resolution);
-          result.advisories[obj.data.resolution.id] = obj.data.advisory;
-        }
-        else if (obj.type && obj.type === "auditSummary")
-          result.metadata = obj.data;
-        resolve(result)
-      }
+      fs.unlinkSync(path.join(rushCommonDir, "config/rush/package.json"));
+      resolve(JSON.parse(stdout.trim()));
     });
   });
 }

@@ -15,8 +15,8 @@ import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
 import { HighlightableTreeProps } from '@bentley/ui-components';
+import { Id64Arg } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
-import { IElementPropertyDataProvider } from '@bentley/ui-components';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InstanceKey } from '@bentley/presentation-common';
 import { IPropertyDataProvider } from '@bentley/ui-components';
@@ -164,9 +164,9 @@ export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeCom
 export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>): React.ForwardRefExoticComponent<React.PropsWithoutRef<P & TreeWithUnifiedSelectionProps> & React.RefAttributes<React.Component<P, any, any>>>;
 
 // @beta
-export class FavoritePropertiesDataProvider implements IElementPropertyDataProvider {
+export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataProvider {
     constructor(props?: FavoritePropertiesDataProviderProps);
-    getData(imodel: IModelConnection, elementId: string): Promise<PropertyData>;
+    getData(imodel: IModelConnection, elementIds: Id64Arg | KeySet): Promise<PropertyData>;
     includeFieldsWithCompositeValues: boolean;
     includeFieldsWithNoValues: boolean;
     }
@@ -316,6 +316,8 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
 
 // @public
 export interface PresentationTreeDataProviderProps {
+    // @beta (undocumented)
+    appendChildrenCountForGroupingNodes?: boolean;
     imodel: IModelConnection;
     pagingSize?: number;
     ruleset: string | Ruleset;

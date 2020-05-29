@@ -354,6 +354,19 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return result;
   }
   /**
+   * Evaluate the point and derivative with respect to the angle (in radians)
+   * @param radians angular position
+   * @param result optional preallocated ray.
+   */
+  public radiansToPoint(radians: number, result?: Point3d): Point3d {
+    result = result ? result : Point3d.create();
+    const c = Math.cos(radians);
+    const s = Math.sin(radians);
+    this._matrix.originPlusMatrixTimesXY(this._center, c, s, result);
+    return result;
+  }
+
+  /**
    * Return a parametric plane with
    * * origin at arc center
    * * vectorU from center to arc at angle (in radians)
@@ -657,6 +670,21 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
 
   }
   /**
+   * Set up a SineCosinePolynomial as the function c+u*cos(theta)+v*sin(theta) where
+   *  c,u,v are coefficients obtained by evaluating altitude and velocity relative to the plane.
+   * @param plane plane for altitude calculation.
+   * @param result optional result.
+   * @internal
+   */
+  public getPlaneAltitudeSineCosinePolynomial(plane: PlaneAltitudeEvaluator, result?: SineCosinePolynomial): SineCosinePolynomial {
+    if (!result)
+      result = new SineCosinePolynomial(0, 0, 0);
+    result.set(plane.altitude(this._center),
+      plane.altitudeXYZ(this._matrix.coffs[0], this._matrix.coffs[3], this._matrix.coffs[6]),
+      plane.altitudeXYZ(this._matrix.coffs[1], this._matrix.coffs[4], this._matrix.coffs[7]));
+    return result;
+  }
+  /**
    * Create a new arc which is a unit circle centered at the origin.
    */
   public static createUnitCircle(): Arc3d {
@@ -942,6 +970,21 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /** Scale the vector0 and vector90 vectors by `scaleFactor` */
   public scaleAboutCenterInPlace(scaleFactor: number) {
     this._matrix.scaleColumnsInPlace(scaleFactor, scaleFactor, 1.0);
+  }
+  /** Return the (signed!) area between (a fractional portion of) the arc and the chord between those points */
+  public areaToChordXY(fraction0: number, fraction1: number): number {
+    let detJ = Geometry.crossProductXYXY(
+      this._matrix.coffs[0], this._matrix.coffs[3],
+      this._matrix.coffs[1], this._matrix.coffs[4]);
+    // areas in arc of unit circle with radians limits
+    const radians0 = this._sweep.fractionToRadians(fraction0);
+    const radians1 = this._sweep.fractionToRadians(fraction1);
+    // const midRadians = 0.5 * (radians0 + radians1);
+    const alpha = 0.5 * (radians1 - radians0);
+    if (alpha < 0.0)
+      detJ = - detJ;
+    const wedgeArea = Math.cos(alpha) * Math.sin(alpha);
+    return (alpha - wedgeArea) * detJ;
   }
 }
 /**

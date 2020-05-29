@@ -61,7 +61,6 @@ export class TestUtils {
     TestUtils.sleep(milliseconds);
     await TestUtils.flushAsyncOperations();
   }
-
 }
 
 export const storageMock = () => {

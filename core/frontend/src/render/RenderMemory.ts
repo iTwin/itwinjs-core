@@ -90,6 +90,7 @@ export namespace RenderMemory {
     PlanarClassifiers,
     ShadowMaps,
     TextureAttachments,
+    ThematicTextures,
     COUNT,
   }
 
@@ -109,6 +110,7 @@ export namespace RenderMemory {
     public get textures() { return this.consumers[ConsumerType.Textures]; }
     public get vertexTables() { return this.consumers[ConsumerType.VertexTables]; }
     public get featureTables() { return this.consumers[ConsumerType.FeatureTables]; }
+    public get thematicTextures() { return this.consumers[ConsumerType.ThematicTextures]; }
     public get featureOverrides() { return this.consumers[ConsumerType.FeatureOverrides]; }
     public get clipVolumes() { return this.consumers[ConsumerType.ClipVolumes]; }
     public get planarClassifiers() { return this.consumers[ConsumerType.PlanarClassifiers]; }
@@ -135,6 +137,7 @@ export namespace RenderMemory {
     public addTexture(numBytes: number) { this.addConsumer(ConsumerType.Textures, numBytes); }
     public addVertexTable(numBytes: number) { this.addConsumer(ConsumerType.VertexTables, numBytes); }
     public addFeatureTable(numBytes: number) { this.addConsumer(ConsumerType.FeatureTables, numBytes); }
+    public addThematicTexture(numBytes: number) { this.addConsumer(ConsumerType.ThematicTextures, numBytes); }
     public addFeatureOverrides(numBytes: number) { this.addConsumer(ConsumerType.FeatureOverrides, numBytes); }
     public addClipVolume(numBytes: number) { this.addConsumer(ConsumerType.ClipVolumes, numBytes); }
     public addPlanarClassifier(numBytes: number) { this.addConsumer(ConsumerType.PlanarClassifiers, numBytes); }

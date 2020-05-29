@@ -69,7 +69,8 @@ describe("Checkbox", () => {
     const spyMethod = sinon.spy();
 
     const wrapper = mount(
-      <Checkbox checked={false} onBlur={spyMethod} />,
+      // add dummy onChange method that is require when specifying a checked value
+      <Checkbox checked={false} onChange={() => { }} onBlur={spyMethod} />,
     );
 
     const input = wrapper.find("input");

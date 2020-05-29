@@ -732,6 +732,16 @@ export { ChangeSetStatus }
 // @internal (undocumented)
 export const CHANNEL = "@bentley/imodeljs-mobilegateway";
 
+// @alpha
+export class ChannelConstraintError extends IModelError {
+    constructor(message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+}
+
+// @public
+export interface ChannelRootAspectProps extends ElementAspectProps {
+    owner: string;
+}
+
 // @internal
 export interface ClassifierTileTreeId {
     // (undocumented)
@@ -4906,6 +4916,7 @@ export namespace RenderTexture {
         Glyph = 1,
         Normal = 0,
         SkyBox = 3,
+        ThematicGradient = 5,
         TileSection = 2
     }
 }
@@ -6151,6 +6162,7 @@ export interface ThematicDisplaySensorProps {
 
 // @alpha
 export class ThematicDisplaySensorSettings {
+    readonly distanceCutoff: number;
     // (undocumented)
     equals(other: ThematicDisplaySensorSettings): boolean;
     // (undocumented)
@@ -6162,6 +6174,7 @@ export class ThematicDisplaySensorSettings {
 
 // @alpha
 export interface ThematicDisplaySensorSettingsProps {
+    distanceCutoff?: number;
     sensors?: ThematicDisplaySensorProps[];
 }
 
@@ -6504,6 +6517,15 @@ export interface ViewAttachmentLabelProps extends GeometricElement2dProps {
 
 // @public
 export interface ViewAttachmentProps extends GeometricElement2dProps {
+    // (undocumented)
+    jsonProperties?: {
+        displayPriority?: number;
+        clip?: any;
+        displayOptions?: {
+            drawAsRaster?: boolean;
+            preserveBackground?: boolean;
+        };
+    };
     // (undocumented)
     view: RelatedElementProps;
 }

@@ -12,6 +12,7 @@ import { DivWithOutsideClick, Orientation, Point, Size, SizeProps } from "@bentl
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup } from "./PositionPopup";
+import { MessageDiv } from "../messages/MessageSpan";
 
 /** @alpha */
 export interface HTMLElementPopupProps extends PopupPropsBase {
@@ -53,7 +54,7 @@ export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps,
         onSizeKnown={this._onSizeKnown}
       >
         <DivWithOutsideClick onOutsideClick={this.props.onCancel}>
-          <div dangerouslySetInnerHTML={{ __html: this.props.element.outerHTML }} />
+          <MessageDiv message={this.props.element} />
         </DivWithOutsideClick>
       </PositionPopup>
     );

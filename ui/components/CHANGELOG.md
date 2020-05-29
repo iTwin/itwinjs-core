@@ -1,6 +1,25 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Fix toolbar overflow panel display.
+- Update to only show group separators if toolbar is not transparent. 
+- Fix toolbar error when scaling up UI.
+- Property grid horizontal layout updated according to UX requirements.
+- Fixed Table filter renderers after react-select version upgrade
+- Support for striped rows in Table
+- Added ability for apps to display Favorite properties in Element Tooltip & Card at Cursor
+- Darken node descriptions in controlled tree
+- Center align ControlledTree error message
+- ControlledTree: Grow virtualized nodes' container width to fit the widest node and do not shrink it to avoid horinzontal scrollbar appearing/disappearing
+- Update version of react-select for ThemedSelect in ui-core.
+- ControlledTree: Fix horizontal scrollbar appearing when tree component size changes even though nodes don't exceed width of the tree
+- Only show badges on toolbar buttons if toolbar background is not transparent.
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT

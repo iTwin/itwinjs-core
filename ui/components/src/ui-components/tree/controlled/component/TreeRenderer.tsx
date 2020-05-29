@@ -6,6 +6,7 @@
  * @module Tree
  */
 
+import "./ControlledTree.scss";
 import classnames from "classnames";
 import * as React from "react";
 import AutoSizer, { Size } from "react-virtualized-auto-sizer";
@@ -69,6 +70,12 @@ export interface TreeRendererContext {
    * @internal
    */
   onLabelRendered?: (node: TreeModelNode) => void;
+
+  /**
+   * A callback that node calls after rendering to report its width
+   * @internal
+   */
+  onNodeWidthMeasured?: (width: number) => void;
 }
 
 /**
@@ -114,6 +121,7 @@ export function TreeRenderer(props: TreeRendererProps) {
     }
   }
 
+  const minContainerWidth = React.useRef<number>(0);
   const onLabelRendered = useScrollToActiveMatch(coreTreeRef, props.nodeHighlightingProps);
   const highlightingEngine = React.useMemo(() => props.nodeHighlightingProps ? new HighlightingEngine(props.nodeHighlightingProps) : undefined, [props.nodeHighlightingProps]);
 
@@ -124,7 +132,19 @@ export function TreeRenderer(props: TreeRendererProps) {
     visibleNodes: props.visibleNodes,
     onLabelRendered,
     highlightingEngine,
+    onNodeWidthMeasured: (width: number) => {
+      if (width > minContainerWidth.current)
+        minContainerWidth.current = width;
+    },
   }), [props.nodeRenderer, props.treeActions, props.nodeLoader, props.visibleNodes, onLabelRendered, highlightingEngine]);
+
+  const prevTreeWidth = React.useRef<number>(0);
+  const onTreeSizeChanged = React.useCallback((width: number) => {
+    if (width !== prevTreeWidth.current) {
+      minContainerWidth.current = 0;
+      prevTreeWidth.current = width;
+    }
+  }, []);
 
   const itemKey = React.useCallback(
     (index: number) => getNodeKey(props.visibleNodes.getAtIndex(index)!),
@@ -153,25 +173,37 @@ export function TreeRenderer(props: TreeRendererProps) {
     variableSizeListRef.current!.scrollToItem(index);
   }, [nodeHighlightingProps]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const innerElementType = React.useCallback(React.forwardRef(({ style, ...rest }: ListChildComponentProps, ref: React.Ref<HTMLDivElement>) => (
+    <div
+      ref={ref}
+      style={{ ...style, minWidth: minContainerWidth.current }}
+      {...rest}
+    />
+  )), []);
+
   return (
     <TreeRendererContextProvider value={rendererContext}>
-      <CoreTree ref={coreTreeRef} className="components-tree">
+      <CoreTree ref={coreTreeRef} className="components-controlledTree">
         <AutoSizer>
-          {({ width, height }: Size) => (
-            <VariableSizeList
-              ref={variableSizeListRef}
-              className={"ReactWindow__VariableSizeList"}
-              width={width}
-              height={height}
-              itemCount={props.visibleNodes.getNumNodes()}
-              itemSize={itemSize}
-              estimatedItemSize={25}
-              overscanCount={10}
-              itemKey={itemKey}
-            >
-              {Node}
-            </VariableSizeList>
-          )}
+          {({ width, height }: Size) => {
+            onTreeSizeChanged(width);
+            return (
+              <VariableSizeList
+                ref={variableSizeListRef}
+                className={"ReactWindow__VariableSizeList"}
+                width={width}
+                height={height}
+                itemCount={props.visibleNodes.getNumNodes()}
+                itemSize={itemSize}
+                estimatedItemSize={25}
+                overscanCount={10}
+                itemKey={itemKey}
+                innerElementType={innerElementType}
+              >
+                {Node}
+              </VariableSizeList>
+            );
+          }}
         </AutoSizer>
       </CoreTree>
     </TreeRendererContextProvider>
@@ -190,7 +222,7 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // tslint:disable-li
     const { index, style } = props;
 
     const context = useTreeRendererContext(Node);
-    const { nodeRenderer, visibleNodes, treeActions, nodeLoader, onLabelRendered, highlightingEngine } = context;
+    const { nodeRenderer, visibleNodes, treeActions, nodeLoader, onLabelRendered, highlightingEngine, onNodeWidthMeasured } = context;
     const node = visibleNodes!.getAtIndex(index)!;
 
     // Mark selected node's wrapper to make detecting consecutively selected nodes with css selectors possible
@@ -216,8 +248,15 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // tslint:disable-li
       return () => { };
     }, [node, nodeLoader]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    const ref = React.useRef<HTMLDivElement>(null);
+    React.useEffect(() => {
+      // istanbul ignore else
+      if (onNodeWidthMeasured && ref.current)
+        onNodeWidthMeasured(ref.current.offsetWidth);
+    }, [onNodeWidthMeasured]);
+
     return (
-      <div className={className} style={style}>
+      <div className={className} style={style} ref={ref}>
         {React.useMemo(() => {
           if (isTreeModelNode(node)) {
             const nodeHighlightProps = highlightingEngine ? highlightingEngine.createRenderProps(node) : undefined;

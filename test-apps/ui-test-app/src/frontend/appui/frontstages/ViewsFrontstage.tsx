@@ -6,7 +6,7 @@ import * as React from "react";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
-  ViewState,
+  ScreenViewport, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import {
@@ -17,10 +17,10 @@ import { Point, ScrollView } from "@bentley/ui-core";
 import {
   BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager,
   ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
-  CustomItemDef, Frontstage, FrontstageManager, FrontstageProvider, GroupItemDef, IModelConnectedViewSelector, MessageManager, ModalDialogManager,
-  ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel, StagePanelHeader,
-  StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework, VisibilityComponentHierarchy, VisibilityWidget, Widget, WIDGET_OPACITY_DEFAULT,
-  WidgetState, Zone, ZoneLocation, ZoneState,
+  CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef, HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler,
+  HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager, ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType,
+  SavedViewLayout, SavedViewLayoutProps, StagePanel, StagePanelHeader, StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework,
+  VisibilityComponentHierarchy, VisibilityWidget, Widget, WIDGET_OPACITY_DEFAULT, WidgetState, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
 // SVG Support - SvgPath or SvgSprite
@@ -46,6 +46,8 @@ import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 
 export class ViewsFrontstage extends FrontstageProvider {
+  public static stageId = "ViewsFrontstage";
+  public static unifiedSelectionPropertyGridId = "UnifiedSelectionPropertyGrid";
   private _additionalTools = new AdditionalTools();
 
   public static savedViewLayoutProps: string;
@@ -67,8 +69,51 @@ export class ViewsFrontstage extends FrontstageProvider {
     allowedZones: [2, 7],
   };
 
+  private async applyVisibilityOverrideToSpatialViewports(frontstageDef: FrontstageDef, processedViewport: ScreenViewport, action: HideIsolateEmphasizeAction) {
+    frontstageDef?.contentControls?.forEach(async (cc) => {
+      const vp = cc.viewport;
+      if (vp !== processedViewport && vp?.view?.isSpatialView() && vp.iModel === processedViewport.iModel) {
+        switch (action) {
+          case HideIsolateEmphasizeAction.ClearHiddenIsolatedEmphasized:
+            HideIsolateEmphasizeManager.clearEmphasize(vp);
+            break;
+          case HideIsolateEmphasizeAction.EmphasizeSelectedElements:
+            await HideIsolateEmphasizeManager.emphasizeSelected(vp);
+            break;
+          case HideIsolateEmphasizeAction.HideSelectedCategories:
+            await HideIsolateEmphasizeManager.hideSelectedElementsCategory(vp);
+            break;
+          case HideIsolateEmphasizeAction.HideSelectedElements:
+            HideIsolateEmphasizeManager.hideSelected(vp);
+            break;
+          case HideIsolateEmphasizeAction.HideSelectedModels:
+            await HideIsolateEmphasizeManager.hideSelectedElementsModel(vp);
+            break;
+          case HideIsolateEmphasizeAction.IsolateSelectedCategories:
+            await HideIsolateEmphasizeManager.isolateSelectedElementsCategory(vp);
+            break;
+          case HideIsolateEmphasizeAction.IsolateSelectedElements:
+            HideIsolateEmphasizeManager.isolateSelected(vp);
+            break;
+          case HideIsolateEmphasizeAction.IsolateSelectedModels:
+            await HideIsolateEmphasizeManager.isolateSelectedElementsModel(vp);
+            break;
+          default:
+            break;
+        }
+      }
+    });
+  }
+
+  private _onEmphasizeElementsChangedHandler = (args: EmphasizeElementsChangedArgs) => {
+    if (FrontstageManager.activeFrontstageDef && FrontstageManager.activeFrontstageId === ViewsFrontstage.stageId)
+      this.applyVisibilityOverrideToSpatialViewports(FrontstageManager.activeFrontstageDef, args.viewport, args.action); // tslint:disable-line: no-floating-promises
+  }
+
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
     super();
+
+    HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(this._onEmphasizeElementsChangedHandler);
   }
 
   /** Get the CustomItemDef for ViewSelector  */
@@ -108,12 +153,12 @@ export class ViewsFrontstage extends FrontstageProvider {
     }
     const myContentGroup: ContentGroup = new ContentGroup({ contents: contentProps });
     return (
-      <Frontstage id="ViewsFrontstage"
+      <Frontstage id={ViewsFrontstage.stageId}
         defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage="MyUsage"
-        version={1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
+        version={3} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
         contentManipulationTools={
           < Zone
             widgets={
@@ -167,7 +212,7 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={350}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
+                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
                 applicationData={{
                   iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
@@ -191,9 +236,9 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={
               [
                 <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                  applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} badgeType={BadgeType.New} />,
+                  applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
                 /* <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
-                   applicationData={{ projectName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
+                   applicationData={{ projectName: "iModelHubTest", imodelName: "Demo" }} />, */
               ]}
           />
         }
@@ -210,15 +255,16 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={
               [
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
+                  id={ViewsFrontstage.unifiedSelectionPropertyGridId}
                   control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
-                  applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }}
-                  syncEventIds={[SyncUiEventId.SelectionSetChanged]}
-                  stateFunc={(): WidgetState => {
-                    const activeContentControl = ContentViewManager.getActiveContentControl();
-                    if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0))
-                      return WidgetState.Open;
-                    return WidgetState.Closed;
-                  }}
+                  applicationData={{ iModelConnection: this.iModelConnection }}
+                // syncEventIds={[SyncUiEventId.SelectionSetChanged]}
+                // stateFunc={(): WidgetState => {
+                //   const activeContentControl = ContentViewManager.getActiveContentControl();
+                //   if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0))
+                //     return WidgetState.Open;
+                //   return WidgetState.Closed;
+                // }}
                 />,
                 <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               ]}
@@ -442,7 +488,7 @@ class AdditionalTools {
     this._viewportDialogCnt++;
     const id = "ViewportDialog_" + this._viewportDialogCnt.toString();
 
-    const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="GrandCanyonTerrain" dialogId={id} />;
+    const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="Demo" dialogId={id} />;
 
     ModelessDialogManager.openDialog(dialog, id);
   }
@@ -491,7 +537,7 @@ class AdditionalTools {
 
           // Add applicationData to the ContentProps
           savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
-            contentProps.applicationData = { viewState: viewStates[index], iModelConnection, rulesetId: "Items" };
+            contentProps.applicationData = { viewState: viewStates[index], iModelConnection };
           });
           const contentGroup = new ContentGroup(savedViewLayoutProps.contentGroupProps);
 
@@ -594,7 +640,7 @@ class AdditionalTools {
               dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
               proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </div>
-            {false && <ViewportWidget projectName="iModelHubTest" imodelName="GrandCanyonTerrain" />}
+            {false && <ViewportWidget projectName="iModelHubTest" imodelName="Demo" />}
             <div>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
               Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
@@ -624,6 +670,23 @@ class AdditionalTools {
     ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(130, AppTools.toolWithSettings, { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(135, AppTools.toggleHideShowItemsCommand, { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(140, new CommandItemDef({
+      commandId: "Show widget",
+      iconSpec: "icon-placeholder",
+      label: "Show widget",
+      execute: () => {
+        UiFramework.layoutManager.showWidget("uitestapp-test-wd3");
+        UiFramework.layoutManager.expandWidget("uitestapp-test-wd3");
+      },
+    }), { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(140, new CommandItemDef({
+      commandId: "Restore layout",
+      iconSpec: "icon-placeholder",
+      label: "Restore layout",
+      execute: () => {
+        UiFramework.layoutManager.restoreLayout("ViewsFrontstage");
+      },
+    }), { groupPriority: 30 }),
     this.formatGroupItemsItem(),
   ];
 

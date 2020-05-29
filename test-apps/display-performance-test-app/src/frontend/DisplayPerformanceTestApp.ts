@@ -591,6 +591,7 @@ class DefaultConfigs {
       this.viewName = "V0";
       this.testType = "timing";
       this.csvFormat = "original";
+      this.renderOptions = { useWebGL2: true };
     }
     if (prevConfigs !== undefined) {
       if (prevConfigs.view) this.view = new ViewSize(prevConfigs.view.width, prevConfigs.view.height);
@@ -1282,7 +1283,7 @@ async function runTest(testConfig: DefaultConfigs) {
       (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false, undefined);
       debugControl.resultsCallback = undefined; // Turn off glTimer metrics
       for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
-        theViewport!.readPixels(viewRect, pixSelect, (_pixels: any) => { return; });
+        theViewport!.readPixels(viewRect, pixSelect, (_pixels: any) => { });
         finalCPUFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
         finalCPUFrameTimings[i].delete("Scene Time");
       }
