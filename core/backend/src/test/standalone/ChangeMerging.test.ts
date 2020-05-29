@@ -7,8 +7,9 @@ import { assert } from "chai";
 import * as path from "path";
 import { ChangeSetApplyOption, ChangeSetStatus, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, IModelJsNative, SpatialCategory, StandaloneDb,
+  ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";

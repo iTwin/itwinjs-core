@@ -364,7 +364,8 @@ describe("Ids", () => {
     assert.equal(Guid.normalize("12345678-1"), "12345678-1");
     assert.equal(Guid.normalize("123456781234"), "123456781234");
     assert.equal(Guid.normalize("12345678-1234-1"), "12345678-1234-1");
-    assert.equal(Guid.normalize("12345678123412341234123456789ABCD"), "12345678123412341234123456789ABCD");
+    assert.equal(Guid.normalize("1234567890123456789012345678901234567890"), "1234567890123456789012345678901234567890");
+    assert.equal(Guid.normalize("BADguid"), "BADguid");
     assert.equal(Guid.normalize("12345678-1234-1234-1234-123456789ABCDEFG"), "12345678-1234-1234-1234-123456789ABCDEFG");
   });
 });
