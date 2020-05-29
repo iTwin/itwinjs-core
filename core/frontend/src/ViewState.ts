@@ -27,6 +27,7 @@ import { GeometricModel2dState, GeometricModel3dState, GeometricModelState } fro
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderMemory } from "./render/RenderMemory";
+import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { TileTreeReference, TileTreeSet } from "./tile/internal";
@@ -178,7 +179,6 @@ export abstract class ViewState extends ElementState {
 
   private _auxCoordSystem?: AuxCoordSystemState;
   private _extentLimits?: ExtentLimits;
-  private _clipVector?: ClipVector;
   public description?: string;
   public isPrivate?: boolean;
 
@@ -203,7 +203,6 @@ export abstract class ViewState extends ElementState {
     this.displayStyle = source.displayStyle.clone();
     this._extentLimits = source._extentLimits;
     this._auxCoordSystem = source._auxCoordSystem;
-    this._clipVector = source._clipVector;
   }
 
   /** Create a new ViewState object from a set of properties. Generally this is called internally by [[IModelConnection.Views.load]] after the properties
@@ -1020,6 +1019,7 @@ export abstract class ViewState extends ElementState {
  */
 export abstract class ViewState3d extends ViewState {
   private readonly _details: ViewDetails3d;
+  private readonly _modelClips: Array<RenderClipVolume | undefined> = [];
   /** @internal */
   public static get className() { return "ViewDefinition3d"; }
   /** True if the camera is valid. */
@@ -1069,7 +1069,31 @@ export abstract class ViewState3d extends ViewState {
       this.centerEyePoint();
 
     this._details = new ViewDetails3d(this.jsonProperties);
+    this._details.onModelClipGroupsChanged.addListener((_) => this.updateModelClips());
+    this.updateModelClips();
+
     this._updateMaxGlobalScopeFactor();
+  }
+
+  private updateModelClips(): void {
+    for (const clip of this._modelClips)
+      clip?.dispose();
+
+    this._modelClips.length = 0;
+    for (const group of this.details.modelClipGroups.groups) {
+      const clip = group.clip ? IModelApp.renderSystem.createClipVolume(group.clip) : undefined;
+      this._modelClips.push(clip);
+    }
+  }
+
+  /** @internal */
+  public getModelClip(modelId: Id64String): RenderClipVolume | undefined {
+    // If the view has a clip, or clipping is turned off, the model clips are ignored.
+    if (undefined !== this.getViewClip() || !this.viewFlags.clipVolume)
+      return undefined;
+
+    const index = this.details.modelClipGroups.findGroupIndex(modelId);
+    return -1 !== index ? this._modelClips[index] : undefined;
   }
 
   /** @internal */

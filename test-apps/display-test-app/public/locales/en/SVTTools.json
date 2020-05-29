@@ -82,6 +82,9 @@
     },
     "DetachViews": {
       "keyin": "dta detach views"
+    },
+    "ModelClip": {
+      "keyin": "dta model clip"
     }
   }
 }

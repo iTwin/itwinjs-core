@@ -10807,6 +10807,8 @@ export abstract class ViewState3d extends ViewState {
     getGroundElevation(): number;
     getGroundExtents(vp?: Viewport): AxisAlignedBox3d;
     getLensAngle(): Angle;
+    // @internal (undocumented)
+    getModelClip(modelId: Id64String): RenderClipVolume | undefined;
     // (undocumented)
     getOrigin(): Point3d;
     // (undocumented)

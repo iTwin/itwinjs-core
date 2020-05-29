@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Point2d } from "@bentley/geometry-core";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@bentley/geometry-core";
+import { ModelClipGroup, ModelClipGroups } from "@bentley/imodeljs-common";
 import {
   imageBufferToPngDataUrl, IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
   SnapshotConnection, Tool, Viewport, ViewState,
@@ -64,6 +65,38 @@ export class SaveImageTool extends Tool {
     if (undefined !== vp)
       saveImage(vp);
 
+    return true;
+  }
+}
+
+export class ModelClipTool extends Tool {
+  public static toolId = "ModelClip";
+  public run(_args: any[]): boolean {
+    const view = IModelApp.viewManager.selectedView?.view;
+    if (!view || !view.isSpatialView() || view.modelSelector.models.size < 2)
+      return true;
+
+    const createClip = (vector: Vector3d) => {
+      const plane = ClipPlane.createNormalAndPoint(vector, view.iModel.projectExtents.center)!;
+      const planes = ConvexClipPlaneSet.createPlanes([ plane ]);
+      const primitive = ClipPrimitive.createCapture(planes);
+      return ClipVector.createCapture([ primitive ]);
+    };
+
+    const leftModels: string[] = [];
+    const rightModels: string[] = [];
+    let left = true;
+    view.modelSelector.models.forEach((model) => {
+      (left ? leftModels : rightModels).push(model);
+      left = !left;
+    });
+
+    view.details.modelClipGroups = new ModelClipGroups([
+      ModelClipGroup.create(createClip(Vector3d.unitX().negate()), rightModels),
+      ModelClipGroup.create(createClip(Vector3d.unitZ().negate()), leftModels),
+    ]);
+
+    IModelApp.viewManager.selectedView!.invalidateScene();
     return true;
   }
 }

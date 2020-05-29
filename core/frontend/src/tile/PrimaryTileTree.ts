@@ -14,6 +14,7 @@ import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
 import { SceneContext } from "../ViewContext";
 import { ViewState, ViewState3d } from "../ViewState";
+import { RenderClipVolume } from "../render/RenderClipVolume";
 import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
@@ -114,6 +115,11 @@ class PrimaryTreeReference extends TileTreeReference {
 
   public get castsShadows() {
     return true;
+  }
+
+  protected getClipVolume(_tree: TileTree): RenderClipVolume | undefined {
+    // ###TODO: reduce frequency with which getModelClip() is called
+    return this._view.is3d() ? this._view.getModelClip(this._model.id) : undefined;
   }
 
   public get treeOwner(): TileTreeOwner {

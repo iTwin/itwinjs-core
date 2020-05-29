@@ -22,7 +22,7 @@ import {
 } from "./Surface";
 import { showError, showStatus } from "./Utils";
 import { VersionComparisonTool } from "./VersionComparison";
-import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { AttachViewTool, DetachViewsTool } from "./AttachViewTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
@@ -221,6 +221,7 @@ export class DisplayTestApp {
       MarkupSelectTestTool,
       MarkupTool,
       MaximizeWindowTool,
+      ModelClipTool,
       OpenIModelTool,
       OutputShadersTool,
       PurgeTileTreesTool,

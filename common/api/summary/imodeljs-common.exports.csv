@@ -272,6 +272,9 @@ beta;class MobileRpcConfiguration
 beta;MobileRpcManager
 beta;MobileRpcProtocol 
 beta;MobileRpcRequest 
+alpha;ModelClipGroup
+internal;ModelClipGroupProps
+alpha;ModelClipGroups
 public;ModelProps 
 public;ModelQueryParams 
 public;ModelSelectorProps 

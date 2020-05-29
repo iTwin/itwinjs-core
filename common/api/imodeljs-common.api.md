@@ -3774,6 +3774,41 @@ export class MobileRpcRequest extends RpcRequest {
     protected setHeader(_name: string, _value: string): void;
 }
 
+// @alpha
+export class ModelClipGroup {
+    clip?: ClipVector;
+    clone(): ModelClipGroup;
+    static create(clip: ClipVector | undefined, models?: Id64Array): ModelClipGroup;
+    // @internal (undocumented)
+    static fromJSON(props: ModelClipGroupProps): ModelClipGroup;
+    includesModel(modelId: Id64String): boolean;
+    models?: Id64Array;
+    // @internal (undocumented)
+    toJSON(): ModelClipGroupProps;
+}
+
+// @internal (undocumented)
+export interface ModelClipGroupProps {
+    // (undocumented)
+    clip?: any;
+    // (undocumented)
+    models?: Id64Array;
+}
+
+// @alpha
+export class ModelClipGroups {
+    constructor(groups?: ModelClipGroup[]);
+    clone(): ModelClipGroups;
+    findGroup(modelId: Id64String): ModelClipGroup | undefined;
+    findGroupIndex(modelId: Id64String): number;
+    // @internal (undocumented)
+    static fromJSON(props: ModelClipGroupProps[] | undefined): ModelClipGroups;
+    getClipForModel(modelId: Id64String): ClipVector | undefined;
+    readonly groups: ModelClipGroup[];
+    // @internal (undocumented)
+    toJSON(): ModelClipGroupProps[];
+}
+
 // @public
 export interface ModelProps extends EntityProps {
     // (undocumented)
@@ -6637,11 +6672,17 @@ export class ViewDetails3d extends ViewDetails {
     set allow3dManipulations(allow: boolean);
     // @internal
     getJSON(): ViewDetails3dProps;
-    }
+    // @alpha
+    get modelClipGroups(): ModelClipGroups;
+    set modelClipGroups(groups: ModelClipGroups);
+    // @internal (undocumented)
+    readonly onModelClipGroupsChanged: BeEvent<(details: ViewDetails3d) => void>;
+}
 
 // @internal (undocumented)
 export interface ViewDetails3dProps extends ViewDetailsProps {
     disable3dManipulations?: boolean;
+    modelClipGroups?: ModelClipGroupProps[];
 }
 
 // @internal (undocumented)
