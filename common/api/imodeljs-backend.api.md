@@ -124,6 +124,7 @@ import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
+import { NativeLoggerCategory } from '@bentley/imodeljs-native';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
 import { OpenBriefcaseOptions } from '@bentley/imodeljs-common';
@@ -2685,7 +2686,7 @@ export class IModelHost {
     // @internal (undocumented)
     static get isNativeAppBackend(): boolean;
     // @internal (undocumented)
-    static loadNative(region: number, dir?: string): void;
+    static loadNative(region: number): void;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
     static readonly onAfterStartup: BeEvent<() => void>;
@@ -2825,6 +2826,8 @@ export class IModelJsFsStats {
     // (undocumented)
     size: number;
 }
+
+export { IModelJsNative }
 
 // @beta
 export class IModelTransformer extends IModelExportHandler {
@@ -3417,6 +3420,8 @@ export class NativeAppBackend {
     static startup(configuration?: IModelHostConfiguration): Promise<void>;
 }
 
+export { NativeLoggerCategory }
+
 // @public @deprecated
 export class OpenParams {
     constructor(
@@ -3510,7 +3515,7 @@ export class Platform {
     static get isMobile(): boolean;
     static get isNodeJs(): boolean;
     // @internal (undocumented)
-    static load(dir?: string): typeof IModelJsNative;
+    static load(): typeof IModelJsNative;
     static get platformName(): string;
 }
 
@@ -4326,8 +4331,6 @@ export class WebMercatorModel extends SpatialModel {
     static get className(): string;
 }
 
-
-export * from "@bentley/imodeljs-native/IModelJsNative";
 
 // (No @packageDocumentation comment for this package)
 
