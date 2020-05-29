@@ -543,7 +543,6 @@ export namespace Guid {
     export function createValue(): GuidString;
     export function isGuid(value: string): boolean;
     export function isV4Guid(value: string): boolean;
-    // @internal
     export function normalize(value: GuidString): GuidString;
 }
 
