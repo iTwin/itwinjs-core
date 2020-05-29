@@ -96,7 +96,7 @@ describe("ECSqlStatement", () => {
 
     });
   });
-  it("Null string accessor", async () => {
+  it.skip("Null string accessor", async () => {
     await using(ECDbTestHelper.createECDb(_outDir, "nullstring.ecdb"), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
       await ecdb.withPreparedStatement(`VALUES(NULL)`, async (stmt: ECSqlStatement) => {
