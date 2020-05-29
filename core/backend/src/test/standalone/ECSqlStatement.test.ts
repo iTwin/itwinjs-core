@@ -96,6 +96,16 @@ describe("ECSqlStatement", () => {
 
     });
   });
+  it("Null string accessor", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "nullstring.ecdb"), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+      await ecdb.withPreparedStatement(`VALUES(NULL)`, async (stmt: ECSqlStatement) => {
+        stmt.step();
+        const str = stmt.getValue(0).getString();
+        assert.equal(str, "");
+      });
+    });
+  });
   it("Paging Resultset", async () => {
     await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
