@@ -188,7 +188,6 @@ export interface AreaFillProps {
     backgroundFill?: BackgroundFill;
     color?: ColorDefProps;
     display: FillDisplay;
-    // @beta
     gradient?: Gradient.SymbProps;
     transparency?: number;
 }
@@ -2379,7 +2378,6 @@ export class GeometryParams {
     fillDisplay?: FillDisplay;
     fillTransparency?: number;
     geometryClass?: GeometryClass;
-    // @beta
     gradient?: Gradient.Symb;
     isEquivalent(other: GeometryParams): boolean;
     lineColor?: ColorDef;
@@ -2653,7 +2651,7 @@ export enum GltfVersions {
     Version2 = 2
 }
 
-// @beta (undocumented)
+// @public
 export namespace Gradient {
     export enum Flags {
         Invert = 1,
@@ -2685,7 +2683,7 @@ export namespace Gradient {
         None = 0,
         // (undocumented)
         Spherical = 4,
-        // (undocumented)
+        // @beta (undocumented)
         Thematic = 6
     }
     export class Symb {
@@ -2695,12 +2693,13 @@ export namespace Gradient {
         clone(): Symb;
         compare(other: Symb): number;
         static compareSymb(lhs: Gradient.Symb, rhs: Gradient.Symb): number;
-        // (undocumented)
+        // @beta (undocumented)
         static createThematic(settings: ThematicGradientSettings): Symb;
         equals(other: Symb): boolean;
         // (undocumented)
         flags: Flags;
         static fromJSON(json?: SymbProps): Symb;
+        // @beta
         getImage(width: number, height: number): ImageBuffer;
         // (undocumented)
         get hasTranslucency(): boolean;
@@ -2712,7 +2711,7 @@ export namespace Gradient {
         mode: Mode;
         // (undocumented)
         shift: number;
-        // (undocumented)
+        // @beta (undocumented)
         thematicSettings?: ThematicGradientSettings;
         // (undocumented)
         tint?: number;
@@ -2725,38 +2724,29 @@ export namespace Gradient {
         keys: KeyColorProps[];
         mode: Mode;
         shift?: number;
+        // @beta
         thematicSettings?: ThematicGradientSettingsProps;
         tint?: number;
     }
 }
 
-// @beta
+// @public
 export class GraphicParams {
-    // (undocumented)
     fillColor: ColorDef;
-    // (undocumented)
     fillFlags: FillFlags;
-    // (undocumented)
     static fromBlankingFill(fillColor: ColorDef): GraphicParams;
-    // (undocumented)
     static fromSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): GraphicParams;
-    // (undocumented)
     gradient?: Gradient.Symb;
-    // (undocumented)
     lineColor: ColorDef;
-    // (undocumented)
     linePixels: LinePixels;
-    // (undocumented)
+    // @beta
     material?: RenderMaterial;
-    // (undocumented)
     rasterWidth: number;
-    // (undocumented)
     setFillTransparency(transparency: number): void;
-    // (undocumented)
     setLineTransparency(transparency: number): void;
-    // (undocumented)
+    // @alpha (undocumented)
     trueWidthEnd: number;
-    // (undocumented)
+    // @alpha (undocumented)
     trueWidthStart: number;
 }
 

@@ -186,8 +186,8 @@ internal;GltfHeader
 internal;GltfMeshMode
 internal;GltfV2ChunkTypes
 internal;GltfVersions
-beta;Gradient
-beta;GraphicParams
+public;Gradient
+public;GraphicParams
 public;GridOrientationType
 public;GroundPlane
 public;GroundPlaneProps

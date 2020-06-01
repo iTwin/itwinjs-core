@@ -57,9 +57,7 @@ export interface AreaFillProps {
   backgroundFill?: BackgroundFill;
   /** Set fill color to a specific color. If the fill color the same as the line color, it is an opaque fill, otherwise it is an outline fill */
   color?: ColorDefProps;
-  /** Set fill using gradient properties
-   * @beta
-   */
+  /** Set fill using gradient properties. */
   gradient?: Gradient.SymbProps;
 }
 

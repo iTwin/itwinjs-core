@@ -31,7 +31,7 @@ beta;AngleDescription
 internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
-beta;AppearanceOverrideProps
+public;AppearanceOverrideProps
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -116,8 +116,8 @@ public;ElementPicker
 public;ElementState 
 internal;ElemMethod
 internal;ElemSource
-beta;EmphasizeElements 
-beta;EmphasizeElementsProps
+public;EmphasizeElements 
+public;EmphasizeElementsProps
 beta;EngineeringLengthDescription 
 public;EntityState 
 public;Environment
@@ -140,7 +140,7 @@ public;extractImageSourceDimensions(source: ImageSource): Promise
 alpha;FeatureLogBatchClient
 alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
-beta;FeatureOverrideType
+public;FeatureOverrideType
 public;FeatureSymbology
 alpha;FeatureTrackingManager
 alpha;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise

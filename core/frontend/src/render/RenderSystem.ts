@@ -398,7 +398,6 @@ export abstract class RenderSystem implements IDisposable {
    * @note If a texture matching the specified gradient already exists, it will be returned.
    * Otherwise, the newly-created texture will be cached on the IModelConnection such that a subsequent call to getGradientTexture with an equivalent gradient will
    * return the previously-created texture.
-   * @beta
    */
   public getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
 
