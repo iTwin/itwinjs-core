@@ -12,7 +12,8 @@
       "common",
       "tools",
       "internal",
-      "extensions"
+      "extensions",
+      "integration-testing"
     ],
     "ignoredNpmScopes": [
       "@types"
@@ -511,7 +512,7 @@
     {
       "packageName": "@bentley/rpcinterface-full-stack-tests",
       "projectFolder": "full-stack-tests/rpc-interface",
-      "reviewCategory": "tools",
+      "reviewCategory": "integration-testing",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -520,6 +521,13 @@
       "projectFolder": "test-apps/simple-editor-app",
       "reviewCategory": "internal",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@bentley/imodelhub-client-tests",
+      "projectFolder": "full-stack-tests/imodelhub-client",
+      "reviewCategory": "integration-testing",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     }
   ]
 }

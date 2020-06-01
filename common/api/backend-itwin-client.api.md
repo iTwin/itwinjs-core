@@ -107,6 +107,20 @@ export class IOSAzureFileHandler implements FileHandler {
     uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string): Promise<void>;
 }
 
+// @internal
+export class LocalhostHandler implements FileHandler {
+    // (undocumented)
+    agent: https.Agent;
+    basename(filePath: string): string;
+    downloadFile(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void>;
+    exists(filePath: string): boolean;
+    getFileSize(filePath: string): number;
+    isDirectory(filePath: string): boolean;
+    join(...paths: string[]): string;
+    unlink(filePath: string): void;
+    uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
+}
+
 // @beta @deprecated
 export type OidcAgentClient = AgentAuthorizationClient;
 

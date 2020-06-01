@@ -1,0 +1,67 @@
+{
+  "name": "@bentley/imodelhub-client-tests",
+  "version": "2.2.0-dev.3",
+  "main": "lib/imodelhub-client-tests.js",
+  "description": "Tests the iModelHub client",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/full-stack-tests/imodelhub-client"
+  },
+  "scripts": {
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "copy:test-assets": "cpx \"./src/assets/**/*\" ./lib/assets",
+    "cover": "npm run cover:imodelhub-client && npm run cover:backend-itwin-client && npm run cover:itwin-client",
+    "cover:imodelhub-client": "nyc --nycrc-path=imodelhub-client.nycrc npm test",
+    "cover:backend-itwin-client": "nyc --nycrc-path=backend-itwin-client.nycrc npm test",
+    "cover:itwin-client": "nyc --nycrc-path=itwin-client.nycrc npm test",
+    "docs": "",
+    "lint": "tslint --project . 1>&2",
+    "pretest": "npm run copy:test-assets",
+    "test": "npm run pretest && betools test --offline=\"mock\" --grep=\"#integration\" --invert --testDir ./lib",
+    "test:integration": "npm run pretest && betools test --grep=\"#integration\" --testDir ./lib",
+    "test:imodel-bank": "npm run pretest && betools test --grep=\"#iModelBank\" --testDir ./lib"
+  },
+  "keywords": [
+    "Bentley",
+    "iModelHub",
+    "iModelJS",
+    "Testing"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {
+    "@bentley/backend-itwin-client": "2.2.0-dev.3",
+    "@bentley/bentleyjs-core": "2.2.0-dev.3",
+    "@bentley/build-tools": "2.2.0-dev.3",
+    "@bentley/config-loader": "2.2.0-dev.3",
+    "@bentley/context-registry-client": "2.2.0-dev.3",
+    "@bentley/frontend-authorization-client": "2.2.0-dev.3",
+    "@bentley/imodelhub-client": "2.2.0-dev.3",
+    "@bentley/imodeljs-common": "2.2.0-dev.3",
+    "@bentley/itwin-client": "2.2.0-dev.3",
+    "@bentley/oidc-signin-tool": "2.2.0-dev.3",
+    "chai": "^4.1.2",
+    "deep-assign": "^2.0.0",
+    "fs-extra": "^8.1.0",
+    "js-base64": "^2.4.5",
+    "mocha": "^5.2.0",
+    "nock": "^9.2.3"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/deep-assign": "^0.1.0",
+    "@types/fs-extra": "^4.0.7",
+    "@types/js-base64": "^2.3.1",
+    "@types/mocha": "^5.2.5",
+    "@types/nock": "^9.1.2",
+    "cpx": "^1.5.0",
+    "nyc": "^14.0.0",
+    "rimraf": "^3.0.2",
+    "tslint": "^5.11.0",
+    "typescript": "~3.7.4"
+  }
+}
