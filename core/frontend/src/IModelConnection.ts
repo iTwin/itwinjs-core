@@ -929,7 +929,6 @@ export namespace IModelConnection {
     /** Given a set of modelIds, return the subset of corresponding models that are not currently loaded.
      * @param modelIds The set of model Ids
      * @returns The subset of the supplied Ids corresponding to models that are not currently loaded, or undefined if all of the specified models are loaded.
-     * @beta
      */
     public filterLoaded(modelIds: Id64Arg): Id64Set | undefined {
       let unloaded: Set<string> | undefined;

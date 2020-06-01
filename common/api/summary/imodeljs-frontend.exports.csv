@@ -155,7 +155,7 @@ internal;FrameCameraViewData
 internal;FrameRenderData
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
-alpha;Frustum2d
+public;Frustum2d
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults

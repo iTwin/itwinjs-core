@@ -1989,19 +1989,16 @@ export class DisplayStyle3dState extends DisplayStyleState {
     clone(iModel: IModelConnection): this;
     get environment(): Environment;
     set environment(env: Environment);
-    // @alpha (undocumented)
+    // (undocumented)
     get lights(): LightSettings;
     set lights(lights: LightSettings);
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
-    // @beta
     setSunTime(time: number): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
-    // @beta
     get solarShadows(): SolarShadowSettings;
     set solarShadows(settings: SolarShadowSettings);
-    // @beta (undocumented)
     get sunDirection(): Readonly<Vector3d>;
 }
 
@@ -2016,10 +2013,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get backgroundDrapeMap(): BackgroundMapTileTreeReference;
     // @internal (undocumented)
     get backgroundMap(): BackgroundMapOrTerrainTileTreeReference;
-    // @beta
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
-    // @beta
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     // @internal (undocumented)
     static get className(): string;
@@ -2685,7 +2680,6 @@ export enum FeatureOverrideType {
 export namespace FeatureSymbology {
     export class Appearance implements AppearanceProps {
         static readonly defaults: Appearance;
-        // @beta
         readonly emphasized?: true | undefined;
         // (undocumented)
         equals(other: Appearance): boolean;
@@ -2718,7 +2712,6 @@ export namespace FeatureSymbology {
         readonly weight?: number;
     }
     export interface AppearanceProps {
-        // @beta
         emphasized?: true | undefined;
         ignoresMaterial?: true | undefined;
         linePixels?: LinePixels;
@@ -2994,7 +2987,7 @@ export class FrontendRequestContext extends ClientRequestContext {
     constructor(activityId?: string);
 }
 
-// @alpha
+// @public
 export namespace Frustum2d {
     const minimumZDistance = 1;
     const minimumZExtents: Readonly<Range1d>;
@@ -3364,7 +3357,6 @@ export abstract class GraphicBuilder {
     pickId?: string;
     get placement(): Transform;
     set placement(tf: Transform);
-    // @beta
     setBlankingFill(fillColor: ColorDef): void;
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
     readonly type: GraphicType;
@@ -3943,7 +3935,6 @@ export namespace IModelConnection {
     export class Models {
         // @internal
         constructor(_iModel: IModelConnection);
-        // @beta
         filterLoaded(modelIds: Id64Arg): Id64Set | undefined;
         // @internal (undocumented)
         getDictionaryModel(): Promise<Id64String>;
@@ -8840,12 +8831,9 @@ export class Tool {
     get iconSpec(): string;
     static get keyin(): string;
     get keyin(): string;
-    // @beta
     static get maxArgs(): number | undefined;
-    // @beta
     static get minArgs(): number;
     static namespace: I18NNamespace;
-    // @beta
     parseAndRun(..._args: string[]): boolean;
     static register(namespace?: I18NNamespace, i18n?: I18N): void;
     run(..._args: any[]): boolean;
@@ -10313,7 +10301,7 @@ export abstract class Viewport implements IDisposable {
     isSubCategoryVisible(id: Id64String): boolean;
     // @internal
     lastFlashedElem?: string;
-    // @alpha (undocumented)
+    // (undocumented)
     get lightSettings(): LightSettings | undefined;
     // @internal (undocumented)
     markSelectionSetDirty(): void;
@@ -10375,7 +10363,7 @@ export abstract class Viewport implements IDisposable {
     setFeatureOverrideProviderChanged(): void;
     // @internal
     setFlashed(id: string | undefined, duration: number): void;
-    // @alpha (undocumented)
+    // (undocumented)
     setLightSettings(settings: LightSettings): void;
     setNeverDrawn(ids: Id64Set): void;
     // @internal (undocumented)
@@ -10393,7 +10381,6 @@ export abstract class Viewport implements IDisposable {
     setValidScene(): void;
     // @internal (undocumented)
     setViewedCategoriesPerModelChanged(): void;
-    // @beta
     get solarShadowSettings(): SolarShadowSettings | undefined;
     // @internal (undocumented)
     readonly subcategories: SubCategoriesCache.Queue;

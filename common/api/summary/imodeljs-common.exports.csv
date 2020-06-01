@@ -1,8 +1,8 @@
 sep=;
 Release Tag;API Item
-beta;AmbientLight
-beta;AmbientLightProps
-beta;AmbientOcclusion
+public;AmbientLight
+public;AmbientLightProps
+public;AmbientOcclusion
 alpha;AnalysisStyle
 alpha;AnalysisStyleProps
 internal;AntiAliasPref
@@ -17,8 +17,8 @@ internal;B3dmHeader
 public;BackendError 
 public;BackgroundFill
 public;BackgroundMapProps
-beta;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
-beta;BackgroundMapSettings
+public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
+public;BackgroundMapSettings
 public;BackgroundMapType
 beta;BatchType
 public;class BentleyCloudRpcConfiguration 
@@ -94,10 +94,10 @@ alpha;DesktopAuthorizationClientConfiguration
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
-beta;DisplayStyle3dSettings 
+public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
 public;DisplayStyleProps 
-beta;DisplayStyleSettings
+public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DistanceExpressionProps
@@ -172,9 +172,9 @@ public;GeometryStreamIterator
 public;GeometryStreamIteratorEntry
 public;GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive
 public;GeometryStreamProps = GeometryStreamEntryProps[]
-alpha;GeometrySummaryOptions
-alpha;GeometrySummaryRequestProps
-alpha;GeometrySummaryVerbosity
+beta;GeometrySummaryOptions
+beta;GeometrySummaryRequestProps
+beta;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
 public;GlobeMode
 internal;GltfBufferData
@@ -191,9 +191,9 @@ beta;GraphicParams
 public;GridOrientationType
 public;GroundPlane
 public;GroundPlaneProps
-beta;HemisphereLights
-beta;HemisphereLightsProps
-beta;HiddenLine
+public;HemisphereLights
+public;HemisphereLightsProps
+public;HiddenLine
 public;Hilite
 public;HSLColor
 public;HSVColor
@@ -244,8 +244,8 @@ internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
 public;LatAndLong
 public;LatLongAndHeight 
 internal;LightLocationProps 
-beta;LightSettings
-beta;LightSettingsProps
+public;LightSettings
+public;LightSettingsProps
 beta;LinearLocationReference
 beta;LinearlyLocatedAttributionProps 
 beta;LinearlyReferencedAtLocationAspectProps 
@@ -430,10 +430,10 @@ public;SkyCubeProps
 beta;SnapRequestProps
 beta;SnapResponseProps
 internal;class SnapshotIModelRpcInterface 
-beta;SolarLight
-beta;SolarLightProps
-beta;SolarShadowSettings
-beta;SolarShadowSettingsProps
+public;SolarLight
+public;SolarLightProps
+public;SolarShadowSettings
+public;SolarShadowSettingsProps
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
 internal;StorageValue = string | number | boolean | null | Uint8Array
@@ -443,10 +443,10 @@ public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
 public;SyncMode
-beta;TerrainHeightOriginMode
-beta;TerrainProps
-beta;TerrainProviderName = "CesiumWorldTerrain"
-beta;TerrainSettings
+public;TerrainHeightOriginMode
+public;TerrainProps
+public;TerrainProviderName = "CesiumWorldTerrain"
+public;TerrainSettings
 internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive

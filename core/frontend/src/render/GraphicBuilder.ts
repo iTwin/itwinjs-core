@@ -253,7 +253,6 @@ export abstract class GraphicBuilder {
    * Blanking fill is not affected by the fill [[ViewFlags]] being disabled.
    * An example would be to add a line to a graphic containing a shape with blanking fill so that the line is always shown in front of the fill.
    * @param fillColor The color in which to draw filled regions.
-   * @beta
    */
   public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor)); }
 }

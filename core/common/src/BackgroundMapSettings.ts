@@ -54,23 +54,19 @@ export interface BackgroundMapProps {
   useDepthBuffer?: boolean;
   /** If true, terrain heights will be applied to the map; otherwise the map will be rendered as a plane. */
   applyTerrain?: boolean;
-  /** Properties associated with terrain display.
-   * @beta
-   */
+  /** Properties associated with terrain display. */
   terrainSettings?: TerrainProps;
-  /** Globe Mode. Default value: GlobeMode.Ellipsoid
-   * @beta
-   */
+  /** Globe Mode. Default value: GlobeMode.Ellipsoid */
   globeMode?: GlobeMode;
 }
 
 /** The current set of supported background map providers.
- * @beta
+ * @public
  */
 export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 
 /** Normalized representation of a [[BackgroundMapProps]] for which type and provider have been validated and default values have been applied where explicit values not defined.
- * @beta
+ * @public
  */
 export class BackgroundMapSettings {
   /** Elevation in meters, relative to sea level. */
@@ -85,13 +81,9 @@ export class BackgroundMapSettings {
   public readonly useDepthBuffer: boolean;
   /** If true, terrain heights will be applied to the map; otherwise the map will be rendered as a plane. */
   public readonly applyTerrain: boolean;
-  /**  Settings associated with terrain display
-   * @beta
-   */
+  /**  Settings associated with terrain display. */
   public readonly terrainSettings: TerrainSettings;
-  /**  Globe display mode
-   * @beta
-   */
+  /** Globe display mode. */
   public readonly globeMode: GlobeMode;
 
   /** If transparency is overridden, the transparency to apply; otherwise, undefined. */

@@ -39,9 +39,7 @@ export namespace FeatureSymbology {
     ignoresMaterial?: true | undefined;
     /** If true, the associated [Feature]($common)s will not be drawn when using [[Viewport.readPixels]]. */
     nonLocatable?: true | undefined;
-    /** If true, the associated [Feature]($common) will be emphasized. Emphasized features are rendered using the [Hilite.Settings]($common) defined by [Viewport.emphasisSettings].
-     * @beta
-     */
+    /** If true, the associated [Feature]($common) will be emphasized. Emphasized features are rendered using the [Hilite.Settings]($common) defined by [Viewport.emphasisSettings]. */
     emphasized?: true | undefined;
   }
 
@@ -62,9 +60,7 @@ export namespace FeatureSymbology {
     public readonly ignoresMaterial?: true | undefined;
     /** If true, ignore the [Feature]($common) when using [[Viewport.readPixels]]. */
     public readonly nonLocatable?: true | undefined;
-    /** If true, the associated [Feature]($common) will be emphasized. Emphasized features are rendered using the [Hilite.Settings]($common) defined by [Viewport.emphasisSettings].
-     * @beta
-     */
+    /** If true, the associated [Feature]($common) will be emphasized. Emphasized features are rendered using the [Hilite.Settings]($common) defined by [Viewport.emphasisSettings]. */
     public readonly emphasized?: true | undefined;
 
     /** An Appearance which overrides nothing. */

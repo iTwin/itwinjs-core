@@ -9,7 +9,7 @@
 import { Id64Array } from "@bentley/bentleyjs-core";
 
 /** Describes the level of detail with which to report each geometric primitive in a geometrysummary.
- * @alpha
+ * @beta
  */
 export enum GeometrySummaryVerbosity {
   /** Simply output the type of geometry. */
@@ -21,7 +21,7 @@ export enum GeometrySummaryVerbosity {
 }
 
 /** Describes what information will be returned by a geometry summary.
- * @alpha
+ * @beta
  */
 export interface GeometrySummaryOptions {
   /** If true, include detailed description of each symbology change (e.g., output material Id, line/fill color, etc). */
@@ -37,7 +37,7 @@ export interface GeometrySummaryOptions {
 }
 
 /** Describes the elements for which to generate an array of geometry summaries and the options controlling the contents of each summary.
- * @alpha
+ * @beta
  */
 export interface GeometrySummaryRequestProps {
   /** The Ids of the elements whose geometry is to be summarized. Can include 2d or 3d geometric elements as well as geometry parts.

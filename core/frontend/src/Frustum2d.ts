@@ -14,7 +14,7 @@ import { Range1d } from "@bentley/geometry-core";
  * Priority values are mapped to Z coordinates in [-1, 1] meters. Therefore a 2d view always has *at least* that same depth range.
  * Sometimes, 3d views are displayed in the context of 2d views. Because 3d views can have arbitrarily large depths, the 2d view's extents are expanded
  * in Z to accommodate the 3d geometry. Expanding the frustum depth does *not* affect the mapping of display priorities to depth values.
- * @alpha
+ * @public
  */
 export namespace Frustum2d {
   /** The minimum distance in positive or negative Z for a 2d frustum, in meters. */

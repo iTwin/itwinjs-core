@@ -66,7 +66,7 @@ import { XYZProps } from '@bentley/geometry-core';
 import { YawPitchRollAngles } from '@bentley/geometry-core';
 import { YawPitchRollProps } from '@bentley/geometry-core';
 
-// @beta
+// @public
 export class AmbientLight {
     constructor(json?: AmbientLightProps);
     clone(changed?: AmbientLightProps): AmbientLight;
@@ -80,13 +80,13 @@ export class AmbientLight {
     toJSON(): AmbientLightProps | undefined;
 }
 
-// @beta
+// @public
 export interface AmbientLightProps {
     color?: RgbColorProps;
     intensity?: number;
 }
 
-// @beta
+// @public
 export namespace AmbientOcclusion {
     export interface Props {
         readonly bias?: number;
@@ -337,23 +337,21 @@ export enum BackgroundFill {
 // @public
 export interface BackgroundMapProps {
     applyTerrain?: boolean;
-    // @beta
     globeMode?: GlobeMode;
     groundBias?: number;
     providerData?: {
         mapType?: BackgroundMapType;
     };
     providerName?: string;
-    // @beta
     terrainSettings?: TerrainProps;
     transparency?: number | false;
     useDepthBuffer?: boolean;
 }
 
-// @beta
+// @public
 export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 
-// @beta
+// @public
 export class BackgroundMapSettings {
     readonly applyTerrain: boolean;
     clone(changedProps?: BackgroundMapProps): BackgroundMapSettings;
@@ -1516,7 +1514,7 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
     };
 }
 
-// @beta
+// @public
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
     constructor(jsonProperties: {
         styles?: DisplayStyle3dSettingsProps;
@@ -1526,16 +1524,20 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     // @internal (undocumented)
     get environment(): EnvironmentProps;
     set environment(environment: EnvironmentProps);
+    // @beta
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
     get hiddenLineSettings(): HiddenLine.Settings;
     set hiddenLineSettings(hline: HiddenLine.Settings);
-    // @alpha (undocumented)
+    // (undocumented)
     get lights(): LightSettings;
     set lights(lights: LightSettings);
+    // @beta
     get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined;
+    // @beta
     setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
     get solarShadows(): SolarShadowSettings;
     set solarShadows(solarShadows: SolarShadowSettings);
+    // @beta
     get thematic(): ThematicDisplay;
     set thematic(thematic: ThematicDisplay);
     // @internal (undocumented)
@@ -1544,12 +1546,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
 // @public
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
-    // @beta
     ao?: AmbientOcclusion.Props;
     environment?: EnvironmentProps;
-    // @beta
     hline?: HiddenLine.SettingsProps;
-    // @alpha
     lights?: LightSettingsProps;
     // @beta
     planProjections?: {
@@ -1559,7 +1558,6 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     sceneLights?: {
         sunDir?: XYZProps;
     };
-    // @beta
     solarShadows?: SolarShadowSettingsProps;
     // @beta
     thematic?: ThematicDisplayProps;
@@ -1572,7 +1570,7 @@ export interface DisplayStyleProps extends DefinitionElementProps {
     };
 }
 
-// @beta
+// @public
 export class DisplayStyleSettings {
     constructor(jsonProperties: {
         styles?: DisplayStyleSettingsProps;
@@ -1606,6 +1604,7 @@ export class DisplayStyleSettings {
     get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
     set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined);
     get subCategoryOverrides(): Map<Id64String, SubCategoryOverride>;
+    // @beta
     get timePoint(): number | undefined;
     set timePoint(timePoint: number | undefined);
     // @internal (undocumented)
@@ -2511,7 +2510,7 @@ export type GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRep
 // @public
 export type GeometryStreamProps = GeometryStreamEntryProps[];
 
-// @alpha
+// @beta
 export interface GeometrySummaryOptions {
     geometryVerbosity?: GeometrySummaryVerbosity;
     includePartReferences?: "2d" | "3d";
@@ -2519,13 +2518,13 @@ export interface GeometrySummaryOptions {
     verboseSymbology?: boolean;
 }
 
-// @alpha
+// @beta
 export interface GeometrySummaryRequestProps {
     elementIds: Id64Array;
     options?: GeometrySummaryOptions;
 }
 
-// @alpha
+// @beta
 export enum GeometrySummaryVerbosity {
     Basic = 10,
     Detailed = 20,
@@ -2791,7 +2790,7 @@ export interface GroundPlaneProps {
     elevation?: number;
 }
 
-// @beta
+// @public
 export class HemisphereLights {
     constructor(json?: HemisphereLightsProps);
     clone(changed?: HemisphereLightsProps): HemisphereLights;
@@ -2807,14 +2806,14 @@ export class HemisphereLights {
     readonly upperColor: RgbColor;
 }
 
-// @beta
+// @public
 export interface HemisphereLightsProps {
     intensity?: number;
     lowerColor?: RgbColorProps;
     upperColor?: RgbColorProps;
 }
 
-// @beta
+// @public
 export namespace HiddenLine {
     export class Settings {
         static defaults: Settings;
@@ -3246,7 +3245,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
     // @beta (undocumented)
     getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps>;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string>;
     // @beta (undocumented)
     getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<IModelCoordinatesResponseProps>;
@@ -3440,7 +3439,7 @@ export interface LightLocationProps extends GeometricElement3dProps {
     enabled?: boolean;
 }
 
-// @beta
+// @public
 export class LightSettings {
     // (undocumented)
     readonly ambient: AmbientLight;
@@ -3451,7 +3450,7 @@ export class LightSettings {
     static fromJSON(props?: LightSettingsProps): LightSettings;
     // (undocumented)
     readonly hemisphere: HemisphereLights;
-    // @internal (undocumented)
+    // (undocumented)
     readonly numCels: number;
     // (undocumented)
     readonly portraitIntensity: number;
@@ -3463,21 +3462,15 @@ export class LightSettings {
     toJSON(): LightSettingsProps | undefined;
 }
 
-// @beta
+// @public
 export interface LightSettingsProps {
-    // (undocumented)
     ambient?: AmbientLightProps;
-    // (undocumented)
     hemisphere?: HemisphereLightsProps;
-    // @internal
     numCels?: number;
-    // (undocumented)
     portrait?: {
         intensity?: number;
     };
-    // (undocumented)
     solar?: SolarLightProps;
-    // (undocumented)
     specularIntensity?: number;
 }
 
@@ -5784,7 +5777,7 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     openRemote(_key: string): Promise<IModelConnectionProps>;
 }
 
-// @beta
+// @public
 export class SolarLight {
     constructor(json?: SolarLightProps);
     // (undocumented)
@@ -5800,14 +5793,14 @@ export class SolarLight {
     toJSON(): SolarLightProps | undefined;
 }
 
-// @beta
+// @public
 export interface SolarLightProps {
     alwaysEnabled?: boolean;
     direction?: XYZProps;
     intensity?: number;
 }
 
-// @beta
+// @public
 export class SolarShadowSettings {
     // @internal (undocumented)
     readonly bias: number;
@@ -5823,7 +5816,7 @@ export class SolarShadowSettings {
     toJSON(): SolarShadowSettingsProps | undefined;
 }
 
-// @beta
+// @public
 export interface SolarShadowSettingsProps {
     // @internal (undocumented)
     bias?: number;
@@ -5978,14 +5971,14 @@ export enum SyncMode {
     PullOnly = 3
 }
 
-// @beta
+// @public
 export enum TerrainHeightOriginMode {
     Geodetic = 0,
     Geoid = 1,
     Ground = 2
 }
 
-// @beta
+// @public
 export interface TerrainProps {
     applyLighting?: boolean;
     exaggeration?: number;
@@ -5994,10 +5987,10 @@ export interface TerrainProps {
     providerName?: string;
 }
 
-// @beta
+// @public
 export type TerrainProviderName = "CesiumWorldTerrain";
 
-// @beta
+// @public
 export class TerrainSettings {
     constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
     readonly applyLighting: boolean;
