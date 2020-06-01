@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { ByteStream, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   BatchType, CloudStorageTileCache, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId,
-  iModelTileTreeIdToString, ModelProps, RelatedElementProps, ServerTimeoutError, TileContentIdentifier, TileFormat, TileReadStatus,
+  iModelTileTreeIdToString, ModelProps, RelatedElementProps, RenderMode, ServerTimeoutError, TileContentIdentifier, TileFormat, TileReadStatus,
 } from "@bentley/imodeljs-common";
 import {
   GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
@@ -537,7 +537,8 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
     iModel: model.iModel,
     scheduleScript,
     viewFlags: {
-      edgesRequired: () => edgesRequired,
+      renderMode: RenderMode.SmoothShade,
+      visibleEdges: edgesRequired,
     },
     is3d: () => true,
   };
@@ -738,24 +739,26 @@ describe("mirukuru TileTree", () => {
     await imodel.models.load(modelId);
     const model = imodel.models.getLoaded(modelId) as GeometricModelState;
 
-    let edgesRequired = false;
     const viewState = {
       iModel: imodel as IModelConnection,
-      viewFlags: { edgesRequired: () => edgesRequired },
+      viewFlags: {
+        renderMode: RenderMode.SmoothShade,
+        visibleEdges: false,
+      },
       is3d: () => true,
     };
 
     const treeRef = model.createTileTreeReference(viewState as ViewState);
     const noEdges = treeRef.treeOwner;
 
-    edgesRequired = true;
+    viewState.viewFlags.visibleEdges = true;
     const edges = treeRef.treeOwner;
     expect(edges).not.to.equal(noEdges);
 
     const edges2 = treeRef.treeOwner;
     expect(edges2).to.equal(edges);
 
-    edgesRequired = false;
+    viewState.viewFlags.visibleEdges = false;
     const noEdges2 = treeRef.treeOwner;
     expect(noEdges2).to.equal(noEdges);
   });

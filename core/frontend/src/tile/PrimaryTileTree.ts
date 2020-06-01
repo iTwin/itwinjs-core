@@ -95,6 +95,7 @@ const primaryTreeSupplier = new PrimaryTreeSupplier();
 class PrimaryTreeReference extends TileTreeReference {
   protected readonly _view: ViewState;
   protected readonly _model: GeometricModelState;
+  protected readonly _viewFlagOverrides: ViewFlagOverrides;
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
 
@@ -102,6 +103,7 @@ class PrimaryTreeReference extends TileTreeReference {
     super();
     this._view = view;
     this._model = model;
+    this._viewFlagOverrides = ViewFlagOverrides.fromJSON(model.jsonProperties.viewFlagOverrides);
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
@@ -111,6 +113,10 @@ class PrimaryTreeReference extends TileTreeReference {
     };
 
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
+  }
+
+  protected getViewFlagOverrides(_tree: TileTree) {
+    return this._viewFlagOverrides;
   }
 
   public get castsShadows() {
@@ -142,7 +148,7 @@ class PrimaryTreeReference extends TileTreeReference {
   protected createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
     const script = view.scheduleScript;
     const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
-    const edgesRequired = view.viewFlags.edgesRequired();
+    const edgesRequired = this._viewFlagOverrides.edgesRequired(view.viewFlags);
     return { type: BatchType.Primary, edgesRequired, animationId };
   }
 }
@@ -150,7 +156,6 @@ class PrimaryTreeReference extends TileTreeReference {
 class PlanProjectionTreeReference extends PrimaryTreeReference {
   private get _view3d() { return this._view as ViewState3d; }
   private _curTransform?: { transform: Transform, elevation: number };
-  private readonly _viewFlagOverrides = new ViewFlagOverrides();
 
   public constructor(view: ViewState3d, model: GeometricModelState) {
     super(view, model, true);
@@ -159,10 +164,6 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
 
   public get castsShadows() {
     return false;
-  }
-
-  protected getViewFlagOverrides(_tree: TileTree) {
-    return this._viewFlagOverrides;
   }
 
   public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {

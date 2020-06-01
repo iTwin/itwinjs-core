@@ -6702,6 +6702,10 @@ export class ViewFlagOverrides {
     get clipVolumeOverride(): boolean | undefined;
     clone(out?: ViewFlagOverrides): ViewFlagOverrides;
     copyFrom(other: ViewFlagOverrides): void;
+    // @beta
+    edgesRequired(viewFlags: ViewFlags): boolean;
+    // (undocumented)
+    static fromJSON(props?: ViewFlagOverridesProps): ViewFlagOverrides;
     isPresent(flag: ViewFlagPresence): boolean;
     overrideAll(flags?: ViewFlags): void;
     // (undocumented)
@@ -6751,7 +6755,59 @@ export class ViewFlagOverrides {
     setUseHlineMaterialColors(val: boolean): void;
     // (undocumented)
     setWhiteOnWhiteReversal(val: boolean): void;
+    // (undocumented)
+    toJSON(): ViewFlagOverridesProps;
     }
+
+// @public
+export interface ViewFlagOverridesProps {
+    // (undocumented)
+    backgroundMap?: boolean;
+    // (undocumented)
+    clipVolume?: boolean;
+    // (undocumented)
+    constructions?: boolean;
+    // (undocumented)
+    dimensions?: boolean;
+    // (undocumented)
+    edgeMask?: number;
+    // (undocumented)
+    fill?: boolean;
+    // (undocumented)
+    forceSurfaceDiscard?: boolean;
+    // (undocumented)
+    hiddenEdges?: boolean;
+    // (undocumented)
+    hLineMaterialColors?: boolean;
+    // (undocumented)
+    lighting?: boolean;
+    // (undocumented)
+    materials?: boolean;
+    // (undocumented)
+    monochrome?: boolean;
+    // (undocumented)
+    noGeometryMap?: boolean;
+    // (undocumented)
+    patterns?: boolean;
+    // (undocumented)
+    renderMode?: RenderMode;
+    // (undocumented)
+    shadows?: boolean;
+    // (undocumented)
+    styles?: boolean;
+    // (undocumented)
+    textures?: boolean;
+    // (undocumented)
+    thematicDisplay?: boolean;
+    // (undocumented)
+    transparency?: boolean;
+    // (undocumented)
+    visibleEdges?: boolean;
+    // (undocumented)
+    weights?: boolean;
+    // (undocumented)
+    whiteOnWhiteReversal?: boolean;
+}
 
 // @public
 export enum ViewFlagPresence {

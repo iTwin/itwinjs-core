@@ -502,6 +502,7 @@ beta;ViewDetails3d
 internal;ViewDetails3dProps 
 internal;ViewDetailsProps
 public;ViewFlagOverrides
+public;ViewFlagOverridesProps
 public;ViewFlagPresence
 public;ViewFlagProps
 public;ViewFlags
