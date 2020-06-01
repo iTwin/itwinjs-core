@@ -172,6 +172,8 @@ export class Batch extends Graphic {
     if (!ptd.thematicSensors)
       ptd.thematicSensors = ThematicSensors.create(target, this.range);
 
+    ptd.thematicSensors.update(target.uniforms.frustum.viewMatrix);
+
     return ptd.thematicSensors;
   }
 
