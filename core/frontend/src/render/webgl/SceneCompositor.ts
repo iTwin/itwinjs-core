@@ -857,11 +857,11 @@ abstract class Compositor extends SceneCompositor {
 
       this.target.beginPerfMetricRecord("Render Translucent Layers", true);
       this.renderLayers(commands, false, RenderPass.TranslucentLayers);
-      this.target.endPerfMetricRecord();
+      this.target.endPerfMetricRecord(true);
 
       this.target.beginPerfMetricRecord("Render Overlay Layers", true);
       this.renderLayers(commands, false, RenderPass.OverlayLayers);
-      this.target.endPerfMetricRecord();
+      this.target.endPerfMetricRecord(true);
 
       this.target.popViewClip();
     }
@@ -870,10 +870,10 @@ abstract class Compositor extends SceneCompositor {
       return;
 
     // Now populate the opaque passes with any pickable world overlays
-    this.target.beginPerfMetricRecord("Overlay Draws");
+    this.target.beginPerfMetricRecord("Overlay Draws", true);
     commands.initForPickOverlays(sceneOverlays, overlayDecorations);
     if (commands.isEmpty) {
-      this.target.endPerfMetricRecord(); // End Overlay Draws record if returning
+      this.target.endPerfMetricRecord(true); // End Overlay Draws record if returning
       return;
     }
 
