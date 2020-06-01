@@ -10,7 +10,7 @@ import { assert, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import {
   Code, ComparisonOption, ElementProps, GeometricElement3dProps, IModelError, LinearLocationReference, LinearlyLocatedAttributionProps,
   LinearlyReferencedAtLocationAspectProps, LinearlyReferencedAtLocationProps, LinearlyReferencedFromToLocationAspectProps,
-  LinearlyReferencedFromToLocationProps, LinearlyReferencedLocationType, QueryParams, ReferentElementProps, RelatedElement,
+  LinearlyReferencedFromToLocationProps, LinearlyReferencedLocationType, PhysicalElementProps, QueryParams, ReferentElementProps, RelatedElement,
 } from "@bentley/imodeljs-common";
 import { ECSqlStatement } from "../ECSqlStatement";
 import { PhysicalElement, SpatialLocationElement } from "../Element";
@@ -123,7 +123,7 @@ export abstract class LinearPhysicalElement extends PhysicalElement {
   /** @internal */
   public static get className(): string { return "LinearPhysicalElement"; }
 
-  public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
+  public constructor(props: PhysicalElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
 }

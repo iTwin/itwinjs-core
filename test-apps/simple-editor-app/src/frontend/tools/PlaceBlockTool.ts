@@ -6,7 +6,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { AxisOrder, IModelJson, LinearSweep, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorDef, GeometricElement3dProps, LinePixels } from "@bentley/imodeljs-common";
+import { Code, ColorDef, LinePixels, PhysicalElementProps } from "@bentley/imodeljs-common";
 import {
   AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, IModelApp,
   ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport,
@@ -161,18 +161,18 @@ export class PlaceBlockTool extends PrimitiveToolEx {
     // We know that all points lie on a plane.
     const angles = YawPitchRollAngles.createFromMatrix3d(this._matrix);
     const origin = this._points[0];
-    const xypoints = this._points.map((pt: Point3d) => ({ x: pt.x - origin.x, y: pt.y - origin.y }));
+    const xyPoints = this._points.map((pt: Point3d) => ({ x: pt.x - origin.x, y: pt.y - origin.y }));
 
-    const primitive = LinearSweep.createZSweep(xypoints, 0.0, this.height, true);
+    const primitive = LinearSweep.createZSweep(xyPoints, 0.0, this.height, true);
 
-    const geomprops = IModelJson.Writer.toIModelJson(primitive);
+    const geomProps = IModelJson.Writer.toIModelJson(primitive);
 
     const model = this.targetModelId!;
     const category = this.targetCategory;
 
-    const props3d: GeometricElement3dProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty() };
+    const props3d: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty() };
 
-    return this.editorConnection.createElement(props3d, origin, angles, geomprops);
+    return this.editorConnection.createElement(props3d, origin, angles, geomProps);
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {

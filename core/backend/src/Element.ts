@@ -12,8 +12,9 @@ import { LockLevel } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel,
-  InformationPartitionElementProps, LineStyleProps, ModelProps, Placement2d, Placement3d, RelatedElement, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionLocationProps, SectionType,
-  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement,
+  RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionLocationProps, SectionType, SheetBorderTemplateProps, SheetProps,
+  SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { Entity } from "./Entity";
@@ -449,14 +450,25 @@ export abstract class SpatialElement extends GeometricElement3d {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** An Element that is spatially located, has mass, and can be 'touched'.
+/** An Element that is spatially located, has mass, and can be *touched*.
  * @public
  */
 export abstract class PhysicalElement extends SpatialElement {
   /** @internal */
   public static get className(): string { return "PhysicalElement"; }
+  /** If defined, the [[PhysicalMaterial]] that makes up this PhysicalElement. */
+  public physicalMaterial?: RelatedElement;
   /** @internal */
-  public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
+  public constructor(props: PhysicalElementProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.physicalMaterial = RelatedElement.fromJSON(props.physicalMaterial);
+  }
+  /** @internal */
+  public toJSON(): PhysicalElementProps {
+    const val = super.toJSON() as PhysicalElementProps;
+    val.physicalMaterial = this.physicalMaterial?.toJSON();
+    return val;
+  }
 }
 
 /** Identifies a *tracked* real world location but has no mass and cannot be *touched*.
@@ -935,9 +947,19 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
 export abstract class PhysicalType extends TypeDefinitionElement {
   /** @internal */
   public static get className(): string { return "PhysicalType"; }
+  /** If defined, the [[PhysicalMaterial]] that makes up this PhysicalType. */
+  public physicalMaterial?: RelatedElement;
   /** @internal */
-  constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
-
+  constructor(props: PhysicalTypeProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.physicalMaterial = RelatedElement.fromJSON(props.physicalMaterial);
+  }
+  /** @internal */
+  public toJSON(): PhysicalTypeProps {
+    const val = super.toJSON() as PhysicalTypeProps;
+    val.physicalMaterial = this.physicalMaterial?.toJSON();
+    return val;
+  }
   /** Create a Code for a PhysicalType element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the PhysicalType element and provides the scope for its name.
@@ -1028,7 +1050,7 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
   /** @internal */
   public static get className(): string { return "GraphicalType2d"; }
   /** @internal */
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+  public constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
   /** Create a Code for a GraphicalType2d element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb

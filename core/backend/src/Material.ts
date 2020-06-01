@@ -11,7 +11,17 @@ import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, RenderMaterialProps, Textu
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
+/** A PhysicalMaterial defines the matter that makes up physical elements.
+ * @note See [[RenderMaterialElement]] for the DefinitionElement used to define rendering characteristics.
+ * @public
+ */
+export abstract class PhysicalMaterial extends DefinitionElement {
+  /** @internal */
+  public static get className(): string { return "PhysicalMaterial"; }
+}
+
 /** Defines a rendering material.
+ * @note See [[PhysicalMaterial]] for the DefinitionElement used to define the matter that makes up physical elements.
  * @public
  */
 export class RenderMaterialElement extends DefinitionElement implements RenderMaterialProps {

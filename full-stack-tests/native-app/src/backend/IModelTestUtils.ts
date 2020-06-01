@@ -8,7 +8,7 @@ import {
   BriefcaseDb, BriefcaseManager, Element, IModelDb, InformationPartitionElement, PhysicalModel, PhysicalPartition, SubjectOwnsPartitionElements,
 } from "@bentley/imodeljs-backend";
 import {
-  BriefcaseProps, Code, CodeProps, ElementProps, GeometricElement3dProps, IModel, IModelVersion, RelatedElement, SyncMode,
+  BriefcaseProps, Code, CodeProps, ElementProps, IModel, IModelVersion, PhysicalElementProps, RelatedElement, SyncMode,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
@@ -59,7 +59,7 @@ export class IModelTestUtils {
 
   // Create a PhysicalObject. (Does not insert it.)
   public static createPhysicalObject(testImodel: IModelDb, modelId: Id64String, categoryId: Id64String, elemCode?: Code): Element {
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: "Generic:PhysicalObject",
       model: modelId,
       category: categoryId,

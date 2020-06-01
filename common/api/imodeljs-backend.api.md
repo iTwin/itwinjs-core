@@ -131,6 +131,8 @@ import { OpenBriefcaseOptions } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import * as os from 'os';
 import { OverriddenBy } from '@bentley/imodeljs-common';
+import { PhysicalElementProps } from '@bentley/imodeljs-common';
+import { PhysicalTypeProps } from '@bentley/imodeljs-common';
 import { Placement2d } from '@bentley/imodeljs-common';
 import { Placement3d } from '@bentley/imodeljs-common';
 import { Point2d } from '@bentley/geometry-core';
@@ -617,7 +619,7 @@ export class CachedSqliteStatement {
     useCount: number;
 }
 
-// @public (undocumented)
+// @public
 export abstract class Callout extends DetailingSymbol implements CalloutProps {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1203,14 +1205,14 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }
 
-// @public (undocumented)
+// @public
 export class DetailCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
 }
 
-// @public (undocumented)
+// @public
 export abstract class DetailingSymbol extends GraphicalElement2d {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1830,7 +1832,7 @@ export class ElementUniqueAspect extends ElementAspect {
     static get className(): string;
 }
 
-// @public (undocumented)
+// @public
 export class ElevationCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2163,6 +2165,42 @@ export abstract class FunctionalType extends TypeDefinitionElement {
     static get className(): string;
 }
 
+// @public
+export class GenericDocument extends Document {
+    constructor(props: ElementProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+}
+
+// @public
+export class GenericGraphicalModel3d extends GraphicalModel3d {
+    constructor(props: GeometricModel3dProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
+}
+
+// @public
+export class GenericGraphicalType2d extends GraphicalType2d {
+    constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+}
+
+// @public
+export class GenericPhysicalMaterial extends PhysicalMaterial {
+    constructor(props: DefinitionElementProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+}
+
+// @public
+export class GenericPhysicalType extends PhysicalType {
+    constructor(props: PhysicalTypeProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+}
+
 // @public (undocumented)
 export class GenericSchema extends Schema {
     // (undocumented)
@@ -2210,7 +2248,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
 }
 
 // @public
-export class GeometricElement2dHasTypeDefinition extends RelatedElement {
+export class GeometricElement2dHasTypeDefinition extends TypeDefinition {
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -2233,7 +2271,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
 }
 
 // @public
-export class GeometricElement3dHasTypeDefinition extends RelatedElement {
+export class GeometricElement3dHasTypeDefinition extends TypeDefinition {
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
@@ -2289,7 +2327,7 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
     toJSON(): GeometryPartProps;
 }
 
-// @public (undocumented)
+// @public
 export class Graphic3d extends GraphicalElement3d {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2346,13 +2384,13 @@ export class GraphicalPartition3d extends InformationPartitionElement {
 // @public
 export abstract class GraphicalType2d extends TypeDefinitionElement {
     // @internal
-    constructor(props: ElementProps, iModel: IModelDb);
+    constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
-// @public (undocumented)
+// @public
 export class Group extends GroupInformationElement {
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2383,7 +2421,7 @@ export class GroupInformationPartition extends InformationPartitionElement {
     static get className(): string;
 }
 
-// @public (undocumented)
+// @public
 export class GroupModel extends GroupInformationModel {
     constructor(props: ModelProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3140,7 +3178,7 @@ export class LinearlyReferencedToPositionRefersToReferent extends RelatedElement
 
 // @beta
 export abstract class LinearPhysicalElement extends PhysicalElement {
-    constructor(props: GeometricElement3dProps, iModel: IModelDb);
+    constructor(props: PhysicalElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
 }
@@ -3444,9 +3482,12 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 // @public
 export abstract class PhysicalElement extends SpatialElement {
     // @internal
-    constructor(props: GeometricElement3dProps, iModel: IModelDb);
+    constructor(props: PhysicalElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    physicalMaterial?: RelatedElement;
+    // @internal (undocumented)
+    toJSON(): PhysicalElementProps;
 }
 
 // @public
@@ -3463,10 +3504,23 @@ export class PhysicalElementFulfillsFunction extends ElementRefersToElements {
 }
 
 // @public
+export class PhysicalElementIsOfPhysicalMaterial extends RelatedElement {
+    constructor(id: Id64String);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @public
 export class PhysicalElementIsOfType extends GeometricElement3dHasTypeDefinition {
     constructor(id: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;
+}
+
+// @public
+export abstract class PhysicalMaterial extends DefinitionElement {
+    // @internal (undocumented)
+    static get className(): string;
 }
 
 // @public
@@ -3476,9 +3530,9 @@ export class PhysicalModel extends SpatialModel {
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
 }
 
-// @public (undocumented)
+// @public
 export class PhysicalObject extends PhysicalElement {
-    constructor(props: GeometricElement3dProps, iModel: IModelDb);
+    constructor(props: PhysicalElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
 }
@@ -3492,13 +3546,23 @@ export class PhysicalPartition extends InformationPartitionElement {
 // @public
 export abstract class PhysicalType extends TypeDefinitionElement {
     // @internal
-    constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
+    constructor(props: PhysicalTypeProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    physicalMaterial?: RelatedElement;
+    // @internal (undocumented)
+    toJSON(): PhysicalTypeProps;
 }
 
-// @public (undocumented)
+// @public
+export class PhysicalTypeIsOfPhysicalMaterial extends RelatedElement {
+    constructor(id: Id64String);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @public
 export class PlanCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3688,7 +3752,7 @@ export class Schemas {
     static unregisterSchema(schemaName: string): boolean;
 }
 
-// @public (undocumented)
+// @public
 export class SectionCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3834,7 +3898,7 @@ export abstract class SpatialElement extends GeometricElement3d {
     static get className(): string;
 }
 
-// @public (undocumented)
+// @public
 export class SpatialLocation extends SpatialLocationElement {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4112,7 +4176,7 @@ export class Texture extends DefinitionElement implements TextureProps {
     width: number;
 }
 
-// @public (undocumented)
+// @public
 export class TitleText extends DetailingSymbol {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4246,7 +4310,7 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
     view: RelatedElement;
 }
 
-// @public (undocumented)
+// @public
 export class ViewAttachmentLabel extends DetailingSymbol implements ViewAttachmentLabelProps {
     constructor(props: ViewAttachmentLabelProps, iModel: IModelDb);
     // @internal (undocumented)

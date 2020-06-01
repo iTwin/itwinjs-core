@@ -2,12 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyStatus, DbResult, Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, Box, Geometry, IModelJson, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, CreatePolyfaceRequestProps, CreatePolyfaceResponseProps, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, TextString, TextStringProps } from "@bentley/imodeljs-common";
+
 import { assert, expect } from "chai";
-import { ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions } from "../../ExportGraphics";
-import { BackendRequestContext, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
+import { BentleyStatus, DbResult, Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import {
+  Angle, Arc3d, Box, Geometry, IModelJson, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, CreatePolyfaceRequestProps, CreatePolyfaceResponseProps, FillDisplay,
+  FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags,
+  GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps,
+  PhysicalElementProps, TextString, TextStringProps,
+} from "@bentley/imodeljs-common";
+import {
+  BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart,
+  LineStyleDefinition, PhysicalObject, Platform, SnapshotDb,
+} from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function assertTrue(expr: boolean): asserts expr {
@@ -68,7 +78,7 @@ describe("GeometryStream", () => {
       pointS.y += 0.5; pointE.y += 0.5;
     });
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -158,7 +168,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.create(1.5, 0, 0), Point3d.create(1.5, 5, 0)));
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -236,7 +246,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0)));
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -307,7 +317,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 5, 0)));
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -391,7 +401,7 @@ describe("GeometryStream", () => {
     shape.tryTransformInPlace(xOffset);
     builder.appendGeometry(shape);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -534,7 +544,7 @@ describe("GeometryStream", () => {
     shape.tryTransformInPlace(xOffset);
     builder.appendGeometry(shape);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -620,7 +630,7 @@ describe("GeometryStream", () => {
     const status = builder.appendTextString(textString);
     assert.isTrue(status);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -734,7 +744,7 @@ describe("GeometryStream", () => {
       builder.appendGeometry(geom);
     }
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -796,7 +806,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(Loop.create(LineString3d.create(shapePts)));
     shapePts.forEach((pt) => { builder.appendGeometryPart3d(partId, pt, undefined, 0.25); }); // Postion part (arc center) at each vertex...
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -851,7 +861,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(shape);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -925,7 +935,7 @@ describe("GeometryStream", () => {
 
     builder.appendBRepData(brepProps);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -1029,7 +1039,7 @@ describe("exportGraphics", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(box!);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -1090,7 +1100,7 @@ describe("createPolyfaceFromElement", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(box!);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -1217,7 +1227,7 @@ describe("Mass Properties", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(box!);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -1253,7 +1263,7 @@ describe("Mass Properties", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(shape);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,

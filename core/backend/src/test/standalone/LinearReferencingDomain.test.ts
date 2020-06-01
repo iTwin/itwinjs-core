@@ -7,12 +7,12 @@ import * as path from "path";
 import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   CategoryProps, Code, GeometricElement3dProps, ILinearElementProps, IModel, InformationPartitionElementProps, LinearlyLocatedAttributionProps,
-  LinearlyReferencedFromToLocationProps,
+  LinearlyReferencedFromToLocationProps, PhysicalElementProps,
 } from "@bentley/imodeljs-common";
-import { LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo } from "../../domains/LinearReferencingElements";
 import {
-  BackendRequestContext, ClassRegistry, IModelDb, LinearlyReferencedFromToLocation, LinearReferencingSchema, PhysicalModel, PhysicalPartition, Schema,
-  Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
+  BackendRequestContext, ClassRegistry, IModelDb, LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo,
+  LinearlyReferencedFromToLocation, LinearReferencingSchema, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
+  SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -166,7 +166,7 @@ describe("LinearReferencing Domain", () => {
     assert.equal(linearLocationAspect!.toPosition.distanceAlongFromStart, 70.0);
 
     // Create a Test PhysicalLinear element
-    const testPhysicalLinarProps: GeometricElement3dProps = {
+    const testPhysicalLinearProps: PhysicalElementProps = {
       classFullName: "TestLinearReferencing:TestLinearPhysicalElement",
       model: physicalModelId,
       category: spatialCategoryId,
@@ -179,7 +179,7 @@ describe("LinearReferencing Domain", () => {
     };
 
     const linearPhysicalElementId: Id64String =
-      LinearlyLocated.insertFromTo(iModelDb, testPhysicalLinarProps, linearElementId, linearFromToPosition);
+      LinearlyLocated.insertFromTo(iModelDb, testPhysicalLinearProps, linearElementId, linearFromToPosition);
     assert.isTrue(Id64.isValidId64(linearPhysicalElementId));
     assert.equal(linearElementId, LinearlyLocated.getLinearElementId(iModelDb, linearPhysicalElementId));
 

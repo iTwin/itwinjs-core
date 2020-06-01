@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelJson as GeomJson, LineSegment3d, LineString3d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorDef, GeometricElement3dProps, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { Code, ColorDef, GeometryStreamProps, PhysicalElementProps } from "@bentley/imodeljs-common";
 import {
   AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
   NotifyMessageDetails, OutputMessagePriority, SnapStatus,
@@ -99,14 +99,14 @@ export class PlaceLineStringTool extends PrimitiveToolEx {
     } else {
       primitive = LineString3d.create(pts);
     }
-    const geomprops = GeomJson.Writer.toIModelJson(primitive);
+    const geomProps = GeomJson.Writer.toIModelJson(primitive);
 
     const model = this.targetModelId!;
     const category = this.targetCategory;
 
-    const props3d: GeometricElement3dProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty() };
+    const props3d: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty() };
 
-    return this.editorConnection.createElement(props3d, origin, angles, geomprops);
+    return this.editorConnection.createElement(props3d, origin, angles, geomProps);
   }
 
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {

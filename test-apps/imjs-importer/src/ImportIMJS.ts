@@ -9,7 +9,7 @@ import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, SnapshotDb,
   SpatialCategory, SpatialModel,
 } from "@bentley/imodeljs-backend";
-import { AxisAlignedBox3d, Code, ColorDef, GeometricElement3dProps, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { AxisAlignedBox3d, Code, ColorDef, PhysicalElementProps, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 
 function collectRange(g: any, rangeToExtend: Range3d) {
   if (g instanceof GeometryQuery) {
@@ -124,10 +124,10 @@ export class ImportIMJS {
           if (range.maxAbs() < this._aroundTheWorld) {
             stats.numWithGeometry++;
             const physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "model" + fileName);
-            const featureProps: GeometricElement3dProps = {
+            const featureProps: PhysicalElementProps = {
+              classFullName: PhysicalObject.classFullName,
               model: physicalModelId,
               code: Code.createEmpty(),
-              classFullName: PhysicalObject.classFullName,
               category: this.featureCategoryId,
             };
             const g1 = IModelJson.Writer.toIModelJson(g);

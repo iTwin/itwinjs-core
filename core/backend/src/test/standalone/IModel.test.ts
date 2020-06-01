@@ -13,9 +13,9 @@ import {
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, ElementProps,
-  EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams,
-  GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, ModelProps, PrimitiveTypeCode, RelatedElement, RenderMode,
-  SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
+  EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
+  IModel, IModelError, IModelStatus, ModelProps, PhysicalElementProps, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps,
+  SubCategoryAppearance, TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import {
@@ -517,12 +517,11 @@ describe("iModel", () => {
     const geometry = gsBuilder.geometryStream;
     // geometry[0].material = { materialId: matId };
 
-    /** The [[GeometricElement3dProps]]  */
-    const props: GeometricElement3dProps = {
+    const props: PhysicalElementProps = {
+      classFullName: "Generic:PhysicalObject",
       placement: { origin: imodel5.projectExtents.center, angles: new YawPitchRollAngles() },
       model: modelId,
       code: Code.createEmpty(),
-      classFullName: "Generic:PhysicalObject",
       category: categoryId,
       geom: geometry,
     };

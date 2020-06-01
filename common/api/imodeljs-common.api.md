@@ -4201,6 +4201,17 @@ export interface PartReference {
 }
 
 // @public
+export interface PhysicalElementProps extends GeometricElement3dProps {
+    // (undocumented)
+    physicalMaterial?: RelatedElementProps;
+}
+
+// @public
+export interface PhysicalTypeProps extends TypeDefinitionElementProps {
+    physicalMaterial?: RelatedElementProps;
+}
+
+// @public
 export class Placement2d implements Placement2dProps {
     constructor(origin: Point2d, angle: Angle, bbox: ElementAlignedBox2d);
     // (undocumented)

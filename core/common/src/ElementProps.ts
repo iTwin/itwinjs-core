@@ -128,6 +128,13 @@ export interface GeometricElement3dProps extends GeometricElementProps {
   typeDefinition?: RelatedElementProps;
 }
 
+/** Properties that define a [PhysicalElement]($backend)
+ * @public
+ */
+export interface PhysicalElementProps extends GeometricElement3dProps {
+  physicalMaterial?: RelatedElementProps;
+}
+
 /** An enumeration of the different types of [SectionDrawing]($backend)s.
  * @public
  */
@@ -278,6 +285,14 @@ export interface DefinitionElementProps extends ElementProps {
  */
 export interface TypeDefinitionElementProps extends DefinitionElementProps {
   recipe?: RelatedElementProps;
+}
+
+/** Properties of a [PhysicalType]($backend)
+ * @public
+ */
+export interface PhysicalTypeProps extends TypeDefinitionElementProps {
+  /** The [PhysicalMaterial]($backend) that makes up this physical type. */
+  physicalMaterial?: RelatedElementProps;
 }
 
 /** Properties of a [InformationPartitionElement]($backend)

@@ -10,7 +10,7 @@
 // NOTE: It does, however, have a classFullName property for consistency with Entity subclasses.
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { RelatedElement } from "@bentley/imodeljs-common";
+import { RelatedElement, TypeDefinition } from "@bentley/imodeljs-common";
 
 /** Relates a parent Element to child Elements which represent parts of the Entity modeled by the parent Element.
  * @public
@@ -85,7 +85,7 @@ export class PhysicalElementAssemblesElements extends ElementOwnsChildElements {
 /** Relates a [[GeometricElement2d]] to its [[TypeDefinitionElement]]
  * @public
  */
-export class GeometricElement2dHasTypeDefinition extends RelatedElement {
+export class GeometricElement2dHasTypeDefinition extends TypeDefinition {
   public static classFullName = "BisCore:GeometricElement2dHasTypeDefinition";
   public constructor(id: Id64String, relClassName: string = GeometricElement2dHasTypeDefinition.classFullName) {
     super({ id, relClassName });
@@ -105,10 +105,20 @@ export class GraphicalElement2dIsOfType extends GeometricElement2dHasTypeDefinit
 /** Relates a [[GeometricElement3d]] to its [[TypeDefinitionElement]]
  * @public
  */
-export class GeometricElement3dHasTypeDefinition extends RelatedElement {
+export class GeometricElement3dHasTypeDefinition extends TypeDefinition {
   public static classFullName = "BisCore:GeometricElement3dHasTypeDefinition";
   public constructor(id: Id64String, relClassName: string = GeometricElement3dHasTypeDefinition.classFullName) {
     super({ id, relClassName });
+  }
+}
+
+/** Relates a [[SpatialLocationElement]] to its [[SpatialLocationType]]
+ * @public
+ */
+export class SpatialLocationIsOfType extends GeometricElement3dHasTypeDefinition {
+  public static classFullName = "BisCore:SpatialLocationIsOfType";
+  public constructor(id: Id64String, relClassName: string = SpatialLocationIsOfType.classFullName) {
+    super(id, relClassName);
   }
 }
 
@@ -122,13 +132,23 @@ export class PhysicalElementIsOfType extends GeometricElement3dHasTypeDefinition
   }
 }
 
-/** Relates a [[SpatialLocationElement]] to its [[SpatialLocationType]]
+/** Relates a [[PhysicalElement]] to its [[PhysicalMaterial]]
  * @public
  */
-export class SpatialLocationIsOfType extends GeometricElement3dHasTypeDefinition {
-  public static classFullName = "BisCore:SpatialLocationIsOfType";
-  public constructor(id: Id64String, relClassName: string = SpatialLocationIsOfType.classFullName) {
-    super(id, relClassName);
+export class PhysicalElementIsOfPhysicalMaterial extends RelatedElement {
+  public static classFullName = "BisCore:PhysicalElementIsOfPhysicalMaterial";
+  public constructor(id: Id64String) {
+    super({ id });
+  }
+}
+
+/** Relates a [[PhysicalType]] to its [[PhysicalMaterial]]
+ * @public
+ */
+export class PhysicalTypeIsOfPhysicalMaterial extends RelatedElement {
+  public static classFullName = "BisCore:PhysicalTypeIsOfPhysicalMaterial";
+  public constructor(id: Id64String) {
+    super({ id });
   }
 }
 

@@ -153,6 +153,11 @@ public;FunctionalModel
 public;FunctionalPartition 
 public;FunctionalSchema 
 public;class FunctionalType 
+public;GenericDocument 
+public;GenericGraphicalModel3d 
+public;GenericGraphicalType2d 
+public;GenericPhysicalMaterial 
+public;GenericPhysicalType 
 public;GenericSchema 
 public;class GeometricElement 
 public;class GeometricElement2d 
@@ -242,11 +247,14 @@ public;OrthographicViewDefinition
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
 public;PhysicalElementFulfillsFunction 
+public;PhysicalElementIsOfPhysicalMaterial 
 public;PhysicalElementIsOfType 
+public;class PhysicalMaterial 
 public;PhysicalModel 
 public;PhysicalObject 
 public;PhysicalPartition 
 public;class PhysicalType 
+public;PhysicalTypeIsOfPhysicalMaterial 
 public;PlanCallout 
 public;Platform
 beta;class RecipeDefinitionElement 

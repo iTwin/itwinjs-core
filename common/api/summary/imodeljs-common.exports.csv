@@ -310,6 +310,8 @@ internal;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PartReference
+public;PhysicalElementProps 
+public;PhysicalTypeProps 
 public;Placement2d 
 public;Placement2dProps
 public;Placement3d 
