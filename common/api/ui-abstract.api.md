@@ -434,7 +434,7 @@ export interface IconDefinition {
     isEnabledFunction?: () => boolean;
 }
 
-// @alpha
+// @beta
 export interface IconEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     definition: IconDefinition;
@@ -506,6 +506,14 @@ export interface LinkElementsInfo {
         end: number;
     }>;
     onClick?: (record: PropertyRecord, text: string) => void;
+}
+
+// @beta
+export interface MultilineTextEditorParams extends BasePropertyEditorParams {
+    // (undocumented)
+    rows: number;
+    // (undocumented)
+    type: PropertyEditorParamTypes.MultilineText;
 }
 
 // @beta
@@ -629,6 +637,12 @@ export enum PropertyEditorParamTypes {
     // (undocumented)
     InputEditorSize = "UiAbstract-InputEditorSize",
     // (undocumented)
+    MultilineText = "UiAbstract-MultilineText",
+    // (undocumented)
+    Range = "UiAbstract-Range",
+    // (undocumented)
+    Slider = "UiAbstract-Slider",
+    // (undocumented)
     SuppressEditorLabel = "UiAbstract-SuppressEditorLabel"
 }
 
@@ -668,6 +682,16 @@ export interface ProvidedItem {
     readonly providerId?: string;
 }
 
+// @beta
+export interface RangeEditorParams extends BasePropertyEditorParams {
+    maximum?: number;
+    minimum?: number;
+    precision?: number;
+    step?: number;
+    // (undocumented)
+    type: PropertyEditorParamTypes.Range;
+}
+
 // @public
 export enum RelativePosition {
     // (undocumented)
@@ -686,6 +710,29 @@ export enum RelativePosition {
     TopLeft = 4,
     // (undocumented)
     TopRight = 5
+}
+
+// @beta
+export interface SliderEditorParams extends BasePropertyEditorParams {
+    formatTick?: (tick: number) => string;
+    formatTooltip?: (value: number) => string;
+    getTickCount?: () => number;
+    getTickValues?: () => number[];
+    maxIconSpec?: string;
+    maximum: number;
+    minIconSpec?: string;
+    minimum: number;
+    mode?: number;
+    reversed?: boolean;
+    showMinMax?: boolean;
+    showTickLabels?: boolean;
+    showTicks?: boolean;
+    showTooltip?: boolean;
+    size?: number;
+    step?: number;
+    tooltipBelow?: boolean;
+    // (undocumented)
+    type: PropertyEditorParamTypes.Slider;
 }
 
 // @beta

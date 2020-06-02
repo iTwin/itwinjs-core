@@ -8,8 +8,9 @@
 
 import { Primitives } from "@bentley/ui-abstract";
 import { UiComponents } from "../UiComponents";
-import { StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
+import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /** Boolean Type Converter.
  * @public
@@ -59,5 +60,5 @@ export class BooleanTypeConverter extends TypeConverter {
   public get isBooleanType(): boolean { return true; }
 }
 
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Boolean, BooleanTypeConverter);
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Bool, BooleanTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Boolean, BooleanTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Bool, BooleanTypeConverter);

@@ -16,6 +16,8 @@ import {
 import { ColorPickerButton } from "../color/ColorPickerButton";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
+import { StandardEditorNames } from "./StandardEditorNames";
 
 /** @internal */
 interface ColorEditorState {
@@ -90,7 +92,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
       if (propertyRecord && this.props.onCommit) {
         const propertyValue = await this.getPropertyValue();
         // istanbul ignore else
-        if (propertyValue) {
+        if (propertyValue !== undefined) {
           this.props.onCommit({ propertyRecord, newValue: propertyValue });
         }
       }
@@ -167,4 +169,4 @@ export class ColorPropertyEditor extends PropertyEditorBase {
   }
 }
 
-PropertyEditorManager.registerEditor("number", ColorPropertyEditor, "color-picker");
+PropertyEditorManager.registerEditor(StandardTypeNames.Number, ColorPropertyEditor, StandardEditorNames.ColorPicker);

@@ -19,6 +19,10 @@ describe("<TextEditor />", () => {
     shallow(<TextEditor />).should.matchSnapshot();
   });
 
+  it("renders correctly with style", () => {
+    shallow(<TextEditor style={{ color: "red" }} />).should.matchSnapshot();
+  });
+
   it("getValue returns proper value after componentDidMount & setState", async () => {
     const record = TestUtils.createPrimitiveStringProperty("Test", "MyValue");
     const wrapper = mount(<TextEditor propertyRecord={record} />);

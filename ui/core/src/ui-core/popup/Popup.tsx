@@ -43,6 +43,8 @@ export interface PopupProps extends CommonProps {
   onOutsideClick?: (e: MouseEvent) => void;
   /** Function called when the popup is closed */
   onClose?: () => void;
+  /** Function called when the popup is closed on Enter */
+  onEnter?: () => void;
   /** Offset from the parent (defaults to 4) */
   offset: number;
   /** Target element to position popup */
@@ -175,7 +177,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return;
 
     if (event.key === "Escape" || event.key === "Enter") {
-      this._onClose();
+      this._onClose(event.key === "Enter");
     }
   }
 
@@ -197,13 +199,15 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     });
   }
 
-  private _onClose() {
+  private _onClose(enterKey?: boolean) {
     if (!this.state.isOpen)
       return;
 
     this._unBindWindowEvents();
 
     this.setState({ isOpen: false }, () => {
+      if (enterKey && this.props.onEnter)
+        this.props.onEnter();
       if (this.props.onClose)
         this.props.onClose();
     });

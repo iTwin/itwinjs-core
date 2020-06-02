@@ -10,8 +10,11 @@ import { ColorByName } from "@bentley/imodeljs-common";
 import { PrimitiveValue } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import { ColorEditor } from "../../ui-components/editors/ColorEditor";
-import { PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
+import { StandardEditorNames } from "../../ui-components/editors/StandardEditorNames";
+
+// cspell:ignore colorpicker
 
 describe("<ColorEditor />", () => {
   afterEach(cleanup);
@@ -24,6 +27,7 @@ describe("<ColorEditor />", () => {
   it("should trigger componentDidUpdate", async () => {
     const record1 = TestUtils.createColorProperty("Test", ColorByName.green as number);
     const record2 = TestUtils.createColorProperty("Test", ColorByName.blue as number);
+    record2.isDisabled = true;
 
     const originalValue = (record1.value as PrimitiveValue).value as number;
     expect(originalValue).to.be.equal(ColorByName.green as number);
@@ -63,6 +67,13 @@ describe("<ColorEditor />", () => {
       await TestUtils.flushAsyncOperations();
       expect(spyOnCommit).to.be.calledOnce;
     }
+  });
+
+  it("renders editor for 'number' type and 'color-picker' editor using SliderEditor", () => {
+    const propertyRecord = TestUtils.createNumericProperty("Test", 50, StandardEditorNames.ColorPicker);
+    const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
+    expect(renderedComponent.getByTestId("components-colorpicker-button")).to.exist;
+    cleanup();
   });
 
 });

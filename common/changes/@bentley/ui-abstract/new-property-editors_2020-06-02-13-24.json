@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Added property editors for multi-line text, slider and numeric input/spinner.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "dan.east@bentley.com"
+}

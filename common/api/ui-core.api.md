@@ -793,6 +793,12 @@ export interface FormProps {
 }
 
 // @internal
+export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string;
+
+// @internal
+export function getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number;
+
+// @internal
 export const getDisplayName: (component: React.ComponentType<any>) => string;
 
 // @internal
@@ -945,7 +951,13 @@ export enum InputStatus {
 }
 
 // @internal
+export const isHTMLElement: (message: MessageType) => message is HTMLElement;
+
+// @internal
 export function isPromiseLike(obj: unknown): obj is PromiseLike<unknown>;
+
+// @internal
+export const isReactMessage: (message: MessageType) => message is ReactMessage;
 
 // @public
 export interface LabeledComponentProps {
@@ -1146,6 +1158,17 @@ export interface MessagedComponentProps {
     messageStyle?: React.CSSProperties;
 }
 
+// @beta
+export function MessageRenderer(props: MessageRendererProps): JSX.Element | null;
+
+// @beta
+export interface MessageRendererProps extends ClassNameProps {
+    // (undocumented)
+    message: MessageType;
+    // (undocumented)
+    useSpan?: boolean;
+}
+
 // @public
 export enum MessageSeverity {
     // (undocumented)
@@ -1161,6 +1184,9 @@ export enum MessageSeverity {
     // (undocumented)
     Warning = 3
 }
+
+// @public
+export type MessageType = string | HTMLElement | ReactMessage;
 
 // @beta
 export function MinimalFeaturedTile(props: TileProps): JSX.Element;
@@ -1300,6 +1326,7 @@ export interface PopupProps extends CommonProps {
     moveFocus?: boolean;
     offset: number;
     onClose?: () => void;
+    onEnter?: () => void;
     onOpen?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
     position: RelativePosition;
@@ -1378,6 +1405,12 @@ export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>,
 export interface RatioChangeResult {
     // (undocumented)
     ratio: number;
+}
+
+// @public
+export interface ReactMessage {
+    // (undocumented)
+    reactNode: React.ReactNode;
 }
 
 // @internal (undocumented)
@@ -1765,14 +1798,17 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
 // @public
 export class Textarea extends React.PureComponent<TextareaProps> {
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
     static defaultProps: Partial<TextareaProps>;
     // (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @public
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
     rows?: number;
+    setFocus?: boolean;
 }
 
 // @public
@@ -1878,6 +1914,19 @@ export const TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35;
 
 // @internal
 export const TOOLBAR_OPACITY_DEFAULT = 0.5;
+
+// @beta
+export function Tooltip(props: TooltipProps): JSX.Element;
+
+// @beta
+export interface TooltipProps extends CommonProps {
+    // (undocumented)
+    below?: boolean;
+    // (undocumented)
+    percent?: number;
+    // (undocumented)
+    value: MessageType;
+}
 
 // @public
 export class Tree extends React.PureComponent<TreeProps> {

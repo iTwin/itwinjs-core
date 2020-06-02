@@ -7,8 +7,9 @@
  */
 
 import { Primitives, PropertyDescription } from "@bentley/ui-abstract";
-import { StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
+import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /**
  * Navigation property type converter
@@ -22,8 +23,8 @@ export class NavigationPropertyTypeConverter extends TypeConverter {
   }
 
   public sortCompare(a: Primitives.Hexadecimal, b: Primitives.Hexadecimal, ignoreCase?: boolean): number {
-    return TypeConverterManager.getConverter(StandardTypeConverterTypeNames.Hexadecimal).sortCompare(a, b, ignoreCase);
+    return TypeConverterManager.getConverter(StandardTypeNames.Hexadecimal).sortCompare(a, b, ignoreCase);
   }
 }
 
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Navigation, NavigationPropertyTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Navigation, NavigationPropertyTypeConverter);

@@ -4,10 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { LoremIpsum } from "lorem-ipsum";
 import * as React from "react";
-import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
 import {
-  ColumnDescription, FilterRenderer, PropertyUpdatedArgs, RowItem, SelectionMode, SimpleTableDataProvider, StandardTypeConverterTypeNames,
-  Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget,
+  BasePropertyEditorParams, InputEditorSizeParams, PropertyDescription, PropertyEditorInfo,
+  PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat, RangeEditorParams, SliderEditorParams,
+} from "@bentley/ui-abstract";
+import {
+  ColumnDescription, FilterRenderer, PropertyUpdatedArgs, RowItem, SelectionMode, SimpleTableDataProvider, StandardEditorNames,
+  StandardTypeNames, Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget,
 } from "@bentley/ui-components";
 import { BodyText, Toggle } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
@@ -30,7 +33,7 @@ interface TableExampleState {
   filtering: boolean;
 }
 
-const createPropertyRecord = (value: any, column: ColumnDescription, typename: string) => {
+const createPropertyRecord = (value: any, column: ColumnDescription, typename: string, editor?: PropertyEditorInfo) => {
   const v: PropertyValue = {
     valueFormat: PropertyValueFormat.Primitive,
     value,
@@ -40,6 +43,7 @@ const createPropertyRecord = (value: any, column: ColumnDescription, typename: s
     typename,
     name: column.key,
     displayLabel: column.label,
+    editor,
   };
   column.propertyDescription = pd;
   return new PropertyRecord(v, pd);
@@ -53,7 +57,7 @@ const createEnumPropertyRecord = (rowIndex: number, column: ColumnDescription) =
     displayValue: value.toString(),
   };
   const pd: PropertyDescription = {
-    typename: StandardTypeConverterTypeNames.Enum,
+    typename: StandardTypeNames.Enum,
     name: column.key,
     displayLabel: column.label,
   };
@@ -78,10 +82,19 @@ const createLoremPropertyRecord = (column: ColumnDescription) => {
     value,
     displayValue: value,
   };
+
+  const editorParams: BasePropertyEditorParams[] = [];
+  const inputSizeParams: InputEditorSizeParams = {
+    type: PropertyEditorParamTypes.InputEditorSize,
+    size: 30,
+  };
+  editorParams.push(inputSizeParams);
+
   const pd: PropertyDescription = {
-    typename: StandardTypeConverterTypeNames.Text,
+    typename: StandardTypeNames.Text,
     name: column.key,
     displayLabel: column.label,
+    editor: { name: StandardEditorNames.MultiLine, params: editorParams },
   };
   column.propertyDescription = pd;
   return new PropertyRecord(v, pd);
@@ -97,6 +110,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       resizable: true,
       sortable: true,
       width: 90,
+      editable: true,
       filterable: true,
       filterRenderer: FilterRenderer.Numeric,
     },
@@ -123,6 +137,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       key: "lorem",
       label: "Lorem",
       resizable: true,
+      editable: true,
       filterable: true,
       filterRenderer: FilterRenderer.Text,
     },
@@ -131,16 +146,33 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
   constructor(props: any) {
     super(props);
 
+    const editorParams: BasePropertyEditorParams[] = [];
+    const sliderParams: SliderEditorParams = {
+      type: PropertyEditorParamTypes.Slider,
+      minimum: 1,
+      maximum: 100,
+      step: 1,
+      showTooltip: true,
+      tooltipBelow: true,
+    };
+    const rangeParams: RangeEditorParams = {
+      type: PropertyEditorParamTypes.Range,
+      minimum: 1,
+      maximum: 100,
+    };
+    editorParams.push(sliderParams);
+    editorParams.push(rangeParams);
+
     const rows = new Array<RowItem>();
     for (let i = 1; i <= 100000; i++) {
       const row: RowItem = { key: i.toString(), cells: [] };
       row.cells.push({
         key: this._columns[0].key,
-        record: createPropertyRecord(i, this._columns[0], StandardTypeConverterTypeNames.Int),
+        record: createPropertyRecord(i, this._columns[0], StandardTypeNames.Int, { name: StandardEditorNames.Slider, params: editorParams }),
       });
       row.cells.push({
         key: this._columns[1].key,
-        record: createPropertyRecord("Title " + i, this._columns[1], StandardTypeConverterTypeNames.String),
+        record: createPropertyRecord("Title " + i, this._columns[1], StandardTypeNames.String),
       });
       row.cells.push({
         key: this._columns[2].key,

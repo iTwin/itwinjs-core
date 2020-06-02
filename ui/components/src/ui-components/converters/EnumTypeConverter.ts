@@ -7,8 +7,9 @@
  */
 
 import { EnumerationChoice, Primitives, PropertyDescription } from "@bentley/ui-abstract";
-import { StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
+import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /**
  * Enum Type Converter.
@@ -45,4 +46,4 @@ export class EnumTypeConverter extends TypeConverter {
   }
 }
 
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Enum, EnumTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Enum, EnumTypeConverter);

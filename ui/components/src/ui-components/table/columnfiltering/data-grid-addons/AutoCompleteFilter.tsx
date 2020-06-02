@@ -71,7 +71,6 @@ export class AutoCompleteFilter extends React.Component<AutoCompleteFilterProps,
   public render() {
     return (
       <ThemedSelect
-        autosize={false}
         name={`filter-${this.props.column.key}`}
         options={this.state.options}
         placeholder={this.props.placeholder || this._placeholder}

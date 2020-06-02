@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { SortDirection } from "@bentley/ui-core";
-import { StandardTypeConverterTypeNames } from "../../../ui-components/converters/TypeConverter";
+import { StandardTypeNames } from "../../../ui-components/common/StandardTypeNames";
 import { FilterCompositionLogicalOperator, FilterOperator } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
 import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn";
 import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
@@ -49,11 +49,11 @@ const createRow = (i: number) => {
   const loremIndex = i % 10;
   row.cells.push({
     key: columns[0].key,
-    record: TestUtils.createPropertyRecord(loremIpsum[loremIndex], columns[0], StandardTypeConverterTypeNames.Text),
+    record: TestUtils.createPropertyRecord(loremIpsum[loremIndex], columns[0], StandardTypeNames.Text),
   });
   row.cells.push({
     key: columns[1].key,
-    record: TestUtils.createPropertyRecord(i, columns[1], StandardTypeConverterTypeNames.Integer),
+    record: TestUtils.createPropertyRecord(i, columns[1], StandardTypeNames.Integer),
   });
   return row;
 };

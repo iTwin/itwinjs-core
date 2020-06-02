@@ -50,3 +50,11 @@ $uicore-internal-z-index-layer-map: uicore-map-from-array-with-result-arg($uicor
 @mixin uicore-z-index($layer) {
   z-index: uicore-get-z-index($layer);
 }
+
+// Use this to add a CSS variable for each z-index layer
+@mixin uicore-z-index-variables() {
+  @each $layer in $uicore-internal-z-index-layers {
+    $z-index: uicore-get-z-index($layer);
+    --uicore-z-index-#{$layer}: #{$z-index};
+  }
+}

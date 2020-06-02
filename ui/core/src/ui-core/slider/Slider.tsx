@@ -14,6 +14,7 @@ import {
 } from "react-compound-slider";
 import { BodyText } from "../text/BodyText";
 import { CommonProps } from "../utils/Props";
+import { Tooltip } from "../notification/Tooltip";
 
 // cspell:ignore pushable
 
@@ -110,7 +111,7 @@ export function Slider(props: SliderProps) {
   const containerClassNames = classnames(
     "core-slider-container",
     className,
-    disabled && "disabled",
+    disabled && "core-disabled",
     showTickLabels && "core-slider-tickLabels",
     includeTicksInWidth && "core-slider-includeTicksInWidth",
   );
@@ -154,7 +155,7 @@ export function Slider(props: SliderProps) {
                   activeHandleID={activeHandleID}
                   getEventData={getEventData}
                   getTrackProps={getTrackProps}
-                  showTooltip={showTooltip}
+                  showTooltip={showTooltip ?? true}
                   tooltipBelow={tooltipBelow}
                   formatTooltip={formatTooltip}
                   multipleValues={multipleValues}
@@ -292,20 +293,11 @@ function TooltipTrack(props: TooltipTrackProps) {
     tooltipText = `${sourceValue} : ${targetValue}`;
   }
 
-  const tooltipClassName = classnames(
-    "core-slider-tooltip",
-    tooltipBelow && "tooltip-below",
-  );
-
   // istanbul ignore next - WIP
   return (
     <>
       {!activeHandleID && percent && showTooltip && multipleValues ? (
-        <div className="core-slider-tooltip-container" style={{ left: `${percent}%` }}>
-          <div className={tooltipClassName} data-testid="core-slider-tooltip">
-            <span className="core-slider-tooltip-text">{tooltipText}</span>
-          </div>
-        </div>
+        <Tooltip percent={percent} below={tooltipBelow} value={tooltipText} />
       ) : null}
       <div className="core-slider-track" data-testid="core-slider-track"
         style={{ left: `${source.percent}%`, width: `${target.percent - source.percent}%` }}
@@ -380,20 +372,11 @@ function Handle(props: HandleProps) {
     setMouseOver(false);
   };
 
-  const tooltipClassName = classnames(
-    "core-slider-tooltip",
-    tooltipBelow && "tooltip-below",
-  );
-
   // istanbul ignore next - WIP
   return (
     <>
       {(mouseOver || isActive) && !disabled && showTooltip ? (
-        <div className="core-slider-tooltip-container" style={{ left: `${percent}%` }}>
-          <div className={tooltipClassName} data-testid="core-slider-tooltip">
-            <span className="core-slider-tooltip-text">{formatTooltip ? formatTooltip(value) : value}</span>
-          </div>
-        </div>
+        <Tooltip percent={percent} below={tooltipBelow} value={formatTooltip ? formatTooltip(value) : value.toString()} />
       ) : null}
       <div
         role="slider"

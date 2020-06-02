@@ -67,6 +67,7 @@ import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
 import { MessageSeverity } from '@bentley/ui-core';
+import { MessageType } from '@bentley/ui-core';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NestedStagePanelKey } from '@bentley/ui-ninezone';
 import { NestedStagePanelsManagerProps } from '@bentley/ui-ninezone';
@@ -103,6 +104,7 @@ import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyUpdatedArgs } from '@bentley/ui-components';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
+import { ReactMessage as ReactMessage_2 } from '@bentley/ui-core';
 import { RectangleProps } from '@bentley/ui-core';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RelativePosition } from '@bentley/ui-abstract';
@@ -2687,17 +2689,11 @@ export enum InputStatus {
 // @internal (undocumented)
 export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open;
 
-// @internal
-export const isHTMLElement: (message: NotifyMessageType) => message is HTMLElement;
-
 // @beta
 export function isNoSelectionActive(): boolean;
 
 // @internal (undocumented)
 export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined>, panelStates: ReadonlyArray<StagePanelState | undefined>): boolean;
-
-// @internal
-export const isReactMessage: (message: NotifyMessageType) => message is ReactMessage;
 
 // @internal
 export const isReactNotifyMessageDetails: (details: any) => details is ReactNotifyMessageDetails;
@@ -3319,6 +3315,7 @@ export class ModelessDialogManager {
     static getDialogInfo(id: string): ModelessDialogInfo | undefined;
     static getDialogZIndex(id: string): number;
     static handlePointerDownEvent(_event: React.PointerEvent, id: string, updateFunc: () => void): void;
+    static initialize(): void;
     static readonly onModelessDialogChangedEvent: ModelessDialogChangedEvent;
     static openDialog(dialog: React.ReactNode, id: string): void;
     static update(): void;
@@ -3508,7 +3505,7 @@ export interface NineZoneChangeHandler {
 export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessageDetails;
 
 // @public
-export type NotifyMessageType = string | HTMLElement | ReactMessage;
+export type NotifyMessageType = MessageType;
 
 // @internal (undocumented)
 export interface PanelSetSizeAction {
@@ -3774,19 +3771,16 @@ export class PropsHelper {
     static isShallowEqual(newObj: any, prevObj: any): boolean;
 }
 
-// @public
-export interface ReactMessage {
-    // (undocumented)
-    reactNode: React.ReactNode;
-}
+// @public @deprecated
+export type ReactMessage = ReactMessage_2;
 
 // @public
 export class ReactNotifyMessageDetails {
-    constructor(priority: OutputMessagePriority, briefMessage: NotifyMessageType, detailedMessage?: string | HTMLElement | ReactMessage | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
+    constructor(priority: OutputMessagePriority, briefMessage: NotifyMessageType, detailedMessage?: string | HTMLElement | ReactMessage_2 | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
     // (undocumented)
     briefMessage: NotifyMessageType;
     // (undocumented)
-    detailedMessage?: string | HTMLElement | ReactMessage | undefined;
+    detailedMessage?: string | HTMLElement | ReactMessage_2 | undefined;
     get displayPoint(): Point2d | undefined;
     get displayTime(): BeDuration;
     set displayTime(duration: BeDuration);

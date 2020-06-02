@@ -8,8 +8,9 @@
 
 import { Primitives } from "@bentley/ui-abstract";
 import { TimeFormat } from "@bentley/ui-core";
-import { LessGreaterOperatorProcessor, StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
+import { LessGreaterOperatorProcessor, TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /**
  * DateTime Type Converter.
@@ -86,7 +87,7 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
 export class ShortDateTypeConverter extends DateTimeTypeConverterBase {
   protected getTimeFormat(): TimeFormat { return TimeFormat.Short; }
 }
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.ShortDate, ShortDateTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.ShortDate, ShortDateTypeConverter);
 
 /**
  * Date Time Type Converter.
@@ -95,4 +96,4 @@ TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.ShortDate,
 export class DateTimeTypeConverter extends DateTimeTypeConverterBase {
   protected getTimeFormat(): TimeFormat { return TimeFormat.Long; }
 }
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.DateTime, DateTimeTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.DateTime, DateTimeTypeConverter);

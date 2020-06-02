@@ -48,7 +48,7 @@ beta;EnumerationChoicesInfo
 internal;getClassName: (obj: any) => string
 beta;GroupButton 
 beta;IconDefinition
-alpha;IconEditorParams 
+beta;IconEditorParams 
 beta;IconListEditorParams 
 beta;IconSpecUtilities
 beta;InputEditorSizeParams 
@@ -64,6 +64,7 @@ beta;isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputE
 beta;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
 beta;isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams
 beta;LinkElementsInfo
+beta;MultilineTextEditorParams 
 beta;OnCancelFunc = () => void
 beta;OnItemExecutedFunc = (item: any) => void
 beta;OnNumberCommitFunc = (value: number) => void
@@ -81,7 +82,9 @@ beta;PropertyRecord
 beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
 beta;PropertyValueFormat
 beta;ProvidedItem
+beta;RangeEditorParams 
 public;RelativePosition
+beta;SliderEditorParams 
 beta;StagePanelLocation
 beta;StagePanelSection
 beta;StageUsage

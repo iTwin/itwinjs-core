@@ -7,8 +7,9 @@
  */
 
 import { Primitives } from "@bentley/ui-abstract";
-import { StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
+import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /**
  * Composite type converter
@@ -43,7 +44,7 @@ export class CompositeTypeConverter extends TypeConverter {
   }
 }
 
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Composite, CompositeTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Composite, CompositeTypeConverter);
 
 const compareStrings = (lhs: string, rhs: string, ignoreCase?: boolean) => {
   if (ignoreCase)

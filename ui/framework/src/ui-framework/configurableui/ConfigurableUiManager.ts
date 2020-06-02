@@ -56,6 +56,9 @@ export class ConfigurableUiManager {
     // Initialize the ToolUiManager that manages Tool Settings properties.
     ToolUiManager.initialize();
 
+    // Initialize the modeless dialog manager.
+    ModelessDialogManager.initialize();
+
     this._initialized = true;
   }
 

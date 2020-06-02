@@ -7,7 +7,7 @@ import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
-import { DialogChangedEventArgs, ModelessDialog, ModelessDialogManager, ModelessDialogRenderer } from "../../ui-framework";
+import { ConfigurableUiManager, DialogChangedEventArgs, ModelessDialog, ModelessDialogManager, ModelessDialogRenderer } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
 describe("ModelessDialogManager", () => {
@@ -20,6 +20,7 @@ describe("ModelessDialogManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework(true);
+    ConfigurableUiManager.initialize();
 
     ModelessDialogManager.onModelessDialogChangedEvent.addListener(handleModelessDialogChanged);
   });

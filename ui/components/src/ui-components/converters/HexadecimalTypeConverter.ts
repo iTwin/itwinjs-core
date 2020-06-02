@@ -8,8 +8,9 @@
 
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Primitives } from "@bentley/ui-abstract";
-import { StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
+import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /** Hexadecimal Type Converter.
  * @public
@@ -48,5 +49,5 @@ export class HexadecimalTypeConverter extends TypeConverter {
   }
 }
 
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Hex, HexadecimalTypeConverter);
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Hexadecimal, HexadecimalTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Hex, HexadecimalTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Hexadecimal, HexadecimalTypeConverter);

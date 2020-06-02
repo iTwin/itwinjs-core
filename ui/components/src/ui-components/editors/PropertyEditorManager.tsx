@@ -7,9 +7,31 @@
  */
 
 import * as React from "react";
-import { PropertyDescription, PropertyRecord, PropertyValue } from "@bentley/ui-abstract";
-import { AsyncValueProcessingResult } from "../converters/TypeConverter";
 import { TextEditor } from "./TextEditor";
+import { StandardTypeNames } from "../common/StandardTypeNames";
+import { PropertyDescription, PropertyRecord, PropertyValue } from "@bentley/ui-abstract";
+import { OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+
+/** Asynchronous Error Message returned as part of [[AsyncValueProcessingResult]]
+ * @beta
+ */
+export interface AsyncErrorMessage {
+  priority: OutputMessagePriority;
+  briefMessage: string;
+  detailedMessage?: string;
+  msgType?: OutputMessageType;
+  alertType?: OutputMessageAlert;
+  displayTime?: number;
+}
+
+/** Asynchronous Value Process Result
+ * @beta
+ */
+export interface AsyncValueProcessingResult {
+  encounteredError: boolean;
+  returnValue?: PropertyValue;
+  errorMessage?: AsyncErrorMessage;
+}
 
 /** DataControllers can be implemented per typename to validate and commit values.
  * @beta
@@ -127,5 +149,5 @@ export class BasicPropertyEditor extends PropertyEditorBase {
   }
 }
 
-PropertyEditorManager.registerEditor("text", BasicPropertyEditor);
-PropertyEditorManager.registerEditor("string", BasicPropertyEditor);
+PropertyEditorManager.registerEditor(StandardTypeNames.Text, BasicPropertyEditor);
+PropertyEditorManager.registerEditor(StandardTypeNames.String, BasicPropertyEditor);

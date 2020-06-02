@@ -6,23 +6,22 @@
  * @module Notification
  */
 
-import * as React from "react";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Point2d, XAndY } from "@bentley/geometry-core";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
+import { MessageType, ReactMessage as Core_ReactMessage } from "@bentley/ui-core";
 
 /** Describes a React based message
  * @public
+ * @deprecated Use ReactMessage in bentley/ui-core instead
  */
-export interface ReactMessage {
-  reactNode: React.ReactNode;
-}
+export type ReactMessage = Core_ReactMessage;
 
 /** Types for message in [[MessageManager]]
  * @public
  */
-export type NotifyMessageType = string | HTMLElement | ReactMessage;
+export type NotifyMessageType = MessageType;
 
 /** Types for NotifyMessageDetails.
  * @public
@@ -84,20 +83,6 @@ export class ReactNotifyMessageDetails {
     this._notifyMessageDetails.setInputFieldTypeDetails(inputField);
   }
 }
-
-/** HTMLElement type guard.
- * @internal
- */
-export const isHTMLElement = (message: NotifyMessageType): message is HTMLElement => {
-  return (message as HTMLElement).innerHTML !== undefined;
-};
-
-/** ReactMessage type guard.
- * @internal
- */
-export const isReactMessage = (message: NotifyMessageType): message is ReactMessage => {
-  return (message as ReactMessage).reactNode !== undefined;
-};
 
 /** ReactNotifyMessageDetails type guard.
  * @internal

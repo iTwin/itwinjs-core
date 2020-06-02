@@ -6,9 +6,11 @@
  * @module Utilities
  */
 
-/** Import color themes and Sass classes barrel file */
+/** Import color themes, layout variables and Sass classes barrel file */
 import "./colorthemes.scss";
+import "./layout-variables.scss";
 import "./classes.scss";
+
 import { Logger } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";

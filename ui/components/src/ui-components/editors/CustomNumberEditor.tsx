@@ -22,6 +22,8 @@ import { Icon, IconInput, Input, InputProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
+import { StandardEditorNames } from "./StandardEditorNames";
 
 /** @internal */
 interface CustomNumberEditorState {
@@ -300,4 +302,4 @@ export class CustomNumberPropertyEditor extends PropertyEditorBase {
     return <CustomNumberEditor />;
   }
 }
-PropertyEditorManager.registerEditor("number", CustomNumberPropertyEditor, "number-custom");
+PropertyEditorManager.registerEditor(StandardTypeNames.Number, CustomNumberPropertyEditor, StandardEditorNames.NumberCustom);
