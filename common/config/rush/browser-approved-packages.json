@@ -83,10 +83,6 @@
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/imodelhub-client-tests",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "@bentley/imodeljs-backend",
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
