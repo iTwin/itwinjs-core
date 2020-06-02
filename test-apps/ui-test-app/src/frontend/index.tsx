@@ -10,7 +10,7 @@ import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, Electr
 import { AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, IModelConnection, RenderSystem, SelectionTool, SnapMode, ViewClipByPlaneTool, ViewState } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
@@ -44,12 +44,6 @@ import { PresentationUnitSystem } from "@bentley/presentation-common";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
-const rpcInterfaces = getSupportedRpcs();
-if (isElectronRenderer) {
-  ElectronRpcManager.initializeClient({}, rpcInterfaces);
-} else {
-  BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
-}
 
 // cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise toggledraginteraction toggleframeworkversion
 // cSpell:ignore mobx setdraginteraction setframeworkversion
@@ -156,11 +150,8 @@ interface SampleIModelParams {
 
 export class SampleAppIModelApp {
   public static sampleAppNamespace: I18NNamespace;
-  // If we use the StateManager, then the app supports combining reducers from extensions and snippets. If we use the StateManage then don't explicitly setup redux store in app,
-  // just pass the app's reducers to the StateManager constructor.
-  // deprecated - public static store: Store<RootState>;
-  // deprecated - public static rootReducer: any;
   public static iModelParams: SampleIModelParams | undefined;
+  public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
   private static _uiSettings: UiSettings | undefined;
   private static _appUiSettings = new AppUiSettings();
@@ -202,29 +193,9 @@ export class SampleAppIModelApp {
       });
     }
 
-    //////////////////////////////////////////////////////////////////////////////
-    // Deprecated way of handling state locally. See use of StateManager above.
-    // Using the StateManager allows extensions and snippet packages to incrementally
-    // add their reducers to the global Redux store.
-    //////////////////////////////////////////////////////////////////////////////
-    // this is the rootReducer for the sample application.
-    // this.rootReducer = combineReducers({
-    //   sampleAppState: SampleAppReducer,
-    //   frameworkState: FrameworkReducer,
-    // });
-    //
-    // create the Redux Store.
-    // this.store = createStore(this.rootReducer,
-    //  (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
-    //////////////////////////////////////////////////////////////////////////////
-
     // register local commands.
     // register core commands not automatically registered
     ViewClipByPlaneTool.register();
-
-    // Configure a CORS proxy in development mode.
-    if (process.env.NODE_ENV === "development")
-      Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:3001`); // By default, this will run on port 3001
 
     // Mobx configuration
     mobxConfigure({ enforceActions: "observed" });
@@ -384,13 +355,13 @@ export class SampleAppIModelApp {
 
   // called after the user has signed in (or access token is still valid)
   public static async showSignedIn() {
-    let viewId: string | undefined;
-    if (Config.App.has("imjs_uitestapp_imodel_viewId"))
-      viewId = Config.App.get("imjs_uitestapp_imodel_viewId");
-
     SampleAppIModelApp.iModelParams = SampleAppIModelApp._usingParams();
 
     if (Config.App.has("imjs_uitestapp_imodel_name") && Config.App.has("imjs_uitestapp_imodel_project_name")) {
+      let viewId: string | undefined;
+      if (Config.App.has("imjs_uitestapp_imodel_viewId"))
+        viewId = Config.App.get("imjs_uitestapp_imodel_viewId");
+
       const projectName = Config.App.getString("imjs_uitestapp_imodel_project_name");
       const iModelName = Config.App.getString("imjs_uitestapp_imodel_name");
 
@@ -417,7 +388,7 @@ export class SampleAppIModelApp {
         // open to the IModelIndex frontstage
         await SampleAppIModelApp.showIModelIndex(SampleAppIModelApp.iModelParams.projectId, SampleAppIModelApp.iModelParams.iModelId);
       }
-    } else if (testAppConfiguration.startWithSnapshots) {
+    } else if (SampleAppIModelApp.testAppConfiguration?.startWithSnapshots) {
       // open to the Local File frontstage
       await LocalFileOpenFrontstage.open();
     } else {
@@ -576,49 +547,33 @@ window.addEventListener("beforeunload", async () => {
   await SampleAppIModelApp.closeCurrentIModel();
 });
 
-export const testAppConfiguration = {} as TestAppConfiguration;
-
-// Retrieves the configuration for starting app from configuration.json file located in the built public folder
-async function retrieveConfiguration(): Promise<void> {
-  return new Promise<void>((resolve, _reject) => {
-    const request: XMLHttpRequest = new XMLHttpRequest();
-    request.open("GET", "testAppConfiguration.json", false);
-    request.setRequestHeader("Cache-Control", "no-cache");
-    request.onreadystatechange = ((_event: Event) => {
-      if (request.readyState === XMLHttpRequest.DONE) {
-        if (request.status === 200) {
-          const newConfigurationInfo: any = JSON.parse(request.responseText);
-          Object.assign(testAppConfiguration, newConfigurationInfo);
-          resolve();
-        }
-      }
-    });
-    request.send();
-  });
-}
-
 function getOidcConfiguration(): BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration {
   const redirectUri = "http://localhost:3000/signin-callback";
-  const baseOidcScope = "openid email profile organization imodelhub context-registry-service:read-only product-settings-service projectwise-share urlps-third-party imodel-extension-service-api";
+  const baseOidcScopes = [
+    "openid",
+    "email",
+    "profile",
+    "organization",
+    "imodelhub",
+    "context-registry-service:read-only",
+    "product-settings-service",
+    "projectwise-share",
+    "urlps-third-party",
+    "imodel-extension-service-api",
+  ];
 
   return isElectronRenderer
     ? {
       clientId: "imodeljs-electron-test",
       redirectUri,
-      scope: baseOidcScope + " offline_access",
+      scope: baseOidcScopes.concat(["offline_access"]).join(" "),
     }
     : {
       clientId: "imodeljs-spa-test",
       redirectUri,
-      scope: baseOidcScope + " imodeljs-router",
+      scope: baseOidcScopes.concat("imodeljs-router").join(" "),
       responseType: "code",
     };
-}
-
-async function handleOidcCallback(oidcConfiguration: BrowserAuthorizationClientConfiguration): Promise<void> {
-  if (!isElectronRenderer) {
-    await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
-  }
 }
 
 async function createOidcClient(requestContext: ClientRequestContext, oidcConfiguration: BrowserAuthorizationClientConfiguration | DesktopAuthorizationClientConfiguration): Promise<FrontendAuthorizationClient> {
@@ -627,6 +582,7 @@ async function createOidcClient(requestContext: ClientRequestContext, oidcConfig
     await desktopClient.initialize(requestContext);
     return desktopClient;
   } else {
+    await BrowserAuthorizationCallbackHandler.handleSigninCallback(oidcConfiguration.redirectUri);
     const browserClient = new BrowserAuthorizationClient(oidcConfiguration as BrowserAuthorizationClientConfiguration);
     try {
       await browserClient.signInSilent(requestContext);
@@ -637,12 +593,6 @@ async function createOidcClient(requestContext: ClientRequestContext, oidcConfig
 
 // main entry point.
 async function main() {
-  // retrieve, set, and output the global configuration variable
-  if (!isElectronRenderer) {
-    await retrieveConfiguration(); // (does a fetch)
-    console.log("Configuration", JSON.stringify(testAppConfiguration)); // tslint:disable-line:no-console
-  }
-
   // initialize logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
@@ -653,9 +603,29 @@ async function main() {
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow
   // Logger.setLevel("ui-framework.DefaultToolSettings", LogLevel.Trace);  // used to show detailed output calculating default toolsettings
 
+  // retrieve, set, and output the global configuration variable
+  if (!isElectronRenderer) {
+    SampleAppIModelApp.testAppConfiguration = {
+      snapshotPath: process.env.imjs_TESTAPP_SNAPSHOT_FILEPATH,
+      startWithSnapshots: process.env.imjs_TESTAPP_START_WITH_SNAPSHOTS,
+    } as TestAppConfiguration;
+    Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // tslint:disable-line:no-console
+  }
+
   const oidcConfig = getOidcConfiguration();
-  await handleOidcCallback(oidcConfig);
   const oidcClient = await createOidcClient(new ClientRequestContext(), oidcConfig);
+
+  const rpcInterfaces = getSupportedRpcs();
+  if (isElectronRenderer) {
+    ElectronRpcManager.initializeClient({}, rpcInterfaces);
+  } else if (process.env.imjs_gp_backend) {
+    const urlClient = new UrlDiscoveryClient();
+    const requestContext = new ClientRequestContext();
+    const orchestratorUrl = await urlClient.discoverUrl(requestContext, "iModelJsOrchestrator.K8S", undefined);
+    BentleyCloudRpcManager.initializeClient({ info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: orchestratorUrl }, rpcInterfaces);
+  } else {
+    BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
+  }
 
   // Set up render option to displaySolarShadows.
   const renderSystemOptions: RenderSystem.Options = {

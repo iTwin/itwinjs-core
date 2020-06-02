@@ -14,6 +14,7 @@
     "lint": "tslint -p . 1>&2",
     "start": "run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/main.js",
+    "start:electron:prod": "cross-env NODE_ENV=production electron ./lib/backend/main.js",
     "start:webserver": "npm run pseudolocalize && cross-env BROWSER=none react-scripts start",
     "start:backend": "node --max-http-header-size=16000 lib/backend/main.js",
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",
@@ -53,6 +54,8 @@
     "@types/semver": "^5.5.0",
     "cpx": "^1.5.0",
     "cross-env": "^5.1.4",
+    "dotenv": "^8.2.0",
+    "dotenv-expand": "^5.1.0",
     "electron": "^8.2.1",
     "electron-chromedriver": "^2.0.0",
     "internal-tools": "0.0.0",
@@ -100,8 +103,7 @@
     "react-redux": "^7.2.0",
     "react-select": "^3.0.4",
     "redux": "^4.0.3",
-    "semver": "^5.5.0",
-    "svg-sprite-loader": "4.2.1"
+    "semver": "^5.5.0"
   },
   "browserslist": [
     "electron 6.0.0",

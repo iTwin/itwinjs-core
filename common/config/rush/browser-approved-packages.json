@@ -356,11 +356,11 @@
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "integration-testing", "tools" ]
+      "allowedCategories": [ "integration-testing", "internal", "tools" ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "integration-testing", "tools" ]
+      "allowedCategories": [ "integration-testing", "internal", "tools" ]
     },
     {
       "name": "electron",
