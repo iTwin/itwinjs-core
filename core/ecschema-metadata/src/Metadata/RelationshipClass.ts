@@ -347,8 +347,11 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
         return testClass.is(constraintClass);
       }
 
-      if (testClass.schemaItemType === SchemaItemType.Mixin && constraintClass.schemaItemType === SchemaItemType.EntityClass) {
-        return (testClass as Mixin).applicableTo(constraintClass as EntityClass);
+      if (testClass.schemaItemType === SchemaItemType.Mixin) {
+        if (constraintClass.schemaItemType === SchemaItemType.EntityClass)
+          return (testClass as Mixin).applicableTo(constraintClass as EntityClass);
+        else
+          return testClass.is(constraintClass);
       }
     }
     return false;
