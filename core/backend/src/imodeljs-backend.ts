@@ -117,6 +117,10 @@ export * from "./IModelDb"; // must be last
  * Classes for working with ECDb.
  */
 /**
+ * @docs-group-description NativeApp
+ * Classes for working with Mobile/Desktop Application.
+ */
+/**
  * @docs-group-description ECSQL
  * Classes for working with [ECSQL]($docs/learning/ECSQL.md)
  */

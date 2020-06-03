@@ -36,6 +36,10 @@ module.exports = {
         test: /@azure[\/\\]storage-blob|azure-storage|AzureFileHandler|UrlFileHandler/,
         use: "null-loader"
       },
+      {
+        test: /websocket\.js$/,
+        use: "null-loader"
+      },
     ]
   },
   stats: "errors-only",

@@ -85,6 +85,7 @@
     "@types/multiparty": "^0.0.31",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
+    "@types/ws": "^6.0.4",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx": "^1.5.0",
@@ -112,6 +113,7 @@
     "js-base64": "^2.4.5",
     "multiparty": "^4.2.1",
     "semver": "^5.5.0",
+    "ws": "^7.2.0",
     "@openid/appauth": "^1.2.6",
     "username": "^5.1.0",
     "open": "^7.0.0"

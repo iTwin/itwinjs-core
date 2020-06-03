@@ -545,12 +545,6 @@ export class Platform {
 
   /** Get the name of the platform. Possible return values are: "win32", "linux", "darwin", "ios", "android", or "uwp". */
   public static get platformName(): string {
-
-    if (Platform.isMobile) {
-      // TBD: Platform.imodeljsMobile.platform should indicate which mobile platform this is.
-      return "iOS";
-    }
-    // This is node or electron. See what underlying OS we are on:
     return process.platform;
   }
 
@@ -563,14 +557,14 @@ export class Platform {
   public static get isDesktop(): boolean { return Platform.electron !== undefined; }
 
   /** Query if this is a mobile configuration */
-  public static get isMobile(): boolean { return Platform.imodeljsMobile !== undefined; }
+  public static get isMobile(): boolean { return typeof (process) !== "undefined" && (process.platform as any) === "ios"; }
 
   /** Query if this is running in Node.js  */
   public static get isNodeJs(): boolean { return !Platform.isMobile; } // currently we use nodejs for all non-mobile backend apps
 
   /** @internal */
   public static load(): typeof IModelJsNative {
-    return this.isMobile ? this.imodeljsMobile.imodeljsNative : NativeLibrary.load();
+    return this.isMobile ? (process as any)._linkedBinding("iModelJsNative") : NativeLibrary.load();
   }
 }
 

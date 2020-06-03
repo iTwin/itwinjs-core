@@ -923,6 +923,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "ws",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "xmldom",
       "allowedCategories": [ "backend", "common", "tools" ]
     },

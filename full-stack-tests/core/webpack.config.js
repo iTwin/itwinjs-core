@@ -36,6 +36,10 @@ function createConfig(shouldInstrument) {
           test: /azure-storage|AzureFileHandler|UrlFileHandler/,
           use: "null-loader"
         },
+        {
+          test: /ws\/index\.js$/,
+          use: "null-loader"
+        },
       ]
     },
     stats: "errors-only",

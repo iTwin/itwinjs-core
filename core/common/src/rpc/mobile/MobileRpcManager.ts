@@ -9,7 +9,7 @@
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcEndpoint, RpcMobilePlatform } from "../core/RpcConstants";
-import { interop, MobileRpcProtocol } from "./MobileRpcProtocol";
+import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
 /** Holds configuration for the RpcInterfaces used by the application.
  * @beta
@@ -64,7 +64,7 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   public static get platform(): RpcMobilePlatform { return MobileRpcConfiguration.getMobilePlatform(); }
 
   /** Check if running backend running on mobile */
-  public static get isMobileBackend() { return interop !== null; }
+  public static get isMobileBackend() { return typeof (process) !== "undefined" && (process.platform as any) === "ios"; }
 
   /** Check if running backend running on mobile */
   public static get isMobileFrontend() { return this.platform !== RpcMobilePlatform.Unknown; }

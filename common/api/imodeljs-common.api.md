@@ -726,9 +726,6 @@ export enum ChangeOpCode {
 
 export { ChangeSetStatus }
 
-// @internal (undocumented)
-export const CHANNEL = "@bentley/imodeljs-mobilegateway";
-
 // @alpha
 export class ChannelConstraintError extends IModelError {
     constructor(message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
@@ -3375,9 +3372,6 @@ export enum InternetConnectivityStatus {
     Online = 0
 }
 
-// @internal (undocumented)
-export const interop: any;
-
 // @beta
 export const Interpolation: {
     Linear: (v: any, k: number) => number;
@@ -3726,6 +3720,18 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
     abstract protocol: MobileRpcProtocol;
 }
 
+// @beta (undocumented)
+export interface MobileRpcGateway {
+    // (undocumented)
+    handler: (payload: ArrayBuffer | string, connectionId: number) => void;
+    // (undocumented)
+    port: number;
+    // (undocumented)
+    sendBinary: (message: Uint8Array, connectionId: number) => void;
+    // (undocumented)
+    sendString: (message: string, connectionId: number) => void;
+}
+
 // @beta
 export class MobileRpcManager {
     static initializeClient(interfaces: RpcInterfaceDefinition[]): MobileRpcConfiguration;
@@ -3737,6 +3743,8 @@ export class MobileRpcProtocol extends RpcProtocol {
     constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint);
     // (undocumented)
     static encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks>;
+    // (undocumented)
+    static obtainInterop(): MobileRpcGateway;
     // (undocumented)
     requests: Map<string, MobileRpcRequest>;
     // (undocumented)

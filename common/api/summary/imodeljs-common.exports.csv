@@ -49,7 +49,6 @@ internal;ChangedElements
 internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode
-internal;CHANNEL = "@bentley/imodeljs-mobilegateway"
 alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
@@ -234,7 +233,6 @@ public;InformationPartitionElementProps
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
 internal;InternetConnectivityStatus
-internal;interop: any
 beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
 beta;IReferentProps
@@ -269,6 +267,7 @@ internal;MeshPolyline
 internal;MeshPolylineList 
 beta;MobileRpcChunks = Array
 beta;class MobileRpcConfiguration 
+beta;MobileRpcGateway
 beta;MobileRpcManager
 beta;MobileRpcProtocol 
 beta;MobileRpcRequest 
