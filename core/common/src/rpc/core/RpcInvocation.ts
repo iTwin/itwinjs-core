@@ -105,7 +105,7 @@ export class RpcInvocation {
       this.result = this.reject(error);
     }
 
-    this.fulfillment = this.result.then((value) => this.fulfillResolved(value), (reason) => this.fulfillRejected(reason));
+    this.fulfillment = this.result.then(async (value) => this._threw ? this.fulfillRejected(value) : this.fulfillResolved(value), (reason) => this.fulfillRejected(reason));
   }
 
   private handleUnknownOperation(error: any): boolean {
@@ -116,19 +116,19 @@ export class RpcInvocation {
     try {
       const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
       clientRequestContext.enter();
+
+      this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
+
+      const parameters = RpcMarshaling.deserialize(this.protocol, this.request.parameters);
+      this.applyPolicies(parameters);
+      const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
+      (impl as any)[CURRENT_INVOCATION] = this;
+      const op = this.lookupOperationFunction(impl);
+
+      return await op.call(impl, ...parameters);
     } catch (error) {
       return this.reject(error);
     }
-
-    this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
-
-    const parameters = RpcMarshaling.deserialize(this.protocol, this.request.parameters);
-    this.applyPolicies(parameters);
-    const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
-    (impl as any)[CURRENT_INVOCATION] = this;
-    const op = this.lookupOperationFunction(impl);
-
-    return op.call(impl, ...parameters);
   }
 
   private applyPolicies(parameters: any) {
@@ -164,8 +164,7 @@ export class RpcInvocation {
 
   private async reject(error: any): Promise<any> {
     this._threw = true;
-    this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorOccurred, this);
-    throw error;
+    return error;
   }
 
   private async fulfillResolved(value: any): Promise<RpcRequestFulfillment> {
@@ -184,10 +183,12 @@ export class RpcInvocation {
 
     if (reason instanceof RpcPendingResponse) {
       this._pending = true;
+      this._threw = false;
       result.objects = reason.message;
       this.protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedPending, this);
     } else if (reason instanceof RpcNotFoundResponse) {
       this._notFound = true;
+      this._threw = false;
       this.protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedNotFound, this);
     } else {
       this._threw = true;

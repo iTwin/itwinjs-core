@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "Fixes for unhandled promise rejections in RPC layer",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}
