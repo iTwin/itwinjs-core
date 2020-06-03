@@ -2424,8 +2424,10 @@ export class StandaloneDb extends IModelDb {
     const filePath: string = nativeDb.getFilePath();
     const iModelRpcProps: IModelRpcProps = { key: filePath, iModelId: nativeDb.getDbGuid(), openMode };
     super(nativeDb, iModelRpcProps, openMode);
-    if (!BriefcaseManager.isStandaloneBriefcaseId(this.getBriefcaseId()))
+    if (!BriefcaseManager.isStandaloneBriefcaseId(this.getBriefcaseId())) {
+      nativeDb.closeIModel();
       throw new IModelError(IModelStatus.BadRequest, "Not a standalone iModel", Logger.logError, loggerCategory);
+    }
 
     StandaloneDb._openDbs.set(filePath, this);
   }
