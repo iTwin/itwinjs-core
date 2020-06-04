@@ -23,6 +23,7 @@ import { InputFieldMessage } from "../messages/InputField";
 import { PointerMessage } from "../messages/Pointer";
 import { PopupRenderer } from "../popup/PopupManager";
 import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
+import { ConfigurableUiManager } from "./ConfigurableUiManager";
 
 // cSpell:ignore cursormenu
 
@@ -32,6 +33,11 @@ import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
 export interface ConfigurableUiContentProps extends CommonProps {
   /** React node of the Backstage */
   appBackstage?: React.ReactNode;
+
+  /** @internal */
+  idleTimeout?: number;
+  /** @internal */
+  intervalTimeout?: number;
 }
 
 /** The ConfigurableUiContent component is the component the pages specified using ConfigurableUi
@@ -55,6 +61,12 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
       window.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
+  React.useEffect(() => {
+    ConfigurableUiManager.activityTracker.initialize({ idleTimeout: props.idleTimeout, intervalTimeout: props.intervalTimeout });
+    return () => {
+      ConfigurableUiManager.activityTracker.terminate();
+    };
+  }, [props.idleTimeout, props.intervalTimeout]);
 
   const handleMouseMove = React.useCallback((e: React.MouseEvent) => {
     const point = new Point(e.pageX, e.pageY);

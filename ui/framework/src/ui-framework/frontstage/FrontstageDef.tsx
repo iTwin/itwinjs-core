@@ -25,6 +25,7 @@ import { ZoneDef } from "../zones/ZoneDef";
 import { Frontstage, FrontstageProps } from "./Frontstage";
 import { FrontstageManager } from "./FrontstageManager";
 import { FrontstageProvider } from "./FrontstageProvider";
+import { TimeTracker } from "../configurableui/TimeTracker";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -68,6 +69,7 @@ export class FrontstageDef {
   private _contentGroup?: ContentGroup;
   private _frontstageProvider?: FrontstageProvider;
   private _nineZone?: NineZoneManagerProps;
+  private _timeTracker: TimeTracker = new TimeTracker();
   private _nineZoneState?: NineZoneState;
 
   public get id(): string { return this._id; }
@@ -106,6 +108,7 @@ export class FrontstageDef {
   public get contentLayoutDef(): ContentLayoutDef | undefined { return this._contentLayoutDef; }
   public get contentGroup(): ContentGroup | undefined { return this._contentGroup; }
   public get frontstageProvider(): FrontstageProvider | undefined { return this._frontstageProvider; }
+
   /** @internal */
   public get nineZone(): NineZoneManagerProps | undefined { return this._nineZone; }
   public set nineZone(props: NineZoneManagerProps | undefined) { this._nineZone = props; }
@@ -119,6 +122,9 @@ export class FrontstageDef {
       state,
     });
   }
+
+  /** @internal */
+  public get timeTracker(): TimeTracker { return this._timeTracker; }
 
   /** Constructs the [[FrontstageDef]]  */
   constructor(props?: FrontstageProps) {
@@ -149,6 +155,8 @@ export class FrontstageDef {
 
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._contentLayoutDef, contentGroup: this._contentGroup });
 
+    this._timeTracker.startTiming();
+
     this._onActivated();
   }
 
@@ -167,6 +175,8 @@ export class FrontstageDef {
 
     if (this.contentGroup)
       this.contentGroup.onFrontstageDeactivated();
+
+    this._timeTracker.stopTiming();
 
     this._onDeactivated();
   }

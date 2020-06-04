@@ -6,6 +6,7 @@
  * @module ConfigurableUi
  */
 
+import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { UiError } from "@bentley/ui-abstract";
 import { ContentGroupManager, ContentGroupProps } from "../content/ContentGroup";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
@@ -28,6 +29,31 @@ import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { MessageManager } from "../messages/MessageManager";
 import { PopupManager } from "../popup/PopupManager";
+import { ActivityTracker } from "./ActivityTracker";
+
+/** Ui Activity Event Args interface.
+ * @internal
+ */
+export interface UiActivityEventArgs {
+  event: Event;
+}
+
+/** Ui Activity Event class.
+ * @internal
+ */
+export class UiActivityEvent extends BeUiEvent<UiActivityEventArgs> { }
+
+/** Ui Interval Event Args interface
+ * @internal
+ */
+export interface UiIntervalEventArgs {
+  idleTimeout?: number;
+}
+
+/** Ui Interval Event class.
+ * @internal
+ */
+export class UiIntervalEvent extends BeUiEvent<UiIntervalEventArgs> { }
 
 /** Configurable Ui Manager maintains controls, Frontstages, Content Groups, Content Layouts, Tasks and Workflows.
  * @public
@@ -35,6 +61,13 @@ import { PopupManager } from "../popup/PopupManager";
 export class ConfigurableUiManager {
   private static _registeredControls = new Map<string, ConfigurableUiControlConstructor>();
   private static _initialized = false;
+
+  /** @internal */
+  public static readonly activityTracker = new ActivityTracker();
+  /** @internal */
+  public static readonly onUiActivityEvent = new UiActivityEvent();
+  /** @internal */
+  public static readonly onUiIntervalEvent = new UiIntervalEvent();
 
   /** Initializes the ConfigurableUiManager and registers core controls. */
   public static initialize() {

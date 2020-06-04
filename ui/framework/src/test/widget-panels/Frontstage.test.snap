@@ -92,6 +92,18 @@ exports[`WidgetPanelsFrontstage should render 1`] = `
       "_defaultLayoutId": "",
       "_id": "",
       "_isInFooterMode": true,
+      "_timeTracker": TimeTracker {
+        "_firstActiveTimestamp": 0,
+        "_idleCount": 0,
+        "_idleStartTimestamp": 0,
+        "_idleTime": 0,
+        "_idleTimeCounter": [Function],
+        "_idleTimeout": 5000,
+        "_lastActiveTimestamp": 0,
+        "_totalIdleTime": 0,
+        "_totalTime": 0,
+        "_trackActivity": [Function],
+      },
       "_version": 0,
     }
   }
@@ -107,6 +119,18 @@ exports[`WidgetPanelsFrontstage should render modal stage content 1`] = `
       "_defaultLayoutId": "",
       "_id": "",
       "_isInFooterMode": true,
+      "_timeTracker": TimeTracker {
+        "_firstActiveTimestamp": 0,
+        "_idleCount": 0,
+        "_idleStartTimestamp": 0,
+        "_idleTime": 0,
+        "_idleTimeCounter": [Function],
+        "_idleTimeout": 5000,
+        "_lastActiveTimestamp": 0,
+        "_totalIdleTime": 0,
+        "_totalTime": 0,
+        "_trackActivity": [Function],
+      },
       "_version": 0,
     }
   }

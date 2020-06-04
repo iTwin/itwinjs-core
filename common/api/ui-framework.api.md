@@ -875,6 +875,10 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps): JSX.El
 // @public
 export interface ConfigurableUiContentProps extends CommonProps {
     appBackstage?: React.ReactNode;
+    // @internal (undocumented)
+    idleTimeout?: number;
+    // @internal (undocumented)
+    intervalTimeout?: number;
 }
 
 // @public
@@ -921,6 +925,8 @@ export interface ConfigurableUiElement {
 
 // @public
 export class ConfigurableUiManager {
+    // @internal (undocumented)
+    static readonly activityTracker: ActivityTracker;
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
     // @internal (undocumented)
     static closeUi(): void;
@@ -939,6 +945,10 @@ export class ConfigurableUiManager {
     static loadTasks(taskPropsList: TaskPropsList): void;
     static loadWorkflow(workflowProps: WorkflowProps): void;
     static loadWorkflows(workflowPropsList: WorkflowPropsList): void;
+    // @internal (undocumented)
+    static readonly onUiActivityEvent: UiActivityEvent;
+    // @internal (undocumented)
+    static readonly onUiIntervalEvent: UiIntervalEvent;
     static registerControl(classId: string, constructor: ConfigurableUiControlConstructor): void;
     static unregisterControl(classId: string): void;
 }
@@ -2060,10 +2070,11 @@ export class FrontstageDeactivatedEvent extends UiEvent<FrontstageDeactivatedEve
 
 // @public
 export interface FrontstageDeactivatedEventArgs {
-    // (undocumented)
     activatedFrontstageDef?: FrontstageDef;
-    // (undocumented)
     deactivatedFrontstageDef: FrontstageDef;
+    engagementTime: number;
+    idleTime: number;
+    totalTime: number;
 }
 
 // @public
@@ -2138,6 +2149,8 @@ export class FrontstageDef {
     setActiveViewFromViewport(viewport: ScreenViewport): boolean;
     setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
     startDefaultTool(): void;
+    // @internal (undocumented)
+    get timeTracker(): TimeTracker;
     // (undocumented)
     get topCenter(): ZoneDef | undefined;
     // (undocumented)
@@ -2200,6 +2213,7 @@ export class FrontstageManager {
     static clearFrontstageDefs(): void;
     static closeModalFrontstage(): void;
     static closeNestedFrontstage(): Promise<void>;
+    static deactivateFrontstageDef(): Promise<void>;
     // @internal
     static ensureToolInformationIsSet(toolId: string): void;
     static findFrontstageDef(id?: string): FrontstageDef | undefined;
@@ -2222,6 +2236,7 @@ export class FrontstageManager {
     // @internal (undocumented)
     static readonly onFrontstageRestoreLayoutEvent: UiEvent<FrontstageEventArgs>;
     static readonly onModalFrontstageChangedEvent: ModalFrontstageChangedEvent;
+    static readonly onModalFrontstageClosedEvent: ModalFrontstageClosedEvent;
     static readonly onNavigationAidActivatedEvent: NavigationAidActivatedEvent;
     // @internal (undocumented)
     static readonly onPanelSizeChangedEvent: PanelSizeChangedEvent;
@@ -3354,6 +3369,18 @@ export class ModalFrontstageChangedEvent extends UiEvent<ModalFrontstageChangedE
 export interface ModalFrontstageChangedEventArgs {
     // (undocumented)
     modalFrontstageCount: number;
+}
+
+// @public
+export class ModalFrontstageClosedEvent extends UiEvent<ModalFrontstageClosedEventArgs> {
+}
+
+// @public
+export interface ModalFrontstageClosedEventArgs {
+    engagementTime: number;
+    idleTime: number;
+    modalFrontstage: ModalFrontstageInfo;
+    totalTime: number;
 }
 
 // @internal (undocumented)
@@ -5499,6 +5526,16 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
     verticalToolbar?: React.ReactNode;
 }
 
+// @internal
+export class UiActivityEvent extends BeUiEvent<UiActivityEventArgs> {
+}
+
+// @internal
+export interface UiActivityEventArgs {
+    // (undocumented)
+    event: Event;
+}
+
 // @public
 export class UiFramework {
     // @beta (undocumented)
@@ -5593,6 +5630,16 @@ export class UiFramework {
     // @alpha (undocumented)
     static get widgetManager(): WidgetManager;
     }
+
+// @internal
+export class UiIntervalEvent extends BeUiEvent<UiIntervalEventArgs> {
+}
+
+// @internal
+export interface UiIntervalEventArgs {
+    // (undocumented)
+    idleTimeout?: number;
+}
 
 // @internal (undocumented)
 export const UiSettingsContext: React.Context<UiSettings>;

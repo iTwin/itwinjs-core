@@ -1,6 +1,7 @@
 sep=;
 Release Tag;API Item
 internal;ActiveTabIdContext: React.Context
+internal;addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial
 internal;addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], widgetArgs?: Partial
 internal;addTab(state: NineZoneState, widgetId: WidgetState["id"], id: TabState["id"], tabArgs?: Partial
 alpha;AppButton 

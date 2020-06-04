@@ -15,7 +15,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
-import { ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkReducer, FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDef, FrontstageManager, IModelAppUiSettings, IModelInfo, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider } from "@bentley/ui-framework";
+import { ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkReducer, FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager, IModelAppUiSettings, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
@@ -46,7 +46,7 @@ import { PresentationUnitSystem } from "@bentley/presentation-common";
 RpcConfiguration.developmentMode = true;
 
 // cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise toggledraginteraction toggleframeworkversion
-// cSpell:ignore mobx setdraginteraction setframeworkversion
+// cSpell:ignore mobx setdraginteraction setframeworkversion urlps
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
  */
@@ -505,16 +505,28 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean }> {
     SampleAppIModelApp.uiSettings = authorized ? new IModelAppUiSettings() : new LocalUiSettings();
   }
 
+  private _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
+    Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage exit: id=${args.deactivatedFrontstageDef.id} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
+  }
+
+  private _handleModalFrontstageClosedEvent = (args: ModalFrontstageClosedEventArgs): void => {
+    Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Modal Frontstage close: title=${args.modalFrontstage.title} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
+  }
+
   public componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
     if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
+    FrontstageManager.onFrontstageDeactivatedEvent.addListener(this._handleFrontstageDeactivatedEvent);
+    FrontstageManager.onModalFrontstageClosedEvent.addListener(this._handleModalFrontstageClosedEvent);
   }
 
   public componentWillUnmount() {
     const oidcClient = IModelApp.authorizationClient;
     if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
+    FrontstageManager.onFrontstageDeactivatedEvent.removeListener(this._handleFrontstageDeactivatedEvent);
+    FrontstageManager.onModalFrontstageClosedEvent.removeListener(this._handleModalFrontstageClosedEvent);
   }
 
   public render(): JSX.Element {
