@@ -88,7 +88,7 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
         : { width: `${panel.size}px` };
   }, [panel.size, panel.side]);
   const ref = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (panel.size !== undefined)
       return;
     const bounds = ref.current?.getBoundingClientRect();

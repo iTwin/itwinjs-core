@@ -9,7 +9,7 @@
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
-import { NineZoneManagerProps } from "@bentley/ui-ninezone";
+import { NineZoneManagerProps, NineZoneState } from "@bentley/ui-ninezone";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";
@@ -25,6 +25,16 @@ import { ZoneDef } from "../zones/ZoneDef";
 import { Frontstage, FrontstageProps } from "./Frontstage";
 import { FrontstageManager } from "./FrontstageManager";
 import { FrontstageProvider } from "./FrontstageProvider";
+
+/** @internal */
+export interface FrontstageEventArgs {
+  frontstageDef: FrontstageDef;
+}
+
+/** @internal */
+export interface FrontstageNineZoneStateChangedEventArgs extends FrontstageEventArgs {
+  state: NineZoneState | undefined;
+}
 
 /** FrontstageDef class provides an API for a Frontstage.
  * @public
@@ -58,6 +68,7 @@ export class FrontstageDef {
   private _contentGroup?: ContentGroup;
   private _frontstageProvider?: FrontstageProvider;
   private _nineZone?: NineZoneManagerProps;
+  private _nineZoneState?: NineZoneState;
 
   public get id(): string { return this._id; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
@@ -98,6 +109,16 @@ export class FrontstageDef {
   /** @internal */
   public get nineZone(): NineZoneManagerProps | undefined { return this._nineZone; }
   public set nineZone(props: NineZoneManagerProps | undefined) { this._nineZone = props; }
+
+  /** @internal */
+  public get nineZoneState(): NineZoneState | undefined { return this._nineZoneState; }
+  public set nineZoneState(state: NineZoneState | undefined) {
+    this._nineZoneState = state;
+    FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
+      frontstageDef: this,
+      state,
+    });
+  }
 
   /** Constructs the [[FrontstageDef]]  */
   constructor(props?: FrontstageProps) {
@@ -475,4 +496,8 @@ export class FrontstageDef {
     });
   }
 
+  /** @beta */
+  public restoreLayout() {
+    FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
+  }
 }

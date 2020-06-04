@@ -10,7 +10,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import {
-  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, StagePanelLocation, ToolbarItemUtilities,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, StagePanelLocation, ToolbarItemUtilities, WidgetState,
 } from "@bentley/ui-abstract";
 import { SelectionMode } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
@@ -20,7 +20,7 @@ import {
   CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef, HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler,
   HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager, ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType,
   SavedViewLayout, SavedViewLayoutProps, StagePanel, StagePanelHeader, StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework,
-  VisibilityComponentHierarchy, VisibilityWidget, Widget, WIDGET_OPACITY_DEFAULT, WidgetState, Zone, ZoneLocation, ZoneState,
+  VisibilityComponentHierarchy, VisibilityWidget, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
 // SVG Support - SvgPath or SvgSprite
@@ -677,8 +677,13 @@ class AdditionalTools {
       iconSpec: "icon-placeholder",
       label: "Show widget",
       execute: () => {
-        UiFramework.layoutManager.showWidget("uitestapp-test-wd3");
-        UiFramework.layoutManager.expandWidget("uitestapp-test-wd3");
+        const frontstageDef = FrontstageManager.activeFrontstageDef;
+        if (!frontstageDef)
+          return;
+        const widgetDef = frontstageDef.findWidgetDef("uitestapp-test-wd3");
+        if (!widgetDef)
+          return;
+        widgetDef.show();
       },
     }), { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(140, new CommandItemDef({
@@ -686,7 +691,8 @@ class AdditionalTools {
       iconSpec: "icon-placeholder",
       label: "Restore layout",
       execute: () => {
-        UiFramework.layoutManager.restoreLayout("ViewsFrontstage");
+        const frontstageDef = FrontstageManager.findFrontstageDef("ViewsFrontstage");
+        frontstageDef && frontstageDef.restoreLayout();
       },
     }), { groupPriority: 30 }),
     this.formatGroupItemsItem(),

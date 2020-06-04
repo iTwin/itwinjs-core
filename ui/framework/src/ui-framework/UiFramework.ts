@@ -30,7 +30,6 @@ import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
-import { LayoutManager } from "./widget-panels/LayoutManager";
 import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
 import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "./selection/HideIsolateEmphasizeManager";
 
@@ -76,7 +75,6 @@ export class UiFramework {
   private static _backstageManager?: BackstageManager;
   private static _widgetManager?: WidgetManager;
   private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
-  private static _layoutManager = new LayoutManager();
   private static _uiVersion = "";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
 
@@ -425,13 +423,6 @@ export class UiFramework {
       mobile = MobileRpcConfiguration.isMobileFrontend;
     }
     return mobile;
-  }
-
-  /** Returns layout manager.
-   * @beta
-   */
-  public static get layoutManager(): LayoutManager {
-    return UiFramework._layoutManager;
   }
 
   /** Returns the Ui Version.

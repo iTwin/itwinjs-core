@@ -34,6 +34,11 @@ export interface WidgetStateChangedEventArgs {
  */
 export class WidgetStateChangedEvent extends UiEvent<WidgetStateChangedEventArgs> { }
 
+/** @internal */
+export interface WidgetEventArgs {
+  widgetDef: WidgetDef;
+}
+
 /** Widget type enum.
  * @public
  */
@@ -362,5 +367,20 @@ export class WidgetDef {
       result = !(result1 || result2);
     }
     return result;
+  }
+
+  /** Opens the widget and makes it visible to the user.
+   * I.e. opens the stage panel or brings the floating widget to front of the screen.
+   * @alpha
+   */
+  public show() {
+    FrontstageManager.onWidgetShowEvent.emit({ widgetDef: this });
+  }
+
+  /** Opens the widget and expands it to fill full size of the stage panel.
+   * @alpha
+   */
+  public expand() {
+    FrontstageManager.onWidgetExpandEvent.emit({ widgetDef: this });
   }
 }

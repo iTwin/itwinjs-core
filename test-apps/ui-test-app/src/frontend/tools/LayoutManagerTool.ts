@@ -6,7 +6,7 @@
  * @module Tools
  */
 import { Tool } from "@bentley/imodeljs-frontend";
-import { FrontstageManager, UiFramework } from "@bentley/ui-framework";
+import { FrontstageManager } from "@bentley/ui-framework";
 
 export class LayoutManagerRestoreLayoutTool extends Tool {
   public static toolId = "TestLayoutManager.RestoreLayout";
@@ -14,7 +14,8 @@ export class LayoutManagerRestoreLayoutTool extends Tool {
   public static get maxArgs() { return 1; }
 
   public parseAndRun(frontstageId: string): boolean {
-    UiFramework.layoutManager.restoreLayout(frontstageId);
+    const frontstageDef = FrontstageManager.findFrontstageDef(frontstageId);
+    frontstageDef && frontstageDef.restoreLayout();
     return true;
   }
 

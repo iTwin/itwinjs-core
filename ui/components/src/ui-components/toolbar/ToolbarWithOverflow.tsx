@@ -264,10 +264,18 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
   const useHeight = (expandsTo === Direction.Right || expandsTo === Direction.Left);
   const [isOverflowPanelOpen, setIsOverflowPanelOpen] = React.useState(false);
   const [popupPanelCount, setPopupPanelCount] = React.useState(0);
-
+  const isMounted = React.useRef(false);
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  });
   const handlePopupPanelOpenClose = React.useCallback((isOpening: boolean) => {
     // use setImmediate to avoid warning about setting state in ToolbarWithOverflow from render method of PopupItem/PopupItemWithDrag
     setImmediate(() => {
+      if (!isMounted.current)
+        return;
       setPopupPanelCount((prev) => {
         const nextCount = isOpening ? (prev + 1) : (prev - 1);
         // tslint:disable-next-line: no-console

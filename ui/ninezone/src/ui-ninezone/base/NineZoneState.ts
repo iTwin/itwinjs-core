@@ -690,6 +690,26 @@ export function addPanelWidget(state: NineZoneState, side: PanelSide, id: Widget
 }
 
 /** @internal */
+export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial<FloatingWidgetState>,
+  widgetArgs?: Partial<WidgetState>,
+): NineZoneState {
+  const floatingWidget: FloatingWidgetState = {
+    bounds: new Rectangle(0, 100, 200, 400).toProps(),
+    id,
+    ...floatingWidgetArgs,
+  };
+  const widget = {
+    ...createWidgetState(id),
+    ...widgetArgs,
+  };
+  return produce(state, (stateDraft) => {
+    stateDraft.floatingWidgets.byId[id] = floatingWidget;
+    stateDraft.floatingWidgets.allIds.push(id);
+    stateDraft.widgets[id] = castDraft(widget);
+  });
+}
+
+/** @internal */
 export function addTab(state: NineZoneState, widgetId: WidgetState["id"], id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState {
   const tab = {
     ...createTabState(id),

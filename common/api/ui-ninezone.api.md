@@ -22,6 +22,9 @@ import { SizeProps } from '@bentley/ui-core';
 export const ActiveTabIdContext: React.Context<string | undefined>;
 
 // @internal (undocumented)
+export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial<FloatingWidgetState>, widgetArgs?: Partial<WidgetState>): NineZoneState;
+
+// @internal (undocumented)
 export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], widgetArgs?: Partial<WidgetState>): NineZoneState;
 
 // @internal (undocumented)

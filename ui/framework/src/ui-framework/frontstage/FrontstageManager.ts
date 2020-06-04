@@ -16,14 +16,14 @@ import { ContentControlActivatedEvent } from "../content/ContentControl";
 import { ContentGroup } from "../content/ContentGroup";
 import { ContentLayoutActivatedEvent, ContentLayoutDef } from "../content/ContentLayout";
 import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
-import { PanelStateChangedEvent, StagePanelTrySetCurrentSizeEventArgs } from "../stagepanels/StagePanelDef";
+import { PanelSizeChangedEvent, PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { WidgetDef, WidgetStateChangedEvent } from "../widgets/WidgetDef";
+import { WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
-import { FrontstageDef } from "./FrontstageDef";
+import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "./FrontstageDef";
 import { FrontstageProvider } from "./FrontstageProvider";
 
 // -----------------------------------------------------------------------------
@@ -220,6 +220,26 @@ export class FrontstageManager {
   /** Get Widget State Changed event. */
   public static readonly onWidgetStateChangedEvent = new WidgetStateChangedEvent();
 
+  /** @internal */
+  public static readonly onWidgetShowEvent = new UiEvent<WidgetEventArgs>();
+
+  /** @internal */
+  public static readonly onWidgetExpandEvent = new UiEvent<WidgetEventArgs>();
+
+  /** @internal */
+  public static readonly onFrontstageNineZoneStateChangedEvent = new UiEvent<FrontstageNineZoneStateChangedEventArgs>();
+
+  /** @internal */
+  public static readonly onFrontstageRestoreLayoutEvent = new UiEvent<FrontstageEventArgs>();
+
+  /** Get Widget State Changed event.
+   * @alpha
+   */
+  public static readonly onPanelStateChangedEvent = new PanelStateChangedEvent();
+
+  /** @internal */
+  public static readonly onPanelSizeChangedEvent = new PanelSizeChangedEvent();
+
   /** Get Nine-zone State Manager. */
   public static get NineZoneManager() {
     const id = FrontstageManager.activeFrontstageId;
@@ -230,14 +250,6 @@ export class FrontstageManager {
     }
     return manager;
   }
-
-  /** Get Widget State Changed event.
-   * @alpha
-   */
-  public static readonly onPanelStateChangedEvent = new PanelStateChangedEvent();
-
-  /** @internal */
-  public static readonly onStagePanelTrySetCurrentSizeEvent = new UiEvent<StagePanelTrySetCurrentSizeEventArgs>();
 
   /** Clears the Frontstage map.
    */

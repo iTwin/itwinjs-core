@@ -57,11 +57,11 @@ describe("StagePanelDef", () => {
     expect(panelDef.panelZones).to.exist;
   });
 
-  it("should emit onStagePanelTrySetCurrentSizeEvent", () => {
+  it("should emit onPanelSizeChangedEvent", () => {
     const spy = sinon.spy();
-    FrontstageManager.onStagePanelTrySetCurrentSizeEvent.addListener(spy);
+    FrontstageManager.onPanelSizeChangedEvent.addListener(spy);
     const panelDef = new StagePanelDef();
-    panelDef.trySetCurrentSize(200);
+    panelDef.size = 200;
     expect(spy).to.be.calledOnceWithExactly(sinon.match({ panelDef, size: 200 }));
   });
 });

@@ -38,10 +38,13 @@ export interface PanelStateChangedEventArgs {
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> { }
 
 /** @internal */
-export interface StagePanelTrySetCurrentSizeEventArgs {
+export interface PanelSizeChangedEventArgs {
   panelDef: StagePanelDef;
-  size: number;
+  size: number | undefined;
 }
+
+/** @internal */
+export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> { }
 
 /**
  * A StagePanelDef represents each Stage Panel within a Frontstage.
@@ -63,6 +66,16 @@ export class StagePanelDef extends WidgetHost {
 
   /** Default size of the panel */
   public get size(): number | undefined { return this._size; }
+
+  public set size(size: number | undefined) {
+    if (this._size === size)
+      return;
+    this._size = size;
+    FrontstageManager.onPanelSizeChangedEvent.emit({
+      panelDef: this,
+      size,
+    });
+  }
   /** Indicates whether the panel is resizable. */
   public get resizable(): boolean { return this._resizable; }
   /** Any application data to attach to this Panel. */
@@ -82,17 +95,6 @@ export class StagePanelDef extends WidgetHost {
     FrontstageManager.onPanelStateChangedEvent.emit({
       panelDef: this,
       panelState,
-    });
-  }
-
-  /** Tries to set current size of the stage panel.
-   * Actual panel size might differ, since min/max size is respected.
-   * @alpha
-   */
-  public trySetCurrentSize(size: number) {
-    FrontstageManager.onStagePanelTrySetCurrentSizeEvent.emit({
-      panelDef: this,
-      size,
     });
   }
 

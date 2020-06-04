@@ -9,3 +9,15 @@ ignore: true
 
 ![cel-shaded display](./assets/cel-shaded.png)
 <p align="center">Cel-shaded display</p>
+
+## Changes in `@bentley/ui-framework`
+
+### `LayoutManager` removed
+
+`LayoutManager.restoreLayout()` is replaced by `FrontstageDef.restoreLayout()`
+`LayoutManager.showWidget()` is replaced by `WidgetDef.show()`
+`LayoutManager.expandWidget()` is replaced by `WidgetDef.expand()`
+
+### `StagePanelDef` changes
+
+`StagePanelDef.trySetCurrentSize()` is replaced by `StagePanelDef.size` setter.

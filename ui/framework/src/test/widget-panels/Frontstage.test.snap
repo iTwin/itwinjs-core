@@ -1,241 +1,182 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`ActiveFrontstageDefProvider should render 1`] = `
+<div
+  className="uifw-widgetPanels-frontstage"
+>
+  <NineZone
+    dispatch={[Function]}
+    state={
+      Object {
+        "draggedTab": undefined,
+        "floatingWidgets": Object {
+          "allIds": Array [],
+          "byId": Object {},
+        },
+        "panels": Object {
+          "bottom": Object {
+            "collapseOffset": 100,
+            "collapsed": false,
+            "maxSize": 600,
+            "minSize": 200,
+            "pinned": true,
+            "side": "bottom",
+            "size": undefined,
+            "span": true,
+            "widgets": Array [],
+          },
+          "left": Object {
+            "collapseOffset": 100,
+            "collapsed": false,
+            "maxSize": 600,
+            "minSize": 200,
+            "pinned": true,
+            "side": "left",
+            "size": undefined,
+            "widgets": Array [],
+          },
+          "right": Object {
+            "collapseOffset": 100,
+            "collapsed": false,
+            "maxSize": 600,
+            "minSize": 200,
+            "pinned": true,
+            "side": "right",
+            "size": undefined,
+            "widgets": Array [],
+          },
+          "top": Object {
+            "collapseOffset": 100,
+            "collapsed": false,
+            "maxSize": 600,
+            "minSize": 200,
+            "pinned": true,
+            "side": "top",
+            "size": undefined,
+            "span": true,
+            "widgets": Array [],
+          },
+        },
+        "size": Object {
+          "height": NaN,
+          "width": NaN,
+        },
+        "tabs": Object {
+          "nz-tool-settings-tab": Object {
+            "id": "nz-tool-settings-tab",
+            "label": "Tool Settings",
+          },
+        },
+        "toolSettings": Object {
+          "type": "docked",
+        },
+        "widgets": Object {},
+      }
+    }
+    toolSettingsContent={<ToolSettingsContent />}
+    widgetContent={<WidgetContent />}
+  >
+    <WidgetPanelsFrontstageComponent />
+  </NineZone>
+</div>
+`;
+
 exports[`WidgetPanelsFrontstage should not render w/o frontstage 1`] = `""`;
 
 exports[`WidgetPanelsFrontstage should render 1`] = `
-<div
-  className="uifw-widgetPanels-frontstage"
->
-  <NineZone
-    dispatch={[Function]}
-    state={
-      Object {
-        "draggedTab": undefined,
-        "floatingWidgets": Object {
-          "allIds": Array [],
-          "byId": Object {},
-        },
-        "panels": Object {
-          "bottom": Object {
-            "collapseOffset": 100,
-            "collapsed": true,
-            "maxSize": 600,
-            "minSize": 200,
-            "pinned": true,
-            "side": "bottom",
-            "size": undefined,
-            "span": true,
-            "widgets": Array [],
-          },
-          "left": Object {
-            "collapseOffset": 100,
-            "collapsed": true,
-            "maxSize": 600,
-            "minSize": 200,
-            "pinned": true,
-            "side": "left",
-            "size": undefined,
-            "widgets": Array [],
-          },
-          "right": Object {
-            "collapseOffset": 100,
-            "collapsed": true,
-            "maxSize": 600,
-            "minSize": 200,
-            "pinned": true,
-            "side": "right",
-            "size": undefined,
-            "widgets": Array [],
-          },
-          "top": Object {
-            "collapseOffset": 100,
-            "collapsed": true,
-            "maxSize": 600,
-            "minSize": 200,
-            "pinned": true,
-            "side": "top",
-            "size": undefined,
-            "span": true,
-            "widgets": Array [],
-          },
-        },
-        "size": Object {
-          "height": NaN,
-          "width": NaN,
-        },
-        "tabs": Object {
-          "nz-tool-settings-tab": Object {
-            "id": "nz-tool-settings-tab",
-            "label": "Tool Settings",
-          },
-        },
-        "toolSettings": Object {
-          "type": "docked",
-        },
-        "widgets": Object {},
-      }
+<ActiveFrontstageDefProvider
+  frontstageDef={
+    FrontstageDef {
+      "_contentGroupId": "",
+      "_defaultContentId": "",
+      "_defaultLayoutId": "",
+      "_id": "",
+      "_isInFooterMode": true,
+      "_version": 0,
     }
-    toolSettingsContent={<ToolSettingsContent />}
-    widgetContent={<WidgetContent />}
-  >
-    <WidgetPanelsFrontstageComponent />
-  </NineZone>
-</div>
+  }
+/>
 `;
 
 exports[`WidgetPanelsFrontstage should render modal stage content 1`] = `
-<div
-  className="uifw-widgetPanels-frontstage"
->
-  <NineZone
-    dispatch={[Function]}
-    state={
-      Object {
-        "draggedTab": undefined,
-        "floatingWidgets": Object {
-          "allIds": Array [],
-          "byId": Object {},
-        },
-        "panels": Object {
-          "bottom": Object {
-            "collapseOffset": 100,
-            "collapsed": true,
-            "maxSize": 600,
-            "minSize": 200,
-            "pinned": true,
-            "side": "bottom",
-            "size": undefined,
-            "span": true,
-            "widgets": Array [],
-          },
-          "left": Object {
-            "collapseOffset": 100,
-            "collapsed": true,
-            "maxSize": 600,
-            "minSize": 200,
-            "pinned": true,
-            "side": "left",
-            "size": undefined,
-            "widgets": Array [],
-          },
-          "right": Object {
-            "collapseOffset": 100,
-            "collapsed": true,
-            "maxSize": 600,
-            "minSize": 200,
-            "pinned": true,
-            "side": "right",
-            "size": undefined,
-            "widgets": Array [],
-          },
-          "top": Object {
-            "collapseOffset": 100,
-            "collapsed": true,
-            "maxSize": 600,
-            "minSize": 200,
-            "pinned": true,
-            "side": "top",
-            "size": undefined,
-            "span": true,
-            "widgets": Array [],
-          },
-        },
-        "size": Object {
-          "height": NaN,
-          "width": NaN,
-        },
-        "tabs": Object {
-          "nz-tool-settings-tab": Object {
-            "id": "nz-tool-settings-tab",
-            "label": "Tool Settings",
-          },
-        },
-        "toolSettings": Object {
-          "type": "docked",
-        },
-        "widgets": Object {},
-      }
+<ActiveFrontstageDefProvider
+  frontstageDef={
+    FrontstageDef {
+      "_contentGroupId": "",
+      "_defaultContentId": "",
+      "_defaultLayoutId": "",
+      "_id": "",
+      "_isInFooterMode": true,
+      "_version": 0,
     }
-    toolSettingsContent={<ToolSettingsContent />}
-    widgetContent={<WidgetContent />}
-  >
-    <WidgetPanelsFrontstageComponent />
-  </NineZone>
-</div>
+  }
+/>
 `;
 
-exports[`initializeFrontstageState should initialize widgets 1`] = `
+exports[`initializeNineZoneState should initialize widgets 1`] = `
 Object {
-  "setting": Object {
-    "id": "",
-    "nineZone": Object {
-      "draggedTab": undefined,
-      "floatingWidgets": Object {
-        "allIds": Array [],
-        "byId": Object {},
-      },
-      "panels": Object {
-        "bottom": Object {
-          "collapseOffset": 100,
-          "collapsed": false,
-          "maxSize": 600,
-          "minSize": 200,
-          "pinned": true,
-          "side": "bottom",
-          "size": undefined,
-          "span": true,
-          "widgets": Array [],
-        },
-        "left": Object {
-          "collapseOffset": 100,
-          "collapsed": false,
-          "maxSize": 600,
-          "minSize": 200,
-          "pinned": true,
-          "side": "left",
-          "size": undefined,
-          "widgets": Array [],
-        },
-        "right": Object {
-          "collapseOffset": 100,
-          "collapsed": false,
-          "maxSize": 600,
-          "minSize": 200,
-          "pinned": true,
-          "side": "right",
-          "size": undefined,
-          "widgets": Array [],
-        },
-        "top": Object {
-          "collapseOffset": 100,
-          "collapsed": false,
-          "maxSize": 600,
-          "minSize": 200,
-          "pinned": true,
-          "side": "top",
-          "size": undefined,
-          "span": true,
-          "widgets": Array [],
-        },
-      },
-      "size": Object {
-        "height": NaN,
-        "width": NaN,
-      },
-      "tabs": Object {
-        "nz-tool-settings-tab": Object {
-          "id": "nz-tool-settings-tab",
-          "label": "Tool Settings",
-        },
-      },
-      "toolSettings": Object {
-        "type": "docked",
-      },
-      "widgets": Object {},
-    },
-    "stateVersion": 2,
-    "version": 0,
+  "draggedTab": undefined,
+  "floatingWidgets": Object {
+    "allIds": Array [],
+    "byId": Object {},
   },
-  "status": "LOADING",
+  "panels": Object {
+    "bottom": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "bottom",
+      "size": undefined,
+      "span": true,
+      "widgets": Array [],
+    },
+    "left": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "left",
+      "size": undefined,
+      "widgets": Array [],
+    },
+    "right": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "right",
+      "size": undefined,
+      "widgets": Array [],
+    },
+    "top": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "top",
+      "size": undefined,
+      "span": true,
+      "widgets": Array [],
+    },
+  },
+  "size": Object {
+    "height": NaN,
+    "width": NaN,
+  },
+  "tabs": Object {
+    "nz-tool-settings-tab": Object {
+      "id": "nz-tool-settings-tab",
+      "label": "Tool Settings",
+    },
+  },
+  "toolSettings": Object {
+    "type": "docked",
+  },
+  "widgets": Object {},
 }
 `;

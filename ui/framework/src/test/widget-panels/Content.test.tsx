@@ -40,4 +40,42 @@ describe("WidgetContent", () => {
     );
     container.firstChild!.should.matchSnapshot();
   });
+
+  it("should render w/o frontstage", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "leftStart", { activeTabId: "w1" });
+    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
+    const { container } = render(
+      <NineZoneProvider
+        dispatch={sinon.stub()}
+        state={nineZone}
+        measure={() => new Rectangle()}
+      >
+        <WidgetStateContext.Provider value={nineZone.widgets.leftStart}>
+          <WidgetContent />
+        </WidgetStateContext.Provider>
+      </NineZoneProvider>,
+    );
+    (container.firstChild === null)!.should.true;
+  });
+
+  it("should render w/o widgetDef", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "leftStart", { activeTabId: "w1" });
+    const frontstage = new FrontstageDef();
+    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
+    sandbox.stub(frontstage, "findWidgetDef").returns(undefined);
+    const { container } = render(
+      <NineZoneProvider
+        dispatch={sinon.stub()}
+        state={nineZone}
+        measure={() => new Rectangle()}
+      >
+        <WidgetStateContext.Provider value={nineZone.widgets.leftStart}>
+          <WidgetContent />
+        </WidgetStateContext.Provider>
+      </NineZoneProvider>,
+    );
+    (container.firstChild === null).should.true;
+  });
 });

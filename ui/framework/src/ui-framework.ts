@@ -212,7 +212,7 @@ export * from "./ui-framework/utils/ToolbarButtonHelper";
 export * from "./ui-framework/widget-panels/Content";
 export * from "./ui-framework/widget-panels/Frontstage";
 export * from "./ui-framework/widget-panels/FrontstageContent";
-export * from "./ui-framework/widget-panels/LayoutManager";
+export * from "./ui-framework/widget-panels/ModalFrontstageComposer";
 export * from "./ui-framework/widget-panels/StatusBar";
 export * from "./ui-framework/widget-panels/Toolbars";
 export * from "./ui-framework/widget-panels/ToolSettings";
