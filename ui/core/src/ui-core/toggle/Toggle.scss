@@ -6,9 +6,13 @@
 
 $toggle-height-small: $uicore-font-size * 1.5;
 $toggle-width-small:  $toggle-height-small * 2;
+$toggle-padding:      2;
 
 $toggle-height-large: 32px;
 $toggle-width-large:  $toggle-height-large * 2;
+
+$toggle-handle-small: $toggle-height-small - ($toggle-padding * 2);
+$toggle-handle-large: $toggle-height-large - ($toggle-padding * 2);
 
 .core-toggle {
   width:  $toggle-width-small;
@@ -24,8 +28,13 @@ $toggle-width-large:  $toggle-height-large * 2;
 }
 
 .core-toggle-large {
-  height:             $toggle-height-large;
-  width:              $toggle-width-large;
+  height:         $toggle-height-large;
+  width:          $toggle-width-large;
+
+  .core-toggle-handle {
+    min-width:    $toggle-handle-large;
+    min-height:   $toggle-handle-large;
+  }
 }
 
 .core-toggle-input {
@@ -58,6 +67,9 @@ $toggle-width-large:  $toggle-height-large * 2;
   position: absolute;
   background: #FFF;
   border-radius: 3px;
+
+  min-width:  $toggle-handle-small;
+  min-height: $toggle-handle-small;
 
   &.core-toggling {
     transition: transform 0.2s ease-out;
