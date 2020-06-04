@@ -1,6 +1,28 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Add a new BackendLoggerCategory for usage logging, 'BackendLoggerCategory.UsageLogging'.
+- Update to imodeljs-native 2.1.0
+- Support for finding an ExternalSourceAspect given scope, id, and kind/hash.
+- ApplyChangeset perf tests updated
+- Fixed token expiry check for desktop authorization. 
+- Download ChangeSets in chunks
+- (1) In xy region booleans, support curved edges; (2) ExportGraphicsMeshVisitor class
+- Add ability to convert ExportGraphicsMesh to Polyface
+- Fixed validation of Guids (ContextId, IModelId) cached within a briefcase.
+- Moved iModelBridgeFwk to a separate package
+- Simplified logging for monitoring briefcase operations. 
+- Fix transforms for creating and querying part instance geometry in world coordinate.
+- Fix and improvement to performance tests
+- Added support for schema XML import to iModelJs backend via the IModelDb.importSchemaStrings method.
+- channel rules
+- Fixed logging usage when opening connections. 
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT

@@ -1,6 +1,19 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Fixed ClipVector.performTransformTo/FromClip() failing to transform the input.
+- (1) In xy region booleans, support curved edges; (2) ExportGraphicsMeshVisitor class
+- (alpha) boolean operations among regions with curved boundaries.
+- Correct IModelJson.Reader error which lost normals.
+- In region booleans, create bridge edges to link islands to surroundings.
+- New methods for chaining curves.   First use of KaTeX in docs
+- Fix PolyfaceData.compress to handle normals and params
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT

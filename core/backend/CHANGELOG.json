@@ -2,6 +2,63 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/imodeljs-backend_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add a new BackendLoggerCategory for usage logging, 'BackendLoggerCategory.UsageLogging'."
+          },
+          {
+            "comment": "Update to imodeljs-native 2.1.0"
+          },
+          {
+            "comment": "Support for finding an ExternalSourceAspect given scope, id, and kind/hash."
+          },
+          {
+            "comment": "ApplyChangeset perf tests updated"
+          },
+          {
+            "comment": "Fixed token expiry check for desktop authorization. "
+          },
+          {
+            "comment": "Download ChangeSets in chunks"
+          },
+          {
+            "comment": "(1) In xy region booleans, support curved edges; (2) ExportGraphicsMeshVisitor class"
+          },
+          {
+            "comment": "Add ability to convert ExportGraphicsMesh to Polyface"
+          },
+          {
+            "comment": "Fixed validation of Guids (ContextId, IModelId) cached within a briefcase."
+          },
+          {
+            "comment": "Moved iModelBridgeFwk to a separate package"
+          },
+          {
+            "comment": "Simplified logging for monitoring briefcase operations. "
+          },
+          {
+            "comment": "Fix transforms for creating and querying part instance geometry in world coordinate."
+          },
+          {
+            "comment": "Fix and improvement to performance tests"
+          },
+          {
+            "comment": "Added support for schema XML import to iModelJs backend via the IModelDb.importSchemaStrings method."
+          },
+          {
+            "comment": "channel rules"
+          },
+          {
+            "comment": "Fixed logging usage when opening connections. "
+          }
+        ]
+      }
+    },
+    {
       "version": "2.0.0",
       "tag": "@bentley/imodeljs-backend_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",

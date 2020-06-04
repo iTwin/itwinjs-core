@@ -2,6 +2,21 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/presentation-backend_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Pass ruleset variables with request options instead of setting them in variables manager."
+          },
+          {
+            "comment": "Added ability to use single manager for all clients"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.0.0",
       "tag": "@bentley/presentation-backend_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",

@@ -2,6 +2,36 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/geometry-core_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed ClipVector.performTransformTo/FromClip() failing to transform the input."
+          },
+          {
+            "comment": "(1) In xy region booleans, support curved edges; (2) ExportGraphicsMeshVisitor class"
+          },
+          {
+            "comment": "(alpha) boolean operations among regions with curved boundaries."
+          },
+          {
+            "comment": "Correct IModelJson.Reader error which lost normals."
+          },
+          {
+            "comment": "In region booleans, create bridge edges to link islands to surroundings."
+          },
+          {
+            "comment": "New methods for chaining curves.   First use of KaTeX in docs"
+          },
+          {
+            "comment": "Fix PolyfaceData.compress to handle normals and params"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.0.0",
       "tag": "@bentley/geometry-core_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",

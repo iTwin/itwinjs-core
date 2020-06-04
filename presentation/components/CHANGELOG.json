@@ -2,6 +2,24 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/presentation-components_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to append grouping node children counts to their label"
+          },
+          {
+            "comment": "Remove memoized values in TreeDataProvider when Ruleset variables changes"
+          },
+          {
+            "comment": "Added ability for apps to display Favorite properties in Element Tooltip & Card at Cursor"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.0.0",
       "tag": "@bentley/presentation-components_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",

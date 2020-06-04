@@ -2,6 +2,66 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/imodeljs-frontend_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Handle height value when calculating ecef transform for maps."
+          },
+          {
+            "comment": "RenderClipVolume now supports ClipVectors containing more than one ClipPrimitive."
+          },
+          {
+            "comment": "Remove now-unused clipping mask shaders."
+          },
+          {
+            "comment": "An unhandled exception no longer closes the electron window."
+          },
+          {
+            "comment": "Fix silently-caught exception during asynchronous loading of EntityState constructors.\""
+          },
+          {
+            "comment": "Raise tile load event when map corners are reprojected."
+          },
+          {
+            "comment": "Fix incorrect conversion of display priority to frustum depth."
+          },
+          {
+            "comment": "ViewState3d.supportsCamera() returns false if 3d manipulations are disallowed."
+          },
+          {
+            "comment": "Orthographic view attachments now render directly onto the sheet view."
+          },
+          {
+            "comment": "Add support for perspective view attachments."
+          },
+          {
+            "comment": "Added support for WebGL2 to shader debug"
+          },
+          {
+            "comment": "Make thematic gradient texture adhere to max texture size of system."
+          },
+          {
+            "comment": "Optimize thematic sensor display by culling sensors based on a distanceCutoff property on ThematicDisplaySensorSettings."
+          },
+          {
+            "comment": "Reduce number of shader programs produced for clipping."
+          },
+          {
+            "comment": "small improvements to WebGL1 & WebGL2 performance & fix for output of hlsl shaders for debug"
+          },
+          {
+            "comment": "Some very minor performance improvements to WebGL1 & 2 shaders."
+          },
+          {
+            "comment": "improve Terrain shaders; default to WebGL2"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.0.0",
       "tag": "@bentley/imodeljs-frontend_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",

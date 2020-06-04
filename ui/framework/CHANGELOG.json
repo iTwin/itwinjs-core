@@ -2,6 +2,60 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/ui-framework_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add missing @bentley/imodeljs-markup peerDependency"
+          },
+          {
+            "comment": "Add commandItemDef to clearHiddenIsolatedEmphasized elements. "
+          },
+          {
+            "comment": "Fix z-index of Modeless dialogs."
+          },
+          {
+            "comment": "Address React warnings about deprecated methods."
+          },
+          {
+            "comment": "Make methods in HideIsolateEmphasizeManager static so they can be called by other packages."
+          },
+          {
+            "comment": "Update Hide, isolate, empahsize callback processing to ensure selection is not cleared until callbacks are processed."
+          },
+          {
+            "comment": "Added ability for apps to display Favorite properties in Element Tooltip & Card at Cursor"
+          },
+          {
+            "comment": "Add useWidgetDirection hook."
+          },
+          {
+            "comment": "Ability to restore layout."
+          },
+          {
+            "comment": "Expose showWidget and expandWidget functionality."
+          },
+          {
+            "comment": "Generate stable widget def id to fix save/restore layout issue."
+          },
+          {
+            "comment": "Ability to set stage panel size."
+          },
+          {
+            "comment": "Visibility Widget Trees: Fix a wrong offset being used for nodes when display state of the node is still unclear"
+          },
+          {
+            "comment": "Update HideIsolateEmphasizeAction enum so entries match FeatureIds used by Design Review."
+          },
+          {
+            "comment": "Do not display camera tool if 3D view does not support camera."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.0.0",
       "tag": "@bentley/ui-framework_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",

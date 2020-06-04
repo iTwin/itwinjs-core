@@ -1,0 +1,26 @@
+{
+  "name": "@bentley/imodel-bridge",
+  "entries": [
+    {
+      "version": "2.1.0",
+      "tag": "@bentley/imodel-bridge_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support for pushing schema changes individually."
+          },
+          {
+            "comment": "Need to pass requestContext in order to call importSchemas"
+          },
+          {
+            "comment": "Support for detecting changes"
+          },
+          {
+            "comment": "New package for IModelBridge support"
+          }
+        ]
+      }
+    }
+  ]
+}

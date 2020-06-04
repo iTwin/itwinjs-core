@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "packageName": "@bentley/ui-core",
       "comment": "",
-      "type": "none"
+      "type": "none",
+      "packageName": "@bentley/imodel-bridge"
     }
   ],
-  "packageName": "@bentley/ui-core",
+  "packageName": "@bentley/imodel-bridge",
   "email": "31107829+calebmshafer@users.noreply.github.com"
 }

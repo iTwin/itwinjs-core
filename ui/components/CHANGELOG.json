@@ -2,6 +2,54 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/ui-components_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix toolbar overflow panel display."
+          },
+          {
+            "comment": "Update to only show group separators if toolbar is not transparent. "
+          },
+          {
+            "comment": "Fix toolbar error when scaling up UI."
+          },
+          {
+            "comment": "Property grid horizontal layout updated according to UX requirements."
+          },
+          {
+            "comment": "Fixed Table filter renderers after react-select version upgrade"
+          },
+          {
+            "comment": "Support for striped rows in Table"
+          },
+          {
+            "comment": "Added ability for apps to display Favorite properties in Element Tooltip & Card at Cursor"
+          },
+          {
+            "comment": "Darken node descriptions in controlled tree"
+          },
+          {
+            "comment": "Center align ControlledTree error message"
+          },
+          {
+            "comment": "ControlledTree: Grow virtualized nodes' container width to fit the widest node and do not shrink it to avoid horinzontal scrollbar appearing/disappearing"
+          },
+          {
+            "comment": "Update version of react-select for ThemedSelect in ui-core."
+          },
+          {
+            "comment": "ControlledTree: Fix horizontal scrollbar appearing when tree component size changes even though nodes don't exceed width of the tree"
+          },
+          {
+            "comment": "Only show badges on toolbar buttons if toolbar background is not transparent."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.0.0",
       "tag": "@bentley/ui-components_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",

@@ -2,6 +2,12 @@
   "name": "@bentley/forms-data-management-client",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/forms-data-management-client_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.0.0",
       "tag": "@bentley/forms-data-management-client_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",

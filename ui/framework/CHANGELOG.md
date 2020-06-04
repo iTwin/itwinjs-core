@@ -1,6 +1,27 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Wed, 06 May 2020 13:17:49 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Add missing @bentley/imodeljs-markup peerDependency
+- Add commandItemDef to clearHiddenIsolatedEmphasized elements. 
+- Fix z-index of Modeless dialogs.
+- Address React warnings about deprecated methods.
+- Make methods in HideIsolateEmphasizeManager static so they can be called by other packages.
+- Update Hide, isolate, empahsize callback processing to ensure selection is not cleared until callbacks are processed.
+- Added ability for apps to display Favorite properties in Element Tooltip & Card at Cursor
+- Add useWidgetDirection hook.
+- Ability to restore layout.
+- Expose showWidget and expandWidget functionality.
+- Generate stable widget def id to fix save/restore layout issue.
+- Ability to set stage panel size.
+- Visibility Widget Trees: Fix a wrong offset being used for nodes when display state of the node is still unclear
+- Update HideIsolateEmphasizeAction enum so entries match FeatureIds used by Design Review.
+- Do not display camera tool if 3D view does not support camera.
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT
