@@ -35,6 +35,8 @@ export class BackendDefaultsPlugin {
     new ExternalsPlugin("commonjs", [
       "electron",
       "debug",
+      "ws",
+      "@bentley/imodeljs-native",
       "@bentley/imodeljs-native/package.json",
       "dtrace-provider",
       "node-report/api",
