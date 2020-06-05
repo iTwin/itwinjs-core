@@ -53,3 +53,7 @@ The iModel.js library is organized into the following separately downloadable [n
 - ($presentation-backend)
 - ($presentation-frontend)
 - ($presentation-components)
+
+## iModel.js Domain Packages
+
+- ($physical-material-backend)

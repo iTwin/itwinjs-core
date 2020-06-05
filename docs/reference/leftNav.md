@@ -54,6 +54,13 @@ packageClassification:  [
          "presentation-backend",
          "presentation-frontend"
       ]
+   },
+   {
+      "order":"5",
+      "header":"iModel.js Domain Packages",
+      "packages":[
+         "physical-material-backend"
+      ]
    }
 ]
 ---

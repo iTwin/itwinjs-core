@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, RenderMaterialProps, TextureMapProps } from "@bentley/imodeljs-common";
+import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, RenderMaterialProps, TextureMapProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -18,6 +18,30 @@ import { IModelDb } from "./IModelDb";
 export abstract class PhysicalMaterial extends DefinitionElement {
   /** @internal */
   public static get className(): string { return "PhysicalMaterial"; }
+  /** Create a Code for a PhysicalMaterial given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param definitionModelId The Id of the DefinitionModel that will contain the PhysicalMaterial and provide the scope for its name.
+   * @param name The name (codeValue) of the PhysicalMaterial
+   */
+  public static createCode(iModel: IModelDb, definitionModelId: CodeScopeProps, name: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.physicalMaterial);
+    return new Code({ spec: codeSpec.id, scope: definitionModelId, value: name });
+  }
+  /** Create a PhysicalMaterial
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the DefinitionModel that will contain the PhysicalMaterial and provide the scope for its name.
+   * @param name The name (codeValue) of the PhysicalMaterial
+   * @returns The newly constructed PhysicalMaterial
+   * @throws [[IModelError]] if there is a problem creating the PhysicalMaterial
+   */
+  public static create<T extends PhysicalMaterial>(iModelDb: IModelDb, definitionModelId: CodeScopeProps, name: string): T {
+    const elementProps: DefinitionElementProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
+    };
+    return iModelDb.elements.createElement(elementProps);
+  }
 }
 
 /** Defines a rendering material.

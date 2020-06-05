@@ -71,6 +71,7 @@
       "ui-core": "ui-core",
       "ui-framework": "ui-framework",
       "ui-ninezone": "ui-ninezone",
+      "physical-material-backend": "physical-material-backend",
       "presentation-backend": "presentation-backend",
       "presentation-common": "presentation-common",
       "presentation-components": "presentation-components",

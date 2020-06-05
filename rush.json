@@ -4,6 +4,7 @@
   "pnpmVersion": "4.12.5",
   "nodeSupportedVersionRange": ">=10.16.0 <13.0.0",
   "projectFolderMinDepth": 2,
+  "projectFolderMaxDepth": 3,
   "ensureConsistentVersions": true,
   "approvedPackagesPolicy": {
     "reviewCategories": [
@@ -205,6 +206,13 @@
     {
       "packageName": "@bentley/logger-config",
       "projectFolder": "core/logger-config",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/physical-material-backend",
+      "projectFolder": "domains/physical-material/backend",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

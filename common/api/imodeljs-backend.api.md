@@ -3521,6 +3521,8 @@ export class PhysicalElementIsOfType extends GeometricElement3dHasTypeDefinition
 export abstract class PhysicalMaterial extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
+    static create<T extends PhysicalMaterial>(iModelDb: IModelDb, definitionModelId: CodeScopeProps, name: string): T;
+    static createCode(iModel: IModelDb, definitionModelId: CodeScopeProps, name: string): Code;
 }
 
 // @public
