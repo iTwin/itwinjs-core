@@ -12,8 +12,9 @@ import * as React from "react";
 import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, assert, createNineZoneState, floatingWidgetBringToFront, FloatingWidgets, FloatingWidgetState, NineZone,
-  NineZoneDispatch, NineZoneState, NineZoneStateReducer, PanelSide, panelSides, TabState, WidgetPanels, WidgetState as NZ_WidgetState,
+  addPanelWidget, addTab, assert, createNineZoneState, createTabsState, floatingWidgetBringToFront, FloatingWidgets, FloatingWidgetState,
+  NineZone, NineZoneDispatch, NineZoneState, NineZoneStateReducer, PanelSide, panelSides, TabState, toolSettingsTabId,
+  WidgetPanels, WidgetState as NZ_WidgetState,
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
@@ -28,6 +29,8 @@ import { WidgetPanelsStatusBar } from "./StatusBar";
 import { WidgetPanelsToolbars } from "./Toolbars";
 import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { Logger } from "@bentley/bentleyjs-core";
+import { UiFramework } from "../UiFramework";
 
 // istanbul ignore next
 const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // tslint:disable-line: variable-name no-shadowed-variable
@@ -127,12 +130,16 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
   }
 
   for (const widget of widgets) {
-    const label = widget.label === "" ? "Panel" : widget.label;
+    const label = getWidgetLabel(widget.label);
     state = addTab(state, widgetId, widget.id, {
       label,
     });
   }
   return state;
+}
+
+function getWidgetLabel(label: string) {
+  return label === "" ? "Widget" : label;
 }
 
 type FrontstagePanelDefs = Pick<FrontstageDef, "leftPanel" | "rightPanel" | "topPanel" | "bottomPanel">;
@@ -265,7 +272,7 @@ export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult)
   return false;
 }
 
-const stateVersion = 2; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+const stateVersion = 3; // this needs to be bumped when NineZoneState is changed (to recreate layout).
 
 /** @internal */
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
@@ -307,6 +314,57 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
   return nineZone;
 }
 
+/** Converts from saved NineZoneState to NineZoneState.
+ * @note Restores toolSettings tab.
+ * @note Restores tab labels.
+ * @internal
+ */
+export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedNineZoneState): NineZoneState {
+  let restored: NineZoneState = {
+    ...saved,
+    tabs: createTabsState(),
+  };
+  restored = produce(restored, (draft) => {
+    for (const [, tab] of Object.entries(saved.tabs)) {
+      const widgetDef = frontstageDef.findWidgetDef(tab.id);
+      if (!widgetDef) {
+        Logger.logError(UiFramework.loggerCategory(restoreNineZoneState), "WidgetDef is not found for saved tab.", () => ({
+          frontstageId: frontstageDef.id,
+          tabId: tab.id,
+        }));
+      }
+      draft.tabs[tab.id] = {
+        ...tab,
+        label: getWidgetLabel(widgetDef?.label || ""),
+      };
+    }
+    return;
+  });
+  return restored;
+}
+
+/** Prepares NineZoneState to be saved.
+ * @note Removes toolSettings tab.
+ * @note Removes tab labels.
+ * @internal
+ */
+export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
+  let packed: SavedNineZoneState = {
+    ...state,
+    tabs: {},
+  };
+  packed = produce(packed, (draft) => {
+    for (const [, tab] of Object.entries(state.tabs)) {
+      if (tab.id === toolSettingsTabId)
+        continue;
+      draft.tabs[tab.id] = {
+        id: tab.id,
+      };
+    }
+  });
+  return packed;
+}
+
 /** @internal */
 export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined>, panelStates: ReadonlyArray<StagePanelState | undefined>) {
   const openZone = zoneStates.find((zoneState) => zoneState === ZoneState.Open);
@@ -314,11 +372,23 @@ export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined
   return !openZone && !openPanel;
 }
 
+// FrontstageState is saved in UiSettings.
 interface FrontstageState {
-  nineZone: NineZoneState;
+  nineZone: SavedNineZoneState;
   id: FrontstageDef["id"];
   version: number;
   stateVersion: number;
+}
+
+// We don't save tab labels.
+type SavedTabState = Omit<TabState, "label">;
+
+interface SavedTabsState {
+  readonly [id: string]: SavedTabState;
+}
+
+interface SavedNineZoneState extends Omit<NineZoneState, "tabs"> {
+  readonly tabs: SavedTabsState;
 }
 
 /** @internal */
@@ -464,7 +534,7 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
         settingsResult.setting.version >= version &&
         settingsResult.setting.stateVersion >= stateVersion
       ) {
-        frontstageDef.nineZoneState = settingsResult.setting.nineZone;
+        frontstageDef.nineZoneState = restoreNineZoneState(frontstageDef, settingsResult.setting.nineZone);
         return;
       }
       frontstageDef.nineZoneState = initializeNineZoneState(frontstageDef);
@@ -477,8 +547,14 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
 export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   const nineZone = useNineZoneState(frontstageDef);
   const uiSettings = useUiSettingsContext();
-  const saveSetting = React.useCallback(debounce(async (state: FrontstageState) => {
-    await uiSettings.saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(state.id), state);
+  const saveSetting = React.useCallback(debounce(async (id: string, version: number, state: NineZoneState) => {
+    const setting: FrontstageState = {
+      id,
+      nineZone: packNineZoneState(state),
+      stateVersion,
+      version,
+    };
+    await uiSettings.saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id), setting);
   }, 1000), [uiSettings]);
   React.useEffect(() => {
     return () => {
@@ -488,13 +564,7 @@ export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   React.useEffect(() => {
     if (!nineZone || nineZone.draggedTab)
       return;
-    const state = {
-      id: frontstageDef.id,
-      version: frontstageDef.version,
-      stateVersion,
-      nineZone,
-    };
-    saveSetting(state);
+    saveSetting(frontstageDef.id, frontstageDef.version, nineZone);
   }, [frontstageDef, nineZone, saveSetting]);
 }
 

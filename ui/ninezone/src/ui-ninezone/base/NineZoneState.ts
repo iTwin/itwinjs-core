@@ -634,6 +634,16 @@ export function createPanelsState(): PanelsState {
   };
 }
 
+/** @internal */
+export function createTabsState(args?: Partial<TabsState>): TabsState {
+  return {
+    [toolSettingsTabId]: createTabState(toolSettingsTabId, {
+      label: "Tool Settings",
+    }),
+    ...args,
+  };
+}
+
 /** @internal future */
 export function createNineZoneState(args?: Partial<NineZoneState>): NineZoneState {
   return {
@@ -644,12 +654,7 @@ export function createNineZoneState(args?: Partial<NineZoneState>): NineZoneStat
     },
     panels: createPanelsState(),
     widgets: {},
-    tabs: {
-      [toolSettingsTabId]: {
-        id: toolSettingsTabId,
-        label: "Tool Settings",
-      },
-    },
+    tabs: createTabsState(),
     toolSettings: {
       type: "docked",
     },
@@ -673,10 +678,11 @@ export function createWidgetState(id: WidgetState["id"], args?: Partial<WidgetSt
 }
 
 /** @internal */
-export function createTabState(id: TabState["id"]): TabState {
+export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState {
   return {
     id,
     label: "",
+    ...args,
   };
 }
 

@@ -36,7 +36,8 @@ internal;createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelS
 internal;createNineZoneState(args?: Partial
 internal;createPanelsState(): PanelsState
 internal;createPanelState(side: PanelSide): PanelState
-internal;createTabState(id: TabState["id"]): TabState
+internal;createTabsState(args?: Partial
+internal;createTabState(id: TabState["id"], args?: Partial
 internal;createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState
 internal;createWidgetState(id: WidgetState["id"], args?: Partial
 internal;Css

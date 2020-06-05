@@ -14,12 +14,20 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import {
   ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, expandWidget, findTab, FrontstageDef,
   FrontstageManager, getPanelSide, getWidgetId, initializeNineZoneState, isFrontstageStateSettingResult, ModalFrontstageComposer,
-  setPanelSize, setWidgetState, showWidget, StagePanelDef, StagePanelZoneDef, StagePanelZonesDef, UiSettingsProvider, useActiveModalFrontstageInfo,
-  useFrontstageManager, useNineZoneDispatch, useNineZoneState, useSavedFrontstageState, useSaveFrontstageSettings, useSyncDefinitions, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
+  packNineZoneState, restoreNineZoneState, setPanelSize, setWidgetState, showWidget, StagePanelDef, StagePanelZoneDef, StagePanelZonesDef,
+  UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState, useSavedFrontstageState,
+  useSaveFrontstageSettings, useSyncDefinitions, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
 } from "../../ui-framework";
 import TestUtils, { UiSettingsStub } from "../TestUtils";
+import { Logger } from "@bentley/bentleyjs-core";
 
-function createFrontstageState(nineZone = createNineZoneState()) {
+function createSavedNineZoneState() {
+  return {
+    ...createNineZoneState(),
+    tabs: {},
+  };
+}
+function createFrontstageState(nineZone = createSavedNineZoneState()) {
   return {
     id: "frontstage1",
     nineZone,
@@ -193,7 +201,7 @@ describe("useSavedFrontstageState", () => {
       wrapper: (props) => <UiSettingsProvider {...props} uiSettings={uiSettings} />,
     });
     await TestUtils.flushAsyncOperations();
-    setting.nineZone.should.eq(frontstageDef.nineZoneState);
+    frontstageDef.nineZoneState?.should.matchSnapshot();
   });
 
   it("should not load nineZoneState when nineZoneState is already initialized", async () => {
@@ -719,5 +727,56 @@ describe("findTab", () => {
     nineZone = addTab(nineZone, "w1", "t1");
     const tab = findTab(nineZone, "t1");
     (tab === undefined).should.true;
+  });
+});
+
+describe("restoreNineZoneState", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should log error if widgetDef is not found", () => {
+    const spy = sandbox.spy(Logger, "logError");
+    const frontstageDef = new FrontstageDef();
+    const savedState = {
+      ...createSavedNineZoneState(),
+      tabs: {
+        t1: {
+          id: "t1",
+        },
+      },
+    };
+    restoreNineZoneState(frontstageDef, savedState);
+    spy.calledOnce.should.true;
+    spy.firstCall.args[2]!().should.matchSnapshot();
+  });
+
+  it("should restore tabs", () => {
+    const frontstageDef = new FrontstageDef();
+    const widgetDef = new WidgetDef({});
+    sandbox.stub(frontstageDef, "findWidgetDef").returns(widgetDef);
+    const savedState = {
+      ...createSavedNineZoneState(),
+      tabs: {
+        t1: {
+          id: "t1",
+        },
+      },
+    };
+    const sut = restoreNineZoneState(frontstageDef, savedState);
+    sut.should.matchSnapshot();
+  });
+
+});
+
+describe("packNineZoneState", () => {
+  it("should remove labels", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addFloatingWidget(nineZone, "w1");
+    nineZone = addTab(nineZone, "w1", "t1");
+    const sut = packNineZoneState(nineZone);
+    sut.should.matchSnapshot();
   });
 });

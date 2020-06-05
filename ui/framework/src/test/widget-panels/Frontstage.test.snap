@@ -204,3 +204,238 @@ Object {
   "widgets": Object {},
 }
 `;
+
+exports[`packNineZoneState should remove labels 1`] = `
+Object {
+  "draggedTab": undefined,
+  "floatingWidgets": Object {
+    "allIds": Array [
+      "w1",
+    ],
+    "byId": Object {
+      "w1": Object {
+        "bounds": Object {
+          "bottom": 400,
+          "left": 0,
+          "right": 200,
+          "top": 100,
+        },
+        "id": "w1",
+      },
+    },
+  },
+  "panels": Object {
+    "bottom": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "bottom",
+      "size": undefined,
+      "span": true,
+      "widgets": Array [],
+    },
+    "left": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "left",
+      "size": undefined,
+      "widgets": Array [],
+    },
+    "right": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "right",
+      "size": undefined,
+      "widgets": Array [],
+    },
+    "top": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "top",
+      "size": undefined,
+      "span": true,
+      "widgets": Array [],
+    },
+  },
+  "size": Object {
+    "height": NaN,
+    "width": NaN,
+  },
+  "tabs": Object {
+    "t1": Object {
+      "id": "t1",
+    },
+  },
+  "toolSettings": Object {
+    "type": "docked",
+  },
+  "widgets": Object {
+    "w1": Object {
+      "activeTabId": undefined,
+      "id": "w1",
+      "minimized": false,
+      "tabs": Array [
+        "t1",
+      ],
+    },
+  },
+}
+`;
+
+exports[`restoreNineZoneState should log error if widgetDef is not found 1`] = `
+Object {
+  "frontstageId": "",
+  "tabId": "t1",
+}
+`;
+
+exports[`restoreNineZoneState should restore tabs 1`] = `
+Object {
+  "draggedTab": undefined,
+  "floatingWidgets": Object {
+    "allIds": Array [],
+    "byId": Object {},
+  },
+  "panels": Object {
+    "bottom": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "bottom",
+      "size": undefined,
+      "span": true,
+      "widgets": Array [],
+    },
+    "left": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "left",
+      "size": undefined,
+      "widgets": Array [],
+    },
+    "right": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "right",
+      "size": undefined,
+      "widgets": Array [],
+    },
+    "top": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "top",
+      "size": undefined,
+      "span": true,
+      "widgets": Array [],
+    },
+  },
+  "size": Object {
+    "height": NaN,
+    "width": NaN,
+  },
+  "tabs": Object {
+    "nz-tool-settings-tab": Object {
+      "id": "nz-tool-settings-tab",
+      "label": "Tool Settings",
+    },
+    "t1": Object {
+      "id": "t1",
+      "label": "Widget",
+    },
+  },
+  "toolSettings": Object {
+    "type": "docked",
+  },
+  "widgets": Object {},
+}
+`;
+
+exports[`useSavedFrontstageState should load saved nineZoneState 1`] = `
+Object {
+  "draggedTab": undefined,
+  "floatingWidgets": Object {
+    "allIds": Array [],
+    "byId": Object {},
+  },
+  "panels": Object {
+    "bottom": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "bottom",
+      "size": undefined,
+      "span": true,
+      "widgets": Array [],
+    },
+    "left": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "left",
+      "size": undefined,
+      "widgets": Array [],
+    },
+    "right": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "right",
+      "size": undefined,
+      "widgets": Array [],
+    },
+    "top": Object {
+      "collapseOffset": 100,
+      "collapsed": false,
+      "maxSize": 600,
+      "minSize": 200,
+      "pinned": true,
+      "side": "top",
+      "size": undefined,
+      "span": true,
+      "widgets": Array [],
+    },
+  },
+  "size": Object {
+    "height": NaN,
+    "width": NaN,
+  },
+  "tabs": Object {
+    "nz-tool-settings-tab": Object {
+      "id": "nz-tool-settings-tab",
+      "label": "Tool Settings",
+    },
+  },
+  "toolSettings": Object {
+    "type": "docked",
+  },
+  "widgets": Object {},
+}
+`;

@@ -212,7 +212,10 @@ export function createPanelsState(): PanelsState;
 export function createPanelState(side: PanelSide): PanelState;
 
 // @internal (undocumented)
-export function createTabState(id: TabState["id"]): TabState;
+export function createTabsState(args?: Partial<TabsState>): TabsState;
+
+// @internal (undocumented)
+export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState;
 
 // @internal (undocumented)
 export function createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState;

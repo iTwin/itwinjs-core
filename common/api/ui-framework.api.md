@@ -3624,6 +3624,9 @@ export type NotifyMessageDetailsType = NotifyMessageDetails | ReactNotifyMessage
 // @public
 export type NotifyMessageType = MessageType;
 
+// @internal
+export function packNineZoneState(state: NineZoneState): SavedNineZoneState;
+
 // @internal (undocumented)
 export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> {
 }
@@ -3940,6 +3943,9 @@ export class ReducerRegistry {
 
 // @beta
 export const ReducerRegistryInstance: ReducerRegistry;
+
+// @internal
+export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedNineZoneState): NineZoneState;
 
 // @beta
 export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any> {
