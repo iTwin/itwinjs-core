@@ -54,7 +54,8 @@ describe("WidgetPanelGrip", () => {
     );
     const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
     act(() => {
-      fireEvent.doubleClick(grip);
+      fireEvent.pointerUp(grip);
+      fireEvent.pointerUp(grip);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: "PANEL_TOGGLE_COLLAPSED",

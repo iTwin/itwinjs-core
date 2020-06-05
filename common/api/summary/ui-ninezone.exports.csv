@@ -358,6 +358,7 @@ beta;Tooltip
 beta;TooltipDefaultProps = Pick
 beta;TooltipProps 
 internal;TopPanelSide = "top"
+internal;useDoubleClick(onDoubleClick?: () => void): [() => void]
 internal;useDraggedItemId
 internal;useDragItem
 internal;UseDragItemArgs

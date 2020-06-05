@@ -2386,6 +2386,9 @@ export interface TooltipProps extends CommonProps {
 export type TopPanelSide = "top";
 
 // @internal (undocumented)
+export function useDoubleClick(onDoubleClick?: () => void): [() => void];
+
+// @internal (undocumented)
 export function useDraggedItemId<T extends DragItem>(type: T["type"]): T["id"] | undefined;
 
 // @internal (undocumented)

@@ -21,7 +21,7 @@ exports[`WidgetPanelGrip should not start resize w/o pointer down 1`] = `
 
 exports[`WidgetPanelGrip should render resizing 1`] = `
 <div
-  class="nz-widgetPanels-grip nz-left nz-resizing"
+  class="nz-widgetPanels-grip nz-left nz-active nz-resizing"
 >
   <div
     class="nz-dot"

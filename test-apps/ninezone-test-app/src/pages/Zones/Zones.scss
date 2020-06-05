@@ -5,6 +5,7 @@
 $header-height: 50px;
 
 .nzdemo-zones-zones {
+  touch-action: manipulation;
   height: calc(100% - #{$header-height});
   display: flex;
   flex-direction: column;
