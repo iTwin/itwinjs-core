@@ -211,6 +211,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/analytical-backend",
+      "projectFolder": "domains/analytical/backend",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/physical-material-backend",
       "projectFolder": "domains/physical-material/backend",
       "reviewCategory": "backend",

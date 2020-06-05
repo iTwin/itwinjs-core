@@ -3,16 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Models
+ * @module Analytical
  */
 
-import { GeometricModel3d } from "../Model";
+import { ElementRefersToElements } from "@bentley/imodeljs-backend";
 
-/** A container for persisting AnalyticalElement instances used to model
- * a specialized analytical perspective.
+/** Relates an AnalyticalElement to the SpatialLocationElement or PhysicalElement it is simulating within the specialized analytical perspective.
  * @beta
  */
-export abstract class AnalyticalModel extends GeometricModel3d {
+export class AnalyticalSimulatesSpatialElement extends ElementRefersToElements {
   /** @internal */
-  public static get className(): string { return "AnalyticalModel"; }
+  public static get className(): string { return "AnalyticalSimulatesSpatialElement"; }
 }

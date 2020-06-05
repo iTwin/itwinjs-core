@@ -2,12 +2,6 @@ sep=;
 Release Tag;API Item
 internal;AdditionalFeatureData
 beta;AliCloudStorageService 
-beta;class AnalyticalElement 
-beta;class AnalyticalModel 
-beta;AnalyticalPartition 
-beta;AnalyticalSchema 
-beta;AnalyticalSimulatesSpatialElement 
-beta;class AnalyticalType 
 public;AnnotationElement2d 
 beta;AppActivityMonitor
 alpha;ApplicationType

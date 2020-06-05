@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Elements
+ * @module Analytical
  */
 
+import { GeometricElement3d, IModelDb, InformationPartitionElement, TypeDefinitionElement } from "@bentley/imodeljs-backend";
 import { GeometricElement3dProps, TypeDefinitionElementProps } from "@bentley/imodeljs-common";
-import { GeometricElement3d, InformationPartitionElement, TypeDefinitionElement } from "../Element";
-import { IModelDb } from "../IModelDb";
 
 /** An AnalyticalPartition element indicates that there is a specialized analytical perspective within
  * the overall information hierarchy. An AnalyticalPartition subclass is always parented to a Subject

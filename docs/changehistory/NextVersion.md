@@ -21,3 +21,19 @@ ignore: true
 ### `StagePanelDef` changes
 
 `StagePanelDef.trySetCurrentSize()` is replaced by `StagePanelDef.size` setter.
+
+## New *domain* packages
+
+### Analytical
+
+The `@bentley/analytical-backend` package contains the backend base classes that specialized Analytical domain schemas extend.
+These classes were previously contained within the `@bentley/imodeljs-backend` package.
+There were no API changes, but imports and dependencies will need to be adjusted if these classes were previously used.
+
+> See: [AnalyticalSchema]($analytical-backend)
+
+### Physical Material
+
+The `@bentley/physical-material-backend` package is new and contains classes for working with physical materials on the backend.
+
+> See: [PhysicalMaterialSchema]($physical-material-backend)

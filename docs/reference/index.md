@@ -56,4 +56,5 @@ The iModel.js library is organized into the following separately downloadable [n
 
 ## iModel.js Domain Packages
 
+- ($analytical-backend)
 - ($physical-material-backend)

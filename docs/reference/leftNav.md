@@ -59,6 +59,7 @@ packageClassification:  [
       "order":"5",
       "header":"iModel.js Domain Packages",
       "packages":[
+         "analytical-backend",
          "physical-material-backend"
       ]
    }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="TestAnalytical" alias="testAnlyt" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1" displayLabel="Test Analytical" description="Used only for testing">
 
-    <ECSchemaReference name="Analytical" version="1.0" alias="anlyt" />
+    <ECSchemaReference name="Analytical" version="1.0.0" alias="anlyt" />
 
     <ECEntityClass typeName="Partition">
         <BaseClass>anlyt:AnalyticalPartition</BaseClass>

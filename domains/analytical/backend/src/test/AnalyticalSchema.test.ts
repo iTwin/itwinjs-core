@@ -7,25 +7,22 @@ import * as path from "path";
 import * as semver from "semver";
 import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
+  BackendRequestContext, BisCoreSchema, ClassRegistry, GenericSchema, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, KnownLocations,
+  PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
+} from "@bentley/imodeljs-backend";
+import {
   CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, PropertyMetaData, RelatedElement,
   TypeDefinitionElementProps,
 } from "@bentley/imodeljs-common";
-import {
-  AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema, BackendRequestContext, BisCoreSchema, ClassRegistry, GenericSchema,
-  GeometricElement3d, IModelDb, IModelJsFs, KnownLocations, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
-  SubjectOwnsPartitionElements,
-} from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema } from "../analytical-backend";
 
 class TestAnalyticalSchema extends Schema {
   public static get schemaName(): string { return "TestAnalytical"; }
-  public static get schemaFilePath(): string { return path.join(__dirname, "../assets/TestAnalytical.ecschema.xml"); }
+  public static get schemaFilePath(): string { return path.join(__dirname, "assets", "TestAnalytical.ecschema.xml"); }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);
       Schemas.registerSchema(this);
-
       ClassRegistry.register(TestAnalyticalPartition, this);
       ClassRegistry.register(TestAnalyticalElement, this);
       ClassRegistry.register(TestAnalyticalModel, this);
@@ -39,24 +36,35 @@ class TestAnalyticalPartition extends AnalyticalPartition {
 
 class TestAnalyticalElement extends AnalyticalElement {
   public static get className(): string { return "Element"; }
-
-  public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
-    super(props, iModel);
-  }
+  public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 class TestAnalyticalModel extends AnalyticalModel {
   public static get className(): string { return "Model"; }
 }
 
-describe("Analytical Domain", () => {
-  const requestContext = new BackendRequestContext();
+describe("AnalyticalSchema", () => {
+  const outputDir = path.join(__dirname, "output");
+  const assetsDir = path.join(__dirname, "assets");
+
+  before(async () => {
+    await IModelHost.startup();
+    AnalyticalSchema.registerSchema();
+    TestAnalyticalSchema.registerSchema();
+    if (!IModelJsFs.existsSync(outputDir)) {
+      IModelJsFs.mkdirSync(outputDir);
+    }
+  });
 
   it("should import Analytical schema", async () => {
-    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "ImportAnalytical.bim"), { rootSubject: { name: "ImportAnalytical" } });
+    const iModelFileName: string = path.join(outputDir, "ImportAnalytical.bim");
+    if (IModelJsFs.existsSync(iModelFileName)) {
+      IModelJsFs.removeSync(iModelFileName);
+    }
+    const iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "ImportAnalytical" }, createClassViews: true });
     // import schemas
     const analyticalSchemaFileName: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", "Analytical.ecschema.xml");
-    const testSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestAnalytical.ecschema.xml");
+    const testSchemaFileName: string = path.join(assetsDir, "TestAnalytical.ecschema.xml");
     assert.isTrue(IModelJsFs.existsSync(BisCoreSchema.schemaFilePath));
     assert.isTrue(IModelJsFs.existsSync(analyticalSchemaFileName));
     assert.isTrue(IModelJsFs.existsSync(testSchemaFileName));
@@ -138,18 +146,21 @@ describe("Analytical Domain", () => {
   });
 
   it("should create elements exercising the Analytical domain", async () => {
-    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("AnalyticalDomain", "AnalyticalTest.bim"), {
+    const iModelFileName: string = path.join(outputDir, "ImportAnalytical.bim");
+    if (IModelJsFs.existsSync(iModelFileName)) {
+      IModelJsFs.removeSync(iModelFileName);
+    }
+    const iModelDb = SnapshotDb.createEmpty(iModelFileName, {
       rootSubject: { name: "AnalyticalTest", description: "Test of the Analytical domain schema." },
       client: "Analytical",
       globalOrigin: { x: 0, y: 0 },
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
       guid: Guid.createValue(),
+      createClassViews: true,
     });
 
     // Import the Analytical schema
-    await iModelDb.importSchemas(requestContext, [AnalyticalSchema.schemaFilePath, TestAnalyticalSchema.schemaFilePath]);
-    AnalyticalSchema.registerSchema();
-    TestAnalyticalSchema.registerSchema();
+    await iModelDb.importSchemas(new BackendRequestContext(), [AnalyticalSchema.schemaFilePath, TestAnalyticalSchema.schemaFilePath]);
     iModelDb.saveChanges("Import TestAnalytical schema");
 
     // Insert a SpatialCategory
@@ -189,7 +200,6 @@ describe("Analytical Domain", () => {
     assert.isTrue(Id64.isValidId64(analyticalElementId));
 
     iModelDb.saveChanges("Insert Test Analytical elements");
-
     iModelDb.close();
   });
 });
