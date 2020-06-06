@@ -268,6 +268,12 @@ describe("ViewState", () => {
     cppView = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, { marginPercent: testParams.margin });
     compareView(viewState, cppView, "LookAtVolume 2");
+
+    assert.isTrue(viewState.getOrigin().isAlmostEqual({ x: 15.16944341639925, y: 14.830556583600767, z: -10.838886832798472 }));
+    assert.isTrue(viewState.getExtents().isAlmostEqual({ x: 18.384776310850253, y: 18.384776310850253, z: 15.877132402714713 }));
+    viewState.adjustAspectRatio(2);
+    assert.isTrue(viewState.getOrigin().isAlmostEqual({ x: 8.66944341639924, y: 8.33055658360076, z: -10.838886832798472 }));
+    assert.isTrue(viewState.getExtents().isAlmostEqual({ x: 36.769552621700505, y: 18.384776310850253, z: 15.877132402714713 }));
   });
 
   // Changes were made in TypeScript to the near/far plane adjustment. The native code hasn't been adjusted to match.

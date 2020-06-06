@@ -701,6 +701,20 @@ export abstract class ViewState extends ElementState {
     return (status !== ViewStatus.Success && opts?.onExtentsError) ? opts.onExtentsError(status) : status;
   }
 
+  /** Adjust the aspect ratio of this ViewState so it matches the supplied value. The adjustment is accomplished by increasing one dimension
+   * and leaving the other unchanged, depending on the ratio of this ViewState's current aspect ratio to the supplied one. This means the result
+   * always shows everything in the current volume, plus potentially more.
+   * @note The *automatic* adjustment that happens when ViewStates are used in Viewports **always** adjusts the Y axis (making
+   * it potentially smaller). That's so that process can be reversible if the view's aspect ratio changes repeatedly (as happens when panels slide in/out, etc.)
+   */
+  public adjustAspectRatio(aspect: number) {
+    const extents = this.getExtents();
+    const origin = this.getOrigin();
+    this.adjustViewDelta(extents, origin, this.getRotation(), aspect);
+    this.setExtents(extents);
+    this.setOrigin(origin);
+  }
+
   /** Set the CategorySelector for this view. */
   public setCategorySelector(categories: CategorySelectorState) { this.categorySelector = categories; }
 
