@@ -112,7 +112,7 @@ export class Presentation {
       // using the one registered first. At least we can avoid an exception...
     }
     this._initProps = props || {};
-    this._shutdownListener = IModelHost.onBeforeShutdown.addListener(Presentation.terminate);
+    this._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => Presentation.terminate());
     this._requestTimeout = (props && props.requestTimeout !== undefined)
       ? props.requestTimeout
       : defaultRequestTimeout;
