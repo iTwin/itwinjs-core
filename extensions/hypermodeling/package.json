@@ -5,7 +5,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "npm run copy:assets && npm run pseudolocalize && extension-webpack-tools build -s ./src/HyperModeling.ts -o ./lib/extension --sourceMap",
+    "build": "npm run copy:assets && npm run pseudolocalize && extension-webpack-tools build -s ./src/HyperModelingExtension.ts -o ./lib/extension --sourceMap",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/public/**/*\" ./lib/extension/",
     "cover": "",

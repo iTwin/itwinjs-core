@@ -85,6 +85,9 @@
     },
     "ModelClip": {
       "keyin": "dta model clip"
+    },
+    "LoadHypermodeling": {
+      "keyin": "dta hypermodeling"
     }
   }
 }

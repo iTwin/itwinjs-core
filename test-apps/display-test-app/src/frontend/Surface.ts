@@ -298,7 +298,7 @@ export class Surface {
     this.updateFocus();
   }
 
-  private togglePin(window: Window): void {
+  public togglePin(window: Window): void {
     window.isPinned = !window.isPinned;
     this.updateFocus();
   }
@@ -360,7 +360,7 @@ export class Surface {
       this.forceClose(viewer);
   }
 
-  private forceClose(window: Window): void {
+  public forceClose(window: Window): void {
     // NB: Must do this before computing index, because closing a Viewer changes the selected viewport which changes focus which changes order of windows in array.
     window.onClosing();
     const index = this._windows.indexOf(window);

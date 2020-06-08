@@ -421,6 +421,10 @@ export abstract class Window {
   public resizeContent(w: number, h: number): void {
     this._header.resizeContent(w, h);
   }
+
+  public setHeaderVisible(visible: boolean): void {
+    this._header.element.style.display = visible ? "block" : "none";
+  }
 }
 
 export interface NamedWindowProps extends WindowProps {

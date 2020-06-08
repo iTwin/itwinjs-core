@@ -137,8 +137,8 @@ export class TileDrawArgs {
     this.planarClassifier = context.getPlanarClassifierForModel(tree.modelId);
     this.drape = context.getTextureDrapeForModel(tree.modelId);
 
-    // NB: Culling is currently feature-gated - ignore view clip if feature not enabled.
-    if (context.viewFlags.clipVolume && false !== tree.viewFlagOverrides.clipVolumeOverride)
+    // NB: If the tile tree has its own clip, do not also apply the view's clip.
+    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolumeOverride && undefined === clip)
       this.viewClip = undefined === context.viewport.outsideClipColor ? context.viewport.view.getViewClip() : undefined;
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
@@ -158,8 +158,13 @@ export class TileDrawArgs {
   /** @internal */
   public getTileRadius(tile: Tile): number {
     let range: Range3d = tile.range.clone(scratchRange);
+    if (tile.tree.is2d) {
+      // 2d tiles have a fixed Z range of [-1, 1]. Sometimes (e.g., hypermodeling) we draw them within a 3d view. Prevent Z from artificially expanding the radius.
+      range.low.z = range.high.z = 0;
+    }
+
     range = this.location.multiplyRange(range, range);
-    return 0.5 * (tile.tree.is3d ? range.low.distance(range.high) : range.low.distanceXY(range.high));
+    return 0.5 * range.low.distance(range.high);
   }
 
   /** @internal */

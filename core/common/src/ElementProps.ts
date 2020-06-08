@@ -6,7 +6,12 @@
  * @module Entities
  */
 
-import { GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
+import {
+  GuidString,
+  Id64,
+  Id64String,
+  Logger,
+} from "@bentley/bentleyjs-core";
 import { AngleProps, LowAndHighXY, LowAndHighXYZ, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { CodeProps } from "./Code";
 import { CommonLoggerCategory } from "./CommonLoggerCategory";
@@ -153,22 +158,17 @@ export interface SectionLocationProps extends GeometricElement3dProps {
   /** Section type */
   sectionType?: SectionType;
   /** Optional Id of the associated [[ViewAttachmentProps]]. */
-  viewAttachment?: Id64String;
-  /** Details on how this section was clipped. A placement local ClipVector stored as a json string.
-   * @deprecated
-   * @internal
-   */
-  clipGeometry?: string;
-  /** The element Id of the [ModelSelector]($backend) for this SectionLocation
-   * @deprecated
-   * @internal
-   */
-  modelSelectorId?: Id64String;
-  /** The element Id of the [CategorySelector]($backend) for this SectionLocation
-   * @deprecated
-   * @internal
-   */
-  categorySelectorId?: Id64String;
+  viewAttachment?: RelatedElementProps;
+  jsonProperties?: {
+    /** The Id of the spatial view from which this section location was created. */
+    spatialViewId?: Id64String;
+    /** The Id of the drawing associated with this section location, if any. If both this and `viewAttachment` are defined, this is the same as the Id of the view attachment's view. */
+    drawingViewId?: Id64String;
+    /** Transform from drawing coordinates to spatial coordinates. */
+    drawingToSpatialTransform?: TransformProps;
+    /** Transform from sheet coordinates to spatial coordinates. */
+    sheetToSpatialTransform?: TransformProps;
+  };
 }
 
 /** Properties that define a [SectionDrawing]($backend).
@@ -184,10 +184,16 @@ export interface SectionDrawingProps extends ElementProps {
      * @alpha
      */
     drawingToSpatialTransform?: TransformProps;
-    /** If the section drawing is placed onto a [Sheet]($backend) via a [ViewAttachment($backend), a transform from the sheet's coordinates to spatial coordinates.
+    /** If the section drawing is placed onto a [Sheet]($backend) via a [ViewAttachment]($backend), a transform from the sheet's coordinates to spatial coordinates.
      * @alpha
      */
     sheetToSpatialTransform?: TransformProps;
+    /** If the section drawing is placed onto a [Sheet]($backend) via a [ViewAttachment]($backend), JSON representation of a [ClipVector]($geometry) to apply to
+     * the sheet graphics when drawn in the context of the spatial view.
+     * The ClipVector is in spatial coordinates.
+     * @alpha
+     */
+    drawingBoundaryClip?: any;
     // ###TODO: Excluded spatial elements; flag to say "exclude all spatial elements" (i.e., don't draw the spatial view at all).
   };
 }

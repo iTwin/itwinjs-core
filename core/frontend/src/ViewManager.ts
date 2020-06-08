@@ -381,21 +381,15 @@ export class ViewManager {
    */
   public async getElementToolTip(hit: HitDetail): Promise<HTMLElement | string> {
     const msg: string[] = await hit.iModel.getToolTipMessage(hit.sourceId); // wait for the locate message(s) from the backend
-    // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
-    // Add "<br>" at the end of each line to cause them to come out on separate lines in the tooltip.
-    let out = "";
-    msg.forEach((line) => out += IModelApp.i18n.translateKeys(line) + "<br>");
-    const div = document.createElement("div");
-    div.innerHTML = out;
-    return div;
+    return IModelApp.formatElementToolTip(msg);
   }
 
   /** Add a new [[ToolTipProvider]] to customize the locate tooltip.
    * @internal
    * @param provider The new tooltip provider to add.
    * @throws Error if provider is already active.
-   * @returns a function that may be called to remove this decorator (in lieu of calling [[dropToolTipProvider]].)
-   * @see [[dropToolTipOverrideProvider]]
+   * @returns a function that may be called to remove this provider (in lieu of calling [[dropToolTipProvider]].)
+   * @see [[dropToolTipProvider]]
    */
   public addToolTipProvider(provider: ToolTipProvider): () => void {
     if (this.toolTipProviders.includes(provider))
@@ -407,7 +401,7 @@ export class ViewManager {
   /** Drop (remove) a [[ToolTipProvider]] so it is no longer active.
    * @internal
    * @param provider The tooltip to drop.
-   * @note Does nothing if decorator is not currently active.
+   * @note Does nothing if provider is not currently active.
    */
   public dropToolTipProvider(provider: ToolTipProvider) {
     const index = this.toolTipProviders.indexOf(provider);
@@ -432,13 +426,17 @@ export class ViewManager {
 
   /** Drop (remove) a [[Decorator]] so it is no longer active.
    * @param decorator The Decorator to drop.
-   * @note Does nothing if decorator is not currently active.
+   * @returns true if the decorator was found and removed; false if the decorator was not found.
    */
-  public dropDecorator(decorator: Decorator) {
+  public dropDecorator(decorator: Decorator): boolean {
     const index = this.decorators.indexOf(decorator);
-    if (index >= 0)
+    if (index >= 0) {
       this.decorators.splice(index, 1);
-    this.invalidateDecorationsAllViews();
+      this.invalidateDecorationsAllViews();
+      return true;
+    }
+
+    return false;
   }
 
   /** Get the tooltip for a pickable decoration.

@@ -2751,6 +2751,8 @@ export namespace FeatureSymbology {
         // @internal
         getSubCategoryPriority(idLo: number, idHi: number): number;
         // @internal
+        ignoreSubCategory: boolean;
+        // @internal
         initFromView(view: ViewState): void;
         // @internal
         initFromViewport(viewport: Viewport): void;
@@ -3736,6 +3738,8 @@ export class IModelApp {
     static get features(): FeatureTrackingManager;
     // @internal
     static get featureToggles(): FeatureToggleClient;
+    // @alpha
+    static formatElementToolTip(msg: string[]): HTMLElement;
     // @internal (undocumented)
     static get hasRenderSystem(): boolean;
     static get i18n(): I18N;
@@ -9965,7 +9969,7 @@ export class ViewManager {
     readonly decorators: Decorator[];
     // @internal (undocumented)
     get doesHostHaveFocus(): boolean;
-    dropDecorator(decorator: Decorator): void;
+    dropDecorator(decorator: Decorator): boolean;
     // @internal
     dropToolTipProvider(provider: ToolTipProvider): void;
     dropViewport(vp: ScreenViewport, disposeOfViewport?: boolean): BentleyStatus;
@@ -10309,6 +10313,8 @@ export abstract class Viewport implements IDisposable {
     readonly onAlwaysDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onChangeView: BeEvent<(vp: Viewport, previousViewState: ViewState) => void>;
     readonly onDisplayStyleChanged: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onDisposed: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverrideProviderChanged: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;

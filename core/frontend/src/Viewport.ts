@@ -785,6 +785,11 @@ export abstract class Viewport implements IDisposable {
   /** Event invoked immediately when [[changeView]] is called to replace the current [[ViewState]] with a different one.
    */
   public readonly onChangeView = new BeEvent<(vp: Viewport, previousViewState: ViewState) => void>();
+  /** Event invoked immediately when the viewport is disposed.
+   * @see [[Viewport.dispose]].
+   * @beta
+   */
+  public readonly onDisposed = new BeEvent<(vp: Viewport) => void>();
 
   private _view!: ViewState;
   private readonly _viewportId: number;
@@ -1441,6 +1446,7 @@ export abstract class Viewport implements IDisposable {
     this._target = dispose(this._target);
     this.subcategories.dispose();
     IModelApp.tileAdmin.forgetViewport(this);
+    this.onDisposed.raiseEvent(this);
   }
 
   /** Enables or disables continuous rendering. Ideally, during each render frame a Viewport will do as little work as possible.

@@ -5570,6 +5570,7 @@ export interface SectionDrawingProps extends ElementProps {
     jsonProperties?: {
         drawingToSpatialTransform?: TransformProps;
         sheetToSpatialTransform?: TransformProps;
+        drawingBoundaryClip?: any;
     };
     sectionType?: SectionType;
     spatialView?: RelatedElementProps;
@@ -5577,14 +5578,15 @@ export interface SectionDrawingProps extends ElementProps {
 
 // @alpha @deprecated
 export interface SectionLocationProps extends GeometricElement3dProps {
-    // @internal @deprecated
-    categorySelectorId?: Id64String;
-    // @internal @deprecated
-    clipGeometry?: string;
-    // @internal @deprecated
-    modelSelectorId?: Id64String;
+    // (undocumented)
+    jsonProperties?: {
+        spatialViewId?: Id64String;
+        drawingViewId?: Id64String;
+        drawingToSpatialTransform?: TransformProps;
+        sheetToSpatialTransform?: TransformProps;
+    };
     sectionType?: SectionType;
-    viewAttachment?: Id64String;
+    viewAttachment?: RelatedElementProps;
 }
 
 // @public

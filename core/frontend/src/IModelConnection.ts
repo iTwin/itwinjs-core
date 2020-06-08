@@ -390,7 +390,7 @@ export abstract class IModelConnection extends IModel {
 
   private _toolTipRpc = new OneAtATimeAction<string[]>((id: string) => IModelReadRpcInterface.getClient().getToolTipMessage(this.getRpcProps(), id));
   /** Request a tooltip from the backend.
-   * @note callers must gracefully handle Promise rejected with AbandonedError
+   * @note If another call to this method occurs before preceding call(s) return, all preceding calls will be abandoned - only the most recent will resolve. Therefore callers must gracefully handle Promise rejected with AbandonedError.
    */
   public async getToolTipMessage(id: Id64String): Promise<string[]> {
     return this.isOpen ? this._toolTipRpc.request(id) : [];

@@ -2,50 +2,148 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, compareStrings, Id64 } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d } from "@bentley/geometry-core";
-import { Placement3d, RelatedElement, SectionLocationProps, ViewAttachmentProps, ViewFlagOverrides } from "@bentley/imodeljs-common";
+
+import { assert, compareBooleans, compareStrings, Id64 } from "@bentley/bentleyjs-core";
+import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import {
-  FeatureSymbology, GeometricModel2dState, HitDetail, IModelConnection, RenderSystem, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
-  TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier, Viewport, ViewState, ViewState2d,
+  CategorySelectorState, DisplayStyle2dState, DrawingViewState,
+  FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelApp, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
+  TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier, Viewport, ViewState2d,
 } from "@bentley/imodeljs-frontend";
+import { SectionLocationState } from "./SectionLocationState";
+
+/** Configures how section graphics are displayed in a viewport. */
+export interface SectionGraphicsConfig {
+  /** Whether or not to clip the 2d view based on the view attachment's boundary. */
+  applyClipVolumes: boolean;
+  /** If true, display clip volumes as shapes for debugging. */
+  debugClipVolumes: boolean;
+  /** If false, don't draw the drawing view. */
+  displayDrawings: boolean;
+  /** If false, don't draw the sheet view (if any). */
+  displaySheets: boolean;
+}
+
+/** Obtain a copy of the default configuration. */
+export function getDefaultSectionGraphicsConfig(): SectionGraphicsConfig {
+  return {
+    applyClipVolumes: true,
+    debugClipVolumes: false,
+    displayDrawings: true,
+    displaySheets: true,
+  };
+}
+
+const globalConfig = getDefaultSectionGraphicsConfig();
+
+/** Obtain a copy of the current configuration. */
+export function getSectionGraphicsConfig(): SectionGraphicsConfig {
+  return { ...globalConfig };
+}
+
+/** Change the current configuration. */
+export function setSectionGraphicsConfig(config: SectionGraphicsConfig): void {
+  let changed = false;
+  const props: Array<keyof SectionGraphicsConfig> = ["applyClipVolumes", "debugClipVolumes", "displayDrawings", "displaySheets"];
+  for (const prop of props) {
+    if (globalConfig[prop] !== config[prop]) {
+      globalConfig[prop] = config[prop];
+      changed = true;
+    }
+  }
+
+  if (changed)
+    IModelApp.viewManager.invalidateViewportScenes();
+}
+
+interface ProxyTreeId {
+  state: SectionLocationState;
+  isSheet: boolean;
+  attachment?: ViewAttachmentProps;
+}
+
+interface ProxyTreeParams {
+  tree: TileTree;
+  ref: TileTreeReference;
+  view: ViewState2d;
+  state: SectionLocationState;
+  attachment?: ViewAttachmentProps;
+}
 
 class ProxyTreeSupplier implements TileTreeSupplier {
-  public compareTileTreeIds(lhs: SectionLocationProps, rhs: SectionLocationProps): number {
-    return compareStrings(lhs.id!, rhs.id!);
+  public compareTileTreeIds(lhs: ProxyTreeId, rhs: ProxyTreeId): number {
+    let cmp = compareBooleans(lhs.isSheet, rhs.isSheet);
+    if (0 === cmp)
+      cmp = compareStrings(lhs.state.id, rhs.state.id);
+
+    return cmp;
   }
 
-  public async createTileTree(props: SectionLocationProps, iModel: IModelConnection): Promise<TileTree | undefined> {
-    const view = await this.getViewState(props, iModel);
-    if (undefined === view || !view.is2d())
+  public async createTileTree(id: ProxyTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
+    let view;
+    if (id.isSheet) {
+      assert(undefined !== id.attachment);
+      view = await this.createSheetViewState(id.state, id.attachment);
+    } else {
+      view = await id.state.tryLoadDrawingView();
+    }
+
+    if (undefined === view)
       return undefined;
 
-    await iModel.models.load(view.baseModelId);
-    const model = iModel.models.getLoaded(view.baseModelId);
-    if (undefined === model || !(model instanceof GeometricModel2dState))
-      return undefined;
+    try {
+      await iModel.models.load(view.baseModelId);
+      const model = iModel.models.getLoaded(view.baseModelId);
+      if (undefined === model || !(model instanceof GeometricModel2dState))
+        return undefined;
 
-    const treeRef = model.createTileTreeReference(view);
-    const tree = await treeRef.treeOwner.loadTree();
-    if (undefined === tree)
-      return undefined;
+      const treeRef = model.createTileTreeReference(view);
+      const tree = await treeRef.treeOwner.loadTree();
+      if (undefined === tree)
+        return undefined;
 
-    return new ProxyTree(tree, treeRef, view, props);
+      const ctor = id.isSheet ? SheetProxyTree : DrawingProxyTree;
+      return new ctor({ tree, ref: treeRef, view, state: id.state, attachment: id.attachment });
+    } catch (_) {
+      return undefined;
+    }
   }
 
-  private async getViewState(props: SectionLocationProps, iModel: IModelConnection): Promise<ViewState | undefined> {
-    if (undefined === props.viewAttachment)
+  private async createSheetViewState(state: SectionLocationState, attachment: ViewAttachmentProps): Promise<DrawingViewState | undefined> {
+    assert(undefined !== state.viewAttachment);
+    try {
+      // A persistent view of the sheet doesn't necessarily exist, and we don't want a SheetViewState anyway.
+      // All we want is to draw all the elements in the sheet (sans view attachments) clipped by the drawing boundary.
+      // However, ModelState.createTileTreeReference() requires a ViewState.
+      await state.iModel.models.load(attachment.model);
+      const sheet = state.iModel.models.getLoaded(attachment.model);
+      if (undefined === sheet || !(sheet instanceof SheetModelState))
+        return undefined;
+
+      const sheetExtents = await sheet.queryModelRange();
+      const viewProps: ViewDefinition2dProps = {
+        baseModelId: attachment.model,
+        origin: { x: 0, y: 0 },
+        delta: { x: sheetExtents.high.x, y: sheetExtents.high.y },
+        angle: 0,
+        categorySelectorId: Id64.invalid,
+        displayStyleId: Id64.invalid,
+        model: Id64.invalid,
+        code: {
+          spec: Id64.invalid,
+          scope: Id64.invalid,
+        },
+        classFullName: DrawingViewState.classFullName,
+      };
+
+      const displayStyle = new DisplayStyle2dState({} as any, state.iModel);
+      const categorySelector = new CategorySelectorState({} as any, state.iModel);
+
+      return new DrawingViewState(viewProps, state.iModel, categorySelector, displayStyle, sheetExtents);
+    } catch {
       return undefined;
-
-    const attachmentId = RelatedElement.idFromJson(props.viewAttachment);
-    if (Id64.isInvalid(attachmentId))
-      return undefined;
-
-    const attachments = await iModel.elements.getProps(attachmentId) as ViewAttachmentProps[];
-    if (1 === attachments.length)
-      return iModel.views.load(attachments[0].view.id);
-
-    return undefined;
+    }
   }
 }
 
@@ -55,9 +153,9 @@ const proxyTreeSupplier = new ProxyTreeSupplier();
 class ProxyTreeReference extends TileTreeReference {
   private readonly _owner: TileTreeOwner;
 
-  public constructor(props: SectionLocationProps, iModel: IModelConnection) {
+  public constructor(id: ProxyTreeId) {
     super();
-    this._owner = iModel.tiles.getTileTreeOwner(props, proxyTreeSupplier);
+    this._owner = id.state.iModel.tiles.getTileTreeOwner(id, proxyTreeSupplier);
   }
 
   public get castsShadows() {
@@ -85,32 +183,22 @@ class ProxyTreeReference extends TileTreeReference {
 }
 
 /** A proxy for a 2d tile tree to be drawn in the context of a spatial view. */
-class ProxyTree extends TileTree {
+abstract class ProxyTree extends TileTree {
   private readonly _rootTile: ProxyTile;
   private readonly _viewFlagOverrides: ViewFlagOverrides;
   public readonly tree: TileTree;
   public readonly ref: TileTreeReference;
   public readonly symbologyOverrides: FeatureSymbology.Overrides;
 
-  public constructor(tree: TileTree, ref: TileTreeReference, view: ViewState2d, props: SectionLocationProps) {
-    const placement = Placement3d.fromJSON(props.placement);
-    const location = placement.transform;
-    const inverseLocation = location.inverse();
-    if (undefined === inverseLocation) {
-      location.origin.set(0, 0, placement.origin.z);
-    } else {
-      const origin = inverseLocation.multiplyPoint3d(Point3d.createZero());
-      origin.z = 0;
-      location.multiplyPoint3d(origin, origin);
-      location.origin.setFrom(origin);
-    }
-
+  protected constructor(params: ProxyTreeParams, location: Transform, clipVolume: RenderClipVolume | undefined) {
+    const { tree, ref, view } = { ...params };
     super({
-      id: tree.modelId + "_hypermodeling",
+      id: params.state.id,
       modelId: tree.modelId,
       iModel: tree.iModel,
       location,
       priority: TileLoadPriority.Primary,
+      clipVolume,
     });
 
     this.tree = tree;
@@ -124,7 +212,7 @@ class ProxyTree extends TileTree {
 
     this._viewFlagOverrides = new ViewFlagOverrides(view.viewFlags);
     this._viewFlagOverrides.setApplyLighting(false);
-    this._viewFlagOverrides.setShowClipVolume(false);
+    this._viewFlagOverrides.setShowClipVolume(undefined !== clipVolume);
 
     this._rootTile = new ProxyTile(this, range);
   }
@@ -135,7 +223,15 @@ class ProxyTree extends TileTree {
   public get isContentUnbounded() { return false; }
   public get maxDepth() { return 1; }
 
+  protected abstract get isDisplayed(): boolean;
+
   public draw(args: TileDrawArgs): void {
+    if (!this.isDisplayed)
+      return;
+
+    if (this.clipVolume)
+      this.viewFlagOverrides.setShowClipVolume(globalConfig.applyClipVolumes);
+
     const tiles = this.selectTiles(args);
     for (const tile of tiles)
       tile.drawGraphics(args);
@@ -144,12 +240,66 @@ class ProxyTree extends TileTree {
   }
 
   protected _selectTiles(_args: TileDrawArgs): Tile[] {
-    return [this.rootTile];
+    return this.isDisplayed ? [this.rootTile] : [];
   }
 
   public prune(): void {
     // Our single tile is only a proxy. Our proxied tree(s) will be pruned separately
   }
+}
+
+class DrawingProxyTree extends ProxyTree {
+  public constructor(params: ProxyTreeParams) {
+    const { state, attachment } = { ...params };
+    const location = state.drawingToSpatialTransform.clone();
+
+    let clipVolume;
+    if (attachment) {
+      assert(undefined !== state.viewAttachment);
+      const clipJSON = attachment.jsonProperties?.clip;
+      const clip = clipJSON ? ClipVector.fromJSON(clipJSON) : ClipVector.createEmpty();
+      if (!clipJSON) {
+        const placement = Placement2d.fromJSON(attachment.placement);
+        const range = placement.calculateRange();
+        clip.appendShape([
+          Point3d.create(range.low.x, range.low.y),
+          Point3d.create(range.high.x, range.low.y),
+          Point3d.create(range.high.x, range.high.y),
+          Point3d.create(range.low.x, range.high.y),
+        ]);
+      }
+
+      if (clip.isValid) {
+        const sheetToWorld = state.viewAttachment.transformToSpatial.clone();
+        clip.transformInPlace(sheetToWorld);
+        clipVolume = IModelApp.renderSystem.createClipVolume(clip);
+      }
+    }
+
+    super(params, location, clipVolume);
+  }
+
+  protected get isDisplayed() { return globalConfig.displayDrawings; }
+}
+
+class SheetProxyTree extends ProxyTree {
+  public constructor(params: ProxyTreeParams) {
+    const { state, attachment } = {...params };
+    assert(undefined !== state.viewAttachment);
+    assert(undefined !== attachment);
+    const location = state.viewAttachment.transformToSpatial.clone();
+
+    let clipVolume;
+    if (state.viewAttachment.clip)
+      clipVolume = IModelApp.renderSystem.createClipVolume(state.viewAttachment.clip);
+
+    super(params, location, clipVolume);
+
+    // Our view is manufactured. It draws everything regardless of subcategory.
+    this.symbologyOverrides.ignoreSubCategory = true;
+  }
+
+  protected get isDisplayed() { return globalConfig.displaySheets; }
 }
 
 /** The single Tile belonging to a ProxyTree, serving as a proxy for all of the proxied tree's tiles. */
@@ -167,30 +317,65 @@ class ProxyTile extends Tile {
   protected _loadChildren(_resolve: (children: Tile[]) => void, _reject: (error: Error) => void): void { }
 
   public drawGraphics(args: TileDrawArgs) {
-    const myTree = this.tree as ProxyTree;
-    const sectionTree = myTree.tree;
+    const proxyTree = this.tree as ProxyTree;
+    const sectionTree = proxyTree.tree;
 
-    const location = myTree.iModelTransform.multiplyTransformTransform(sectionTree.iModelTransform);
-    const drawArgs = TileDrawArgs.fromTileTree(args.context, location, sectionTree, myTree.viewFlagOverrides, sectionTree.clipVolume, args.parentsAndChildrenExclusive, myTree.symbologyOverrides);
-    sectionTree.draw(drawArgs);
+    const location = proxyTree.iModelTransform.multiplyTransformTransform(sectionTree.iModelTransform);
+    const clipVolume = true === proxyTree.viewFlagOverrides.clipVolumeOverride ? proxyTree.clipVolume : undefined;
+    args = new TileDrawArgs(args.context, location, sectionTree, args.now, proxyTree.viewFlagOverrides, clipVolume, args.parentsAndChildrenExclusive, proxyTree.symbologyOverrides);
+    sectionTree.draw(args);
+
+    const rangeGfx = this.getRangeGraphic(args.context);
+    if (undefined !== rangeGfx)
+      args.graphics.add(rangeGfx);
+
+    if (!globalConfig.debugClipVolumes || undefined === proxyTree.clipVolume)
+      return;
+
+    const builder = args.context.createSceneGraphicBuilder();
+    builder.setSymbology(ColorDef.red, ColorDef.red, 2);
+    for (const prim of proxyTree.clipVolume.clipVector.clips) {
+      if (!(prim instanceof ClipShape))
+        continue;
+
+      const tf = prim.transformFromClip;
+      const pts = prim.polygon.map((pt) => tf ? tf.multiplyPoint3d(pt) : pt.clone());
+      builder.addLineString(pts);
+    }
+
+    const branch = new GraphicBranch();
+    branch.entries.push(builder.finish());
+    branch.setViewFlagOverrides(new ViewFlagOverrides());
+    branch.viewFlagOverrides.setShowClipVolume(false);
+    args.context.outputGraphic(args.context.createGraphicBranch(branch, Transform.createIdentity()));
   }
 }
 
 /** Draws the 2d section graphics into the 3d view. */
 class SectionGraphicsProvider implements TiledGraphicsProvider {
-  private readonly _treeRef: TileTreeReference;
+  private readonly _drawingRef: TileTreeReference;
+  private readonly _sheetRef?: TileTreeReference;
 
-  public constructor(ref: ProxyTreeReference) {
-    this._treeRef = ref;
+  public constructor(state: SectionLocationState, attachment: ViewAttachmentProps | undefined) {
+    this._drawingRef = new ProxyTreeReference({ state, attachment, isSheet: false });
+    if (attachment)
+      this._sheetRef = new ProxyTreeReference({ state, attachment, isSheet: true });
   }
 
   public forEachTileTreeRef(_viewport: Viewport, func: (ref: TileTreeReference) => void): void {
-    func(this._treeRef);
+    func(this._drawingRef);
+    if (undefined !== this._sheetRef)
+      func(this._sheetRef);
   }
 }
 
-export async function createSectionGraphicsProvider(sectionLocationProps: SectionLocationProps, iModel: IModelConnection): Promise<TiledGraphicsProvider> {
-  assert(undefined !== sectionLocationProps.id);
-  const ref = new ProxyTreeReference(sectionLocationProps, iModel);
-  return new SectionGraphicsProvider(ref);
+export async function createSectionGraphicsProvider(state: SectionLocationState): Promise<TiledGraphicsProvider> {
+  let attachment;
+  if (undefined !== state.viewAttachment) {
+    const attachments = await state.iModel.elements.getProps(state.viewAttachment.id) as ViewAttachmentProps[];
+    if (1 === attachments.length)
+      attachment = attachments[0];
+  }
+
+  return new SectionGraphicsProvider(state, attachment);
 }
