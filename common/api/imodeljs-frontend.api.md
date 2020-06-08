@@ -2810,8 +2810,17 @@ export class FeatureTrackingManager {
     protected _client: FeatureLogBatchClient;
     protected _hostFallbackName: string;
     protected _hostName: string;
-    track(_featureId: string, _featureName?: string, _iModelConnection?: IModelConnection): void;
+    track(props: FeatureTrackingProps): void;
+    protected trackFeature(_props: FeatureTrackingProps): FeatureLogEntry | undefined;
     protected _usageType: UsageType;
+}
+
+// @alpha
+export interface FeatureTrackingProps {
+    applicationData?: Map<string, any>;
+    featureName: string;
+    iModelConnection?: IModelConnection;
+    ulasFeatureId?: string;
 }
 
 // @alpha
@@ -2972,6 +2981,8 @@ export enum FrontendLoggerCategory {
     EditorConnection = "imodeljs-frontend.EditorConnection",
     EventSource = "imodeljs-frontend.EventSource",
     FeatureToggle = "imodeljs-frontend.FeatureToggles",
+    // @alpha
+    FeatureTracking = "imodeljs-frontend.FeatureTracking",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
     IOSAuthorizationClient = "imodeljs-frontend.IOSAuthorizationClient",
