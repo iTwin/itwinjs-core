@@ -897,14 +897,6 @@ export abstract class IModelDb extends IModel {
     return JSON.parse(resultString) as GeoCoordinatesResponseProps;
   }
 
-  /**
-   * @internal
-   */
-  public async createPolyfaceFromElement(requestContext: ClientRequestContext, requestProps: CreatePolyfaceRequestProps): Promise<CreatePolyfaceResponseProps> {
-    requestContext.enter();
-    return this.nativeDb.createPolyfaceFromElement(requestProps);
-  }
-
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
    *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend,
    *    or that shared backends export a limited number of elements at a time.
