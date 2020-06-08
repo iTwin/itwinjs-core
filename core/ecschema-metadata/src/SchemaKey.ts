@@ -161,13 +161,14 @@ export class SchemaKey {
   }
 
   /*
-   * Compares two schema names, case-sensitive.
+   * Compares two schema names, case-insensitive.
    * @return True if they match; otherwise, false.
    */
   public compareByName(rhs: SchemaKey | string | undefined): boolean {
-    if (undefined === rhs || typeof (rhs) === "string")
-      return rhs === this.name;
-    return rhs.name === this.name;
+    if (undefined === rhs) { return false; }
+    if (typeof (rhs) === "string")
+      return rhs.toLowerCase() === this.name.toLowerCase();
+    return rhs.name.toLowerCase() === this.name.toLowerCase();
   }
 
   /**
