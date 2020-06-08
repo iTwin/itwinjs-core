@@ -161,6 +161,11 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     this._hotKeyMap.set(index, hotKey);
   }
 
+  private _handleOnOutsideClick = (event: MouseEvent) => {
+    if (this.props.opened && this.props.onOutsideClick)
+      this.props.onOutsideClick(event);
+  }
+
   public render(): JSX.Element {
     const {
       opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect,
@@ -184,7 +189,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
         data-testid="core-context-menu-root"
         {...props}
         ref={this._rootRef}>
-        <DivWithOutsideClick onOutsideClick={onOutsideClick}>
+        <DivWithOutsideClick onOutsideClick={this._handleOnOutsideClick}>
           <div
             ref={this._menuRef}
             tabIndex={0}
