@@ -811,6 +811,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "supertest",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "svg-sprite-loader",
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
