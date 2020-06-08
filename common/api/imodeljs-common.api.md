@@ -22,6 +22,7 @@ import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { GeometryQuery } from '@bentley/geometry-core';
+import { GeoServiceStatus } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { Id64 } from '@bentley/bentleyjs-core';
@@ -3601,6 +3602,9 @@ export interface LineStyleProps extends DefinitionElementProps {
 export type LocalAlignedBox3d = Range3d;
 
 export { LogFunction }
+
+// @public
+export function mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus;
 
 // @internal (undocumented)
 export interface MarshalingBinaryMarker {

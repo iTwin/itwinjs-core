@@ -255,6 +255,7 @@ public;LinePixels
 public;LineStyle
 beta;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
+public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
 beta;MassPropertiesOperation

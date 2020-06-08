@@ -535,6 +535,28 @@ export enum ExtensionStatus {
 }
 
 // @public
+export enum GeoServiceStatus {
+    // (undocumented)
+    CSMapError = 147461,
+    // (undocumented)
+    GEOSERVICESTATUS_BASE = 147456,
+    // (undocumented)
+    NoDatumConverter = 147459,
+    // (undocumented)
+    NoGeoLocation = 65602,
+    // (undocumented)
+    OutOfMathematicalDomain = 147458,
+    // (undocumented)
+    OutOfUsefulRange = 147457,
+    // (undocumented)
+    Pending = 147462,
+    // (undocumented)
+    Success = 0,
+    // (undocumented)
+    VerticalDatumConvertError = 147460
+}
+
+// @public
 export type GetMetaDataFunction = () => any;
 
 // @public

@@ -7,13 +7,13 @@
  */
 
 import {
-  assert, BeEvent, BentleyStatus, DbResult, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
+  assert, BeEvent, BentleyStatus, DbResult, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BriefcaseProps, Cartographic, CodeSpec, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap, FontMapProps,
   GeoCoordStatus, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion,
-  IModelWriteRpcInterface, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit,
+  IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit,
   QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent,
   SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
@@ -412,16 +412,18 @@ export abstract class IModelConnection extends IModel {
       this._noGcsDefined = true;
 
     if (this._noGcsDefined)
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     const geoConverter = this.geoServices.getConverter()!;
     const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([spatial]);
 
     if (this._noGcsDefined = (1 !== coordResponse.geoCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.geoCoords[0].s))
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    if (GeoCoordStatus.Success !== coordResponse.geoCoords[0].s)
-      throw new IModelError(IModelStatus.BadRequest, "Error converting spatial to cartographic");
+    if (GeoCoordStatus.Success !== coordResponse.geoCoords[0].s) {
+      const geoServiceStatus = mapToGeoServiceStatus(coordResponse.geoCoords[0].s);
+      throw new IModelError(geoServiceStatus, "Error converting spatial to cartographic");
+    }
 
     const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
     return Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z, result);
@@ -458,17 +460,19 @@ export abstract class IModelConnection extends IModel {
       this._noGcsDefined = true;
 
     if (this._noGcsDefined)
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     const geoConverter = this.geoServices.getConverter()!;
     const geoCoord = Point3d.create(cartographic.longitudeDegrees, cartographic.latitudeDegrees, cartographic.height); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
     const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoCoord]);
 
     if (this._noGcsDefined = (1 !== coordResponse.iModelCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.iModelCoords[0].s))
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    if (GeoCoordStatus.Success !== coordResponse.iModelCoords[0].s)
-      throw new IModelError(IModelStatus.BadRequest, "Error converting cartographic to spatial");
+    if (GeoCoordStatus.Success !== coordResponse.iModelCoords[0].s) {
+      const geoServiceStatus = mapToGeoServiceStatus(coordResponse.iModelCoords[0].s);
+      throw new IModelError(geoServiceStatus, "Error converting cartographic to spatial");
+    }
 
     result = result ? result : Point3d.createZero();
     result.setFromJSON(coordResponse.iModelCoords[0].p);

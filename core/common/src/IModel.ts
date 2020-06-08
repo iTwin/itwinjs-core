@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import {
   Angle, AxisIndex, AxisOrder, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@bentley/geometry-core";
@@ -316,7 +316,7 @@ export abstract class IModel implements IModelProps {
    */
   public getEcefTransform(): Transform {
     if (undefined === this._ecefLocation)
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     if (this._ecefTrans === undefined) {
       this._ecefTrans = this._ecefLocation.getTransform();
