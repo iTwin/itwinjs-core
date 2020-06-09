@@ -69,7 +69,6 @@ public;ColorDefProps = number
 internal;ColorIndex
 public;CommonLoggerCategory
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
-beta;ComparisonOption
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
 internal;class ContentIdProvider
@@ -99,7 +98,6 @@ public;DisplayStyleProps
 public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
-beta;DistanceExpressionProps
 beta;DownloadBriefcaseOptions
 internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
@@ -201,8 +199,6 @@ public;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "
 public;HttpServerRequest 
 public;HttpServerResponse 
 internal;I3dmHeader 
-beta;ILinearElementProps 
-beta;ILinearlyLocatedAttributionProps
 public;ImageBuffer
 public;ImageBufferFormat
 beta;ImageGraphic
@@ -235,7 +231,6 @@ internal;INSTANCE: unique symbol
 internal;InternetConnectivityStatus
 beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
-beta;IReferentProps
 internal;isKnownTileFormat(format: number): boolean
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
@@ -244,13 +239,6 @@ public;LatLongAndHeight
 internal;LightLocationProps 
 public;LightSettings
 public;LightSettingsProps
-beta;LinearLocationReference
-beta;LinearlyLocatedAttributionProps 
-beta;LinearlyReferencedAtLocationAspectProps 
-beta;LinearlyReferencedAtLocationProps
-beta;LinearlyReferencedFromToLocationAspectProps 
-beta;LinearlyReferencedFromToLocationProps
-beta;LinearlyReferencedLocationType
 public;LinePixels
 public;LineStyle
 beta;LineStyleProps 
@@ -339,7 +327,6 @@ internal;QPoint3d
 internal;QPoint3dList
 internal;Quantization
 public;QueryLimit
-beta;QueryParams
 public;QueryPriority
 public;QueryQuota
 public;QueryResponse
@@ -348,7 +335,6 @@ internal;QueuedEvent
 public;Rank
 internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
-beta;ReferentElementProps 
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps

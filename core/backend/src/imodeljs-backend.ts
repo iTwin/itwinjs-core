@@ -33,10 +33,6 @@ export * from "./domains/FunctionalSchema";
 export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
-export * from "./domains/LinearReferencingSchema";
-export * from "./domains/LinearReferencingElementAspects";
-export * from "./domains/LinearReferencingElements";
-export * from "./domains/LinearReferencingRelationships";
 export { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
@@ -52,6 +48,7 @@ export * from "./DevTools";
 export * from "./oidc/DesktopAuthorizationClient";
 export * from "./usage-logging/UsageLoggingUtilities";
 export * from "./IModelDb"; // must be last
+
 /** @docs-package-description
  * The imodeljs-backend package always runs on the computer with a local Briefcase.
  *

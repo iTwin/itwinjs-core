@@ -58,7 +58,6 @@ import { DisplayStyle3dProps } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
-import { DistanceExpressionProps } from '@bentley/imodeljs-common';
 import { DownloadBriefcaseOptions } from '@bentley/imodeljs-common';
 import { DownloadBriefcaseStatus } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
@@ -107,12 +106,6 @@ import { IndexedPolyface } from '@bentley/geometry-core';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { LightLocationProps } from '@bentley/imodeljs-common';
-import { LinearLocationReference } from '@bentley/imodeljs-common';
-import { LinearlyLocatedAttributionProps } from '@bentley/imodeljs-common';
-import { LinearlyReferencedAtLocationAspectProps } from '@bentley/imodeljs-common';
-import { LinearlyReferencedAtLocationProps } from '@bentley/imodeljs-common';
-import { LinearlyReferencedFromToLocationAspectProps } from '@bentley/imodeljs-common';
-import { LinearlyReferencedFromToLocationProps } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LineStyleProps } from '@bentley/imodeljs-common';
 import { Lock } from '@bentley/imodelhub-client';
@@ -143,7 +136,6 @@ import { PolyfaceVisitor } from '@bentley/geometry-core';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { PropertyCallback } from '@bentley/imodeljs-common';
 import { QueryLimit } from '@bentley/imodeljs-common';
-import { QueryParams } from '@bentley/imodeljs-common';
 import { QueryPriority } from '@bentley/imodeljs-common';
 import { QueryQuota } from '@bentley/imodeljs-common';
 import { QueryResponse } from '@bentley/imodeljs-common';
@@ -152,7 +144,6 @@ import { Range2d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
 import { Rank } from '@bentley/imodeljs-common';
 import { Readable } from 'stream';
-import { ReferentElementProps } from '@bentley/imodeljs-common';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
@@ -1294,21 +1285,6 @@ export interface DisplayStyleCreationOptions {
     viewFlags?: ViewFlags;
 }
 
-// @beta
-export class DistanceExpression implements DistanceExpressionProps {
-    constructor(props: DistanceExpressionProps);
-    // (undocumented)
-    distanceAlongFromReferent?: number;
-    // (undocumented)
-    distanceAlongFromStart: number;
-    // (undocumented)
-    static fromJSON(json: DistanceExpressionProps): DistanceExpression;
-    // (undocumented)
-    lateralOffsetFromILinearElement?: number;
-    // (undocumented)
-    verticalOffsetFromILinearElement?: number;
-}
-
 // @public
 export abstract class Document extends InformationContentElement {
     // @internal
@@ -2386,32 +2362,6 @@ export class GroupModel extends GroupInformationModel {
 }
 
 // @beta
-export class ILinearElementProvidedBySource extends RelatedElement {
-    constructor(sourceId: Id64String, relClassName?: string);
-    // (undocumented)
-    static classFullName: string;
-}
-
-// @beta
-export class ILinearLocationLocatesElement extends ElementRefersToElements {
-    // @internal (undocumented)
-    static get className(): string;
-}
-
-// @beta
-export class ILinearlyLocatedAlongILinearElement extends ElementRefersToElements {
-    // @internal (undocumented)
-    static get className(): string;
-}
-
-// @beta
-export class ILinearlyLocatedAttributesElement extends RelatedElement {
-    constructor(attributedElementId: Id64String, relClassName?: string);
-    // (undocumented)
-    static classFullName: string;
-}
-
-// @beta
 export class IModelCloneContext {
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     // @internal
@@ -2956,13 +2906,6 @@ export interface InstanceChange {
     summaryId: Id64String;
 }
 
-// @beta
-export class IReferentReferencesElement extends RelatedElement {
-    constructor(referencedElementId: Id64String, relClassName?: string);
-    // (undocumented)
-    static classFullName: string;
-}
-
 // @public
 export class KnownLocations {
     static get nativeAssetsDir(): string;
@@ -2976,177 +2919,6 @@ export class LightLocation extends SpatialLocationElement implements LightLocati
     // (undocumented)
     static get className(): string;
     enabled: boolean;
-}
-
-// @beta
-export class LinearElement {
-    static queryLinearLocations(iModel: IModelDb, linearElementId: Id64String, queryParams: QueryParams): LinearLocationReference[];
-}
-
-// @beta
-export class LinearLocation extends LinearLocationElement {
-    constructor(props: GeometricElement3dProps, iModel: IModelDb);
-    // @internal (undocumented)
-    static get className(): string;
-    // (undocumented)
-    static create(iModel: IModelDb, modelId: Id64String, categoryId: Id64String): LinearLocation;
-    // (undocumented)
-    static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
-    // (undocumented)
-    insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
-    // (undocumented)
-    static insertFromTo(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
-    // (undocumented)
-    insertFromTo(iModel: IModelDb, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
-    }
-
-// @beta
-export abstract class LinearLocationElement extends SpatialLocationElement implements LinearlyLocatedBase {
-    constructor(props: GeometricElement3dProps, iModel: IModelDb);
-    // @internal (undocumented)
-    static get className(): string;
-    // (undocumented)
-    getLinearElementId(): Id64String | undefined;
-}
-
-// @beta
-export class LinearlyLocated {
-    static getAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocation | undefined;
-    static getAtLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocation[];
-    static getFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocation | undefined;
-    static getFromToLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocation[];
-    static getLinearElementId(iModel: IModelDb, linearlyLocatedElementId: Id64String): Id64String | undefined;
-    static insertAt(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
-    static insertFromTo(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps): Id64String;
-    static updateAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedAtLocationProps, aspectId?: Id64String): void;
-    static updateFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String, linearLocationProps: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
-}
-
-// @beta
-export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps, LinearlyLocatedBase {
-    constructor(props: LinearlyLocatedAttributionProps, iModel: IModelDb);
-    // (undocumented)
-    attributedElement?: ILinearlyLocatedAttributesElement;
-    // @internal (undocumented)
-    static get className(): string;
-    // (undocumented)
-    getLinearElementId(): Id64String | undefined;
-}
-
-// @beta
-export interface LinearlyLocatedBase {
-    // (undocumented)
-    getLinearElementId(): Id64String | undefined;
-}
-
-// @beta
-export interface LinearlyLocatedMultipleAt extends LinearlyLocatedBase {
-    // (undocumented)
-    getAtLocations(): LinearlyReferencedAtLocation[];
-    // (undocumented)
-    updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId: Id64String): void;
-}
-
-// @beta
-export interface LinearlyLocatedMultipleFromTo extends LinearlyLocatedBase {
-    // (undocumented)
-    getFromToLocations(): LinearlyReferencedFromToLocation[];
-    // (undocumented)
-    updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId: Id64String): void;
-}
-
-// @beta
-export interface LinearlyLocatedSingleAt extends LinearlyLocatedBase {
-    // (undocumented)
-    getAtLocation(): LinearlyReferencedAtLocation | undefined;
-    // (undocumented)
-    updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId?: Id64String): void;
-}
-
-// @beta
-export interface LinearlyLocatedSingleFromTo extends LinearlyLocatedBase {
-    // (undocumented)
-    getFromToLocation(): LinearlyReferencedFromToLocation | undefined;
-    // (undocumented)
-    updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
-}
-
-// @beta
-export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation implements LinearlyReferencedAtLocationAspectProps {
-    constructor(props: LinearlyReferencedAtLocationAspectProps, iModel: IModelDb);
-    // (undocumented)
-    atPosition: DistanceExpression;
-    // @internal (undocumented)
-    static get className(): string;
-    // (undocumented)
-    static create(iModel: IModelDb, locatedElementId: Id64String, at: DistanceExpression, fromReferentId?: Id64String): LinearlyReferencedAtLocation;
-    // (undocumented)
-    fromReferent?: LinearlyReferencedAtPositionRefersToReferent;
-    // (undocumented)
-    static insert(iModel: IModelDb, locatedElementId: Id64String, at: DistanceExpression, fromReferentId?: Id64String): void;
-    }
-
-// @beta
-export class LinearlyReferencedAtPositionRefersToReferent extends RelatedElement {
-    constructor(referentId: Id64String, relClassName?: string);
-    // (undocumented)
-    static classFullName: string;
-}
-
-// @beta
-export class LinearlyReferencedFromPositionRefersToReferent extends RelatedElement {
-    constructor(referentId: Id64String, relClassName?: string);
-    // (undocumented)
-    static classFullName: string;
-}
-
-// @beta
-export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation implements LinearlyReferencedFromToLocationAspectProps {
-    constructor(props: LinearlyReferencedFromToLocationAspectProps, iModel: IModelDb);
-    // @internal (undocumented)
-    static get className(): string;
-    // (undocumented)
-    static create(iModel: IModelDb, locatedElementId: Id64String, from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): LinearlyReferencedFromToLocation;
-    // (undocumented)
-    fromPosition: DistanceExpression;
-    // (undocumented)
-    fromPositionFromReferent?: LinearlyReferencedFromPositionRefersToReferent;
-    // (undocumented)
-    static insert(iModel: IModelDb, locatedElementId: Id64String, from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): void;
-    // (undocumented)
-    toPosition: DistanceExpression;
-    // (undocumented)
-    toPositionFromReferent?: LinearlyReferencedToPositionRefersToReferent;
-    }
-
-// @beta
-export class LinearlyReferencedLocation extends ElementMultiAspect {
-    // @internal (undocumented)
-    static get className(): string;
-}
-
-// @beta
-export class LinearlyReferencedToPositionRefersToReferent extends RelatedElement {
-    constructor(referentId: Id64String, relClassName?: string);
-    // (undocumented)
-    static classFullName: string;
-}
-
-// @beta
-export abstract class LinearPhysicalElement extends PhysicalElement {
-    constructor(props: PhysicalElementProps, iModel: IModelDb);
-    // @internal (undocumented)
-    static get className(): string;
-}
-
-// @beta
-export class LinearReferencingSchema extends Schema {
-    // (undocumented)
-    static registerSchema(): void;
-    // (undocumented)
-    static get schemaFilePath(): string;
-    // (undocumented)
-    static get schemaName(): string;
 }
 
 // @public
@@ -3547,30 +3319,6 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-}
-
-// @beta
-export class Referent extends ReferentElement {
-    constructor(props: ReferentElementProps, iModel: IModelDb);
-    // @internal (undocumented)
-    static get className(): string;
-    // (undocumented)
-    static create(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, referencedElementId: Id64String): Referent;
-    // (undocumented)
-    static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, referencedElementId: Id64String): Id64String;
-    // (undocumented)
-    insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
-    }
-
-// @beta
-export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps, LinearlyLocatedBase {
-    constructor(props: ReferentElementProps, iModel: IModelDb);
-    // @internal (undocumented)
-    static get className(): string;
-    // (undocumented)
-    getLinearElementId(): Id64String | undefined;
-    // (undocumented)
-    referencedElement?: IReferentReferencesElement;
 }
 
 // @public

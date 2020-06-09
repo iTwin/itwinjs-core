@@ -32,6 +32,20 @@ There were no API changes, but imports and dependencies will need to be adjusted
 
 > See: [AnalyticalSchema]($analytical-backend)
 
+### Linear Referencing
+
+The `@bentley/linear-referencing-backend` package contains classes for working with linear referencing on the backend.
+These classes were previously contained within the `@bentley/imodeljs-backend` package.
+There were no API changes, but imports and dependencies will need to be adjusted if these classes were previously used.
+
+> See: [LinearReferencingSchema]($linear-referencing-backend)
+
+The `@bentley/linear-referencing-common` package is new and contains classes for working with linear referencing on the frontend and backend.
+These classes were previously contained within the `@bentley/imodeljs-common` package.
+There were no API changes, but imports and dependencies will need to be adjusted if these classes were previously used.
+
+> See: [LinearReferencingCommon]($linear-referencing-common)
+
 ### Physical Material
 
 The `@bentley/physical-material-backend` package is new and contains classes for working with physical materials on the backend.

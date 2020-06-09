@@ -57,4 +57,6 @@ The iModel.js library is organized into the following separately downloadable [n
 ## iModel.js Domain Packages
 
 - ($analytical-backend)
+- ($linear-referencing-backend)
+- ($linear-referencing-common)
 - ($physical-material-backend)

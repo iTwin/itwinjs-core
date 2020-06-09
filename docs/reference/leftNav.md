@@ -60,6 +60,8 @@ packageClassification:  [
       "header":"iModel.js Domain Packages",
       "packages":[
          "analytical-backend",
+         "linear-referencing-backend",
+         "linear-referencing-common",
          "physical-material-backend"
       ]
    }

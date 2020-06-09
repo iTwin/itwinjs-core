@@ -3,23 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Schema
+ * @module LinearReferencing
  */
 
 import * as path from "path";
-import { ClassRegistry } from "../ClassRegistry";
-import { KnownLocations } from "../IModelHost";
-import { Schema, Schemas } from "../Schema";
+import { ClassRegistry, KnownLocations, Schema, Schemas } from "@bentley/imodeljs-backend";
 import * as aspectsModule from "./LinearReferencingElementAspects";
 import * as elementsModule from "./LinearReferencingElements";
 import * as relationshipsModule from "./LinearReferencingRelationships";
 
-/** Schema class for the LinearReferencing domain.
+/** Schema for the LinearReferencing domain.
+ * [Linear referencing](https://en.wikipedia.org/wiki/Linear_referencing) is the method of storing geographic locations by using relative positions along a measured linear feature.
  * @beta
  */
 export class LinearReferencingSchema extends Schema {
   public static get schemaName(): string { return "LinearReferencing"; }
-  public static get schemaFilePath(): string { return path.join(KnownLocations.nativeAssetsDir, "ECSchemas/Domain/LinearReferencing.ecschema.xml"); }
+  public static get schemaFilePath(): string { return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", "LinearReferencing.ecschema.xml"); }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);

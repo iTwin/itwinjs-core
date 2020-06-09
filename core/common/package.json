@@ -55,17 +55,17 @@
     "@bentley/geometry-core": "2.2.0-dev.9",
     "@bentley/imodelhub-client": "2.2.0-dev.9",
     "@bentley/itwin-client": "2.2.0-dev.9",
-    "@types/semver": "^5.5.0",
-    "rimraf": "^3.0.2",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
-    "typescript": "~3.7.4",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
+    "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
-    "ts-node": "^7.0.1"
+    "rimraf": "^3.0.2",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.7.4"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

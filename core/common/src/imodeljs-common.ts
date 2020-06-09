@@ -72,8 +72,6 @@ export * from "./ViewFlags";
 export * from "./ViewProps";
 export * from "./domains/FunctionalElementProps";
 export * from "./domains/GenericElementProps";
-export * from "./domains/LinearReferencingCommon";
-export * from "./domains/LinearReferencingElementProps";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/BoundingSphere";
 export * from "./geometry/Cartographic";

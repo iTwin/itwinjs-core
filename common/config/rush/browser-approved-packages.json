@@ -115,6 +115,10 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@bentley/linear-referencing-common",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/logger-config",
       "allowedCategories": [ "internal" ]
     },

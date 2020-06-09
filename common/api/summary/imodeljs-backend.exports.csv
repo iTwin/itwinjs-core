@@ -73,7 +73,6 @@ public;class DisplayStyle
 public;DisplayStyle2d 
 public;DisplayStyle3d 
 public;DisplayStyleCreationOptions
-beta;DistanceExpression 
 public;class Document 
 internal;class DocumentCarrier 
 public;DocumentListModel 
@@ -177,10 +176,6 @@ public;class GroupInformationElement
 public;class GroupInformationModel 
 public;GroupInformationPartition 
 public;GroupModel 
-beta;ILinearElementProvidedBySource 
-beta;ILinearLocationLocatesElement 
-beta;ILinearlyLocatedAlongILinearElement 
-beta;ILinearlyLocatedAttributesElement 
 beta;IModelCloneContext
 public;class IModelDb 
 public;IModelDb
@@ -206,27 +201,8 @@ public;InformationRecordModel
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
 beta;InstanceChange
-beta;IReferentReferencesElement 
 public;KnownLocations
 internal;LightLocation 
-beta;LinearElement
-beta;LinearLocation 
-beta;class LinearLocationElement 
-beta;LinearlyLocated
-beta;class LinearlyLocatedAttribution 
-beta;LinearlyLocatedBase
-beta;LinearlyLocatedMultipleAt 
-beta;LinearlyLocatedMultipleFromTo 
-beta;LinearlyLocatedSingleAt 
-beta;LinearlyLocatedSingleFromTo 
-beta;LinearlyReferencedAtLocation 
-beta;LinearlyReferencedAtPositionRefersToReferent 
-beta;LinearlyReferencedFromPositionRefersToReferent 
-beta;LinearlyReferencedFromToLocation 
-beta;LinearlyReferencedLocation 
-beta;LinearlyReferencedToPositionRefersToReferent 
-beta;class LinearPhysicalElement 
-beta;LinearReferencingSchema 
 public;LineStyle 
 public;LineStyleDefinition
 public;class LinkElement 
@@ -252,8 +228,6 @@ public;PhysicalTypeIsOfPhysicalMaterial
 public;PlanCallout 
 public;Platform
 beta;class RecipeDefinitionElement 
-beta;Referent 
-beta;class ReferentElement 
 public;Relationship 
 public;RelationshipProps 
 public;Relationships

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Entities
+ * @module LinearReferencing
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";

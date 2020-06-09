@@ -3,19 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Elements
+ * @module LinearReferencing
  */
 
 import { assert, DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { ECSqlStatement, ElementAspect, IModelDb, PhysicalElement, SpatialLocationElement } from "@bentley/imodeljs-backend";
+import { Code, ElementProps, GeometricElement3dProps, IModelError, PhysicalElementProps, RelatedElement } from "@bentley/imodeljs-common";
 import {
-  Code, ComparisonOption, ElementProps, GeometricElement3dProps, IModelError, LinearLocationReference, LinearlyLocatedAttributionProps,
-  LinearlyReferencedAtLocationAspectProps, LinearlyReferencedAtLocationProps, LinearlyReferencedFromToLocationAspectProps,
-  LinearlyReferencedFromToLocationProps, LinearlyReferencedLocationType, PhysicalElementProps, QueryParams, ReferentElementProps, RelatedElement,
-} from "@bentley/imodeljs-common";
-import { ECSqlStatement } from "../ECSqlStatement";
-import { PhysicalElement, SpatialLocationElement } from "../Element";
-import { ElementAspect } from "../ElementAspect";
-import { IModelDb } from "../IModelDb";
+  ComparisonOption, LinearLocationReference, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationAspectProps,
+  LinearlyReferencedAtLocationProps, LinearlyReferencedFromToLocationAspectProps, LinearlyReferencedFromToLocationProps,
+  LinearlyReferencedLocationType, QueryParams, ReferentElementProps,
+} from "@bentley/linear-referencing-common";
 import { LinearlyReferencedAtLocation, LinearlyReferencedFromToLocation } from "./LinearReferencingElementAspects";
 import {
   ILinearLocationLocatesElement, ILinearlyLocatedAlongILinearElement, ILinearlyLocatedAttributesElement, IReferentReferencesElement,
@@ -677,7 +675,7 @@ export interface LinearlyLocatedBase {
 
 /** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always a single at-position.
  * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
- * make use of the services provided by [LinearlyLocated]($backend).
+ * make use of the services provided by [LinearlyLocated]($linear-referencing-backend).
  * @beta
  */
 export interface LinearlyLocatedSingleAt extends LinearlyLocatedBase {
@@ -687,7 +685,7 @@ export interface LinearlyLocatedSingleAt extends LinearlyLocatedBase {
 
 /** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always at-positions.
  * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
- * make use of the services provided by [LinearlyLocated]($backend).
+ * make use of the services provided by [LinearlyLocated]($linear-referencing-backend).
  * @beta
  */
 export interface LinearlyLocatedMultipleAt extends LinearlyLocatedBase {
@@ -697,7 +695,7 @@ export interface LinearlyLocatedMultipleAt extends LinearlyLocatedBase {
 
 /** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always a single from-to-position.
  * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
- * make use of the services provided by [LinearlyLocated]($backend).
+ * make use of the services provided by [LinearlyLocated]($linear-referencing-backend).
  * @beta
  */
 export interface LinearlyLocatedSingleFromTo extends LinearlyLocatedBase {
@@ -707,7 +705,7 @@ export interface LinearlyLocatedSingleFromTo extends LinearlyLocatedBase {
 
 /** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always from-to-positions.
  * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
- * make use of the services provided by [LinearlyLocated]($backend).
+ * make use of the services provided by [LinearlyLocated]($linear-referencing-backend).
  * @beta
  */
 export interface LinearlyLocatedMultipleFromTo extends LinearlyLocatedBase {

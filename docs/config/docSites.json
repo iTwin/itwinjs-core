@@ -72,6 +72,8 @@
       "ui-framework": "ui-framework",
       "ui-ninezone": "ui-ninezone",
       "analytical-backend": "analytical-backend",
+      "linear-referencing-backend": "linear-referencing-backend",
+      "linear-referencing-common": "linear-referencing-common",
       "physical-material-backend": "physical-material-backend",
       "presentation-backend": "presentation-backend",
       "presentation-common": "presentation-common",

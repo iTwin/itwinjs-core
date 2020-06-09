@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Entities
+ * @module LinearReferencing
  */
 
-import { ElementAspectProps, GeometricElement3dProps, RelatedElementProps } from "../ElementProps";
+import { ElementAspectProps, GeometricElement3dProps, RelatedElementProps } from "@bentley/imodeljs-common";
 
 /** Properties of an ILinearElement
  * @beta
@@ -24,7 +24,7 @@ export interface ILinearlyLocatedAttributionProps {
   attributedElement?: RelatedElementProps;
 }
 
-/** Properties of a [LinearlyLocatedAttribution]($backend)
+/** Properties of a [LinearlyLocatedAttribution]($linear-referencing-backend)
  * @beta
  */
 export interface LinearlyLocatedAttributionProps extends GeometricElement3dProps, ILinearlyLocatedAttributionProps {
@@ -37,13 +37,13 @@ export interface IReferentProps {
   referencedElement?: RelatedElementProps;
 }
 
-/** Properties of a [ReferentElement]($backend)
+/** Properties of a [ReferentElement]($linear-referencing-backend)
  * @beta
  */
 export interface ReferentElementProps extends GeometricElement3dProps, IReferentProps {
 }
 
-/** Properties of a [DistanceExpression]($backend)
+/** Properties of a [DistanceExpression]($linear-referencing-backend)
  * @beta
  */
 export interface DistanceExpressionProps {
@@ -53,7 +53,7 @@ export interface DistanceExpressionProps {
   distanceAlongFromReferent?: number;
 }
 
-/** Core properties of a [LinearlyReferencedAtLocation]($backend)
+/** Core properties of a [LinearlyReferencedAtLocation]($linear-referencing-backend)
  * @beta
  */
 export interface LinearlyReferencedAtLocationProps {
@@ -61,7 +61,7 @@ export interface LinearlyReferencedAtLocationProps {
   fromReferent?: RelatedElementProps;
 }
 
-/** Core properties of a [LinearlyReferencedFromToLocation]($backend)
+/** Core properties of a [LinearlyReferencedFromToLocation]($linear-referencing-backend)
  * @beta
  */
 export interface LinearlyReferencedFromToLocationProps {
@@ -71,13 +71,13 @@ export interface LinearlyReferencedFromToLocationProps {
   toPositionFromReferent?: RelatedElementProps;
 }
 
-/** Properties of a [LinearlyReferencedAtLocation]($backend)
+/** Properties of a [LinearlyReferencedAtLocation]($linear-referencing-backend)
  * @beta
  */
 export interface LinearlyReferencedAtLocationAspectProps extends LinearlyReferencedAtLocationProps, ElementAspectProps {
 }
 
-/** Properties of a [LinearlyReferencedFromToLocation]($backend)
+/** Properties of a [LinearlyReferencedFromToLocation]($linear-referencing-backend)
  * @beta
  */
 export interface LinearlyReferencedFromToLocationAspectProps extends LinearlyReferencedFromToLocationProps, ElementAspectProps {

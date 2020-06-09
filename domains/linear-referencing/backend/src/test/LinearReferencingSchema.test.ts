@@ -6,19 +6,20 @@ import { assert } from "chai";
 import * as path from "path";
 import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  CategoryProps, Code, GeometricElement3dProps, ILinearElementProps, IModel, InformationPartitionElementProps, LinearlyLocatedAttributionProps,
-  LinearlyReferencedFromToLocationProps, PhysicalElementProps,
-} from "@bentley/imodeljs-common";
+  BackendRequestContext, ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb,
+  SpatialCategory, SubjectOwnsPartitionElements,
+} from "@bentley/imodeljs-backend";
 import {
-  BackendRequestContext, ClassRegistry, IModelDb, LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo,
-  LinearlyReferencedFromToLocation, LinearReferencingSchema, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
-  SubjectOwnsPartitionElements,
-} from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+  CategoryProps, Code, GeometricElement3dProps, IModel, InformationPartitionElementProps, PhysicalElementProps,
+} from "@bentley/imodeljs-common";
+import { ILinearElementProps, LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps } from "@bentley/linear-referencing-common";
+import {
+  LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo, LinearlyReferencedFromToLocation, LinearReferencingSchema,
+} from "../linear-referencing-backend";
 
 class TestLinearReferencingSchema extends Schema {
   public static get schemaName(): string { return "TestLinearReferencing"; }
-  public static get schemaFilePath(): string { return path.join(__dirname, "../assets/TestLinearReferencing.ecschema.xml"); }
+  public static get schemaFilePath(): string { return path.join(__dirname, "assets", "TestLinearReferencing.ecschema.xml"); }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);
@@ -63,21 +64,33 @@ class TestLinearlyLocatedAttribution extends LinearlyLocatedAttribution implemen
 }
 
 describe("LinearReferencing Domain", () => {
-  const requestContext = new BackendRequestContext();
+  const outputDir = path.join(__dirname, "output");
+
+  before(async () => {
+    await IModelHost.startup();
+    LinearReferencingSchema.registerSchema();
+    TestLinearReferencingSchema.registerSchema();
+    if (!IModelJsFs.existsSync(outputDir)) {
+      IModelJsFs.mkdirSync(outputDir);
+    }
+  });
 
   it("should create elements exercising the LinearReferencing domain", async () => {
-    const iModelDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("LinearReferencingDomain", "LinearReferencingTest.bim"), {
+    const iModelFileName: string = path.join(outputDir, "LinearReferencingTest.bim");
+    if (IModelJsFs.existsSync(iModelFileName)) {
+      IModelJsFs.removeSync(iModelFileName);
+    }
+    const iModelDb = SnapshotDb.createEmpty(iModelFileName, {
       rootSubject: { name: "LinearReferencingTest", description: "Test of the LinearReferencing domain schema." },
       client: "LinearReferencing",
       globalOrigin: { x: 0, y: 0 },
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
       guid: Guid.createValue(),
+      createClassViews: true,
     });
 
     // Import the LinearReferencing schema
-    await iModelDb.importSchemas(requestContext, [LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
-    LinearReferencingSchema.registerSchema();
-    TestLinearReferencingSchema.registerSchema();
+    await iModelDb.importSchemas(new BackendRequestContext(), [LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
     iModelDb.saveChanges("Import TestLinearReferencing schema");
 
     // Insert a SpatialCategory
@@ -212,7 +225,6 @@ describe("LinearReferencing Domain", () => {
     assert.equal(linearLocationRefs[1].linearlyLocatedId, linearPhysicalElementId);
 
     iModelDb.saveChanges("Insert Test LinearReferencing elements");
-
     iModelDb.close();
   });
 });

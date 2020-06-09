@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Schema
+ * @module LinearReferencing
  */
 
 import { Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { ElementMultiAspect, IModelDb } from "@bentley/imodeljs-backend";
+import { RelatedElement } from "@bentley/imodeljs-common";
 import {
-  DistanceExpressionProps, LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationAspectProps, RelatedElement,
-} from "@bentley/imodeljs-common";
-import { ElementMultiAspect } from "../ElementAspect";
-import { IModelDb } from "../IModelDb";
+  DistanceExpressionProps, LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationAspectProps,
+} from "@bentley/linear-referencing-common";
 import {
   LinearlyReferencedAtPositionRefersToReferent, LinearlyReferencedFromPositionRefersToReferent, LinearlyReferencedToPositionRefersToReferent,
 } from "./LinearReferencingRelationships";

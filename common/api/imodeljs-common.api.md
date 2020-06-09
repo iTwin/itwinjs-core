@@ -1314,14 +1314,6 @@ export enum CommonLoggerCategory {
 // @internal
 export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number;
 
-// @beta
-export enum ComparisonOption {
-    // (undocumented)
-    Exclusive = 1,
-    // (undocumented)
-    Inclusive = 0
-}
-
 // @internal
 export class CompositeTileHeader extends TileHeader {
     constructor(stream: ByteStream);
@@ -1634,18 +1626,6 @@ export interface DisplayStyleSettingsProps {
 // @public
 export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Props {
     subCategory?: Id64String;
-}
-
-// @beta
-export interface DistanceExpressionProps {
-    // (undocumented)
-    distanceAlongFromReferent?: number;
-    // (undocumented)
-    distanceAlongFromStart: number;
-    // (undocumented)
-    lateralOffsetFromILinearElement?: number;
-    // (undocumented)
-    verticalOffsetFromILinearElement?: number;
 }
 
 // @beta
@@ -2988,22 +2968,6 @@ export class I3dmHeader extends TileHeader {
     readonly length: number;
 }
 
-// @beta
-export interface ILinearElementProps extends GeometricElement3dProps {
-    // (undocumented)
-    lengthValue: number;
-    // (undocumented)
-    source: RelatedElementProps;
-    // (undocumented)
-    startValue: number;
-}
-
-// @beta
-export interface ILinearlyLocatedAttributionProps {
-    // (undocumented)
-    attributedElement?: RelatedElementProps;
-}
-
 // @public
 export class ImageBuffer {
     // @internal
@@ -3389,12 +3353,6 @@ export const Interpolation: {
 // @beta (undocumented)
 export type InterpolationFunction = (v: any, k: number) => number;
 
-// @beta
-export interface IReferentProps {
-    // (undocumented)
-    referencedElement?: RelatedElementProps;
-}
-
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
@@ -3457,62 +3415,6 @@ export interface LightSettingsProps {
     };
     solar?: SolarLightProps;
     specularIntensity?: number;
-}
-
-// @beta
-export interface LinearLocationReference {
-    // (undocumented)
-    linearlyLocatedClassFullName: string;
-    // (undocumented)
-    linearlyLocatedId: Id64String;
-    // (undocumented)
-    locationAspectId: Id64String;
-    // (undocumented)
-    startDistanceAlong: number;
-    // (undocumented)
-    stopDistanceAlong: number;
-}
-
-// @beta
-export interface LinearlyLocatedAttributionProps extends GeometricElement3dProps, ILinearlyLocatedAttributionProps {
-}
-
-// @beta
-export interface LinearlyReferencedAtLocationAspectProps extends LinearlyReferencedAtLocationProps, ElementAspectProps {
-}
-
-// @beta
-export interface LinearlyReferencedAtLocationProps {
-    // (undocumented)
-    atPosition: DistanceExpressionProps;
-    // (undocumented)
-    fromReferent?: RelatedElementProps;
-}
-
-// @beta
-export interface LinearlyReferencedFromToLocationAspectProps extends LinearlyReferencedFromToLocationProps, ElementAspectProps {
-}
-
-// @beta
-export interface LinearlyReferencedFromToLocationProps {
-    // (undocumented)
-    fromPosition: DistanceExpressionProps;
-    // (undocumented)
-    fromPositionFromReferent?: RelatedElementProps;
-    // (undocumented)
-    toPosition: DistanceExpressionProps;
-    // (undocumented)
-    toPositionFromReferent?: RelatedElementProps;
-}
-
-// @beta
-export enum LinearlyReferencedLocationType {
-    // (undocumented)
-    Any = 2,
-    // (undocumented)
-    At = 0,
-    // (undocumented)
-    FromTo = 1
 }
 
 // @public
@@ -4673,22 +4575,6 @@ export interface QueryLimit {
     startRowOffset?: number;
 }
 
-// @beta
-export interface QueryParams {
-    // (undocumented)
-    fromComparisonOption?: ComparisonOption;
-    // (undocumented)
-    fromDistanceAlong?: number;
-    // (undocumented)
-    linearlyLocatedClassFullNames?: string[];
-    // (undocumented)
-    linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType;
-    // (undocumented)
-    toComparisonOption?: ComparisonOption;
-    // (undocumented)
-    toDistanceAlong?: number;
-}
-
 // @public
 export enum QueryPriority {
     // (undocumented)
@@ -4757,10 +4643,6 @@ export interface ReadableFormData extends Readable {
 
 // @internal
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
-
-// @beta
-export interface ReferentElementProps extends GeometricElement3dProps, IReferentProps {
-}
 
 // @internal (undocumented)
 export const REGISTRY: unique symbol;

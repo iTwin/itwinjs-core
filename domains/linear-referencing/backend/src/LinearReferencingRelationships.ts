@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Schema
+ * @module LinearReferencing
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
+import { ElementRefersToElements } from "@bentley/imodeljs-backend";
 import { RelatedElement } from "@bentley/imodeljs-common";
-import { ElementRefersToElements } from "../Relationship";
 
 /** Relationship indicating the Linear-Element along which concrete instances mixing-in ILinearlyLocated are located.
  * @beta
