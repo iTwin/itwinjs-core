@@ -7,7 +7,7 @@ import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-co
 import { Angle, Arc3d, Box, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, TextString, TextStringProps } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
+import { BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function assertTrue(expr: boolean): asserts expr {
@@ -1062,6 +1062,79 @@ describe("exportGraphics", () => {
     assert.strictEqual(polyface.data.pointCount, 24);
     assert.strictEqual(polyface.data.normalCount, 24);
     assert.strictEqual(polyface.data.paramCount, 24);
+  });
+
+  //
+  //
+  //    2---3      6
+  //    | \ |     | \
+  //    0---1    4---5
+  //
+  it("ExportMeshGraphicsVisitor", async () => {
+    const numPoints = 7;
+    const numFacets = 3;
+    const pointData = [0, 0, 0, 1, 0, 0, 0, 2, 0, 1, 2, 0, 2, 0, 0, 4, 0, 0, 3, 2, 0];
+    const paramData = [0, 0, 1, 0, 0, 2, 1, 2, 2, 0, 4, 0, 3, 2];
+    const normalData = new Float32Array(pointData.length);
+    const a0 = 2.0;
+    const a1 = 3.0;
+    const b0 = -2.0;
+    const b1 = 5.0;
+    // make normals functionally related to point coordinates . . . not good normals, but good for tests
+    let paramCursor = 0;
+    for (let i = 0; i < pointData.length; i++) {
+      normalData[i] = a1 * pointData[i] + a0;
+      if ((i + 1) % 3 !== 0)
+        paramData[paramCursor++] = b0 + b1 * pointData[i];
+    }
+    const smallMesh = {
+      points: new Float64Array(pointData),
+      params: new Float32Array(paramData),
+      // normals have one-based index as z ..
+      normals: new Float32Array(normalData),
+      indices: new Int32Array([0, 1, 2, 2, 1, 3, 4, 5, 6]),
+      isTwoSided: true,
+    };
+    const knownArea = 4.0;
+    assert.isTrue(smallMesh.points.length === 3 * numPoints);
+    assert.isTrue(smallMesh.normals.length === 3 * numPoints);
+    assert.isTrue(smallMesh.params.length === 2 * numPoints);
+    assert.isTrue(smallMesh.indices.length === 3 * numFacets);
+    const visitor = ExportGraphicsMeshVisitor.create(smallMesh, 0);
+    assert.isDefined(visitor.paramIndex, "paramIndex defined");
+    assert.isDefined(visitor.paramIndex, "paramIndex defined");
+    let numFacetsA = 0;
+    let indexCursor = 0;
+    let areaSum = 0.0;
+    while (visitor.moveToNextFacet()) {
+      numFacetsA++;
+      assert.isTrue(visitor.point.length === 3);
+      assert.isTrue(smallMesh.indices[indexCursor] === visitor.pointIndex[0]);
+      assert.isTrue(smallMesh.indices[indexCursor + 1] === visitor.pointIndex[1]);
+      assert.isTrue(smallMesh.indices[indexCursor + 2] === visitor.pointIndex[2]);
+      const areaVector = visitor.point.crossProductIndexIndexIndex(0, 1, 2)!;
+      areaSum += areaVector.magnitude() * 0.5;
+      assert.isTrue(smallMesh.indices[indexCursor] === visitor.paramIndex![0]);
+      assert.isTrue(smallMesh.indices[indexCursor + 1] === visitor.paramIndex![1]);
+      assert.isTrue(smallMesh.indices[indexCursor + 2] === visitor.paramIndex![2]);
+      assert.isTrue(smallMesh.indices[indexCursor] === visitor.normalIndex![0]);
+      assert.isTrue(smallMesh.indices[indexCursor + 1] === visitor.normalIndex![1]);
+      assert.isTrue(smallMesh.indices[indexCursor + 2] === visitor.normalIndex![2]);
+      for (let k = 0; k < 3; k++) {
+        const point = visitor.point.getPoint3dAtUncheckedPointIndex(k);
+        const normal = visitor.normal!.getPoint3dAtUncheckedPointIndex(k);
+        const param = visitor.param!.getPoint2dAtUncheckedPointIndex(k);
+        for (let j = 0; j < 3; j++) {
+          assert.isTrue(a0 + a1 * point.at(j) === normal.at(j));
+        }
+        for (let j = 0; j < 2; j++) {
+          assert.isTrue(b0 + b1 * point.at(j) === (j === 0 ? param.x : param.y));
+        }
+      }
+      indexCursor += 3;
+    }
+    assert.isTrue(Math.abs(knownArea - areaSum) < 1.0e-13);
+    assert.isTrue(numFacetsA === numFacets, "facet count");
   });
 });
 
