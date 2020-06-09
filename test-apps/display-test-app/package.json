@@ -34,7 +34,6 @@
   "dependencies": {
     "@bentley/icons-generic": "^1.0.5",
     "@bentley/icons-generic-webfont": "^1.0.5",
-    "@bentley/ui-abstract": "2.2.0-dev.9",
     "@bentley/frontend-devtools": "2.2.0-dev.9",
     "@bentley/bentleyjs-core": "2.2.0-dev.9",
     "@bentley/electron-manager": "2.2.0-dev.9",
