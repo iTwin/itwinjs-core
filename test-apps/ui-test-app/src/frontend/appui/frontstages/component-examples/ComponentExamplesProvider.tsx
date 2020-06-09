@@ -208,7 +208,7 @@ export class ComponentExamplesProvider {
 
         createComponentExample("ThemedSelect", "ThemedSelect component for colors",
           <div className="uicore-full-width">
-            <ThemedSelect className="select-item" options={colorChoices} />
+            <ThemedSelect options={colorChoices} />
           </div>),
         createComponentExample("Multi ThemedSelect", "ThemedSelect component with isMulti",
           <div className="uicore-full-width">

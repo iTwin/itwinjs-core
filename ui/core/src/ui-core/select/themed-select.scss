@@ -12,7 +12,7 @@
 // priority than the class prefix style solution, which we use. I thought
 // this was the best solution after testing several, the better of which
 // caused an obscure node-sass error
-.reactSelectTop {
+.uicore-reactSelectTop {
   $uicore-select-padding-bordered:  $uicore-inputs-padding-bordered;
 
   font-size:          $uicore-font-size;
@@ -150,16 +150,4 @@
     background-color: $buic-background-control;
     @include uicore-z-index(dialog-popup);
   }
-}
-
-.selectCheckboxOption {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.checkbox {
-  // prevent strange click handling by react-select when checkbox pressed
-  pointer-events: none;
-  margin-right: 8px;
 }

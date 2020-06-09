@@ -4,16 +4,24 @@
 
 ```ts
 
+import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
+import { FocusEventHandler } from 'react-select/src/types';
+import { formatGroupLabel } from 'react-select/src/builtins';
+import { getOptionLabel } from 'react-select/src/builtins';
+import { getOptionValue } from 'react-select/src/builtins';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { InputActionMeta } from 'react-select/src/types';
+import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
-import { Props as Props_2 } from 'react-select/base/index';
 import * as React from 'react';
 import { RelativePosition } from '@bentley/ui-abstract';
+import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { SliderModeFunction } from 'react-compound-slider';
+import { ValueType } from 'react-select/src/types';
 
 // @internal
 export class AnnularSector {
@@ -1249,11 +1257,14 @@ export type OmitChildrenProp<T extends {
 }> = Omit<T, "children">;
 
 // @beta
+export type OptionsType = Array<OptionType>;
+
+// @beta
 export interface OptionType {
     // (undocumented)
     label: string;
     // (undocumented)
-    value: string;
+    value: any;
 }
 
 // @public
@@ -1816,7 +1827,66 @@ export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement>, Com
 }
 
 // @beta
-export function ThemedSelect<OptionType>(props: Props_2<OptionType>): JSX.Element;
+export function ThemedSelect(props: ThemedSelectProps): JSX.Element;
+
+// @beta
+export type ThemedSelectProps = {
+    autoFocus?: boolean;
+    backspaceRemovesValue?: boolean;
+    blurInputOnSelect?: boolean;
+    captureMenuScroll?: boolean;
+    closeMenuOnSelect?: boolean;
+    closeMenuOnScroll?: boolean | EventListener;
+    components?: SelectComponentsConfig<OptionType>;
+    controlShouldRenderValue?: boolean;
+    defaultMenuIsOpen?: boolean;
+    defaultValue?: ValueType<OptionType>;
+    escapeClearsValue?: boolean;
+    filterOption?: ((option: OptionType, rawInput: string) => boolean) | null;
+    formatGroupLabel?: typeof formatGroupLabel;
+    formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => Node;
+    getOptionLabel?: typeof getOptionLabel;
+    getOptionValue?: typeof getOptionValue;
+    hideSelectedOptions?: boolean;
+    id?: string;
+    inputValue?: string;
+    inputId?: string;
+    instanceId?: number | string;
+    isClearable?: boolean;
+    isDisabled?: boolean;
+    isLoading?: boolean;
+    isOptionDisabled?: (option: OptionType, options: OptionsType) => boolean | false;
+    isMulti?: boolean;
+    isMenuFixed?: boolean;
+    isRtl?: boolean;
+    isSearchable?: boolean;
+    minMenuHeight?: number;
+    maxMenuHeight?: number;
+    menuIsOpen?: boolean;
+    menuShouldBlockScroll?: boolean;
+    menuShouldScrollIntoView?: boolean;
+    name?: string;
+    noOptionsMessage?: (obj: {
+        inputValue: string;
+    }) => string | null;
+    onBlur?: FocusEventHandler;
+    onChange?: (value: ValueType<OptionType>, action: ActionMeta<OptionType>) => void;
+    onFocus?: FocusEventHandler;
+    onInputChange?: (newValue: string, actionMeta?: InputActionMeta) => void;
+    onKeyDown?: KeyboardEventHandler;
+    onMenuOpen?: () => void;
+    onMenuClose?: () => void;
+    onMenuScrollToTop?: (e: React.SyntheticEvent<HTMLElement>) => void;
+    onMenuScrollToBottom?: (e: React.SyntheticEvent<HTMLElement>) => void;
+    openMenuOnFocus?: boolean;
+    openMenuOnClick?: boolean;
+    options: OptionsType;
+    pageSize?: number;
+    placeholder?: string;
+    tabIndex?: string;
+    tabSelectsValue?: boolean;
+    value?: ValueType<OptionType>;
+};
 
 // @internal
 export class TildeFinder {

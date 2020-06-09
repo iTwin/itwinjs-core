@@ -2,7 +2,7 @@
 
 exports[`<ThemedSelect /> renders array options correctly 1`] = `
 <div
-  className="reactSelectTop"
+  className="uicore-reactSelectTop"
 >
   <StateManager
     classNamePrefix="react-select"
@@ -14,7 +14,6 @@ exports[`<ThemedSelect /> renders array options correctly 1`] = `
     defaultInputValue=""
     defaultMenuIsOpen={false}
     defaultValue={null}
-    isSearchable={false}
     menuPortalTarget={
       <div
         id="portal"
@@ -52,7 +51,7 @@ exports[`<ThemedSelect /> renders array options correctly 1`] = `
 
 exports[`<ThemedSelect /> renders correctly 1`] = `
 <div
-  className="reactSelectTop"
+  className="uicore-reactSelectTop"
 >
   <StateManager
     classNamePrefix="react-select"
@@ -64,7 +63,6 @@ exports[`<ThemedSelect /> renders correctly 1`] = `
     defaultInputValue=""
     defaultMenuIsOpen={false}
     defaultValue={null}
-    isSearchable={false}
     menuPortalTarget={
       <div
         id="portal"
@@ -83,7 +81,7 @@ exports[`<ThemedSelect /> renders correctly 1`] = `
 
 exports[`<ThemedSelect /> renders default value correctly when options are provided  1`] = `
 <div
-  className="reactSelectTop"
+  className="uicore-reactSelectTop"
 >
   <StateManager
     classNamePrefix="react-select"
@@ -100,7 +98,6 @@ exports[`<ThemedSelect /> renders default value correctly when options are provi
         "value": 1,
       }
     }
-    isSearchable={false}
     menuPortalTarget={
       <div
         id="portal"
@@ -138,7 +135,7 @@ exports[`<ThemedSelect /> renders default value correctly when options are provi
 
 exports[`<ThemedSelect /> renders defaultValue correctly 1`] = `
 <div
-  className="reactSelectTop"
+  className="uicore-reactSelectTop"
 >
   <StateManager
     classNamePrefix="react-select"
@@ -155,7 +152,6 @@ exports[`<ThemedSelect /> renders defaultValue correctly 1`] = `
         "value": 1,
       }
     }
-    isSearchable={false}
     menuPortalTarget={
       <div
         id="portal"
@@ -174,7 +170,7 @@ exports[`<ThemedSelect /> renders defaultValue correctly 1`] = `
 
 exports[`<ThemedSelect /> renders initial value correctly 1`] = `
 <div
-  className="reactSelectTop"
+  className="uicore-reactSelectTop"
 >
   <StateManager
     classNamePrefix="react-select"
@@ -186,7 +182,6 @@ exports[`<ThemedSelect /> renders initial value correctly 1`] = `
     defaultInputValue=""
     defaultMenuIsOpen={false}
     defaultValue={null}
-    isSearchable={false}
     menuPortalTarget={
       <div
         id="portal"
@@ -230,7 +225,7 @@ exports[`<ThemedSelect /> renders initial value correctly 1`] = `
 
 exports[`<ThemedSelect /> renders object options correctly 1`] = `
 <div
-  className="reactSelectTop"
+  className="uicore-reactSelectTop"
 >
   <StateManager
     classNamePrefix="react-select"
@@ -242,7 +237,6 @@ exports[`<ThemedSelect /> renders object options correctly 1`] = `
     defaultInputValue=""
     defaultMenuIsOpen={false}
     defaultValue={null}
-    isSearchable={false}
     menuPortalTarget={
       <div
         id="portal"
@@ -280,7 +274,7 @@ exports[`<ThemedSelect /> renders object options correctly 1`] = `
 
 exports[`<ThemedSelect /> renders placeholder correctly 1`] = `
 <div
-  className="reactSelectTop"
+  className="uicore-reactSelectTop"
 >
   <StateManager
     classNamePrefix="react-select"
@@ -292,7 +286,6 @@ exports[`<ThemedSelect /> renders placeholder correctly 1`] = `
     defaultInputValue=""
     defaultMenuIsOpen={false}
     defaultValue={null}
-    isSearchable={false}
     menuPortalTarget={
       <div
         id="portal"
@@ -312,7 +305,7 @@ exports[`<ThemedSelect /> renders placeholder correctly 1`] = `
 
 exports[`<ThemedSelect /> renders placeholder correctly when options are provided 1`] = `
 <div
-  className="reactSelectTop"
+  className="uicore-reactSelectTop"
 >
   <StateManager
     classNamePrefix="react-select"
@@ -324,7 +317,6 @@ exports[`<ThemedSelect /> renders placeholder correctly when options are provide
     defaultInputValue=""
     defaultMenuIsOpen={false}
     defaultValue={null}
-    isSearchable={false}
     menuPortalTarget={
       <div
         id="portal"
@@ -363,7 +355,7 @@ exports[`<ThemedSelect /> renders placeholder correctly when options are provide
 
 exports[`<ThemedSelect /> renders status correctly 1`] = `
 <div
-  className="reactSelectTop"
+  className="uicore-reactSelectTop"
 >
   <StateManager
     classNamePrefix="react-select"
@@ -380,7 +372,6 @@ exports[`<ThemedSelect /> renders status correctly 1`] = `
         "value": 0,
       }
     }
-    isSearchable={false}
     menuPortalTarget={
       <div
         id="portal"
@@ -399,7 +390,7 @@ exports[`<ThemedSelect /> renders status correctly 1`] = `
 
 exports[`<ThemedSelect /> renders value correctly 1`] = `
 <div
-  className="reactSelectTop"
+  className="uicore-reactSelectTop"
 >
   <StateManager
     classNamePrefix="react-select"
@@ -411,7 +402,6 @@ exports[`<ThemedSelect /> renders value correctly 1`] = `
     defaultInputValue=""
     defaultMenuIsOpen={false}
     defaultValue={null}
-    isSearchable={false}
     menuPortalTarget={
       <div
         id="portal"
@@ -428,6 +418,56 @@ exports[`<ThemedSelect /> renders value correctly 1`] = `
       Object {
         "label": "White",
         "value": 1,
+      }
+    }
+  />
+</div>
+`;
+
+exports[`<ThemedSelect /> renders with fixed menu correctly 1`] = `
+<div
+  className="uicore-reactSelectTop"
+>
+  <StateManager
+    classNamePrefix="react-select"
+    components={
+      Object {
+        "Menu": [Function],
+      }
+    }
+    defaultInputValue=""
+    defaultMenuIsOpen={false}
+    defaultValue={null}
+    noOptionsMessage={[Function]}
+    options={
+      Array [
+        Object {
+          "label": "Red",
+          "value": 0,
+        },
+        Object {
+          "label": "White",
+          "value": 1,
+        },
+        Object {
+          "label": "Blue",
+          "value": 2,
+        },
+        Object {
+          "label": "Yellow",
+          "value": 3,
+        },
+      ]
+    }
+    styles={
+      Object {
+        "menuPortal": [Function],
+      }
+    }
+    value={
+      Object {
+        "label": "Red",
+        "value": 0,
       }
     }
   />

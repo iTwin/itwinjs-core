@@ -156,6 +156,7 @@ internal;NumericInputDefaultProps = Pick
 beta;NumericInputProps 
 public;Omit
 public;OmitChildrenProp
+beta;OptionsType = Array
 beta;OptionType
 public;Orientation
 internal;Point 
@@ -212,7 +213,8 @@ public;TabsProps
 public;Textarea 
 public;TextareaProps 
 public;TextProps 
-beta;ThemedSelect
+beta;ThemedSelect(props: ThemedSelectProps): JSX.Element
+beta;ThemedSelectProps =
 internal;TildeFinder
 beta;Tile 
 internal;TileDefaultProps = Pick
