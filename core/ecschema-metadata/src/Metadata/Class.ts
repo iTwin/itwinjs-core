@@ -641,6 +641,15 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
     return this.traverseBaseClassesSync(SchemaItem.equalByKey, targetClass);
   }
+
+  /**
+   * @alpha
+   * A setter method used specifically for schema editing.
+   * @param modifier
+   */
+  protected setModifier(modifier: ECClassModifier) {
+    this._modifier = modifier;
+  }
 }
 
 /**
@@ -662,7 +671,7 @@ export class StructClass extends ECClass {
  */
 export abstract class MutableClass extends ECClass {
   public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
-
+  public abstract setModifier(modifier: ECClassModifier): void;
   public abstract async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
   public abstract async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
   public abstract async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
@@ -684,4 +693,5 @@ export abstract class MutableClass extends ECClass {
 
   public abstract async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
   public abstract createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty;
+
 }

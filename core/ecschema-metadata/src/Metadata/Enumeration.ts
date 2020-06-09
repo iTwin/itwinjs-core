@@ -176,9 +176,18 @@ export class Enumeration extends SchemaItem {
   public async fromJSON(enumerationProps: EnumerationProps) {
     this.fromJSONSync(enumerationProps);
   }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setIsStrict(isStrict: boolean) {
+    this._isStrict = isStrict;
+  }
+
 }
 
 /** @internal */
 export abstract class MutableEnumeration extends Enumeration {
   public abstract addEnumerator(enumerator: AnyEnumerator): void;
+  public abstract setIsStrict(isStrict: boolean): void;
 }

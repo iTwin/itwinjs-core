@@ -59,4 +59,18 @@ export class CustomAttributeClass extends ECClass {
   public async fromJSON(customAttributeProps: CustomAttributeClassProps) {
     this.fromJSONSync(customAttributeProps);
   }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setContainerType(containerType: CustomAttributeContainerType) {
+    this._containerType = containerType;
+  }
+}
+/**
+ * @internal
+ * Used for Schema editing.
+ */
+export abstract class MutableCAClass extends CustomAttributeClass {
+  public abstract setContainerType(containerType: CustomAttributeContainerType): void;
 }

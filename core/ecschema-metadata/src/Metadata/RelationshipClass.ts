@@ -67,6 +67,20 @@ export class RelationshipClass extends ECClass {
   }
 
   /**
+   * @alpha Used for schema editing.
+   */
+  protected setStrength(strength: StrengthType) {
+    this._strength = strength;
+  }
+
+  /**
+   * @alpha Used for schema editing.
+   */
+  protected setStrengthDirection(direction: StrengthDirection) {
+    this._strengthDirection = direction;
+  }
+
+  /**
    * Save this RelationshipClass's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
@@ -363,6 +377,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
 
     this._customAttributes.set(customAttribute.className, customAttribute);
   }
+
 }
 
 /**
@@ -371,6 +386,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
  */
 export abstract class MutableRelationshipConstraint extends RelationshipConstraint {
   public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
+
 }
 
 const INT32_MAX = 2147483647;
@@ -418,4 +434,18 @@ export class RelationshipMultiplicity {
   public toString(): string {
     return `(${this.lowerLimit}..${this.upperLimit === INT32_MAX ? "*" : this.upperLimit})`;
   }
+}
+
+/**
+ * @internal
+ * An abstract class used for schema editing.
+ */
+export abstract class MutableRelationshipClass extends RelationshipClass {
+
+  get source() { return this._source as MutableRelationshipConstraint; }
+  get target() { return this._target as MutableRelationshipConstraint; }
+  public abstract setStrength(strength: StrengthType): void;
+  public abstract setStrengthDirection(direction: StrengthDirection): void;
+  public abstract async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
+  public abstract createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
 }

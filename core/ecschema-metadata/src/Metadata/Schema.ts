@@ -131,6 +131,38 @@ export class Schema implements CustomAttributeContainerProps {
     return new SchemaItemKey(itemName, schemaKey);
   }
 
+  protected addItem<T extends SchemaItem>(item: T): void {
+    if (undefined !== this.getItemSync(item.name))
+      throw new ECObjectsError(ECObjectsStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
+
+    this._items.set(item.name.toUpperCase(), item);
+  }
+
+  /**
+   * @alpha
+   */
+  protected createClass<T extends AnyClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
+    const item = new type(this, name, modifier);
+    this.addItem(item);
+    return item;
+  }
+
+  /**
+   * @alpha
+   */
+  protected createItem<T extends AnySchemaItem>(type: (new (schema: Schema, name: string) => T), name: string): T {
+    const item = new type(this, name);
+    this.addItem(item);
+    return item;
+  }
+
+  protected addCustomAttribute(customAttribute: CustomAttribute) {
+    if (!this._customAttributes)
+      this._customAttributes = new Map<string, CustomAttribute>();
+
+    this._customAttributes.set(customAttribute.className, customAttribute);
+  }
+
   /**
    * Creates a EntityClass with the provided name in this schema.
    * @param name
@@ -299,21 +331,25 @@ export class Schema implements CustomAttributeContainerProps {
   protected createPropertyCategorySync(name: string): PropertyCategory {
     return this.createItem<PropertyCategory>(PropertyCategory, name);
   }
-
-  // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
-  private createClass<T extends AnyClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
-    const item = new type(this, name, modifier);
-    this.addItem(item);
-    return item;
+  /**
+   *
+   * @param refSchema
+   */
+  protected async addReference(refSchema: Schema): Promise<void> {
+    // TODO validation of reference schema. For now just adding
+    this.addReferenceSync(refSchema);
   }
 
-  // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
-  private createItem<T extends AnySchemaItem>(type: (new (schema: Schema, name: string) => T), name: string): T {
-    const item = new type(this, name);
-    this.addItem(item);
-    return item;
+  protected addReferenceSync(refSchema: Schema): void {
+    this.references.push(refSchema);
   }
 
+  /**
+   * @alpha Used for schema editing.
+   */
+  protected setContext(context: SchemaContext): void {
+    this._context = context;
+  }
   /**
    * Gets an item from within this schema. To get by full name use lookupItem instead.
    * @param key the local (unqualified) name, lookup is case-insensitive
@@ -380,13 +416,6 @@ export class Schema implements CustomAttributeContainerProps {
     return refSchema.getItemSync<T>(itemName);
   }
 
-  protected addItem<T extends SchemaItem>(item: T): void {
-    if (undefined !== this.getItemSync(item.name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
-
-    this._items.set(item.name.toUpperCase(), item);
-  }
-
   public getItems<T extends AnySchemaItem>(): IterableIterator<T> {
     if (!this._items)
       return new Map<string, SchemaItem>().values() as IterableIterator<T>;
@@ -399,19 +428,6 @@ export class Schema implements CustomAttributeContainerProps {
       if (value instanceof ECClass)
         yield value;
     }
-  }
-
-  /**
-   *
-   * @param refSchema
-   */
-  protected async addReference(refSchema: Schema): Promise<void> {
-    // TODO validation of reference schema. For now just adding
-    this.addReferenceSync(refSchema);
-  }
-
-  protected addReferenceSync(refSchema: Schema): void {
-    this.references.push(refSchema);
   }
 
   public async getReference<T extends Schema>(refSchemaName: string): Promise<T | undefined> {
@@ -541,13 +557,6 @@ export class Schema implements CustomAttributeContainerProps {
     this.fromJSONSync(schemaProps);
   }
 
-  protected addCustomAttribute(customAttribute: CustomAttribute) {
-    if (!this._customAttributes)
-      this._customAttributes = new Map<string, CustomAttribute>();
-
-    this._customAttributes.set(customAttribute.className, customAttribute);
-  }
-
   public static async fromJson(jsonObj: object | string, context: SchemaContext): Promise<Schema> {
     let schema: Schema = new Schema(context);
 
@@ -567,6 +576,7 @@ export class Schema implements CustomAttributeContainerProps {
 
     return schema;
   }
+
 }
 
 /**

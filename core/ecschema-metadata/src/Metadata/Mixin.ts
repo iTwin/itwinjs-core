@@ -48,6 +48,12 @@ export class Mixin extends ECClass {
   }
 
   /**
+   * @alpha Used for schema editing.
+   */
+  protected setAppliesTo(appliesTo: LazyLoadedEntityClass) {
+    this._appliesTo = appliesTo;
+  }
+  /**
    * Save this Mixin's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
@@ -120,4 +126,14 @@ export class Mixin extends ECClass {
 
     return appliesTo.is(entityClass);
   }
+}
+/**
+ * @internal
+ * An abstract class used for schema editing.
+ */
+export abstract class MutableMixin extends Mixin {
+
+  public abstract setAppliesTo(entityClass: LazyLoadedEntityClass): void;
+  public abstract async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
+  public abstract createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
 }
