@@ -1883,6 +1883,7 @@ export interface FrameworkState {
 
 // @beta
 export class FrameworkUiAdmin extends UiAdmin {
+    closeToolSettingsPopup(): boolean;
     get cursorPosition(): XAndY;
     hideCalculator(): boolean;
     hideCard(): boolean;
@@ -1892,6 +1893,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     hideToolbar(): boolean;
     // @internal (undocumented)
     onInitialized(): void;
+    openToolSettingsPopup(dataProvider: UiDataProvider, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
     showAngleEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showCalculator(initialValue: number, resultIcon: string, location: XAndY, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showCard(content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean;
@@ -3754,6 +3756,8 @@ export class PopupManager {
     // @internal (undocumented)
     static clearPopups(): void;
     // (undocumented)
+    static closeToolSettings(): boolean;
+    // (undocumented)
     static get defaultOffset(): XAndY;
     static set defaultOffset(offset: XAndY);
     // (undocumented)
@@ -3768,6 +3772,8 @@ export class PopupManager {
     static hideToolbar(): boolean;
     // (undocumented)
     static readonly onPopupsChangedEvent: PopupsChangedEvent;
+    // (undocumented)
+    static openToolSettings(dataProvider: UiDataProvider, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
     static get popupCount(): number;
     // (undocumented)
@@ -5410,6 +5416,12 @@ export interface ToolSettingsEntry {
 
 // @beta
 export function ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element;
+
+// @beta
+export function ToolSettingsGridContainer({ itemsManager, componentGenerator }: {
+    itemsManager: DialogItemsManager;
+    componentGenerator: ComponentGenerator;
+}): JSX.Element;
 
 // @beta
 export interface ToolSettingsGridProps {

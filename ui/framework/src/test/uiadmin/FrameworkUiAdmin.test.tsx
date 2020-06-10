@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { AbstractMenuItemProps, AbstractToolbarProps, PropertyDescription, RelativePosition } from "@bentley/ui-abstract";
+import { AbstractMenuItemProps, AbstractToolbarProps, PropertyDescription, RelativePosition, UiDataProvider } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
 import { CursorInformation } from "../../ui-framework/cursor/CursorInformation";
 import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
@@ -116,7 +116,7 @@ describe("FrameworkUiAdmin", () => {
     expect(uiAdmin.hideInputEditor()).to.be.true;
   });
 
-  it("showInputEditor should return false by default", () => {
+  it("showInputEditor should return true", () => {
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
     const spyCommit = sinon.fake();
     const spyCancel = sinon.fake();
@@ -135,10 +135,11 @@ describe("FrameworkUiAdmin", () => {
 
     expect(uiAdmin.showHTMLElement(display.documentElement, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.true;
     expect(uiAdmin.showHTMLElement(display.documentElement, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel, RelativePosition.BottomRight)).to.be.true;
+    expect(uiAdmin.showHTMLElement(display.documentElement, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel)).to.be.true;
     expect(uiAdmin.hideHTMLElement()).to.be.true;
   });
 
-  it("showCard should return false by default", () => {
+  it("showCard should return true", () => {
     const html = '<div style="width: 120px; height: 50px; display: flex; justify-content: center; align-items: center; background-color: aqua;">Hello World!</div>';
     const content = new DOMParser().parseFromString(html, "text/html");
     const toolbarProps: AbstractToolbarProps = {
@@ -155,8 +156,20 @@ describe("FrameworkUiAdmin", () => {
 
     expect(uiAdmin.showCard(content.documentElement, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.true;
     expect(uiAdmin.showCard(content.documentElement, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel, RelativePosition.BottomRight)).to.be.true;
+    expect(uiAdmin.showCard(content.documentElement, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel)).to.be.true;
     expect(uiAdmin.hideCard()).to.be.true;
     expect(uiAdmin.hideCard()).to.be.false;
   });
 
+  it("openToolSettingsPopup should return true", () => {
+    class TestUiDataProvider extends UiDataProvider { }
+    const uiDataProvider = new TestUiDataProvider();
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    const spyCancel = sinon.fake();
+
+    expect(uiAdmin.openToolSettingsPopup(uiDataProvider, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.true;
+    expect(uiAdmin.openToolSettingsPopup(uiDataProvider, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel, RelativePosition.BottomRight)).to.be.true;
+    expect(uiAdmin.openToolSettingsPopup(uiDataProvider, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel)).to.be.true;
+    expect(uiAdmin.closeToolSettingsPopup()).to.be.true;
+  });
 });

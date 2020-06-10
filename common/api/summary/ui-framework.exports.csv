@@ -525,6 +525,7 @@ internal;ToolSettingsContent(): JSX.Element | null
 internal;ToolSettingsDockedContent(): JSX.Element
 beta;ToolSettingsEntry
 beta;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
+beta;ToolSettingsGridContainer({ itemsManager, componentGenerator }:
 beta;ToolSettingsGridProps
 internal;ToolSettingsWidgetContent(): JSX.Element
 internal;ToolSettingsZone 

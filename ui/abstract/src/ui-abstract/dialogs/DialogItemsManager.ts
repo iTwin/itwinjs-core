@@ -10,7 +10,7 @@ import { PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorPara
 import { PropertyRecord } from "../properties/Record";
 import { PrimitiveValue, PropertyValueFormat } from "../properties/Value";
 import { BaseDialogItem, DialogItem, DialogPropertySyncItem } from "./DialogItem";
-import { UiDataProvider } from "./UiDataProvider";
+import { SyncPropertiesChangeEvent, UiDataProvider } from "./UiDataProvider";
 
 /** [[DialogRow]] is the interface that groups dialog items into rows for building UI
  * @beta
@@ -36,8 +36,11 @@ export interface DialogItemSyncArgs {
 /** [[DialogItemsManager]] generates UI items for Dialogs
  * @beta
  */
-export class DialogItemsManager extends UiDataProvider {
+export class DialogItemsManager {
   private _items: ReadonlyArray<DialogItem> = [];
+
+  /** Get Sync UI Control Properties Event */
+  public onSyncPropertiesChangeEvent = new SyncPropertiesChangeEvent();
 
   /** Array of dialog rows */
   public rows: DialogRow[] = [];
@@ -52,10 +55,18 @@ export class DialogItemsManager extends UiDataProvider {
   }
 
   constructor(items?: ReadonlyArray<DialogItem>) {
-    super();
     // istanbul ignore else
     if (items)
       this.loadItemsInternal(items);
+  }
+
+  /** Create a DialogItemsManager from a UiDataProvider
+   * @beta
+   */
+  public static fromUiDataProvider(uiDataProvider: UiDataProvider) {
+    const manager = new DialogItemsManager(uiDataProvider.supplyDialogItems());
+    manager.onSyncPropertiesChangeEvent = uiDataProvider.onSyncPropertiesChangeEvent;
+    return manager;
   }
 
   private loadItemsInternal(items: ReadonlyArray<DialogItem>) {

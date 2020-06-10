@@ -340,10 +340,11 @@ export interface DialogItemsChangedArgs {
 }
 
 // @beta
-export class DialogItemsManager extends UiDataProvider {
+export class DialogItemsManager {
     constructor(items?: ReadonlyArray<DialogItem>);
     applyUiPropertyChange: (_item: DialogPropertySyncItem) => void;
     static editorWantsLabel(item: DialogItem): boolean;
+    static fromUiDataProvider(uiDataProvider: UiDataProvider): DialogItemsManager;
     static getItemDisabledState(baseDialogItem: BaseDialogItem): boolean;
     static getPropertyRecord: (dialogItem: BaseDialogItem) => PropertyRecord;
     static hasAssociatedLockProperty(item: DialogItem): boolean;
@@ -353,6 +354,7 @@ export class DialogItemsManager extends UiDataProvider {
     // @internal (undocumented)
     layoutDialogRows(): DialogRow[];
     static onlyContainButtonGroupEditors(row: DialogRow): boolean;
+    onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
     rows: DialogRow[];
 }
 
@@ -930,6 +932,7 @@ export class UiAbstract {
 
 // @beta
 export class UiAdmin {
+    closeToolSettingsPopup(): boolean;
     createXAndY(x: number, y: number): XAndY;
     get cursorPosition(): XAndY;
     hideCalculator(): boolean;
@@ -940,12 +943,13 @@ export class UiAdmin {
     hideToolbar(): boolean;
     // @internal (undocumented)
     onInitialized(): void;
+    openToolSettingsPopup(_dataProvider: UiDataProvider, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
     showAngleEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showCalculator(_initialValue: number, _resultIcon: string, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showCard(_content: HTMLElement, _title: string | PropertyRecord | undefined, _toolbarProps: AbstractToolbarProps | undefined, _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
     showContextMenu(_menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean;
     showHeightEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
-    showHTMLElement(_displayElement: HTMLElement, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean;
+    showHTMLElement(_displayElement: HTMLElement, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
     showInputEditor(_initialValue: Primitives.Value, _propertyDescription: PropertyDescription, _location: XAndY, _onCommit: OnValueCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showLengthEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean;
@@ -957,6 +961,7 @@ export abstract class UiDataProvider {
     onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
     processChangesInUi(_properties: DialogPropertyItem[]): PropertyChangeResult;
     supplyAvailableProperties(): DialogPropertyItem[];
+    supplyDialogItems(): DialogItem[] | undefined;
     syncProperties(_syncProperties: DialogPropertySyncItem[]): void;
     validateProperty(_item: DialogPropertyItem): PropertyChangeResult;
 }

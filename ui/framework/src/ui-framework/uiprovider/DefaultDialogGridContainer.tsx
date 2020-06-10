@@ -19,7 +19,11 @@ enum LayoutMode {
   Wide = 0,
   Narrow = 1,
 }
-function ToolSettingsGridContainer({ itemsManager, componentGenerator }: { itemsManager: DialogItemsManager, componentGenerator: ComponentGenerator }) {
+/**
+ * Component to provide grid of property editors
+ * @beta
+ */
+export function ToolSettingsGridContainer({ itemsManager, componentGenerator }: { itemsManager: DialogItemsManager, componentGenerator: ComponentGenerator }) {
   const { availableContentWidth } = React.useContext(ToolSettingsContentContext);
   const version = useFrameworkVersion();
   const layoutMode = toLayoutMode(availableContentWidth);
