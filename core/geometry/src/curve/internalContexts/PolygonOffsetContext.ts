@@ -191,14 +191,40 @@ class Joint {
   }
 
   private static collectPrimitive(destination: CurvePrimitive[], primitive?: CurvePrimitive) {
-    if (primitive)
+    if (primitive) {
+      if (destination.length > 0) {
+        const pointA = destination[destination.length - 1].endPoint();
+        const pointB = primitive.startPoint();
+        if (!pointA.isAlmostEqual(pointB)) {
+          destination.push(LineSegment3d.create(pointA, pointB));
+        }
+      }
       destination.push(primitive);
+    }
+  }
+  private static adjustJointToPrimitives(joint: Joint) {
+    const ls = joint.jointCurve;
+    if (ls instanceof LineString3d) {
+      if (joint.curve0) {
+        const curvePoint = joint.curve0.endPoint();
+        const jointPoint0 = ls.startPoint();
+        if (!curvePoint.isAlmostEqual(jointPoint0))
+          ls.packedPoints.setAtCheckedPointIndex(0, curvePoint);
+      }
+      if (joint.curve1) {
+        const curvePoint = joint.curve1.startPoint();
+        const jointPoint1 = ls.endPoint();
+        if (!curvePoint.isAlmostEqual(jointPoint1))
+          ls.packedPoints.setAtCheckedPointIndex(ls.packedPoints.length - 1, curvePoint);
+      }
+    }
   }
   public static collectCurvesFromChain(start: Joint | undefined, destination: CurvePrimitive[], maxTest: number = 100) {
     if (start === undefined)
       return;
     let numOut = -2 * maxTest;    // allow extra things to happen
     Joint.visitJointsOnChain(start, (joint: Joint) => {
+      this.adjustJointToPrimitives(joint);
       this.collectPrimitive(destination, joint.jointCurve);
 
       if (joint.curve1 && joint.fraction1 !== undefined) {
@@ -682,7 +708,7 @@ export class CurveChainWireOffsetContext {
 
     const outputCurves: CurvePrimitive[] = [];
     Joint.collectCurvesFromChain(joint0, outputCurves, numOffset);
-    return RegionOps.createLoopPathOrBagOfCurves(outputCurves, wrap);
+    return RegionOps.createLoopPathOrBagOfCurves(outputCurves, wrap, true);
   }
   /**
    * Construct offset curves as viewed in xy.

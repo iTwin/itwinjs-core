@@ -18,6 +18,11 @@ import { Range3d } from "../../geometry3d/Range";
 import { UsageSums } from "../../numerics/UsageSums";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker, SaveAndRestoreCheckTransform } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 
 /* tslint:disable: no-console */
 
@@ -111,9 +116,9 @@ function testClipper(points: Point3d[], root: AlternatingCCTreeNode, outputLevel
 }
 
 describe("RecursiveClipSets", () => {
-  const ck = new Checker();
 
   it("Test1", () => {
+    const ck = new Checker();
     for (const numPoints of [5, 8, 12, 15, 23, 37, 67]) {
       const shifter = new SaveAndRestoreCheckTransform(10, 0, 0);
       const points = Sample.createUnitCircle(numPoints);
@@ -147,11 +152,11 @@ describe("RecursiveClipSets", () => {
 
     Checker.clearGeometry("RecursiveClipSets.test1", outDir);
 
-    ck.checkpoint("Test1");
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("Test2", () => {
+    const ck = new Checker();
     for (const perpendicularFactor of [-1.0, 1.0]) {
       for (const generatorFunction of [
         Sample.createFractalDiamondConvexPattern,
@@ -175,11 +180,11 @@ describe("RecursiveClipSets", () => {
 
     Checker.clearGeometry("RecursiveClipSets.test2", outDir);
 
-    ck.checkpoint("Test2");
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("Test3", () => {
+    const ck = new Checker();
     // A diamond, but with the diagonals pushed inward so no full edge of the polygon is on the hull.
     const points: Point3d[] = [
       Point3d.create(5, 0, 0),
@@ -213,11 +218,11 @@ describe("RecursiveClipSets", () => {
     testClipper(points, rootClone);
     Checker.clearGeometry("RecursiveClipSets.test3", outDir);
 
-    ck.checkpoint("Test3");
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("LineClip0", () => {
+    const ck = new Checker();
     const linesToClip: Point3d[] = [];
     const baseShift = Vector3d.create(-0.1, -0.1, 0);
     for (const perpendicularFactor of [-1.0, 1.0]) {
@@ -229,7 +234,7 @@ describe("RecursiveClipSets", () => {
         Sample.createFractalLReversingPattern,
         Sample.createFractalLMildConcavePatter]) {
         const shifterA = new SaveAndRestoreCheckTransform(50, 0, 0);
-        for (const depth of [2, 0, 1, 2]) {
+        for (const depth of [0, 1, 2]) {
           const shifterB = new SaveAndRestoreCheckTransform(5, 0, 0);
           const polygon = generatorFunction(depth, perpendicularFactor);
           const root = AlternatingCCTreeNode.createTreeForPolygon(polygon);
@@ -330,7 +335,97 @@ describe("RecursiveClipSets", () => {
     }
 
     Checker.clearGeometry("RecursiveClipSets.LineClip0", outDir);
-    ck.checkpoint("LineClip0");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("PolygonClipA", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const polygon = [Point3d.create(0, 0), Point3d.create(4, 0), Point3d.create(4, 2), Point3d.create(2, 2), Point3d.create(2, 3), Point3d.create(0, 4)];
+    const root = AlternatingCCTreeNode.createTreeForPolygon(polygon);
+    let x0 = 0;
+    const dx = 10.0;
+    const dy = 10.0;
+    for (const yA of [1, -1.5, 2]) {
+      let y0 = 0;
+      for (const dyAB of [2, 1, 3]) {
+        const cache = new GrowableXYZArrayCache();
+        const rectangle = GrowableXYZArray.create(Sample.createRectangleXY(1, yA, 5, dyAB));
+        const insideFragments: GrowableXYZArray[] = [];
+        const outsideFragments: GrowableXYZArray[] = [];
+        root.appendPolygonClip(rectangle, insideFragments, outsideFragments, cache);
+        GeometryCoreTestIO.createAndCaptureLoop(allGeometry, rectangle, x0, y0);
+        GeometryCoreTestIO.createAndCaptureLoop(allGeometry, polygon, x0, y0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(polygon), x0, y0 + dy);
+        GeometryCoreTestIO.createAndCaptureLoops(allGeometry, insideFragments, x0, y0 + dy);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(polygon), x0, y0 + 2 * dy);
+        GeometryCoreTestIO.createAndCaptureLoops(allGeometry, outsideFragments, x0, y0 + 2 * dy);
+        y0 += 4 * dy;
+      }
+      x0 += dx;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, outDir, "PolygonClipA");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("PolygonClipB", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const cache = new GrowableXYZArrayCache();
+    const polygonUVA = [];
+    polygonUVA.push(Point3d.create(0.2, 0.2));
+    polygonUVA.push(Point3d.create(1.1, 0.3));
+    polygonUVA.push(Point3d.create(0.9, 0.75));
+    polygonUVA.push(Point3d.create(0.5, 0.5));
+    polygonUVA.push(Point3d.create(0.1, 0.5));
+    let x0 = 0;
+    const polygonUVB = Sample.createRectangleXY(-0.1, -0.1, 1.2, 1.2, 0);
+    for (const polygonUV of [polygonUVB, polygonUVA]) {
+      for (const perpendicularFactor of [-1.0, 1.0]) {
+        const y0 = 0;
+        for (const generatorFunction of [
+          Sample.createFractalSquareReversingPattern,
+          Sample.nonConvexQuadSimpleFractal,
+          Sample.createFractalDiamondConvexPattern,
+          Sample.createFractalSquareReversingPattern,
+          Sample.createFractalLReversingPattern,
+          Sample.createFractalLMildConcavePatter]) {
+          for (const depth of [0, 1, 2]) {
+            const polygon = generatorFunction(depth, perpendicularFactor);
+            const range = Range3d.createArray(polygon);
+            const dy = 1.25 * range.yLength();
+            const root = AlternatingCCTreeNode.createTreeForPolygon(polygon);
+            const input = new GrowableXYZArray();
+            for (const p of polygonUV)
+              input.push(range.localToWorld(p)!);
+            const inputArea = PolygonOps.area(input.getPoint3dArray());
+
+            const insideFragments: GrowableXYZArray[] = [];
+            const outsideFragments: GrowableXYZArray[] = [];
+            root.appendPolygonClip(input, insideFragments, outsideFragments, cache);
+            GeometryCoreTestIO.createAndCaptureLoop(allGeometry, input, x0, y0);
+            GeometryCoreTestIO.createAndCaptureLoop(allGeometry, polygon, x0, y0);
+            GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(polygon), x0, y0 + dy);
+            GeometryCoreTestIO.createAndCaptureLoops(allGeometry, insideFragments, x0, y0 + dy);
+            GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(polygon), x0, y0 + 2 * dy);
+            GeometryCoreTestIO.createAndCaptureLoops(allGeometry, outsideFragments, x0, y0 + 2 * dy);
+            const insideArea = summedAreas(insideFragments);
+            const outsideArea = summedAreas(outsideFragments);
+            ck.testCoordinate(inputArea, insideArea + outsideArea, " clipped area sums");
+
+            x0 += 4 * range.xLength();
+          }
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, outDir, "PolygonClipB");
     expect(ck.getNumErrors()).equals(0);
   });
 });
+
+function summedAreas(loops: GrowableXYZArray[]): number {
+  let s = 0;
+  for (const loop of loops) {
+    s += PolygonOps.area(loop.getPoint3dArray());
+  }
+  return s;
+}

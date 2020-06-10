@@ -48,7 +48,7 @@ export enum ClipMaskXYZRangePlanes {
 
 /**
  * * ClipPrimitive is a base class for clipping implementations that use
- *   * A ClipPlaneSet designated "clipPlanes"
+ *   * A UnionOfConvexClipPlaneSets designated "clipPlanes"
  *   * an "invisible" flag
  * * When constructed directly, objects of type ClipPrimitive (directly, not through a derived class) will have just planes
  * * Derived classes (e.g. ClipShape) carry additional data of a swept shape.
