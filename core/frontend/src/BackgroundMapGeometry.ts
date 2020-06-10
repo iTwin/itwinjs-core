@@ -158,7 +158,7 @@ export class BackgroundMapGeometry {
     }
   }
 
-  public getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d, doGlobalScope?: boolean): Range1d {
+  public getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, doGlobalScope?: boolean): Range1d {
     const clipPlanes = frustum.getRangePlanes(false, false, 0);
     const eyePoint = frustum.getEyePoint(scratchEyePoint);
     const viewRotation = frustum.getRotation(scratchViewRotation)!;
@@ -228,8 +228,17 @@ export class BackgroundMapGeometry {
           const silhouette = ellipsoid.silhouetteArc(eyePoint4d);
           if (silhouette !== undefined) {
             silhouette.perpendicularVector.clone(scratchSilhouetteNormal);
-            if (scratchSilhouetteNormal.dotProduct(viewZ) < 0)
-              scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
+            // Push the silhouette plane as clip so that we do not include geometry at other side of ellipsoid.
+            // First make sure that it is pointing in the right diretion.
+            if (eyePoint) {
+              // Clip toward eye.
+              if (scratchSilhouetteNormal.dotProduct(viewZ) < 0)
+                scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
+            } else {
+              /* If parallel projection - clip toward side of ellipsoid with BIM geometry */
+              if (Vector3d.createStartEnd(silhouette.center, bimRange.center).dotProduct(scratchSilhouetteNormal) < 0)
+                scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
+            }
             clipPlanes.planes.push(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!);
           } else {
             clipPlanes.planes.push(ClipPlane.createNormalAndPoint(viewZ, center)!);
