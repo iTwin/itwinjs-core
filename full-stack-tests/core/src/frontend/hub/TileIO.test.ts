@@ -949,7 +949,7 @@ describe("TileAdmin", () => {
       }
 
       public static async test(imodel: IModelConnection) {
-        await this.testPrimaryTree(imodel, "9_1-0x1c");
+        await this.testPrimaryTree(imodel, "a_1-0x1c");
 
         // ###TODO: The tree Id is validated on back-end and rejected if the animation source Id does not identify an existing DisplayStyle with an attached schedule script.
         // Our test iModel lacks any such styles so test will fail.
@@ -973,7 +973,7 @@ describe("TileAdmin", () => {
         let treeId = "0x1c";
         if (undefined === maximumMajorTileFormatVersion || maximumMajorTileFormatVersion >= 4) {
           const v = undefined !== maximumMajorTileFormatVersion ? maximumMajorTileFormatVersion : CurrentImdlVersion.Major;
-          treeId = v.toString() + "_1-0x1c";
+          treeId = v.toString(16) + "_1-0x1c";
         }
 
         const tree = await imodel.tiles.getTileTreeProps(treeId);
