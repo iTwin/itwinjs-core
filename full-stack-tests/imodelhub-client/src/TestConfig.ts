@@ -4,8 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { Config } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { RequestGlobalOptions } from "@bentley/itwin-client";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
+// Increase the timeout since iModel creation is taking longer
+RequestGlobalOptions.timeout.response = 60 * 1000; // 60 seconds in ms
 
 function isOfflineSet(): boolean {
   const index = process.argv.indexOf("--offline");
