@@ -40,7 +40,7 @@ import { PanelStateChangedEventArgs, StagePanelDef, StagePanelState as StagePane
  */
 
 /** Properties of a Stage Panel Zone
- * @alpha
+ * @beta
  */
 export interface StagePanelZoneProps {
   /** Properties for the Widgets in this Zone.
@@ -53,7 +53,7 @@ export interface StagePanelZoneProps {
 }
 
 /** Properties of the Stage Panel Zones
- * @alpha
+ * @beta
  */
 export interface StagePanelZonesProps {
   /** Properties for the Widgets in the Start section. */
@@ -65,7 +65,7 @@ export interface StagePanelZonesProps {
 }
 
 /** Properties of a [[StagePanel]] component
- * @alpha
+ * @beta
  */
 export interface StagePanelProps {
   /** Describes which zones are allowed in this stage panel. */
@@ -90,7 +90,7 @@ export interface StagePanelProps {
    */
   widgets?: Array<React.ReactElement<WidgetProps>>;
 
-  /** Properties for the Panel Zones in this Panel. @alpha */
+  /** Properties for the Panel Zones in this Panel. @beta */
   panelZones?: StagePanelZonesProps;
 
   /** @internal */
@@ -98,7 +98,7 @@ export interface StagePanelProps {
 }
 
 /** Default properties of [[StagePanel]] component.
- * @alpha
+ * @beta
  */
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 
@@ -124,7 +124,7 @@ interface StagePanelComponentState {
 }
 
 /** Frontstage Panel React component.
- * @alpha
+ * @beta
  */
 export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {
   public static readonly defaultProps: StagePanelDefaultProps = {

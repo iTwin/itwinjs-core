@@ -8,7 +8,6 @@
 
 import { BeEvent, Logger } from "@bentley/bentleyjs-core";
 import { BackstageItem } from "./backstage/BackstageItem";
-import { StageUsage } from "./items/StageUsage";
 import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
 import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/ToolbarItem";
 import { UiAbstract } from "./UiAbstract";
@@ -35,9 +34,9 @@ export interface UiItemsProvider {
   readonly id: string;
 
   /** UiItemsManager calls following method to get items to populate specific toolbars */
-  provideToolbarButtonItems?: (stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
+  provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
   /** UiItemsManager calls following method to augment base statusbar for stages that allow it. */
-  provideStatusBarItems?: (stageId: string, stageUsage: StageUsage) => CommonStatusBarItem[];
+  provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
   /** UiItemsManager calls following method to augment backstage items. */
   provideBackstageItems?: () => BackstageItem[];
   /** UiItemsManager calls following method to augment Widget lists.
@@ -128,7 +127,7 @@ export class UiItemsManager {
    * @param itemIds provides hierarchy of item Ids of the items that comprise the 'base' toolbar. This allows the caller to determine a relative position for buttons the provider provides.
    * @returns an array of error messages. The array will be empty if the load is successful, otherwise it is a list of one or more problems.
    */
-  public static getToolbarButtonItems(stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+  public static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
     const buttonItems: CommonToolbarItem[] = [];
     if (0 === UiItemsManager._registeredUiItemsProviders.size)
       return buttonItems;
@@ -149,7 +148,7 @@ export class UiItemsManager {
    * @param stageUsage the StageUsage of the active stage.
    * @returns An array of CommonStatusBarItem that will be used to create controls for the status bar.
    */
-  public static getStatusBarItems(stageId: string, stageUsage: StageUsage): CommonStatusBarItem[] {
+  public static getStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
 
     if (0 === UiItemsManager._registeredUiItemsProviders.size)

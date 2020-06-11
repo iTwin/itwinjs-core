@@ -10,8 +10,8 @@ Below is an excerpt from the [UiItemsProvider]($ui-abstract) interface that show
 ```ts
 export interface UiItemsProvider {
   readonly id: string;
-  provideToolbarButtonItems?: (stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
-  provideStatusBarItems?: (stageId: string, stageUsage: StageUsage) => CommonStatusBarItem[];
+  provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
+  provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
   provideBackstageItems?: () => BackstageItem[];
   provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) => ReadonlyArray<AbstractWidgetProps>;
 }
@@ -25,7 +25,7 @@ The code excerpt below is an example taken from `imodeljs\test-apps\ui-test-app`
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "TestUiProvider";
 
-  public provideToolbarButtonItems(_stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+  public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
 
     if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
       const simpleActionSpec = ToolbarItemUtilities.createActionButton("simple-test-action-tool", 200, "icon-developer", "simple-test-action-tool",

@@ -571,11 +571,11 @@ describe("getWidgetId", () => {
   });
 
   it("should return 'top'", () => {
-    getWidgetId("top", "start").should.eq("top");
+    getWidgetId("top", "start").should.eq("topStart");
   });
 
   it("should return 'bottom'", () => {
-    getWidgetId("bottom", "start").should.eq("bottom");
+    getWidgetId("bottom", "start").should.eq("bottomStart");
   });
 });
 

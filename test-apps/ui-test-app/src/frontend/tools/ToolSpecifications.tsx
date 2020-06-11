@@ -9,7 +9,7 @@ import {
   SelectionTool, SnapMode,
 } from "@bentley/imodeljs-frontend";
 import {
-  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, StageUsage, StatusBarSection,
+  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, StatusBarSection,
   UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
 import { MessageSeverity, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
@@ -53,7 +53,7 @@ class AppItemsProvider implements UiItemsProvider {
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(AppItemsProvider.syncEventId);
   }
 
-  public provideStatusBarItems(_stageId: string, _stageUsage: StageUsage): CommonStatusBarItem[] {
+  public provideStatusBarItems(_stageId: string, _stageUsage: string): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
     const isHiddenCondition = new ConditionalBooleanValue(() => !AppItemsProvider._sampleBackstageItemVisible, [AppItemsProvider.syncEventId]);
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusSeparatorId, StatusBarSection.Left, 11, <FooterSeparator />, { isHidden: isHiddenCondition }));

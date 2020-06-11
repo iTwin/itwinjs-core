@@ -356,8 +356,8 @@ public;NotifyMessageType = MessageType
 internal;packNineZoneState(state: NineZoneState): SavedNineZoneState
 internal;PanelSizeChangedEvent 
 internal;PanelSizeChangedEventArgs
-alpha;PanelStateChangedEvent 
-alpha;PanelStateChangedEventArgs
+beta;PanelStateChangedEvent 
+beta;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
 public;PointerMessage 
 public;PointerMessageChangedEvent 
@@ -438,22 +438,22 @@ public;SpatialContainmentTreeProps
 public;SpecialKey
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
-alpha;StagePanel 
+beta;StagePanel 
 public;StagePanelChangeHandler
-alpha;StagePanelDef 
-alpha;StagePanelDefaultProps = Pick
+beta;StagePanelDef 
+beta;StagePanelDefaultProps = Pick
 alpha;StagePanelHeader 
 alpha;StagePanelHeaderProps 
 alpha;StagePanelLocation
-alpha;StagePanelProps
+beta;StagePanelProps
 internal;StagePanelRuntimeProps
 alpha;StagePanelSection
-alpha;StagePanelState
+beta;StagePanelState
 internal;StagePanelZoneDef 
 internal;StagePanelZoneDefKeys = keyof Pick
-alpha;StagePanelZoneProps
+beta;StagePanelZoneProps
 internal;StagePanelZonesDef
-alpha;StagePanelZonesProps
+beta;StagePanelZonesProps
 public;StandardMessageBox 
 public;StandardMessageBoxProps 
 alpha;StandardRotationNavigationAid 

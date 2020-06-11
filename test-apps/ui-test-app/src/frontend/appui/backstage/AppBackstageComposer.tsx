@@ -33,6 +33,7 @@ interface AppBackstageComposerProps {
 export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposerProps) {
   const hiddenCondition3 = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
   const enableCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
+  const notUi2Condition = new ConditionalBooleanValue(() => SampleAppIModelApp.getUiFrameworkProperty() === "1", [SampleAppUiActionId.toggleFrameworkVersion, SampleAppUiActionId.setFrameworkVersion]);
   const imodelIndexHidden = new ConditionalBooleanValue(() => SampleAppIModelApp.isIModelLocal, [SampleAppUiActionId.setIsIModelLocal]);
 
   const [backstageItems] = React.useState(() => [
@@ -40,6 +41,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
     BackstageItemUtilities.createStageLauncher("Test2", 100, 20, IModelApp.i18n.translate("SampleApp:backstage.testFrontstage2"), undefined, "icon-placeholder"),
     BackstageItemUtilities.createStageLauncher("Test3", 100, 30, IModelApp.i18n.translate("SampleApp:backstage.testFrontstage3"), undefined, "icon-placeholder", { isHidden: hiddenCondition3 }),
     BackstageItemUtilities.createStageLauncher("Test4", 100, 40, IModelApp.i18n.translate("SampleApp:backstage.testFrontstage4"), undefined, "icon-placeholder", { isDisabled: enableCondition }),
+    BackstageItemUtilities.createStageLauncher("Ui2", 100, 50, IModelApp.i18n.translate("SampleApp:backstage.testFrontstageUi20"), undefined, "icon-placeholder", { isHidden: notUi2Condition }),
     BackstageItemUtilities.createStageLauncher("IModelOpen", 200, 10, IModelApp.i18n.translate("SampleApp:backstage.imodelopen"), undefined, "icon-folder-opened"),
     BackstageItemUtilities.createStageLauncher("IModelIndex", 200, 20, IModelApp.i18n.translate("SampleApp:backstage.imodelindex"), undefined, "icon-placeholder", { isHidden: imodelIndexHidden }),
     BackstageItemUtilities.createActionItem("SampleApp.open-local-file", 200, 30, () => LocalFileOpenFrontstage.open(), IModelApp.i18n.translate("SampleApp:backstage:fileSelect"), undefined, "icon-placeholder"),

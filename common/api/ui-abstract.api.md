@@ -766,11 +766,17 @@ export enum StagePanelSection {
 // @beta
 export enum StageUsage {
     // (undocumented)
+    Edit = "Edit",
+    // (undocumented)
     General = "General",
     // (undocumented)
     Private = "Private",
     // (undocumented)
-    Redline = "Redline"
+    Redline = "Redline",
+    // (undocumented)
+    Settings = "Settings",
+    // (undocumented)
+    ViewOnly = "ViewOnly"
 }
 
 // @beta
@@ -1023,8 +1029,8 @@ export class UiItemsArbiter {
 // @beta
 export class UiItemsManager {
     static getBackstageItems(): BackstageItem[];
-    static getStatusBarItems(stageId: string, stageUsage: StageUsage): CommonStatusBarItem[];
-    static getToolbarButtonItems(stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[];
+    static getStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[];
+    static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[];
     static getUiItemsProvider(providerId: string): UiItemsProvider | undefined;
     static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps>;
     static get hasRegisteredProviders(): boolean;
@@ -1042,8 +1048,8 @@ export interface UiItemsProvider {
     onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
     onWidgetArbiterChange?: (widget: AbstractWidgetProps, action: UiItemsApplicationAction) => void;
     provideBackstageItems?: () => BackstageItem[];
-    provideStatusBarItems?: (stageId: string, stageUsage: StageUsage) => CommonStatusBarItem[];
-    provideToolbarButtonItems?: (stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
+    provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
+    provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
     provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) => ReadonlyArray<AbstractWidgetProps>;
 }
 

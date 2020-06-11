@@ -2092,9 +2092,9 @@ export class FrontstageDef {
     get bottomCenter(): ZoneDef | undefined;
     // (undocumented)
     get bottomLeft(): ZoneDef | undefined;
-    // @alpha (undocumented)
+    // @beta @deprecated (undocumented)
     get bottomMostPanel(): StagePanelDef | undefined;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     get bottomPanel(): StagePanelDef | undefined;
     // (undocumented)
     get bottomRight(): ZoneDef | undefined;
@@ -2120,7 +2120,7 @@ export class FrontstageDef {
     findWidgetDef(id: string): WidgetDef | undefined;
     // (undocumented)
     get frontstageProvider(): FrontstageProvider | undefined;
-    // @alpha
+    // @beta
     getStagePanelDef(location: StagePanelLocation_2): StagePanelDef | undefined;
     getZoneDef(zoneId: number): ZoneDef | undefined;
     // (undocumented)
@@ -2130,7 +2130,7 @@ export class FrontstageDef {
     initializeFromProvider(frontstageProvider: FrontstageProvider): void;
     // (undocumented)
     get isInFooterMode(): boolean;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     get leftPanel(): StagePanelDef | undefined;
     // @internal (undocumented)
     get nineZone(): NineZoneManagerProps | undefined;
@@ -2144,11 +2144,11 @@ export class FrontstageDef {
     protected _onDeactivated(): void;
     onFrontstageReady(): void;
     protected _onFrontstageReady(): void;
-    // @alpha
+    // @beta
     get panelDefs(): StagePanelDef[];
     // @beta (undocumented)
     restoreLayout(): void;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     get rightPanel(): StagePanelDef | undefined;
     setActiveContent(): boolean;
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
@@ -2161,9 +2161,9 @@ export class FrontstageDef {
     get topCenter(): ZoneDef | undefined;
     // (undocumented)
     get topLeft(): ZoneDef | undefined;
-    // @alpha (undocumented)
+    // @beta @deprecated (undocumented)
     get topMostPanel(): StagePanelDef | undefined;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     get topPanel(): StagePanelDef | undefined;
     // (undocumented)
     get topRight(): ZoneDef | undefined;
@@ -2282,9 +2282,9 @@ export interface FrontstageProps extends CommonProps {
     bottomCenter?: React.ReactElement<ZoneProps>;
     // @deprecated
     bottomLeft?: React.ReactElement<ZoneProps>;
-    // @alpha
+    // @beta @deprecated
     bottomMostPanel?: React.ReactElement<StagePanelProps>;
-    // @alpha
+    // @beta
     bottomPanel?: React.ReactElement<StagePanelProps>;
     // @deprecated
     bottomRight?: React.ReactElement<ZoneProps>;
@@ -2293,36 +2293,36 @@ export interface FrontstageProps extends CommonProps {
     // @deprecated
     centerRight?: React.ReactElement<ZoneProps>;
     contentGroup: string | ContentGroup;
-    // @alpha
+    // @beta
     contentManipulationTools?: React.ReactElement<ZoneProps>;
     defaultContentId?: string;
     defaultLayout: string | ContentLayoutDef;
     defaultTool: ToolItemDef;
     id: string;
     isInFooterMode?: boolean;
-    // @alpha
+    // @beta
     leftPanel?: React.ReactElement<StagePanelProps>;
-    // @alpha
+    // @beta
     rightPanel?: React.ReactElement<StagePanelProps>;
     // @internal (undocumented)
     runtimeProps?: FrontstageRuntimeProps;
-    // @alpha
+    // @beta
     statusBar?: React.ReactElement<ZoneProps>;
-    // @alpha
+    // @beta
     toolSettings?: React.ReactElement<ZoneProps>;
     // @deprecated
     topCenter?: React.ReactElement<ZoneProps>;
     // @deprecated
     topLeft?: React.ReactElement<ZoneProps>;
-    // @alpha
+    // @beta @deprecated
     topMostPanel?: React.ReactElement<StagePanelProps>;
-    // @alpha
+    // @beta
     topPanel?: React.ReactElement<StagePanelProps>;
     // @deprecated
     topRight?: React.ReactElement<ZoneProps>;
     usage?: string;
     version?: number;
-    // @alpha
+    // @beta
     viewNavigationTools?: React.ReactElement<ZoneProps>;
 }
 
@@ -3657,11 +3657,11 @@ export interface PanelSizeChangedEventArgs {
     size: number | undefined;
 }
 
-// @alpha
+// @beta
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface PanelStateChangedEventArgs {
     // (undocumented)
     panelDef: StagePanelDef;
@@ -4664,7 +4664,7 @@ export interface SplitterPaneTargetProps {
     paneIndex: number;
 }
 
-// @alpha
+// @beta
 export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {
     constructor(props: StagePanelProps);
     // (undocumented)
@@ -4693,7 +4693,7 @@ export interface StagePanelChangeHandler {
     handleTogglePanelCollapse(panelLocation: StagePanelLocation_2): void;
 }
 
-// @alpha
+// @beta
 export class StagePanelDef extends WidgetHost {
     constructor();
     get applicationData(): any | undefined;
@@ -4712,7 +4712,7 @@ export class StagePanelDef extends WidgetHost {
     set size(size: number | undefined);
     }
 
-// @alpha
+// @beta
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 
 // @alpha
@@ -4745,7 +4745,7 @@ export enum StagePanelLocation {
     TopMost = 102
 }
 
-// @alpha
+// @beta
 export interface StagePanelProps {
     allowedZones?: ZoneLocation[];
     applicationData?: any;
@@ -4797,7 +4797,7 @@ export enum StagePanelSection {
     Start = 0
 }
 
-// @alpha
+// @beta
 export enum StagePanelState {
     // (undocumented)
     Minimized = 1,
@@ -4818,7 +4818,7 @@ export class StagePanelZoneDef extends WidgetHost {
 // @internal (undocumented)
 export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "middle" | "end">;
 
-// @alpha
+// @beta
 export interface StagePanelZoneProps {
     applicationData?: any;
     widgets: Array<React.ReactElement<WidgetProps>>;
@@ -4838,7 +4838,7 @@ export class StagePanelZonesDef {
     get start(): StagePanelZoneDef | undefined;
     }
 
-// @alpha
+// @beta
 export interface StagePanelZonesProps {
     end?: StagePanelZoneProps;
     middle?: StagePanelZoneProps;

@@ -422,6 +422,10 @@ export class SampleAppIModelApp {
     return SampleAppIModelApp.store.getState().sampleAppState.testProperty;
   }
 
+  public static getUiFrameworkProperty(): string {
+    return SampleAppIModelApp.store.getState().sampleAppState.frameworkVersion;
+  }
+
   public static saveAnimationViewId(value: string, immediateSync = false) {
     if (value !== SampleAppIModelApp.getTestProperty()) {
       UiFramework.dispatchActionToStore(SampleAppUiActionId.setAnimationViewId, value, immediateSync);

@@ -753,6 +753,7 @@ export function createVerticalPanelState(side: VerticalPanelSide): VerticalPanel
 export function createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelState {
   return {
     ...createPanelState(side),
+    minSize: 100,
     side,
     span: true,
   };
