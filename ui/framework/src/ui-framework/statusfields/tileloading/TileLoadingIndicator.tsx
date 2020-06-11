@@ -44,7 +44,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     const requested = vp.numRequestedTiles;
     const ready = vp.numReadyTiles;
     const total = ready + requested;
-    const pctComplete = (total > 0) ? (ready / total) * 100 : 100;
+    const pctComplete = (total > 0) ? (ready / total) * 100 : /* istanbul ignore next */ 100;
     let enabled = this.state.enabled;
     let finished = this.state.finished;
 
@@ -71,7 +71,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
   private _onViewOpen(vp: ScreenViewport) {
     onRenderUpdate = () => this._update(vp);
 
-    // istanbul ignore else
+    // istanbul ignore if
     if (this._removeOnRenderListener)
       this._removeOnRenderListener();
     this._removeOnRenderListener = vp.onRender.addListener(onRenderUpdate, this);
@@ -89,6 +89,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     if (vp) {
       this._onViewOpen(vp);
     } else {
+      // istanbul ignore next
       onViewOpen = (_vp: ScreenViewport) => this._onViewOpen(_vp);
       this._removeViewOpenListener = IModelApp.viewManager.onViewOpen.addListener(onViewOpen, this);
     }

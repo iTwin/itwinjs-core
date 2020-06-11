@@ -171,7 +171,10 @@ function getListPanel(props: ListPickerProps): React.ReactNode {
             key={itemIndex.toString()}
             label={item.name}
             isActive={item.enabled}
-            onClick={() => { props.setEnabled(item, !item.enabled); }}
+            onClick={
+              // istanbul ignore next
+              () => { props.setEnabled(item, !item.enabled); }
+            }
           />
         );
       case ListItemType.Separator:
@@ -195,6 +198,7 @@ function getListPanel(props: ListPickerProps): React.ReactNode {
         } else {
           return (<div key={itemIndex.toString()} />);
         }
+      // istanbul ignore next
       default:
         return (<div key={itemIndex.toString()} />);
     }
@@ -259,8 +263,9 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
 
   /** Renders ListPickerBase */
   public render() {
-    const icon = this.props.iconSpec ? (typeof this.props.iconSpec === "string" ? <i className={"icon " + (this.props.iconSpec)} /> :
-      <i className="icon uifw-item-svg-icon">{this.props.iconSpec}</i>) : <i className="icon icon-list" />;
+    const icon = this.props.iconSpec ? /* istanbul ignore next */ (typeof this.props.iconSpec === "string" ?
+      /* istanbul ignore next */ <i className={"icon " + (this.props.iconSpec)} /> : <i className="icon uifw-item-svg-icon">{this.props.iconSpec}</i>) :
+      <i className="icon icon-list" />;
 
     return (
       <ToolbarDragInteractionContext.Consumer>
@@ -399,7 +404,7 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
  * @beta
  */
 function ListPickerPopupItem(props: ListPickerProps) {
-  const icon = props.iconSpec ? (typeof props.iconSpec === "string" ? <i className={"icon " + (props.iconSpec)} /> :
+  const icon = props.iconSpec ? /* istanbul ignore next */ (typeof props.iconSpec === "string" ? <i className={"icon " + (props.iconSpec)} /> :
     <i className="icon uifw-item-svg-icon">{props.iconSpec}</i>) : <i className="icon icon-list" />;
 
   return (

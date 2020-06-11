@@ -53,6 +53,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
   public static get isTooltipVisible(): boolean { return ElementTooltip._isTooltipVisible; }
 
   public static showTooltip(el: HTMLElement, message: NotifyMessageType, pt?: XAndY, options?: ToolTipOptions): void {
+    // istanbul ignore if
     if (ElementTooltip._isTooltipHalted)
       return;
     ElementTooltip._isTooltipVisible = true;
@@ -64,7 +65,9 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
     ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: false, message: "" });
   }
 
+  // istanbul ignore next
   public static get isTooltipHalted(): boolean { return ElementTooltip._isTooltipHalted; }
+  // istanbul ignore next
   public static set isTooltipHalted(halt: boolean) {
     ElementTooltip._isTooltipHalted = halt;
     if (halt && ElementTooltip._isTooltipVisible)
@@ -134,6 +137,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
     this.updatePosition();
   }
 
+  // istanbul ignore next
   private _handleSizeChanged = (size: SizeProps) => {
     this._size = size;
     this.updatePosition();
@@ -156,6 +160,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
       if (position.equals(prevState.position))
         return null;
 
+      // istanbul ignore next
       return {
         position,
       };

@@ -53,9 +53,11 @@ export class StagePanelHeader extends React.PureComponent<StagePanelHeaderProps>
 
   private _handleCollapseButtonClick = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    // istanbul ignore if
     if (!activeFrontstageDef)
       return;
     const stagePanel = activeFrontstageDef.getStagePanelDef(this.props.location);
+    // istanbul ignore if
     if (!stagePanel)
       return;
     stagePanel.panelState = StagePanelState.Minimized;

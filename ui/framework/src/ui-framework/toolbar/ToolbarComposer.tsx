@@ -17,7 +17,7 @@ import { Direction, Toolbar, ToolbarPanelAlignment } from "@bentley/ui-ninezone"
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
+import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { ToolbarHelper } from "./ToolbarHelper";
@@ -74,9 +74,13 @@ function nestedAddItemToSpecifiedParentGroup(items: ReadonlyArray<ActionButton |
       }
     });
 
+    // istanbul ignore else
     if (foundIndices.length) {
       // process in reverse order so groupChildren can be reduced as we find matches
-      foundIndices.sort((a, b) => a - b).reverse().forEach((foundIndex) => {
+      foundIndices.sort(
+        // istanbul ignore next
+        (a, b) => a - b,
+      ).reverse().forEach((foundIndex) => {
         newChildren.push(groupChildren[foundIndex]);
         groupChildren.splice(foundIndex);
       });
@@ -107,7 +111,10 @@ function addItemToSpecifiedParentGroup(items: readonly CommonToolbarItem[], grou
     // istanbul ignore else
     if (foundIndices.length) {
       // process in reverse order so groupChildren can be reduced as we find matches
-      foundIndices.sort((a, b) => a - b).reverse().forEach((foundIndex) => {
+      foundIndices.sort(
+        // istanbul ignore next
+        (a, b) => a - b,
+      ).reverse().forEach((foundIndex) => {
         newChildren.push(groupChildren[foundIndex]);
         groupChildren.splice(foundIndex);
       });
@@ -132,7 +139,7 @@ function cloneGroup(inGroup: GroupButton): GroupButton {
 }
 
 function getItemSortValue(item: ToolbarItem) {
-  const groupValue = undefined === item.groupPriority ? 0 : item.groupPriority;
+  const groupValue = undefined === item.groupPriority ? 0 : /* istanbul ignore next */ item.groupPriority;
   return groupValue * 10000 + item.itemPriority;
 }
 
@@ -205,7 +212,8 @@ function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems
 const useProximityOpacitySetting = () => {
   const [proximityOpacity, setProximityOpacity] = React.useState(UiShowHideManager.useProximityOpacity);
   React.useEffect(() => {
-    const handleUiVisibilityChanged = (_args: UiVisibilityEventArgs) => {
+    // istanbul ignore next
+    const handleUiVisibilityChanged = () => {
       setProximityOpacity(UiShowHideManager.useProximityOpacity);
     };
     UiFramework.onUiVisibilityChanged.addListener(handleUiVisibilityChanged);
@@ -290,7 +298,7 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
     panelAlignment={panelAlignment}
     items={toolbarItems}
     useDragInteraction={isDragEnabled}
-    toolbarOpacitySetting={useProximityOpacity && !UiFramework.isMobile() ? ToolbarOpacitySetting.Proximity : ToolbarOpacitySetting.Defaults}
+    toolbarOpacitySetting={useProximityOpacity && !UiFramework.isMobile() ? ToolbarOpacitySetting.Proximity : /* istanbul ignore next */ ToolbarOpacitySetting.Defaults}
   />;
 
 }

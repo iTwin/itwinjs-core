@@ -81,7 +81,7 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
       onMouseMove={handleMouseMove}
     >
       {props.appBackstage}
-      {version === "1" ? <FrontstageComposer style={{ position: "relative", height: "100%" }} /> : <WidgetPanelsFrontstage />}
+      {version === "1" ? <FrontstageComposer style={{ position: "relative", height: "100%" }} /> : /* istanbul ignore next */ <WidgetPanelsFrontstage />}
       <ModelessDialogRenderer />
       <ModalDialogRenderer />
       <ElementTooltip />

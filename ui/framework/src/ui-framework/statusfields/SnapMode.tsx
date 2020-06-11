@@ -95,7 +95,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
             isInFooterMode={this.props.isInFooterMode}
             onClick={this._handleSnapModeIndicatorClick}
           >
-            {this.props.isInFooterMode ? this._title : undefined}
+            {this.props.isInFooterMode ? this._title : /* istanbul ignore next */ undefined}
           </NZ_SnapMode>
         </div>
         <FooterPopup

@@ -209,7 +209,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       case ZoneLocation.TopCenter:
         return props.toolSettings ? props.toolSettings : props.topCenter;
       case ZoneLocation.TopRight:
-        return props.viewNavigationTools ? props.viewNavigationTools : props.topRight;
+        return props.viewNavigationTools ? /* istanbul ignore next */ props.viewNavigationTools : props.topRight;
       case ZoneLocation.CenterLeft:
         return props.centerLeft;
       case ZoneLocation.CenterRight:
@@ -223,6 +223,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     }
 
     // Zones can be undefined in a Frontstage
+    // istanbul ignore next
     return undefined;
   }
 
@@ -330,7 +331,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         const draggedWidget = runtimeProps.nineZone.zones.draggedWidget;
 
         const panelRuntimeProps: StagePanelRuntimeProps = {
-          draggedWidgetId: draggedWidget ? draggedWidget.id : undefined,
+          draggedWidgetId: draggedWidget ? /* istanbul ignore next */ draggedWidget.id : undefined,
           getWidgetContentRef: this._getContentRef,
           isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
           isTargeted: !!runtimeProps.nineZone.zones.target,
@@ -382,11 +383,12 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const zoneRuntimeProps: ZoneRuntimeProps = {
         activeTabIndex,
         disabledResizeHandles,
-        draggedWidget: draggedWidget && draggedWidget.id === zoneId ? draggedWidget : undefined,
+        draggedWidget: draggedWidget && /* istanbul ignore next */ draggedWidget.id === zoneId ? /* istanbul ignore next */ draggedWidget : undefined,
         dropTarget,
         getWidgetContentRef: this._getContentRef,
         ghostOutline,
-        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ? false : !this.state.isUiVisible,
+        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && /* istanbul ignore next */ (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ?
+          /* istanbul ignore next */ false : !this.state.isUiVisible,
         isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
         openWidgetId,
         targetChangeHandler: runtimeProps.targetChangeHandler,
@@ -621,7 +623,7 @@ export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, 
  */
 export const useActiveFrontstageId = () => {
   const def = useActiveFrontstageDef();
-  const id = React.useMemo(() => def ? def.id : "", [def]);
+  const id = React.useMemo(() => def ? /* istanbul ignore next */ def.id : "", [def]);
   return id;
 };
 
@@ -629,6 +631,7 @@ export const useActiveFrontstageId = () => {
 export function useActiveFrontstageDef() {
   const [def, setDef] = React.useState(FrontstageManager.activeFrontstageDef);
   React.useEffect(() => {
+    // istanbul ignore next
     const handleActivated = (args: FrontstageActivatedEventArgs) => {
       setDef(args.activatedFrontstageDef);
     };

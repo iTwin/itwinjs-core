@@ -226,6 +226,7 @@ export class FrontstageDef {
   /** Starts the default tool for the Frontstage */
   public startDefaultTool(): void {
     // Start the default tool
+    // istanbul ignore next
     if (this.defaultTool && IModelApp.toolAdmin && IModelApp.viewManager) {
       IModelApp.toolAdmin.defaultToolId = this.defaultTool.toolId;
       this.defaultTool.execute();
@@ -273,11 +274,13 @@ export class FrontstageDef {
   /** Sets the active view content control based on the selected viewport. */
   public setActiveViewFromViewport(viewport: ScreenViewport): boolean {
     const contentControl = this.contentControls.find((control: ContentControl) => control.viewport === viewport);
+    // istanbul ignore else
     if (contentControl) {
       ContentViewManager.setActiveContent(contentControl.reactNode, true);
       return true;
     }
 
+    // istanbul ignore next
     return false;
   }
 
@@ -403,6 +406,7 @@ export class FrontstageDef {
         return widgetDef;
     }
 
+    // istanbul ignore next
     return undefined;
   }
 
@@ -421,6 +425,7 @@ export class FrontstageDef {
     this.panelDefs.forEach((panelDef: StagePanelDef) => {
       panelDef.widgetDefs.forEach((widgetDef: WidgetDef) => {
         const widgetControl = widgetDef.widgetControl;
+        // istanbul ignore if
         if (widgetControl)
           widgetControls.push(widgetControl);
       });
@@ -480,7 +485,7 @@ export class FrontstageDef {
 
     this._topLeft = Frontstage.createZoneDef(props.contentManipulationTools ? props.contentManipulationTools : props.topLeft, ZoneLocation.TopLeft, props);
     this._topCenter = Frontstage.createZoneDef(props.toolSettings ? props.toolSettings : props.topCenter, ZoneLocation.TopCenter, props);
-    this._topRight = Frontstage.createZoneDef(props.viewNavigationTools ? props.viewNavigationTools : props.topRight, ZoneLocation.TopRight, props);
+    this._topRight = Frontstage.createZoneDef(props.viewNavigationTools ? /* istanbul ignore next */ props.viewNavigationTools : props.topRight, ZoneLocation.TopRight, props);
     this._centerLeft = Frontstage.createZoneDef(props.centerLeft, ZoneLocation.CenterLeft, props);
     this._centerRight = Frontstage.createZoneDef(props.centerRight, ZoneLocation.CenterRight, props);
     this._bottomLeft = Frontstage.createZoneDef(props.bottomLeft, ZoneLocation.BottomLeft, props);

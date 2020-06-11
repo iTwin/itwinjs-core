@@ -192,8 +192,10 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
   }
 
   private _handlePanelStateChangedEvent = ({ panelDef, panelState }: PanelStateChangedEventArgs) => {
+    // istanbul ignore else
     if (panelDef !== this.props.runtimeProps?.panelDef)
       return;
+    // istanbul ignore next
     this.setState({
       panelState,
     });

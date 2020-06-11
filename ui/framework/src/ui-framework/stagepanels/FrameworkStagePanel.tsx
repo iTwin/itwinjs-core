@@ -64,7 +64,7 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
   }
 
   public render(): React.ReactNode {
-    const panelStateClassName = classnames(this.props.panelState === StagePanelState.Off && "uifw-stagepanel-off");
+    const panelStateClassName = classnames(this.props.panelState === StagePanelState.Off && /* istanbul ignore next */ "uifw-stagepanel-off");
     const className = classnames("uifw-stagepanel", panelStateClassName);
     const paneCount = this.props.widgetCount + this.props.panel.panes.length;
     const type = getStagePanelType(this.props.location);
@@ -169,8 +169,8 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
   private setMinMaxSize() {
     const panel = getNestedStagePanelKey(this.props.location);
     const nestedPanelsManager = FrontstageManager.NineZoneManager.getNestedPanelsManager();
-    this.props.minSize && (nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).minSize = this.props.minSize);
-    this.props.maxSize && (nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).maxSize = this.props.maxSize);
+    this.props.minSize && /* istanbul ignore next */ (nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).minSize = this.props.minSize);
+    this.props.maxSize && /* istanbul ignore next */ (nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).maxSize = this.props.maxSize);
   }
 
   private _handleResize = (resizeBy: number) => {

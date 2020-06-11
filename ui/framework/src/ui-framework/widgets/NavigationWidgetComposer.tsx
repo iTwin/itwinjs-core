@@ -26,7 +26,7 @@ function createNavigationAidControl(activeContentControl: ContentControl | undef
     return undefined;
 
   const viewport = activeContentControl.viewport;
-  const imodel = viewport ? viewport.iModel : UiFramework.getIModelConnection();
+  const imodel = viewport ? viewport.iModel : /* istanbul ignore next */ UiFramework.getIModelConnection();
   const navigationAidControl = ConfigurableUiManager.createControl(navigationAidId, navigationAidId, { imodel, viewport }) as NavigationAidControl;
 
   navigationAidControl.initialize();
@@ -49,8 +49,8 @@ export interface NavigationAidHostProps {
  */
 export function NavigationAidHost(props: NavigationAidHostProps) {
   const [activeContentControl, setActiveContentControl] = React.useState(() => ContentViewManager.getActiveContentControl());
-  const [activeContentViewport, setActiveContentViewport] = React.useState(() => activeContentControl?.viewport);
-  const [navigationAidId, setNavigationAidId] = React.useState(() => activeContentControl ? activeContentControl.navigationAidControl : "");
+  const [activeContentViewport, setActiveContentViewport] = React.useState(() => /* istanbul ignore next */ activeContentControl?.viewport);
+  const [navigationAidId, setNavigationAidId] = React.useState(() => activeContentControl ? activeContentControl.navigationAidControl : /* istanbul ignore next */ "");
 
   React.useEffect(() => {
     const handleContentControlActivated = (args: ContentControlActivatedEventArgs) => {
@@ -73,6 +73,7 @@ export function NavigationAidHost(props: NavigationAidHostProps) {
   });
 
   React.useEffect(() => {
+    // istanbul ignore next
     const handleViewClassFullNameChange = (args: ViewClassFullNameChangedEventArgs) => {
       setActiveViewClass(args.newName);
     };
@@ -88,13 +89,13 @@ export function NavigationAidHost(props: NavigationAidHostProps) {
   const ref = React.useRef<HTMLDivElement>(null);
   const proximity = useProximityToMouse(ref);
   const divStyle: React.CSSProperties = {
-    minWidth: props.minWidth ? props.minWidth : "64px",
-    minHeight: props.minHeight ? props.minHeight : "64px",
+    minWidth: props.minWidth ? /* istanbul ignore next */ props.minWidth : "64px",
+    minHeight: props.minHeight ? /* istanbul ignore next */ props.minHeight : "64px",
   };
 
   if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) {
     const threshold = 100;
-    const scale = ((proximity < threshold) ? threshold - proximity : 0) / threshold;
+    const scale = ((proximity < threshold) ? threshold - proximity : /* istanbul ignore next */ 0) / threshold;
     const navigationAidOpacity = (0.30 * scale) + 0.70;
 
     divStyle.opacity = `${navigationAidOpacity}`;
@@ -128,7 +129,7 @@ export function NavigationWidgetComposer(props: NavigationWidgetComposerProps) {
   const { navigationAidHost, horizontalToolbar, verticalToolbar, ...otherProps } = props;
   return (
     <NavigationArea
-      navigationAid={navigationAidHost ? navigationAidHost : <NavigationAidHost />}
+      navigationAid={navigationAidHost ? /* istanbul ignore next */ navigationAidHost : <NavigationAidHost />}
       horizontalToolbar={horizontalToolbar}
       verticalToolbar={verticalToolbar}
       {...otherProps}

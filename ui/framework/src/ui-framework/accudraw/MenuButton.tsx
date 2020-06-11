@@ -94,7 +94,8 @@ export class MenuButton extends React.PureComponent<MenuButtonProps, MenuButtonS
     }
   }
 
-  private _handleClose = (_event: any) => {
+  // istanbul ignore next
+  private _handleClose = () => {
     this.setState({ expanded: false });
   }
 

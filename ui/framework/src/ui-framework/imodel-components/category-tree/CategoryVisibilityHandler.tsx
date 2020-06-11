@@ -80,6 +80,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     this._viewManager = params.viewManager;
     this._imodel = params.imodel;
     this._activeView = params.activeView;
+    // istanbul ignore next
     this._useAllViewports = params.allViewports ?? false;
     this._categories = params.categories;
     this._onVisibilityChange = params.onVisibilityChange;
@@ -113,6 +114,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     // handle subcategory visibility change
     if (node.parentId) {
       const childId = CategoryVisibilityHandler.getInstanceIdFromTreeNodeKey(nodeKey);
+      // istanbul ignore next
       const parentId = this.getParent(childId)?.key;
 
       // make sure parent category is enabled
@@ -171,7 +173,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
   }
 
   public static getInstanceIdFromTreeNodeKey(nodeKey: NodeKey) {
-    return (NodeKey.isInstancesNodeKey(nodeKey) && nodeKey.instanceKeys.length > 0) ? nodeKey.instanceKeys[0].id : "";
+    return (NodeKey.isInstancesNodeKey(nodeKey) && nodeKey.instanceKeys.length > 0) ? nodeKey.instanceKeys[0].id : /* istanbul ignore next */ "";
   }
 
   /** Changes category display in the viewport */

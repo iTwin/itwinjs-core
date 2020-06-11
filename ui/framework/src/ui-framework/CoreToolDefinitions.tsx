@@ -57,6 +57,7 @@ export class CoreTools {
     });
   }
 
+  // istanbul ignore next
   private static _renderKeyInBrowser = ({ closePanel }: PopupButtonChildrenRenderPropArgs) => {
     return (
       <KeyinBrowser onExecute={closePanel} onCancel={closePanel} />

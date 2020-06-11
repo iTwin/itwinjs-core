@@ -42,10 +42,12 @@ export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps) {
     setShowIndicator((!!activeViewport && UiFramework.hideIsolateEmphasizeActionHandler.areFeatureOverridesActive(activeViewport)) || !props.hideWhenUnused);
 
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(onEmphasizeChange);
+    // istanbul ignore if
     if (activeViewport)
       activeViewport.onFeatureOverridesChanged.addListener(onEmphasizeChange);
 
     return () => {
+      // istanbul ignore if
       if (activeViewport)
         activeViewport.onFeatureOverridesChanged.removeListener(onEmphasizeChange);
 

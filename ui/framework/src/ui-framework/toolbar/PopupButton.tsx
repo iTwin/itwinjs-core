@@ -210,6 +210,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
   }
 
   private _handleClick = () => {
+    // istanbul ignore else
     if (this._isMounted)
       this.setState((prevState) => {
         const isPressed = !prevState.isPressed;

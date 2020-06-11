@@ -69,6 +69,7 @@ export class PopupManager {
   public static get popups() { return this._popups; }
 
   public static set popups(popups: ReadonlyArray<PopupInfo>) {
+    // istanbul ignore if
     if (this._popups === popups)
       return;
     this._popups = popups;
@@ -89,6 +90,7 @@ export class PopupManager {
   }
 
   private static updatePopup(popupInfo: PopupInfo, itemIndex: number): void {
+    // istanbul ignore if
     if (itemIndex < 0)
       return;
 
@@ -208,7 +210,7 @@ export class PopupManager {
     const id = PopupManager._cardId;
     const component = (
       <CardPopup id={id} el={el} pt={pt} offset={offset}
-        content={content} title={title} items={toolbarProps ? toolbarProps.items : undefined}
+        content={content} title={title} items={toolbarProps ? toolbarProps.items : /* istanbul ignore next */ undefined}
         relativePosition={relativePosition} orientation={Orientation.Horizontal} onCancel={onCancel} onItemExecuted={onItemExecuted} />
     );
 

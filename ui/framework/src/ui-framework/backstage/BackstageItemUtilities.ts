@@ -78,7 +78,7 @@ export class BackstageItemUtilities {
     const tooltipSpec = PropsHelper.getStringSpec(props.tooltip, props.tooltipKey);
 
     return {
-      isEnabled: undefined !== !props.isEnabled ? !!props.isEnabled : false,
+      isEnabled: undefined !== !props.isEnabled ? !!props.isEnabled : /* istanbul ignore next */false,
       label: PropsHelper.getStringFromSpec(labelSpec),
       subtitle: PropsHelper.getStringFromSpec(subtitleSpec),
       tooltip: PropsHelper.getStringFromSpec(tooltipSpec),

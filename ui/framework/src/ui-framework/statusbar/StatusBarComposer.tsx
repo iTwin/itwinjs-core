@@ -333,11 +333,11 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
   const onOverflowClick = React.useCallback(() => {
     setIsOverflowPanelOpen((prev) => !prev);
   }, []);
-  const onOutsideClick = React.useCallback(() => {
+  const onOutsideClick = React.useCallback(/* istanbul ignore next */() => {
     // istanbul ignore next
     setIsOverflowPanelOpen(false);
   }, []);
-  const isOutsideEvent = React.useCallback((e: PointerEvent) => {
+  const isOutsideEvent = React.useCallback(/* istanbul ignore next */(e: PointerEvent) => {
     // istanbul ignore next
     return !!containerRef.current && (e.target instanceof Node) && !containerRef.current.contains(e.target);
   }, []);

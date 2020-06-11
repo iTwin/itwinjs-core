@@ -94,6 +94,7 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
   }
 
   private filterSelectionItems(items: TreeNodeItem[]) {
+    // istanbul ignore if
     if (!this._selectionPredicate)
       return items;
 

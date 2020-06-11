@@ -17,7 +17,7 @@ import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProvid
  */
 export const useUiItemsProviderBackstageItems = (manager: BackstageItemsManager): readonly BackstageItem[] => {
   const uiItemProviderIds = useAvailableUiItemsProviders();
-  const [items, setItems] = React.useState(manager ? manager.items : []);
+  const [items, setItems] = React.useState(manager ? manager.items : /* istanbul ignore next */[]);
   const providersRef = React.useRef("");
   // gathers items from registered extensions - dependent on when a UiItemsProvider is register or unregistered and if the
   // current stage's composer allows entries from extensions.

@@ -207,6 +207,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean {
     const { position, el } = this.resolveHtmlElement(location, anchorElement);
 
+    // istanbul ignore if
     if (relativePosition === undefined)
       relativePosition = RelativePosition.TopRight;
 
@@ -236,6 +237,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean {
     const { position, el } = this.resolveHtmlElement(location, anchorElement);
 
+    // istanbul ignore if
     if (relativePosition === undefined)
       relativePosition = RelativePosition.TopRight;
 

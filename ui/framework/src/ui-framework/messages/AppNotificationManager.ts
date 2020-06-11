@@ -140,7 +140,7 @@ export class AppNotificationManager extends NotificationManager {
    * @public
    */
   public setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
-    MessageManager.outputPrompt(instructions ? instructions.mainInstruction.text : "");
+    MessageManager.outputPrompt(instructions ? instructions.mainInstruction.text : /* istanbul ignore next */ "");
     MessageManager.setToolAssistance(instructions);
   }
 

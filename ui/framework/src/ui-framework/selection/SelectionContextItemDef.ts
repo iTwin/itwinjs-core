@@ -36,10 +36,13 @@ export function getSelectionContextSyncEventIds(): string[] {
 export function isNoSelectionActive(): boolean {
   const activeContentControl = ContentViewManager.getActiveContentControl();
   let selectionCount = 0;
+  // istanbul ignore if
   if (!UiFramework.frameworkStateKey)
     selectionCount = UiFramework.store.getState()[UiFramework.frameworkStateKey].frameworkState.sessionState.numItemsSelected;
 
-  if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0 || selectionCount > 0))
+  // istanbul ignore if
+  if (activeContentControl && activeContentControl.viewport &&
+    /* istanbul ignore next */ (activeContentControl.viewport.view.iModel.selectionSet.size > 0 || selectionCount > 0))
     return false;
   return true;
 }
@@ -49,6 +52,7 @@ export function isNoSelectionActive(): boolean {
  */
 export function areNoFeatureOverridesActive(): boolean {
   const activeContentControl = ContentViewManager.getActiveContentControl();
+  // istanbul ignore next
   if (activeContentControl && activeContentControl.viewport)
     return !UiFramework.hideIsolateEmphasizeActionHandler.areFeatureOverridesActive(activeContentControl.viewport);
 

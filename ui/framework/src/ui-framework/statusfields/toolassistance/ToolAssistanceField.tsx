@@ -275,8 +275,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   /** @internal */
   public render(): React.ReactNode {
     const { instructions } = this.state;
-
-    const dialogTitle = (IModelApp.toolAdmin.activeTool) ? IModelApp.toolAdmin.activeTool.flyover : UiFramework.translate("toolAssistance.title");
+    const dialogTitle = (IModelApp.toolAdmin.activeTool) ? /* istanbul ignore next */ IModelApp.toolAdmin.activeTool.flyover : UiFramework.translate("toolAssistance.title");
     const mouseLabel = UiFramework.translate("toolAssistance.mouse");
     const touchLabel = UiFramework.translate("toolAssistance.touch");
     let prompt = "";
@@ -423,6 +422,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     if (this.state.isPinned)
       return;
 
+    // istanbul ignore if
     if (!this._indicator.current ||
       !(e.target instanceof Node) ||
       this._indicator.current.contains(e.target))
@@ -560,13 +560,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           break;
         case ToolAssistanceImage.TouchCursorDrag:
           svgImage = touchCursorDragIcon;
-          className = mediumSize ? "uifw-toolassistance-svg-medium-wide" : "uifw-toolassistance-svg-wide";
+          className = mediumSize ? /* istanbul ignore next */ "uifw-toolassistance-svg-medium-wide" : "uifw-toolassistance-svg-wide";
           break;
       }
 
       image = (
         <div className={className}>
           {svgImage &&
+            // istanbul ignore next
             <SvgSprite src={svgImage} />
           }
         </div>

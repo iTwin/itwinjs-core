@@ -68,6 +68,7 @@ export class StagePanelDef extends WidgetHost {
   public get size(): number | undefined { return this._size; }
 
   public set size(size: number | undefined) {
+    // istanbul ignore if
     if (this._size === size)
       return;
     this._size = size;
@@ -77,6 +78,7 @@ export class StagePanelDef extends WidgetHost {
     });
   }
   /** Indicates whether the panel is resizable. */
+  // istanbul ignore next
   public get resizable(): boolean { return this._resizable; }
   /** Any application data to attach to this Panel. */
   public get applicationData(): any | undefined { return this._applicationData; }
@@ -137,6 +139,7 @@ export class StagePanelDef extends WidgetHost {
 
   /** Finds a [[WidgetDef]] based on a given id */
   public findWidgetDef(id: string): WidgetDef | undefined {
+    // istanbul ignore if
     if (this.panelZones) {
       for (const [, panelZone] of this.panelZones) {
         const widgetDef = panelZone.findWidgetDef(id);

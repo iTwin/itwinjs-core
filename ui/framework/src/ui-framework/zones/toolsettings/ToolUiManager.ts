@@ -103,6 +103,7 @@ export class ToolUiManager {
   public static get toolSettingsProperties(): DialogItem[] {
     if (IModelApp.toolAdmin && IModelApp.toolAdmin.activeTool && IModelApp.toolAdmin.activeTool.toolId === ToolUiManager._toolIdForToolSettings) {
       const properties = IModelApp.toolAdmin.activeTool.supplyToolSettingsProperties();
+      // istanbul ignore else
       if (properties)
         return properties;
     }

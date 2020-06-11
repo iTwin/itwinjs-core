@@ -553,9 +553,9 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                   isEnabled = item.isEnabled; // tslint:disable-line:deprecation
                   if (item.stateFunc) { // tslint:disable-line:deprecation
                     const newState = item.stateFunc({ isVisible, isActive, isEnabled }); // tslint:disable-line:deprecation
-                    isVisible = undefined !== newState.isVisible ? newState.isVisible : isVisible;
-                    isEnabled = undefined !== newState.isEnabled ? newState.isEnabled : isEnabled;
-                    isActive = undefined !== newState.isActive ? newState.isActive : isActive;
+                    isVisible = undefined !== newState.isVisible ? newState.isVisible : /* istanbul ignore next */ isVisible;
+                    isEnabled = undefined !== newState.isEnabled ? newState.isEnabled : /* istanbul ignore next */ isEnabled;
+                    isActive = undefined !== newState.isActive ? newState.isActive : /* istanbul ignore next */ isActive;
                   }
                 }
 

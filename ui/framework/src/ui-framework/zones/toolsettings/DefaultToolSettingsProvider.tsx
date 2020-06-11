@@ -24,11 +24,13 @@ import { ToolUiProvider } from "./ToolUiProvider";
 /** DataProvider that keeps underlying data in sync with UI display */
 class ToolSettingsDataProvider extends DialogItemsManager {
   private static _thisInstance?: ToolSettingsDataProvider;
+  // istanbul ignore next
   public onUiPropertyChanged = () => { };
 
   constructor() {
     super();
 
+    // istanbul ignore else
     if (!ToolSettingsDataProvider._thisInstance) {
       ToolSettingsDataProvider._thisInstance = this;
     }
@@ -38,6 +40,7 @@ class ToolSettingsDataProvider extends DialogItemsManager {
   private static _handleSyncToolSettingsPropertiesEvent = (args: SyncToolSettingsPropertiesEventArgs): void => {
     const syncArgs: SyncPropertiesChangeEventArgs = { properties: args.syncProperties };
 
+    // istanbul ignore else
     if (ToolSettingsDataProvider._thisInstance)
       ToolSettingsDataProvider._thisInstance.onSyncPropertiesChangeEvent.emit(syncArgs);
   }
@@ -50,6 +53,7 @@ class ToolSettingsDataProvider extends DialogItemsManager {
     return ToolSettingsDataProvider._thisInstance;
   }
 
+  // istanbul ignore next
   public isToolSettingsManager = (): boolean => {
     return true;
   }
@@ -60,7 +64,9 @@ class ToolSettingsDataProvider extends DialogItemsManager {
     if (!activeTool)
       return;
 
+    // istanbul ignore next
     activeTool.applyToolSettingPropertyChange(syncItem);
+    // istanbul ignore next
     this.onUiPropertyChanged();
   }
 }
@@ -102,6 +108,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     this.updateToolSettingsNodes();
   }
 
+  // istanbul ignore next
   private _handleUiPropertyChanged = () => {
     this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
     this.updateToolSettingsNodes();

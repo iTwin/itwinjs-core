@@ -120,6 +120,7 @@ export class ModelSelectorDataProvider implements IPresentationTreeDataProvider 
     this._baseProvider.pagingSize = 5;
   }
 
+  // istanbul ignore next
   public dispose() {
     this._baseProvider.dispose();
   }
@@ -141,6 +142,7 @@ export class ModelSelectorDataProvider implements IPresentationTreeDataProvider 
    * Returns a [[NodeKey]] from given [[TreeNodeItem]].
    * **Warning:** the `node` must be created by this data provider.
    */
+  // istanbul ignore next
   public getNodeKey(node: TreeNodeItem): NodeKey {
     return this._baseProvider.getNodeKey(node);
   }
@@ -179,5 +181,6 @@ export class ModelSelectorDataProvider implements IPresentationTreeDataProvider 
     return this._baseProvider.getNodes(parentNode, pageOptions);
   }
 
+  // istanbul ignore next
   public async loadHierarchy() { return this._baseProvider.loadHierarchy(); }
 }

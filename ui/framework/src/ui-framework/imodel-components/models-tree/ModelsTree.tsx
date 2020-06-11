@@ -141,6 +141,7 @@ export function ModelsTree(props: ModelsTreeProps) {
 
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : undefined;
 
+  // istanbul ignore next
   const noFilteredDataRenderer = React.useCallback(() => {
     return <VisibilityTreeNoFilteredData
       title={UiFramework.i18n.translate("UiFramework:modelTree.noModelFound")}
@@ -187,6 +188,7 @@ const useVisibilityHandler = (activeView?: Viewport, visibilityHandler?: Visibil
 };
 
 const createVisibilityHandler = (activeView?: Viewport): IVisibilityHandler | undefined => {
+  // istanbul ignore next
   return activeView ? new VisibilityHandler({ viewport: activeView }) : undefined;
 };
 
@@ -286,15 +288,15 @@ export class VisibilityHandler implements IVisibilityHandler {
   }
 
   private getCategoryParentModelId(categoryNode: TreeNodeItem): Id64String | undefined {
-    return categoryNode.extendedData ? categoryNode.extendedData.modelId : undefined;
+    return categoryNode.extendedData ? categoryNode.extendedData.modelId : /* istanbul ignore next */ undefined;
   }
 
   private getElementModelId(elementNode: TreeNodeItem): Id64String | undefined {
-    return elementNode.extendedData ? elementNode.extendedData.modelId : undefined;
+    return elementNode.extendedData ? elementNode.extendedData.modelId : /* istanbul ignore next */ undefined;
   }
 
   private getElementCategoryId(elementNode: TreeNodeItem): Id64String | undefined {
-    return elementNode.extendedData ? elementNode.extendedData.categoryId : undefined;
+    return elementNode.extendedData ? elementNode.extendedData.categoryId : /* istanbul ignore next */ undefined;
   }
 
   private async getSubjectDisplayStatus(ids: Id64String[]): Promise<VisibilityStatus> {
@@ -396,7 +398,9 @@ export class VisibilityHandler implements IVisibilityHandler {
       && categoryId && this.getCategoryDisplayStatus(categoryId, modelId).isDisplayed;
     const isHiddenDueToExclusiveAlwaysDrawnElements = this._props.viewport.isAlwaysDrawnExclusive && this._props.viewport.alwaysDrawn && 0 !== this._props.viewport.alwaysDrawn.size;
     const currNeverDrawn = new Set(this._props.viewport.neverDrawn ? this._props.viewport.neverDrawn : []);
-    const currAlwaysDrawn = new Set(this._props.viewport.alwaysDrawn ? this._props.viewport.alwaysDrawn : []);
+    const currAlwaysDrawn = new Set(this._props.viewport.alwaysDrawn ?
+      this._props.viewport.alwaysDrawn : /* istanbul ignore next */[],
+    );
     elementIds.forEach((elementId) => {
       if (on) {
         currNeverDrawn.delete(elementId);
@@ -442,6 +446,7 @@ export class VisibilityHandler implements IVisibilityHandler {
       .reduce((allModelIds: Id64String[], curr: Id64String[]) => [...allModelIds, ...curr], []);
   }
 
+  // istanbul ignore next
   private async getAssemblyElementIds(assemblyId: Id64String): Promise<Id64String[]> {
     const provider = new AssemblyElementIdsProvider(this._props.viewport.iModel, assemblyId);
     return provider.getElementIds();
@@ -515,6 +520,7 @@ class SubjectModelIdsCache {
   }
 }
 
+// istanbul ignore next
 class RulesetDrivenRecursiveIdsProvider extends ContentDataProvider {
   constructor(imodel: IModelConnection, displayType: string, parentKey: InstanceKey) {
     super({ imodel, ruleset: RULESET_MODELS.id, displayType });
@@ -534,6 +540,7 @@ class RulesetDrivenRecursiveIdsProvider extends ContentDataProvider {
   }
 }
 
+// istanbul ignore next
 class AssemblyElementIdsProvider extends RulesetDrivenRecursiveIdsProvider {
   constructor(imodel: IModelConnection, assemblyId: Id64String) {
     super(imodel, "AssemblyElementsRequest", { className: "BisCore:Element", id: assemblyId });

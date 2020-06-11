@@ -35,7 +35,7 @@ const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
   return {
     isEnabled: undefined !== props.isEnabled ? props.isEnabled && props.actionItem.isEnabled : props.actionItem.isEnabled, // tslint:disable-line:deprecation
     isVisible: props.actionItem.isVisible, // tslint:disable-line:deprecation
-    isActive: undefined !== props.actionItem.isActive ? props.actionItem.isActive : false,
+    isActive: undefined !== props.actionItem.isActive ? props.actionItem.isActive : /* istanbul ignore next */ false,
   };
 };
 

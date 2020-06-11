@@ -115,7 +115,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
           {
             this.props.cards.map((card: CardInfo, _index: number) => {
               let includeCard = true;
-              const iconClassName = (typeof card.iconSpec === "string") ? card.iconSpec : "icon-placeholder";
+              const iconClassName = (typeof card.iconSpec === "string") ? card.iconSpec : /* istanbul ignore next */ "icon-placeholder";
 
               if (this.props.searchValue) {
                 includeCard = this.contains(card.label, this.props.searchValue);
@@ -156,6 +156,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
    * @param card Data about the sheet card selected.
    */
   private async _handleCardSelected(card: CardInfo) {
+    // istanbul ignore if
     if (IModelApp.viewManager && IModelApp.viewManager.selectedView) {
       const vp = IModelApp.viewManager.selectedView;
       const viewState = await this.props.connection.views.load(card.viewId);
@@ -220,7 +221,7 @@ export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
 
     const iconClassName = classnames(
       "icon",
-      (typeof iconSpec === "string") ? iconSpec : "icon-placeholder",
+      (typeof iconSpec === "string") ? iconSpec : /* istanbul ignore next */ "icon-placeholder",
     );
 
     return (

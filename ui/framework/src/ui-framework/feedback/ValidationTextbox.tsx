@@ -132,7 +132,7 @@ export class ValidationTextbox extends React.PureComponent<ValidationTextboxProp
    */
   private _calculateIsValid(value: string): boolean {
     if (this.props.onValueChanged)
-      return (this.props.onValueChanged(value) === InputStatus.Valid) ? true : false;
+      return (this.props.onValueChanged(value) === InputStatus.Valid) ? /* istanbul ignore next */ true : false;
     return value.length > 0;
   }
 

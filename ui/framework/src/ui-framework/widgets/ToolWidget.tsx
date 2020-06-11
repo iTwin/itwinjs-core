@@ -30,7 +30,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
     this.widgetType = WidgetType.Tool;
     this.verticalDirection = (props.verticalDirection !== undefined) ? props.verticalDirection : Direction.Right;
 
-    const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : "";
+    const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : /* istanbul ignore next */"";
     this.widgetBaseName = `[${activeStageName}]ToolWidget`;
   }
 
@@ -142,8 +142,8 @@ class ToolWidgetWithDef extends React.Component<Props, ToolWidgetWithDefState> {
   }
 
   private reloadToolbars() {
-    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.toolWidgetDef.renderHorizontalToolbar();
-    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.toolWidgetDef.renderVerticalToolbar();
+    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : /* istanbul ignore next */ this.props.toolWidgetDef.renderHorizontalToolbar();
+    const verticalToolbar = (this.props.verticalToolbar) ? /* istanbul ignore next */ this.props.verticalToolbar : this.props.toolWidgetDef.renderVerticalToolbar();
     this.setState({ horizontalToolbar, verticalToolbar });
   }
 

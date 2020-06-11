@@ -30,6 +30,7 @@ export function ToolSettingsGridContainer({ itemsManager, componentGenerator }: 
   const layoutMode = toLayoutMode(availableContentWidth);
   const className = classnames(
     version === "1" && "uifw-fill",
+    // istanbul ignore next
     LayoutMode.Narrow === layoutMode && "uifw-default-narrow",
   );
   const container = (
@@ -58,6 +59,7 @@ interface DialogGridContainerProps {
 }
 
 /** @internal */
+// istanbul ignore next
 export function DialogGridContainer({ itemsManager, componentGenerator, containerClassName }: DialogGridContainerProps) {
   const className = classnames(
     "uifw-default-container",
@@ -76,14 +78,16 @@ export function DialogGridContainer({ itemsManager, componentGenerator, containe
  * @beta
  */
 export function DefaultDialogGridContainer({ itemsManager, componentGenerator, isToolSettings }: { itemsManager: DialogItemsManager, componentGenerator?: ComponentGenerator, isToolSettings?: boolean }) {
+  // istanbul ignore if
   if (!componentGenerator)
     componentGenerator = new ComponentGenerator(itemsManager);
 
   return (!!isToolSettings ?
     <ToolSettingsGridContainer itemsManager={itemsManager} componentGenerator={componentGenerator} /> :
+    /* istanbul ignore next */
     <DialogGridContainer itemsManager={itemsManager} componentGenerator={componentGenerator} />);
 }
 
 const toLayoutMode = (width: number) => {
-  return (width < 250 && width > 0) ? LayoutMode.Narrow : LayoutMode.Wide;
+  return (width < 250 && width > 0) ? /* istanbul ignore next */ LayoutMode.Narrow : LayoutMode.Wide;
 };

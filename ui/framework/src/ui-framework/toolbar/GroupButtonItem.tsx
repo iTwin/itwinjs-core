@@ -400,7 +400,10 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
                     isActive={isActive}
                     key={itemKey}
                     label={ConditionalStringValue.getValue(item.label)}
-                    onClick={() => this.handleToolGroupItemClicked(this.state.trayId, itemKey)}
+                    onClick={
+                      // istanbul ignore next
+                      () => this.handleToolGroupItemClicked(this.state.trayId, itemKey)
+                    }
                     onPointerUp={activateOnPointerUp ? () => this.handleToolGroupItemClicked(this.state.trayId, itemKey) : undefined}
                     icon={icon}
                     badge={badge}
@@ -416,7 +419,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
                 columns={columns}
                 onBack={this._handleBack}
                 onBackPointerUp={activateOnPointerUp ? this._handleBack : undefined}
-                onOutsideClick={dragInteraction ? this._handleDragInteractionOutsideClick : this._handleOutsideClick}
+                onOutsideClick={dragInteraction ? this._handleDragInteractionOutsideClick : /* istanbul ignore next */ this._handleOutsideClick}
                 title={tray.title}
               />
             );
@@ -439,12 +442,13 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
       if (item)
         return item;
     }
+    // istanbul ignore next
     return undefined;
   }
 
   private _handleBack = () => {
     this.setState((prevState) => {
-      const trayId = prevState.backTrays.length > 0 ? prevState.backTrays[prevState.backTrays.length - 1] : prevState.trayId;
+      const trayId = prevState.backTrays.length > 0 ? prevState.backTrays[prevState.backTrays.length - 1] : /* istanbul ignore next */ prevState.trayId;
       const backTrays = prevState.backTrays.slice(0, -1);
       return {
         trayId,
@@ -474,6 +478,7 @@ const getFirstItem = (groupItem: GroupButton): ActionButton | GroupButton | unde
       // istanbul ignore else
       if (firstItem)
         return firstItem;
+      // istanbul ignore next
       continue;
     }
     if (!isHidden && !isDisabled)

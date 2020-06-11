@@ -196,6 +196,7 @@ export class WidgetDef {
 
     if (widgetProps.iconSpec !== undefined)
       me._iconSpec = widgetProps.iconSpec;
+    // istanbul ignore if
     if (widgetProps.icon !== undefined)
       me._iconSpec = widgetProps.icon;
 
