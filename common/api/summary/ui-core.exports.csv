@@ -254,7 +254,7 @@ internal;useProximityToMouse: (elementRef: React.RefObject
 internal;useRefEffect
 internal;useRefs
 internal;useResizeObserver
-internal;useTargeted: (elementRef: React.RefObject
+internal;useTargeted: (ref: React.RefObject
 public;VerticalAlignment
 public;VerticalTabs 
 public;WebFontIcon(props: WebFontIconProps): JSX.Element

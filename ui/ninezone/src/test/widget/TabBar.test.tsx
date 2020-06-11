@@ -88,6 +88,7 @@ describe("WidgetTitleBar", () => {
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     const target = container.getElementsByClassName("nz-widget-tabTarget")[0];
+    sandbox.stub(document, "elementFromPoint").returns(target);
     act(() => {
       fireEvent.pointerDown(handle);
       fireEvent.pointerMove(target);
@@ -134,6 +135,7 @@ describe("WidgetTitleBar", () => {
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
+    sandbox.stub(document, "elementFromPoint").returns(target);
     act(() => {
       fireEvent.pointerDown(handle);
       fireEvent.pointerMove(target);

@@ -7,6 +7,7 @@
 // Similar issue mentioned in https://github.com/vuejs/vue-test-utils/issues/936
 require('jsdom-global')();
 window.Date = Date;
+document.elementFromPoint = () => null;
 
 const {
   JSDOM

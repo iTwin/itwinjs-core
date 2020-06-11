@@ -2202,7 +2202,7 @@ export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T |
 export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
 
 // @internal
-export const useTargeted: (elementRef: React.RefObject<Element>) => boolean;
+export const useTargeted: (ref: React.RefObject<Element>) => boolean;
 
 // @public
 export enum VerticalAlignment {
