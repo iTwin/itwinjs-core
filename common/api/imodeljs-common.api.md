@@ -1434,8 +1434,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 589824,
-    Major = 9,
+    Combined = 655360,
+    Major = 10,
     Minor = 0
 }
 
