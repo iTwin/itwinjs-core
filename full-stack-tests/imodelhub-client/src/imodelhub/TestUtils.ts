@@ -13,10 +13,9 @@ import {
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
   Version, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, ProgressInfo, UserInfo, WsgError } from "@bentley/itwin-client";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
-import { AzureFileHandler, IOSAzureFileHandler, LocalhostHandler, StorageServiceFileHandler, UrlFileHandler } from "@bentley/backend-itwin-client";
+import { AzureFileHandler, LocalhostHandler, StorageServiceFileHandler, UrlFileHandler } from "@bentley/backend-itwin-client";
 import { RequestType, ResponseBuilder, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
@@ -39,9 +38,7 @@ function configMockSettings() {
   Config.App.set("imjs_test_manager_user_password", "test");
 }
 export function createFileHandler(useDownloadBuffer?: boolean) {
-  if (MobileRpcConfiguration.isMobileBackend) {
-    return new IOSAzureFileHandler();
-  } else if (TestConfig.enableIModelBank && !TestConfig.enableMocks) {
+  if (TestConfig.enableIModelBank && !TestConfig.enableMocks) {
     return createIModelBankFileHandler(useDownloadBuffer);
   }
   return new AzureFileHandler(useDownloadBuffer);

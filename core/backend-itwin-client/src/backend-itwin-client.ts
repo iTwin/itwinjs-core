@@ -7,7 +7,6 @@ export * from "./BackendITwinClientLoggerCategory";
 export * from "./RequestHost";
 export * from "./imodelhub/LocalhostFileHandler";
 export * from "./imodelhub/AzureFileHandler";
-export * from "./imodelhub/IOSAzureFileHandler";
 export * from "./UrlFileHandler";
 export * from "./StorageServiceFileHandler";
 

@@ -8,7 +8,7 @@
 
 import * as glob from "glob";
 import * as path from "path";
-import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/backend-itwin-client";
+import { AzureFileHandler } from "@bentley/backend-itwin-client";
 import {
   assert, AsyncMutex, BeDuration, BeEvent, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64,
   IModelHubStatus, IModelStatus, Logger, LogLevel, OpenMode, PerfLogger,
@@ -20,7 +20,7 @@ import {
 } from "@bentley/imodelhub-client";
 import {
   BriefcaseDownloader, BriefcaseKey, BriefcaseProps, BriefcaseStatus, CreateIModelProps, DownloadBriefcaseOptions, DownloadBriefcaseStatus,
-  IModelError, IModelVersion, MobileRpcConfiguration, RequestBriefcaseProps, SyncMode,
+  IModelError, IModelVersion, RequestBriefcaseProps, SyncMode,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
@@ -612,10 +612,7 @@ export class BriefcaseManager {
   private static _initializedOffline: boolean;
 
   private static setupDefaultIModelClient() {
-    if (MobileRpcConfiguration.isMobileBackend)
-      this._imodelClient = new IModelHubClient(new IOSAzureFileHandler());
-    else
-      this._imodelClient = new IModelHubClient(new AzureFileHandler());
+    this._imodelClient = new IModelHubClient(new AzureFileHandler());
   }
 
   private static setupContextRegistryClient() {
