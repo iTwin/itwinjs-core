@@ -16,7 +16,7 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
-  CreateEmptyStandaloneIModelProps, CreatePolyfaceRequestProps, CreatePolyfaceResponseProps, CreateSnapshotIModelProps, DisplayStyleProps,
+  CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, IModel, IModelCoordinatesResponseProps, IModelEncryptionProps,
   IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelVersion, MassPropertiesRequestProps,

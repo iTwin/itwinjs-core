@@ -9,7 +9,6 @@ export * from "./Camera";
 export * from "./ChangedElements";
 export * from "./CloudStorage";
 export * from "./CloudStorageTileCache";
-export * from "./CreatePolyfaceFromElement";
 export * from "./Code";
 export * from "./ColorByName";
 export * from "./ColorDef";

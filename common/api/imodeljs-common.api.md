@@ -1386,36 +1386,6 @@ export interface CreateIModelProps extends IModelProps {
     thumbnail?: ThumbnailProps;
 }
 
-// @internal (undocumented)
-export interface CreatePolyfaceRequestProps {
-    angleTol?: number;
-    chordTol?: number;
-    // (undocumented)
-    elementId: Id64String;
-    maxEdgeLength?: number;
-    minBRepFeatureSize?: number;
-}
-
-// @internal (undocumented)
-export interface CreatePolyfaceResponseProps {
-    // (undocumented)
-    results?: CreatePolyfaceResponseResult[];
-    // (undocumented)
-    status: IModelStatus;
-}
-
-// @internal (undocumented)
-export interface CreatePolyfaceResponseResult {
-    // (undocumented)
-    fillColor: ColorDefProps;
-    // (undocumented)
-    indexedMesh: IModelJson.IndexedMeshProps;
-    // (undocumented)
-    lineColor: ColorDefProps;
-    // (undocumented)
-    materialDiffuseColor?: ColorDefProps;
-}
-
 // @public
 export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
     createClassViews?: boolean;
