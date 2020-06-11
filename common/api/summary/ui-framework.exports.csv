@@ -150,6 +150,7 @@ internal;DefaultToolSettingsProvider
 alpha;DefaultViewOverlay 
 public;DialogChangedEvent 
 public;DialogChangedEventArgs
+internal;DialogGridContainer({ itemsManager, componentGenerator, containerClassName }: DialogGridContainerProps): JSX.Element
 public;DialogInfo
 internal;DialogManagerBase
 internal;DialogRendererBase 

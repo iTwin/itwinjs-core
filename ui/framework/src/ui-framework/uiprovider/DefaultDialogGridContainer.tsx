@@ -19,6 +19,7 @@ enum LayoutMode {
   Wide = 0,
   Narrow = 1,
 }
+
 /**
  * Component to provide grid of property editors
  * @beta
@@ -28,16 +29,15 @@ export function ToolSettingsGridContainer({ itemsManager, componentGenerator }: 
   const version = useFrameworkVersion();
   const layoutMode = toLayoutMode(availableContentWidth);
   const className = classnames(
-    "uifw-default-container",
     version === "1" && "uifw-fill",
     LayoutMode.Narrow === layoutMode && "uifw-default-narrow",
   );
   const container = (
-    <div className="uifw-default-resizer-parent">
-      <div className={className} >
-        {itemsManager.rows.map((row: DialogRow, index: number) => componentGenerator.getRow(row, index))}
-      </div>
-    </div>
+    <DialogGridContainer
+      componentGenerator={componentGenerator}
+      itemsManager={itemsManager}
+      containerClassName={className}
+    />
   );
   return (
     <FrameworkVersionSwitch
@@ -51,10 +51,21 @@ export function ToolSettingsGridContainer({ itemsManager, componentGenerator }: 
   );
 }
 
-function DialogGridContainer({ itemsManager, componentGenerator }: { itemsManager: DialogItemsManager, componentGenerator: ComponentGenerator }) {
+interface DialogGridContainerProps {
+  itemsManager: DialogItemsManager;
+  componentGenerator: ComponentGenerator;
+  containerClassName?: string;
+}
+
+/** @internal */
+export function DialogGridContainer({ itemsManager, componentGenerator, containerClassName }: DialogGridContainerProps) {
+  const className = classnames(
+    "uifw-default-container",
+    containerClassName,
+  );
   return (
     <div className="uifw-default-resizer-parent">
-      <div className={"uifw-default-container"} >
+      <div className={className}>
         {itemsManager.rows.map((row: DialogRow, index: number) => componentGenerator.getRow(row, index))}
       </div>
     </div>

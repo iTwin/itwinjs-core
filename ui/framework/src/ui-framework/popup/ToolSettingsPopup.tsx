@@ -13,7 +13,7 @@ import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup, PositionPopupContent } from "./PositionPopup";
 import { ComponentGenerator } from "../uiprovider/ComponentGenerator";
-import { ToolSettingsGridContainer } from "../uiprovider/DefaultDialogGridContainer";
+import { DialogGridContainer } from "../uiprovider/DefaultDialogGridContainer";
 
 /** @alpha */
 export interface ToolSettingsPopupProps extends PopupPropsBase {
@@ -82,7 +82,7 @@ export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProp
           <PositionPopupContent>
             <FocusTrap active={true} returnFocusOnDeactivate={true}>
               {this._componentGenerator && this._itemsManager &&
-                <ToolSettingsGridContainer itemsManager={this._itemsManager} componentGenerator={this._componentGenerator} />
+                <DialogGridContainer itemsManager={this._itemsManager} componentGenerator={this._componentGenerator} />
               }
             </FocusTrap>
           </PositionPopupContent>

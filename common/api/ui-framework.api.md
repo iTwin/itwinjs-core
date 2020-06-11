@@ -1498,6 +1498,9 @@ export interface DialogChangedEventArgs {
     dialogCount: number;
 }
 
+// @internal (undocumented)
+export function DialogGridContainer({ itemsManager, componentGenerator, containerClassName }: DialogGridContainerProps): JSX.Element;
+
 // @public
 export interface DialogInfo {
     // (undocumented)

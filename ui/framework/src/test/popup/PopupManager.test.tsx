@@ -21,7 +21,7 @@ import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManag
 import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
 import { TestUtils } from "../TestUtils";
 import { Card } from "../../ui-framework/popup/CardPopup";
-import { ToolSettingsGridContainer } from "../../ui-framework/uiprovider/DefaultDialogGridContainer";
+import { DialogGridContainer } from "../../ui-framework/uiprovider/DefaultDialogGridContainer";
 
 describe("PopupManager", () => {
 
@@ -407,7 +407,7 @@ describe("PopupManager", () => {
 
       PopupManager.openToolSettings(uiDataProvider, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
       wrapper.update();
-      expect(wrapper.find(ToolSettingsGridContainer).length).to.eq(1);
+      expect(wrapper.find(DialogGridContainer).length).to.eq(1);
 
       let inputNode = wrapper.find("input");
       expect(inputNode.length).to.eq(1);
@@ -418,7 +418,7 @@ describe("PopupManager", () => {
 
       PopupManager.openToolSettings(uiDataProvider, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
       wrapper.update();
-      expect(wrapper.find(ToolSettingsGridContainer).length).to.eq(1);
+      expect(wrapper.find(DialogGridContainer).length).to.eq(1);
 
       inputNode = wrapper.find("input");
       expect(inputNode.length).to.eq(1);

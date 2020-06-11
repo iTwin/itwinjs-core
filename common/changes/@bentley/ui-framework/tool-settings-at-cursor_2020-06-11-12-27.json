@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Use the DialogGridContainer not the ToolSettingsGridContainer for popup toolsetting since these popup are not in widgets.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}
