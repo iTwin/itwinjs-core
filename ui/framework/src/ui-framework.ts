@@ -155,6 +155,8 @@ export * from "./ui-framework/statusbar/StatusBarItem";
 export * from "./ui-framework/statusbar/StatusBarItemsManager";
 export * from "./ui-framework/statusbar/StatusBarItemUtilities";
 export * from "./ui-framework/statusbar/StatusBarComposer";
+export * from "./ui-framework/statusbar/StickyMessage";
+export * from "./ui-framework/statusbar/ToastMessage";
 export * from "./ui-framework/statusbar/withMessageCenterFieldProps";
 export * from "./ui-framework/statusbar/useUiItemsProviderStatusBarItems";
 export * from "./ui-framework/statusbar/useDefaultStatusBarItems";

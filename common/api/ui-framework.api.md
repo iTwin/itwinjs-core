@@ -2593,6 +2593,9 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     processIsolateSelectedElementsModel(): Promise<void>;
     }
 
+// @internal
+export function HollowIcon(props: IconProps): JSX.Element;
+
 // @alpha
 export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps, HTMLElementPopupState> {
     // (undocumented)
@@ -3296,6 +3299,12 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
 export interface MessageCenterFieldProps extends StatusFieldProps {
     targetRef?: React.Ref<HTMLElement>;
 }
+
+// @internal
+export function MessageLabel(props: {
+    message: NotifyMessageType;
+    className: string;
+}): JSX.Element;
 
 // @public
 export class MessageManager {
@@ -5002,6 +5011,21 @@ export interface StatusFieldProps extends CommonProps {
     openWidget: StatusBarFieldId;
 }
 
+// @beta
+export function StickyMessage(props: StickyMessageProps): JSX.Element;
+
+// @beta
+export interface StickyMessageProps {
+    // (undocumented)
+    closeMessage: (id: string) => void;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    messageDetails: NotifyMessageDetailsType;
+    // (undocumented)
+    severity: MessageSeverity;
+}
+
 // @public
 export interface SupportsViewSelectorChange {
     processViewSelectorChange(iModel: IModelConnection, viewDefinitionId: Id64String, viewState: ViewState, name: string): Promise<void>;
@@ -5170,6 +5194,23 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     componentWillUnmount(): void;
     render(): JSX.Element;
     }
+
+// @beta
+export function ToastMessage(props: ToastMessageProps): JSX.Element;
+
+// @beta
+export interface ToastMessageProps {
+    // (undocumented)
+    closeMessage: (id: string) => void;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    messageDetails: NotifyMessageDetailsType;
+    // (undocumented)
+    severity: MessageSeverity;
+    // (undocumented)
+    toastTarget: HTMLElement | null;
+}
 
 // @alpha
 export function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;

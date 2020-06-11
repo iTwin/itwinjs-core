@@ -235,6 +235,7 @@ public;GroupItemProps
 alpha;HideIsolateEmphasizeAction
 alpha;class HideIsolateEmphasizeActionHandler
 alpha;HideIsolateEmphasizeManager 
+internal;HollowIcon(props: IconProps): JSX.Element
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
 beta;IModelAppUiSettings 
@@ -309,6 +310,7 @@ public;MessageAddedEvent
 public;MessageAddedEventArgs
 public;MessageCenterField 
 public;MessageCenterFieldProps 
+internal;MessageLabel(props:
 public;MessageManager
 public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
@@ -477,6 +479,8 @@ public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
 internal;StatusBarZoneProps 
 public;StatusFieldProps 
+beta;StickyMessage(props: StickyMessageProps): JSX.Element
+beta;StickyMessageProps
 public;SupportsViewSelectorChange
 public;SyncToolSettingsPropertiesEvent 
 public;SyncToolSettingsPropertiesEventArgs
@@ -495,6 +499,8 @@ public;TaskProps
 public;TaskPropsList
 public;ThemeManager: import("react-redux").ConnectedComponent
 beta;TileLoadingIndicator 
+beta;ToastMessage(props: ToastMessageProps): JSX.Element
+beta;ToastMessageProps
 alpha;toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise
 public;ToolActivatedEvent 
 public;ToolActivatedEventArgs

@@ -11,8 +11,8 @@ import classnames from "classnames";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { OutputMessageType } from "@bentley/imodeljs-frontend";
-import { CommonDivProps, CommonProps, Div, Icon, IconProps, MessageContainer, MessageSeverity, SmallText, UiCore } from "@bentley/ui-core";
-import { Footer, Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Status, Toast } from "@bentley/ui-ninezone";
+import { CommonDivProps, CommonProps, Div, Icon, IconProps, MessageSeverity, SmallText, UiCore } from "@bentley/ui-core";
+import { Footer, Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Status } from "@bentley/ui-ninezone";
 import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager";
 import { MessageDiv } from "../messages/MessageSpan";
 import { NotifyMessageDetailsType, NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
@@ -20,6 +20,8 @@ import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
+import { ToastMessage } from "./ToastMessage";
+import { StickyMessage } from "./StickyMessage";
 
 // cspell:ignore safearea
 
@@ -231,13 +233,15 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
                   if (message.messageDetails.msgType === OutputMessageType.Toast) {
                     messageNode = (
                       <li key={message.id}>
-                        <ToastMessage message={message} closeMessage={this._closeMessage} toastTarget={this.state.toastTarget} />
+                        <ToastMessage id={message.id} messageDetails={message.messageDetails} severity={message.severity}
+                          closeMessage={this._closeMessage} toastTarget={this.state.toastTarget} />
                       </li>
                     );
                   } else {
                     messageNode = (
                       <li key={message.id}>
-                        <StickyMessage message={message} closeMessage={this._closeMessage} />
+                        <StickyMessage id={message.id} messageDetails={message.messageDetails} severity={message.severity}
+                          closeMessage={this._closeMessage} />
                       </li>
                     );
                   }
@@ -350,99 +354,22 @@ export const StatusBarContext = React.createContext<StatusBarWidgetControlArgs>(
   toastTargetRef: { current: null },
 });
 
-/** Message String/Label */
-function MessageLabel(props: { message: NotifyMessageType, className: string }) {
+/** Message String/Label
+ * @internal
+ */
+export function MessageLabel(props: { message: NotifyMessageType, className: string }) {
   const classNames = classnames("uifw-statusbar-message-label", props.className);
   return <MessageDiv className={classNames} message={props.message} />;
 }
 
-/** Icon for Message */
-function HollowIcon(props: IconProps) {
+/** Icon for Message
+ * @internal
+ */
+export function HollowIcon(props: IconProps) {
   return (
     <span className="uifw-statusbar-hollow-icon">
       <Icon {...props} />
     </span>
-  );
-}
-
-/** Properties for a [[ToastMessage]] */
-interface ToastMessageProps {
-  message: StatusBarMessage;
-  toastTarget: HTMLElement | null;
-  closeMessage: (id: string) => void;
-}
-
-/** Toast Message React component */
-function ToastMessage(props: ToastMessageProps) {
-  const { id, messageDetails, severity } = props.message;
-
-  return (
-    <Toast
-      animateOutTo={props.toastTarget}
-      onAnimatedOut={() => props.closeMessage(id)}
-      timeout={messageDetails.displayTime.milliseconds}
-      content={
-        <Message
-          status={StatusBar.severityToStatus(severity)}
-          icon={
-            <HollowIcon iconSpec={MessageContainer.getIconClassName(severity, true)} />
-          }
-        >
-          <MessageLayout>
-            <MessageLabel message={messageDetails.briefMessage} className="uifw-statusbar-message-brief" />
-            {messageDetails.detailedMessage &&
-              <MessageLabel message={messageDetails.detailedMessage} className="uifw-statusbar-message-detailed" />
-            }
-          </MessageLayout>
-        </Message>
-      }
-    />
-  );
-}
-
-/** Properties for a [[StickyMessage]] */
-interface StickyMessageProps {
-  message: StatusBarMessage;
-  closeMessage: (id: string) => void;
-}
-
-/** Sticky Message React component */
-function StickyMessage(props: StickyMessageProps) {
-  const { id, messageDetails, severity } = props.message;
-  const [closing, setClosing] = React.useState(false);
-
-  const handleClose = () => {
-    setClosing(true);
-    setTimeout(() => props.closeMessage(id), 500);
-  };
-
-  const classNames = classnames(
-    "uifw-statusbar-sticky-message",
-    closing && "uifw-closing",
-  );
-
-  return (
-    <div className={classNames}>
-      <Message
-        status={StatusBar.severityToStatus(severity)}
-        icon={
-          <HollowIcon iconSpec={MessageContainer.getIconClassName(severity, true)} />
-        }
-      >
-        <MessageLayout
-          buttons={
-            <MessageButton onClick={handleClose}>
-              <Icon iconSpec="icon-close" />
-            </MessageButton>
-          }
-        >
-          <MessageLabel message={messageDetails.briefMessage} className="uifw-statusbar-message-brief" />
-          {messageDetails.detailedMessage &&
-            <MessageLabel message={messageDetails.detailedMessage} className="uifw-statusbar-message-detailed" />
-          }
-        </MessageLayout>
-      </Message>
-    </div>
   );
 }
 
