@@ -449,6 +449,7 @@ public;ViewportComponentEvents
 public;ViewportProps 
 public;ViewRotationChangeEvent 
 public;ViewRotationChangeEventArgs
+public;ViewStateProp = ViewState | (() => ViewState)
 beta;VisibleTreeNodes 
 beta;WeightEditor 
 beta;WeightPickerButton 

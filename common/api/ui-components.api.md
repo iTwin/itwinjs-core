@@ -4482,7 +4482,7 @@ export interface ViewportProps extends CommonProps {
     // @internal
     viewManagerOverride?: ViewManager;
     viewportRef?: (v: ScreenViewport) => void;
-    viewState?: ViewState;
+    viewState?: ViewStateProp;
 }
 
 // @public
@@ -4496,6 +4496,9 @@ export interface ViewRotationChangeEventArgs {
     // (undocumented)
     viewport: Viewport;
 }
+
+// @public
+export type ViewStateProp = ViewState | (() => ViewState);
 
 // @beta
 export interface VisibleTreeNodes extends Iterable<TreeModelNode | TreeModelNodePlaceholder> {

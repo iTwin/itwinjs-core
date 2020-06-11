@@ -164,6 +164,7 @@ import { ViewFlagProps } from '@bentley/imodeljs-common';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
+import { ViewStateProp } from '@bentley/ui-components';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
 import { WidgetState as WidgetState_2 } from '@bentley/ui-abstract';
 import { WidgetState as WidgetState_3 } from '@bentley/ui-ninezone';
@@ -2700,9 +2701,11 @@ export interface IModelUserInfo {
 export class IModelViewportControl extends ViewportContentControl {
     constructor(info: ConfigurableCreateInfo, options: IModelViewportControlOptions);
     // (undocumented)
+    protected _alwaysUseSuppliedViewState: boolean;
+    // (undocumented)
     protected _disableDefaultViewOverlay: boolean;
     protected getImodelConnectedViewportReactElement(): React.ReactNode;
-    protected getImodelViewportReactElement(iModelConnection: IModelConnection, viewState: ViewState): React.ReactNode;
+    protected getImodelViewportReactElement(iModelConnection: IModelConnection, viewState: ViewStateProp): React.ReactNode;
     protected getNoContentReactElement(_options: IModelViewportControlOptions): React.ReactNode;
     getReactElementForViewSelectorChange(iModelConnection: IModelConnection, _unusedViewDefinitionId: Id64String, viewState: ViewState, _name: string): React.ReactNode;
     protected _getViewOverlay: (viewport: ScreenViewport) => React.ReactNode;
@@ -2712,15 +2715,16 @@ export class IModelViewportControl extends ViewportContentControl {
     protected _iModelConnection: IModelConnection | undefined;
     get navigationAidControl(): string;
     // (undocumented)
-    protected _viewState: ViewState | undefined;
+    protected _viewState: ViewStateProp | undefined;
 }
 
 // @beta
 export interface IModelViewportControlOptions {
+    alwaysUseSuppliedViewState?: boolean;
     bgColor?: string;
     disableDefaultViewOverlay?: boolean;
     iModelConnection?: IModelConnection | (() => IModelConnection);
-    viewState?: ViewState | (() => ViewState);
+    viewState?: ViewStateProp;
 }
 
 // @internal

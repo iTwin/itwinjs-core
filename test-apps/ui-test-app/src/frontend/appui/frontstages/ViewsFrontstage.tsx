@@ -128,9 +128,51 @@ export class ViewsFrontstage extends FrontstageProvider {
     });
   }
 
+  /** Commands that opens switches the content layout */
+  private get _switchLayout1() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      label: "Horizontal Layout",
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef) {
+          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesHorizontal");
+          if (contentLayout && activeFrontstageDef.contentGroup) {
+            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+          }
+        }
+      },
+    });
+  }
+
+  private get _switchLayout2() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      label: "Vertical Layout",
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef) {
+          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesVertical");
+          if (contentLayout && activeFrontstageDef.contentGroup) {
+            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+          }
+        }
+      },
+    });
+  }
+
   private get _additionalNavigationVerticalToolbarItems() {
     return [
-      ToolbarHelper.createToolbarItemFromItemDef(200, this._viewSelectorItemDef)];
+      ToolbarHelper.createToolbarItemFromItemDef(200, this._viewSelectorItemDef),
+      ToolbarHelper.createToolbarItemFromItemDef(200,
+        new GroupItemDef({
+          label: "Layout Demos",
+          panelLabel: "Layout Demos",
+          iconSpec: "icon-placeholder",
+          items: [this._switchLayout1, this._switchLayout2],
+        }),
+      ),
+    ];
   }
 
   public get frontstage() {
@@ -423,13 +465,13 @@ class AdditionalTools {
     document.removeEventListener("mousemove", this._handleTool4Dismiss);
   }
 
-  private get _tool3Item() {
+  private get _activityMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.activityMessage", execute: async () => { await this._tool3(); },
     });
   }
 
-  private get _tool4Item() {
+  private get _pointerMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.pointerMessage", execute: () => { this._tool4(); },
     });
@@ -732,7 +774,7 @@ class AdditionalTools {
       labelKey: "SampleApp:buttons.messageDemos",
       panelLabel: "Message Demos",
       iconSpec: "icon-placeholder",
-      items: [this._tool3Item, this._tool4Item, this._outputMessageItem, this._clearMessages],
+      items: [this._activityMessageItem, this._pointerMessageItem, this._outputMessageItem, this._clearMessages],
     }),
     new GroupItemDef({
       labelKey: "SampleApp:buttons.dialogDemos",
