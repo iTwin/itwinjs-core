@@ -8,10 +8,12 @@ import * as sinon from "sinon";
 import { Rectangle } from "@bentley/ui-core";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext, PanelTarget, WidgetIdContext, WidgetTabTarget,
+  addPanelWidget, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext, PanelTarget, useDrag, WidgetIdContext,
+  WidgetTabTarget,
 } from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
 import { NineZoneProvider } from "../Providers";
+import { renderHook } from "@testing-library/react-hooks";
 
 describe("WidgetTitleBar", () => {
   const sandbox = sinon.createSandbox();
@@ -151,5 +153,26 @@ describe("WidgetTitleBar", () => {
         type: "panel",
       },
     })).should.true;
+  });
+});
+
+describe("useDrag", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should start drag action after timeout", () => {
+    const fakeTimers = sandbox.useFakeTimers();
+    const spy = sinon.stub<Parameters<typeof useDrag>[0]>();
+    const { result } = renderHook(() => useDrag(spy));
+    act(() => {
+      const instance = document.createElement("div");
+      result.current(instance);
+      fireEvent.pointerDown(instance);
+      fakeTimers.tick(300);
+    });
+    spy.calledOnce.should.true;
   });
 });

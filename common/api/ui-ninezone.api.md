@@ -2391,6 +2391,9 @@ export type TopPanelSide = "top";
 // @internal (undocumented)
 export function useDoubleClick(onDoubleClick?: () => void): [() => void];
 
+// @internal
+export function useDrag<T extends HTMLElement>(onDragStart: (initialPointerPosition: Point) => void): (instance: T | null) => void;
+
 // @internal (undocumented)
 export function useDraggedItemId<T extends DragItem>(type: T["type"]): T["id"] | undefined;
 
