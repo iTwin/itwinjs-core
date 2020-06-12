@@ -2584,7 +2584,8 @@ export class IModelExporter {
     protected get handler(): IModelExportHandler;
     registerHandler(handler: IModelExportHandler): void;
     readonly sourceDb: IModelDb;
-    }
+    wantGeometry: boolean;
+}
 
 // @beta
 export abstract class IModelExportHandler {
@@ -2820,6 +2821,7 @@ export class IModelTransformer extends IModelExportHandler {
 
 // @beta
 export interface IModelTransformOptions {
+    loadSourceGeometry?: boolean;
     noProvenance?: boolean;
     targetScopeElementId?: Id64String;
 }
