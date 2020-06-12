@@ -80,6 +80,7 @@
     "@bentley/imodeljs-common": "2.2.0-dev.13",
     "@bentley/imodeljs-i18n": "2.2.0-dev.13",
     "@bentley/imodeljs-frontend": "2.2.0-dev.13",
+    "@bentley/frontend-devtools": "2.2.0-dev.13",
     "@bentley/imodeljs-markup": "2.2.0-dev.13",
     "@bentley/imodeljs-quantity": "2.2.0-dev.13",
     "@bentley/imodeljs-backend": "2.2.0-dev.13",

@@ -41,6 +41,7 @@ import { Tool2 } from "./tools/Tool2";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
+import { FrontendDevTools } from "@bentley/frontend-devtools";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -231,6 +232,8 @@ export class SampleAppIModelApp {
     // default to showing imperial formatted units
     IModelApp.quantityFormatter.useImperialFormats = true;
     Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
+
+    await FrontendDevTools.initialize();
   }
 
   // cSpell:enable
