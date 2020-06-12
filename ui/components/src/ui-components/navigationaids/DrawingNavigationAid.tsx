@@ -738,10 +738,18 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
       const screenViewport = this.props.screenViewportOverride ? this.props.screenViewportOverride : /* istanbul ignore next */ ScreenViewport;
       const previousView = viewManager.selectedView;
       this._vp = screenViewport.create(this._canvasElement, this.props.view);
+      this.customizeViewport(this._vp);
       viewManager.addViewport(this._vp);
       viewManager.setSelectedView(previousView); // switch to original viewport
       this._update();
     }
+  }
+
+  private customizeViewport(vp: ScreenViewport): void {
+    /* istanbul ignore next */
+    if (vp.logo.style)
+      vp.logo.style.display = "none";
+    vp.viewFlags.acsTriad = false;
   }
 
   private _update = () => {
@@ -768,6 +776,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
         if (this._canvasElement && (this.props.canvasSizeOverride || /* istanbul ignore next */ (this._canvasElement.clientWidth !== 0 && this._canvasElement.clientHeight !== 0))) {
           const previousView = viewManager.selectedView;
           this._vp = screenViewport.create(this._canvasElement, this.props.view.clone());
+          this.customizeViewport(this._vp);
           viewManager.addViewport(this._vp);
           viewManager.setSelectedView(previousView); // switch to original viewport
           this._update();
