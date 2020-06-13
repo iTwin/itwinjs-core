@@ -63,6 +63,7 @@
     "ToggleSection": "Toggle Section Display",
     "AlignSection": "Align View To Section",
     "OpenSection": "Open Section View",
+    "OpenSheet": "Open Sheet View",
     "ApplyView": "Apply Spatial View"
   },
   "Error": {

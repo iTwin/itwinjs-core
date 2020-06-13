@@ -3,22 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Id64String } from "@bentley/bentleyjs-core";
 import {
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  ClipVector,
-  Transform,
-  XYZProps,
+  ClipVector, Transform, XYZProps,
 } from "@bentley/geometry-core";
 import {
-  Placement3d,
-  SectionType,
+  Placement3d, SectionType,
 } from "@bentley/imodeljs-common";
 import {
-  DrawingViewState,
-  IModelConnection,
-  SpatialViewState,
+  DrawingViewState, IModelConnection, SheetViewState, SpatialViewState,
 } from "@bentley/imodeljs-frontend";
 
 /** JSON representation of a SectionLocationState. This is an amalgamation of data from several ECClasses.
@@ -32,6 +25,7 @@ export interface SectionLocationStateProps {
   viewAttachmentId?: Id64String;
   sheetToSpatialTransform?: string; // stringified TransformProps
   sheetClip?: string; // stringified ClipVector json
+  sheetViewId?: Id64String;
 
   sectionLocationId: Id64String;
   sectionViewId: Id64String;
@@ -61,6 +55,7 @@ export class SectionLocationState {
   public readonly drawingToSpatialTransform: Transform;
   public readonly viewAttachment?: {
     id: Id64String;
+    viewId?: Id64String;
     transformToSpatial: Transform;
     clip?: ClipVector;
   };
@@ -106,6 +101,7 @@ export class SectionLocationState {
         id: props.viewAttachmentId,
         transformToSpatial: Transform.fromJSON(JSON.parse(props.sheetToSpatialTransform)),
         clip: extractClip(props.sheetClip),
+        viewId: props.sheetViewId,
       };
     }
   }
@@ -124,6 +120,19 @@ export class SectionLocationState {
     try {
       const view = await this.iModel.views.load(this.spatialViewId);
       if (view instanceof SpatialViewState)
+        return view;
+    } catch { }
+
+    return undefined;
+  }
+
+  public async tryLoadSheetView(): Promise<SheetViewState | undefined> {
+    if (undefined === this.viewAttachment || undefined === this.viewAttachment.viewId)
+      return undefined;
+
+    try {
+      const view = await this.iModel.views.load(this.viewAttachment.viewId);
+      if (view instanceof SheetViewState)
         return view;
     } catch { }
 

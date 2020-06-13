@@ -180,11 +180,13 @@ async function createMarkers(vp: ScreenViewport, extension: Extension, useModelS
       json_extract(bis.SectionDrawing.jsonProperties, '$.drawingBoundaryClip') as sheetClip,
 
       json_extract(bis.SpatialViewDefinition.jsonProperties, '$.viewDetails.clip') as clipJSON,
-      bis.ViewAttachment.ECInstanceId as viewAttachmentId
+      bis.ViewAttachment.ECInstanceId as viewAttachmentId,
+      bis.SheetViewDefinition.ECInstanceId as sheetViewId
     FROM bis.SectionDrawingLocation
     INNER JOIN bis.ViewDefinition2d on bis.SectionDrawingLocation.SectionView.Id = bis.ViewDefinition2d.ECInstanceId
     INNER JOIN bis.SectionDrawing on bis.ViewDefinition2d.BaseModel.Id = bis.SectionDrawing.ECInstanceId
     LEFT JOIN  bis.ViewAttachment on bis.ViewDefinition2d.ECInstanceId = bis.ViewAttachment.View.Id
+    LEFT JOIN bis.SheetViewDefinition on bis.SheetViewDefinition.BaseModel.Id = bis.ViewAttachment.Model.Id
     INNER JOIN bis.SpatialViewDefinition on bis.SpatialViewDefinition.ECInstanceId = bis.SectionDrawing.SpatialView.Id
     ` + where;
 
@@ -429,6 +431,9 @@ export class SectionMarkerSetDecorator {
       case "apply_view":
         this.applySpatialView(marker); // tslint:disable-line:no-floating-promises
         break;
+      case "open_sheet":
+        this.openSheet(marker); // tslint:disable-line:no-floating-promises
+        break;
     }
   }
 
@@ -478,6 +483,18 @@ export class SectionMarkerSetDecorator {
     const viewState = await marker.state.tryLoadDrawingView();
     if (viewState)
       this.viewport.changeView(viewState);
+  }
+
+  private async openSheet(marker: SectionMarker): Promise<void> {
+    if (undefined === marker.state.viewAttachment)
+      return;
+
+    const viewState = await marker.state.tryLoadSheetView();
+    if (!viewState)
+      return;
+
+    this.viewport.changeView(viewState);
+    await this.viewport.zoomToElements(marker.state.viewAttachment.id);
   }
 
   private async applySpatialView(marker: SectionMarker): Promise<void> {
