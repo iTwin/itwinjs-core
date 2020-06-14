@@ -36,6 +36,7 @@ export class BackendDefaultsPlugin {
       }),
       new FilterWarningsPlugin({ exclude: /Failed to parse source map/ }),
       new IgnoreOptionalDependenciesPlugin([
+        "debug",
         "express",
         "keyv",
         "ws",
