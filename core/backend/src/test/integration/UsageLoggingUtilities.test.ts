@@ -19,8 +19,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 //    imjs_oidc_ulas_test_redirect_uri
 //    imjs_oidc_ulas_test_scopes
 
-// TODO: Failing on Linux
-describe.skip("UsageLoggingUtilities - OIDC Token (#integration)", () => {
+describe("UsageLoggingUtilities - OIDC Token (#integration)", () => {
   const imodelJsProductId = 2686;
   let requestContext: AuthorizedBackendRequestContext;
   const defaultAuthType = IModelJsNative.AuthType.OIDC;
