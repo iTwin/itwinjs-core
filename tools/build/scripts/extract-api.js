@@ -19,6 +19,20 @@ const isCI = (process.env.TF_BUILD);
 const entryPointFileName = argv.entry;
 const ignoreMissingTags = argv.ignoreMissingTags;
 
+// Resolves the root of the Rush repo
+const resolveRoot = relativePath => {
+  // recurse until you find the "rush.json"
+  const parts = paths.appSrc.split(path.sep).reverse();
+  while (parts.length > 0) {
+    const resolved = path.join(parts.slice().reverse().join(path.sep), "rush.json");
+    if (fs.existsSync(resolved))
+      return path.join(parts.slice().reverse().join(path.sep), relativePath);
+    parts.shift();
+  }
+  process.stderr.write("Root of the Rush repository not found.  Missing a rush.json file?");
+};
+const rushCommon = resolveRoot("common");
+
 const config = {
   $schema: "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
   projectFolder: "../",
@@ -28,8 +42,8 @@ const config = {
   mainEntryPointFilePath: `${entryPointFileName}.d.ts`,
   apiReport: {
     enabled: true,
-    reportFolder: path.resolve(path.join(paths.rushCommon, "/api")),
-    reportTempFolder: path.resolve(path.join(paths.rushCommon, "/temp/api")),
+    reportFolder: path.resolve(path.join(rushCommon, "/api")),
+    reportTempFolder: path.resolve(path.join(rushCommon, "/temp/api")),
   },
   docModel: {
     enabled: false
@@ -104,8 +118,8 @@ spawn(require.resolve(".bin/api-extractor"), args).then((code) => {
 
   const extractSummaryArgs = [
     path.resolve(__dirname, "extract-api-summary.js"),
-    "--apiSignature", path.resolve(path.join(paths.rushCommon, `/api/${entryPointFileName}.api.md`)),
-    "--outDir", path.resolve(path.join(paths.rushCommon, "/api/summary")),
+    "--apiSignature", path.resolve(path.join(rushCommon, `/api/${entryPointFileName}.api.md`)),
+    "--outDir", path.resolve(path.join(rushCommon, "/api/summary")),
   ];
 
   spawn("node", extractSummaryArgs).then((code) => {
