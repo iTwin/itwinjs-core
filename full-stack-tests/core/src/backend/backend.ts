@@ -5,7 +5,9 @@
 import "./RpcImpl";
 // Sets up certa to allow a method on the frontend to get an access token
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
+import * as http from "http";
 import * as path from "path";
+import serveHandler = require("serve-handler");
 import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelJsExpressServer } from "@bentley/express-server";
@@ -47,6 +49,16 @@ async function init() {
     const server = new IModelJsExpressServer(rpcConfig.protocol);
     await server.initialize(port);
     console.log("Web backend for full-stack-tests listening on port " + port);
+
+    await new Promise((resolve) => {
+      http.createServer(async (request, response) => {
+        return serveHandler(request, response, {
+          cleanUrls: false,
+          public: "lib",
+          headers: [{ source: "*", headers: [{ key: "Access-Control-Allow-Origin", value: "*" }] }],
+        });
+      }).listen(Number(process.env.CERTA_PORT ?? 3011) + 3000, undefined, undefined, resolve);
+    });
   }
 }
 

@@ -787,6 +787,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
+      "name": "serve-handler",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "sinon",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
@@ -921,6 +925,10 @@
     {
       "name": "webpack-cli",
       "allowedCategories": [ "integration-testing" ]
+    },
+    {
+      "name": "webpack-core",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "webpack-filter-warnings-plugin",
