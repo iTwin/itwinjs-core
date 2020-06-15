@@ -276,56 +276,59 @@ steps:
   #-------
   # Code Coverage Tests
   #-------
-  - task: PythonScript@0
-    displayName: "Combine code coverage"
-    inputs:
-      workingDirectory: ${{ parameters.workingDir }}
-      scriptSource: inline
-      script: |
-        import os, argparse, shutil
-        def readXML(compName, filePath):
-          covFile = open(filePath).read()
-          pattern = 'package name="'
-          component = 'package name="'+ compName
-          covFile = covFile.replace(pattern, component)
-          outfile = open(filePath, 'w')
-          outfile.write(covFile)
-          outfile.close()
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--components", help="Semi-colon separated list of first 2 directories names e.g 'ui\framework'")
-        parser.add_argument("--output", help="Output path where xml reports will be copied")
-        args = parser.parse_args()
-        workDir = os.getcwd()
-        testing = args.components.split(';')[1]
-        print "Working directory" + (os.getcwd() + os.sep + testing)
-        # Get the list of component folders that exist.  If a folder does not exist, it is skipped.
-        components = list(filter(lambda x: '' != x and os.path.exists(workDir + os.sep + x), args.components.split(';')))
-        print components
-        output_Dir = os.path.join(args.output, "coverageXMLs")
-        if not os.path.exists(output_Dir):
-          os.makedirs(output_Dir)
-          print "*** Output directory created at: " + output_Dir
-        # Copy the reports to the respective dirs
-        postfix = os.path.join("lib", "test", "coverage", "cobertura-coverage.xml")
-        for comp in components:
-          print "Processing component: " + comp
-          src =  workDir + os.sep + comp + os.sep + postfix
-          if not os.path.exists(src):
-            print "*** Source path for xml not exist: " + src
-            continue
-          dstFileDir = output_Dir + os.sep + comp
-          if not os.path.exists(dstFileDir):
-            print "*** Creating destination folder, '" + dstFileDir + "'..."
-            os.makedirs(dstFileDir)
-          shutil.copy(src, dstFileDir)
-          print "Copied: " + src
-          filePath = os.path.join(dstFileDir, "cobertura-coverage.xml")
-          readXML(comp, filePath)
-      arguments: --component '\ui\components\;\ui\core\;\ui\framework\;\ui\ninezone\;\core\backend\;\core\frontend\;\core\geometry\;\core\bentley\;\core\ecschema-metadata\;\core\common\;\core\clients\;\core\clients-backend\;\presentation\backend\;\presentation\frontend\;\presentation\common\;\presentation\components\;\presentation\testing\' --output '$(Build.BinariesDirectory)'
-    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
+  # - task: PythonScript@0
+  #   displayName: "Combine code coverage"
+  #   inputs:
+  #     workingDirectory: ${{ parameters.workingDir }}
+  #     scriptSource: inline
+  #     script: |
+  #       import os, argparse, shutil
+  #       def readXML(compName, filePath):
+  #         covFile = open(filePath).read()
+  #         pattern = 'package name="'
+  #         component = 'package name="'+ compName
+  #         covFile = covFile.replace(pattern, component)
+  #         outfile = open(filePath, 'w')
+  #         outfile.write(covFile)
+  #         outfile.close()
+  #       parser = argparse.ArgumentParser()
+  #       parser.add_argument("--components", help="Semi-colon separated list of first 2 directories names e.g 'ui\framework'")
+  #       parser.add_argument("--output", help="Output path where xml reports will be copied")
+  #       args = parser.parse_args()
+  #       workDir = os.getcwd()
+  #       testing = args.components.split(';')[1]
+  #       print ("Working directory" + (os.getcwd() + os.sep + testing))
+
+  #       # Get the list of component folders that exist.  If a folder does not exist, it is skipped.
+  #       components = list(filter(lambda x: '' != x and os.path.exists(os.path.normpath(os.path.join(workDir, x))), args.components.split(';')))
+  #       print (components)
+  #       output_Dir = os.path.join(args.output, "coverageXMLs")
+
+  #       if not os.path.exists(output_Dir):
+  #         os.makedirs(output_Dir)
+  #         print ("*** Output directory created at: " + output_Dir)
+
+  #       # Copy the reports to the respective dirs
+  #       postfix = os.path.join("lib", "test", "coverage", "cobertura-coverage.xml")
+  #       for comp in components:
+  #         print ("Processing component: " + comp)
+  #         src =  workDir + os.sep + comp + os.sep + postfix
+  #         if not os.path.exists(src):
+  #           print ("*** Source path for xml not exist: " + src)
+  #           continue
+  #         dstFileDir = output_Dir + os.sep + comp
+  #         if not os.path.exists(dstFileDir):
+  #           print ("*** Creating destination folder, '" + dstFileDir + "'...")
+  #           os.makedirs(dstFileDir)
+  #         shutil.copy(src, dstFileDir)
+  #         print ("Copied: " + src)
+  #         filePath = os.path.join(dstFileDir, "cobertura-coverage.xml")
+  #         readXML(comp, filePath)
+  #     arguments: --component 'ui/components/;\ui\core\;\ui\framework\;\ui\ninezone\;\core\backend\;\core\frontend\;\core\geometry\;\core\bentley\;\core\ecschema-metadata\;\core\common\;\core\clients\;\core\clients-backend\;\presentation\backend\;\presentation\frontend\;\presentation\common\;\presentation\components\;\presentation\testing\' --output '$(Build.BinariesDirectory)'
+  #   condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) #, eq(variables['Agent.OS'], 'Windows_NT'))
   - task: PublishCodeCoverageResults@1
     displayName: "Publish code coverage"
     inputs:
       codeCoverageTool: Cobertura
-      summaryFileLocation: $(Build.BinariesDirectory)\coverageXMLs\**\cobertura-coverage.xml
-    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
+      summaryFileLocation: $(Build.SourcesDirectory)\**\**\lib\test\coverage\cobertura-coverage.xml
+    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual')) # , eq(variables['Agent.OS'], 'Windows_NT'))

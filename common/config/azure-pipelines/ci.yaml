@@ -10,7 +10,7 @@ jobs:
       matrix:
         "Windows - Node 10":
           NodeVersion: 10
-          OS: windows-latest
+          OS: vs2017-win2016
         "Linux - Node 10":
           NodeVersion: 10
           OS: ubuntu-latest
@@ -19,7 +19,7 @@ jobs:
           OS: macOS-latest
         "Windows - Node 12":
           NodeVersion: 12
-          OS: windows-latest
+          OS: vs2017-win2016
         "Linux - Node 12":
           NodeVersion: 12
           OS: ubuntu-latest
@@ -27,6 +27,7 @@ jobs:
           NodeVersion: 12
           OS: macOS-latest
 
+    timeoutInMinutes: 90
     pool:
       vmImage: $(OS)
     steps:
