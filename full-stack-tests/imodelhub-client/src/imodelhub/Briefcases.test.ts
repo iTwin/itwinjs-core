@@ -76,6 +76,7 @@ describe("iModelHub BriefcaseHandler", () => {
     this.enableTimeouts(false);
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
+    (requestContext as any).activityId = "iModelHub BriefcaseHandler";
 
     await utils.createIModel(requestContext, imodelName);
     imodelId = await utils.getIModelId(requestContext, imodelName);

@@ -220,6 +220,8 @@ describe("iModelHub iModelsHandler", () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
+    (requestContext as any).activityId = "iModelHub iModelsHandler";
+
     projectId = await utils.getProjectId(requestContext, undefined);
     await utils.createIModel(requestContext, imodelName);
     imodelId = await utils.getIModelId(requestContext, imodelName);
