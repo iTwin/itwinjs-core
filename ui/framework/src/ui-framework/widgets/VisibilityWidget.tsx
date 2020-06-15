@@ -16,6 +16,7 @@ import { ContextMenu, ContextMenuItem, SelectionMode } from "@bentley/ui-compone
 import { ScrollPositionMaintainer } from "@bentley/ui-core";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { CategoryTreeWithSearchBox } from "../imodel-components/category-tree/CategoriesTreeWithSearchBox";
+import { ClassGroupingOption } from "../imodel-components/Common";
 import { ModelsTree, ModelsTreeSelectionPredicate } from "../imodel-components/models-tree/ModelsTree";
 import { SpatialContainmentTree } from "../imodel-components/spatial-tree/SpatialContainmentTree";
 import { connectIModelConnection } from "../redux/connectIModel";
@@ -40,6 +41,10 @@ export interface VisibilityComponentConfig {
   modelsTree?: {
     selectionMode?: SelectionMode;
     selectionPredicate?: ModelsTreeSelectionPredicate;
+    enableElementsClassGrouping?: ClassGroupingOption;
+  };
+  spatialContainmentTree?: {
+    enableElementsClassGrouping?: ClassGroupingOption;
   };
 }
 
@@ -145,10 +150,11 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
   }
 
   private _renderSpatialTree() {
-    const { iModelConnection } = this.props;
+    const { iModelConnection, config } = this.props;
     return <SpatialContainmentTree
       iModel={iModelConnection}
       enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.SpatialContainment)}
+      {...config?.spatialContainmentTree}
     />;
   }
 

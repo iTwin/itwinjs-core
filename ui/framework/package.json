@@ -137,8 +137,8 @@
   ],
   "dependencies": {
     "@bentley/context-registry-client": "2.2.0-dev.16",
-    "@bentley/icons-generic": "^1.0.5",
-    "@bentley/icons-generic-webfont": "^1.0.5",
+    "@bentley/icons-generic": "^1.0.12",
+    "@bentley/icons-generic-webfont": "^1.0.12",
     "@bentley/presentation-components": "2.2.0-dev.16",
     "classnames": "^2.2.5",
     "immer": "^6.0.3",

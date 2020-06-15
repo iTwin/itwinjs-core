@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Introduce an option to group elements by class in `ModelsTree` and `SpatialContainmentTree`. Also allow specifying the option for both trees when creating `VisibilityWidget`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "grigas.petraitis@bentley.com"
+}

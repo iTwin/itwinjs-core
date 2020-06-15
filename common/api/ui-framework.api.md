@@ -745,6 +745,13 @@ export interface ChangeSetInfo {
 }
 
 // @beta
+export enum ClassGroupingOption {
+    No = 0,
+    Yes = 1,
+    YesWithCounts = 2
+}
+
+// @beta
 export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element;
 
 // @public
@@ -3495,6 +3502,8 @@ export enum ModelsTreeNodeType {
     // (undocumented)
     Element = 4,
     // (undocumented)
+    Grouping = 5,
+    // (undocumented)
     Model = 2,
     // (undocumented)
     Subject = 1,
@@ -3507,6 +3516,8 @@ export interface ModelsTreeProps {
     activeView?: Viewport;
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
+    // @beta
+    enableElementsClassGrouping?: ClassGroupingOption;
     enablePreloading?: boolean;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
@@ -3996,11 +4007,17 @@ export interface RotationData {
 // @internal
 export const RULESET_CATEGORIES: Ruleset;
 
-// @internal
+// @internal (undocumented)
 export const RULESET_MODELS: Ruleset;
 
-// @internal
+// @internal (undocumented)
+export const RULESET_MODELS_GROUPED_BY_CLASS: Ruleset;
+
+// @internal (undocumented)
 export const RULESET_SPATIAL_BREAKDOWN: Ruleset;
+
+// @internal (undocumented)
+export const RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset;
 
 // @alpha
 export const SafeAreaContext: React.Context<SafeAreaInsets>;
@@ -4610,7 +4627,10 @@ export function SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.
 
 // @public
 export interface SpatialContainmentTreeProps {
+    // @internal
     dataProvider?: IPresentationTreeDataProvider;
+    // @beta
+    enableElementsClassGrouping?: ClassGroupingOption;
     enablePreloading?: boolean;
     // (undocumented)
     iModel: IModelConnection;
@@ -6002,6 +6022,11 @@ export interface VisibilityComponentConfig {
     modelsTree?: {
         selectionMode?: SelectionMode;
         selectionPredicate?: ModelsTreeSelectionPredicate;
+        enableElementsClassGrouping?: ClassGroupingOption;
+    };
+    // (undocumented)
+    spatialContainmentTree?: {
+        enableElementsClassGrouping?: ClassGroupingOption;
     };
 }
 
@@ -6042,6 +6067,8 @@ export class VisibilityHandler implements IVisibilityHandler {
 export interface VisibilityHandlerProps {
     // (undocumented)
     onVisibilityChange?: () => void;
+    // (undocumented)
+    rulesetId: string;
     // (undocumented)
     viewport: Viewport;
 }

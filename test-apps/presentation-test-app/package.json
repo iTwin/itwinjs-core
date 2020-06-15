@@ -33,7 +33,7 @@
     "@bentley/geometry-core": "2.2.0-dev.16",
     "@bentley/electron-manager": "2.2.0-dev.16",
     "@bentley/express-server": "2.2.0-dev.16",
-    "@bentley/icons-generic-webfont": "^1.0.5",
+    "@bentley/icons-generic-webfont": "^1.0.12",
     "@bentley/imodeljs-common": "2.2.0-dev.16",
     "@bentley/imodeljs-backend": "2.2.0-dev.16",
     "@bentley/imodeljs-frontend": "2.2.0-dev.16",

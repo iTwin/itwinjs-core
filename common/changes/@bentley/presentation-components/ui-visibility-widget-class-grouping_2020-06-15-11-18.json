@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "BREAKING CHANGE: Change `PresentationTreeNodeLoaderProps` to derive from `PresentationTreeDataProviderProps`. This changes paging attribute name from `pageSize` to `pagingSize`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}

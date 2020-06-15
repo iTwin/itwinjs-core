@@ -69,6 +69,7 @@ alpha;CardSelectedEventArgs
 public;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
 internal;ChangeSetInfo
+beta;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 public;COLOR_THEME_DEFAULT = ColorTheme.Light
 public;ColorTheme
@@ -396,7 +397,9 @@ beta;ReviewToolWidgetProps
 internal;RotationData
 internal;RULESET_CATEGORIES: Ruleset
 internal;RULESET_MODELS: Ruleset
+internal;RULESET_MODELS_GROUPED_BY_CLASS: Ruleset
 internal;RULESET_SPATIAL_BREAKDOWN: Ruleset
+internal;RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset
 alpha;SafeAreaContext: React.Context
 public;SavedView
 public;SavedViewLayout

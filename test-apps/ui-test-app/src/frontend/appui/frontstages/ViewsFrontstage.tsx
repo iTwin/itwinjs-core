@@ -1,8 +1,8 @@
+import * as React from "react";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
@@ -15,12 +15,13 @@ import {
 import { SelectionMode } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
 import {
-  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager,
-  ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
-  CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef, HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler,
-  HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager, ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType,
-  SavedViewLayout, SavedViewLayoutProps, StagePanel, StagePanelHeader, StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework,
-  VisibilityComponentHierarchy, VisibilityWidget, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
+  BasicNavigationWidget, BasicToolWidget, ClassGroupingOption, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef,
+  ContentLayoutManager, ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager,
+  CursorUpdatedEventArgs, CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef,
+  HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
+  ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel,
+  StagePanelHeader, StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework, VisibilityComponentHierarchy, VisibilityWidget, Widget,
+  WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
 // SVG Support - SvgPath or SvgSprite
@@ -257,14 +258,30 @@ export class ViewsFrontstage extends FrontstageProvider {
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
                 applicationData={{
-                  iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
-                  config: { modelsTree: { selectionMode: SelectionMode.Extended, selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element } },
+                  iModelConnection: this.iModelConnection,
+                  enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
+                  config: {
+                    modelsTree: {
+                      selectionMode: SelectionMode.Extended,
+                      selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element,
+                    },
+                  },
                 }}
                 fillZone={true} />,
               <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
                 applicationData={{
-                  iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
-                  config: { modelsTree: { selectionMode: SelectionMode.Extended, selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element } },
+                  iModelConnection: this.iModelConnection,
+                  enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
+                  config: {
+                    modelsTree: {
+                      selectionMode: SelectionMode.Extended,
+                      selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Element || type === ModelsTreeNodeType.Grouping),
+                      enableElementsClassGrouping: ClassGroupingOption.YesWithCounts,
+                    },
+                    spatialContainmentTree: {
+                      enableElementsClassGrouping: ClassGroupingOption.YesWithCounts,
+                    },
+                  },
                 }}
                 fillZone={true} />,
             ]}

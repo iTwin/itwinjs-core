@@ -221,8 +221,8 @@
       },
       "element": {
         "modelNotDisplayed": "Can't control element display if model is not displayed",
-        "hiddenThroughNeverDrawnList": "Element in \"never drawn\" list",
-        "displayedThroughAlwaysDrawnList": "Element in \"always drawn\" list",
+        "hiddenThroughNeverDrawnList": "Element(s) in \"never drawn\" list",
+        "displayedThroughAlwaysDrawnList": "Element(s) in \"always drawn\" list",
         "hiddenDueToOtherElementsExclusivelyAlwaysDrawn": "Other elements in \"exclusively always drawn\" list",
         "hiddenThroughCategory": "Category not displayed"
       }

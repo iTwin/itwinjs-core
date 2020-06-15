@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
-  "id": "VisibilityTree",
+  "id": "VisibilityWidget.ModelsTree",
   "supportedSchemas": {
     "schemaNames": [
       "BisCore"
@@ -319,20 +319,16 @@
       "specifications": [
         {
           "specType": "ContentRelatedInstances",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementOwnsChildElements"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "Element"
-            ]
-          },
-          "isRecursive": true
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ElementOwnsChildElements"
+              },
+              "direction": "Forward",
+              "count": "*"
+            }
+          ]
         }
       ]
     }

@@ -1,6 +1,6 @@
 {
-  "$schema": "../../../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
-  "id": "ui-framework/ModelsTree",
+  "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
+  "id": "VisibilityWidget.ModelsTree-GroupedByClass",
   "supportedSchemas": {
     "schemaNames": [
       "BisCore"
@@ -246,7 +246,7 @@
             }
           ],
           "instanceFilter": "this.Model.Id = parent.parent.ECInstanceId ANDALSO this.Parent = NULL",
-          "groupByClass": false,
+          "groupByClass": true,
           "groupByLabel": false
         }
       ],
@@ -279,7 +279,7 @@
               }
             }
           ],
-          "groupByClass": false,
+          "groupByClass": true,
           "groupByLabel": false
         }
       ],
@@ -295,23 +295,28 @@
     },
     {
       "ruleType": "ImageIdOverride",
-      "condition": "ThisNode.IsOfClass(\"Subject\", \"BisCore\")",
+      "condition": "ThisNode.IsInstanceNode ANDALSO ThisNode.IsOfClass(\"Subject\", \"BisCore\")",
       "imageIdExpression": "IIF(this.Parent.Id = NULL, \"icon-imodel-hollow-2\", \"icon-folder\")"
     },
     {
       "ruleType": "ImageIdOverride",
-      "condition": "ThisNode.IsOfClass(\"Model\", \"BisCore\")",
+      "condition": "ThisNode.IsInstanceNode ANDALSO ThisNode.IsOfClass(\"Model\", \"BisCore\")",
       "imageIdExpression": "\"icon-model\""
     },
     {
       "ruleType": "ImageIdOverride",
-      "condition": "ThisNode.IsOfClass(\"Category\", \"BisCore\")",
+      "condition": "ThisNode.IsInstanceNode ANDALSO ThisNode.IsOfClass(\"Category\", \"BisCore\")",
       "imageIdExpression": "\"icon-layers\""
     },
     {
       "ruleType": "ImageIdOverride",
-      "condition": "ThisNode.IsOfClass(\"Element\", \"BisCore\")",
+      "condition": "ThisNode.IsInstanceNode ANDALSO ThisNode.IsOfClass(\"Element\", \"BisCore\")",
       "imageIdExpression": "\"icon-item\""
+    },
+    {
+      "ruleType": "ImageIdOverride",
+      "condition": "ThisNode.IsClassGroupingNode",
+      "imageIdExpression": "\"icon-ec-class\""
     },
     {
       "ruleType": "Content",
