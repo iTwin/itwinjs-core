@@ -3326,6 +3326,8 @@ export class MessageManager {
     static getIconType(details: NotifyMessageDetailsType): MessageBoxIconType;
     static getSeverity(details: NotifyMessageDetailsType): MessageSeverity;
     static hideInputFieldMessage(): void;
+    static get maxDisplayedStickyMessages(): number;
+    static set maxDisplayedStickyMessages(max: number);
     static get messages(): Readonly<NotifyMessageDetailsType[]>;
     static readonly onActivityMessageCancelledEvent: ActivityMessageCancelledEvent;
     static readonly onActivityMessageUpdatedEvent: ActivityMessageUpdatedEvent;

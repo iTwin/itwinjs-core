@@ -6,6 +6,7 @@
  * @module StatusBar
  */
 
+import "./StickyMessage.scss";
 import * as React from "react";
 import classnames from "classnames";
 import { Icon, MessageContainer, MessageSeverity } from "@bentley/ui-core";
@@ -50,7 +51,7 @@ export function StickyMessage(props: StickyMessageProps) {
       >
         <MessageLayout
           buttons={
-            <MessageButton onClick={handleClose}>
+            <MessageButton onClick={handleClose} className="uifw-statusbar-sticky-close">
               <Icon iconSpec="icon-close" />
             </MessageButton>
           }

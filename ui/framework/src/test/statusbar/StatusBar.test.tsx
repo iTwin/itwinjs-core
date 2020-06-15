@@ -191,6 +191,42 @@ describe("StatusBar", () => {
     wrapper.unmount();
   });
 
+  it("StatusBar should render maximum of 3 Sticky messages", async () => {
+    MessageManager.maxDisplayedStickyMessages = 3;
+
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const details1 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 1.", undefined, OutputMessageType.Sticky);
+    notifications.outputMessage(details1);
+    const details2 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 2.", undefined, OutputMessageType.Sticky);
+    notifications.outputMessage(details2);
+    const details3 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 3.", undefined, OutputMessageType.Sticky);
+    notifications.outputMessage(details3);
+    wrapper.update();
+
+    expect(wrapper.find(Message).length).to.eq(3);
+
+    const details4 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 4.", undefined, OutputMessageType.Sticky);
+    notifications.outputMessage(details4);
+    wrapper.update();
+
+    expect(wrapper.find(Message).length).to.eq(3);
+
+    wrapper.unmount();
+  });
+
+  it("StatusBar should not render a Pointer message", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Pointer);
+    notifications.outputMessage(details);
+    wrapper.update();
+
+    expect(wrapper.find(Message).length).to.eq(0);
+
+    wrapper.unmount();
+  });
+
   it("StatusBar should clear messages", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 

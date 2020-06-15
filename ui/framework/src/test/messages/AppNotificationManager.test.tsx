@@ -90,6 +90,15 @@ describe("AppNotificationManager", () => {
     expect(spyMethod3.calledOnce).to.be.true;
   });
 
+  it("outputMessage with InputField but without setInputFieldTypeDetails", () => {
+    const spyMethod = sinon.spy(MessageManager, "addMessage");
+    const spyMethod2 = sinon.spy(MessageManager, "displayInputFieldMessage");
+    const details = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.", "A detailed message.", OutputMessageType.InputField);
+    notifications.outputMessage(details);
+    expect(spyMethod.calledOnce).to.be.true;
+    expect(spyMethod2.called).to.be.false;
+  });
+
   it("openMessageBox", async () => {
     const wrapper = mount(<ModalDialogRenderer />);
 

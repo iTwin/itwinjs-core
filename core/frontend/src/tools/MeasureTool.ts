@@ -342,7 +342,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (undefined === this._totalDistanceMarker)
       return;
     const briefMsg = CoreTools.translate(this._acceptedSegments.length > 1 ? "Measure.Labels.CumulativeDistance" : "Measure.Labels.Distance") + ": " + this._totalDistanceMarker.label;
-    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.InputField);
+    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.Sticky);
     IModelApp.notifications.outputMessage(msgDetail);
   }
 
@@ -671,7 +671,7 @@ export class MeasureLocationTool extends PrimitiveTool {
     const briefMsg = this._acceptedLocations[this._acceptedLocations.length - 1].title;
     if (undefined === briefMsg)
       return;
-    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.InputField);
+    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.Sticky);
     IModelApp.notifications.outputMessage(msgDetail);
   }
 
@@ -961,7 +961,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     if (undefined === this._marker)
       return;
     const briefMsg = CoreTools.translate("Measure.Labels.Area") + ": " + this._marker.label;
-    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.InputField);
+    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.Sticky);
     IModelApp.notifications.outputMessage(msgDetail);
   }
 
@@ -1144,7 +1144,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
         return;
     }
     const briefMsg = CoreTools.translate(label) + ": " + this._totalMarker.label;
-    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.InputField);
+    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.Sticky);
     IModelApp.notifications.outputMessage(msgDetail);
   }
 

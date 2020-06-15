@@ -53,6 +53,15 @@ class StatusBarMessageManager {
     this._messages = messages;
 
     this._messageId++;
+
+    /** Remove Sticky messages beyond the max displayed */
+    const stickyMessages = this._messages.filter((message) => message.messageDetails.msgType === OutputMessageType.Sticky);
+    if (stickyMessages.length > MessageManager.maxDisplayedStickyMessages) {
+      const removeMessages = stickyMessages.slice(MessageManager.maxDisplayedStickyMessages);
+      for (const removeMessage of removeMessages) {
+        this.remove(removeMessage.id);
+      }
+    }
   }
 
   public remove(id: string): boolean {
@@ -237,7 +246,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
                           closeMessage={this._closeMessage} toastTarget={this.state.toastTarget} />
                       </li>
                     );
-                  } else {
+                  } else if (message.messageDetails.msgType === OutputMessageType.Sticky) {
                     messageNode = (
                       <li key={message.id}>
                         <StickyMessage id={message.id} messageDetails={message.messageDetails} severity={message.severity}
