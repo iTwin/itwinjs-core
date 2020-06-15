@@ -9,7 +9,6 @@ import { ActionButton, GroupButton } from "@bentley/ui-abstract";
 import { ToolbarItem, ToolbarWithOverflow } from "@bentley/ui-components";
 import { Point } from "@bentley/ui-core";
 import {
-  assert,
   NineZone,
   addPanelWidget,
   addTab,
@@ -361,15 +360,27 @@ export function WidgetContent() {
   const scrollPosition = React.useRef(new Point());
   const [state, setState] = React.useState(false);
   const onSave = React.useCallback(() => {
-    assert(scrollViewRef.current);
+    if (!scrollViewRef.current)
+      return;
     scrollPosition.current = new Point(scrollViewRef.current.scrollLeft, scrollViewRef.current.scrollTop);
   }, []);
   const onRestore = React.useCallback(() => {
-    assert(scrollViewRef.current);
+    if (!scrollViewRef.current)
+      return;
     scrollViewRef.current.scrollLeft = scrollPosition.current.x;
     scrollViewRef.current.scrollTop = scrollPosition.current.y;
   }, []);
   useTransientState(onSave, onRestore);
+  if (tabId === "centerLeft_1") {
+    return (
+      <div className="nzdemo-centerLeft_1">
+        <h2>Tab={tabId}</h2>
+        <div className="nzdemo-block">Block 1</div>
+        <div className="nzdemo-block">Block 2</div>
+        <div className="nzdemo-block">Block 3</div>
+      </div>
+    );
+  }
   return (
     <ScrollableWidgetContent>
       <h2>Tab={tabId}</h2>

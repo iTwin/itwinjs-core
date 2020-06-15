@@ -116,6 +116,8 @@ export class FrontstageDef {
   /** @internal */
   public get nineZoneState(): NineZoneState | undefined { return this._nineZoneState; }
   public set nineZoneState(state: NineZoneState | undefined) {
+    if (this._nineZoneState === state)
+      return;
     this._nineZoneState = state;
     FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
       frontstageDef: this,

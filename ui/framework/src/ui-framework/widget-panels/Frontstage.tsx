@@ -242,21 +242,13 @@ export function addPanelWidgets(
         break;
       }
       case "top": {
-        const widgets = [
-          ...(frontstageDef.topPanel?.widgetDefs || []),
-          ...(frontstageDef.topMostPanel?.widgetDefs || []), // tslint:disable-line: deprecation
-        ];
-        state = addWidgets(state, widgets, side, "topStart");
-        state = addWidgets(state, widgets, side, "topEnd");
+        state = addWidgets(state, frontstageDef.topPanel?.widgetDefs || [], side, "topStart");
+        state = addWidgets(state, frontstageDef.topMostPanel?.widgetDefs || [], side, "topEnd"); // tslint:disable-line: deprecation
         break;
       }
       case "bottom": {
-        const widgets = [
-          ...(frontstageDef.bottomPanel?.widgetDefs || []),
-          ...(frontstageDef.bottomMostPanel?.widgetDefs || []), // tslint:disable-line: deprecation
-        ];
-        state = addWidgets(state, widgets, side, "bottomStart");
-        state = addWidgets(state, widgets, side, "bottomEnd");
+        state = addWidgets(state, frontstageDef.bottomPanel?.widgetDefs || [], side, "bottomStart");
+        state = addWidgets(state, frontstageDef.bottomMostPanel?.widgetDefs || [], side, "bottomEnd"); // tslint:disable-line: deprecation
         break;
       }
     }
