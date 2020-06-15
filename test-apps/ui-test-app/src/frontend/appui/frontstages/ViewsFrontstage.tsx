@@ -10,7 +10,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import {
-  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, StagePanelLocation, ToolbarItemUtilities, WidgetState,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, StagePanelLocation, StageUsage, ToolbarItemUtilities, WidgetState,
 } from "@bentley/ui-abstract";
 import { SelectionMode } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
@@ -200,8 +200,8 @@ export class ViewsFrontstage extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
-        usage="MyUsage"
-        version={3} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
+        usage={StageUsage.General}
+        version={3.1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
         contentManipulationTools={
           < Zone
             widgets={
