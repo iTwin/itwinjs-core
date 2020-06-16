@@ -4609,9 +4609,7 @@ export abstract class MapTilingScheme {
     cartographicToFraction(latitudeRadians: number, longitudeRadians: number, result: Point2d): Point2d;
     cartographicToTileXY(carto: Cartographic, level: number, result?: Point2d): Point2d;
     // (undocumented)
-    computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection): Transform;
-    // (undocumented)
-    ecefToPixelFraction(point: Point3d): Point3d;
+    computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection, applyTerrain: boolean): Transform;
     fractionToCartographic(xFraction: number, yFraction: number, result: Cartographic, height?: number): Cartographic;
     getNumberOfXTilesAtLevel(level: number): number;
     getNumberOfYTilesAtLevel(level: number): number;
