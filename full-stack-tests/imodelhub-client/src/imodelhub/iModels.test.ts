@@ -222,7 +222,7 @@ describe("iModelHub iModelsHandler", () => {
 
     (requestContext as any).activityId = "iModelHub iModelsHandler";
 
-    projectId = await utils.getProjectId(requestContext, undefined);
+    projectId = await utils.getProjectId(requestContext, "iModelJsTest");
     await utils.createIModel(requestContext, imodelName);
     imodelId = await utils.getIModelId(requestContext, imodelName);
     iModelClient = utils.getDefaultClient();
