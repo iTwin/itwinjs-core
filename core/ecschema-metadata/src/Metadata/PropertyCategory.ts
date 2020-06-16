@@ -49,4 +49,20 @@ export class PropertyCategory extends SchemaItem {
   public async fromJSON(propertyCategoryProps: PropertyCategoryProps) {
     this.fromJSONSync(propertyCategoryProps);
   }
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
+  protected setPriority(priority: number) {
+    this._priority = priority;
+  }
+}
+
+/**
+ * @internal
+ * An abstract class used for schema editing.
+ */
+export abstract class MutablePropertyCategory extends PropertyCategory {
+  public abstract setPriority(priority: number): void;
+  public abstract setDisplayLabel(displayLabel: string): void;
 }

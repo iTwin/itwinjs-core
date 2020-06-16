@@ -221,6 +221,7 @@ export abstract class MutableEntityClass extends EntityClass {
   public abstract addMixin(mixin: Mixin): any;
   public abstract async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
   public abstract createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
+  public abstract setDisplayLabel(displayLabel: string): void;
 }
 
 /** @internal */
