@@ -13,6 +13,7 @@ import { HierarchyRequestOptions, NodeKey, NodePathElement, Ruleset } from "@ben
 import { Presentation } from "@bentley/presentation-frontend";
 import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@bentley/ui-components";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
+import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 import { CreateTreeNodeItemProps, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY } from "./Utils";
 
@@ -121,7 +122,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     if (undefined !== pageOptions && pageOptions.size !== this.pagingSize) {
       const msg = `PresentationTreeDataProvider.pagingSize doesn't match pageOptions in PresentationTreeDataProvider.getNodes call.
         Make sure you set PresentationTreeDataProvider.pagingSize to avoid excessive backend requests.`;
-      Logger.logWarning("Presentation.Components", msg);
+      Logger.logWarning(PresentationComponentsLoggerCategory.Hierarchy, msg);
     }
 
     return (await this._getNodesAndCount(parentNode, pageOptions)).nodes;

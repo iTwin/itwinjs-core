@@ -19,6 +19,14 @@ export {
 export { IFavoritePropertiesStorage } from "./presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 
 /**
+ * @module Logging
+ *
+ * @docs-group-description Logging
+ * Types related to logging in this package.
+ */
+export * from "./presentation-frontend/FrontendLoggerCategory";
+
+/**
  * @module UnifiedSelection
  *
  * @docs-group-description UnifiedSelection

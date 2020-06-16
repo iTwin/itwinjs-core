@@ -16,6 +16,7 @@ import {
   PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority,
   Ruleset, RulesetVariable, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
+import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import { createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
@@ -452,7 +453,7 @@ export class PresentationManager {
     const params = this.createRequestParams(NativePlatformRequestTypes.LoadHierarchy, options);
     const start = new Date();
     await this.request<void>(requestContext, requestOptions.imodel, params);
-    Logger.logInfo("ECPresentation.Node", `Loading full hierarchy for `
+    Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Loading full hierarchy for `
       + `iModel "${requestOptions.imodel.iModelId}" and ruleset "${options.rulesetId}" `
       + `completed in ${((new Date()).getTime() - start.getTime()) / 1000} s.`);
   }

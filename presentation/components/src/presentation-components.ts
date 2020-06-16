@@ -19,6 +19,14 @@ export { DataProvidersFactory, DataProvidersFactoryProps } from "./presentation-
 export { useRulesetRegistration } from "./presentation-components/hooks/UseRulesetRegistration";
 
 /**
+ * @module Logging
+ *
+ * @docs-group-description Logging
+ * Types related to logging in this package.
+ */
+export * from "./presentation-components/ComponentsLoggerCategory";
+
+/**
  * @module PropertyGrid
  *
  * @docs-group-description PropertyGrid

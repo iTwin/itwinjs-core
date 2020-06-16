@@ -946,7 +946,7 @@ export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> {
 // @public
 export type LabelRpcRequestOptions = PresentationRpcRequestOptions<LabelRequestOptions<any>>;
 
-// @public
+// @public @deprecated
 export enum LoggingNamespaces {
     // (undocumented)
     ECObjects = "ECObjects",

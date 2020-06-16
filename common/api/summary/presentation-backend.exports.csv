@@ -2,6 +2,8 @@ sep=;
 Release Tag;API Item
 beta;DuplicateRulesetHandlingStrategy
 public;Presentation
+beta;PresentationBackendLoggerCategory
+beta;PresentationBackendNativeLoggerCategory
 public;PresentationManager
 public;PresentationManagerMode
 public;PresentationManagerProps

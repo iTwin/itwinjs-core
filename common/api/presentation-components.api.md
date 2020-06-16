@@ -223,6 +223,14 @@ export interface IUnifiedSelectionComponent {
     readonly selectionHandler?: SelectionHandler;
 }
 
+// @beta
+export enum PresentationComponentsLoggerCategory {
+    Content = "presentation-components.Content",
+    Hierarchy = "presentation-components.Hierarchy",
+    // (undocumented)
+    Package = "presentation-components"
+}
+
 // @public
 export class PresentationLabelsProvider implements IPresentationLabelsProvider {
     constructor(props: PresentationLabelsProviderProps);

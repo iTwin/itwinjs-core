@@ -23,6 +23,7 @@ public;IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataP
 public;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider &
 public;IPresentationTreeDataProvider 
 public;IUnifiedSelectionComponent
+beta;PresentationComponentsLoggerCategory
 public;PresentationLabelsProvider 
 public;PresentationLabelsProviderProps
 public;PresentationPropertyDataProvider 
