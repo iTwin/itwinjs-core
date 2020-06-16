@@ -570,12 +570,20 @@ describe("getWidgetId", () => {
     getWidgetId("right", "end").should.eq("rightEnd");
   });
 
-  it("should return 'top'", () => {
+  it("should return 'topStart'", () => {
     getWidgetId("top", "start").should.eq("topStart");
   });
 
-  it("should return 'bottom'", () => {
+  it("should return 'topEnd'", () => {
+    getWidgetId("top", "end").should.eq("topEnd");
+  });
+
+  it("should return 'bottomStart'", () => {
     getWidgetId("bottom", "start").should.eq("bottomStart");
+  });
+
+  it("should return 'bottomEnd'", () => {
+    getWidgetId("bottom", "end").should.eq("bottomEnd");
   });
 });
 
