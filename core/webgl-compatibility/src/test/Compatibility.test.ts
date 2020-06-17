@@ -74,9 +74,8 @@ describe("Render Compatibility", () => {
     const compatibility = queryRenderCompatibility(false, createContext);
     expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
     expect(compatibility.missingRequiredFeatures.length).to.equal(0);
-    expect(compatibility.missingOptionalFeatures.length).to.equal(2);
+    expect(compatibility.missingOptionalFeatures.length).to.equal(1);
     expect(compatibility.missingOptionalFeatures[0]).to.equal("fragment depth");
-    expect(compatibility.missingOptionalFeatures[1]).to.equal("standard derivatives");
     expect(compatibility.contextErrorMessage).to.be.undefined;
     overriddenFunctions.restore();
   });

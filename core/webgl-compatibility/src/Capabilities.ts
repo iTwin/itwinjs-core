@@ -176,6 +176,8 @@ export class Capabilities {
       features.push(WebGLFeature.MinimalTextureUnits);
     if (this.supportsFragDepth)
       features.push(WebGLFeature.FragDepth);
+    if (this.supportsStandardDerivatives)
+      features.push(WebGLFeature.StandardDerivatives);
 
     if (DepthType.TextureUnsignedInt24Stencil8 === this._maxDepthType)
       features.push(WebGLFeature.DepthTexture);
