@@ -787,6 +787,19 @@ export class CodeSpecs {
 }
 
 // @beta
+export interface ComputedProjectExtents {
+    extents: Range3d;
+    extentsWithOutliers?: Range3d;
+    outliers?: Id64Array;
+}
+
+// @beta
+export interface ComputeProjectExtentsOptions {
+    reportExtentsWithOutliers?: boolean;
+    reportOutliers?: boolean;
+}
+
+// @beta
 export class ConcurrencyControl {
     constructor(_iModel: BriefcaseDb);
     abandonRequest(): void;
@@ -2393,6 +2406,8 @@ export abstract class IModelDb extends IModel {
     clearSqliteStatementCache(): void;
     clearStatementCache(): void;
     get codeSpecs(): CodeSpecs;
+    // @beta
+    computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
     // (undocumented)

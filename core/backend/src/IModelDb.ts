@@ -10,7 +10,7 @@
 
 import * as os from "os";
 import {
-  BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils,
+  BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, JsonUtils,
   Logger, OpenMode, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
@@ -85,6 +85,30 @@ export class OpenParams {
  */
 export interface IModelJsAdditionalFeatureData extends AdditionalFeatureData {
   iModelJsVersion?: string;
+}
+
+/** Options supplied to [[IModelDb.computeProjectExtents]].
+ * @see [[ComputedProjectExtents]].
+ * @beta
+ */
+export interface ComputeProjectExtentsOptions {
+  /** If true, the result will include `extentsWithOutliers`. */
+  reportExtentsWithOutliers?: boolean;
+  /** If true, the result will include `outliers`. */
+  reportOutliers?: boolean;
+}
+
+/** The result of [[IModelDb.computeProjectExtents]].
+ * @see [[ComputeProjectExtentsOptions]].
+ * @beta
+ */
+export interface ComputedProjectExtents {
+  /** The computed extents, excluding any outlier elements. */
+  extents: Range3d;
+  /** If requested by caller, the computed extents, *including* any outlier elements. */
+  extentsWithOutliers?: Range3d;
+  /** If requested by caller, the Ids of outlier elements excluded from the computed extents. */
+  outliers?: Id64Array;
 }
 
 /** An iModel database file. The database file is either a local copy (briefcase) of an iModel managed by iModelHub or a read-only *snapshot* used for archival and data transfer purposes.
@@ -499,6 +523,26 @@ export abstract class IModelDb extends IModel {
   public updateProjectExtents(newExtents: AxisAlignedBox3d) {
     this.projectExtents = newExtents;
     this.updateIModelProps();
+  }
+
+  /** Compute an appropriate project extents for this iModel based on the ranges of all spatial elements.
+   * Typically, the result is simply the union of the ranges of all spatial elements. However, the algorithm also detects "outlier elements",
+   * whose placements locate them so far from the rest of the spatial geometry that they are considered statistically insignificant. The
+   * range of an outlier element does not contribute to the computed extents.
+   * @param options Specifies the level of detail desired in the return value.
+   * @returns the computed extents.
+   * @note This method does not modify the IModel's stored project extents. @see [[updateProjectExtents]].
+   * @beta
+   */
+  public computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents {
+    const wantFullExtents = true === options?.reportExtentsWithOutliers;
+    const wantOutliers = true === options?.reportOutliers;
+    const result = this.nativeDb.computeProjectExtents(wantFullExtents, wantOutliers);
+    return {
+      extents: Range3d.fromJSON(result.extents),
+      extentsWithOutliers: result.fullExtents ? Range3d.fromJSON(result.fullExtents) : undefined,
+      outliers: result.outliers,
+    };
   }
 
   /** Update the [EcefLocation]($docs/learning/glossary#eceflocation) of this iModel.  */
