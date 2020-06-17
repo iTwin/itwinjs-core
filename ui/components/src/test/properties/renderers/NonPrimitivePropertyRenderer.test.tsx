@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import TestUtils from "../../TestUtils";
-import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../ui-components";
+import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 import { PropertyRenderer } from "../../../ui-components/properties/renderers/PropertyRenderer";
+import TestUtils from "../../TestUtils";
 
 describe("NonPrimitivePropertyRenderer", () => {
   before(async () => {
@@ -29,7 +29,30 @@ describe("NonPrimitivePropertyRenderer", () => {
 
     const labelRenderer = rendererMount.find(NonPrimitivePropertyLabelRenderer);
     expect(labelRenderer.exists()).to.be.true;
-    expect(labelRenderer.html().indexOf("Pipes")).to.be.greaterThan(-1);
+    expect(labelRenderer.html().indexOf("Pipes (1)")).to.be.greaterThan(-1);
+
+    expect(rendererMount.find(".components-property-label-renderer-colon").exists()).to.be.false;
+    expect(rendererMount.find(PropertyRenderer).exists()).to.be.false;
+  });
+
+  it("renders array size in label correctly", async () => {
+    const rendererMount = mount(
+      <NonPrimitivePropertyRenderer
+        orientation={Orientation.Horizontal}
+        propertyRecord={TestUtils.createArrayProperty("Pipes", [
+          TestUtils.createPrimitiveStringProperty("pipe_1", "Water pipe"),
+          TestUtils.createPrimitiveStringProperty("pipe_2", "Sewage pipe"),
+          TestUtils.createPrimitiveStringProperty("pipe_3", "Water pipe"),
+        ])}
+        valueElement={"string[1]"}
+        isCollapsible={true}
+      />);
+
+    await TestUtils.flushAsyncOperations();
+
+    const labelRenderer = rendererMount.find(NonPrimitivePropertyLabelRenderer);
+    expect(labelRenderer.exists()).to.be.true;
+    expect(labelRenderer.html().indexOf("Pipes (3)")).to.be.greaterThan(-1);
 
     expect(rendererMount.find(PropertyRenderer).exists()).to.be.false;
   });
@@ -40,13 +63,14 @@ describe("NonPrimitivePropertyRenderer", () => {
         orientation={Orientation.Horizontal}
         propertyRecord={
           TestUtils.createArrayProperty(
-            "Pipes", [
+            "Pipes",
+            [
               TestUtils.createPrimitiveStringProperty("pipe_1", "Water pipe"),
               TestUtils.createPrimitiveStringProperty("pipe_2", "Sewage pipe"),
             ])}
       />);
 
-    expect(rendererMount.find(PropertyRenderer).length).to.be.be.eq(3); // Length property + 2 items
+    expect(rendererMount.find(PropertyRenderer).length).to.be.be.eq(2);
   });
 
   it("changes component state from collapsed to expanded when label is clicked", () => {
@@ -55,7 +79,8 @@ describe("NonPrimitivePropertyRenderer", () => {
         orientation={Orientation.Horizontal}
         propertyRecord={
           TestUtils.createStructProperty(
-            "House", {
+            "House",
+            {
               building: TestUtils.createPrimitiveStringProperty("Building", "Residential"),
               street: TestUtils.createPrimitiveStringProperty("Street", "Glass st."),
             })}
@@ -98,7 +123,11 @@ describe("NonPrimitivePropertyRenderer", () => {
     const rendererMount = mount(
       <NonPrimitivePropertyRenderer
         orientation={Orientation.Horizontal}
-        propertyRecord={TestUtils.createArrayProperty("Pipes")}
+        propertyRecord={TestUtils.createArrayProperty(
+          "Pipes",
+          [
+            TestUtils.createPrimitiveStringProperty("pipe_1", "Water pipe"),
+          ])}
         indentation={1}
       />);
 
@@ -109,16 +138,21 @@ describe("NonPrimitivePropertyRenderer", () => {
     const rendererMount = mount(
       <NonPrimitivePropertyRenderer
         orientation={Orientation.Horizontal}
-        propertyRecord={TestUtils.createArrayProperty("Pipes")}
+        propertyRecord={TestUtils.createArrayProperty(
+          "Pipes",
+          [
+            TestUtils.createPrimitiveStringProperty("pipe_1", "Water pipe"),
+          ])}
         uniqueKey="unique_key"
       />);
 
-    expect(rendererMount.find(PropertyRenderer).at(0).key()).to.be.eq("unique_key_array_length");
+    expect(rendererMount.find(PropertyRenderer).at(0).key()).to.be.eq("unique_key_pipe_1_0");
   });
 
   it("renders as expanded if property should be automatically expanded", () => {
     const structProperty = TestUtils.createStructProperty(
-      "House", {
+      "House",
+      {
         building: TestUtils.createPrimitiveStringProperty("Building", "Residential"),
         street: TestUtils.createPrimitiveStringProperty("Street", "Glass st."),
       });

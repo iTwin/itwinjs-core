@@ -6,19 +6,17 @@
  * @module Notification
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
-import { XAndY } from "@bentley/geometry-core";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { UiEvent, CommonProps, MessageContainer, MessageSeverity, Point, PointProps, Rectangle, SizeProps } from "@bentley/ui-core";
-import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";
-
-import { MessageSpan, MessageDiv } from "./MessageSpan";
-import { MessageManager } from "./MessageManager";
-
 import "./Pointer.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { XAndY } from "@bentley/geometry-core";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { CommonProps, MessageContainer, MessageSeverity, Point, PointProps, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
+import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";
+import { MessageManager } from "./MessageManager";
+import { MessageDiv, MessageSpan } from "./MessageSpan";
+import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
 
 // cSpell:ignore noicon
 
@@ -35,10 +33,10 @@ export interface PointerMessageProps extends CommonProps {
  */
 interface PointerMessageState {
   isVisible: boolean;
-  message: HTMLElement | string;
-  detailedMessage?: HTMLElement | string;
+  message: NotifyMessageType;
+  detailedMessage?: NotifyMessageType;
   position: PointProps;
-  messageDetails?: NotifyMessageDetails;
+  messageDetails?: NotifyMessageDetailsType;
 }
 
 /** [[PointerMessageChangedEvent]] arguments.
@@ -47,12 +45,12 @@ interface PointerMessageState {
 export interface PointerMessageChangedEventArgs {
   isVisible: boolean;
   priority: OutputMessagePriority;
-  message: HTMLElement | string;
-  detailedMessage?: HTMLElement | string;
+  message: NotifyMessageType;
+  detailedMessage?: NotifyMessageType;
   relativePosition?: RelativePosition;
   viewport?: HTMLElement;
   pt?: XAndY;
-  messageDetails?: NotifyMessageDetails;
+  messageDetails?: NotifyMessageDetailsType;
 }
 
 /** Pointer Message Changed Event emitted by the [[PointerMessage]] component
@@ -82,7 +80,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
 
   public static get onPointerMessageChangedEvent(): PointerMessageChangedEvent { return PointerMessage._pointerMessageChangedEvent; }
 
-  public static showMessage(message: NotifyMessageDetails): void {
+  public static showMessage(message: NotifyMessageDetailsType): void {
     PointerMessage.onPointerMessageChangedEvent.emit({
       isVisible: true,
       priority: message.priority,
@@ -168,6 +166,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     PointerMessage._onPointerMessagePositionChangedEvent.removeListener(this._handlePointerMessagePositionChangedEvent);
   }
 
+  // istanbul ignore next
   private _handleSizeChanged = (size: SizeProps) => {
     this._size = size;
     this.updatePosition();
@@ -225,6 +224,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     this.setState((prevState) => {
       if (!this._viewport)
         return null;
+      // istanbul ignore if
       if (!this._position)
         return null;
 
@@ -235,9 +235,11 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
       const adjustedPosition = offsetAndContainInContainer(relativeBounds, containerBounds.getSize(), offset);
       const position = adjustedPosition.offset(viewportOffset);
 
+      // istanbul ignore else
       if (position.equals(prevState.position))
         return null;
 
+      // istanbul ignore next
       return {
         position,
       };

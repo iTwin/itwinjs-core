@@ -2,13 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module IModelConnection */
+/** @packageDocumentation
+ * @module IModelConnection
+ */
 
-import { IModelError, Editor3dRpcInterface, GeometricElement3dProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "./IModelConnection";
-import { OpenMode, IModelStatus, Logger, Id64Array, GuidString, Guid } from "@bentley/bentleyjs-core";
-import { Point3d, YawPitchRollAngles, TransformProps } from "@bentley/geometry-core";
+import { Guid, GuidString, Id64Array, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { Point3d, TransformProps, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Editor3dRpcInterface, GeometricElement3dProps, IModelError } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { IModelConnection } from "./IModelConnection";
 
 const LOGGING_CATEGORY = FrontendLoggerCategory.EditorConnection;
 

@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { render } from "@testing-library/react";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
+import { render } from "@testing-library/react";
 import { CellEditingEngine, EditableTreeProps } from "../../../ui-components/tree/deprecated/CellEditingEngine";
-import { BeInspireTreeNode, BeInspireTree } from "../../../ui-components/tree/deprecated/component/BeInspireTree";
+import { BeInspireTree, BeInspireTreeNode } from "../../../ui-components/tree/deprecated/component/BeInspireTree";
 import { DEPRECATED_Tree as Tree } from "../../../ui-components/tree/deprecated/component/Tree";
+import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 
 // tslint:disable:deprecation
 

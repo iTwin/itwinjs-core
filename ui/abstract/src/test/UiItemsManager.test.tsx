@@ -4,12 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
 import {
-  AbstractStatusBarItemUtilities, StatusBarSection,
-  CommonStatusBarItem, UiItemsProvider, CommonToolbarItem, StageUsage, UiItemsManager, AbstractWidgetProps,
-  ToolbarUsage, ToolbarOrientation, ToolbarItemUtilities, BackstageItem, BackstageItemUtilities,
-  StagePanelLocation, StagePanelSection,
+  AbstractStatusBarItemUtilities, AbstractWidgetProps, BackstageItem, BackstageItemUtilities, CommonStatusBarItem, CommonToolbarItem,
+  StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager,
+  UiItemsProvider,
 } from "../ui-abstract";
 
 const testStageUsage = StageUsage.General;
@@ -36,7 +34,7 @@ class TestUiItemsProvider implements UiItemsProvider {
 
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
-        AbstractStatusBarItemUtilities.createActionItem("UiItemsProviderTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from plugin",
+        AbstractStatusBarItemUtilities.createActionItem("UiItemsProviderTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension",
           () => {
             // tslint:disable-next-line: no-console
             console.log("Got Here!");

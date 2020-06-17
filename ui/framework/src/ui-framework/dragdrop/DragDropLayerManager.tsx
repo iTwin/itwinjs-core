@@ -6,12 +6,11 @@
  * @module DragDrop
  */
 
-import * as React from "react";
-import { DragLayer, DndComponentClass, DragLayerMonitor } from "react-dnd";
 import classnames from "classnames";
-
-import { UiEvent, CommonProps } from "@bentley/ui-core";
-import { DragSourceArguments, DragLayerProps } from "@bentley/ui-components";
+import * as React from "react";
+import { DndComponentClass, DragLayer, DragLayerMonitor } from "react-dnd";
+import { DragLayerProps, DragSourceArguments } from "@bentley/ui-components";
+import { CommonProps, UiEvent } from "@bentley/ui-core";
 
 /** Drag/Drop Layer Changed Event Args class.
  * @beta
@@ -34,6 +33,7 @@ export class DragDropLayerManager {
   private static _layers: { [type: string]: React.ComponentType<DragLayerProps> } = {};
   private static _dragDropLayerChangedEvent: DragDropLayerChangedEvent = new DragDropLayerChangedEvent();
 
+  // istanbul ignore next
   public static get onDragDropLayerChangedEvent(): DragDropLayerChangedEvent { return this._dragDropLayerChangedEvent; }
 
   /**
@@ -47,6 +47,7 @@ export class DragDropLayerManager {
    * Gets the DragLayer component of the currently active type.
    */
   public static getActiveLayer() {
+    // istanbul ignore if
     if (this._currentType)
       return this._layers[this._currentType];
     return undefined;
@@ -60,7 +61,9 @@ export class DragDropLayerManager {
     this._currentType = type;
     this._dragDropLayerChangedEvent.emit({ type });
   }
+
   /** Registers a new DragLayer for the given type. */
+  // istanbul ignore next
   public static registerTypeLayer(type: string, layer: React.ComponentType<DragLayerProps>) {
     this._layers[type] = layer;
   }
@@ -104,14 +107,17 @@ export class DragDropLayerRendererComponent extends React.Component<DragDropLaye
     window.removeEventListener("dragend", this._handleDragEnd);
   }
 
+  // istanbul ignore next
   private _handleDragStart = () => {
     this._dragging = true;
   }
 
+  // istanbul ignore next
   private _handleDragEnd = () => {
     this._dragging = false;
   }
 
+  // istanbul ignore next
   public render(): React.ReactNode {
     if (this.props.itemType !== DragDropLayerManager.getType()) { // A drag of a new type has been triggered.
       DragDropLayerManager.setType(this.props.itemType);
@@ -123,8 +129,7 @@ export class DragDropLayerRendererComponent extends React.Component<DragDropLaye
 
     const dragSourceArgs = item! as DragSourceArguments;
 
-    // tslint:disable-next-line:variable-name
-    const LayerElement = DragDropLayerManager.getActiveLayer() || (dragSourceArgs && dragSourceArgs.defaultDragLayer);
+    const LayerElement = DragDropLayerManager.getActiveLayer() || (dragSourceArgs && dragSourceArgs.defaultDragLayer); // tslint:disable-line:variable-name
     if (!this._dragging || !LayerElement)
       return null;
 

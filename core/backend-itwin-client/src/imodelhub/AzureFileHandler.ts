@@ -6,21 +6,24 @@
  * @module iModelHub
  */
 
-import { Logger, BriefcaseStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, FileHandler, ProgressInfo, ProgressCallback, request, RequestOptions, ResponseError, CancelRequest, UserCancelledError } from "@bentley/itwin-client";
-import { Transform, TransformCallback, PassThrough } from "stream";
-import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
-import WriteStreamAtomic = require("fs-write-stream-atomic");
-import { AzCopy, ProgressEventArgs, StringEventArgs, InitEventArgs } from "../util/AzCopy";
-import { ArgumentCheck } from "@bentley/imodelhub-client";
 import * as fs from "fs";
-import * as https from "https";
 import * as http from "http";
-import * as path from "path";
+import * as https from "https";
 import * as os from "os";
+import * as path from "path";
+import { PassThrough, Transform, TransformCallback } from "stream";
 import * as urllib from "url";
+import { BriefcaseStatus, Config, Logger } from "@bentley/bentleyjs-core";
+import { ArgumentCheck } from "@bentley/imodelhub-client";
+import {
+  AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, ResponseError,
+  SasUrlExpired, UserCancelledError,
+} from "@bentley/itwin-client";
+import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
+import { AzCopy, InitEventArgs, ProgressEventArgs, StringEventArgs } from "../util/AzCopy";
 
-const loggerCategory: string = ClientsBackendLoggerCategory.IModelHub;
+import WriteStreamAtomic = require("fs-write-stream-atomic");
+const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
 /**
  * Stream that buffers writing to file.
@@ -155,7 +158,7 @@ export class AzureFileHandler implements FileHandler {
     const azcopy = new AzCopy({ logLocation: azLogDir });
     if (progressCallback) {
       const cb = (args: ProgressEventArgs) => {
-        progressCallback({ total: args.TotalBytesEnumerated, loaded: args.BytesOverWire, percent: args.BytesOverWire ? (args.BytesOverWire / args.TotalBytesEnumerated) : 0 });
+        progressCallback({ total: args.TotalBytesEnumerated, loaded: args.BytesOverWire, percent: args.BytesOverWire ? (args.BytesOverWire / args.TotalBytesEnumerated) * 100.0 : 0 });
       };
 
       azcopy.on("azprogress", cb);
@@ -179,7 +182,7 @@ export class AzureFileHandler implements FileHandler {
     // start download by spawning in a azcopy process
     const rc = await azcopy.copy(downloadUrl, downloadToPathname);
     if (rc !== 0) {
-      return Promise.reject(`AzCopy failed with return code: ${rc}`);
+      throw new Error(`AzCopy failed with return code: ${rc}`);
     }
   }
 
@@ -209,6 +212,10 @@ export class AzureFileHandler implements FileHandler {
 
     const promise = new Promise<void>((resolve, reject) => {
       const downloadCallback = ((res: http.IncomingMessage) => {
+        if (res.statusCode && (res.statusCode <= 0 || res.statusCode >= 400)) {
+          reject(new DownloadFailed(res.statusCode, res.statusMessage ? res.statusMessage : "Download failed"));
+          return;
+        }
         res.pipe(bufferedStream)
           .on("data", (chunk: any) => {
             bytesWritten += chunk.length;
@@ -267,8 +274,29 @@ export class AzureFileHandler implements FileHandler {
       safeToLogDownloadUrl.search = "...";
     if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
       safeToLogDownloadUrl.hash = "...";
-    return safeToLogDownloadUrl.toString();
+    return urllib.format(safeToLogDownloadUrl);
   }
+
+  /**
+   * Check if sas url has expired
+   * @param download sas url for download
+   * @param futureSeconds should be valid in future for given seconds.
+   */
+  public static isUrlExpired(downloadUrl: string, futureSeconds?: number): boolean {
+    const sasUrl = new URL(downloadUrl);
+    const se = sasUrl.searchParams.get("se");
+    if (se) {
+      const expiryUTC = new Date(se);
+      const now = new Date();
+      const currentUTC = new Date(now.toUTCString());
+      if (futureSeconds) {
+        currentUTC.setSeconds(futureSeconds + currentUTC.getSeconds());
+      }
+      return expiryUTC <= currentUTC;
+    }
+    return false;
+  }
+
   /**
    * Download a file from AzureBlobStorage for iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
    * @param requestContext The client request context
@@ -286,13 +314,23 @@ export class AzureFileHandler implements FileHandler {
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
     ArgumentCheck.defined("downloadUrl", downloadUrl);
     ArgumentCheck.defined("downloadToPathname", downloadToPathname);
-
+    if (AzureFileHandler.isUrlExpired(downloadUrl)) {
+      Logger.logError(loggerCategory, `Sas url has expired ${safeToLogUrl}`);
+      throw new SasUrlExpired(403, "Download URL has expired");
+    }
     if (fs.existsSync(downloadToPathname))
       fs.unlinkSync(downloadToPathname);
 
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
     try {
-      if (AzCopy.isAvaliable) {
+      // suppress azcopy for smaller file as it take longer to spawn and exit then it take Http downloader to download it.
+      let useAzcopy = AzCopy.isAvailable;
+      if (useAzcopy && fileSize) {
+        const minFileSize = Config.App.getNumber("imjs_az_min_filesize_threshold", 500 * 1024 * 1024 /** 500 Mb */);
+        if (fileSize < minFileSize)
+          useAzcopy = false;
+      }
+      if (useAzcopy) {
         await this.downloadFileUsingAzCopy(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback);
       } else {
         await this.downloadFileUsingHttps(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);
@@ -304,7 +342,14 @@ export class AzureFileHandler implements FileHandler {
 
       if (!(err instanceof UserCancelledError))
         Logger.logError(loggerCategory, `Error downloading file`);
-      return Promise.reject(err);
+      throw err;
+    }
+    if (fileSize && fs.existsSync(downloadToPathname)) {
+      if (fs.lstatSync(downloadToPathname).size !== fileSize) {
+        fs.unlinkSync(downloadToPathname);
+        Logger.logError(loggerCategory, `Downloaded file is of incorrect size ${safeToLogUrl}`);
+        throw new DownloadFailed(403, "Download failed. Expected filesize does not match");
+      }
     }
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Downloaded file from ${safeToLogUrl}`);
@@ -420,6 +465,14 @@ export class AzureFileHandler implements FileHandler {
    */
   public exists(filePath: string): boolean {
     return fs.existsSync(filePath);
+  }
+
+  /**
+   * Deletes file.
+   * @param filePath Path of the file.
+   */
+  public unlink(filePath: string): void {
+    fs.unlinkSync(filePath);
   }
 
   /**

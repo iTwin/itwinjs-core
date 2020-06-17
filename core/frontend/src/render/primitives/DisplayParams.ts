@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial, TextureMapping, RenderTexture } from "@bentley/imodeljs-common";
-import { compareNumbers, compareBooleans, compareStringsOrUndefined, comparePossiblyUndefined, assert } from "@bentley/bentleyjs-core";
+import { assert, compareBooleans, compareNumbers, comparePossiblyUndefined, compareStringsOrUndefined } from "@bentley/bentleyjs-core";
+import { ColorDef, FillFlags, Gradient, GraphicParams, LinePixels, RenderMaterial, RenderTexture, TextureMapping } from "@bentley/imodeljs-common";
 
 function compareMaterials(lhs?: RenderMaterial, rhs?: RenderMaterial): number {
   return comparePossiblyUndefined((lhMat: RenderMaterial, rhMat: RenderMaterial) => lhMat === rhMat ? 0 : compareStringsOrUndefined(lhMat.key, rhMat.key), lhs, rhs);

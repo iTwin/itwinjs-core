@@ -11,7 +11,6 @@ import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
-import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { XAndY } from '@bentley/geometry-core';
 
 // @beta
@@ -163,7 +162,7 @@ export interface BackstageStageLauncher extends CommonBackstageItem {
     readonly stageId: string;
 }
 
-// @beta
+// @public
 export enum BadgeType {
     New = 2,
     None = 0,
@@ -277,7 +276,7 @@ export type CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBa
 // @beta
 export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
 
-// @beta
+// @public
 export class ConditionalBooleanValue {
     constructor(testFunc: () => boolean, syncEventIds: string[], value?: boolean);
     static getValue(conditionalValue: ConditionalBooleanValue | boolean | undefined): boolean;
@@ -341,10 +340,11 @@ export interface DialogItemsChangedArgs {
 }
 
 // @beta
-export class DialogItemsManager extends UiDataProvider {
+export class DialogItemsManager {
     constructor(items?: ReadonlyArray<DialogItem>);
     applyUiPropertyChange: (_item: DialogPropertySyncItem) => void;
     static editorWantsLabel(item: DialogItem): boolean;
+    static fromUiDataProvider(uiDataProvider: UiDataProvider): DialogItemsManager;
     static getItemDisabledState(baseDialogItem: BaseDialogItem): boolean;
     static getPropertyRecord: (dialogItem: BaseDialogItem) => PropertyRecord;
     static hasAssociatedLockProperty(item: DialogItem): boolean;
@@ -354,6 +354,7 @@ export class DialogItemsManager extends UiDataProvider {
     // @internal (undocumented)
     layoutDialogRows(): DialogRow[];
     static onlyContainButtonGroupEditors(row: DialogRow): boolean;
+    onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
     rows: DialogRow[];
 }
 
@@ -435,7 +436,7 @@ export interface IconDefinition {
     isEnabledFunction?: () => boolean;
 }
 
-// @alpha
+// @beta
 export interface IconEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     definition: IconDefinition;
@@ -507,6 +508,14 @@ export interface LinkElementsInfo {
         end: number;
     }>;
     onClick?: (record: PropertyRecord, text: string) => void;
+}
+
+// @beta
+export interface MultilineTextEditorParams extends BasePropertyEditorParams {
+    // (undocumented)
+    rows: number;
+    // (undocumented)
+    type: PropertyEditorParamTypes.MultilineText;
 }
 
 // @beta
@@ -630,6 +639,12 @@ export enum PropertyEditorParamTypes {
     // (undocumented)
     InputEditorSize = "UiAbstract-InputEditorSize",
     // (undocumented)
+    MultilineText = "UiAbstract-MultilineText",
+    // (undocumented)
+    Range = "UiAbstract-Range",
+    // (undocumented)
+    Slider = "UiAbstract-Slider",
+    // (undocumented)
     SuppressEditorLabel = "UiAbstract-SuppressEditorLabel"
 }
 
@@ -669,6 +684,16 @@ export interface ProvidedItem {
     readonly providerId?: string;
 }
 
+// @beta
+export interface RangeEditorParams extends BasePropertyEditorParams {
+    maximum?: number;
+    minimum?: number;
+    precision?: number;
+    step?: number;
+    // (undocumented)
+    type: PropertyEditorParamTypes.Range;
+}
+
 // @public
 export enum RelativePosition {
     // (undocumented)
@@ -687,6 +712,29 @@ export enum RelativePosition {
     TopLeft = 4,
     // (undocumented)
     TopRight = 5
+}
+
+// @beta
+export interface SliderEditorParams extends BasePropertyEditorParams {
+    formatTick?: (tick: number) => string;
+    formatTooltip?: (value: number) => string;
+    getTickCount?: () => number;
+    getTickValues?: () => number[];
+    maxIconSpec?: string;
+    maximum: number;
+    minIconSpec?: string;
+    minimum: number;
+    mode?: number;
+    reversed?: boolean;
+    showMinMax?: boolean;
+    showTickLabels?: boolean;
+    showTicks?: boolean;
+    showTooltip?: boolean;
+    size?: number;
+    step?: number;
+    tooltipBelow?: boolean;
+    // (undocumented)
+    type: PropertyEditorParamTypes.Slider;
 }
 
 // @beta
@@ -804,6 +852,7 @@ export interface ToolbarItem extends ProvidedItem {
     readonly applicationData?: any;
     readonly badgeType?: BadgeType;
     readonly description?: string | ConditionalStringValue;
+    readonly groupPriority?: number;
     readonly id: string;
     readonly internalData?: Map<string, any>;
     readonly isActive?: boolean;
@@ -871,31 +920,36 @@ export class UiAbstract {
     static get i18n(): I18N;
     static get i18nNamespace(): string;
     static initialize(i18n: I18N): Promise<void>;
+    static get initialized(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)
     static get packageName(): string;
     static terminate(): void;
     // @internal
-    static translate(key: string | string[], options?: TranslationOptions): string;
+    static translate(key: string | string[]): string;
 }
 
 // @beta
 export class UiAdmin {
+    closeToolSettingsPopup(): boolean;
     createXAndY(x: number, y: number): XAndY;
     get cursorPosition(): XAndY;
     hideCalculator(): boolean;
+    hideCard(): boolean;
     hideHTMLElement(): boolean;
     hideInputEditor(): boolean;
     hideMenuButton(_id: string): boolean;
     hideToolbar(): boolean;
     // @internal (undocumented)
     onInitialized(): void;
+    openToolSettingsPopup(_dataProvider: UiDataProvider, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
     showAngleEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showCalculator(_initialValue: number, _resultIcon: string, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
+    showCard(_content: HTMLElement, _title: string | PropertyRecord | undefined, _toolbarProps: AbstractToolbarProps | undefined, _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
     showContextMenu(_menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean;
     showHeightEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
-    showHTMLElement(_displayElement: HTMLElement, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean;
+    showHTMLElement(_displayElement: HTMLElement, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
     showInputEditor(_initialValue: Primitives.Value, _propertyDescription: PropertyDescription, _location: XAndY, _onCommit: OnValueCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showLengthEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean;
@@ -907,6 +961,7 @@ export abstract class UiDataProvider {
     onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
     processChangesInUi(_properties: DialogPropertyItem[]): PropertyChangeResult;
     supplyAvailableProperties(): DialogPropertyItem[];
+    supplyDialogItems(): DialogItem[] | undefined;
     syncProperties(_syncProperties: DialogPropertySyncItem[]): void;
     validateProperty(_item: DialogPropertyItem): PropertyChangeResult;
 }

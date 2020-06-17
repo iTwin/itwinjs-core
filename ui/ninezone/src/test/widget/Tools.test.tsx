@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-
 import { Tools } from "../../ui-ninezone";
 
 describe("<Tools />", () => {
@@ -21,7 +20,7 @@ describe("<Tools />", () => {
   });
 
   it("renders correctly with out gap", () => {
-    shallow(<Tools verticalToolbar={""} />).should.matchSnapshot();
+    shallow(<Tools verticalToolbar="" />).should.matchSnapshot();
   });
 
   it("renders correctly with reduced gap", () => {

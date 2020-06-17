@@ -6,30 +6,22 @@
  * @module WebGL
  */
 
-import { CachedGeometry } from "./CachedGeometry";
-import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ViewFlagOverrides } from "@bentley/imodeljs-common";
-import { System } from "./System";
-import { Batch, Branch } from "./Graphic";
-import { BranchState } from "./BranchState";
-import { isFeatureHilited } from "./FeatureOverrides";
-import { Primitive } from "./Primitive";
-import { ShaderProgramExecutor } from "./ShaderProgram";
-import { RenderPass, RenderOrder } from "./RenderFlags";
-import { Target, Hilites } from "./Target";
-import { ClippingType } from "../RenderClipVolume";
 import { AnimationBranchState } from "../GraphicBranch";
-import { TechniqueId } from "./TechniqueId";
-import { ClipPlanesVolume } from "./ClipVolume";
+import { BranchState } from "./BranchState";
+import { CachedGeometry } from "./CachedGeometry";
+import { ClipVolume } from "./ClipVolume";
+import { isFeatureHilited } from "./FeatureOverrides";
+import { Batch, Branch } from "./Graphic";
 import { UniformHandle } from "./Handle";
-import {
-  IsAnimated,
-  IsClassified,
-  IsInstanced,
-  IsShadowable,
-  TechniqueFlags,
-  IsThematic,
-} from "./TechniqueFlags";
+import { Primitive } from "./Primitive";
+import { RenderOrder, RenderPass } from "./RenderFlags";
+import { ShaderProgramExecutor } from "./ShaderProgram";
+import { System } from "./System";
+import { Hilites, Target } from "./Target";
+import { IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "./TechniqueFlags";
+import { TechniqueId } from "./TechniqueId";
 
 // tslint:disable:no-const-enum
 
@@ -164,8 +156,8 @@ export class PushBranchCommand {
       this.branch.localToWorldTransform = transform;
     }
 
-    if (anim.clip !== undefined && anim.clip.type === ClippingType.Planes) {
-      this.branch.clips = anim.clip as ClipPlanesVolume;
+    if (anim.clip !== undefined) {
+      this.branch.clips = anim.clip as ClipVolume;
       if (undefined === PushBranchCommand._viewFlagOverrides) {
         PushBranchCommand._viewFlagOverrides = new ViewFlagOverrides();
         PushBranchCommand._viewFlagOverrides.setShowClipVolume(true);
@@ -211,8 +203,8 @@ export class PrimitiveCommand {
       return;
 
     const target = exec.target;
-    const shadowable = (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.TerrainMesh) && target.solarShadowMap.isReady && target.currentViewFlags.shadows;
     const thematic = this.primitive.cachedGeometry.supportsThematicDisplay && target.wantThematicDisplay;
+    const shadowable = (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.TerrainMesh) && target.solarShadowMap.isReady && target.currentViewFlags.shadows && !thematic;
     const isShadowable = shadowable ? IsShadowable.Yes : IsShadowable.No;
     const isThematic = thematic ? IsThematic.Yes : IsThematic.No;
     const isClassified = (undefined !== target.currentPlanarClassifierOrDrape || undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
@@ -220,8 +212,7 @@ export class PrimitiveCommand {
     const isAnimated = this.primitive.hasAnimation ? IsAnimated.Yes : IsAnimated.No;
 
     const flags = PrimitiveCommand._scratchTechniqueFlags;
-    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, undefined, isThematic);
-    flags.setHasMaterialAtlas(target.currentViewFlags.materials && this.primitive.hasMaterialAtlas);
+    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic);
 
     const technique = target.techniques.getTechnique(techniqueId);
     const program = technique.getShader(flags);

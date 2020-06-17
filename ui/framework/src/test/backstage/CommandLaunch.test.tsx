@@ -2,19 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow } from "enzyme";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-import {
-  CommandLaunchBackstageItem,
-  FrontstageManager,
-  BackstageItemState,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
-import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
-import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 import { Logger } from "@bentley/bentleyjs-core";
+import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
+import { BackstageItemState, CommandLaunchBackstageItem, FrontstageManager } from "../../ui-framework";
+import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
+import TestUtils from "../TestUtils";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";

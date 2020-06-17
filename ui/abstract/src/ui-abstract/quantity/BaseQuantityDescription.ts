@@ -6,8 +6,8 @@
  * @module Properties
  */
 
-import { CustomFormattedNumberParams, IconEditorParams, ParseResults, PropertyEditorParamTypes } from "../properties/EditorParams";
 import { PropertyDescription, PropertyEditorInfo } from "../properties/Description";
+import { CustomFormattedNumberParams, IconEditorParams, ParseResults, PropertyEditorParamTypes } from "../properties/EditorParams";
 
 /**
  * Base Quantity Property Description

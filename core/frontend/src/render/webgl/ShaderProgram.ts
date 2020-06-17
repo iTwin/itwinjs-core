@@ -7,16 +7,17 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { UniformHandle } from "./Handle";
-import { ShaderProgramParams, DrawParams } from "./DrawCommand";
-import { GL } from "./GL";
-import { Target } from "./Target";
-import { RenderPass } from "./RenderFlags";
-import { TechniqueFlags } from "./TechniqueFlags";
-import { System } from "./System";
-import { Branch, Batch } from "./Graphic";
+import { DebugShaderFile } from "../RenderSystem";
 import { AttributeDetails } from "./AttributeMap";
 import { WebGLDisposable } from "./Disposable";
+import { DrawParams, ShaderProgramParams } from "./DrawCommand";
+import { GL } from "./GL";
+import { Batch, Branch } from "./Graphic";
+import { UniformHandle } from "./Handle";
+import { RenderPass } from "./RenderFlags";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueFlags } from "./TechniqueFlags";
 
 // tslint:disable:no-const-enum
 
@@ -119,23 +120,28 @@ export const enum CompileStatus {
 
 /** @internal */
 export class ShaderProgram implements WebGLDisposable {
-  private _description: string; // for debugging purposes...
   public vertSource: string;
   public fragSource: string;
-  public readonly maxClippingPlanes: number;
   private _glProgram?: WebGLProgram;
   private _inUse: boolean = false;
   private _status: CompileStatus = CompileStatus.Uncompiled;
   private readonly _programUniforms = new Array<ProgramUniform>();
   private readonly _graphicUniforms = new Array<GraphicUniform>();
   private readonly _attrMap?: Map<string, AttributeDetails>;
+  // for debugging purposes...
+  private _description: string;
+  private _fragDescription: string;
+  private _vertGNdx: number = -1;
+  private _fragGNdx: number = -1;
+  private _vertHNdx: number = -1;
+  private _fragHNdx: number = -1;
 
-  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, maxClippingPlanes: number) {
+  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, fragDescription: string) {
     this._description = description;
+    this._fragDescription = fragDescription;
     this.vertSource = vertSource;
     this.fragSource = fragSource;
     this._attrMap = attrMap;
-    this.maxClippingPlanes = maxClippingPlanes;
 
     const glProgram = gl.createProgram();
     this._glProgram = (null === glProgram) ? undefined : glProgram;
@@ -172,6 +178,12 @@ export class ShaderProgram implements WebGLDisposable {
       throw new Error(compileLog);
     }
 
+    if (System.instance.options.debugShaders) {
+      const isVS = GL.ShaderType.Vertex === type;
+      const desc = isVS ? this._description : this._fragDescription;
+      this.saveShaderCode(isVS, desc, src, shader);
+    }
+
     return shader;
   }
   private linkProgram(vert: WebGLShader, frag: WebGLShader): boolean {
@@ -204,7 +216,10 @@ export class ShaderProgram implements WebGLDisposable {
 
     return true;
   }
-  public compile(): CompileStatus {
+  public compile(forUse: boolean = false): CompileStatus {
+    if (System.instance.options.debugShaders && forUse && this._status === CompileStatus.Success)
+      this.setDebugShaderUsage();
+
     switch (this._status) {
       case CompileStatus.Failure: return CompileStatus.Failure;
       case CompileStatus.Success: return CompileStatus.Success;
@@ -225,6 +240,9 @@ export class ShaderProgram implements WebGLDisposable {
       if (this.linkProgram(vert, frag) && this.compileUniforms(this._programUniforms) && this.compileUniforms(this._graphicUniforms))
         this._status = CompileStatus.Success;
 
+    if (System.instance.options.debugShaders && forUse && this._status === CompileStatus.Success)
+      this.setDebugShaderUsage();
+
     if (true !== System.instance.options.preserveShaderSourceCode)
       this.vertSource = this.fragSource = "";
 
@@ -232,25 +250,23 @@ export class ShaderProgram implements WebGLDisposable {
   }
 
   public use(params: ShaderProgramParams): boolean {
-    if (this.compile() !== CompileStatus.Success) {
+    if (this.compile(true) !== CompileStatus.Success)
       return false;
-    }
 
     assert(undefined !== this._glProgram);
-    if (null === this._glProgram || undefined === this._glProgram) {
+    if (null === this._glProgram || undefined === this._glProgram)
       return false;
-    }
 
     assert(!this._inUse);
     this._inUse = true;
     params.context.useProgram(this._glProgram);
 
-    for (const uniform of this._programUniforms) {
+    for (const uniform of this._programUniforms)
       uniform.bind(params);
-    }
 
     return true;
   }
+
   public endUse() {
     this._inUse = false;
     System.instance.context.useProgram(null);
@@ -258,9 +274,8 @@ export class ShaderProgram implements WebGLDisposable {
 
   public draw(params: DrawParams): void {
     assert(this._inUse);
-    for (const uniform of this._graphicUniforms) {
+    for (const uniform of this._graphicUniforms)
       uniform.bind(params);
-    }
 
     params.geometry.draw();
   }
@@ -269,6 +284,7 @@ export class ShaderProgram implements WebGLDisposable {
     assert(this.isUncompiled);
     this._programUniforms.push(new ProgramUniform(name, binding));
   }
+
   public addGraphicUniform(name: string, binding: BindGraphicUniform) {
     assert(this.isUncompiled);
     this._graphicUniforms.push(new GraphicUniform(name, binding));
@@ -281,6 +297,326 @@ export class ShaderProgram implements WebGLDisposable {
     }
 
     return true;
+  }
+
+  private setDebugShaderUsage() {
+    if (!System.instance.options.debugShaders)
+      return;
+
+    const shaderFiles = System.instance.debugShaderFiles;
+    if (this._vertGNdx >= 0)
+      shaderFiles[this._vertGNdx].isUsed = true;
+
+    if (this._fragGNdx >= 0)
+      shaderFiles[this._fragGNdx].isUsed = true;
+
+    if (this._vertHNdx >= 0)
+      shaderFiles[this._vertHNdx].isUsed = true;
+
+    if (this._fragHNdx >= 0)
+      shaderFiles[this._fragHNdx].isUsed = true;
+  }
+
+  private saveShaderCode(isVS: boolean, desc: string, src: string, shader: WebGLShader) {
+    // save glsl and hlsl (from Angle and fixed up) in DebugShaderFile
+    if (!System.instance.options.debugShaders)
+      return;
+
+    const shaderFiles = System.instance.debugShaderFiles;
+    let sname: string;
+    if (desc) {
+      sname = desc.split(isVS ? "//!V! " : "//!F! ").join("");
+      sname = sname.split(": ").join("-");
+      sname = sname.split("; ").join("-");
+    } else {
+      // need to investigate shaders with no comments to derive names, for now come up with unique name
+      sname = "noname-" + shaderFiles.length;
+    }
+
+    sname += isVS ? "_VS" : "_FS";
+    const fname = sname + ".glsl";
+    let dsfNdx = shaderFiles.push(new DebugShaderFile(fname, src, isVS, true, false));
+    if (isVS)
+      this._vertGNdx = dsfNdx - 1;
+    else
+      this._fragGNdx = dsfNdx - 1;
+
+    const ext2 = System.instance.context.getExtension("WEBGL_debug_shaders");
+    if (!ext2)
+      return;
+
+    const srcH = ext2.getTranslatedShaderSource(shader);
+    if (!srcH)
+      return;
+
+    // TODO: implement WebGL2 specific inputs for gl_VertexID and gl_InstanceID if ever used
+
+    // parse and edit srcH to make it compilable
+    const fnameH = sname + ".hlsl";
+    let numTargets = 0; // for gl_Color cases
+    let haveGLpos = false;
+    let haveGLpntsz = false;
+    let haveGLDepth = false;
+    let haveGLFrontFacing = false;
+    let haveGLPointCoord = false;
+    let haveGLFragCoord = false;
+    let haveGLFragColorOnly = false; // for only 1 output
+    const haveGLFragColor = [false, false, false, false, false, false, false, false];
+    const attrs: string[] = new Array<string>();
+    const varyings: string[] = new Array<string>();
+    const lines = srcH.split("\n");
+    let toss = true;
+    for (let ndx = 0; ndx < lines.length;) {
+      let line = lines[ndx];
+      if (line.indexOf("// INITIAL HLSL END") >= 0)
+        toss = true;
+
+      if (toss)
+        lines.splice(ndx, 1);
+
+      if (line.indexOf("// INITIAL HLSL BEGIN") >= 0) {
+        toss = false;
+      } else if (!toss) { // look for lines that need editing
+        if (line.indexOf("Varyings") >= 0) { // save off varyings in either case
+          while (ndx + 1 < lines.length && lines[ndx + 1].indexOf("static") >= 0) {
+            ++ndx;
+            line = lines[ndx].substring(6).trimLeft();
+            varyings.push(line.substring(0, line.indexOf("=")));
+          }
+        }
+
+        if (isVS) {
+          if (line.indexOf("Attributes") >= 0) { // save off attributes
+            while (ndx + 1 < lines.length && lines[ndx + 1].indexOf("static") >= 0) {
+              ++ndx;
+              line = lines[ndx].substring(6).trimLeft();
+              attrs.push(line.substring(0, line.indexOf("=")));
+            }
+          } else if (line.indexOf("static float4 gl_Position") >= 0) {
+            haveGLpos = true;
+          } else if (line.indexOf("static float gl_PointSize") >= 0) {
+            haveGLpntsz = true;
+          } else if (line.indexOf("@@ VERTEX ATTRIBUTES @@") >= 0) {
+            lines[ndx] = "// @@ VERTEX ATTRIBUTES @@";
+          } else if (line.indexOf("@@ MAIN PROLOGUE @@") >= 0) {
+            lines[ndx] = "// @@ MAIN PROLOGUE @@\ngetInput(input);";
+          } else if (line.indexOf("@@ VERTEX OUTPUT @@") >= 0) {
+            // have to create a VS_OUTPUT struct and a generateOutput function from varyings
+            lines[ndx] = "// @@ VERTEX OUTPUT @@\nstruct VS_INPUT\n  {";
+            let aNdx = 0;
+            for (const tstr of attrs) {
+              ++ndx;
+              lines.splice(ndx, 0, "  " + tstr + ": TEXCOORD" + aNdx + ";");
+              ++aNdx;
+            }
+
+            ++ndx;
+            lines.splice(ndx, 0, "  };\nvoid getInput(VS_INPUT input) {");
+            for (const tstr of attrs) {
+              let t = tstr.indexOf("_a");
+              let vName = tstr.substring(t);
+              t = vName.indexOf(" ");
+              vName = vName.substring(0, t);
+              ++ndx;
+              lines.splice(ndx, 0, "  " + vName + " = input." + vName + ";");
+            }
+
+            ++ndx;
+            lines.splice(ndx, 0, "}\nstruct VS_OUTPUT\n  {");
+            if (haveGLpos) {
+              ++ndx;
+              lines.splice(ndx, 0, "  float4 _v_position : SV_Position;");
+            }
+
+            if (haveGLpntsz) {
+              ++ndx;
+              lines.splice(ndx, 0, "  float gl_PointSize : PointSize;");
+            }
+
+            let vNdx = 0;
+            for (const tstr of varyings) {
+              ++ndx;
+              lines.splice(ndx, 0, "  " + tstr + ": TEXCOORD" + vNdx + ";");
+              ++vNdx;
+            }
+
+            ++ndx;
+            lines.splice(ndx, 0, "  };\nVS_OUTPUT generateOutput(VS_INPUT input) {\n  VS_OUTPUT output;");
+            if (haveGLpos) {
+              ++ndx;
+              lines.splice(ndx, 0, "  output._v_position = gl_Position;");
+            }
+
+            if (haveGLpntsz) {
+              ++ndx;
+              lines.splice(ndx, 0, "  output.gl_PointSize = gl_PointSize;");
+            }
+
+            for (const tstr of varyings) {
+              let t = tstr.indexOf("_v");
+              let vName = tstr.substring(t);
+              t = vName.indexOf(" ");
+              vName = vName.substring(0, t);
+              ++ndx;
+              lines.splice(ndx, 0, "  output." + vName + " = " + vName + ";");
+            }
+
+            ++ndx;
+            lines.splice(ndx, 0, "  return output;\n}");
+          }
+        } else { // fragment shader
+          let tNdx = 0;
+          if ((tNdx = line.indexOf("static float4 gl_Color[")) >= 0) {
+          } else if (line.indexOf("gl_Color[0] =") >= 0) {
+            if (numTargets < 1)
+              numTargets = 1;
+          } else if (line.indexOf("gl_Color[1] =") >= 0) {
+            if (numTargets < 2)
+              numTargets = 2;
+          } else if (line.indexOf("gl_Color[2] =") >= 0) {
+            if (numTargets < 3)
+              numTargets = 3;
+          } else if (line.indexOf("gl_Color[3] =") >= 0) {
+            numTargets = 4;
+          } else if (line.indexOf("gl_Depth") >= 0) {
+            haveGLDepth = true;
+          } else if (line.indexOf("gl_FrontFacing") >= 0) {
+            haveGLFrontFacing = true;
+          } else if (line.indexOf("gl_PointCoord") >= 0) {
+            haveGLPointCoord = true;
+          } else if (line.indexOf("gl_FragCoord") >= 0) {
+            haveGLFragCoord = true;
+          } else if ((tNdx = line.indexOf("out_FragColor")) >= 0) {
+            const c = line.substr(tNdx + 13, 1);
+            if (c === " " || c === "=")
+              haveGLFragColorOnly = true;
+            else {
+              tNdx = +c;
+              haveGLFragColor[tNdx] = true;
+            }
+          } else if (line.indexOf("@@ PIXEL OUTPUT @@") >= 0) {
+            // have to create a VS_OUTPUT struct, a getInputs function (both from varyings),
+            // a PS_OUTPUT struct, and a generateOutput function (both based on numTargets or haveGLFragColor)
+            lines[ndx] = "// @@ PIXEL OUTPUT @@\nstruct VS_OUTPUT\n  {";
+            if (haveGLFragCoord) {
+              ++ndx;
+              lines.splice(ndx, 0, "  float4 gl_FragCoord : SV_POSITION;");
+            }
+
+            let vNdx = 0;
+            for (const tstr of varyings) {
+              ++ndx;
+              lines.splice(ndx, 0, "  " + tstr + ": TEXCOORD" + vNdx + ";");
+              ++vNdx;
+            }
+
+            if (haveGLFrontFacing) {
+              ++ndx;
+              lines.splice(ndx, 0, "  bool gl_FrontFacing : SV_IsFrontFace;");
+            }
+
+            if (haveGLPointCoord) {
+              ++ndx;
+              lines.splice(ndx, 0, "  float2 gl_PointCoord : PointCoord;");
+            }
+
+            ++ndx;
+            lines.splice(ndx, 0, "  };\nvoid getInputs(VS_OUTPUT input) {");
+            if (haveGLFragCoord) {
+              ++ndx;
+              lines.splice(ndx, 0, "  gl_FragCoord = input.gl_FragCoord;");
+            }
+
+            for (const tstr of varyings) {
+              let t = tstr.indexOf("_v");
+              let vName = tstr.substring(t);
+              t = vName.indexOf(" ");
+              vName = vName.substring(0, t);
+              ++ndx;
+              lines.splice(ndx, 0, "  " + vName + " = input." + vName + ";");
+            }
+
+            if (haveGLFrontFacing) {
+              ++ndx;
+              lines.splice(ndx, 0, "  gl_FrontFacing = input.gl_FrontFacing;");
+            }
+
+            if (haveGLPointCoord) {
+              ++ndx;
+              lines.splice(ndx, 0, "  gl_PointCoord = input.gl_PointCoord;");
+            }
+
+            ++ndx;
+            lines.splice(ndx, 0, "}\nstruct PS_OUTPUT\n  {");
+            let cNdx = 0;
+            while (cNdx < numTargets) {
+              ++ndx;
+              lines.splice(ndx, 0, "  float4 col" + cNdx + " : SV_TARGET" + cNdx + ";");
+              ++cNdx;
+            }
+
+            if (haveGLFragColorOnly) {
+              ++ndx;
+              lines.splice(ndx, 0, "  float4 out_FragColor : SV_TARGET;");
+            } else {
+              for (cNdx = 0; cNdx < haveGLFragColor.length; ++cNdx) {
+                if (haveGLFragColor[cNdx]) {
+                  ++ndx;
+                  lines.splice(ndx, 0, "  float4 out_FragColor" + cNdx + " : SV_TARGET" + cNdx + ";");
+                }
+              }
+            }
+
+            if (haveGLDepth) {
+              ++ndx;
+              lines.splice(ndx, 0, "  float gl_Depth : SV_Depth;");
+            }
+
+            ++ndx;
+            lines.splice(ndx, 0, "  };\nPS_OUTPUT generateOutput () {\n  PS_OUTPUT output;");
+            cNdx = 0;
+            while (cNdx < numTargets) {
+              ++ndx;
+              lines.splice(ndx, 0, "  output.col" + cNdx + " = gl_Color[" + cNdx + "];");
+              ++cNdx;
+            }
+
+            if (haveGLFragColorOnly) {
+              ++ndx;
+              lines.splice(ndx, 0, "  output.out_FragColor = out_FragColor;");
+            } else {
+              for (cNdx = 0; cNdx < haveGLFragColor.length; ++cNdx) {
+                if (haveGLFragColor[cNdx]) {
+                  ++ndx;
+                  lines.splice(ndx, 0, "  output.out_FragColor" + cNdx + " = out_FragColor" + cNdx + ";");
+                }
+              }
+            }
+
+            if (haveGLDepth) {
+              ++ndx;
+              lines.splice(ndx, 0, "  output.gl_Depth = gl_Depth;");
+            }
+
+            ++ndx;
+            lines.splice(ndx, 0, "  return output;\n}");
+          } else if (line.indexOf("PS_OUTPUT main") >= 0) {
+            lines[ndx] = "// " + line + "\nPS_OUTPUT main(VS_OUTPUT input){";
+          } else if (line.indexOf("@@ MAIN PROLOGUE @@") >= 0) {
+            lines[ndx] = "// " + line + "\ngetInputs(input);";
+          }
+        }
+
+        ++ndx;
+      }
+    }
+
+    const srcH2 = lines.join("\n");
+    dsfNdx = shaderFiles.push(new DebugShaderFile(fnameH, srcH2, isVS, false, false));
+    if (isVS)
+      this._vertHNdx = dsfNdx - 1;
+    else
+      this._fragHNdx = dsfNdx - 1;
   }
 }
 
@@ -339,7 +675,7 @@ export class ShaderProgramExecutor {
     }
   }
 
-  public pushBranch(branch: Branch): void { this.target.pushBranch(this, branch); }
+  public pushBranch(branch: Branch): void { this.target.pushBranch(branch); }
   public popBranch(): void { this.target.popBranch(); }
   public pushBatch(batch: Batch): void { this.target.pushBatch(batch); }
   public popBatch(): void { this.target.popBatch(); }

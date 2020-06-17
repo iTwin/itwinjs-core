@@ -3,15 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { expect } from "chai";
 import { ContextRegistryClient, ContextRegistryRequestQueryOptions, Project } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { expect } from "chai";
 import { IModelHubPermission, Permission, RbacClient } from "../../RbacClient";
 import { TestConfig } from "../TestConfig";
 
-// VSTS#291161: Re-enable tests after oidc-signin-tool fixes
-describe.skip("RbacClient (#integration)", () => {
+describe("RbacClient (#integration)", () => {
   const contextRegistry = new ContextRegistryClient();
   const rbacClient = new RbacClient();
   let requestContext: AuthorizedClientRequestContext;

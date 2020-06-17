@@ -6,12 +6,12 @@
  * @module ToolSettings
  */
 
+import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { useResizeObserver } from "@bentley/ui-core";
-import { ToolSettingProps } from "./Setting";
 import { Ellipsis } from "../base/Ellipsis";
-import "./Overflow.scss";
+import { ToolSettingProps } from "./Setting";
 
 /** Properties of [[ToolSettingsOverflow]] component.
  * @internal

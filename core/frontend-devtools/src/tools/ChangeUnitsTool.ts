@@ -7,10 +7,7 @@
  * @module Tools
  */
 
-import {
-  IModelApp,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** Controls whether quantities are formatted using imperial or metric units.

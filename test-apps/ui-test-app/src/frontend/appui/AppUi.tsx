@@ -3,18 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
-
-import * as React from "react";
-
-import { StageUsage, StagePanelLocation } from "@bentley/ui-abstract";
-import { FillCentered } from "@bentley/ui-core";
-import {
-  ConfigurableUiManager, FrontstageManager, WidgetState, ContentGroupProps,
-  TaskPropsList, WorkflowPropsList, ContentLayoutProps, UiFramework, CoreTools,
-  KeyboardShortcutProps, FunctionKey, CommandItemDef, KeyboardShortcutManager,
-  WorkflowProps, WidgetDef, ZoneLocation, WidgetProvider, StagePanelSection,
-} from "@bentley/ui-framework";
-
 /** Include application registered Controls in Webpack
  */
 import "./contentviews/CubeContent";
@@ -32,18 +20,25 @@ import "./tooluiproviders/Tool1UiProvider";
 import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
-
+import * as React from "react";
+import { StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
+import { FillCentered } from "@bentley/ui-core";
+import {
+  CommandItemDef, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, CoreTools, FrontstageManager, FunctionKey, KeyboardShortcutManager,
+  KeyboardShortcutProps, StagePanelSection, TaskPropsList, UiFramework, WidgetDef, WidgetProvider, WidgetState, WorkflowProps, WorkflowPropsList,
+  ZoneLocation,
+} from "@bentley/ui-framework";
+import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
+import { AppTools } from "../tools/ToolSpecifications";
+import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
 import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
 import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
-import { SignInFrontstage } from "./frontstages/SignInFrontstage";
-import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFrontstage";
-import { AppTools } from "../tools/ToolSpecifications";
-import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
+import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 
 /** Example Ui Configuration for an iModelJS App
  */
@@ -455,6 +450,7 @@ export class AppUi {
     UiFramework.widgetManager.addWidgetDef(widgetDef2, undefined, StageUsage.General, ZoneLocation.BottomRight);
 
     const widgetDef3 = new WidgetDef({
+      id: "uitestapp-test-wd3",
       iconSpec: "icon-placeholder",
       label: "Dynamic Widget 3",
       element: <FillCentered>Dynamic Widget in panel</FillCentered>,

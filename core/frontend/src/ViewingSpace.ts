@@ -7,40 +7,20 @@
  */
 
 import {
-  AxisOrder,
-  ClipPlaneContainment,
-  Constant,
-  Map4d,
-  Matrix3d,
-  Point3d,
-  Point4d,
-  Range1d,
-  Range2d,
-  Range3d,
-  Transform,
-  Vector3d,
-  XYZ,
-  XYAndZ,
+  AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
-import {
-  Frustum,
-  Npc,
-  NpcCorners,
-} from "@bentley/imodeljs-common";
+import { Frustum, Npc, NpcCorners } from "@bentley/imodeljs-common";
+import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
+import { CoordSystem, Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
 import { ViewState } from "./ViewState";
-import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
-import {
-  CoordSystem,
-  Viewport,
-} from "./Viewport";
+import { Frustum2d } from "./Frustum2d";
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's camera or volume changes.
  * @beta
  */
 export class ViewingSpace {
-  private static get frustumDepth2d() { return Constant.oneMeter; }
   private readonly _viewRange = new ViewRect(); // scratch variable
   private readonly _viewCorners = new Range3d(); // scratch variable
 
@@ -173,7 +153,7 @@ export class ViewingSpace {
       const viewZ = this.rotation.getRow(2);
       const eyeDepth = this.eyePoint ? viewZ.dotProduct(this.eyePoint) : undefined;
       const heightRange = this.view.displayStyle.displayTerrain ? ApproximateTerrainHeights.instance.globalHeightRange : Range1d.createXX(-1, 1);
-      depthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(frustum, heightRange, this.view.maxGlobalScopeFactor > 1);
+      depthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(frustum, extents, heightRange, this.view.maxGlobalScopeFactor > 1);
 
       if (eyeDepth !== undefined) {
         const maxBackgroundFrontBackRatio = 1.0E6;
@@ -274,8 +254,8 @@ export class ViewingSpace {
 
         const extents = view.getViewedExtents();
         if (extents.isNull) {
-          extents.low.z = -ViewingSpace.frustumDepth2d;
-          extents.high.z = ViewingSpace.frustumDepth2d;
+          extents.low.z = Frustum2d.minimumZExtents.low;
+          extents.high.z = Frustum2d.minimumZExtents.high;
         }
 
         let zMax = Math.max(Math.abs(extents.low.z), Math.abs(extents.high.z));
@@ -314,8 +294,6 @@ export class ViewingSpace {
       }
     } else { // 2d viewport
       this.alignWithRootZ();
-      delta.z = 2 * ViewingSpace.frustumDepth2d;
-      origin.z = -ViewingSpace.frustumDepth2d;
     }
 
     this.viewOrigin.setFrom(origin);

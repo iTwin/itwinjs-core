@@ -7,12 +7,10 @@
  */
 
 import * as React from "react";
-
 import { CommandHandler, OnItemExecutedFunc } from "@bentley/ui-abstract";
 import { Orientation, SizeProps } from "@bentley/ui-core";
-
-import { ItemDefBase } from "./ItemDefBase";
 import { ActionItemButton } from "../toolbar/ActionItemButton";
+import { ItemDefBase } from "./ItemDefBase";
 import { ItemProps } from "./ItemProps";
 
 /** Abstract base class that is used by classes to execute an action when pressed.

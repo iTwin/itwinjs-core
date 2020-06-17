@@ -15,14 +15,16 @@ $text-font-color: $buic-text-color;
   padding: 1px 9px;
 
   .components-property-record-label {
-    font-size: $text-font-size;
-    color: $text-font-color;
+    font-size: $uicore-font-size-small;
+    color: $buic-foreground-muted;
+    margin-right: 5px;
   }
 
   .components-property-record-value {
     min-height: 24px;
     font-size: $text-font-size;
     color: $text-font-color;
+    padding: 0px 5px;
   }
 }
 

@@ -3,18 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as faker from "faker";
+import * as sinon from "sinon";
 import {
-  createRandomCategory, createRandomPrimitiveTypeDescription,
-  createRandomId, createRandomECClassInfo,
-} from "./_helpers/random";
-import {
-  RulesetsFactory, Rule, RuleTypes, ContentSpecificationTypes,
-  Property, PropertiesField, Field, Item, PropertyValueFormat,
-  PrimitiveTypeDescription, StructTypeDescription, ArrayTypeDescription,
-  NestedContentField, RelatedClassInfo, NestedContentValue, RelationshipDirection, ClassInfo,
+  ArrayTypeDescription, ClassInfo, ContentSpecificationTypes, Field, Item, NestedContentField, NestedContentValue, PrimitiveTypeDescription,
+  PropertiesField, Property, PropertyValueFormat, RelatedClassInfo, RelationshipDirection, Rule, RulesetsFactory, RuleTypes, StructTypeDescription,
 } from "../presentation-common";
+import { createRandomCategory, createRandomECClassInfo, createRandomId, createRandomPrimitiveTypeDescription } from "./_helpers/random";
 
 describe("RulesetsFactory", () => {
 

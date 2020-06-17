@@ -8,16 +8,15 @@
 
 import { XAndY } from "@bentley/geometry-core";
 import {
-  UiAdmin, AbstractMenuItemProps, AbstractToolbarProps,
-  RelativePosition, OnItemExecutedFunc, OnCancelFunc, OnNumberCommitFunc, Primitives, PropertyDescription, OnValueCommitFunc,
+  AbstractMenuItemProps, AbstractToolbarProps, OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc, Primitives,
+  PropertyDescription, PropertyRecord, RelativePosition, UiAdmin, UiDataProvider,
 } from "@bentley/ui-abstract";
-
-import { CursorInformation } from "../cursor/CursorInformation";
-import { UiFramework } from "../UiFramework";
-import { CursorMenuData } from "../redux/SessionState";
-import { PopupManager } from "../popup/PopupManager";
-import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { AccuDrawPopupManager } from "../accudraw/AccuDrawPopupManager";
+import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
+import { CursorInformation } from "../cursor/CursorInformation";
+import { PopupManager } from "../popup/PopupManager";
+import { CursorMenuData } from "../redux/SessionState";
+import { UiFramework } from "../UiFramework";
 
 /** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
  * @beta
@@ -205,9 +204,10 @@ export class FrameworkUiAdmin extends UiAdmin {
    */
   public showHTMLElement(
     displayElement: HTMLElement, location: XAndY, offset: XAndY, onCancel: OnCancelFunc,
-    relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean {
-    const { position, el } = this.resolveHtmlElement(location, htmlElement);
+    relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean {
+    const { position, el } = this.resolveHtmlElement(location, anchorElement);
 
+    // istanbul ignore if
     if (relativePosition === undefined)
       relativePosition = RelativePosition.TopRight;
 
@@ -219,4 +219,58 @@ export class FrameworkUiAdmin extends UiAdmin {
     return PopupManager.hideHTMLElement();
   }
 
+  /** Show a Card containing content, a title and a toolbar at a particular location.
+   * @param content The HTMLElement of the content to display
+   * @param title Title to display at the top of the card.
+   * @param toolbarProps Properties of the Toolbar to display.
+   * @param location Location of the Card, relative to the origin of htmlElement or the window.
+   * @param offset Offset of the Card from the location.
+   * @param onItemExecuted Function invoked after a Toolbar item is executed
+   * @param onCancel Function invoked when the Escape key is pressed or a click occurs outside the Card
+   * @param relativePosition Position relative to the given location. Defaults to TopRight.
+   * @param anchorElement The HTMLElement that anchors the Card. If undefined, the location is relative to the overall window.
+   * @return true if the Card was displayed, false if the Card could not be displayed.
+   */
+  public showCard(
+    content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined,
+    location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc,
+    relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean {
+    const { position, el } = this.resolveHtmlElement(location, anchorElement);
+
+    // istanbul ignore if
+    if (relativePosition === undefined)
+      relativePosition = RelativePosition.TopRight;
+
+    return PopupManager.showCard(content, title, toolbarProps, el, position, offset, onItemExecuted, onCancel, relativePosition);
+  }
+
+  /** Hides the Card. */
+  public hideCard(): boolean {
+    return PopupManager.hideCard();
+  }
+
+  /** Opens a Tool Settings Ui popup at a particular location.
+   * @param dataProvider The UiDataProvider for the tool settings
+   * @param location Location of the tool settings, relative to the origin of anchorElement or the window
+   * @param offset Offset of the tool settings from the location
+   * @param onCancel Function invoked when the Escape key is pressed or a click occurs outside the tool settings
+   * @param relativePosition Position relative to the given location. Defaults to TopRight.
+   * @param anchorElement The HTMLElement that anchors the tool settings. If undefined, the location is relative to the overall window.
+   * @return true if the tool settings were displayed, false if the tool settings could not be displayed.
+   */
+  public openToolSettingsPopup(
+    dataProvider: UiDataProvider, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement,
+  ): boolean {
+    const { position, el } = this.resolveHtmlElement(location, anchorElement);
+
+    if (relativePosition === undefined)
+      relativePosition = RelativePosition.TopRight;
+
+    return PopupManager.openToolSettings(dataProvider, el, position, offset, onCancel, relativePosition);
+  }
+
+  /** Closes the Tool Settings Ui popup. */
+  public closeToolSettingsPopup(): boolean {
+    return PopupManager.closeToolSettings();
+  }
 }

@@ -6,12 +6,13 @@
  * @module Numerics
  */
 
-import { Geometry, BeJSONFunctions } from "../Geometry";
-import { XYAndZ } from "../geometry3d/XYZProps";
+import { BeJSONFunctions, Geometry } from "../Geometry";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
+import { XYAndZ } from "../geometry3d/XYZProps";
 import { Point4d, Point4dProps } from "./Point4d";
+
 /**
  * Coordinate data with `Point4d` numeric data as an array `[x,y,z,w]`
  * @public

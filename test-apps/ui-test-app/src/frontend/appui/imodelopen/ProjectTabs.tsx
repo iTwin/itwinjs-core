@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import classnames from "classnames";
 import "./ProjectTabs.scss";
+import classnames from "classnames";
+import * as React from "react";
 
 /**
  * Properties for the [[ProjectTab]] component. A temporary tab component.  Do not reuse!
@@ -24,11 +24,6 @@ export interface TabProps {
  * @internal
  */
 export class ProjectTab extends React.Component<TabProps> {
-
-  constructor(props: TabProps, context?: any) {
-    super(props, context);
-  }
-
   public static defaultProps: Partial<TabProps> = {
     label: "",
     icon: "",
@@ -59,6 +54,7 @@ export class ProjectTab extends React.Component<TabProps> {
     const icon = classnames("icon", this.props.icon);
     return (
       <li className={classes} onClick={this._onClick}>
+        {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
         <a>
           <span className={icon} />
           <span className="text">{this.props.label}</span>

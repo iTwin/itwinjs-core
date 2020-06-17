@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { Angle, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ, Constant } from "@bentley/geometry-core";
+import { Angle, Constant, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ } from "@bentley/geometry-core";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 

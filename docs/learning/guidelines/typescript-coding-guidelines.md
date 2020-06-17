@@ -54,7 +54,8 @@ On the other hand, vertical whitespace can contribute significantly to code read
 2. Don't use blank lines unnecessarily. For example the first line of a function *not* should be a blank line.
 3. There should never be more than one blank line in a row.
 4. **Don't use** clever/pretty multi-line comment blocks to separate sections of code. One line suffices, if you absolutely feel the need to include them. Usually they aren't necessary. Your well written, accurate and complete documentation and logical source organization is all the help anyone needs to understand your code.
-5. If a function has only a single statement, it should **not** be on one line. Many debuggers refuse to allow breakpoints to be set on single-line functions.
+5. Don't put each import in an import statement on a separate line. If you use Visual Studio Code as your editor, use the [TypeScript Import Sorter extension](https://marketplace.visualstudio.com/items?itemName=mike-co.import-sorter) with its default settings to automatically format import statements.
+6. If a function has only a single statement, it should **not** be on one line. Many debuggers refuse to allow breakpoints to be set on single-line functions.
 
 > Note: This recommendation is now the exact opposite of the previous recommendation.
 
@@ -70,7 +71,7 @@ On the other hand, vertical whitespace can contribute significantly to code read
   }
 ```
 
-6. The body of an `if` statement or a loop should be on a separate line, even if the body contains only a single line of code.
+7. The body of an `if` statement or a loop should be on a separate line, even if the body contains only a single line of code.
 
 ```ts
   // No (body on same line as conditional, cannot set breakpoint) !!!
@@ -83,7 +84,7 @@ On the other hand, vertical whitespace can contribute significantly to code read
     return "cat";
 ```
 
-7. A closing curly brace should be followed by a blank line.
+8. A closing curly brace should be followed by a blank line.
 
 ```ts
   // No (missing blank line after closing brace) !!!
@@ -106,7 +107,7 @@ On the other hand, vertical whitespace can contribute significantly to code read
   return maximum - minimum;
 ```
 
-8. Omit curly braces from single-line code blocks...
+9. Omit curly braces from single-line code blocks...
 
 ```ts
   // No (closing brace wastes a line) !!!
@@ -121,7 +122,7 @@ On the other hand, vertical whitespace can contribute significantly to code read
     return "cat";
 ```
 
-9. ...unless related blocks require braces
+10. ...unless related blocks require braces
 
 ```ts
   // No (unbalanced braces) !!!

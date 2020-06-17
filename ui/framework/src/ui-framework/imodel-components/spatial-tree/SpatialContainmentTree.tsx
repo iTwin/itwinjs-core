@@ -6,15 +6,14 @@
  * @module IModelComponents
  */
 
-import * as React from "react";
-import { Ruleset } from "@bentley/presentation-common";
-import { connectIModelConnection } from "../../redux/connectIModel";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ControlledTree, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
-import { usePresentationTreeNodeLoader, IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
-import { useDisposable } from "@bentley/ui-core";
-
 import "./SpatialContainmentTree.scss";
+import * as React from "react";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Ruleset } from "@bentley/presentation-common";
+import { IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
+import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
+import { useDisposable } from "@bentley/ui-core";
+import { connectIModelConnection } from "../../redux/connectIModel";
 
 const PAGING_SIZE = 20;
 

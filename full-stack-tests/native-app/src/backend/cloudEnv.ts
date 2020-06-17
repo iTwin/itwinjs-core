@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Config } from "@bentley/bentleyjs-core";
-import { IModelHubBackendCloudEnv } from "./IModelHubBackendCloudEnv";
-import { getIModelBankCloudEnv } from "./IModelBankBackendCloudEnv";
 import { IModelCloudEnvironment } from "@bentley/imodelhub-client";
+import { getIModelBankCloudEnv } from "./IModelBankBackendCloudEnv";
+import { IModelHubBackendCloudEnv } from "./IModelHubBackendCloudEnv";
 
 export class CloudEnv {
   public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank") && !!JSON.parse(Config.App.get("imjs_test_imodel_bank"));

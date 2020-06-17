@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { ControlledTreeProps, useVisibleTreeNodes, AbstractTreeNodeLoaderWithProvider } from "@bentley/ui-components";
+import { AbstractTreeNodeLoaderWithProvider, ControlledTreeProps, useVisibleTreeNodes } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /**

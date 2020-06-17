@@ -1,0 +1,16 @@
+sep=;
+Release Tag;API Item
+beta;ComparisonOption
+beta;DistanceExpressionProps
+beta;ILinearElementProps 
+beta;ILinearlyLocatedAttributionProps
+beta;IReferentProps
+beta;LinearLocationReference
+beta;LinearlyLocatedAttributionProps 
+beta;LinearlyReferencedAtLocationAspectProps 
+beta;LinearlyReferencedAtLocationProps
+beta;LinearlyReferencedFromToLocationAspectProps 
+beta;LinearlyReferencedFromToLocationProps
+beta;LinearlyReferencedLocationType
+beta;QueryParams
+beta;ReferentElementProps 

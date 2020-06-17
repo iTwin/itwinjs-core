@@ -6,12 +6,11 @@
  * @module Frontstage
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
-import { BackButton } from "@bentley/ui-ninezone";
-import { CommonProps } from "@bentley/ui-core";
 import "./ModalFrontstage.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
+import { BackButton } from "@bentley/ui-ninezone";
 
 /**
  * Properties for the [[ModalFrontstage]] React component

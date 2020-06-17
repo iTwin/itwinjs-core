@@ -4,17 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import {
-  ECInstancesNodeKey, StandardNodeTypes, Node, NodePathElement,
-  ECClassGroupingNodeKey, ECPropertyGroupingNodeKey,
-  LabelGroupingNodeKey, GroupingNodeKey, BaseNodeKey,
+  BaseNodeKey, ECClassGroupingNodeKey, ECInstancesNodeKey, ECPropertyGroupingNodeKey, GroupingNodeKey, LabelGroupingNodeKey, Node, NodePathElement,
+  StandardNodeTypes,
 } from "../../../presentation-common";
+import { InstanceKey, InstanceKeyJSON } from "../../../presentation-common/EC";
 import { ECInstancesNodeKeyJSON } from "../../../presentation-common/hierarchy/Key";
 import { NodeJSON } from "../../../presentation-common/hierarchy/Node";
 import { NodePathElementJSON } from "../../../presentation-common/hierarchy/NodePathElement";
-import { nullable, createRandomHexColor, createRandomRgbColor } from "./Misc";
 import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "./EC";
-import { createRandomLabelDefinitionJSON, createRandomLabelDefinition } from "./LabelDefinition";
-import { InstanceKeyJSON, InstanceKey } from "../../../presentation-common/EC";
+import { createRandomLabelDefinition, createRandomLabelDefinitionJSON } from "./LabelDefinition";
+import { createRandomHexColor, createRandomRgbColor, nullable } from "./Misc";
 
 export const createRandomBaseNodeKey = (): BaseNodeKey => {
   return {

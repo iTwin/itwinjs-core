@@ -6,18 +6,17 @@
  * @module Toolbar
  */
 
+import "./Items.scss";
 import classnames from "classnames";
 import * as React from "react";
 import {
-  CommonProps, useProximityToMouse,
-  calculateBoxShadowOpacity, calculateProximityScale, calculateToolbarOpacity, calculateBackdropFilterBlur,
-  getToolbarBackgroundColor, getToolbarBoxShadow, getToolbarBackdropFilter,
-  TOOLBAR_OPACITY_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT,
+  calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateProximityScale, calculateToolbarOpacity, CommonProps, getToolbarBackdropFilter,
+  getToolbarBackgroundColor, getToolbarBoxShadow,
+  TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
+  useProximityToMouse,
 } from "@bentley/ui-core";
-
-import { OrthogonalDirectionHelpers, OrthogonalDirection } from "./utilities/Direction";
-import { useToolbarWithOverflowDirectionContext } from "./Toolbar";
-import "./Items.scss";
+import { ToolbarOpacitySetting, useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";
+import { OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
 
 /** Properties of [[ToolbarItems]] component.
  * @internal
@@ -33,23 +32,23 @@ export interface ToolbarItemsProps extends CommonProps {
  * @internal
  */
 export function ToolbarItems(props: ToolbarItemsProps) {
-  const className = classnames(
-    "components-toolbar-items-container",
-    OrthogonalDirectionHelpers.getCssClassName(props.direction),
-    props.className);
 
   const ref = React.useRef<HTMLDivElement>(null);
   const proximity = useProximityToMouse(ref);
-  const { useProximityOpacity, openPopupCount, overflowDisplayActive } = useToolbarWithOverflowDirectionContext();
-  let toolbarOpacity = TOOLBAR_OPACITY_DEFAULT;
-  let boxShadowOpacity = TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT;
-  let filterBlur = TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT;
+  const { toolbarOpacitySetting, openPopupCount, overflowDisplayActive } = useToolbarWithOverflowDirectionContext();
+  const useTransparentBackground = toolbarOpacitySetting === ToolbarOpacitySetting.Transparent;
+  let toolbarOpacity = useTransparentBackground ? 0 : TOOLBAR_OPACITY_DEFAULT;
+  let boxShadowOpacity = useTransparentBackground ? 0 : TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT;
+  let filterBlur = useTransparentBackground ? 0 : TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT;
+  let showSeparators = toolbarOpacitySetting === ToolbarOpacitySetting.Transparent ? false : true;
 
-  if (useProximityOpacity && openPopupCount < 1 && !overflowDisplayActive) {
+  if (toolbarOpacitySetting === ToolbarOpacitySetting.Proximity && openPopupCount < 1 && !overflowDisplayActive) {
     const proximityScale = calculateProximityScale(proximity);
     toolbarOpacity = calculateToolbarOpacity(proximityScale);
     boxShadowOpacity = calculateBoxShadowOpacity(proximityScale);
     filterBlur = calculateBackdropFilterBlur(proximityScale);
+    if (proximityScale < .25)
+      showSeparators = false;
   }
 
   const divStyle: React.CSSProperties = {
@@ -58,6 +57,12 @@ export function ToolbarItems(props: ToolbarItemsProps) {
     backdropFilter: getToolbarBackdropFilter(filterBlur),
     ...props.style,
   };
+
+  const className = classnames(
+    "components-toolbar-items-container",
+    OrthogonalDirectionHelpers.getCssClassName(props.direction),
+    showSeparators && "components-toolbar-show-decorators",
+    props.className);
 
   return (
     <div

@@ -14,7 +14,7 @@ import { UiFramework } from "../UiFramework";
 export const INACTIVITY_TIME_DEFAULT = 3500;  /** Wait 3.5 seconds */
 
 /** Maintains Ui Show/Hide state. The `Ui` includes widgets, panels and the status bar.
- * @beta
+ * @public
  */
 export class UiShowHideManager {
   private static _isUiVisible: boolean = true;

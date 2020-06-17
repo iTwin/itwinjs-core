@@ -2,18 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-import { render, cleanup, fireEvent } from "@testing-library/react";
-import { Button, LabeledInput, AutoSuggest } from "@bentley/ui-core";
-import {
-  KeyinBrowser,
-} from "../../ui-framework";
+import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
+import { AutoSuggest, Button, LabeledInput } from "@bentley/ui-core";
+import { cleanup, fireEvent, render } from "@testing-library/react";
+import { KeyinBrowser } from "../../ui-framework";
 import TestUtils, { storageMock } from "../TestUtils";
-
-import { MockRender, IModelApp } from "@bentley/imodeljs-frontend";
 
 const myLocalStorage = storageMock();
 

@@ -6,17 +6,14 @@
  * @module StatusBar
  */
 
+import "./SelectionInfo.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { connect } from "react-redux";
-import classnames from "classnames";
-
 import { Icon } from "@bentley/ui-core";
 import { FooterIndicator } from "@bentley/ui-ninezone";
-
 import { UiFramework } from "../UiFramework";
 import { StatusFieldProps } from "./StatusFieldProps";
-
-import "./SelectionInfo.scss";
 
 /** Defines properties supported by the SelectionInfo Field Component.
  */

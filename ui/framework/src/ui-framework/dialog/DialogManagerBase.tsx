@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-
 import { UiEvent } from "@bentley/ui-core";
 
 /** Dialog Stack Changed Event Args class.
@@ -66,6 +65,12 @@ export class DialogManagerBase {
       targetDialog = this.activeDialog;
 
     this.removeDialog(targetDialog);
+    this.emitDialogChangedEvent();
+  }
+
+  /** @internal */
+  public closeAll(): void {
+    this._dialogs = [];
     this.emitDialogChangedEvent();
   }
 

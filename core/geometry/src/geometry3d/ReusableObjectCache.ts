@@ -1,9 +1,8 @@
-import { GrowableXYZArray } from "./GrowableXYZArray";
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { GrowableXYZArray } from "./GrowableXYZArray";
 
 /** @packageDocumentation
  * @module ArraysAndInterfaces

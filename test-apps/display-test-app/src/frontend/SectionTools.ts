@@ -3,15 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  IModelApp,
-  ViewClipDecorationProvider,
-  ScreenViewport,
-} from "@bentley/imodeljs-frontend";
-import {
-  createComboBox,
-  createButton,
-} from "@bentley/frontend-devtools";
+import { createButton, createComboBox } from "@bentley/frontend-devtools";
+import { IModelApp, ScreenViewport, ViewClipDecorationProvider } from "@bentley/imodeljs-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 function setFocusToHome(): void {

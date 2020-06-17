@@ -6,64 +6,32 @@
  * @module Rendering
  */
 
+import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { ClipVector, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
 import {
-  base64StringToUint8Array,
-  Id64String,
-  IDisposable,
-} from "@bentley/bentleyjs-core";
-import {
-  ClipVector,
-  IndexedPolyface,
-  Point2d,
-  Point3d,
-  Range2d,
-  Range3d,
-  Transform,
-  Vector2d,
-} from "@bentley/geometry-core";
-import {
-  ColorDef,
-  ElementAlignedBox3d,
-  FeatureIndexType,
-  Gradient,
-  ImageBuffer,
-  ImageSource,
-  ImageSourceFormat,
-  isValidImageSourceFormat,
-  PackedFeatureTable,
-  QParams3d,
-  QPoint3dList,
-  RenderMaterial,
-  RenderTexture,
-  TextureProps,
+  ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat,
+  PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps,
 } from "@bentley/imodeljs-common";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { Viewport } from "../Viewport";
-import { ViewRect } from "../ViewRect";
-import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
-import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
-import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
-import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { BackgroundMapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
-import { RenderTarget } from "./RenderTarget";
-import { RenderMemory } from "./RenderMemory";
+import { Viewport } from "../Viewport";
+import { ViewRect } from "../ViewRect";
+import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
+import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
-import {
-  GraphicList,
-  RenderGraphic,
-  RenderGraphicOwner,
-} from "./RenderGraphic";
+import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
+import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
+import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
 import { RenderClipVolume } from "./RenderClipVolume";
-import {
-  GraphicBranch,
-  GraphicBranchOptions,
-} from "./GraphicBranch";
+import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
+import { RenderMemory } from "./RenderMemory";
+import { RenderTarget } from "./RenderTarget";
 
 // tslint:disable:no-const-enum
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -131,16 +99,20 @@ class GraphicOwner extends RenderGraphicOwner {
 export interface RenderSystemDebugControl {
   /** Destroy this system's webgl context. Returns false if this behavior is not supported. */
   loseContext(): boolean;
+
   /** Draw surfaces as "pseudo-wiremesh", using GL_LINES instead of GL_TRIANGLES. Useful for visualizing faces of a mesh. Not suitable for real wiremesh display. */
   drawSurfacesAsWiremesh: boolean;
+
   /** Record GPU profiling information for each frame drawn. Check isGLTimerSupported before using.
    * @internal
    */
   resultsCallback?: GLTimerResultCallback;
+
   /** Returns true if the browser supports GPU profiling queries.
    * @internal
    */
   readonly isGLTimerSupported: boolean;
+
   /** Attempts to compile all shader programs and returns true if all were successful. May throw exceptions on errors.
    * This is useful for debugging shader compilation on specific platforms - especially those which use neither ANGLE nor SwiftShader (e.g., linux, mac, iOS)
    * because our unit tests which also compile all shaders run in software mode and therefore may not catch some "errors" (especially uniforms that have no effect on
@@ -148,6 +120,11 @@ export interface RenderSystemDebugControl {
    * @internal
    */
   compileAllShaders(): boolean;
+
+  /** Obtain accumulated debug info collected during shader compilation. See `RenderSystem.Options.debugShaders`.
+   * @internal
+   */
+  debugShaderFiles?: DebugShaderFile[];
 }
 
 /** @internal */
@@ -159,6 +136,12 @@ export abstract class RenderTerrainMeshGeometry implements IDisposable, RenderMe
 /** @internal */
 export class TerrainTexture {
   public constructor(public readonly texture: RenderTexture, public readonly scale: Vector2d, public readonly translate: Vector2d, public readonly clipRectangle?: Range2d) {
+  }
+}
+
+/** @internal */
+export class DebugShaderFile {
+  public constructor(public readonly filename: string, public readonly src: string, public isVS: boolean, public isGL: boolean, public isUsed: boolean) {
   }
 }
 
@@ -265,10 +248,6 @@ export abstract class RenderSystem implements IDisposable {
   public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
-  /** @internal */
-  public createSheetTilePolyfaces(_corners: Point3d[], _clip?: ClipVector): IndexedPolyface[] { return []; }
-  /** @internal */
-  public createSheetTile(_tile: RenderTexture, _polyfaces: IndexedPolyface[], _tileColor: ColorDef): GraphicList { return []; }
   /** @internal */
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
   /** @internal */
@@ -408,8 +387,8 @@ export abstract class RenderSystem implements IDisposable {
       return undefined;
 
     const imageSource = new ImageSource(base64StringToUint8Array(textureProps.data as string), format);
-    const imagePromise = imageElementFromImageSource(imageSource);
-    return imagePromise.then((image: HTMLImageElement) => ({ image, format }));
+    const image = await imageElementFromImageSource(imageSource);
+    return { image, format };
   }
 
   /** Obtain a texture created from a gradient.
@@ -419,7 +398,6 @@ export abstract class RenderSystem implements IDisposable {
    * @note If a texture matching the specified gradient already exists, it will be returned.
    * Otherwise, the newly-created texture will be cached on the IModelConnection such that a subsequent call to getGradientTexture with an equivalent gradient will
    * return the previously-created texture.
-   * @beta
    */
   public getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
 
@@ -431,7 +409,8 @@ export abstract class RenderSystem implements IDisposable {
 
   /** Create a new texture from an [[ImageSource]]. */
   public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    return imageElementFromImageSource(source).then((image) => IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined);
+    const image = await imageElementFromImageSource(source);
+    return IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined;
   }
 
   /** Create a new texture from a cube of HTML images.
@@ -528,14 +507,14 @@ export namespace RenderSystem {
 
     /** If true will attempt to create a WebGL2 context.
      *
-     * Default value: false
+     * Default value: true
      *
      * @internal
      */
     useWebGL2?: boolean;
 
     /** If true, plan projection models will be rendered using [PlanProjectionSettings]($common) defined by the [[DisplayStyle3dState]].
-     * Default value: false
+     * Default value: true
      * @internal
      */
     planProjections?: boolean;
@@ -556,5 +535,12 @@ export namespace RenderSystem {
      * @internal
      */
     contextAttributes?: WebGLContextAttributes;
+
+    /** If true, and the `WEBGL_debug_shaders` extension is available, accumulate debug information during shader compilation.
+     * This information can be accessed via `RenderSystemDebugControl.debugShaderFiles`.
+     * Default value: false
+     * @internal
+     */
+    debugShaders?: boolean;
   }
 }

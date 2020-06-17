@@ -6,17 +6,17 @@
  * @module WidgetPanels
  */
 
+import "./Panels.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { CenterContent } from "./CenterContent";
-import { CursorOverlay } from "./CursorOverlay";
-import { WidgetPanel, panelSides } from "./Panel";
 import { PanelsStateContext } from "../base/NineZone";
+import { WidgetContentRenderers } from "../widget/ContentRenderer";
 import { FloatingTab } from "../widget/FloatingTab";
 import { AppContent } from "./AppContent";
-import { WidgetContentRenderers } from "../widget/ContentRenderer";
-import "./Panels.scss";
+import { CenterContent } from "./CenterContent";
+import { CursorOverlay } from "./CursorOverlay";
+import { panelSides, WidgetPanel } from "./Panel";
 
 /** Properties of [[WidgetPanels]] component.
  * @internal

@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { render, fireEvent, waitForElement } from "@testing-library/react";
-import * as sinon from "sinon";
 import * as React from "react";
+import * as sinon from "sinon";
 import { LinkElementsInfo, PropertyRecord } from "@bentley/ui-abstract";
+import { fireEvent, render, waitForElement } from "@testing-library/react";
+import { hasLinks, LinksRenderer, renderLinks, withLinks } from "../../ui-components/properties/LinkHandler";
 import TestUtils from "../TestUtils";
-import { hasLinks, renderLinks, withLinks, LinksRenderer } from "../../ui-components/properties/LinkHandler";
 
 describe("LinkHandler", () => {
   let record: PropertyRecord;

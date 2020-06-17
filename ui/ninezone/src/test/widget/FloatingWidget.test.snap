@@ -6,7 +6,7 @@ exports[`FloatingWidget should render 1`] = `
   style="height: 300px; width: 200px; left: 0px; top: 100px;"
 >
   <div
-    class="nz-widget-titleBar"
+    class="nz-widget-tabBar"
   >
     <div
       class="nz-handle"
@@ -48,7 +48,7 @@ exports[`FloatingWidget should render dragged 1`] = `
   style="width: 200px; left: 0px; top: 100px;"
 >
   <div
-    class="nz-widget-titleBar"
+    class="nz-widget-tabBar"
   >
     <div
       class="nz-handle"
@@ -90,7 +90,7 @@ exports[`FloatingWidget should render minimized 1`] = `
   style="width: 200px; left: 0px; top: 100px;"
 >
   <div
-    class="nz-widget-titleBar"
+    class="nz-widget-tabBar"
   >
     <div
       class="nz-handle"

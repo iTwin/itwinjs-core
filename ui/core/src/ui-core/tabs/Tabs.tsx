@@ -6,12 +6,12 @@
  * @module Tabs
  */
 
-import * as React from "react";
 import classnames from "classnames";
+import * as React from "react";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[HorizontalTabs]] and [[VerticalTabs]] components
- * @beta
+ * @public
  */
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
   /** Text shown for each tab */
@@ -25,7 +25,7 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
 }
 
 /** Properties for the base [[Tabs]] component
- * @beta
+ * @public
  */
 export interface MainTabsProps extends TabsProps {
   /** Main CSS class name */
@@ -33,9 +33,10 @@ export interface MainTabsProps extends TabsProps {
 }
 
 /** Tabs meant to represent the current position in a page/section
- * @beta
+ * @public
  */
 export class Tabs extends React.PureComponent<MainTabsProps> {
+  /** @internal */
   public render(): JSX.Element {
     const ulClassNames = classnames(
       this.props.mainClassName,

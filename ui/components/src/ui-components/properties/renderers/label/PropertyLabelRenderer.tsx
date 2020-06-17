@@ -6,9 +6,8 @@
  * @module Properties
  */
 
-import * as React from "react";
-
 import "./PropertyLabelRenderer.scss";
+import * as React from "react";
 
 /** Base properties for a property label renderer
  * @public

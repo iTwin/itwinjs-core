@@ -4,19 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Transform } from "../../geometry3d/Transform";
-import { LineSegment3d } from "../../curve/LineSegment3d";
+import { BooleanClipFactory } from "../../clipping/BooleanClipFactory";
+import { BooleanClipNode } from "../../clipping/BooleanClipNode";
+import { Clipper } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
-import { BooleanClipNode } from "../../clipping/BooleanClipNode";
-import { BooleanClipFactory } from "../../clipping/BooleanClipFactory";
-import { Clipper } from "../../clipping/ClipUtils";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { Checker } from "../Checker";
+
 /* tslint:disable:no-console */
 
 describe("ConvexClipPlaneSet", () => {

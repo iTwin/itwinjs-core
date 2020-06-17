@@ -32,6 +32,7 @@ export function FrameworkVersion(props: FrameworkVersionProps) {
 
   React.useEffect(() => {
     const version = props.version;
+    // istanbul ignore else
     if (currentVersion.current !== version) {
       const oldVersion = currentVersion.current;
       currentVersion.current = version;
@@ -57,12 +58,10 @@ export interface FrameworkVersionSwitchProps {
 export function FrameworkVersionSwitch(props: FrameworkVersionSwitchProps) {
   const version = useFrameworkVersion();
   switch (version) {
-    case "1": {
-      return <>{props.v1}</>;
-    }
     case "2": {
       return <>{props.v2}</>;
     }
+    case "1":
     default: {
       return <>{props.v1}</>;
     }

@@ -4,17 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-
-import { SelectionTool, IModelApp } from "@bentley/imodeljs-frontend";
-import { Orientation, Size } from "@bentley/ui-core";
-
-import TestUtils from "../TestUtils";
-import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
-import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
-import { ActionButtonItemDef } from "../../ui-framework/shared/ActionButtonItemDef";
-import { Tool1 } from "../tools/Tool1";
-import { ItemProps } from "../../ui-framework/shared/ItemProps";
+import { IModelApp, SelectionTool } from "@bentley/imodeljs-frontend";
 import { ConditionalStringValue } from "@bentley/ui-abstract";
+import { Orientation, Size } from "@bentley/ui-core";
+import { ActionButtonItemDef } from "../../ui-framework/shared/ActionButtonItemDef";
+import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
+import { ItemProps } from "../../ui-framework/shared/ItemProps";
+import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
+import TestUtils from "../TestUtils";
+import { Tool1 } from "../tools/Tool1";
 
 describe("Item", () => {
 

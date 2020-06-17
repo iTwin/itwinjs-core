@@ -2,14 +2,16 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
+import { GuidString, Id64Array } from "@bentley/bentleyjs-core";
+import { Point3d, TransformProps, YawPitchRollAngles } from "@bentley/geometry-core";
+import { GeometricElement3dProps } from "../ElementProps";
+import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { IModelRpcProps } from "../IModel";
-import { Id64Array, GuidString } from "@bentley/bentleyjs-core";
-import { GeometricElement3dProps } from "../ElementProps";
-import { TransformProps, YawPitchRollAngles, Point3d } from "@bentley/geometry-core";
 
 /** The RPC interface for editing Spatial and other 3D elements and Models in an iModel.
  * All operations require read+write access.

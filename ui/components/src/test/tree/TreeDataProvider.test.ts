@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  TreeDataProviderRaw, TreeDataProviderPromise, TreeDataProviderMethod, ITreeDataProvider,
-  isTreeDataProviderRaw, isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise,
+  isTreeDataProviderInterface, isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw, ITreeDataProvider, TreeDataProviderMethod,
+  TreeDataProviderPromise, TreeDataProviderRaw,
 } from "../../ui-components/tree/TreeDataProvider";
 
 describe("TreeDataProvider", () => {
@@ -14,7 +14,7 @@ describe("TreeDataProvider", () => {
   const emptyPromiseProvider: TreeDataProviderPromise = Promise.resolve(emptyRawProvider);
   const emptyMethodProvider: TreeDataProviderMethod = async () => emptyPromiseProvider;
   const emptyInterfaceProvider: ITreeDataProvider = {
-    getNodesCount: async () => Promise.resolve(0),
+    getNodesCount: async () => 0,
     getNodes: emptyMethodProvider,
   };
 

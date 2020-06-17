@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-import { render, cleanup } from "@testing-library/react";
+import * as React from "react";
+import { cleanup, render } from "@testing-library/react";
 import { DragSourceProps, DropTargetProps } from "../../../../ui-components/dragdrop/DragDropDef";
-import { DragDropTreeNodeComponent, DragDropTreeNode } from "../../../../ui-components/tree/deprecated/hocs/DragDropTreeNode";
+import { DragDropTreeNode, DragDropTreeNodeComponent } from "../../../../ui-components/tree/deprecated/hocs/DragDropTreeNode";
 
 // tslint:disable:deprecation
 

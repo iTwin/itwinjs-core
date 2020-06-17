@@ -2,12 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module Curve
  */
-import { RecursiveCurveProcessor } from "../CurveProcessor";
-import { CurvePrimitive } from "../CurvePrimitive";
 import { CurveCollection } from "../CurveCollection";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { RecursiveCurveProcessor } from "../CurveProcessor";
+
 /**
  * Algorithmic class: Sum lengths of curves
  * @internal

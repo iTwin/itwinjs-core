@@ -2,17 +2,27 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, BentleyLoggerCategory, ChangeSetStatus, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode, Config } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelHubClientLoggerCategory, ChangeSet } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/itwin-client";
-import { BriefcaseProps, Code, CodeProps, ElementProps, GeometricElement3dProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, RelatedElement, RpcConfiguration, RpcManager, SyncMode } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
+import {
+  BeEvent, BentleyLoggerCategory, ChangeSetStatus, Config, DbResult, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel,
+  OpenMode,
+} from "@bentley/bentleyjs-core";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
+import {
+  BriefcaseProps, Code, CodeProps, ElementProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, PhysicalElementProps, RelatedElement,
+  RpcConfiguration, RpcManager, SyncMode,
+} from "@bentley/imodeljs-common";
+import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
+import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ClassRegistry } from "../ClassRegistry";
-import { PhysicalElement } from "../Element";
-import { BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, InformationPartitionElement, Model, NativeLoggerCategory, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements } from "../imodeljs-backend";
+import { PhysicalElement, Subject } from "../Element";
+import {
+  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, InformationPartitionElement, Model,
+  PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
+} from "../imodeljs-backend";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { Schema, Schemas } from "../Schema";
 import { HubUtility } from "./integration/HubUtility";
@@ -113,7 +123,7 @@ export class TestElementDrivesElement extends ElementDrivesElement implements Te
   public static onValidateOutput(props: RelationshipProps, imodel: IModelDb): void { this.validateOutput.raiseEvent(props, imodel); }
   public static onDeletedDependency(props: RelationshipProps, imodel: IModelDb): void { this.deletedDependency.raiseEvent(props, imodel); }
 }
-export interface TestPhysicalObjectProps extends GeometricElement3dProps {
+export interface TestPhysicalObjectProps extends PhysicalElementProps {
   intProperty: number;
 }
 export class TestPhysicalObject extends PhysicalElement implements TestPhysicalObjectProps {
@@ -142,10 +152,6 @@ export class IModelTestUtils {
   public static async getTestModelInfo(requestContext: AuthorizedClientRequestContext, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
     const iModelInfo = new TestIModelInfo(iModelName);
     iModelInfo.id = await HubUtility.queryIModelIdByName(requestContext, testProjectId, iModelInfo.name);
-
-    const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
-    iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
-    iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
     iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelInfo.id);
     return iModelInfo;
@@ -202,11 +208,14 @@ export class IModelTestUtils {
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps): Id64String {
+  public static createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
+    const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
+    const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
+
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
-      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-      model: IModel.repositoryModelId,
+      parent,
+      model,
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
@@ -214,11 +223,14 @@ export class IModelTestUtils {
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static async createAndInsertPhysicalPartitionAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
+  public static async createAndInsertPhysicalPartitionAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
+    const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
+    const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
+
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
-      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-      model: IModel.repositoryModelId,
+      parent,
+      model,
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
@@ -257,8 +269,8 @@ export class IModelTestUtils {
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   // @return [modeledElementId, modelId]
   //
-  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false): Id64String[] {
-    const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode);
+  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
+    const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode, parent);
     const modeledElementRef = new RelatedElement({ id: eid });
     const mid = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef, privateModel);
     return [eid, mid];
@@ -268,8 +280,8 @@ export class IModelTestUtils {
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   // @return [modeledElementId, modelId]
   //
-  public static async createAndInsertPhysicalPartitionAndModelAsync(rqctx: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false): Promise<Id64String[]> {
-    const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(rqctx, testImodel, newModelCode);
+  public static async createAndInsertPhysicalPartitionAndModelAsync(rqctx: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
+    const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(rqctx, testImodel, newModelCode, parentId);
     rqctx.enter();
     const modeledElementRef = new RelatedElement({ id: eid });
     const mid = await IModelTestUtils.createAndInsertPhysicalModelAsync(rqctx, testImodel, modeledElementRef, privateModel);
@@ -291,7 +303,7 @@ export class IModelTestUtils {
 
   // Create a PhysicalObject. (Does not insert it.)
   public static createPhysicalObject(testImodel: IModelDb, modelId: Id64String, categoryId: Id64String, elemCode?: Code): Element {
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: "Generic:PhysicalObject",
       model: modelId,
       category: categoryId,
@@ -345,9 +357,9 @@ export class IModelTestUtils {
     Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
     Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
     Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(ITwinClientLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(IModelHubClientLoggerCategory.IModelHub, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(ITwinClientLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(NativeLoggerCategory.Licensing, reset ? LogLevel.Error : LogLevel.Trace);
@@ -377,6 +389,12 @@ export class IModelTestUtils {
 
       return rows;
     });
+  }
+
+  public static createJobSubjectElement(iModel: IModelDb, name: string): Subject {
+    const subj = Subject.create(iModel, iModel.elements.getRootSubject().id, name);
+    subj.setJsonProperty("Subject", { Job: name });
+    return subj;
   }
 
   /** Flushes the Txns in the TxnTable - this allows importing of schemas */

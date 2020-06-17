@@ -2,12 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module RealityData
  */
-import { ClientRequestContext, Config, Guid } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 import { URL } from "url";
+import { ClientRequestContext, Config, Guid } from "@bentley/bentleyjs-core";
+import {
+  AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance,
+} from "@bentley/itwin-client";
 
 /** RealityData
  * This class implements a Reality Data stored in ProjectWise Context Share (Reality Data Service)
@@ -200,13 +203,13 @@ export class RealityData extends WsgInstance {
       this.projectId = "Server";
 
     if (!this.id)
-      return Promise.reject(new Error("id not set"));
+      throw new Error("id not set");
 
     if (undefined === this._blobUrl || this._blobTimeStamp.valueOf() - Date.now() > 3000000) { // 3 million milliseconds or 50 minutes
       const fileAccess: FileAccessKey[] = await this.client.getFileAccessKey(requestContext, this.projectId as string, this.id, writeAccess);
       requestContext.enter();
       if (fileAccess.length !== 1)
-        return Promise.reject(new Error("Could not obtain blob file access key for reality data: " + this.id));
+        throw new Error("Could not obtain blob file access key for reality data: " + this.id);
       const urlString = fileAccess[0].url!;
       this._blobUrl = (typeof window !== "undefined") ? new window.URL(urlString) : new URL(urlString);
       this._blobTimeStamp = new Date(Date.now());
@@ -272,7 +275,7 @@ export class RealityData extends WsgInstance {
     requestContext.enter();
 
     if (!this.rootDocument)
-      return Promise.reject(new Error("Root document not defined for reality data: " + this.id));
+      throw new Error("Root document not defined for reality data: " + this.id);
 
     const root = this.rootDocument!;
 
@@ -417,7 +420,7 @@ export class RealityDataClient extends WsgClient {
     requestContext.enter();
 
     if (realityDatas.length !== 1)
-      return Promise.reject(new Error("Could not fetch reality data: " + tilesId));
+      throw new Error("Could not fetch reality data: " + tilesId);
 
     realityDatas[0].client = this;
     realityDatas[0].projectId = projectId;
@@ -502,7 +505,7 @@ export class RealityDataClient extends WsgClient {
     requestContext.enter();
 
     if (!resultRealityData)
-      return Promise.reject(new Error("Could not create new reality data: " + (realityData.id ? realityData.id : realityData.name)));
+      throw new Error("Could not create new reality data: " + (realityData.id ? realityData.id : realityData.name));
 
     resultRealityData.client = this;
     resultRealityData.projectId = projectId;
@@ -527,7 +530,7 @@ export class RealityDataClient extends WsgClient {
     requestContext.enter();
 
     if (!resultRealityData)
-      return Promise.reject(new Error("Could not update reality data: " + (realityData.id ? realityData.id : realityData.name)));
+      throw new Error("Could not update reality data: " + (realityData.id ? realityData.id : realityData.name));
 
     resultRealityData.client = this;
     resultRealityData.projectId = projectId;
@@ -573,7 +576,7 @@ export class RealityDataClient extends WsgClient {
     requestContext.enter();
     const resultRealityDataRelationship: RealityDataRelationship = await this.postInstance<RealityDataRelationship>(requestContext, RealityDataRelationship, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityDataRelationship`, relationship);
     if (!resultRealityDataRelationship)
-      return Promise.reject(new Error("Could not create new reality data relationship between reality data: " + (relationship.realityDataId ? relationship.realityDataId : "") + " and context: " + (relationship.relatedId ? relationship.relatedId : "")));
+      throw new Error("Could not create new reality data relationship between reality data: " + (relationship.realityDataId ? relationship.realityDataId : "") + " and context: " + (relationship.relatedId ? relationship.relatedId : ""));
 
     return resultRealityDataRelationship;
   }

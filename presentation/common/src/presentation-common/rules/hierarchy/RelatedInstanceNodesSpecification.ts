@@ -6,10 +6,10 @@
  * @module PresentationRules
  */
 
-import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
-import { RelationshipDirection } from "../RelationshipDirection";
 import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
+import { RelationshipDirection } from "../RelationshipDirection";
 import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
+import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 
 /**
  * Creates nodes for related instances of specified ECClasses.

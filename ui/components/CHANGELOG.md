@@ -1,6 +1,97 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Fix toolbar overflow panel display.
+- Update to only show group separators if toolbar is not transparent. 
+- Fix toolbar error when scaling up UI.
+- Property grid horizontal layout updated according to UX requirements.
+- Fixed Table filter renderers after react-select version upgrade
+- Support for striped rows in Table
+- Added ability for apps to display Favorite properties in Element Tooltip & Card at Cursor
+- Darken node descriptions in controlled tree
+- Center align ControlledTree error message
+- ControlledTree: Grow virtualized nodes' container width to fit the widest node and do not shrink it to avoid horinzontal scrollbar appearing/disappearing
+- Update version of react-select for ThemedSelect in ui-core.
+- ControlledTree: Fix horizontal scrollbar appearing when tree component size changes even though nodes don't exceed width of the tree
+- Only show badges on toolbar buttons if toolbar background is not transparent.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- Prefer panelNode over buttonNode when using customToolbarItem.
+- Add support for groupPriority for ToolbarItems. If specified then a group separator is shown when the priority changes.
+- Add tilde to sass imports
+- Qualified .label & .message CSS classes. Removed .cell CSS class usage. Fixed cell editor sizes.
+- Fixed Navigation cube jagged edges on iOS
+- Added new type of ImageSourceType "webfont-icon" which allows to load custom font-family icons by providing {className}:{iconName} format image value. It defaults to core-icon if value does not match this format.
+- Fix parsing of 0 (zero) value in CustomNumberEditor
+- Fix bug where toolbar buttons did not show expand arrow on custom button when not in 'DragInteraction' mode.  Fix display of key-in browser 1.0 UI.
+- Fix ordering of button items in overflow in Navigation Widget.
+- Ensure ui-abstract is listed as peer dependency and not just a dev dependency.
+- Fix documentation tag
+- Fix issue where resizing toolbar too small would make it disappear and it would not return even when window was resized.
+- Fix bug 292829 where toolbar border displayed when all items are hidden.
+- Fixed ReactResizeDetector usage after upgrade. Converted Toggle component to function. Hover/pressed styling in 2.0 Toolbar.
+- Update GroupButton definition to use ReadonlyArray for child items.
+- Ui 2.0 - Blur the toolbar item background
+- Moved the CubeNavigationAid & DrawingNavigationAid to ui-components package
+- Increased size of Navigation cube arrow touch targets for mobile
+- Clean up deprecated APIs
+- Clean up some ControlledTree-related APIs
+- Clone TreeNodeItem when creating TreeModelNode to avoid immer freezing it
+- Made React functional component specifications consistent across UI packages
+- For consistency add reactNode getters/setters and deprecate use of reactElement.
+- Upgrade to Rush 5.23.2
+- Copied filter renderers from react-data-grid-addons to ui-components to prevent security error
+- Fixed Table column filtering when backspacing to empty
+- Ui 2.0 - Toolbar display changes
+- Updated Toolbar colors/opacity for Ui 2.0
+- Add ToolbarWithOverflow.
+- Promoted some @beta to @public in Ui packages & ToolAssistance for 2.0 release.
+- Fixes to Toggle onBlur handling & ControlledTree error message position
+- Change `TreeNodeItem` and `PropertyData` labels to be PropertyRecords
+- In source documentation. Some learning docs & API changes.
+- PropertyGrid, Table, Tree & Viewport Learning docs for ui-components
+- Fixed ControlledTree TreeModel clearing. Fixed TreeRenderer to rerender list when size callback changes.
+- Update CustomNumberEditor to handle onBlur. This will update the value when the user clicks in another field in the dialog and the field loses focus.
+- Move react to peerDependencies.
+- Learning documentation for ui-core
+- TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
+- Started ui-components Learning doc section
+- Fixed children node loading from TreeDataProviderRaw and TreeDataProviderPromise
+- Add a new `SelectableContent` component
+- Changed IPropertyValueRenderer.render() to be synchronous
+- UI: Toggle Component - only use animation on value change
+- Fix iOS Safari high CPU of enum button group.
+- Fix nodes loading to correctly handle and load ImmediatelyLoadedTreeNodeItem
+- Fix SparseArray, SparseTree and MutableTreeModel to be properly modified by immer
+- Update auto-generated dialog items to work with the Tool Settings Bar.
+- Moved Property classes and interfaces to ui-abstract package.
+- Moved Checkbox, Radio, Select, Toggle, Slider & AutoSuggest into their own category
+- Update to ensure tooltip for timeline uses z-index for tooltips.
+- Update to ensure tooltip for timeline uses z-index for tooltips.
+- Defaulting to IModelApp.i18n in UI packages and cascading initialize() calls
+- Minor styling changes
+- Remove support for the iModel.js module system by no longer delivering modules.
+- iModel write API development
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+*Version update only*
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+*Version update only*
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -125,9 +216,9 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Ability to Scroll to Table row via scrollToRow Prop
 - Add alwaysMinimized prop to TimelineComponent.
 - Tool Assistance changes per UX Design
-- Joe G required the tree (empty data) be more descriptive and generic.
+- Update the tree (empty data) be more descriptive and generic.
 - In the Model/Category/Spatial trees, center the error message
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 - Fixed signature of BreadcrumbTreeUtils.aliasNodeListToTableDataProvider for consistent extract-api treatment
 - Tree: Clear page caches when reloading tree data
 - this.props.viewportRef(this._vp); callback moved to the end of async componentDidMount(); Additional check if (!this._mounted) after await
@@ -154,7 +245,7 @@ Tue, 13 Aug 2019 20:25:53 GMT
 
 - Update to use latest icon library
 - Added CursorPrompt, improved Pointer messages
-- explicitly set margin for button groups to avoid bleed over from BWC styles.
+- Explicitly set margin for button groups to avoid bleed over from BWC styles.
 - After canceling (clearing) search, set focus back to input field.
 - Skip failing test until UI team can investigate
 - Updated generic icon package
@@ -202,7 +293,6 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Temporarily lowered ui-components coverage thresholds
 - BeInspireTree: Fix an issue with delay-loaded child nodes sometimes being assigned to expired node objects.
 - Tree: Fix child node checkbox events affecting parent node's checkbox state
-- Improve test coverage.
 - ui-component unit tests. NumericInput strict=true default.
 
 ## 1.0.0
@@ -231,7 +321,7 @@ Mon, 13 May 2019 15:52:05 GMT
 
 - Update to latest version of icon library.
 - @beta tags for Toolbar. More React.PureComponent usage. Added constructors to prevent deprecated warnings. Coverage minimum thresholds.
-- #84584 Add support for a view overlay component. This will provide ability to show animation timeline control in viewport.
+- Add support for a view overlay component. This will provide ability to show animation timeline control in viewport.
 - Update Timeline interfaces.
 - Update CSS for ColorSwatch.
 - Add Unit test for ColorEditor and ColorPickerButton
@@ -247,7 +337,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Add components to show and select a line weight.
 - Put sourcemap in npm package.
 - Locked react-data-grid at 6.0.1 and @types/react-data-grid at 4.0.2
-- #96348 Improve default rotate point for navigation cube
+- Improve default rotate point for navigation cube
 - Fix to SignIn constructor in ui-components
 - Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
 - Require React & React-dom 16.8
@@ -301,7 +391,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Added TableCell and TableCellContent React components.
 - Changed table css class names.
 - Changed CellItem interface property - 'alignment' type to be a restricted string instead of an enum.
--  Cleanup of DefaultToolSetting provider and EnumButtonGroup editor
+- Cleanup of DefaultToolSetting provider and EnumButtonGroup editor
 - Add EnumButtonGroupEditor.
 - Primitive property value renderers now render links specified in property records.
 - Renamed class names that start with "ui-components-" to start with just "components-"
@@ -377,7 +467,7 @@ Wed, 02 Jan 2019 15:18:23 GMT
 ### Updates
 
 - Changed property pane css.
--  Changed how vertical PropertyPane looks.
+- Changed how vertical PropertyPane looks.
 - Fix BeInspireTree's render suspension not being consistent in some cases
 - Added optional viewState prop to ViewportComponent
 
@@ -467,7 +557,6 @@ Mon, 03 Dec 2018 18:52:58 GMT
 - Refactored PropertyRenderer into smaller pieces and added isSelectable and indentation prop
 - Changed the way PropertyCategoryBlock looks.
 - Enabled table to contain popups and dialog and slightly cleaned up it's CSS.
-- Unit tests
 - Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components
 - Implement pagination in Tree component
 

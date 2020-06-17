@@ -7,8 +7,8 @@
  */
 
 import { CheckBoxState } from "@bentley/ui-core";
-import { Observable, Subscription } from "./Observable";
 import { TreeNodeItem } from "../TreeDataProvider";
+import { Observable, Subscription } from "./Observable";
 
 /**
  * Tree events that can occur while interacting with tree.

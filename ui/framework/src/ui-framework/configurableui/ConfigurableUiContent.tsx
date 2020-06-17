@@ -6,24 +6,24 @@
  * @module ConfigurableUi
  */
 
+import "./configurableui.scss";
 import * as React from "react";
 import { CommonProps, Point } from "@bentley/ui-core";
-
+import { CursorInformation } from "../cursor/CursorInformation";
+import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
+import { CursorPopupRenderer } from "../cursor/cursorpopup/CursorPopupManager";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
 import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
 import { ElementTooltip } from "../feedback/ElementTooltip";
 import { FrontstageComposer } from "../frontstage/FrontstageComposer";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
-import { PointerMessage } from "../messages/Pointer";
 import { InputFieldMessage } from "../messages/InputField";
-import { CursorInformation } from "../cursor/CursorInformation";
-import { CursorPopupRenderer } from "../cursor/cursorpopup/CursorPopupManager";
-import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
+import { PointerMessage } from "../messages/Pointer";
 import { PopupRenderer } from "../popup/PopupManager";
-import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 import { WidgetPanelsFrontstage } from "../widget-panels/Frontstage";
-import "./configurableui.scss";
+import { ConfigurableUiManager } from "./ConfigurableUiManager";
 
 // cSpell:ignore cursormenu
 
@@ -33,6 +33,11 @@ import "./configurableui.scss";
 export interface ConfigurableUiContentProps extends CommonProps {
   /** React node of the Backstage */
   appBackstage?: React.ReactNode;
+
+  /** @internal */
+  idleTimeout?: number;
+  /** @internal */
+  intervalTimeout?: number;
 }
 
 /** The ConfigurableUiContent component is the component the pages specified using ConfigurableUi
@@ -56,6 +61,12 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
       window.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
+  React.useEffect(() => {
+    ConfigurableUiManager.activityTracker.initialize({ idleTimeout: props.idleTimeout, intervalTimeout: props.intervalTimeout });
+    return () => {
+      ConfigurableUiManager.activityTracker.terminate();
+    };
+  }, [props.idleTimeout, props.intervalTimeout]);
 
   const handleMouseMove = React.useCallback((e: React.MouseEvent) => {
     const point = new Point(e.pageX, e.pageY);
@@ -70,7 +81,7 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
       onMouseMove={handleMouseMove}
     >
       {props.appBackstage}
-      {version === "1" ? <FrontstageComposer style={{ position: "relative", height: "100%" }} /> : <WidgetPanelsFrontstage />}
+      {version === "1" ? <FrontstageComposer style={{ position: "relative", height: "100%" }} /> : /* istanbul ignore next */ <WidgetPanelsFrontstage />}
       <ModelessDialogRenderer />
       <ModalDialogRenderer />
       <ElementTooltip />

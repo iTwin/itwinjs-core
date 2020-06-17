@@ -5,13 +5,13 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import { ClientRequestContext, Config, Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
+import { ClientRequestContext, Config, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
-import { ClientsLoggerCategory } from "./iTwinClientLoggerCategory";
+import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 import { request, RequestOptions, Response, ResponseError } from "./Request";
 
-const loggerCategory: string = ClientsLoggerCategory.Clients;
+const loggerCategory: string = ITwinClientLoggerCategory.Clients;
 
 /**
  * Provider for default RequestOptions, used by Client to set defaults.
@@ -33,10 +33,9 @@ export class DefaultRequestOptionsProvider {
    * @param options Options that should be augmented.
    */
   public async assignOptions(options: RequestOptions): Promise<void> {
-    const clonedOptions: RequestOptions = Object.assign({}, options);
+    const clonedOptions: RequestOptions = { ...options };
     deepAssign(options, this._defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
-    return Promise.resolve();
   }
 }
 
@@ -80,19 +79,18 @@ export abstract class Client {
    */
   public async getUrl(requestContext: ClientRequestContext): Promise<string> {
     if (this._url) {
-      return Promise.resolve(this._url);
+      return this._url;
     }
 
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
     const searchKey: string = this.getUrlSearchKey();
-    return urlDiscoveryClient.discoverUrl(requestContext, searchKey, undefined)
-      .then(async (url: string): Promise<string> => {
-        this._url = url;
-        return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
-      })
-      .catch(async (): Promise<string> => {
-        return Promise.reject(`Failed to discover URL for service identified by "${searchKey}"`);
-      });
+    try {
+      const url = await urlDiscoveryClient.discoverUrl(requestContext, searchKey, undefined);
+      this._url = url;
+      return this._url; // TODO: On the server this really needs a lifetime!!
+    } catch (error) {
+      throw new Error(`Failed to discover URL for service identified by "${searchKey}"`);
+    }
   }
 
   /** used by clients to send delete requests */
@@ -145,7 +143,7 @@ export class UrlDiscoveryClient extends Client {
    * @returns URL of the discovery service.
    */
   public async getUrl(): Promise<string> {
-    return Promise.resolve(Config.App.getString(UrlDiscoveryClient.configURL, "https://buddi.bentley.com/WebService"));
+    return Config.App.getString(UrlDiscoveryClient.configURL, "https://buddi.bentley.com/WebService");
   }
 
   /**
@@ -174,6 +172,6 @@ export class UrlDiscoveryClient extends Client {
     requestContext.enter();
 
     const discoveredUrl: string = response.body.result.url.replace(/\/$/, ""); // strip trailing "/" for consistency
-    return Promise.resolve(discoveredUrl);
+    return discoveredUrl;
   }
 }

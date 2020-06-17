@@ -14,10 +14,9 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
+import { Coordinate } from "../geom/Coordinate";
 import { Registry } from "./Registry";
 import { Unit } from "./Unit";
-
-import { Coordinate } from "../geom/Coordinate";
 
 /**
  * Class Ellipsoid defines the parameters of an earth ellipsoid.

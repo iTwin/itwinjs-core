@@ -8,14 +8,14 @@
 * [react-data-grid-addons](https://github.com/adazzle/react-data-grid/tree/master/packages/react-data-grid-addons).
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
 import * as _ from "lodash";
-import Select from "react-select";
+import React from "react";
+import { ThemedSelect } from "@bentley/ui-core";
+import { UiComponents } from "../../../UiComponents";
 import { ReactDataGridColumn } from "../../component/TableColumn";
 import { TableDistinctValue } from "../../TableDataProvider";
-import { UiComponents } from "../../../UiComponents";
 
-import "react-select/dist/react-select.css";
+// cspell:ignore autosize
 
 /** @internal */
 export interface AutoCompleteFilterProps {
@@ -70,14 +70,14 @@ export class AutoCompleteFilter extends React.Component<AutoCompleteFilterProps,
 
   public render() {
     return (
-      <Select
-        autosize={false}
+      <ThemedSelect
         name={`filter-${this.props.column.key}`}
         options={this.state.options}
         placeholder={this.props.placeholder || this._placeholder}
         onChange={this._handleChange}
         escapeClearsValue={true}
-        multi={this.props.multiSelection !== undefined && this.props.multiSelection !== null ? this.props.multiSelection : true}
+        isMulti={this.props.multiSelection !== undefined ? this.props.multiSelection : false}
+        isClearable={true}
         value={this.state.filters} />
     );
   }

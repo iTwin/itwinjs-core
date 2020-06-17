@@ -31,11 +31,63 @@ exports[`<Select /> renders correctly 1`] = `
 />
 `;
 
+exports[`<Select /> renders default value correctly when options are provided  1`] = `
+<select
+  className="uicore-inputs-select"
+  defaultValue="option2"
+>
+  <option
+    key="option1"
+    value="option1"
+  >
+    Option 1
+  </option>
+  <option
+    key="option2"
+    value="option2"
+  >
+    Option 2
+  </option>
+  <option
+    key="option3"
+    value="option3"
+  >
+    Option3
+  </option>
+</select>
+`;
+
 exports[`<Select /> renders defaultValue correctly 1`] = `
 <select
   className="uicore-inputs-select"
   defaultValue="test"
 />
+`;
+
+exports[`<Select /> renders initial value correctly 1`] = `
+<select
+  className="uicore-inputs-select"
+  value="option2"
+>
+  <option
+    key="option1"
+    value="option1"
+  >
+    Option 1
+  </option>
+  <option
+    key="option2"
+    value="option2"
+  >
+    Option 2
+  </option>
+  <option
+    key="option3"
+    value="option3"
+  >
+    Option3
+  </option>
+</select>
 `;
 
 exports[`<Select /> renders object options correctly 1`] = `
@@ -77,6 +129,42 @@ exports[`<Select /> renders placeholder correctly 1`] = `
     value="placeholder"
   >
     test
+  </option>
+</select>
+`;
+
+exports[`<Select /> renders placeholder correctly when options are provided 1`] = `
+<select
+  className="uicore-inputs-select"
+  defaultValue="placeholder"
+  placeholder="place-holder-text"
+  required={true}
+>
+  <option
+    className="placeholder"
+    disabled={true}
+    key=""
+    value="placeholder"
+  >
+    place-holder-text
+  </option>
+  <option
+    key="option1"
+    value="option1"
+  >
+    Option 1
+  </option>
+  <option
+    key="option2"
+    value="option2"
+  >
+    Option 2
+  </option>
+  <option
+    key="option3"
+    value="option3"
+  >
+    Option3
   </option>
 </select>
 `;

@@ -7,11 +7,11 @@
  * @module ExtensionService
  */
 
-import { ExtensionStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ExtensionStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, Client, request, RequestOptions, ResponseError, getArrayBuffer } from "@bentley/itwin-client";
-import { ExtensionProps, extensionPropsFromJSON } from "./ExtensionProps";
+import { AuthorizedClientRequestContext, Client, getArrayBuffer, request, RequestOptions, ResponseError } from "@bentley/itwin-client";
 import { ExtensionFile } from "./ExtensionFile";
+import { ExtensionProps, extensionPropsFromJSON } from "./ExtensionProps";
 
 /**
  * Client for querying, publishing and deleting iModel.js Extensions
@@ -282,6 +282,8 @@ export class ExtensionClient extends Client {
         throw new IModelError(ExtensionStatus.UnknownError, "Unknown error");
       if (error.status === 400)
         throw new IModelError(ExtensionStatus.BadRequest, (error as any)._data?.message);
+      if (error.status === 404)
+        throw new IModelError(ExtensionStatus.ExtensionNotFound, (error as any)._data?.message);
 
       throw new IModelError(ExtensionStatus.UnknownError, "Server returned status: " + error.status + ", message: " + (error as any)._data?.message);
     }

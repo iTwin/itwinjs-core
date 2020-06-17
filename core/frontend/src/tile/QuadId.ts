@@ -7,11 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  AngleSweep,
-  Range2d,
-} from "@bentley/geometry-core";
+import { Angle, AngleSweep, Range2d } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { MapTilingScheme } from "./internal";
 

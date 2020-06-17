@@ -7,8 +7,8 @@
  */
 
 import * as path from "path";
-import { KeySet } from "./KeySet";
 import { NodeKey } from "./hierarchy/Key";
+import { KeySet } from "./KeySet";
 
 /**
  * Create a type with `T` properties excluding properties listed in `K`.
@@ -34,6 +34,17 @@ export type Subtract<T, K> = Omit<T, keyof K>;
  */
 export interface ValuesDictionary<T> {
   [key: string]: T;
+}
+
+/**
+ * A structure for paged responses
+ * @alpha
+ */
+export interface PagedResponse<T> {
+  /** Total number of items */
+  total: number;
+  /** Items for the requested page  */
+  items: T[];
 }
 
 /**

@@ -6,15 +6,15 @@
  * @module Widget
  */
 
-import * as React from "react";
 import classnames from "classnames";
+import * as React from "react";
+import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "@bentley/ui-abstract";
 import { CoreTools } from "../CoreToolDefinitions";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
-import { ToolWidgetComposer, BackstageAppButton } from "./ToolWidgetComposer";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
-import { ToolbarUsage, ToolbarOrientation, CommonToolbarItem } from "@bentley/ui-abstract";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
+import { BackstageAppButton, ToolWidgetComposer } from "./ToolWidgetComposer";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
  * @beta
@@ -55,16 +55,18 @@ export function BasicToolWidget(props: BasicToolWidgetProps) {
       if (useCategoryAndModelsContextTools) {
         items.push(
           ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.clearSelectionItemDef),
-          ToolbarHelper.createToolbarItemFromItemDef(20, SelectionContextToolDefinitions.hideSectionToolGroup),
-          ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.isolateSelectionToolGroup),
-          ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.emphasizeElementsItemDef),
+          ToolbarHelper.createToolbarItemFromItemDef(20, SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef),
+          ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.hideSectionToolGroup),
+          ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.isolateSelectionToolGroup),
+          ToolbarHelper.createToolbarItemFromItemDef(50, SelectionContextToolDefinitions.emphasizeElementsItemDef),
         );
       } else {
         items.push(
           ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.clearSelectionItemDef),
-          ToolbarHelper.createToolbarItemFromItemDef(20, SelectionContextToolDefinitions.hideElementsItemDef),
-          ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.isolateElementsItemDef),
-          ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.emphasizeElementsItemDef),
+          ToolbarHelper.createToolbarItemFromItemDef(20, SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef),
+          ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.hideElementsItemDef),
+          ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.isolateElementsItemDef),
+          ToolbarHelper.createToolbarItemFromItemDef(50, SelectionContextToolDefinitions.emphasizeElementsItemDef),
         );
       }
       if (props.additionalHorizontalItems)

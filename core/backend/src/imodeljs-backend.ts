@@ -33,15 +33,7 @@ export * from "./domains/FunctionalSchema";
 export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
-export * from "./domains/LinearReferencingSchema";
-export * from "./domains/LinearReferencingElementAspects";
-export * from "./domains/LinearReferencingElements";
-export * from "./domains/LinearReferencingRelationships";
-export * from "./domains/AnalyticalSchema";
-export * from "./domains/AnalyticalElements";
-export * from "./domains/AnalyticalModels";
-export * from "./domains/AnalyticalRelationships";
-export * from "@bentley/imodeljs-native/IModelJsNative";
+export { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
 export * from "./NativeAppBackend";
@@ -56,6 +48,7 @@ export * from "./DevTools";
 export * from "./oidc/DesktopAuthorizationClient";
 export * from "./usage-logging/UsageLoggingUtilities";
 export * from "./IModelDb"; // must be last
+
 /** @docs-package-description
  * The imodeljs-backend package always runs on the computer with a local Briefcase.
  *
@@ -115,6 +108,10 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description ECDb
  * Classes for working with ECDb.
+ */
+/**
+ * @docs-group-description NativeApp
+ * Classes for working with Mobile/Desktop Application.
  */
 /**
  * @docs-group-description ECSQL

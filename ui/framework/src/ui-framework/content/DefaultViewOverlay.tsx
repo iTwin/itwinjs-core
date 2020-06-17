@@ -6,17 +6,15 @@
  * @module ContentView
  */
 
+import "./DefaultViewOverlay.scss";
 import * as React from "react";
-
-import { TimelineDataProvider, TimelineComponent, SolarTimeline, SolarDataProvider } from "@bentley/ui-components";
 import { IModelApp, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
-import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { ScheduleAnimationTimelineDataProvider } from "../timeline/ScheduleAnimationProvider";
+import { SolarDataProvider, SolarTimeline, TimelineComponent, TimelineDataProvider } from "@bentley/ui-components";
+import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { AnalysisAnimationTimelineDataProvider } from "../timeline/AnalysisAnimationProvider";
+import { ScheduleAnimationTimelineDataProvider } from "../timeline/ScheduleAnimationProvider";
 import { SolarTimelineDataProvider } from "../timeline/SolarTimelineDataProvider";
 import { ContentViewManager } from "./ContentViewManager";
-
-import "./DefaultViewOverlay.scss";
 
 /** Props of Viewport Overlay Control that show timelines
  */

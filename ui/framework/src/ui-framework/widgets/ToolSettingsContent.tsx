@@ -6,11 +6,11 @@
  * @module Widget
  */
 
+import "./ToolSettingsContent.scss";
 import classnames from "classnames";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-import { WidgetContent, HorizontalAnchor, ToolSettingsWidgetMode } from "@bentley/ui-ninezone";
-import "./ToolSettingsContent.scss";
+import { HorizontalAnchor, ToolSettingsWidgetMode, WidgetContent } from "@bentley/ui-ninezone";
 
 /** @internal */
 interface ToolSettingsContentProps {

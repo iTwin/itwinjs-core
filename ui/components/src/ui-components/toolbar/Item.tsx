@@ -6,12 +6,10 @@
  * @module Toolbar
  */
 
+import "./Item.scss";
 import classnames from "classnames";
 import * as React from "react";
-
 import { CommonProps } from "@bentley/ui-core";
-
-import "./Item.scss";
 
 /** Properties of [[ToolbarButtonItem]] component.
  * @beta
@@ -31,6 +29,8 @@ export interface ToolbarButtonItemProps extends CommonProps {
   title: string;
   /** A badge to draw. */
   badge?: React.ReactNode;
+  /** If true add a gap before button. Default to false. */
+  addGroupSeparator?: boolean;
 }
 
 /** Toolbar item component. Used in [[Toolbar]] component.

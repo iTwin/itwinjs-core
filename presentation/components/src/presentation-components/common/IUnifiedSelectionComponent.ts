@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { SelectionHandler } from "@bentley/presentation-frontend";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { SelectionHandler } from "@bentley/presentation-frontend";
 
 /**
  * An interface for all unified selection components

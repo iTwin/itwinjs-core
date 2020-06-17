@@ -8,9 +8,9 @@
 
 import * as http from "http";
 import * as https from "https";
-import { Downloader } from './Downloader';
-import { ABuffer } from '../buffer/ABuffer';
-import { StringMap } from '../collection/StringMap';
+import { ABuffer } from "../buffer/ABuffer";
+import { StringMap } from "../collection/StringMap";
+import { Downloader } from "./Downloader";
 
 /**
  * Class DownloaderNode implements a downloader using the Node platform.

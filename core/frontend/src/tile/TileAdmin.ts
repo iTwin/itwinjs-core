@@ -6,39 +6,16 @@
  * @module Tiles
  */
 
+import { assert, BeDuration, BeEvent, BeTimePoint, Dictionary, Id64Array, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
-  BeDuration,
-  BeTimePoint,
-  Dictionary,
-  Id64Array,
-  PriorityQueue,
-  assert,
-} from "@bentley/bentleyjs-core";
-import {
-  CurrentImdlVersion,
-  getMaximumMajorTileFormatVersion,
-  IModelTileRpcInterface,
-  NativeAppRpcInterface,
-  RpcOperation,
-  RpcRegistry,
-  RpcResponseCacheControl,
-  TileTreeContentIds,
-  TileTreeProps,
+  CurrentImdlVersion, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, NativeAppRpcInterface, RpcOperation, RpcRegistry,
+  RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds, TileTreeProps,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import {
-  Tile,
-  TileLoadStatus,
-  TileRequest,
-  TileTree,
-  TileTreeSet,
-} from "./internal";
 import { Viewport } from "../Viewport";
-import {
-  ReadonlyViewportSet,
-  UniqueViewportSets,
-} from "../ViewportSet";
+import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
+import { Tile, TileLoadStatus, TileRequest, TileTree, TileTreeSet } from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -62,7 +39,7 @@ export interface SelectedAndReadyTiles {
    * current view, e.g., because sibling tiles are not yet ready to draw.
    */
   readonly ready: Set<Tile>;
-  /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
+  /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles and tiles for view attachments.
    * @alpha
    */
   readonly external: ExternalTileStatistics;
@@ -255,6 +232,31 @@ export abstract class TileAdmin {
   public abstract onCacheMiss(): void;
   /** @internal */
   public abstract onActiveRequestCanceled(tile: Tile): void;
+
+  /** Event raised when a request to load a tile's content completes.
+   * @internal
+   */
+  public readonly onTileLoad = new BeEvent<(tile: Tile) => void>();
+
+  /** Event raised when a request to load a tile tree completes.
+   * @internal
+   */
+  public readonly onTileTreeLoad = new BeEvent<(tileTree: TileTree) => void>();
+
+  /** Event raised when a request to load a tile's child tiles completes.
+   * @internal
+   */
+  public readonly onTileChildrenLoad = new BeEvent<(parentTile: Tile) => void>();
+
+  /** Subscribe to onTileLoad, onTileTreeLoad, and onTileChildrenLoad.
+   * @internal
+   */
+  public addLoadListener(callback: (imodel: IModelConnection) => void): () => void {
+    const tileLoad = this.onTileLoad.addListener((tile) => callback(tile.tree.iModel));
+    const treeLoad = this.onTileTreeLoad.addListener((tree) => callback(tree.iModel));
+    const childLoad = this.onTileChildrenLoad.addListener((tile) => callback(tile.tree.iModel));
+    return () => { tileLoad(); treeLoad(); childLoad(); };
+  }
 }
 
 /** @alpha */
@@ -287,6 +289,10 @@ export namespace TileAdmin {
     totalDispatchedRequests: number;
     /** The total number of tiles for which content requests were dispatched and then canceled on the backend before completion. */
     totalAbortedRequests: number;
+    /** The number of in-flight TileTreeProps requests. */
+    numActiveTileTreePropsRequests: number;
+    /** The number of pending TileTreeProps requests. */
+    numPendingTileTreePropsRequests: number;
   }
 
   /** Describes configuration of a [[TileAdmin]].
@@ -299,6 +305,13 @@ export namespace TileAdmin {
      * Default value: 10
      */
     maxActiveRequests?: number;
+
+    /** The maximum number of simultaneously active requests for TileTreeProps. Requests are fulfilled in FIFO order.
+     *
+     * Default value: 10
+     * @alpha
+     */
+    maxActiveTileTreePropsRequests?: number;
 
     /** A default multiplier applied to the size in pixels of a [[Tile]] during tile selection for any [[Viewport]].
      * Individual Viewports can override this multiplier if desired.
@@ -470,6 +483,77 @@ class SelectedAndReadyTilesPerViewport extends Dictionary<Viewport, SelectedAndR
   }
 }
 
+/** Some views contain thousands of models. When we open such a view, the first thing we do is request the TileTreeProps for each model. This involves a http request per model,
+ * which can exceed the maximum number of simultaneous requests permitted by the browser.
+ * Similar to how we throttle requests for tile *content*, we throttle requests for TileTreeProps based on `TileAdmin.Props.maxActiveTileTreePropsRequests`, heretofore referred to as `N`.
+ * TileAdmin maintains a FIFO queue of requests for TileTreeProps. The first N of those requests have been dispatched; the remainder are waiting for their turn.
+ * When `TileAdmin.requestTileTreeProps` is called, it appends a new request to the queue, and if the queue length < N, dispatches it immediately.
+ * When a request completes, throws an error, or is canceled, it is removed from the queue, and any not-yet-dispatched requests are dispatched (not exceeding N total in flight).
+ * When an IModelConnection is closed, any requests associated with that iModel are canceled.
+ * NOTE: This request queue currently does not interact at all with the tile content request queue.
+ * NOTE: We rely on TreeOwner to not request the same TileTreeProps multiple times - we do not check the queue for presence of a requested tree before enqeueing it.
+ */
+class TileTreePropsRequest {
+  private _isDispatched = false;
+
+  public constructor(
+    public readonly iModel: IModelConnection,
+    private readonly _treeId: string,
+    private readonly _resolve: (props: TileTreeProps) => void,
+    private readonly _reject: (error: Error) => void) {
+  }
+
+  public get isDispatched(): boolean { return this._isDispatched; }
+
+  public dispatch(): void {
+    if (this.isDispatched)
+      return;
+
+    this._isDispatched = true;
+
+    requestTileTreeProps(this.iModel, this._treeId).then((props) => {
+      this.terminate();
+      this._resolve(props);
+    }).catch((err) => {
+      this.terminate();
+      this._reject(err);
+    });
+  }
+
+  /** The IModelConnection was closed, or IModelApp was shut down. Don't call terminate(), because we don't want to dispatch pending requests as a result.
+   * Just reject if not yet dispatched.
+   */
+  public abandon(): void {
+    if (!this.isDispatched) {
+      // A little white lie that tells the TileTreeOwner it can try to load again later if needed, rather than treating rejection as failure to load.
+      this._reject(new ServerTimeoutError("requestTileTreeProps cancelled"));
+    }
+  }
+
+  private terminate(): void {
+    (IModelApp.tileAdmin as Admin).terminateTileTreePropsRequest(this);
+  }
+}
+
+/** @internal */
+export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise<TileTreeProps>;
+
+let requestTileTreePropsOverride: RequestTileTreePropsFunc | undefined;
+
+async function requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {
+  if (requestTileTreePropsOverride)
+    return requestTileTreePropsOverride(iModel, treeId);
+
+  return IModelTileRpcInterface.getClient().requestTileTreeProps(iModel.getRpcProps(), treeId);
+}
+
+/** Strictly for tests - overrides the call to IModelTileRpcInterface.requestTileTreeProps with a custom function, or clears the override.
+ * @internal
+ */
+export function overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void {
+  requestTileTreePropsOverride = func;
+}
+
 class Admin extends TileAdmin {
   private readonly _viewports = new Set<Viewport>();
   private readonly _requestsPerViewport = new TilesPerViewport();
@@ -477,6 +561,7 @@ class Admin extends TileAdmin {
   private readonly _viewportSetsForUsage = new UniqueViewportSets();
   private readonly _viewportSetsForRequests = new UniqueViewportSets();
   private _maxActiveRequests: number;
+  private readonly _maxActiveTileTreePropsRequests: number;
   private _defaultTileSizeModifier: number;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
@@ -509,9 +594,18 @@ class Admin extends TileAdmin {
   private readonly _contextPreloadParentSkip: number;
   private _canceledRequests?: Map<IModelConnection, Map<string, Set<string>>>;
   private _cancelBackendTileRequests: boolean;
+  private _tileTreePropsRequests: TileTreePropsRequest[] = [];
 
   public get emptyViewportSet(): ReadonlyViewportSet { return UniqueViewportSets.emptySet; }
   public get statistics(): TileAdmin.Statistics {
+    let numActiveTileTreePropsRequests = 0;
+    for (const req of this._tileTreePropsRequests) {
+      if (!req.isDispatched)
+        break;
+
+      ++numActiveTileTreePropsRequests;
+    }
+
     return {
       numPendingRequests: this._pendingRequests.length,
       numActiveRequests: this._activeRequests.size,
@@ -525,6 +619,8 @@ class Admin extends TileAdmin {
       totalCacheMisses: this._totalCacheMisses,
       totalDispatchedRequests: this._totalDispatchedRequests,
       totalAbortedRequests: this._totalAbortedRequests,
+      numActiveTileTreePropsRequests,
+      numPendingTileTreePropsRequests: this._tileTreePropsRequests.length - numActiveTileTreePropsRequests,
     };
   }
 
@@ -540,7 +636,8 @@ class Admin extends TileAdmin {
     if (undefined === options)
       options = {};
 
-    this._maxActiveRequests = undefined !== options.maxActiveRequests ? options.maxActiveRequests : 10;
+    this._maxActiveRequests = options.maxActiveRequests ?? 10;
+    this._maxActiveTileTreePropsRequests = options.maxActiveTileTreePropsRequests ?? 10;
     this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
     this._enableInstancing = false !== options.enableInstancing;
@@ -837,6 +934,18 @@ class Admin extends TileAdmin {
       if (vp.iModel === iModel)
         this.onViewportIModelClosed(vp);
     });
+
+    // Remove any TileTreeProps requests associated with this iModel
+    this._tileTreePropsRequests = this._tileTreePropsRequests.filter((req) => {
+      if (req.iModel !== iModel)
+        return true;
+
+      req.abandon();
+      return false;
+    });
+
+    // Dispatch TileTreeProps requests not associated with this iModel
+    this.dispatchTileTreePropsRequests();
   }
 
   public onShutDown(): void {
@@ -850,9 +959,13 @@ class Admin extends TileAdmin {
     for (const queued of this._pendingRequests)
       queued.cancel();
 
+    for (const req of this._tileTreePropsRequests)
+      req.abandon();
+
     this._requestsPerViewport.clear();
     this._viewportSetsForRequests.clear();
     this._viewportSetsForUsage.clear();
+    this._tileTreePropsRequests.length = 0;
   }
 
   private dispatch(req: TileRequest): void {
@@ -889,8 +1002,13 @@ class Admin extends TileAdmin {
 
   public async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps> {
     this.initializeRpc();
-    const intfc = IModelTileRpcInterface.getClient();
-    return intfc.requestTileTreeProps(iModel.getRpcProps(), treeId);
+    const requests = this._tileTreePropsRequests;
+    return new Promise<TileTreeProps>((resolve, reject) => {
+      const request = new TileTreePropsRequest(iModel, treeId, resolve, reject);
+      requests.push(request);
+      if (this._tileTreePropsRequests.length <= this._maxActiveTileTreePropsRequests)
+        request.dispatch();
+    });
   }
 
   public async purgeTileTrees(iModel: IModelConnection, modelIds: Id64Array | undefined): Promise<void> {
@@ -963,5 +1081,18 @@ class Admin extends TileAdmin {
     }
 
     contentIds.add(tile.contentId);
+  }
+
+  public terminateTileTreePropsRequest(request: TileTreePropsRequest): void {
+    const index = this._tileTreePropsRequests.indexOf(request);
+    if (index >= 0) {
+      this._tileTreePropsRequests.splice(index, 1);
+      this.dispatchTileTreePropsRequests();
+    }
+  }
+
+  private dispatchTileTreePropsRequests(): void {
+    for (let i = 0; i < this._maxActiveTileTreePropsRequests && i < this._tileTreePropsRequests.length; i++)
+      this._tileTreePropsRequests[i].dispatch();
   }
 }

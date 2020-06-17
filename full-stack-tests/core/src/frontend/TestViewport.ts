@@ -4,16 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import {
-  IModelApp,
-  IModelConnection,
-  OffScreenViewport,
-  Pixel,
-  ScreenViewport,
-  ViewRect,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
 import { Feature, GeometryClass } from "@bentley/imodeljs-common";
+import { IModelApp, IModelConnection, OffScreenViewport, Pixel, ScreenViewport, Viewport, ViewRect } from "@bentley/imodeljs-frontend";
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
   if (undefined === lhs && undefined === rhs)
@@ -175,7 +167,7 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
     IModelApp.tileAdmin.process();
 
     if (this.areAllTilesLoaded)
-      return Promise.resolve();
+      return;
 
     await new Promise<void>((resolve: any) => setTimeout(resolve, 100));
 
@@ -197,8 +189,6 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
 
     // NB: ToolAdmin loop is not turned on, and this viewport is not tracked by ViewManager - must manually pump tile request scheduler.
     IModelApp.tileAdmin.process();
-
-    return Promise.resolve();
   }
 }
 
@@ -213,7 +203,7 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
   private async waitForRenderFrame(): Promise<void> {
     if (this._frameRendered) {
       this._frameRendered = false;
-      return Promise.resolve();
+      return;
     }
 
     this.onRender.addOnce((_) => { this._frameRendered = true; });
@@ -225,7 +215,7 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
     // NB: This viewport is registered with ViewManager, so render loop and tile request scheduler are pumping.
     await this.drawFrame();
     if (this.areAllTilesLoaded)
-      return Promise.resolve();
+      return;
 
     await this.waitForRenderFrame();
     return this.waitForAllTilesToRender();
@@ -287,7 +277,7 @@ export async function createOnScreenTestViewport(viewId: Id64String, imodel: IMo
 
 export async function testOnScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: ScreenTestViewport) => Promise<void>, devicePixelRatio?: number): Promise<void> {
   if (!IModelApp.initialized)
-    return Promise.resolve();
+    return;
 
   // ###TODO: Make ScreenTestViewport integrate properly with the (non-continuous) render loop...
   const onscreen = await createOnScreenTestViewport(viewId, imodel, width, height, devicePixelRatio);
@@ -298,13 +288,11 @@ export async function testOnScreenViewport(viewId: Id64String, imodel: IModelCon
     onscreen.continuousRendering = false;
     onscreen.dispose();
   }
-
-  return Promise.resolve();
 }
 
 export async function testOffScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
   if (!IModelApp.initialized)
-    return Promise.resolve();
+    return;
 
   const offscreen = await createOffScreenTestViewport(viewId, imodel, width, height);
   try {
@@ -312,16 +300,13 @@ export async function testOffScreenViewport(viewId: Id64String, imodel: IModelCo
   } finally {
     offscreen.dispose();
   }
-
-  return Promise.resolve();
 }
 
 // Execute a test against both an off-screen and on-screen viewport.
 export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>, devicePixelRatio?: number): Promise<void> {
   if (!IModelApp.initialized)
-    return Promise.resolve();
+    return;
 
   await testOnScreenViewport(viewId, imodel, width, height, test, devicePixelRatio);
   await testOffScreenViewport(viewId, imodel, width, height, test);
-  return Promise.resolve();
 }

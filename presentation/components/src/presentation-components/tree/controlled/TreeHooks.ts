@@ -6,14 +6,14 @@
  * @module Tree
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { useDisposable } from "@bentley/ui-core";
-import { usePagedTreeNodeLoader, useTreeModelSource, PagedTreeNodeLoader } from "@bentley/ui-components";
 import { Ruleset } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
+import { PagedTreeNodeLoader, usePagedTreeNodeLoader, useTreeModelSource } from "@bentley/ui-components";
+import { useDisposable } from "@bentley/ui-core";
 import { PresentationTreeDataProvider } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
-import { Presentation } from "@bentley/presentation-frontend";
 
 /**
  * Properties for [[usePresentationTreeNodeLoader]] hook.

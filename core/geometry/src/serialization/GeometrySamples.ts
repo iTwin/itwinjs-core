@@ -7,58 +7,94 @@
  * @module Serialization
  */
 
-import { Geometry, AxisOrder } from "../Geometry";
-import { AngleSweep } from "../geometry3d/AngleSweep";
-import { Angle } from "../geometry3d/Angle";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-
-import { Range1d, Range2d, Range3d } from "../geometry3d/Range";
+import { BezierCurve3d } from "../bspline/BezierCurve3d";
+import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
+import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
+import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
+import { ClipPlane } from "../clipping/ClipPlane";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
+import { Arc3d } from "../curve/Arc3d";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
+import { BagOfCurves } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Path } from "../curve/Path";
+import { PointString3d } from "../curve/PointString3d";
+import { TransitionSpiral3d } from "../curve/TransitionSpiral";
+import { UnionRegion } from "../curve/UnionRegion";
+import { AxisOrder, Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range1d, Range2d, Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Transform } from "../geometry3d/Transform";
+import { XYAndZ } from "../geometry3d/XYZProps";
 import { Map4d } from "../geometry4d/Map4d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
-import { UnionRegion } from "../curve/UnionRegion";
-import { BagOfCurves } from "../curve/CurveCollection";
-import { ParityRegion } from "../curve/ParityRegion";
-import { Loop } from "../curve/Loop";
-import { Path } from "../curve/Path";
 import { IndexedPolyface } from "../polyface/Polyface";
-import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
-import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
-import { Sphere } from "../solid/Sphere";
-import { Cone } from "../solid/Cone";
 import { Box } from "../solid/Box";
-import { TorusPipe } from "../solid/TorusPipe";
+import { Cone } from "../solid/Cone";
 import { LinearSweep } from "../solid/LinearSweep";
 import { RotationalSweep } from "../solid/RotationalSweep";
 import { RuledSweep } from "../solid/RuledSweep";
-
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { Arc3d } from "../curve/Arc3d";
-import { TransitionSpiral3d } from "../curve/TransitionSpiral";
-import { LineString3d } from "../curve/LineString3d";
-import { PointString3d } from "../curve/PointString3d";
-import { ClipPlane } from "../clipping/ClipPlane";
-import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { BezierCurve3d } from "../bspline/BezierCurve3d";
-import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
-import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
-import { KnotVector, BSplineWrapMode } from "../bspline/KnotVector";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
-import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { Sphere } from "../solid/Sphere";
+import { TorusPipe } from "../solid/TorusPipe";
 
 /* tslint:disable:no-console */
+/**
+ * Function to be called to obtain function value at (i,n), for
+ * * n fixed over many calls
+ *   * n may be assumed 1 or greater (so fraction = i/n is safe)
+ * * i varies from 0 to n
+ * @alpha
+ */
+export type SteppedIndexFunction = (i: number, n: number) => number;
+/**
+ * Static methods to create functions of type SteppedIndexFunction
+ * * Convention: constant value is optional last argument, with default value 0
+ * @alpha
+ */
+export class SteppedIndexFunctionFactory {
+  /** Returns a callable function that returns a constant value. */
+  public static createConstant(value: number = 0): SteppedIndexFunction {
+    return (_i: number, _n: number) => value;
+  }
+  /** Return a function that steps linearly
+   * *  f(i,n) = y0 + (i/n) * a
+   */
+  public static createLinear(a: number, f0: number = 0): SteppedIndexFunction {
+    return (i: number, n: number) => (f0 + a * (i / n));
+  }
+  /** Return a function that steps with cosine of angles in sweep
+   * *  f(i,n) = y0 + amplitude * cos(i/n)
+   */
+  public static createCosine(amplitude: number, sweep: AngleSweep = AngleSweep.create360(), f0: number = 0): SteppedIndexFunction {
+    return (i: number, n: number) => (f0 + amplitude * Math.cos(sweep.fractionToRadians(i / n)));
+  }
+  /** Return a function that steps with cosine of angles in sweep.
+   * *  f(i,n) = y0 + amplitude * sin(i/n)
+   */
+  public static createSine(amplitude: number, sweep: AngleSweep = AngleSweep.create360(), f0: number = 0): SteppedIndexFunction {
+    return (i: number, n: number) => (f0 + amplitude * Math.sin(sweep.fractionToRadians(i / n)));
+  }
+}
 /**
  * `Sample` has static methods to create a variety of geometry samples useful in testing.
  * @alpha
@@ -2222,5 +2258,31 @@ export class Sample {
     this.appendGeometry(this.createBagOfCurves(), result);
 
     return result;
+  }
+  /** Create points on a sine wave
+   * Point i is origin + (i * xStep, a *sin(theta0 + i * dTheta), b * sin(beta0 + i * dBeta))
+   * * Default b is zero, so it is a simple sine wave
+   * * If the dTheta and dBeta are equal, it is a sine wave in a tilted plane.
+   * * If dTheta and dBeta are different it is a non-planar curve
+   */
+  public static createPointSineWave(origin: XYAndZ | undefined, numInterval: number = 24,
+    xStep: number = Math.PI / 12,
+    a: number = 1, thetaSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 360),
+    b: number = 0, betaSweep: AngleSweep = AngleSweep.createStartEndDegrees(0, 180)): Point3d[] {
+    return this.createPointsByIndexFunctions(numInterval, SteppedIndexFunctionFactory.createLinear(xStep, origin ? origin.x : 0),
+      SteppedIndexFunctionFactory.createCosine(a, thetaSweep, origin ? origin.y : 0),
+      SteppedIndexFunctionFactory.createCosine(b, betaSweep, origin ? origin.z : 0));
+  }
+  /** Create points with x,y,z independent functions of i and numInterval,
+   *    Point3d.create (fx(i,numInterval), fy(i,numInterval), fz(i, numInterval));
+   */
+  public static createPointsByIndexFunctions(numInterval: number, fx: SteppedIndexFunction, fy: SteppedIndexFunction, fz?: SteppedIndexFunction): Point3d[] {
+    const points = [];
+    if (numInterval > 0) {
+      for (let i = 0; i <= numInterval; i++) {
+        points.push(Point3d.create(fx(i, numInterval), fy(i, numInterval), fz ? fz(i, numInterval) : 0));
+      }
+    }
+    return points;
   }
 }

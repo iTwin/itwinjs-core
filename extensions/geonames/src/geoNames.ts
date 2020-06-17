@@ -3,12 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, Extension, Tool, Marker, ScreenViewport, Cluster, MarkerSet, DecorateContext, imageElementFromUrl, ViewState3d, BeButton, BeButtonEvent, InputSource, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { request, Response, RequestOptions } from "@bentley/itwin-client";
-import { Range2d, Angle, Point2d, Point3d, XYAndZ } from "@bentley/geometry-core";
+import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
+import {
+  BeButton, BeButtonEvent, Cluster, DecorateContext, Extension, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,
+  OutputMessagePriority, ScreenViewport, Tool, ViewState3d,
+} from "@bentley/imodeljs-frontend";
+import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { request, RequestOptions, Response } from "@bentley/itwin-client";
 
 /*-----------------------------------------------------------------------
 This is the source for an iModel.js Extension that displays on-screen markers
@@ -210,6 +213,7 @@ class GeoNameUpdateTool extends GeoNameTool {
 
 export class GeoNameExtension extends Extension {
   private _i18NNamespace?: I18NNamespace;
+  protected _defaultNs = "geoNames";
   public static extension: GeoNameExtension | undefined;
 
   /** Invoked the first time this extension is loaded. */
@@ -217,7 +221,7 @@ export class GeoNameExtension extends Extension {
     // store the extension in the tool prototype.
     GeoNameExtension.extension = this;
 
-    this._i18NNamespace = this.i18n.registerNamespace("geoNames");
+    this._i18NNamespace = this.i18n.getNamespace(this._defaultNs);
     await this._i18NNamespace!.readFinished;
     IModelApp.tools.register(GeoNameOnTool, this._i18NNamespace, this.i18n);
     IModelApp.tools.register(GeoNameOffTool, this._i18NNamespace, this.i18n);

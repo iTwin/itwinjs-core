@@ -5,8 +5,8 @@
 
 import * as chai from "chai";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestConfig } from "./TestConfig";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestConfig } from "./TestConfig";
 
 chai.should();
 

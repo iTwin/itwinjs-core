@@ -8,19 +8,17 @@
 
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { CommonProps, Orientation, NoChildrenProps, Size } from "@bentley/ui-core";
-import { Direction, ToolbarPanelAlignment, Toolbar as NZ_Toolbar } from "@bentley/ui-ninezone";
-import { UiFramework } from "../UiFramework";
-
-import { ItemList } from "../shared/ItemMap";
+import { CommonProps, NoChildrenProps, Orientation, Size } from "@bentley/ui-core";
+import { Direction, Toolbar as NZ_Toolbar, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
-import { ItemDefBase } from "../shared/ItemDefBase";
-import { GroupItemDef } from "./GroupItem";
-import { CustomItemDef } from "../shared/CustomItemDef";
 import { AnyItemDef } from "../shared/AnyItemDef";
+import { CustomItemDef } from "../shared/CustomItemDef";
+import { ItemDefBase } from "../shared/ItemDefBase";
+import { ItemList } from "../shared/ItemMap";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
+import { GroupItemDef } from "./GroupItem";
 
 /** Properties of [[Toolbar]] component.
  * @internal
@@ -123,6 +121,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
       item.isActive = !!itemState.isActive;
       return true;
     }
+    // istanbul ignore next
     return false;
   }
 
@@ -193,7 +192,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
       actionItems.forEach((item: ActionButtonItemDef) => {
         const itemSize = item.getDimension(this.props.orientation) + 1;
         itemDimensions += itemSize;
-        Logger.logTrace(UiFramework.loggerCategory(this), `  Item [${item.id ? item.id : item.label}] has a size of ${itemSize} cumulative size=${itemDimensions}.`);
+        Logger.logTrace(UiFramework.loggerCategory(this), `  Item [${item.id ? item.id : /* istanbul ignore next */ item.label}] has a size of ${itemSize} cumulative size=${itemDimensions}.`);
       });
 
       Logger.logInfo(UiFramework.loggerCategory(this), `  Needed toolbar size [${this._toolbarId}] = ${itemDimensions}`);
@@ -216,7 +215,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
           if (deletedItems.length === 1) {
             const item = deletedItems[0];
             overflowItems.unshift(item);
-            Logger.logTrace(UiFramework.loggerCategory(this), `  * Item [${item.id ? item.id : item.label}] put into overflow items.`);
+            Logger.logTrace(UiFramework.loggerCategory(this), `  * Item [${item.id ? item.id : /* istanbul ignore next */ item.label}] put into overflow items.`);
 
             let currentWidth = 0;
             actionItems.forEach((itemDef) => currentWidth += (itemDef.getDimension(this.props.orientation) + 1));
@@ -274,6 +273,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
       if (item && item.isVisible) // tslint:disable-line:deprecation
         return true;
     }
+    // istanbul ignore next
     return false;
   }
 

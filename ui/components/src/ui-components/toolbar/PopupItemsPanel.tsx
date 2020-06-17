@@ -6,19 +6,19 @@
  * @module Toolbar
  */
 
-import * as React from "react";
 import classnames from "classnames";
-
-import { GroupButton, ActionButton, ConditionalStringValue, ToolbarItemUtilities } from "@bentley/ui-abstract";
-import { GroupColumn } from "./groupPanel/Column";
+import * as React from "react";
+import { ActionButton, ConditionalStringValue, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { BadgeUtilities, IconHelper } from "@bentley/ui-core";
-import { GroupToolExpander } from "./groupPanel/tool/Expander";
-import { GroupTool } from "./groupPanel/tool/Tool";
+import { BackArrow } from "./groupPanel/BackArrow";
+import { GroupColumn } from "./groupPanel/Column";
+import { Columns } from "./groupPanel/Columns";
 import { Panel } from "./groupPanel/Panel";
 import { Title } from "./groupPanel/Title";
-import { Columns } from "./groupPanel/Columns";
+import { GroupToolExpander } from "./groupPanel/tool/Expander";
+import { GroupTool } from "./groupPanel/tool/Tool";
 import { useToolbarPopupContext } from "./PopupItem";
-import { BackArrow } from "./groupPanel/BackArrow";
+import { useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";
 
 function getNumItemsInColumn(numTotalItems: number): number {
   if (numTotalItems <= 6)
@@ -83,24 +83,31 @@ export function PopupItemsPanel(props: PopupItemsPanelProps) {
   }, [groupArray]);
 
   const { closePanel, setSelectedItem } = useToolbarPopupContext();
+  const { onItemExecuted, onKeyDown } = useToolbarWithOverflowDirectionContext();
 
   const handleOnPointerUp = React.useCallback(/* istanbul ignore next */(panelItem: GroupButton | ActionButton) => {
     // istanbul ignore else
     if (ToolbarItemUtilities.isActionButton(panelItem)) {
       props.activateOnPointerUp && setSelectedItem && setSelectedItem(panelItem);
       props.activateOnPointerUp && panelItem.execute();
+      onItemExecuted(panelItem);
       props.activateOnPointerUp && closePanel();
     }
-  }, [props.activateOnPointerUp, setSelectedItem, closePanel]);
+  }, [props.activateOnPointerUp, setSelectedItem, closePanel, onItemExecuted]);
 
   const handleActionItemClick = React.useCallback((panelItem: GroupButton | ActionButton) => {
     // istanbul ignore else
     if (ToolbarItemUtilities.isActionButton(panelItem)) {
       setSelectedItem && setSelectedItem(panelItem);
       panelItem.execute();
+      onItemExecuted(panelItem);
       closePanel();
     }
-  }, [setSelectedItem, closePanel]);
+  }, [setSelectedItem, closePanel, onItemExecuted]);
+
+  const handleOnKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+    onKeyDown(e);
+  }, [onKeyDown]);
 
   // build n-number of columns
   const columns = React.useMemo(() => columnToItems.map((columnItems, columnIndex) =>
@@ -148,7 +155,7 @@ export function PopupItemsPanel(props: PopupItemsPanelProps) {
   );
 
   return (
-    <Panel className={className}>
+    <Panel className={className} onKeyDown={handleOnKeyDown} >
       {groupArray.length > 1 &&
         <BackArrow
           className="components-back"

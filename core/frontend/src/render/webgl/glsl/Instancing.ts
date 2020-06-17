@@ -7,10 +7,10 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
-import { addOvrFlagConstants } from "./FeatureSymbology";
-import { addExtractNthBit } from "./Common";
+import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { System } from "../System";
+import { addExtractNthBit } from "./Common";
+import { addOvrFlagConstants } from "./FeatureSymbology";
 
 const extractInstanceBit = `
 float extractInstanceBit(float flag) { return extractNthBit(a_instanceOverrides.r, flag); }
@@ -52,11 +52,8 @@ export function addInstanceColor(vert: VertexShaderBuilder): void {
   vert.addUniform("u_applyInstanceColor", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_applyInstanceColor", (uniform, params) => {
       let val = 1.0;
-      if (params.geometry.isEdge) {
-        const ovrs = params.target.getEdgeOverrides(params.renderPass);
-        if (undefined !== ovrs && ovrs.overridesColor)
-          val = 0.0;
-      }
+      if (params.geometry.isEdge && undefined !== params.target.currentEdgeSettings.getColor(params.target.currentViewFlags))
+        val = 0.0;
 
       uniform.setUniform1f(val);
     });

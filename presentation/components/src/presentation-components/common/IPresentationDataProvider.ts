@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { IDisposable } from "@bentley/bentleyjs-core";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 /**
  * Interface for a presentation data provider

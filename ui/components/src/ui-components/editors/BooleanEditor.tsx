@@ -6,13 +6,14 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/ui-abstract";
-import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./BooleanEditor.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { PrimitiveValue, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Checkbox } from "@bentley/ui-core";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /** @internal */
 interface BooleanEditorState {
@@ -67,7 +68,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
         if (this.props.propertyRecord && this.props.onCommit) {
           const propertyValue = await this.getPropertyValue();
           // istanbul ignore else
-          if (propertyValue) {
+          if (propertyValue !== undefined) {
             this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
           }
         }
@@ -138,5 +139,5 @@ export class BooleanPropertyEditor extends PropertyEditorBase {
   }
 }
 
-PropertyEditorManager.registerEditor("bool", BooleanPropertyEditor);
-PropertyEditorManager.registerEditor("boolean", BooleanPropertyEditor);
+PropertyEditorManager.registerEditor(StandardTypeNames.Bool, BooleanPropertyEditor);
+PropertyEditorManager.registerEditor(StandardTypeNames.Boolean, BooleanPropertyEditor);

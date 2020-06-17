@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Cartographic, Frustum } from "@bentley/imodeljs-common";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 export class ProjectExtentsExample {
   // __PUBLISH_EXTRACT_START__ ProjectExtents_toCartographic

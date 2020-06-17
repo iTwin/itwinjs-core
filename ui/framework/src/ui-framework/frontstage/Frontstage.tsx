@@ -8,30 +8,28 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-
 import { Logger } from "@bentley/bentleyjs-core";
 import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, Rectangle } from "@bentley/ui-core";
 import {
-  Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, widgetZoneIds,
-  HorizontalAnchor, ToolSettingsWidgetMode, ZoneManagerProps, ZonesManagerProps,
+  HorizontalAnchor, StagePanels, StagePanelsManager, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManagerProps, Zones as NZ_Zones,
+  ZonesManagerProps,
 } from "@bentley/ui-ninezone";
-
-import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
+import { ContentLayout, ContentLayoutDef } from "../content/ContentLayout";
+import { ToolItemDef } from "../shared/ToolItemDef";
+import { getNestedStagePanelKey, StagePanel, StagePanelProps, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
+import { StagePanelDef } from "../stagepanels/StagePanelDef";
+import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { ToolSettingsContent } from "../widgets/ToolSettingsContent";
+import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
+import { WidgetProvidersChangedEventArgs, WidgetsChangedEventArgs } from "../widgets/WidgetManager";
+import { isToolSettingsWidgetManagerProps, Zone, ZoneLocation, ZoneProps, ZoneRuntimeProps } from "../zones/Zone";
+import { ZoneDef } from "../zones/ZoneDef";
 import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
 import { FrontstageDef } from "./FrontstageDef";
-import { ToolItemDef } from "../shared/ToolItemDef";
-import { ZoneDef } from "../zones/ZoneDef";
-import { Zone, ZoneProps, ZoneRuntimeProps, ZoneLocation, isToolSettingsWidgetManagerProps } from "../zones/Zone";
-import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
-import { StagePanelProps, StagePanel, StagePanelRuntimeProps, getNestedStagePanelKey } from "../stagepanels/StagePanel";
-import { StagePanelDef } from "../stagepanels/StagePanelDef";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
-import { FrontstageManager, FrontstageActivatedEventArgs } from "./FrontstageManager";
-import { ToolSettingsContent } from "../widgets/ToolSettingsContent";
-import { WidgetsChangedEventArgs, WidgetProvidersChangedEventArgs } from "../widgets/WidgetManager";
+import { FrontstageActivatedEventArgs, FrontstageManager } from "./FrontstageManager";
 
 /** Properties for a [[Frontstage]] component.
  * @public
@@ -53,7 +51,11 @@ export interface FrontstageProps extends CommonProps {
   applicationData?: any;
   /** Usage type for this Frontstage. */
   usage?: string;
-  /** Frontstage version. Used to force saved layout reinitialization after changes to frontstage. */
+  /** Frontstage version. Used to force saved layout reinitialization after changes to frontstage.
+   * @note This value should be increased when changes are made to Frontstage.
+   * Increasing the value will make sure to reinitialize App layout instead of restoring to old layout.
+   * Version increase is required when widgets are added/removed.
+   */
   version?: number;
 
   /** The Zone in the top-left corner. @deprecated Use 'contentManipulationTools' property. */
@@ -207,7 +209,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       case ZoneLocation.TopCenter:
         return props.toolSettings ? props.toolSettings : props.topCenter;
       case ZoneLocation.TopRight:
-        return props.viewNavigationTools ? props.viewNavigationTools : props.topRight;
+        return props.viewNavigationTools ? /* istanbul ignore next */ props.viewNavigationTools : props.topRight;
       case ZoneLocation.CenterLeft:
         return props.centerLeft;
       case ZoneLocation.CenterRight:
@@ -221,6 +223,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     }
 
     // Zones can be undefined in a Frontstage
+    // istanbul ignore next
     return undefined;
   }
 
@@ -328,7 +331,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         const draggedWidget = runtimeProps.nineZone.zones.draggedWidget;
 
         const panelRuntimeProps: StagePanelRuntimeProps = {
-          draggedWidgetId: draggedWidget ? draggedWidget.id : undefined,
+          draggedWidgetId: draggedWidget ? /* istanbul ignore next */ draggedWidget.id : undefined,
           getWidgetContentRef: this._getContentRef,
           isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
           isTargeted: !!runtimeProps.nineZone.zones.target,
@@ -380,11 +383,12 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const zoneRuntimeProps: ZoneRuntimeProps = {
         activeTabIndex,
         disabledResizeHandles,
-        draggedWidget: draggedWidget && draggedWidget.id === zoneId ? draggedWidget : undefined,
+        draggedWidget: draggedWidget && /* istanbul ignore next */ draggedWidget.id === zoneId ? /* istanbul ignore next */ draggedWidget : undefined,
         dropTarget,
         getWidgetContentRef: this._getContentRef,
         ghostOutline,
-        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ? false : !this.state.isUiVisible,
+        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && /* istanbul ignore next */ (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ?
+          /* istanbul ignore next */ false : !this.state.isUiVisible,
         isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
         openWidgetId,
         targetChangeHandler: runtimeProps.targetChangeHandler,
@@ -619,7 +623,7 @@ export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, 
  */
 export const useActiveFrontstageId = () => {
   const def = useActiveFrontstageDef();
-  const id = React.useMemo(() => def ? def.id : "", [def]);
+  const id = React.useMemo(() => def ? /* istanbul ignore next */ def.id : "", [def]);
   return id;
 };
 
@@ -627,6 +631,7 @@ export const useActiveFrontstageId = () => {
 export function useActiveFrontstageDef() {
   const [def, setDef] = React.useState(FrontstageManager.activeFrontstageDef);
   React.useEffect(() => {
+    // istanbul ignore next
     const handleActivated = (args: FrontstageActivatedEventArgs) => {
       setDef(args.activatedFrontstageDef);
     };

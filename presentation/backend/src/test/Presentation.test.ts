@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "./IModelHostSetup";
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as faker from "faker";
+import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
+import { RpcManager } from "@bentley/imodeljs-common";
 import { PresentationError } from "@bentley/presentation-common";
-import { Presentation } from "../presentation-backend/Presentation";
+import { Presentation, PresentationPropsDeprecated } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
-import "./IModelHostSetup";
 
 describe("Presentation", () => {
 
@@ -34,6 +34,12 @@ describe("Presentation", () => {
       expect(addListenerSpy).to.be.calledOnce;
     });
 
+    it("can be safely shutdown via IModelHost shutdown listener", async () => {
+      Presentation.initialize();
+      await IModelHost.shutdown();
+      expect(() => Presentation.getManager()).to.throw(PresentationError);
+    });
+
     it("creates a manager instance", () => {
       expect(() => Presentation.getManager()).to.throw(PresentationError);
       Presentation.initialize();
@@ -45,7 +51,7 @@ describe("Presentation", () => {
       it("sets unused client lifetime provided through props", () => {
         Presentation.initialize({ unusedClientLifetime: faker.random.number() });
         const storage = (Presentation as any)._clientsStorage as TemporaryStorage<PresentationManager>;
-        expect(storage.props.valueLifetime).to.eq(Presentation.initProps!.unusedClientLifetime);
+        expect(storage.props.valueLifetime).to.eq((Presentation.initProps! as PresentationPropsDeprecated).unusedClientLifetime); // tslint:disable-line:deprecation
       });
 
       describe("getRequestTimeout", () => {
@@ -74,6 +80,14 @@ describe("Presentation", () => {
         const managerMock = moq.Mock.ofType<PresentationManager>();
         Presentation.initialize({ clientManagerFactory: () => managerMock.object });
         expect(Presentation.getManager()).to.eq(managerMock.object);
+      });
+
+      it("uses useSingleManager flag to create one manager for all clients", () => {
+        Presentation.initialize({ useSingleManager: true });
+        const manager = Presentation.getManager();
+        expect(manager).to.be.instanceOf(PresentationManager);
+        const clientId = faker.random.word();
+        expect(manager).to.be.eq(Presentation.getManager(clientId));
       });
 
     });

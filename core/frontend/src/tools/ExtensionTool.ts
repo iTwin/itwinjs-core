@@ -7,10 +7,10 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { Tool } from "./Tool";
 import { Extension } from "../extension/Extension";
-import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
 import { IModelApp } from "../IModelApp";
+import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
+import { Tool } from "./Tool";
 
 const loggerCategory = "imodeljs-frontend.Extension";
 

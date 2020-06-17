@@ -14,18 +14,18 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { AttributeMask } from "./AttributeMask";
-import { AttributeReader } from "./AttributeReader";
-import { DirectoryReader } from "./DirectoryReader";
-import { FileReader } from "./FileReader";
-import { PointReader } from "./PointReader";
-import { TileReadBuffer } from "./TileReadBuffer";
-
+import { Bounds } from "../../../spatial/geom/Bounds";
+import { Coordinate } from "../../../spatial/geom/Coordinate";
 import { ABuffer } from "../../../system/buffer/ABuffer";
 import { Uint16Buffer } from "../../../system/buffer/Uint16Buffer";
 import { Uint8Buffer } from "../../../system/buffer/Uint8Buffer";
-import { Bounds } from "../../../spatial/geom/Bounds";
-import { Coordinate } from "../../../spatial/geom/Coordinate";
+import { AList } from "../../../system/collection/AList";
+import { ALong } from "../../../system/runtime/ALong";
+import { ASystem } from "../../../system/runtime/ASystem";
+import { Message } from "../../../system/runtime/Message";
+import { Strings } from "../../../system/runtime/Strings";
+import { ContentLoader } from "../../../system/storage/ContentLoader";
+import { FileStorage } from "../../../system/storage/FileStorage";
 import { AttributeValue } from "../../model/AttributeValue";
 import { BlockIndex } from "../../model/BlockIndex";
 import { CloudPoint } from "../../model/CloudPoint";
@@ -37,13 +37,12 @@ import { PointDataRaw } from "../../model/PointDataRaw";
 import { ReadRequest } from "../../model/ReadRequest";
 import { StandardAttributes } from "../../model/StandardAttributes";
 import { TileIndex } from "../../model/TileIndex";
-import { AList } from "../../../system/collection/AList";
-import { ALong } from "../../../system/runtime/ALong";
-import { ASystem } from "../../../system/runtime/ASystem";
-import { Message } from "../../../system/runtime/Message";
-import { Strings } from "../../../system/runtime/Strings";
-import { ContentLoader } from "../../../system/storage/ContentLoader";
-import { FileStorage } from "../../../system/storage/FileStorage";
+import { AttributeMask } from "./AttributeMask";
+import { AttributeReader } from "./AttributeReader";
+import { DirectoryReader } from "./DirectoryReader";
+import { FileReader } from "./FileReader";
+import { PointReader } from "./PointReader";
+import { TileReadBuffer } from "./TileReadBuffer";
 
 /**
  * Class OPCReader reads pointcloud files.

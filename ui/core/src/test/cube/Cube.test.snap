@@ -320,7 +320,7 @@ exports[`Cube <CubeFace /> correctly renders nothing when face is Face.None 1`] 
 
 exports[`Cube <CubeFace /> renders correctly 1`] = `
 <div
-  className="face top"
+  className="face cube-top"
   data-testid="core-cube-face-top"
   style={
     Object {

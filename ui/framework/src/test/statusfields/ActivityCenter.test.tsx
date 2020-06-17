@@ -2,23 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
-
+import { mount } from "enzyme";
+import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
-
-import TestUtils from "../TestUtils";
 import {
-  ActivityCenterField,
-  StatusBarWidgetControl,
-  ConfigurableUiControlType,
-  WidgetDef,
-  ConfigurableCreateInfo,
-  StatusBar,
-  MessageManager,
-  StatusBarWidgetControlArgs,
+  ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageManager, StatusBar, StatusBarWidgetControl,
+  StatusBarWidgetControlArgs, WidgetDef,
 } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("ActivityCenter", () => {
 

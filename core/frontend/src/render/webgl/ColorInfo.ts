@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { ColorIndex, ColorDef } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
-import { FloatRgba } from "./FloatRGBA";
+import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
 import { VertexTable } from "../primitives/VertexTable";
+import { FloatRgba } from "./FloatRGBA";
 
 /* Describes a primitive's basic color properties
  * @internal

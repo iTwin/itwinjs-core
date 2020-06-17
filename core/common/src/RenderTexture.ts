@@ -61,6 +61,8 @@ export namespace RenderTexture {
     SkyBox,
     /** A non-repeating image with mip-maps and and anisotropic filtering, used for map tiles when draped on terrain. */
     FilteredTileSection,
+    /** A thematic gradient image used for thematic display. */
+    ThematicGradient,
   }
 
   /** Parameters used to construct a [[RenderTexture]]. */

@@ -6,14 +6,13 @@
  * @module IModelComponents
  */
 
+import "./CategoriesTreeWithSearchBox.scss";
 import * as React from "react";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { CategoryTreeProps, toggleAllCategories, CategoryTree } from "./CategoriesTree";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { FilteringInput } from "@bentley/ui-components";
-
-import "./CategoriesTreeWithSearchBox.scss";
+import { CategoryTree, CategoryTreeProps, toggleAllCategories } from "./CategoriesTree";
 
 /** @internal @deprecated */
 export interface CategoryTreeWithSearchBoxProps extends CategoryTreeProps {
@@ -32,7 +31,7 @@ export function CategoryTreeWithSearchBox(props: CategoryTreeWithSearchBoxProps)
   const [matchesCount, setMatchesCount] = React.useState<number>();
   const [filteredProvider, setFilteredProvider] = React.useState<IPresentationTreeDataProvider>();
 
-  const cancelFilter = React.useCallback(() => {
+  const cancelFilter = React.useCallback(/* istanbul ignore next */() => {
     setMatchesCount(undefined);
     setFilter("");
     setFilteredProvider(undefined);
@@ -47,7 +46,9 @@ export function CategoryTreeWithSearchBox(props: CategoryTreeWithSearchBoxProps)
     setFilteredProvider(provider);
   }, []);
 
+  // istanbul ignore next
   const viewManager = strippedProps.viewManager ?? IModelApp.viewManager;
+  // istanbul ignore next
   const activeView = strippedProps.activeView ?? viewManager.getFirstOpenView();
   React.useEffect(
     () => showAll?.addListener(() => toggleAllCategories(viewManager, strippedProps.iModel, true, activeView, true, filteredProvider)),

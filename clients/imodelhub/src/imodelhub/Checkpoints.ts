@@ -6,9 +6,11 @@
  * @module iModelHubClient
  */
 
-import { GuidString, Logger, PerfLogger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, CancelRequest, ECJsonTypeMap, FileHandler, ProgressCallback, WsgInstance, WsgQuery } from "@bentley/itwin-client";
 import * as urllib from "url";
+import { GuidString, Logger, PerfLogger } from "@bentley/bentleyjs-core";
+import {
+  AuthorizedClientRequestContext, CancelRequest, ECJsonTypeMap, FileHandler, ProgressCallback, WsgInstance, WsgQuery,
+} from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
@@ -176,18 +178,18 @@ export class CheckpointHandler {
     ArgumentCheck.defined("path", path);
 
     if (typeof window !== "undefined")
-      return Promise.reject(IModelHubClientError.browser());
+      throw IModelHubClientError.browser();
 
     if (!this._fileHandler)
-      return Promise.reject(IModelHubClientError.fileHandler());
+      throw IModelHubClientError.fileHandler();
 
     if (!checkpoint.downloadUrl)
-      return Promise.reject(IModelHubClientError.missingDownloadUrl("checkpoint"));
+      throw IModelHubClientError.missingDownloadUrl("checkpoint");
 
     const checkpointForLog: Checkpoint = new Checkpoint();
     Object.assign(checkpointForLog, checkpoint);
     checkpointForLog.downloadUrl = CheckpointHandler.getSafeUrlForLogging(checkpointForLog.downloadUrl!);
-    const perfLogger = new PerfLogger("Downloading checkpoint", () => ({ ...checkpointForLog, path }));
+    const perfLogger = new PerfLogger("Downloading checkpoint", () => ({ ...checkpointForLog, path, iModelId: checkpoint.fileId }));
     await this._fileHandler.downloadFile(requestContext, checkpoint.downloadUrl, path, parseInt(checkpoint.fileSize!, 10), progressCallback, cancelRequest);
     requestContext.enter();
     perfLogger.dispose();

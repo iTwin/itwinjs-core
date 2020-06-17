@@ -7,6 +7,87 @@ parameters:
 
 steps:
   #-------
+  # Clients Tests
+  #-------
+  - task: PublishTestResults@2
+    displayName: "Publish Clients - Context Registry Test Results"
+    inputs:
+      testResultsFiles: "clients/context-registry/lib/test/junit_results.xml"
+      testRunTitle: "Clients - Context Registry Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Clients - Extension Test Results"
+    inputs:
+      testResultsFiles: "clients/extension/lib/test/junit_results.xml"
+      testRunTitle: "Clients - Extension Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Clients - Forms Data Management Test Results"
+    inputs:
+      testResultsFiles: "clients/forms-data-management/lib/test/junit_results.xml"
+      testRunTitle: "Clients - Forms Data Management Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Clients - Frontend Authorization Test Results"
+    inputs:
+      testResultsFiles: "clients/frontend-authorization/lib/test/junit_results.xml"
+      testRunTitle: "Clients - Frontend Authorization Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Clients - iModelHub Test Results"
+    inputs:
+      testResultsFiles: "clients/imodelhub/lib/test/junit_results.xml"
+      testRunTitle: "Clients - iModelHub Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Clients - iTwin Test Results"
+    inputs:
+      testResultsFiles: "clients/itwin/lib/test/junit_results.xml"
+      testRunTitle: "Clients - iTwin Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Clients - Product Settings Test Results"
+    inputs:
+      testResultsFiles: "clients/product-settings/lib/test/junit_results.xml"
+      testRunTitle: "Clients - Product Settings Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Clients - ProjectShare Test Results"
+    inputs:
+      testResultsFiles: "clients/projectshare/lib/test/junit_results.xml"
+      testRunTitle: "Clients - ProjectShare Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Clients - RBAC Test Results"
+    inputs:
+      testResultsFiles: "clients/rbac/lib/test/junit_results.xml"
+      testRunTitle: "Clients - RBAC Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Clients - Reality Data Test Results"
+    inputs:
+      testResultsFiles: "clients/reality-data/lib/test/junit_results.xml"
+      testRunTitle: "Clients - Reality Data Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Clients - Usage Logging Test Results"
+    inputs:
+      testResultsFiles: "clients/usage-logging/lib/test/junit_results.xml"
+      testRunTitle: "Clients - Usage Logging Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+
+  #-------
   # Core Tests
   #-------
   - task: PublishTestResults@2
@@ -14,70 +95,63 @@ steps:
     inputs:
       testResultsFiles: "core/backend/lib/test/junit_results.xml"
       testRunTitle: "Core - Backend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish Bentley Test Results"
     inputs:
       testResultsFiles: "core/bentley/lib/test/junit_results.xml"
       testRunTitle: "Core - Bentley Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
-    displayName: "Publish Clients Test Results"
+    displayName: "Publish Backend iTwin Client Test Results"
     inputs:
-      testResultsFiles: "core/clients/lib/test/junit_results.xml"
-      testRunTitle: "Core - Clients Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-  - task: PublishTestResults@2
-    displayName: "Publish Clients Backend Test Results"
-    inputs:
-      testResultsFiles: "core/clients-backend/lib/test/junit_results.xml"
-      testRunTitle: "Core - Clients Backend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      testResultsFiles: "core/backend-itwin-client/lib/test/junit_results.xml"
+      testRunTitle: "Core - Backend iTwin Client Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish Common Backend Test Results"
     inputs:
       testResultsFiles: "core/common/lib/test/junit_results.xml"
       testRunTitle: "Core - Common Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish ECSchema Locaters Test Results"
     inputs:
       testResultsFiles: "core/ecschema-locaters/lib/test/junit_results.xml"
       testRunTitle: "Core - ECSchema Locaters Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish ECSchema Metadata Test Results"
     inputs:
       testResultsFiles: "core/ecschema-metadata/lib/test/junit_results.xml"
       testRunTitle: "Core - ECSchema Metadata Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish Frontend Test Results"
     inputs:
       testResultsFiles: "core/frontend/lib/test/junit_results.xml"
       testRunTitle: "Core - Frontend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish Geometry Test Results"
     inputs:
       testResultsFiles: "core/geometry/lib/test/junit_results.xml"
       testRunTitle: "Core - Geometry Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish Quantity Test Results"
     inputs:
       testResultsFiles: "core/quantity/lib/test/junit_results.xml"
       testRunTitle: "Core - Quantity Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   #-------
   # Presentation Tests
@@ -87,35 +161,35 @@ steps:
     inputs:
       testResultsFiles: "presentation/backend/lib/test/junit_results.xml"
       testRunTitle: "Presentation - Backend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish Presentation Common Test Results"
     inputs:
       testResultsFiles: "presentation/common/lib/test/junit_results.xml"
       testRunTitle: "Presentation - Common Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish Presentation Components Test Results"
     inputs:
       testResultsFiles: "presentation/components/lib/test/junit_results.xml"
       testRunTitle: "Presentation - Components Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish Presentation Frontend Test Results"
     inputs:
       testResultsFiles: "presentation/frontend/lib/test/junit_results.xml"
       testRunTitle: "Presentation - Frontend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish Presentation Testing Test Results"
     inputs:
       testResultsFiles: "presentation/testing/lib/test/junit_results.xml"
       testRunTitle: "Presentation - Testing Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
 
   #-------
@@ -126,35 +200,35 @@ steps:
     inputs:
       testResultsFiles: "ui/abstract/lib/test/junit_results.xml"
       testRunTitle: "UI - Abstract Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish UI Components Test Results"
     inputs:
       testResultsFiles: "ui/components/lib/test/junit_results.xml"
       testRunTitle: "UI - Components Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish UI Core Test Results"
     inputs:
       testResultsFiles: "ui/core/lib/test/junit_results.xml"
       testRunTitle: "UI - Core Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish UI Framework Test Results"
     inputs:
       testResultsFiles: "ui/framework/lib/test/junit_results.xml"
       testRunTitle: "UI - Framework Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish UI Ninezone Test Results"
     inputs:
       testResultsFiles: "ui/ninezone/lib/test/junit_results.xml"
       testRunTitle: "UI - Ninezone Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
 
   #-------
@@ -165,21 +239,21 @@ steps:
     inputs:
       testResultsFiles: "full-stack/core/lib/test/junit_results.xml"
       testRunTitle: "Core Full Stack - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish RPC Full Stack Test Results"
     inputs:
       testResultsFiles: "full-stack/rpc/lib/test/junit_results.xml"
       testRunTitle: "RPC Full Stack - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish Presentation Integration Test Results"
     inputs:
       testResultsFiles: "test-apps/presentation-integration-tests/lib/test/junit_results.xml"
       testRunTitle: "Presentation Full Stack - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
 
   #-------
@@ -190,14 +264,14 @@ steps:
     inputs:
       testResultsFiles: "example-code/app/lib/test/junit_results.xml"
       testRunTitle: "Example Apps - App Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
     displayName: "Publish Example Snippets"
     inputs:
       testResultsFiles: "example-code/Snippets/lib/test/junit_results.xml"
       testRunTitle: "Example Apps - Snippets Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      workingDirectory: ${{ parameters.workingDir }}
+      searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   #-------
   # Code Coverage Tests
@@ -254,5 +328,4 @@ steps:
     inputs:
       codeCoverageTool: Cobertura
       summaryFileLocation: $(Build.BinariesDirectory)\coverageXMLs\**\cobertura-coverage.xml
-      workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))

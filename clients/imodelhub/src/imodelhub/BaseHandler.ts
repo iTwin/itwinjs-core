@@ -6,7 +6,10 @@
  * @module iModelHubClient
  */
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, DefaultWsgRequestOptionsProvider, FileHandler, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance, WsgRequestOptions } from "@bentley/itwin-client";
+import {
+  AuthorizedClientRequestContext, ChunkedQueryContext, DefaultWsgRequestOptionsProvider, FileHandler, RequestOptions, RequestQueryOptions, WsgClient,
+  WsgInstance, WsgRequestOptions,
+} from "@bentley/itwin-client";
 import { CustomRequestOptions } from "./CustomRequestOptions";
 import { IModelHubError } from "./Errors";
 
@@ -169,13 +172,25 @@ export class IModelBaseHandler extends WsgClient {
    * Get multiple strongly typed instances.
    * @param requestContext The client request context
    * @param typedConstructor Used to construct the resulting instances from the response.
-   * @param token Delegation token of the authorized user.
    * @param relativeUrlPath Relative path to the REST resource.
    * @param queryOptions Query options.
    * @returns Array of strongly typed instances.
    */
   public async getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]> {
     return super.getInstances(requestContext, typedConstructor, relativeUrlPath, queryOptions);
+  }
+
+  /**
+   * Get a chunk of strongly typed instances.
+   * @param requestContext Client request context
+   * @param url Full path to the REST resource.
+   * @param chunkedQueryContext Chunked query context
+   * @param typedConstructor Constructor function for the type
+   * @param queryOptions Query options.
+   * @returns Array of strongly typed instances.
+   */
+  public async getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions): Promise<T[]> {
+    return super.getInstancesChunk(requestContext, url, chunkedQueryContext, typedConstructor, queryOptions);
   }
 
   /**

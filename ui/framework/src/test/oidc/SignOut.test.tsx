@@ -2,14 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { mount } from "enzyme";
-import { expect } from "chai";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import TestUtils, { mockUserInfo } from "../TestUtils";
 import { SignOutModalFrontstage } from "../../ui-framework/oidc/SignOut";
+import TestUtils, { mockUserInfo } from "../TestUtils";
 
 describe("SignOutModalFrontstage", () => {
 

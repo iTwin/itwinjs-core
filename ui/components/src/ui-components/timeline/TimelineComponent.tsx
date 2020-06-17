@@ -6,17 +6,17 @@
  * @module Timeline
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { PlayerButton, PlayButton } from "./PlayerButton";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { Milestone, PlaybackSettings } from "./interfaces";
-import { Timeline } from "./Timeline";
-import { Scrubber } from "./Scrubber";
-import { InlineEdit } from "./InlineEdit";
-import { ContextMenu, ContextMenuItem } from "./ContextMenu";
-import { UiComponents } from "../UiComponents";
 import "./TimelineComponent.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { UiComponents } from "../UiComponents";
+import { ContextMenu, ContextMenuItem } from "./ContextMenu";
+import { InlineEdit } from "./InlineEdit";
+import { Milestone, PlaybackSettings } from "./interfaces";
+import { PlayButton, PlayerButton } from "./PlayerButton";
+import { Scrubber } from "./Scrubber";
+import { Timeline } from "./Timeline";
 
 const slowSpeed = 60 * 1000;
 const mediumSpeed = 20 * 1000;

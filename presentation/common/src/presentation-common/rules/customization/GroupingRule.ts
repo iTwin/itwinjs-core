@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
+import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Grouping rule is an advanced way to configure node grouping.

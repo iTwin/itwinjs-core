@@ -2,22 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
+import * as React from "react";
 import * as sinon from "sinon";
-
 import { BadgeType, WidgetState } from "@bentley/ui-abstract";
-
-import TestUtils from "../TestUtils";
 import {
-  WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl,
-  ConfigurableCreateInfo, ConfigurableUiControlType, SyncUiEventId,
+  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, FrontstageManager, SyncUiEventId, WidgetControl, WidgetDef, WidgetProps,
 } from "../../ui-framework";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
+import TestUtils from "../TestUtils";
 
 // cSpell:ignore widgetstate
 
 describe("WidgetDef", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
 
   class TestWidget extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any) {
@@ -163,4 +165,25 @@ describe("WidgetDef", () => {
     expect(() => widgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget)).to.throw(Error);
   });
 
+  describe("show", () => {
+    it("should emit onWidgetShowEvent", () => {
+      const spy = sandbox.spy(FrontstageManager.onWidgetShowEvent, "emit");
+      const widgetDef = new WidgetDef({});
+      widgetDef.show();
+      spy.calledOnceWithExactly(sinon.match({
+        widgetDef,
+      })).should.true;
+    });
+  });
+
+  describe("expand", () => {
+    it("should emit onWidgetExpandEvent", () => {
+      const spy = sandbox.spy(FrontstageManager.onWidgetExpandEvent, "emit");
+      const widgetDef = new WidgetDef({});
+      widgetDef.expand();
+      spy.calledOnceWithExactly(sinon.match({
+        widgetDef,
+      })).should.true;
+    });
+  });
 });

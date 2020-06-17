@@ -7,11 +7,11 @@
  * @module BrowserAuthorization
  */
 
-import { assert, Logger } from "@bentley/bentleyjs-core";
 import { UserManager, UserManagerSettings } from "oidc-client";
-import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationClientRedirectState";
-import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
+import { assert, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
+import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
+import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationClientRedirectState";
 
 /**
  * @beta

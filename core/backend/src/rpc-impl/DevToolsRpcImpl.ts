@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { RpcInterface, RpcManager, DevToolsRpcInterface, IModelRpcProps, DevToolsStatsOptions } from "@bentley/imodeljs-common";
+import { DevToolsRpcInterface, DevToolsStatsOptions, IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { DevTools, DevToolsStatsFormatter } from "../DevTools";
 
 /** The backend implementation of WipRpcInterface.

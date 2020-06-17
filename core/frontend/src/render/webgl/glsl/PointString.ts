@@ -6,15 +6,15 @@
  * @module WebGL
  */
 
-import { addHiliter } from "./FeatureSymbology";
-import { addModelViewProjectionMatrix, addLineWeight } from "./Vertex";
-import { addShaderFlags } from "./Common";
-import { addColor } from "./Color";
-import { addWhiteOnWhiteReversal } from "./Fragment";
-import { ShaderBuilderFlags, ProgramBuilder, VertexShaderComponent, VariableType, FragmentShaderComponent } from "../ShaderBuilder";
-import { IsInstanced } from "../TechniqueFlags";
 import { AttributeMap } from "../AttributeMap";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { IsInstanced } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
+import { addColor } from "./Color";
+import { addShaderFlags } from "./Common";
+import { addHiliter } from "./FeatureSymbology";
+import { addWhiteOnWhiteReversal } from "./Fragment";
+import { addLineWeight, addModelViewProjectionMatrix } from "./Vertex";
 
 const computePosition = `
   float lineWeight = computeLineWeight();

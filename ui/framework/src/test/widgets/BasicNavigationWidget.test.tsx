@@ -2,19 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { mount, shallow } from "enzyme";
-import * as moq from "typemoq";
+import * as React from "react";
 import * as sinon from "sinon";
-
-import TestUtils from "../TestUtils";
-
-import { BasicNavigationWidget } from "../../ui-framework/widgets/BasicNavigationWidget";
+import * as moq from "typemoq";
+import { Matrix3d } from "@bentley/geometry-core";
+import { MockRender, OrthographicViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ConfigurableUiManager, ContentViewManager, ViewportContentControl } from "../../ui-framework";
 import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
 import { ToolbarHelper } from "../../ui-framework/toolbar/ToolbarHelper";
-import { MockRender, ScreenViewport, OrthographicViewState } from "@bentley/imodeljs-frontend";
-import { ConfigurableUiManager, ContentViewManager, ViewportContentControl } from "../../ui-framework";
-import { Matrix3d } from "@bentley/geometry-core";
+import { BasicNavigationWidget } from "../../ui-framework/widgets/BasicNavigationWidget";
+import TestUtils from "../TestUtils";
 
 describe("BasicNavigationWidget", () => {
   const sandbox = sinon.createSandbox();

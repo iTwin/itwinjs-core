@@ -6,15 +6,13 @@
  * @module Inputs
  */
 
-import * as React from "react";
+import "./IconInput.scss";
 import classnames from "classnames";
-
+import * as React from "react";
 import { Input, InputProps } from "../Input";
 
-import "./IconInput.scss";
-
 /** Properties for the [[IconInput]] component
- * @beta
+ * @public
  */
 export interface IconInputProps extends InputProps {
   /** Icon displayed to the left of the Input field within the IconInput component */
@@ -24,7 +22,7 @@ export interface IconInputProps extends InputProps {
 }
 
 /** Input component with icon to the left of the input field
- * @beta
+ * @public
  */
 export class IconInput extends React.PureComponent<IconInputProps> {
   public render(): JSX.Element {

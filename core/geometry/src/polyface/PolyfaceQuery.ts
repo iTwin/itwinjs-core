@@ -9,32 +9,33 @@
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { StrokeOptions } from "../curve/StrokeOptions";
+import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 // import { Point3d, Vector3d, Point2d } from "./PointVector";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Polyface, PolyfaceVisitor, IndexedPolyface } from "./Polyface";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
-import { Loop } from "../curve/Loop";
-import { LineString3d } from "../curve/LineString3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
-import { MomentData } from "../geometry4d/MomentData";
-import { IndexedEdgeMatcher, SortableEdgeCluster, SortableEdge } from "./IndexedEdgeMatcher";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Transform } from "../geometry3d/Transform";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { PolyfaceBuilder } from "./PolyfaceBuilder";
-import { Geometry } from "../Geometry";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { ChainMergeContext } from "../topology/ChainMerge";
-import { UnionFindContext } from "../numerics/UnionFind";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { RangeLengthData } from "./RangeLengthData";
-import { XYPointBuckets } from "./multiclip/XYPointBuckets";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { Range3d } from "../geometry3d/Range";
-import { Angle } from "../geometry3d/Angle";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { MomentData } from "../geometry4d/MomentData";
+import { UnionFindContext } from "../numerics/UnionFind";
+import { ChainMergeContext } from "../topology/ChainMerge";
 import { FacetOrientationFixup } from "./FacetOrientation";
+import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
+import { XYPointBuckets } from "./multiclip/XYPointBuckets";
+import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
+import { PolyfaceBuilder } from "./PolyfaceBuilder";
+import { RangeLengthData } from "./RangeLengthData";
+
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public
@@ -382,7 +383,7 @@ export class PolyfaceQuery {
       return this.partitionFacetIndicesByVertexConnectedComponent(polyface.createVisitor(0));
     }
     // The polyface is really a visitor !!!
-    const context = new UnionFindContext(polyface.clientPolyface().data.point.length);
+    const context = new UnionFindContext(this.visitorClientPointCount (polyface));
     for (polyface.reset(); polyface.moveToNextFacet();) {
       const firstVertexIndexOnThisFacet = polyface.pointIndex[0];
       for (const vertexIndex of polyface.pointIndex)
@@ -467,6 +468,23 @@ export class PolyfaceQuery {
       polyfaces.push(builder.claimPolyface(true));
     }
     return polyfaces;
+  }
+
+  /** If the visitor's client is a polyface, simply return its point array length.
+   * If not a polyface, visit all facets to find the largest index.
+   */
+  private static visitorClientPointCount(visitor: PolyfaceVisitor): number {
+    const polyface = visitor.clientPolyface();
+    if (polyface !== undefined)
+      return polyface.data.point.length;
+    visitor.reset();
+    let maxIndex = -1;
+    while (visitor.moveToNextFacet()) {
+      for (const pointIndex of visitor.pointIndex)
+        if (pointIndex > maxIndex)
+          maxIndex = pointIndex;
+    }
+    return maxIndex + 1;
   }
 
   /** Search the facets for facet subsets that are connected with at least edge contact.

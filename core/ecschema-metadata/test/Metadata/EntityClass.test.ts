@@ -5,16 +5,15 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../src/Context";
-
-import { DelayedPromiseWithProps } from "./../../src/DelayedPromise";
-import { ECClassModifier } from "./../../src/ECObjects";
-import { ECObjectsError } from "./../../src/Exception";
-import { ECClass, MutableClass } from "./../../src/Metadata/Class";
-import { EntityClass, MutableEntityClass } from "./../../src/Metadata/EntityClass";
-import { Mixin } from "./../../src/Metadata/Mixin";
-import { RelationshipClass } from "./../../src/Metadata/RelationshipClass";
-import { MutableSchema, Schema } from "./../../src/Metadata/Schema";
-import { createSchemaJsonWithItems } from "./../TestUtils/DeserializationHelpers";
+import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
+import { ECClassModifier } from "../../src/ECObjects";
+import { ECObjectsError } from "../../src/Exception";
+import { ECClass, MutableClass } from "../../src/Metadata/Class";
+import { EntityClass, MutableEntityClass } from "../../src/Metadata/EntityClass";
+import { Mixin } from "../../src/Metadata/Mixin";
+import { RelationshipClass } from "../../src/Metadata/RelationshipClass";
+import { MutableSchema, Schema } from "../../src/Metadata/Schema";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
 describe("EntityClass", () => {

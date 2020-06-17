@@ -31,19 +31,24 @@
     filter: $icon-shadow;
     transition: all 250ms ease;
 
-    svg {
-      -webkit-filter: drop-shadow(0 1px 0 rgba( var(--buic-foreground-body-reverse-rgb), .5 ));
-      filter: drop-shadow(0 0.5px 0 rgba( var(--buic-foreground-body-reverse-rgb), .5 ));
-    }
-
     img {
       width: $icon-size;
       height: $icon-size;
     }
   }
 
+  &:focus {
+    color: $hovered-icon-color;
+    background-color: $buic-background-focus-overlay;
+
+    svg {
+      opacity: 1;
+    }
+  }
+
   &:hover {
-    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    color: $hovered-icon-color;
+    background-color: $buic-background-hover-overlay;
 
     svg {
       opacity: 1;
@@ -51,7 +56,8 @@
   }
 
   &:active {
-    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    color: $active-icon-color;
+    background-color: $buic-background-active-overlay;
     border: solid 2px $buic-foreground-primary;
 
     > .components-icon {
@@ -64,14 +70,15 @@
   }
 
   &:active:not(.components-disabled) {
-    background: $buic-foreground-primary-tone;
-    color: $buic-text-color-reverse;
+    background: $buic-background-pressed-overlay;
+    color: $pressed-icon-color;
     transition-duration: 150ms;
     transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
   }
 
   &.components-active {
-    background-color: rgba( $buic-foreground-primary-rgb, .2 );
+    color: $active-icon-color;
+    background-color: $buic-background-active-overlay;
     border: solid 2px $buic-foreground-primary;
 
     &:not(:active):not(.components-disabled) {
@@ -104,8 +111,13 @@
   }
 
   > .components-badge {
-    position: absolute;
-    top: 0;
-    left: 0;
+    display: none;
   }
+}
+
+div.components-toolbar-items-container.components-toolbar-show-decorators .components-toolbar-button-item>.components-badge {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
 }

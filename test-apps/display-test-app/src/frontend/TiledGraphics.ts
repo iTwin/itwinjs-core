@@ -4,14 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  FeatureSymbology,
-  IModelConnection,
-  SceneContext,
-  SpatialModelState,
-  TiledGraphicsProvider,
-  TileTreeReference,
-  Viewport,
-  SnapshotConnection,
+  FeatureSymbology, IModelConnection, SceneContext, SnapshotConnection, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
 

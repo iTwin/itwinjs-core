@@ -2,22 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { Arc3d } from "../../curve/Arc3d";
+import { CurveCurve } from "../../curve/CurveCurve";
+import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { CurveCurve } from "../../curve/CurveCurve";
-import { LineString3d } from "../../curve/LineString3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Checker } from "../Checker";
-import { expect } from "chai";
+import { Transform } from "../../geometry3d/Transform";
 import { Map4d } from "../../geometry4d/Map4d";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
-import { Transform } from "../../geometry3d/Transform";
-import { Arc3d } from "../../curve/Arc3d";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function createSamplePerspectiveMaps(): Map4d[] {
   const origin = Point3d.create(-20, -20, -1);

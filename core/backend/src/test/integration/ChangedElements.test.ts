@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { DbResult } from "@bentley/bentleyjs-core";
 import { ChangeSet } from "@bentley/imodelhub-client";
 import { ChangedElements, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { assert } from "chai";
 import { ChangedElementsManager } from "../../ChangedElementsManager";
 import { AuthorizedBackendRequestContext, BriefcaseManager, ChangedElementsDb, IModelJsFs } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";

@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import classnames from "classnames";
-import { UiFramework, IModelInfo } from "@bentley/ui-framework";
-import { ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Spinner, SpinnerSize } from "@bentley/ui-core";
 import "./Common.scss";
 import "./IModelViewPicker.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Spinner, SpinnerSize } from "@bentley/ui-core";
+import { IModelInfo, UiFramework } from "@bentley/ui-framework";
 
 interface ViewCardProps {
   view: ViewDefinitionProps;
@@ -49,7 +49,7 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
     return (
       <div className={cardClassName} onClick={this._onClicked}>
         <div className="view-card-content">
-          <img className="view-card-thumbnail" src="https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg" />
+          <img className="view-card-thumbnail" src="https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg" alt="" />
           <div className="view-card-name">{name}</div>
         </div>
       </div>

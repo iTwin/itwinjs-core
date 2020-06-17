@@ -6,19 +6,18 @@
  * @module Notification
  */
 
+import "./InputField.scss";
 import * as React from "react";
-import classnames = require("classnames");
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Popup } from "@bentley/ui-core";
-
-import { MessageManager, InputFieldMessageEventArgs } from "../messages/MessageManager";
+import { InputFieldMessageEventArgs, MessageManager } from "../messages/MessageManager";
 import { MessageDiv } from "./MessageSpan";
+import { NotifyMessageType } from "./ReactNotifyMessageDetails";
 
-import "./InputField.scss";
-
+import classnames = require("classnames");
 /** Properties of [[InputFieldMessage]] component.
- * @beta
+ * @public
  */
 interface InputFieldMessageProps {
   showCloseButton?: boolean;
@@ -30,8 +29,8 @@ interface InputFieldMessageProps {
 interface InputFieldMessageState {
   isVisible: boolean;
   priority: OutputMessagePriority;
-  message: HTMLElement | string;
-  detailedMessage?: HTMLElement | string;
+  message: NotifyMessageType;
+  detailedMessage?: NotifyMessageType;
   inputFieldElement?: HTMLElement;
   showCloseButton?: boolean;
 }

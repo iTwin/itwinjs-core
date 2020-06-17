@@ -14,14 +14,13 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { CRS } from "./CRS";
-import { OperationMethod } from "./OperationMethod";
-import { Registry } from "./Registry";
-
-import { Coordinate } from "../geom/Coordinate";
 import { AList } from "../../system/collection/AList";
 import { Numbers } from "../../system/runtime/Numbers";
 import { Strings } from "../../system/runtime/Strings";
+import { Coordinate } from "../geom/Coordinate";
+import { CRS } from "./CRS";
+import { OperationMethod } from "./OperationMethod";
+import { Registry } from "./Registry";
 
 /**
  * Class Operation defines an coordinate operation. The operation defines a specific method,

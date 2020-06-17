@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.definition
-import { RpcInterface, IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
+import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
 
 // The RPC query interface that may be exposed by the RobotWorldEngine.
@@ -17,7 +17,7 @@ export abstract class RobotWorldReadRpcInterface extends RpcInterface {
 }
 // __PUBLISH_EXTRACT_END__
 
-import { XYZProps, AngleProps } from "@bentley/geometry-core";
+import { AngleProps, XYZProps } from "@bentley/geometry-core";
 
 // The RPC write interface that may be exposed by the RobotWorldEngine.
 export abstract class RobotWorldWriteRpcInterface extends RpcInterface {

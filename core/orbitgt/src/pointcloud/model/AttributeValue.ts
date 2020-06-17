@@ -14,8 +14,6 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { AttributeTypes } from "./AttributeTypes";
-
 import { ABuffer } from "../../system/buffer/ABuffer";
 import { LittleEndian } from "../../system/buffer/LittleEndian";
 import { InStream } from "../../system/io/InStream";
@@ -23,6 +21,7 @@ import { OutStream } from "../../system/io/OutStream";
 import { ALong } from "../../system/runtime/ALong";
 import { ASystem } from "../../system/runtime/ASystem";
 import { Numbers } from "../../system/runtime/Numbers";
+import { AttributeTypes } from "./AttributeTypes";
 
 /**
  * Class AttributeValue holds a single (typed) attribute value.

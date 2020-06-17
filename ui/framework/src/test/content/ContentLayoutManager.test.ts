@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { FrontstageManager } from "../../ui-framework/frontstage/FrontstageManager";
 import { ContentLayoutManager } from "../../ui-framework/content/ContentLayoutManager";
+import { FrontstageManager } from "../../ui-framework/frontstage/FrontstageManager";
 
 describe("ContentLayoutManager", () => {
   before(async () => {

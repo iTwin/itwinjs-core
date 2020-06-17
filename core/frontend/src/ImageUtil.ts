@@ -6,14 +6,8 @@
  * @module Rendering
  */
 
-import {
-  ElectronRpcConfiguration,
-  ImageBuffer,
-  ImageBufferFormat,
-  ImageSource,
-  ImageSourceFormat,
-} from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
+import { ElectronRpcConfiguration, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { ViewRect } from "./ViewRect";
 
 interface Rgba {
@@ -221,7 +215,8 @@ export async function imageElementFromUrl(url: string): Promise<HTMLImageElement
  * @public
  */
 export async function extractImageSourceDimensions(source: ImageSource): Promise<Point2d> {
-  return imageElementFromImageSource(source).then((image) => new Point2d(image.naturalWidth, image.naturalHeight));
+  const image = await imageElementFromImageSource(source);
+  return new Point2d(image.naturalWidth, image.naturalHeight);
 }
 
 /**

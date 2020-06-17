@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-
 import { SchemaContext } from "../../src/Context";
 import { SchemaItemType } from "../../src/ECObjects";
 import { ECObjectsError } from "../../src/Exception";

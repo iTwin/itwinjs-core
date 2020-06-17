@@ -5,7 +5,7 @@ tableRowAnchors: true
 # Glossary of terms in iModel.js UI
 
 |Term | Definition
-|------------|------------|--------|--------|-------|
+|------------|------------|
 |**Backstage**|A menu used to open Frontstages and launch Tasks and commands. It is opened by clicking or pressing the App button. It can open a full-screen overlay presenting application settings and data management to the user.
 |**Content&nbsp;Control**|A class that specifies the React component to display for a Content View.
 |**Content&nbsp;Group**|A collection of Content Controls.

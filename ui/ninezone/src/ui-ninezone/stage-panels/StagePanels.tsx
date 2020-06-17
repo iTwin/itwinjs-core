@@ -6,10 +6,10 @@
  * @module StagePanels
  */
 
+import "./StagePanels.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./StagePanels.scss";
 
 /** Properties of [[StagePanels]] component.
  * @beta

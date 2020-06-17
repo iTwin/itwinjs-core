@@ -7,10 +7,7 @@
  */
 
 import { ByteStream } from "@bentley/bentleyjs-core";
-import {
-  TileFormat,
-  TileHeader,
-} from "./TileIO";
+import { TileFormat, TileHeader } from "./TileIO";
 
 /** Known version of the [glTF format](https://www.khronos.org/gltf/).
  * @internal

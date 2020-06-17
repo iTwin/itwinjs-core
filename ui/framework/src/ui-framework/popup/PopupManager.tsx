@@ -7,24 +7,20 @@
  */
 
 import * as React from "react";
-
 import { Logger } from "@bentley/bentleyjs-core";
 import { XAndY } from "@bentley/geometry-core";
 import {
-  OnValueCommitFunc, OnCancelFunc, OnItemExecutedFunc,
-  AbstractToolbarProps, RelativePosition,
-  PrimitiveValue, PropertyValueFormat, PropertyRecord,
-  PropertyDescription,
-  Primitives,
+  AbstractToolbarProps, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue, PropertyDescription, PropertyRecord,
+  PropertyValueFormat, RelativePosition, UiDataProvider,
 } from "@bentley/ui-abstract";
-
-import { UiEvent, Rectangle, Point, SizeProps, Orientation } from "@bentley/ui-core";
+import { Orientation, Point, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
 import { offsetAndContainInContainer } from "@bentley/ui-ninezone";
-
 import { UiFramework } from "../UiFramework";
-import { InputEditorPopup, InputEditorCommitHandler } from "./InputEditorPopup";
-import { ToolbarPopup } from "./ToolbarPopup";
 import { HTMLElementPopup } from "./HTMLElementPopup";
+import { InputEditorCommitHandler, InputEditorPopup } from "./InputEditorPopup";
+import { ToolbarPopup } from "./ToolbarPopup";
+import { CardPopup } from "./CardPopup";
+import { ToolSettingsPopup } from "./ToolSettingsPopup";
 
 /** Information maintained by PopupManager about a Popup
  * @alpha
@@ -63,6 +59,8 @@ export class PopupManager {
   private static _editorId = "InputEditor";
   private static _toolbarId = "Toolbar";
   private static _htmlElementId = "HTMLElement";
+  private static _cardId = "Card";
+  private static _toolSettingsId = "ToolSettings";
   private static _defaultOffset = { x: 8, y: 8 };
 
   public static readonly onPopupsChangedEvent = new PopupsChangedEvent();
@@ -71,6 +69,7 @@ export class PopupManager {
   public static get popups() { return this._popups; }
 
   public static set popups(popups: ReadonlyArray<PopupInfo>) {
+    // istanbul ignore if
     if (this._popups === popups)
       return;
     this._popups = popups;
@@ -91,6 +90,7 @@ export class PopupManager {
   }
 
   private static updatePopup(popupInfo: PopupInfo, itemIndex: number): void {
+    // istanbul ignore if
     if (itemIndex < 0)
       return;
 
@@ -199,6 +199,56 @@ export class PopupManager {
 
   public static hideHTMLElement(): boolean {
     return PopupManager.removePopup(PopupManager._htmlElementId);
+  }
+
+  public static showCard(
+    content: HTMLElement, title: string | PropertyRecord | undefined, toolbarProps: AbstractToolbarProps | undefined,
+    el: HTMLElement, pt: XAndY, offset: XAndY,
+    onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition,
+  ): boolean {
+
+    const id = PopupManager._cardId;
+    const component = (
+      <CardPopup id={id} el={el} pt={pt} offset={offset}
+        content={content} title={title} items={toolbarProps ? toolbarProps.items : /* istanbul ignore next */ undefined}
+        relativePosition={relativePosition} orientation={Orientation.Horizontal} onCancel={onCancel} onItemExecuted={onItemExecuted} />
+    );
+
+    const popupInfo: PopupInfo = {
+      id, pt, component,
+    };
+    PopupManager.addOrUpdatePopup(popupInfo);
+
+    return true;
+  }
+
+  public static hideCard(): boolean {
+    const index = PopupManager._popups.findIndex((info: PopupInfo) => PopupManager._cardId === info.id);
+    if (index >= 0)
+      return PopupManager.removePopup(PopupManager._cardId);
+    return false;
+  }
+
+  public static openToolSettings(
+    dataProvider: UiDataProvider, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition,
+  ): boolean {
+
+    const id = PopupManager._toolSettingsId;
+    const component = (
+      <ToolSettingsPopup id={id} el={el} pt={pt} offset={offset}
+        dataProvider={dataProvider} relativePosition={relativePosition} orientation={Orientation.Horizontal} onCancel={onCancel} />
+    );
+
+    const popupInfo: PopupInfo = {
+      id, pt, component,
+    };
+    PopupManager.addOrUpdatePopup(popupInfo);
+
+    return true;
+  }
+
+  public static closeToolSettings(): boolean {
+    return PopupManager.removePopup(PopupManager._toolSettingsId);
   }
 
   public static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size: SizeProps): Point {

@@ -6,11 +6,11 @@
  * @module Widget
  */
 
+import "./Content.scss";
 import * as React from "react";
+import { Point } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { useTransientState } from "./ContentRenderer";
-import { Point } from "@bentley/ui-core";
-import "./Content.scss";
 
 /** Properties of [[ScrollableWidgetContent]] component.
  * @internal future

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import SampleRpcInterface from "../common/SampleRpcInterface";
-import { RpcManager } from "@bentley/imodeljs-common";
-import { IModelHost } from "@bentley/imodeljs-backend";
 import * as fs from "fs";
 import * as path from "path";
+import { IModelHost } from "@bentley/imodeljs-backend";
+import { RpcManager } from "@bentley/imodeljs-common";
+import SampleRpcInterface from "../common/SampleRpcInterface";
 
 /** The backend implementation of SampleRpcInterface. */
 export default class SampleRpcImpl extends SampleRpcInterface {

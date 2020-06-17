@@ -7,7 +7,7 @@
  */
 
 /** Describes 2d points.
- * @beta
+ * @public
  */
 export interface PointProps {
   readonly x: number;
@@ -71,6 +71,11 @@ export class Point implements PointProps {
   /** @returns New [[Point]] with modified y value. */
   public setY(y: number) {
     return new Point(this.x, y);
+  }
+
+  /** @returns New [[Point]] with coordinates multiplied by specified factor. */
+  public multiply(factor: number) {
+    return new Point(this.x * factor, this.y * factor);
   }
 
   /** @returns [[PointProps]] object for this point. */

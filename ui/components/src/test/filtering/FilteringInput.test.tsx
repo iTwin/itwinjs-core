@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
 import * as enzyme from "enzyme";
 import * as React from "react";
+import * as sinon from "sinon";
 import { Key } from "ts-key-enum";
-
 import { FilteringInput } from "../../ui-components/filtering/FilteringInput";
 import { ResultSelector } from "../../ui-components/filtering/ResultSelector";
 import TestUtils from "../TestUtils";

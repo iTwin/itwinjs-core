@@ -14,13 +14,12 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { KrovakObliqueConformalConic } from "./KrovakObliqueConformalConic";
-
 import { Coordinate } from "../../geom/Coordinate";
 import { CRS } from "../CRS";
 import { Operation } from "../Operation";
 import { OperationMethod } from "../OperationMethod";
 import { ParameterValueList } from "../ParameterValueList";
+import { KrovakObliqueConformalConic } from "./KrovakObliqueConformalConic";
 
 /**
  * Class KrovakObliqueConformalConicEN defines the "East-North" variant of the Krovak Oblique Conformal Conic projection.

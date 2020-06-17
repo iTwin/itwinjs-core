@@ -9,8 +9,8 @@
 import * as React from "react";
 import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ContentControl } from "./ContentControl";
 import { ViewUtilities } from "../utils/ViewUtilities";
+import { ContentControl } from "./ContentControl";
 import { ContentLayoutManager } from "./ContentLayoutManager";
 
 /** [[MouseDownChangedEvent]] Args interface.
@@ -108,7 +108,9 @@ export class ContentViewManager {
           // Only call setActiveView if going to or coming from a non-viewport ContentControl
           // istanbul ignore else
           if (activeContentControl) {
-            const doSetActiveView = forceEventProcessing || (!activeContentControl.viewport || (oldContentControl && !oldContentControl.viewport));
+            const doSetActiveView = forceEventProcessing || (!activeContentControl.viewport ||
+              /* istanbul ignore next */ (oldContentControl && !oldContentControl.viewport));
+            // istanbul ignore else
             if (doSetActiveView) {
               this.onActiveContentChangedEvent.emit({ activeContent, oldContent });
               activeFrontstageDef.setActiveView(activeContentControl, oldContentControl);

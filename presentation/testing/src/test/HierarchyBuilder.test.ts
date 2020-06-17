@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as moq from "typemoq";
 import { expect } from "chai";
-import { Guid } from "@bentley/bentleyjs-core";
+import * as moq from "typemoq";
+import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Node, NodeKey, Ruleset, RegisteredRuleset, LabelDefinition } from "@bentley/presentation-common";
-import { PresentationManager, Presentation, RulesetManager } from "@bentley/presentation-frontend";
+import { LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
+import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
 import { HierarchyBuilder, NodeMappingFunc } from "../presentation-testing/HierarchyBuilder";
 
@@ -36,6 +36,7 @@ async function getChildrenNodes({ }, parentKey: NodeKey) {
 
 describe("HierarchyBuilder", () => {
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+  const rulesetVariablesManagerMock = moq.Mock.ofType<RulesetVariablesManager>();
   const rulesetManagerMock = moq.Mock.ofType<RulesetManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const rulesetMock = moq.Mock.ofType<Ruleset>();
@@ -43,11 +44,14 @@ describe("HierarchyBuilder", () => {
   beforeEach(() => {
     rulesetMock.setup((ruleset) => ruleset.id).returns(() => "1");
     rulesetManagerMock.setup(async (x) => x.add(moq.It.isAny())).returns(async (ruleset) => new RegisteredRuleset(ruleset, Guid.createValue(), () => { }));
+    rulesetVariablesManagerMock.setup((x) => x.onVariableChanged).returns(() => new BeEvent());
     presentationManagerMock.setup((manager) => manager.rulesets()).returns(() => rulesetManagerMock.object);
+    presentationManagerMock.setup((manager) => manager.vars(moq.It.isAny())).returns(() => rulesetVariablesManagerMock.object);
   });
 
   afterEach(() => {
     presentationManagerMock.reset();
+    rulesetVariablesManagerMock.reset();
     rulesetMock.reset();
   });
 

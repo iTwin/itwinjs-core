@@ -6,8 +6,8 @@
  * @module State
  */
 
-import { createAction, ActionsUnion } from "../redux/redux-ts";
 import { SnapMode } from "@bentley/imodeljs-frontend";
+import { ActionsUnion, createAction } from "../redux/redux-ts";
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
 
 // cSpell:ignore configurableui snapmode toolprompt
@@ -46,9 +46,15 @@ const initialState: ConfigurableUiState = {
  */
 export const ConfigurableUiActions = {   // tslint:disable-line:variable-name
   setSnapMode: (snapMode: number) => createAction(ConfigurableUiActionId.SetSnapMode, snapMode),
-  setTheme: (theme: string) => createAction(ConfigurableUiActionId.SetTheme, theme),
-  setToolPrompt: (toolPrompt: string) => createAction(ConfigurableUiActionId.SetToolPrompt, toolPrompt),
-  setWidgetOpacity: (opacity: number) => createAction(ConfigurableUiActionId.SetWidgetOpacity, opacity),
+  setTheme:
+    // istanbul ignore next
+    (theme: string) => createAction(ConfigurableUiActionId.SetTheme, theme),
+  setToolPrompt:
+    // istanbul ignore next
+    (toolPrompt: string) => createAction(ConfigurableUiActionId.SetToolPrompt, toolPrompt),
+  setWidgetOpacity:
+    // istanbul ignore next
+    (opacity: number) => createAction(ConfigurableUiActionId.SetWidgetOpacity, opacity),
 };
 
 /** Union of ConfigurableUi Redux actions

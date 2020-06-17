@@ -5,14 +5,15 @@
 
 import { AnyClass } from "../Interfaces";
 import { Constant } from "../Metadata/Constant";
-import { CustomAttributeContainerProps, CustomAttribute } from "../Metadata/CustomAttribute";
+import { CustomAttribute, CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { EntityClass } from "../Metadata/EntityClass";
-import { Enumeration, AnyEnumerator } from "../Metadata/Enumeration";
+import { AnyEnumerator, Enumeration } from "../Metadata/Enumeration";
 import { Format } from "../Metadata/Format";
 import { InvertedUnit } from "../Metadata/InvertedUnit";
 import { KindOfQuantity } from "../Metadata/KindOfQuantity";
 import { Mixin } from "../Metadata/Mixin";
+import { OverrideFormat } from "../Metadata/OverrideFormat";
 import { Phenomenon } from "../Metadata/Phenomenon";
 import { AnyProperty } from "../Metadata/Property";
 import { PropertyCategory } from "../Metadata/PropertyCategory";
@@ -21,11 +22,10 @@ import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { AnyDiagnostic } from "./Diagnostic";
-import { SchemaCompareDiagnostics } from "./SchemaCompareDiagnostics";
 import { SchemaChanges } from "./SchemaChanges";
-import { ISchemaCompareReporter } from "./SchemaCompareReporter";
+import { SchemaCompareDiagnostics } from "./SchemaCompareDiagnostics";
 import { SchemaCompareDirection } from "./SchemaComparer";
-import { OverrideFormat } from "../Metadata/OverrideFormat";
+import { ISchemaCompareReporter } from "./SchemaCompareReporter";
 
 /**
  * Used by the [[SchemaComparer]] to report differences found during schema comparison.

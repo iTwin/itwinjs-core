@@ -6,18 +6,17 @@
  * @module Tree
  */
 
+import "./Node.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Checkbox, CheckboxProps } from "../checkbox/Checkbox";
 import { CheckBoxState } from "../enums/CheckBoxState";
-import { ExpansionToggle } from "./ExpansionToggle";
 import { Spinner, SpinnerSize } from "../loading/Spinner";
-import { Omit } from "../utils/typeUtils";
-
-import "./Node.scss";
 import { CommonProps } from "../utils/Props";
+import { Omit } from "../utils/typeUtils";
+import { ExpansionToggle } from "./ExpansionToggle";
 
-/** Props for node checkbox renderer
+/** Props for node Checkbox renderer
  * @beta
  */
 export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"> & {
@@ -25,7 +24,7 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
   onClick: (e: React.MouseEvent) => void,
 };
 
-/** Type for node checkbox renderer
+/** Type for node Checkbox renderer
  * @beta
  */
 export type NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode;

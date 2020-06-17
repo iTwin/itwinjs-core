@@ -6,16 +6,22 @@
  * @module Tools
  */
 
-import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { SelectionContextUtilities } from "./SelectionContextUtilities";
-import { CommandItemDef } from "../shared/CommandItemDef";
-import { BaseItemState } from "../shared/ItemDefBase";
-import { GroupItemDef } from "../toolbar/GroupItem";
-import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { SessionStateActionId } from "../redux/SessionState";
+import { CommandItemDef } from "../shared/CommandItemDef";
+import { BaseItemState } from "../shared/ItemDefBase";
+import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { GroupItemDef } from "../toolbar/GroupItem";
 import { UiFramework } from "../UiFramework";
+import { HideIsolateEmphasizeActionHandler } from "./HideIsolateEmphasizeManager";
+
+/** return SyncEventIds that trigger selection state function refresh.
+ * @beta
+ */
+export function getFeatureOverrideSyncEventIds(): string[] {
+  return [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, HideIsolateEmphasizeActionHandler.hideIsolateEmphasizeUiSyncId];
+}
 
 /** return SyncEventIds that trigger selection state function refresh.
  * @beta
@@ -30,12 +36,34 @@ export function getSelectionContextSyncEventIds(): string[] {
 export function isNoSelectionActive(): boolean {
   const activeContentControl = ContentViewManager.getActiveContentControl();
   let selectionCount = 0;
+  // istanbul ignore if
   if (!UiFramework.frameworkStateKey)
     selectionCount = UiFramework.store.getState()[UiFramework.frameworkStateKey].frameworkState.sessionState.numItemsSelected;
 
-  if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0 || selectionCount > 0))
+  // istanbul ignore if
+  if (activeContentControl && activeContentControl.viewport &&
+    /* istanbul ignore next */ (activeContentControl.viewport.view.iModel.selectionSet.size > 0 || selectionCount > 0))
     return false;
   return true;
+}
+
+/** return ConditionalBooleanValue object used to show items if selection set is active.
+ * @beta
+ */
+export function areNoFeatureOverridesActive(): boolean {
+  const activeContentControl = ContentViewManager.getActiveContentControl();
+  // istanbul ignore next
+  if (activeContentControl && activeContentControl.viewport)
+    return !UiFramework.hideIsolateEmphasizeActionHandler.areFeatureOverridesActive(activeContentControl.viewport);
+
+  return true;
+}
+
+/** return ConditionalBooleanValue object used to show item if feature overrides are active.
+ * @beta
+ */
+export function getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue {
+  return new ConditionalBooleanValue(areNoFeatureOverridesActive, getFeatureOverrideSyncEventIds());
 }
 
 /** return ConditionalBooleanValue object used to show items if selection set is active.
@@ -73,13 +101,7 @@ export class SelectionContextToolDefinitions {
       commandId: "UiFramework.IsolateModel",
       iconSpec: "icon-model-isolate",
       labelKey: "UiFramework:tools.isolateModels",
-      execute: async () => {
-        const vp = IModelApp.viewManager.selectedView;
-        if (!vp)
-          return;
-
-        await SelectionContextUtilities.isolateSelectedElementsModel(vp);
-      },
+      execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processIsolateSelectedElementsModel(),
     });
   }
 
@@ -88,13 +110,7 @@ export class SelectionContextToolDefinitions {
       commandId: "UiFramework.IsolateCategory",
       iconSpec: "icon-layers-isolate",
       labelKey: "UiFramework:tools.isolateCategories",
-      execute: async () => {
-        const vp = IModelApp.viewManager.selectedView;
-        if (!vp)
-          return;
-
-        await SelectionContextUtilities.isolateSelectedElementsCategory(vp);
-      },
+      execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processIsolateSelectedElementsCategory(),
     });
   }
 
@@ -106,12 +122,7 @@ export class SelectionContextToolDefinitions {
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
       isHidden: getIsHiddenIfSelectionNotActive(),
-      execute: () => {
-        const vp = IModelApp.viewManager.selectedView;
-        if (!vp)
-          return;
-        SelectionContextUtilities.isolateSelected(vp);
-      },
+      execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processIsolateSelected(),
     });
   }
 
@@ -133,13 +144,7 @@ export class SelectionContextToolDefinitions {
       commandId: "UiFramework.HideModel",
       iconSpec: "icon-model-hide",
       labelKey: "UiFramework:tools.hideModels",
-      execute: async () => {
-        const vp = IModelApp.viewManager.selectedView;
-        if (!vp)
-          return;
-
-        await SelectionContextUtilities.hideSelectedElementsModel(vp);
-      },
+      execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processHideSelectedElementsModel(),
     });
   }
 
@@ -148,13 +153,7 @@ export class SelectionContextToolDefinitions {
       commandId: "UiFramework.HideCategory",
       iconSpec: "icon-layers-hide",
       labelKey: "UiFramework:tools.hideCategories",
-      execute: async () => {
-        const vp = IModelApp.viewManager.selectedView;
-        if (!vp)
-          return;
-
-        await SelectionContextUtilities.hideSelectedElementsCategory(vp);
-      },
+      execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processHideSelectedElementsCategory(),
     });
   }
 
@@ -166,13 +165,7 @@ export class SelectionContextToolDefinitions {
       isHidden: getIsHiddenIfSelectionNotActive(),
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
-      execute: () => {
-        const vp = IModelApp.viewManager.selectedView;
-        if (!vp)
-          return;
-
-        SelectionContextUtilities.hideSelected(vp);
-      },
+      execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processHideSelected(),
     });
   }
 
@@ -197,13 +190,18 @@ export class SelectionContextToolDefinitions {
       isHidden: getIsHiddenIfSelectionNotActive(),
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
-      execute: async () => {
-        const vp = IModelApp.viewManager.selectedView;
-        if (!vp)
-          return;
+      execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processEmphasizeSelected(),
+    });
+  }
 
-        await SelectionContextUtilities.emphasizeSelected(vp);
-      },
+  public static get clearHideIsolateEmphasizeElementsItemDef() {
+    return new CommandItemDef({
+      commandId: "UiFramework.ClearHideIsolateEmphasize",
+      iconSpec: "icon-visibility",
+      labelKey: "UiFramework:tools.clearVisibility",
+      isHidden: getIsHiddenIfFeatureOverridesActive(),
+      stateFunc: selectionContextStateFunc,
+      execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processClearEmphasize(),
     });
   }
 

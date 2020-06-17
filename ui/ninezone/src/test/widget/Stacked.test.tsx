@@ -5,14 +5,12 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-
 import { Point, Rectangle } from "@bentley/ui-core";
-
-import { createBoundingClientRect } from "../Utils";
-import { Stacked, HorizontalAnchor } from "../../ui-ninezone";
-import { VerticalAnchorHelpers, VerticalAnchor, ResizeHandle } from "../../ui-ninezone/widget/Stacked";
-import { ResizeGrip } from "../../ui-ninezone/widget/rectangular/ResizeGrip";
+import { HorizontalAnchor, Stacked } from "../../ui-ninezone";
 import { DisabledResizeHandles } from "../../ui-ninezone/utilities/DisabledResizeHandles";
+import { ResizeGrip } from "../../ui-ninezone/widget/rectangular/ResizeGrip";
+import { ResizeHandle, VerticalAnchor, VerticalAnchorHelpers } from "../../ui-ninezone/widget/Stacked";
+import { createBoundingClientRect } from "../Utils";
 
 describe("<Stacked />", () => {
   const sandbox = sinon.createSandbox();

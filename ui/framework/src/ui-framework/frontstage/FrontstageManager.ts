@@ -7,26 +7,25 @@
  */
 
 import * as React from "react";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, InteractiveTool, SelectedViewportChangedArgs, StartOrResume, Tool } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { NineZoneManager } from "@bentley/ui-ninezone";
-
-import { FrontstageDef } from "./FrontstageDef";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
-import { WidgetDef, WidgetStateChangedEvent } from "../widgets/WidgetDef";
-import { ToolInformation } from "../zones/toolsettings/ToolInformation";
-import { FrontstageProvider } from "./FrontstageProvider";
-import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
+import { ContentGroup } from "../content/ContentGroup";
 import { ContentLayoutActivatedEvent, ContentLayoutDef } from "../content/ContentLayout";
 import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { PanelSizeChangedEvent, PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
-import { ContentGroup } from "../content/ContentGroup";
-import { PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef";
+import { ToolInformation } from "../zones/toolsettings/ToolInformation";
+import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
+import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "./FrontstageDef";
+import { FrontstageProvider } from "./FrontstageProvider";
+import { TimeTracker } from "../configurableui/TimeTracker";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -49,8 +48,17 @@ export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventAr
  * @public
  */
 export interface FrontstageDeactivatedEventArgs {
+  /** Frontstage being deactivated */
   deactivatedFrontstageDef: FrontstageDef;
+  /** Frontstage being activated */
   activatedFrontstageDef?: FrontstageDef;
+
+  /** Total time spent in frontstage */
+  totalTime: number;
+  /** Engagement time spent in frontstage */
+  engagementTime: number;
+  /** Idle time spent in frontstage */
+  idleTime: number;
 }
 
 /** Frontstage Deactivated Event class.
@@ -81,6 +89,26 @@ export interface ModalFrontstageChangedEventArgs {
  * @public
  */
 export class ModalFrontstageChangedEvent extends UiEvent<ModalFrontstageChangedEventArgs> { }
+
+/** Modal Frontstage Closed Event Args interface.
+ * @public
+ */
+export interface ModalFrontstageClosedEventArgs {
+  /** Modal Frontstage being closed */
+  modalFrontstage: ModalFrontstageInfo;
+
+  /** Total time spent in frontstage */
+  totalTime: number;
+  /** Engagement time spent in frontstage */
+  engagementTime: number;
+  /** Idle time spent in frontstage */
+  idleTime: number;
+}
+
+/** Modal Frontstage Closed Event class.
+ * @public
+ */
+export class ModalFrontstageClosedEvent extends UiEvent<ModalFrontstageClosedEventArgs> { }
 
 /** Tool Activated Event Args interface.
  * @public
@@ -115,6 +143,14 @@ export interface ModalFrontstageInfo {
   appBarRight?: React.ReactNode;
 }
 
+/** Modal Frontstage array item interface.
+ * @internal
+ */
+interface ModalFrontstageItem {
+  modalFrontstage: ModalFrontstageInfo;
+  timeTracker: TimeTracker;
+}
+
 // -----------------------------------------------------------------------------
 // FrontstageManager class
 // -----------------------------------------------------------------------------
@@ -128,7 +164,7 @@ export class FrontstageManager {
   private static _activeToolId = "";
   private static _activeFrontstageDef: FrontstageDef | undefined;
   private static _frontstageDefs = new Map<string, FrontstageDef>();
-  private static _modalFrontstages: ModalFrontstageInfo[] = new Array<ModalFrontstageInfo>();
+  private static _modalFrontstages: ModalFrontstageItem[] = new Array<ModalFrontstageItem>();
   private static _nineZoneManagers = new Map<string, NineZoneManager>();
 
   private static _nestedFrontstages: FrontstageDef[] = new Array<FrontstageDef>();
@@ -199,6 +235,9 @@ export class FrontstageManager {
   /** Get Modal Frontstage Changed event. */
   public static readonly onModalFrontstageChangedEvent = new ModalFrontstageChangedEvent();
 
+  /** Get Modal Frontstage Closed event. */
+  public static readonly onModalFrontstageClosedEvent = new ModalFrontstageClosedEvent();
+
   /** Get Tool Activated event. */
   public static readonly onToolActivatedEvent = new ToolActivatedEvent();
 
@@ -222,6 +261,26 @@ export class FrontstageManager {
   /** Get Widget State Changed event. */
   public static readonly onWidgetStateChangedEvent = new WidgetStateChangedEvent();
 
+  /** @internal */
+  public static readonly onWidgetShowEvent = new UiEvent<WidgetEventArgs>();
+
+  /** @internal */
+  public static readonly onWidgetExpandEvent = new UiEvent<WidgetEventArgs>();
+
+  /** @internal */
+  public static readonly onFrontstageNineZoneStateChangedEvent = new UiEvent<FrontstageNineZoneStateChangedEventArgs>();
+
+  /** @internal */
+  public static readonly onFrontstageRestoreLayoutEvent = new UiEvent<FrontstageEventArgs>();
+
+  /** Get Widget State Changed event.
+   * @alpha
+   */
+  public static readonly onPanelStateChangedEvent = new PanelStateChangedEvent();
+
+  /** @internal */
+  public static readonly onPanelSizeChangedEvent = new PanelSizeChangedEvent();
+
   /** Get Nine-zone State Manager. */
   public static get NineZoneManager() {
     const id = FrontstageManager.activeFrontstageId;
@@ -232,11 +291,6 @@ export class FrontstageManager {
     }
     return manager;
   }
-
-  /** Get Widget State Changed event.
-   * @alpha
-   */
-  public static readonly onPanelStateChangedEvent = new PanelStateChangedEvent();
 
   /** Clears the Frontstage map.
    */
@@ -305,12 +359,23 @@ export class FrontstageManager {
    * @returns A Promise that is fulfilled when the [[FrontstageDef]] is ready.
    */
   public static async setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void> {
+    if (FrontstageManager._activeFrontstageDef === frontstageDef)
+      return;
+
     FrontstageManager._isLoading = true;
 
     const deactivatedFrontstageDef = FrontstageManager._activeFrontstageDef;
     if (deactivatedFrontstageDef) {
       deactivatedFrontstageDef.onDeactivated();
-      FrontstageManager.onFrontstageDeactivatedEvent.emit({ deactivatedFrontstageDef, activatedFrontstageDef: frontstageDef });
+
+      const timeTracker = deactivatedFrontstageDef.timeTracker;
+      FrontstageManager.onFrontstageDeactivatedEvent.emit({
+        deactivatedFrontstageDef,
+        activatedFrontstageDef: frontstageDef,
+        totalTime: timeTracker.getTotalTimeSeconds(),
+        engagementTime: timeTracker.getEngagementTimeSeconds(),
+        idleTime: timeTracker.getIdleTimeSeconds(),
+      });
     }
 
     FrontstageManager._activeFrontstageDef = frontstageDef;
@@ -330,7 +395,14 @@ export class FrontstageManager {
 
       frontstageDef.setActiveContent();
     }
+
     FrontstageManager._isLoading = false;
+  }
+
+  /** Deactivates the active FrontstageDef.
+   */
+  public static async deactivateFrontstageDef(): Promise<void> {
+    await this.setActiveFrontstageDef(undefined);
   }
 
   /** Gets the Id of the active tool. If a tool is not active, blank is returned.
@@ -398,7 +470,10 @@ export class FrontstageManager {
   }
 
   private static pushModalFrontstage(modalFrontstage: ModalFrontstageInfo): void {
-    FrontstageManager._modalFrontstages.push(modalFrontstage);
+    const timeTracker = new TimeTracker();
+    timeTracker.startTiming();
+    const frontstageItem: ModalFrontstageItem = { modalFrontstage, timeTracker };
+    FrontstageManager._modalFrontstages.push(frontstageItem);
     FrontstageManager.emitModalFrontstageChangedEvent();
   }
 
@@ -409,7 +484,19 @@ export class FrontstageManager {
   }
 
   private static popModalFrontstage(): void {
-    FrontstageManager._modalFrontstages.pop();
+    const frontstageItem = FrontstageManager._modalFrontstages.pop();
+    if (frontstageItem) {
+      const modalFrontstage = frontstageItem.modalFrontstage;
+      const timeTracker = frontstageItem.timeTracker;
+      timeTracker.stopTiming();
+      FrontstageManager.onModalFrontstageClosedEvent.emit({
+        modalFrontstage,
+        totalTime: timeTracker.getTotalTimeSeconds(),
+        engagementTime: timeTracker.getEngagementTimeSeconds(),
+        idleTime: timeTracker.getIdleTimeSeconds(),
+      });
+    }
+
     FrontstageManager.emitModalFrontstageChangedEvent();
 
     UiShowHideManager.handleFrontstageReady();
@@ -429,8 +516,11 @@ export class FrontstageManager {
    * @returns Top-most modal Frontstage, or undefined if there is none.
    */
   public static get activeModalFrontstage(): ModalFrontstageInfo | undefined {
-    if (FrontstageManager._modalFrontstages.length > 0)
-      return FrontstageManager._modalFrontstages[FrontstageManager._modalFrontstages.length - 1];
+    if (FrontstageManager._modalFrontstages.length > 0) {
+      const frontstageItem = FrontstageManager._modalFrontstages[FrontstageManager._modalFrontstages.length - 1];
+      const modalFrontstage = frontstageItem.modalFrontstage;
+      return modalFrontstage;
+    }
 
     return undefined;
   }
@@ -467,8 +557,8 @@ export class FrontstageManager {
     return false;
   }
 
-  /** Sets the state of the widget with the given id
-   * @param widgetId  Id of the Widget for which to set the state
+  /** Finds a widget with the given id in the active frontstage
+   * @param widgetId  Id of the Widget to find
    * @returns The WidgetDef with the given id, or undefined if not found.
    */
   public static findWidget(widgetId: string): WidgetDef | undefined {

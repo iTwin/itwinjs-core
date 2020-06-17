@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { KindOfQuantityProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
+import { formatStringRgx } from "../utils/FormatEnums";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { OverrideFormat } from "./OverrideFormat";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { KindOfQuantityProps } from "../Deserialization/JsonProps";
-import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
-import { formatStringRgx } from "../utils/FormatEnums";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 interface OverrideFormatProps {
   name: string;
@@ -269,4 +269,11 @@ export class KindOfQuantity extends SchemaItem {
     if (undefined !== kindOfQuantityProps.presentationUnits)
       await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
   }
+}
+/**
+ * @internal
+ * An abstract class used for schema editing.
+ */
+export abstract class MutableKindOfQuantity {
+  public abstract addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean): void;
 }

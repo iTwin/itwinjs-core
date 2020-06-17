@@ -7,11 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import {
-  ClipPlane,
-  Point3d,
-  Vector3d,
-} from "@bentley/geometry-core";
+import { ClipPlane, Point3d, Vector3d } from "@bentley/geometry-core";
 import { Frustum } from "../Frustum";
 import { BoundingSphere } from "./BoundingSphere";
 
@@ -29,6 +25,7 @@ export class FrustumPlanes {
 
   public get isValid(): boolean { return undefined !== this._planes; }
 
+  // Order: right, left, top, bottom, back, front
   public get planes() { return this._planes; }
 
   public init(frustum: Frustum) {

@@ -6,10 +6,7 @@
  * @module Content
  */
 
-import {
-  PropertyInfo, PropertyInfoJSON,
-  RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
-} from "../EC";
+import { PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON } from "../EC";
 
 /**
  * Data structure that describes one step of property

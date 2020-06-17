@@ -2,6 +2,90 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/presentation-backend_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Pass ruleset variables with request options instead of setting them in variables manager."
+          },
+          {
+            "comment": "Added ability to use single manager for all clients"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/presentation-backend_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Change argument lists to props object"
+          },
+          {
+            "comment": "Move some @beta APIs to @public"
+          },
+          {
+            "comment": "When loading related SpatialLocationType and PhysicalType properties, also load their Aspect properties"
+          },
+          {
+            "comment": "Fix aspect relationship class names in BisCore supplemental ruleset"
+          },
+          {
+            "comment": "Fix presentation backend not finding its assets when webpacked"
+          },
+          {
+            "comment": "Fix assets lookup on electron and add a way to override the path"
+          },
+          {
+            "comment": "Use correct physical element ID when looking for related functional element when calculating functional-assembly and functional-top-assembly scoped selection"
+          },
+          {
+            "comment": "Fix functional scopes for `BisCore.GeometricElement3d` elements"
+          },
+          {
+            "comment": "Added ability to control hierarchy cache location"
+          },
+          {
+            "comment": "Log when `PresentationManager` instances are created and disposed"
+          },
+          {
+            "comment": "Return related functional element key when computing 3d element selection"
+          },
+          {
+            "comment": "Separate tests from source"
+          },
+          {
+            "comment": "Add ability to set active units system for property values formatting"
+          },
+          {
+            "comment": "Add ability to compare hierarchies created using different rules"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/presentation-backend_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/presentation-backend_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/presentation-backend_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",
@@ -122,7 +206,7 @@
             "comment": "Added Ruleset and Ruleset variables to request options to make presentation backend stateless"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -215,7 +299,7 @@
             "comment": "Adds parameter for api-extractor to validate missing release tags"
           },
           {
-            "comment": "remove requirement that JavaScript classnames match BIS classnames"
+            "comment": "Remove requirement that JavaScript classnames match BIS classnames"
           },
           {
             "comment": "Fix broken links"
@@ -296,7 +380,7 @@
             "comment": "RPC Interface changes to optimize getting first page of nodes/content"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -344,7 +428,7 @@
       "comments": {
         "none": [
           {
-            "comment": "move to Node 10"
+            "comment": "Move to Node 10"
           }
         ]
       }
@@ -356,7 +440,7 @@
       "comments": {
         "none": [
           {
-            "comment": "move to Node 10"
+            "comment": "Move to Node 10"
           }
         ]
       }

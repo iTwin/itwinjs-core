@@ -2,6 +2,87 @@
   "name": "@bentley/oidc-signin-tool",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/oidc-signin-tool_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/oidc-signin-tool_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. "
+          },
+          {
+            "comment": "Add retry logic for navigation context destroyed error."
+          },
+          {
+            "comment": "Option to refresh token before expiry"
+          },
+          {
+            "comment": "Fixes to integration tests. "
+          },
+          {
+            "comment": "Update error handling for Ping login page."
+          },
+          {
+            "comment": "Fix federated workflow with slow network speed"
+          },
+          {
+            "comment": "react to changes in imodeljs-clients"
+          },
+          {
+            "comment": "update TestOidcClient to implement FrontendAuthorizationClient; add universal TestFrontendAuthorizationClient"
+          },
+          {
+            "comment": "Temporarily commented out failing tests. "
+          },
+          {
+            "comment": "This come from another branch."
+          },
+          {
+            "comment": "react to new clients packages from imodeljs-clients"
+          },
+          {
+            "comment": "Update documentation for the TestUsers"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Update to support new Bentley sign-in and consent pages "
+          },
+          {
+            "comment": "Renamed TestOidcClient and related constructs for consistency"
+          },
+          {
+            "comment": "Add certa helper functions to support initializing a SideChannel to get an AccessToken."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/oidc-signin-tool_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/oidc-signin-tool_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Moved changes from master to fix integration tests. "
+          }
+        ]
+      }
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/oidc-signin-tool_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",

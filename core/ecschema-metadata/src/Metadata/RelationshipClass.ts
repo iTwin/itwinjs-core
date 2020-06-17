@@ -3,23 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import {
+  ECClassModifier, parseStrength, parseStrengthDirection, RelationshipEnd, SchemaItemType, StrengthDirection, strengthDirectionToString,
+  strengthToString, StrengthType,
+} from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
+import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
-import { CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
-import { EntityClass, createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
+import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { createNavigationProperty, createNavigationPropertySync, EntityClass } from "./EntityClass";
 import { Mixin } from "./Mixin";
 import { NavigationProperty } from "./Property";
 import { Schema } from "./Schema";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { RelationshipClassProps, RelationshipConstraintProps } from "./../Deserialization/JsonProps";
-import {
-  ECClassModifier, SchemaItemType, StrengthDirection,
-  strengthDirectionToString, strengthToString, StrengthType, RelationshipEnd, parseStrength, parseStrengthDirection,
-} from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedRelationshipConstraintClass } from "./../Interfaces";
-import { SchemaItemKey } from "./../SchemaKey";
 import { SchemaItem } from "./SchemaItem";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
 
@@ -64,6 +64,20 @@ export class RelationshipClass extends ECClass {
 
   protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
+  }
+
+  /**
+   * @alpha Used for schema editing.
+   */
+  protected setStrength(strength: StrengthType) {
+    this._strength = strength;
+  }
+
+  /**
+   * @alpha Used for schema editing.
+   */
+  protected setStrengthDirection(direction: StrengthDirection) {
+    this._strengthDirection = direction;
   }
 
   /**
@@ -347,8 +361,11 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
         return testClass.is(constraintClass);
       }
 
-      if (testClass.schemaItemType === SchemaItemType.Mixin && constraintClass.schemaItemType === SchemaItemType.EntityClass) {
-        return (testClass as Mixin).applicableTo(constraintClass as EntityClass);
+      if (testClass.schemaItemType === SchemaItemType.Mixin) {
+        if (constraintClass.schemaItemType === SchemaItemType.EntityClass)
+          return (testClass as Mixin).applicableTo(constraintClass as EntityClass);
+        else
+          return testClass.is(constraintClass);
       }
     }
     return false;
@@ -360,6 +377,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
 
     this._customAttributes.set(customAttribute.className, customAttribute);
   }
+
 }
 
 /**
@@ -368,6 +386,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
  */
 export abstract class MutableRelationshipConstraint extends RelationshipConstraint {
   public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
+
 }
 
 const INT32_MAX = 2147483647;
@@ -415,4 +434,18 @@ export class RelationshipMultiplicity {
   public toString(): string {
     return `(${this.lowerLimit}..${this.upperLimit === INT32_MAX ? "*" : this.upperLimit})`;
   }
+}
+
+/**
+ * @internal
+ * An abstract class used for schema editing.
+ */
+export abstract class MutableRelationshipClass extends RelationshipClass {
+
+  get source() { return this._source as MutableRelationshipConstraint; }
+  get target() { return this._target as MutableRelationshipConstraint; }
+  public abstract setStrength(strength: StrengthType): void;
+  public abstract setStrengthDirection(direction: StrengthDirection): void;
+  public abstract async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
+  public abstract createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
 }

@@ -6,9 +6,9 @@
  * @module Views
  */
 import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+import { CategorySelectorProps } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { CategorySelectorProps } from "@bentley/imodeljs-common";
 
 /** A set of Categories to be displayed in a [[ViewState]].
  * Elements belonging to categories not specified in the category selector will not be drawn in the view.

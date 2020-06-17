@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module ContextRegistry
  */
+import * as deepAssign from "deep-assign";
 import { Config } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
-import * as deepAssign from "deep-assign";
 
 /** The iTwin context type.
  * @beta

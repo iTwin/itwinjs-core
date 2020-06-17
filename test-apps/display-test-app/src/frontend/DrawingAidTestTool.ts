@@ -3,29 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@bentley/geometry-core";
+import { ColorDef, GeometryStreamProps } from "@bentley/imodeljs-common";
 import {
-  IModelJson as GeomJson,
-  LineString3d,
-  Point3d,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  AccuDrawHintBuilder,
-  AccuDrawShortcuts,
-  BeButtonEvent,
-  DecorateContext,
-  DynamicsContext,
-  EventHandled,
-  GraphicType,
-  HitDetail,
-  IModelApp,
-  PrimitiveTool,
-  SnapStatus,
+  AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
+  PrimitiveTool, SnapStatus,
 } from "@bentley/imodeljs-frontend";
-import {
-  ColorDef,
-  GeometryStreamProps,
-} from "@bentley/imodeljs-common";
 
 export class DrawingAidTestTool extends PrimitiveTool {
   public static toolId = "DrawingAidTest.Points";

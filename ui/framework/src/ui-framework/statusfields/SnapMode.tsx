@@ -8,12 +8,11 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
-
 import { SnapMode } from "@bentley/imodeljs-frontend";
+import { FooterPopup, FooterPopupContentType, Snap, SnapMode as NZ_SnapMode, SnapModePanel } from "@bentley/ui-ninezone";
 import { ConfigurableUiActions } from "../configurableui/state";
 import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
-import { SnapMode as NZ_SnapMode, SnapModePanel, Snap, FooterPopup, FooterPopupContentType } from "@bentley/ui-ninezone";
 import { StatusFieldProps } from "./StatusFieldProps";
 
 // cSpell:ignore multione
@@ -96,7 +95,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
             isInFooterMode={this.props.isInFooterMode}
             onClick={this._handleSnapModeIndicatorClick}
           >
-            {this.props.isInFooterMode ? this._title : undefined}
+            {this.props.isInFooterMode ? this._title : /* istanbul ignore next */ undefined}
           </NZ_SnapMode>
         </div>
         <FooterPopup

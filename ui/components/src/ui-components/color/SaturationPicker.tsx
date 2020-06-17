@@ -6,13 +6,11 @@
  * @module Color
  */
 
-import * as React from "react";
+import "./SaturationPicker.scss";
 import classnames from "classnames";
-
+import * as React from "react";
 import { HSVColor } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
-
-import "./SaturationPicker.scss";
 
 /** Properties for the [[SaturationPicker]] React component
  * @beta

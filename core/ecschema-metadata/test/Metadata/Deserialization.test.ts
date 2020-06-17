@@ -5,15 +5,14 @@
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
-
+import { SchemaContext } from "../../src/Context";
+import { SchemaReadHelper } from "../../src/Deserialization/Helper";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
-import { SchemaContext } from "./../../src/Context";
-import { SchemaReadHelper } from "./../../src/Deserialization/Helper";
-import { SchemaItemType } from "./../../src/ECObjects";
-import { ECObjectsError } from "./../../src/Exception";
-import { AnyClass } from "./../../src/Interfaces";
-import { NavigationProperty } from "./../../src/Metadata/Property";
-import { Schema } from "./../../src/Metadata/Schema";
+import { SchemaItemType } from "../../src/ECObjects";
+import { ECObjectsError } from "../../src/Exception";
+import { AnyClass } from "../../src/Interfaces";
+import { NavigationProperty } from "../../src/Metadata/Property";
+import { Schema } from "../../src/Metadata/Schema";
 import { ISchemaPartVisitor } from "../../src/SchemaPartVisitorDelegate";
 
 describe("Full Schema Deserialization", () => {
@@ -78,6 +77,15 @@ describe("Full Schema Deserialization", () => {
         version: "1.100.0",
       };
 
+      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
+    });
+
+    it("should throw for invalid schema minor version", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.0.10000000",
+      };
       await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
     });
 

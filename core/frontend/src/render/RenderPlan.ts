@@ -6,27 +6,13 @@
  * @module Rendering
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { Vector3d, Point3d } from "@bentley/geometry-core";
+import { Point3d, Vector3d } from "@bentley/geometry-core";
 import {
-  AmbientOcclusion,
-  AnalysisStyle,
-  ColorDef,
-  Frustum,
-  GlobeMode,
-  Gradient,
-  ThematicDisplay,
-  HiddenLine,
-  Hilite,
-  LightSettings,
-  MonochromeMode,
-  Npc,
-  RenderTexture,
-  ViewFlags,
+  AmbientOcclusion, AnalysisStyle, ColorDef, Frustum, GlobeMode, Gradient, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
+  ThematicDisplay, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
-import { ViewState3d } from "../ViewState";
-import { ViewClipSettings, createViewClipSettings } from "./ViewClipSettings";
+import { createViewClipSettings, ViewClipSettings } from "./ViewClipSettings";
 
 const scratchPoint3a = new Point3d();
 const scratchPoint3b = new Point3d();
@@ -35,93 +21,117 @@ const scratchPoint3c = new Point3d();
 /** A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
  * @internal
  */
-export class RenderPlan {
-  public readonly is3d: boolean;
-  public readonly viewFlags: ViewFlags;
-  public readonly bgColor: ColorDef;
-  public readonly monoColor: ColorDef;
-  public readonly monochromeMode: MonochromeMode;
-  public readonly hiliteSettings: Hilite.Settings;
-  public readonly emphasisSettings: Hilite.Settings;
-  public readonly activeClipSettings?: ViewClipSettings;
-  public readonly hline?: HiddenLine.Settings;
-  public readonly analysisStyle?: AnalysisStyle;
-  public readonly ao?: AmbientOcclusion.Settings;
-  public readonly thematic?: ThematicDisplay;
-  public readonly isFadeOutActive: boolean;
-  public readonly analysisTexture?: RenderTexture;
-  public readonly classificationTextures?: Map<Id64String, RenderTexture>;
-  public readonly frustum: Frustum;
-  public readonly fraction: number;
-  public readonly terrainTransparency: number;
-  public readonly globalViewTransition: number;
-  public readonly isGlobeMode3D: boolean;
-  public readonly backgroundMapOn: boolean;
-  public readonly upVector: Vector3d;
-  public readonly lights?: LightSettings;
+export interface RenderPlan {
+  readonly is3d: boolean;
+  readonly viewFlags: ViewFlags;
+  readonly bgColor: ColorDef;
+  readonly monoColor: ColorDef;
+  readonly monochromeMode: MonochromeMode;
+  readonly hiliteSettings: Hilite.Settings;
+  readonly emphasisSettings: Hilite.Settings;
+  readonly activeClipSettings?: ViewClipSettings;
+  readonly hline?: HiddenLine.Settings;
+  readonly analysisStyle?: AnalysisStyle;
+  readonly ao?: AmbientOcclusion.Settings;
+  readonly thematic?: ThematicDisplay;
+  readonly isFadeOutActive: boolean;
+  readonly analysisTexture?: RenderTexture;
+  readonly frustum: Frustum;
+  readonly fraction: number;
+  readonly terrainTransparency: number;
+  readonly globalViewTransition: number;
+  readonly isGlobeMode3D: boolean;
+  readonly backgroundMapOn: boolean;
+  readonly upVector: Vector3d;
+  readonly lights?: LightSettings;
+}
 
-  public static createFromViewport(vp: Viewport): RenderPlan {
-    return new RenderPlan(vp);
+/** @internal */
+export function createEmptyRenderPlan(): RenderPlan {
+  return {
+    is3d: true,
+    viewFlags: new ViewFlags(),
+    bgColor: ColorDef.white,
+    monoColor: ColorDef.white,
+    monochromeMode: MonochromeMode.Scaled,
+    hiliteSettings: new Hilite.Settings(),
+    emphasisSettings: new Hilite.Settings(),
+    frustum: new Frustum(),
+    fraction: 0,
+    isFadeOutActive: false,
+    terrainTransparency: 1,
+    globalViewTransition: 0,
+    isGlobeMode3D: false,
+    backgroundMapOn: false,
+    upVector: Vector3d.unitZ(),
+  };
+}
+
+/** @internal */
+export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
+  const view = vp.view;
+  const style = view.displayStyle;
+
+  const is3d = view.is3d();
+  const terrainTransparency = view.is3d() ? view.getDisplayStyle3d().backgroundMapSettings.transparency || 0.0 : 0.0;
+  const globalViewTransition = view.is3d() ? view.globalViewTransition() : 0.0;
+  const backgroundMapOn = view.displayStyle.viewFlags.backgroundMap;
+  const frustum = vp.viewingSpace.getFrustum();
+  const fraction = vp.viewingSpace.frustFraction;
+  const viewFlags = style.viewFlags;
+
+  const bgColor = view.backgroundColor;
+  const monoColor = style.monochromeColor;
+  const monochromeMode = style.settings.monochromeMode;
+
+  const hiliteSettings = vp.hilite;
+  const emphasisSettings = vp.emphasisSettings;
+  const lights = vp.lightSettings;
+
+  const isFadeOutActive = vp.isFadeOutActive;
+  const activeClipSettings = createViewClipSettings(view.getViewClip(), vp.outsideClipColor, vp.insideClipColor);
+  const hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
+  const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
+  const analysisStyle = style.settings.analysisStyle;
+  const thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
+
+  let upVector;
+  const isGlobeMode3D = (GlobeMode.Ellipsoid === view.globeMode);
+  if (isGlobeMode3D) {
+    const lb = frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);
+    const rt = frustum.getCorner(Npc.RightTopRear).interpolate(0.5, frustum.getCorner(Npc.RightTopFront), scratchPoint3b);
+    const cntr = lb.interpolate(0.5, rt, scratchPoint3c);
+    upVector = view.getUpVector(cntr);
+  } else {
+    upVector = Vector3d.unitZ();
   }
 
-  public static createEmpty(): RenderPlan {
-    return new RenderPlan();
-  }
+  let analysisTexture;
+  if (undefined !== analysisStyle && undefined !== analysisStyle.scalarThematicSettings)
+    analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(analysisStyle.scalarThematicSettings), vp.iModel);
 
-  private constructor(vp?: Viewport) {
-    if (undefined !== vp) {
-      const view = vp.view;
-      const style = view.displayStyle;
-
-      this.is3d = view.is3d();
-      this.terrainTransparency = this.is3d ? (view as ViewState3d).getDisplayStyle3d().backgroundMapSettings.transparency || 0.0 : 0.0;
-      this.globalViewTransition = this.is3d ? (view as ViewState3d).globalViewTransition() : 0.0;
-      this.backgroundMapOn = view.displayStyle.viewFlags.backgroundMap;
-      this.frustum = vp.viewingSpace.getFrustum();
-      this.fraction = vp.viewingSpace.frustFraction;
-      this.viewFlags = style.viewFlags;
-
-      this.bgColor = view.backgroundColor;
-      this.monoColor = style.monochromeColor;
-      this.monochromeMode = style.settings.monochromeMode;
-
-      this.hiliteSettings = vp.hilite;
-      this.emphasisSettings = vp.emphasisSettings;
-      this.lights = vp.lightSettings;
-
-      this.isFadeOutActive = vp.isFadeOutActive;
-      this.activeClipSettings = createViewClipSettings(view.getViewClip(), vp.outsideClipColor, vp.insideClipColor);
-      this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
-      this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
-      this.analysisStyle = style.settings.analysisStyle;
-      this.thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
-      this.isGlobeMode3D = (GlobeMode.Ellipsoid === view.globeMode);
-      if (this.isGlobeMode3D) {
-        const lb = this.frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, this.frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);
-        const rt = this.frustum.getCorner(Npc.RightTopRear).interpolate(0.5, this.frustum.getCorner(Npc.RightTopFront), scratchPoint3b);
-        const cntr = lb.interpolate(0.5, rt, scratchPoint3c);
-        this.upVector = view.getUpVector(cntr);
-      } else
-        this.upVector = Vector3d.unitZ();
-
-      if (undefined !== this.analysisStyle && undefined !== this.analysisStyle.scalarThematicSettings)
-        this.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(this.analysisStyle.scalarThematicSettings), vp.iModel);
-
-    } else {
-      this.is3d = true;
-      this.viewFlags = new ViewFlags();
-      this.bgColor = this.monoColor = ColorDef.white;
-      this.monochromeMode = MonochromeMode.Scaled;
-      this.hiliteSettings = new Hilite.Settings();
-      this.emphasisSettings = new Hilite.Settings();
-      this.frustum = new Frustum();
-      this.fraction = 0;
-      this.isFadeOutActive = false;
-      this.terrainTransparency = 1.0;
-      this.globalViewTransition = 0.0;
-      this.isGlobeMode3D = false;
-      this.backgroundMapOn = false;
-      this.upVector = Vector3d.unitZ();
-    }
-  }
+  return {
+    is3d,
+    viewFlags,
+    bgColor,
+    monoColor,
+    monochromeMode,
+    hiliteSettings,
+    emphasisSettings,
+    activeClipSettings,
+    hline,
+    analysisStyle,
+    ao,
+    thematic,
+    isFadeOutActive,
+    analysisTexture,
+    frustum,
+    fraction,
+    terrainTransparency,
+    globalViewTransition,
+    isGlobeMode3D,
+    backgroundMapOn,
+    upVector,
+    lights,
+  };
 }

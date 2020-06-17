@@ -6,12 +6,13 @@
 
 import { AccessToken } from '@bentley/itwin-client';
 import { Asset } from '@bentley/context-registry-client';
-import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
+import { ChunkedQueryContext } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ContextType } from '@bentley/context-registry-client';
 import { FileHandler } from '@bentley/itwin-client';
+import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { HttpStatus } from '@bentley/bentleyjs-core';
@@ -145,6 +146,7 @@ export class ChangeSet extends WsgInstance {
     downloadUrl?: string;
     fileName?: string;
     fileSize?: string;
+    get fileSizeNumber(): number;
     id?: string;
     index?: string;
     isUploaded?: boolean;
@@ -172,7 +174,7 @@ export class ChangeSetHandler {
     // @internal
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
     create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet>;
-    download(requestContext: AuthorizedClientRequestContext, changeSets: ChangeSet[], path: string, progressCallback?: ProgressCallback): Promise<void>;
+    download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet[]>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: ChangeSetQuery): Promise<ChangeSet[]>;
     }
 
@@ -199,6 +201,7 @@ export class ChangeSetQuery extends StringIdQuery {
     bySeedFileId(seedFileId: GuidString): this;
     // @internal (undocumented)
     protected checkValue(id: string): void;
+    clone(): ChangeSetQuery;
     // @internal
     static defaultPageSize: number;
     fromId(id: string): this;
@@ -534,12 +537,6 @@ export class HubUserInfo extends WsgInstance {
 }
 
 // @internal
-export interface IModelAuthorizationClient extends AuthorizationClient {
-    // (undocumented)
-    authorizeUser(requestContext: ClientRequestContext, userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken>;
-}
-
-// @internal
 export class IModelBankClient extends IModelClient {
     constructor(url: string, handler: FileHandler | undefined);
     // (undocumented)
@@ -589,6 +586,7 @@ export class IModelBaseHandler extends WsgClient {
     // (undocumented)
     getFileHandler(): FileHandler | undefined;
     getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
+    getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions): Promise<T[]>;
     protected getRelyingPartyUrl(): string;
     getUrl(requestContext: ClientRequestContext): Promise<string>;
     protected getUrlSearchKey(): string;
@@ -635,9 +633,9 @@ export abstract class IModelClient {
 // @internal
 export interface IModelCloudEnvironment {
     // (undocumented)
-    readonly authorization: IModelAuthorizationClient;
-    // (undocumented)
     readonly contextMgr: ContextManagerClient;
+    // (undocumented)
+    getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient;
     // (undocumented)
     readonly imodelClient: IModelClient;
     // (undocumented)

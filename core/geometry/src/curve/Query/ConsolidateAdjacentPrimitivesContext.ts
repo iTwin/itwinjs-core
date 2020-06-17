@@ -6,16 +6,19 @@
  * @module Curve
  */
 
-import { ConsolidateAdjacentCurvePrimitivesOptions, CurveChain } from "../CurveCollection";
 import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
-import { Loop } from "../Loop";
-import { Path } from "../Path";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
+import { Arc3d } from "../Arc3d";
+import { ConsolidateAdjacentCurvePrimitivesOptions, CurveChain } from "../CurveCollection";
+import { CurveFactory } from "../CurveFactory";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Arc3d } from "../Arc3d";
-import { CurveFactory } from "../CurveFactory";
+import { Loop } from "../Loop";
+import { Path } from "../Path";
+import { ParityRegion } from "../ParityRegion";
+
 /**
  * * Implementation class for ConsolidateAdjacentCurvePrimitives.
  *
@@ -56,8 +59,13 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
           }
         }
         if (points.length > 1) {
-          const compressedPointsA = PolylineOps.compressShortEdges(points, this._options.colinearPointTolerance);
-          const compressedPointsB = PolylineOps.compressByPerpendicularDistance(compressedPointsA, this._options.colinearPointTolerance);
+          const tolerance = this._options.colinearPointTolerance;
+          const compressedPointsA = PolylineOps.compressShortEdges(points, tolerance);
+          const compressedPointsB = PolylineOps.compressByPerpendicularDistance(compressedPointsA, tolerance);
+          if (i0 === 0 && i1 === numOriginal) {
+            // points is the entire curve, and the curve is closed.   Maybe the first and last segments are colinear.
+            PolylineCompressionContext.compressColinearWrapInPlace(compressedPointsB, tolerance);
+          }
           if (compressedPointsB.length < 2) {
             // Collapsed to a point?  Make a single point linestring
             g.children[numAccept++] = LineString3d.create(compressedPointsB[0]);
@@ -92,4 +100,8 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
 
   public handlePath(g: Path): any { return this.handleCurveChain(g); }
   public handleLoop(g: Loop): any { return this.handleCurveChain(g); }
+  public handleParityRegion(g: ParityRegion): any {
+    for (const child of g.children)
+      child.dispatchToGeometryHandler(this);
+  }
 }

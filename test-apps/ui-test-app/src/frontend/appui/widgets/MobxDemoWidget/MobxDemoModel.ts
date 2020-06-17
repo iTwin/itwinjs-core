@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { observable, action, computed } from "mobx";
+import { action, computed, observable } from "mobx";
 
 export class MobxDemoModel {
   @observable private _birds: string[] = [];

@@ -8,19 +8,18 @@
 
 import * as React from "react";
 import {
-  TreeNode as TreeNodeBase, NodeCheckboxProps as CheckboxProps, Omit,
-  CheckBoxState, NodeCheckboxRenderer, shallowDiffers, CommonProps,
+  CheckBoxState, CommonProps, NodeCheckboxProps as CheckboxProps, NodeCheckboxRenderer, Omit, shallowDiffers, TreeNode as TreeNodeBase,
 } from "@bentley/ui-core";
-import { TreeComponentTestId } from "../../TreeComponentTestId";
-import { TreeNodeItem } from "../../TreeDataProvider";
-import { BeInspireTreeNode } from "./BeInspireTree";
-import { TreeNodeContent } from "./NodeContent";
-import { CellEditingEngine } from "../CellEditingEngine";
-import { HighlightableTreeNodeProps } from "../../HighlightingEngine";
-import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { ITreeImageLoader } from "../../ImageLoader";
 import { Image } from "../../../common/IImageLoader";
 import { ImageRenderer } from "../../../common/ImageRenderer";
+import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
+import { HighlightableTreeNodeProps } from "../../HighlightingEngine";
+import { ITreeImageLoader } from "../../ImageLoader";
+import { TreeComponentTestId } from "../../TreeComponentTestId";
+import { TreeNodeItem } from "../../TreeDataProvider";
+import { CellEditingEngine } from "../CellEditingEngine";
+import { BeInspireTreeNode } from "./BeInspireTree";
+import { TreeNodeContent } from "./NodeContent";
 
 // tslint:disable:deprecation
 

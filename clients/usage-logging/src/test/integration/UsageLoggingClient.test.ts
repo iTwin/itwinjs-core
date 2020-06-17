@@ -2,12 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
+import * as os from "os";
 import { BentleyStatus, Config, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { assert } from "chai";
-import * as os from "os";
-import { EndFeatureLogEntry, FeatureLogEntry, LogPostingResponse, StartFeatureLogEntry, UsageLoggingClient, UsageType } from "../../UsageLoggingClient";
+import {
+  EndFeatureLogEntry, FeatureLogEntry, LogPostingResponse, StartFeatureLogEntry, UsageLoggingClient, UsageType,
+} from "../../UsageLoggingClient";
 
 describe("UlasClient - OIDC Token (#integration)", () => {
   const client: UsageLoggingClient = new UsageLoggingClient();
@@ -36,14 +38,15 @@ describe("UlasClient - OIDC Token (#integration)", () => {
 
     for (const mode of [TokenMode.Complete, TokenMode.NoUserProfile, TokenMode.NoUserId, TokenMode.NoUltimateId]) {
       let tempAccessToken: AccessToken;
-
       if (mode === TokenMode.NoUserProfile) {
         // fake token that does not contain a user profile
-        tempAccessToken = AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify({ ForeignProjectAccessToken: {} }))!;
+        tempAccessToken = new AccessToken("");
       } else {
+        tempAccessToken = (await getAccessTokenFromBackend(TestUsers.regular) as any) as AccessToken;
+
         // token from which some user profile information is removed. UlasClient does not utilize this information, and instead defers this task to the ULAS server, which examines the token string itself.
         // Need to cast to any and then back to AccessToken because of circular dependency with the oidc-signin-tool
-        tempAccessToken = (await getAccessTokenFromBackend(TestUsers.regular) as any) as AccessToken; switch (mode) {
+        switch (mode) {
           case TokenMode.NoUserId:
             tempAccessToken.getUserInfo()!.id = "";
             break;

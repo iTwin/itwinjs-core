@@ -10,7 +10,10 @@
 @import "../style/typography";
 @import "../z-index";
 
-$uicore-menu-bordered-padding:  $uicore-bordered-padding + 2px;
+// cspell:ignore themecolors unbordered
+
+$uicore-menu-padding:             $uicore-bordered-padding;
+$uicore-menu-top-bottom-padding:  $uicore-menu-padding * 2/3;
 
 .core-context-menu-global {
   position: fixed;
@@ -46,7 +49,7 @@ $uicore-menu-bordered-padding:  $uicore-bordered-padding + 2px;
     visibility: hidden;
     transform: scaleY(0);
     display: table;
-    border: 1px solid $buic-background-control-stroke;
+    border: 1px solid $buic-background-divider;
     box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
 
     &.core-context-menu-floating {
@@ -98,8 +101,8 @@ $uicore-menu-bordered-padding:  $uicore-bordered-padding + 2px;
     .core-context-menu-item {
       display: flex;
       cursor: default;
-      padding: $uicore-menu-bordered-padding $uicore-menu-bordered-padding;
-      width: calc(100% - 2 * #{$uicore-menu-bordered-padding});
+      padding: $uicore-menu-top-bottom-padding $uicore-menu-padding;
+      width: calc(100% - 2 * #{$uicore-menu-padding});
       align-items: center;
       position: relative;
 
@@ -143,7 +146,7 @@ $uicore-menu-bordered-padding:  $uicore-bordered-padding + 2px;
     }
 
     &:focus {
-      border: 1px solid $uicore-inputs-border-color;
+      border: 1px solid $buic-background-divider;
       box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
       outline: 0px;
 

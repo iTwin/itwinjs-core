@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SpatialLocationElement, IModelDb, SpatialCategory } from "@bentley/imodeljs-backend";
-import { GeometryStreamProps, GeometryStreamBuilder } from "@bentley/imodeljs-common";
-import { Point3d, LineSegment3d } from "@bentley/geometry-core";
+import { LineSegment3d, Point3d } from "@bentley/geometry-core";
+import { IModelDb, SpatialCategory, SpatialLocationElement } from "@bentley/imodeljs-backend";
+import { GeometryStreamBuilder, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { RobotWorld } from "./RobotWorldSchema";
 
 /**

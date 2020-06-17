@@ -6,14 +6,17 @@
  * @module MarkupTools
  */
 
-import { Point2d, Point3d, Transform, XAndY, Vector2d } from "@bentley/geometry-core";
-import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource, BeButton, BeTouchEvent, ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection, CoreTools } from "@bentley/imodeljs-frontend";
+import { BeEvent } from "@bentley/bentleyjs-core";
+import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@bentley/geometry-core";
+import {
+  BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage,
+  ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
+} from "@bentley/imodeljs-frontend";
 import { ArrayXY, Box, Container, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 import { EditTextTool } from "./TextEdit";
 import { UndoManager } from "./Undo";
-import { BeEvent } from "@bentley/bentleyjs-core";
 
 /** Classes added to HTMLElements so they can be customized in CSS by applications.
  * A "modify handle" is a visible position on the screen that provides UI to modify a MarkupElement.
@@ -93,7 +96,7 @@ class StretchHandle extends ModifyHandle {
 
   public startDrag(_ev: BeButtonEvent) {
     const handles = this.handles;
-    this.startCtm = handles.el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx);
+    this.startCtm = handles.el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx());
     this.startBox = handles.el.bbox(); // save starting size so we can preserve aspect ratio
     this.startPos = handles.npcToBox(this.posNpc);
     this.opposite = handles.npcToBox({ x: 1 - this.posNpc.x, y: 1 - this.posNpc.y });
@@ -183,7 +186,7 @@ class VertexHandle extends ModifyHandle {
   }
   public setPosition(): void {
     let point = new Point(this.handles.el.attr(this._x), this.handles.el.attr(this._y));
-    const matrix = this.handles.el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx);
+    const matrix = this.handles.el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx());
     point = point.transform(matrix);
     this._circle.center(point.x, point.y);
   }
@@ -298,7 +301,7 @@ export class Handles {
   public draw() {
     const el = this.el;
     const bb = el.bbox();
-    const ctm = el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx);
+    const ctm = el.screenCTM().lmultiplyO(MarkupApp.screenToVbMtx());
     this.vbToBoxTrn = ctm.inverse().toIModelTransform();
     this.npcToVbTrn = new Matrix().scaleO(bb.w, bb.h).translateO(bb.x, bb.y).lmultiplyO(ctm).toIModelTransform();
     this.handles.forEach((h) => h.setPosition());

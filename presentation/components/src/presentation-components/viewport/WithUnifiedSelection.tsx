@@ -9,11 +9,11 @@
 import * as React from "react";
 import { IDisposable, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { SelectionInfo, KeySet, AsyncTasksTracker } from "@bentley/presentation-common";
-import { SelectionHandler, Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
+import { AsyncTasksTracker, KeySet, SelectionInfo } from "@bentley/presentation-common";
+import { ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionHandler } from "@bentley/presentation-frontend";
 import { ViewportProps } from "@bentley/ui-components";
-import { getDisplayName } from "../common/Utils";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
+import { getDisplayName } from "../common/Utils";
 
 /**
  * Props that are injected to the ViewWithUnifiedSelection HOC component.

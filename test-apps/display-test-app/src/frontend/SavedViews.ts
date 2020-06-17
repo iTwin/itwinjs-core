@@ -3,22 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  IModelConnection,
-  Viewport,
-  ViewState,
-} from "@bentley/imodeljs-frontend";
-import {
-  createTextBox,
-  createButton,
-  deserializeViewState,
-  serializeViewState,
-} from "@bentley/frontend-devtools";
 import { Id64Arg } from "@bentley/bentleyjs-core";
+import { createButton, createTextBox, deserializeViewState, serializeViewState } from "@bentley/frontend-devtools";
+import { IModelConnection, Viewport, ViewState } from "@bentley/imodeljs-frontend";
 import SVTRpcInterface from "../common/SVTRpcInterface";
+import { Provider } from "./FeatureOverrides";
 import { NamedViewStatePropsString, NamedVSPSList } from "./NamedVSPSList";
 import { ToolBarDropDown } from "./ToolBar";
-import { Provider } from "./FeatureOverrides";
 
 export interface ApplySavedView {
   applySavedView(view: ViewState): Promise<void>;
@@ -97,8 +88,6 @@ export class SavedViewPicker extends ToolBarDropDown {
         ev.stopPropagation();
         if ("Enter" === ev.key)
           await this.saveView();
-
-        return Promise.resolve();
       },
     });
 
@@ -180,7 +169,7 @@ export class SavedViewPicker extends ToolBarDropDown {
 
   private async recallView(): Promise<void> {
     if (undefined === this._selectedView)
-      return Promise.resolve();
+      return;
 
     const vsp = JSON.parse(this._selectedView.viewStatePropsString);
     const viewState = await deserializeViewState(vsp, this._vp.iModel);
@@ -208,7 +197,7 @@ export class SavedViewPicker extends ToolBarDropDown {
   private async deleteView(): Promise<void> {
     // eslint-disable-next-line no-restricted-globals
     if (undefined === this._selectedView)
-      return Promise.resolve();
+      return;
 
     this._views.removeName(this._selectedView.name);
     this.populateFromViewList();
@@ -218,7 +207,7 @@ export class SavedViewPicker extends ToolBarDropDown {
   private async saveView(): Promise<void> {
     const newName = this._newViewName;
     if (0 === newName.length || undefined !== this.findView(newName))
-      return Promise.resolve();
+      return;
 
     const props = serializeViewState(this._vp.view);
     const json = JSON.stringify(props);

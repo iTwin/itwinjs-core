@@ -1,6 +1,47 @@
 # Change Log - @bentley/presentation-frontend
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Add event that is raised when Ruleset variable changes
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- react to changes in imodeljs-clients
+- update tests to utilize FrontendAuthorizationClient
+- Clean up deprecated APIs
+- Change argument lists to props object
+- Made `HiliteSetProvider` and related APIs @public
+- Made Presentation.initialize async
+- Do not use EventSource in non-native apps to avoid error logs
+- Do an authorization check before using the settings client to avoid errors being logged.
+- Added the ability to change favorite property order. Favorite properties API now needs IModelConnection for all functions.
+- Translate string with multiple localization keys
+- Add offline mode support. Currently the only component that makes use of that is favorite properties persistence layer - the data will be cached locally until the application comes online and then synced with the persistence service.
+- Change internal `Presentation` setters to functions (so they can actually be @internal)
+- Separate tests from source
+- Add ability to set active units system for property values formatting
+- Add ability to modify a ruleset and get a list of modifications that need to be applied to components to represent the changed hierarchies and content
+- react to new clients packages from imodeljs-clients
+- Upgrade to Rush 5.23.2
+- Remove support for the iModel.js module system by no longer delivering modules.
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+*Version update only*
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+*Version update only*
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -66,7 +107,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Add ability to force-load all hierarchy with the given imodel and ruleset
 - Add module descriptions
 - Added Ruleset and Ruleset variables to request options to support stateless presentation backend
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -122,7 +163,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Allow sending content descriptor overrides instead of descriptor when requesting content. This allows to competely avoid a descriptor request when content customization requirements are the same for all kinds of content.
 - Do not include transient element IDs when syncing with logical selection
 - Always compute selection when syncing tool selection with logical selection - that's necessary to determine concrete element class names. Without that, we're adding keys with "BisCore:Element" class to selection and then our keys compare fails (presentation components like the table always have concrete class names). This can cause rows / nodes not to be highlighted in components.
-- remove IModelApp subclasses
+- Remove IModelApp subclasses
 - Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Upgrade TypeDoc dependency to 0.14.2
 
@@ -145,7 +186,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Save BUILD_SEMVER to globally accessible map
 - Add an API for getting selection scopes and computing selection based on a selection scope.
 - RPC Interface changes to optimize getting first page of nodes/content
-- upgrade to TypeScript 3.2.2
+- Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT

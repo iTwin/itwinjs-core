@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CommonStatusBarItem, StatusBarItemsManager, StatusBarItemsChangedArgs } from "@bentley/ui-abstract";
+import { CommonStatusBarItem, StatusBarItemsChangedArgs, StatusBarItemsManager } from "@bentley/ui-abstract";
 
 /** Hook that returns items from [[StatusBarItemsManager]].
  * @beta

@@ -3,32 +3,32 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { FooterSeparator } from "@bentley/ui-ninezone";
+import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 import {
-  IModelApp, NotifyMessageDetails, OutputMessagePriority, MessageBoxValue, SelectionTool,
-  OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType, OutputMessageAlert,
+  IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
+  SelectionTool, SnapMode,
 } from "@bentley/imodeljs-frontend";
-import { MessageSeverity, SvgSprite, SvgPath } from "@bentley/ui-core";
 import {
-  BackstageItem, StatusBarSection, UiItemsManager, CommonStatusBarItem, StageUsage, UiItemsProvider,
-  ConditionalBooleanValue, ConditionalStringValue, BackstageItemUtilities,
+  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, StageUsage, StatusBarSection,
+  UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
+import { MessageSeverity, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
-  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager,
-  SyncUiEventId, Backstage, StatusBarItemUtilities, withStatusFieldProps, SyncUiEventDispatcher,
+  Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactMessage,
+  ReactNotifyMessageDetails, StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, WidgetState, withStatusFieldProps,
 } from "@bentley/ui-framework";
+import { FooterSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../";
+import { AppUi } from "../appui/AppUi";
+// cSpell:ignore appui
+import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
+import { SampleStatusField } from "../appui/statusfields/SampleStatusField";
+import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "../tools/ToolWithSettings";
-import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
-
-// cSpell:ignore appui
-import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
-import { AppUi } from "../appui/AppUi";
-import { SampleStatusField } from "../appui/statusfields/SampleStatusField";
-
-import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
+import { Presentation } from "@bentley/presentation-frontend";
+import { PresentationUnitSystem } from "@bentley/presentation-common";
 
 // tslint:disable-next-line: variable-name
 const SampleStatus = withStatusFieldProps(SampleStatusField);
@@ -233,6 +233,7 @@ export class AppTools {
       labelKey: "SampleApp:buttons.setLengthFormatMetric",
       execute: () => {
         IModelApp.quantityFormatter.useImperialFormats = false;
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
       },
     });
@@ -246,6 +247,7 @@ export class AppTools {
       labelKey: "SampleApp:buttons.setLengthFormatImperial",
       execute: () => {
         IModelApp.quantityFormatter.useImperialFormats = true;
+        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
       },
     });
@@ -257,7 +259,11 @@ export class AppTools {
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.toggleLengthFormat",
       execute: () => {
-        IModelApp.quantityFormatter.useImperialFormats = !IModelApp.quantityFormatter.useImperialFormats;
+        const useImperialFormats = !IModelApp.quantityFormatter.useImperialFormats;
+        IModelApp.quantityFormatter.useImperialFormats = useImperialFormats;
+        Presentation.presentation.activeUnitSystem = useImperialFormats
+          ? PresentationUnitSystem.BritishImperial
+          : PresentationUnitSystem.Metric;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.quantityFormatter.useImperialFormats ? "Set Length Format to Imperial" : "Set Length Format to Metric"));
       },
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
@@ -295,12 +301,25 @@ export class AppTools {
     return span;
   }
 
+  private static get _reactMessage(): ReactMessage {
+    const reactNode = (
+      <span>
+        For more details, <UnderlinedButton onClick={this._handleLink}>click here</UnderlinedButton>.
+      </span>
+    );
+    return ({ reactNode });
+  }
+
+  private static _handleLink = () => {
+    window.alert("The link was clicked");
+  }
+
   public static get infoMessageCommand() {
     return new CommandItemDef({
       commandId: "infoMessage",
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._detailedMessage)),
+      execute: () => MessageManager.outputMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._reactMessage)),
     });
   }
 
@@ -309,7 +328,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._detailedMessage, OutputMessageType.Sticky)),
+      execute: () => MessageManager.outputMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._reactMessage, OutputMessageType.Sticky)),
     });
   }
 
@@ -499,12 +518,16 @@ export class AppTools {
     return new CommandItemDef({
       commandId: "addMessage",
       iconSpec: "icon-status-warning",
-      labelKey: "SampleApp:buttons.openMessageBox",
+      labelKey: "SampleApp:buttons.openSeveralMessages",
       execute: async () => {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, AppTools._infoStr));
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, AppTools._warningStr));
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, AppTools._errorStr));
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Fatal, AppTools._fatalStr));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, AppTools._infoStr, undefined, OutputMessageType.Sticky));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, AppTools._warningStr, undefined, OutputMessageType.Sticky));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, AppTools._errorStr, undefined, OutputMessageType.Sticky));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Fatal, AppTools._fatalStr, undefined, OutputMessageType.Sticky));
       },
     });
   }

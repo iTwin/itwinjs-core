@@ -8,16 +8,15 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
 import * as moq from "typemoq";
+import { I18N } from "@bentley/imodeljs-i18n";
+import { LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
 import {
-  createRandomDescriptor, createRandomPropertiesField, createRandomNestedContentField,
-  createRandomLabelDefinition, createRandomLabelCompositeValue,
+  createRandomDescriptor, createRandomLabelCompositeValue, createRandomLabelDefinition, createRandomNestedContentField, createRandomPropertiesField,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { PrimitiveValue, Primitives } from "@bentley/ui-abstract";
-import { LabelCompositeValue } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
+import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
 import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
 import * as utils from "../../presentation-components/common/Utils";
-import { Presentation } from "@bentley/presentation-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
 
 class TestComponent extends React.Component {
 }
@@ -147,7 +146,7 @@ describe("Utils", () => {
 
     it("creates PropertyRecord for label with composite value", () => {
       const compositeValue = createRandomLabelCompositeValue();
-      const definition = { ...createRandomLabelDefinition(), rawValue: compositeValue, typeName: "composite" };
+      const definition = { ...createRandomLabelDefinition(), rawValue: compositeValue, typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME };
       const record = utils.createLabelRecord(definition, "test");
       const primitiveValue = record.value as PrimitiveValue;
       validateCompositeValue(primitiveValue.value as Primitives.Composite, definition.rawValue);

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import { CheckBoxState } from "@bentley/ui-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { CheckBoxState } from "@bentley/ui-core";
 import { MutableTreeModelNode, TreeNodeItemData } from "../../../ui-components";
 import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 

@@ -6,21 +6,21 @@
  * @module Curve
  */
 
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 /* tslint:disable: no-console */
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Arc3d } from "../Arc3d";
 import { CurveCollection } from "../CurveCollection";
+import { CurveCurve } from "../CurveCurve";
+import { CurveCurveApproachType, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { LineSegment3d } from "../LineSegment3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { CurveCurveApproachType, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { LineString3d } from "../LineString3d";
-import { Path } from "../Path";
 import { Loop } from "../Loop";
-import { Arc3d } from "../Arc3d";
-import { CurveCurve } from "../CurveCurve";
-import { Angle } from "../../geometry3d/Angle";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Path } from "../Path";
 import { RegionOps } from "../RegionOps";
 
 /**
@@ -191,12 +191,40 @@ class Joint {
   }
 
   private static collectPrimitive(destination: CurvePrimitive[], primitive?: CurvePrimitive) {
-    if (primitive)
+    if (primitive) {
+      if (destination.length > 0) {
+        const pointA = destination[destination.length - 1].endPoint();
+        const pointB = primitive.startPoint();
+        if (!pointA.isAlmostEqual(pointB)) {
+          destination.push(LineSegment3d.create(pointA, pointB));
+        }
+      }
       destination.push(primitive);
+    }
   }
-  public static collectCurvesFromChain(start: Joint, destination: CurvePrimitive[], maxTest: number = 100) {
+  private static adjustJointToPrimitives(joint: Joint) {
+    const ls = joint.jointCurve;
+    if (ls instanceof LineString3d) {
+      if (joint.curve0) {
+        const curvePoint = joint.curve0.endPoint();
+        const jointPoint0 = ls.startPoint();
+        if (!curvePoint.isAlmostEqual(jointPoint0))
+          ls.packedPoints.setAtCheckedPointIndex(0, curvePoint);
+      }
+      if (joint.curve1) {
+        const curvePoint = joint.curve1.startPoint();
+        const jointPoint1 = ls.endPoint();
+        if (!curvePoint.isAlmostEqual(jointPoint1))
+          ls.packedPoints.setAtCheckedPointIndex(ls.packedPoints.length - 1, curvePoint);
+      }
+    }
+  }
+  public static collectCurvesFromChain(start: Joint | undefined, destination: CurvePrimitive[], maxTest: number = 100) {
+    if (start === undefined)
+      return;
     let numOut = -2 * maxTest;    // allow extra things to happen
     Joint.visitJointsOnChain(start, (joint: Joint) => {
+      this.adjustJointToPrimitives(joint);
       this.collectPrimitive(destination, joint.jointCurve);
 
       if (joint.curve1 && joint.fraction1 !== undefined) {
@@ -214,8 +242,9 @@ class Joint {
   }
 
   /** Execute `joint.annotateJointMode()` at all joints on the chain. */
-  public static annotateChain(start: Joint, options: JointOptions, maxTest: number = 100) {
-    Joint.visitJointsOnChain(start, (joint: Joint) => { joint.annotateJointMode(options); return true; }, maxTest);
+  public static annotateChain(start: Joint | undefined, options: JointOptions, maxTest: number = 100) {
+    if (start)
+      Joint.visitJointsOnChain(start, (joint: Joint) => { joint.annotateJointMode(options); return true; }, maxTest);
   }
 
   /**
@@ -592,7 +621,7 @@ export class CurveChainWireOffsetContext {
         const sign = g1.sweep.sweepRadians * g1.matrixRef.coffs[8] >= 0.0 ? 1.0 : -1.0;
         const r = g1.matrixRef.columnXMagnitude();
         const r1 = r - sign * distanceLeft;
-        if (!Geometry.isSmallMetricDistance (r1)) {
+        if (!Geometry.isSmallMetricDistance(r1)) {
           const factor = r1 / r;
           const matrix = g1.matrixClone();
           matrix.scaleColumnsInPlace(factor, factor, 1.0);
@@ -635,7 +664,7 @@ export class CurveChainWireOffsetContext {
    * @param curves input curves
    * @param offsetDistanceOrOptions offset controls.
    */
-  public static constructCurveXYOffset(curves: Path | Loop, options: JointOptions): CurveCollection | undefined {
+  private static constructCurveXYOffsetGo(curves: Path | Loop, options: JointOptions): CurveCollection | undefined {
     const wrap = curves instanceof Loop;
     if (options === undefined)
       return undefined;
@@ -655,18 +684,23 @@ export class CurveChainWireOffsetContext {
         }
       }
     }
-    let fragment0 = simpleOffsets[0];
-    const joint0 = new Joint(undefined, fragment0, fragment0.fractionToPoint(0.0));
+    let fragment0;
     let newJoint;
-    let previousJoint = joint0;
-    for (let i = 1; i < simpleOffsets.length; i++) {
-      const fragment1 = simpleOffsets[i];
-      newJoint = new Joint(fragment0, fragment1, fragment1.fractionToPoint(0.0));
-      Joint.link(previousJoint, newJoint);
-      previousJoint = newJoint;
-      fragment0 = fragment1;
+    let previousJoint;
+    let joint0;
+    for (const fragment1 of simpleOffsets) {
+      if (fragment1) {
+        newJoint = new Joint(fragment0, fragment1, fragment1.fractionToPoint(0.0));
+        if (newJoint !== undefined)
+          if (joint0 === undefined)
+            joint0 = newJoint;
+        if (previousJoint)
+          Joint.link(previousJoint, newJoint);
+        previousJoint = newJoint;
+        fragment0 = fragment1;
+      }
     }
-    if (curves instanceof Loop)
+    if (joint0 && previousJoint && curves instanceof Loop)
       Joint.link(previousJoint, joint0);
 
     const numOffset = simpleOffsets.length;
@@ -674,6 +708,15 @@ export class CurveChainWireOffsetContext {
 
     const outputCurves: CurvePrimitive[] = [];
     Joint.collectCurvesFromChain(joint0, outputCurves, numOffset);
-    return RegionOps.createLoopPathOrBagOfCurves(outputCurves, wrap);
+    return RegionOps.createLoopPathOrBagOfCurves(outputCurves, wrap, true);
+  }
+  /**
+   * Construct offset curves as viewed in xy.
+   * @param curves base curves.
+   * @param offsetDistanceOrOptions distance (positive left, negative right) or options.
+   */
+  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined {
+    const options = JointOptions.create(offsetDistanceOrOptions);
+    return this.constructCurveXYOffsetGo(curves, options);
   }
 }

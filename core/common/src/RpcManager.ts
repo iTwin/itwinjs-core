@@ -6,10 +6,10 @@
  * @module RpcInterface
  */
 
-import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface";
-import { RpcRegistry } from "./rpc/core/RpcRegistry";
 import { IModelRpcProps } from "./IModel";
 import { RpcOperation } from "./rpc/core/RpcOperation";
+import { RpcRegistry } from "./rpc/core/RpcRegistry";
+import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface";
 
 /** Describes the endpoints of an RPC interface.
  * @public

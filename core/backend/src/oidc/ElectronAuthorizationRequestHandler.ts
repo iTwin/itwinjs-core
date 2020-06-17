@@ -8,15 +8,15 @@
  * @module Authentication
  */
 
+import * as open from "open";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  AuthorizationRequestResponse, AuthorizationError, AuthorizationResponse, AuthorizationRequestHandler, AuthorizationServiceConfiguration, AuthorizationRequest,
-  BasicQueryStringUtils, AuthorizationErrorJson, AuthorizationResponseJson,
+  AuthorizationError, AuthorizationErrorJson, AuthorizationRequest, AuthorizationRequestHandler, AuthorizationRequestResponse, AuthorizationResponse,
+  AuthorizationResponseJson, AuthorizationServiceConfiguration, BasicQueryStringUtils,
 } from "@openid/appauth";
 import { NodeCrypto } from "@openid/appauth/built/node_support";
-import * as open from "open";
-import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
+import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
 
 const loggerCategory = BackendLoggerCategory.Authorization;
 

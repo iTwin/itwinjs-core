@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
-import { mount, shallow } from "enzyme";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
 import sinon from "sinon";
-import { EnumEditor } from "../../ui-components/editors/EnumEditor";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
+import { EnumEditor } from "../../ui-components/editors/EnumEditor";
 import TestUtils from "../TestUtils";
 
 describe("<EnumEditor />", () => {

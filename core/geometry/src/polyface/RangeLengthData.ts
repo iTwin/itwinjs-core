@@ -9,6 +9,7 @@
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Range3d } from "../geometry3d/Range";
 import { UsageSums } from "../numerics/UsageSums";
+
 /**
  * Accumulated data for x,y,z length statistics in ranges.
  * * Usage pattern:

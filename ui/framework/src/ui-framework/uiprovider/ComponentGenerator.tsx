@@ -6,21 +6,23 @@
  * @module UiProvider
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import {
-  DialogItemsManager, BaseDialogItem, DialogItem, DialogRow, SyncPropertiesChangeEventArgs, PropertyRecord, PropertyValueFormat, DialogPropertySyncItem, DialogItemValue,
-} from "@bentley/ui-abstract";
-import { PropertyUpdatedArgs, EditorContainer } from "@bentley/ui-components";
-import { ToolSettingsEntry } from "../widget-panels/ToolSettings";
-
 import "./DefaultDialogGridContainer.scss";
+import classnames from "classnames";
+import * as React from "react";
+import {
+  BaseDialogItem, DialogItem, DialogItemsManager, DialogItemValue, DialogPropertySyncItem, DialogRow, PropertyRecord, PropertyValueFormat,
+  SyncPropertiesChangeEventArgs,
+} from "@bentley/ui-abstract";
+import { EditorContainer, PropertyUpdatedArgs } from "@bentley/ui-components";
 import { assert } from "@bentley/ui-ninezone";
+import { ToolSettingsEntry } from "../widget-panels/ToolSettings";
 
 function EditorLabel({ itemsManager, item, isLeftmostRecord }: { itemsManager: DialogItemsManager, item: DialogItem, isLeftmostRecord?: boolean }) {
   const [isDisabled, setIsDisabled] = React.useState(!!item.isDisabled);
 
-  const displayLabel = React.useMemo(() => item.property.displayLabel ? item.property.displayLabel : item.property.name, [item]);
+  const displayLabel = React.useMemo(() => {
+    return item.property.displayLabel ? item.property.displayLabel : /* istanbul ignore next */ item.property.name;
+  }, [item]);
   const propertyId = React.useMemo(() => `dialogItemProperty-${item.property.name}`, [item]);
 
   // listen for tool sync property events and update the isDisabled state
@@ -68,6 +70,7 @@ function PropertyEditor({ itemsManager, record, isLock, setFocus }: { itemsManag
   }, [itemsManager, propertyRecord, record.property.name]);
 
   const className = React.useMemo(() => isLock ? "uifw-default-property-lock" : "uifw-default-editor", [isLock]);
+  // istanbul ignore next
   const handleCommit = React.useCallback((commit: PropertyUpdatedArgs) => {
     // DialogItemsManager supports only primitive property types
     // istanbul ignore next
@@ -80,7 +83,10 @@ function PropertyEditor({ itemsManager, record, isLock, setFocus }: { itemsManag
 
   return (
     <div key={record.property.name} className={className} >
-      <EditorContainer key={record.property.name} propertyRecord={propertyRecord!} setFocus={setFocus} onCommit={handleCommit} onCancel={() => { }} />
+      <EditorContainer key={record.property.name} propertyRecord={propertyRecord!} setFocus={setFocus} onCommit={handleCommit} onCancel={
+        // istanbul ignore next
+        () => { }
+      } />
     </div>);
 }
 

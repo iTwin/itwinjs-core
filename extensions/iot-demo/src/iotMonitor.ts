@@ -3,19 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  FeatureOverrideProvider,
-  FeatureSymbology,
-  HitDetail,
-  IModelApp,
-  ScreenViewport,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
-import { ColorDef } from "@bentley/imodeljs-common";
-
-import { AnimationType, IoTDeviceType } from "./IoTDefinitions";
-import { IoTAnimation, IoTDemoExtension, ColorValue } from "./iotDemo";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { ColorDef } from "@bentley/imodeljs-common";
+import { FeatureOverrideProvider, FeatureSymbology, HitDetail, IModelApp, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
+import { AnimationType, IoTDeviceType } from "./IoTDefinitions";
+import { ColorValue, IoTAnimation, IoTDemoExtension } from "./iotDemo";
 
 export class IoTMonitor implements FeatureOverrideProvider {
   private _animation: IoTAnimation | undefined;

@@ -7,22 +7,15 @@
  */
 
 import * as React from "react";
-
-// cSpell:Ignore configurableui
-
-import {
-  DialogItem, DialogPropertySyncItem, DialogItemsManager, SyncPropertiesChangeEventArgs,
-} from "@bentley/ui-abstract";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+// cSpell:Ignore configurableui
+import { DialogItem, DialogItemsManager, DialogPropertySyncItem, SyncPropertiesChangeEventArgs } from "@bentley/ui-abstract";
 import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
-import { ToolUiProvider } from "./ToolUiProvider";
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
-import { ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../toolsettings/ToolUiManager";
-
-import { FrameworkVersionSwitch } from "../../hooks/useFrameworkVersion";
-import { WidgetPanelsDefaultToolSettings } from "../../widget-panels/DefaultToolSettings";
-import { DefaultDialogGridContainer } from "../../uiprovider/DefaultDialogGridContainer";
 import { ComponentGenerator } from "../../uiprovider/ComponentGenerator";
+import { DefaultDialogGridContainer } from "../../uiprovider/DefaultDialogGridContainer";
+import { SyncToolSettingsPropertiesEventArgs, ToolUiManager } from "../toolsettings/ToolUiManager";
+import { ToolUiProvider } from "./ToolUiProvider";
 
 /** Responsive Layout Mode */
 
@@ -31,10 +24,13 @@ import { ComponentGenerator } from "../../uiprovider/ComponentGenerator";
 /** DataProvider that keeps underlying data in sync with UI display */
 class ToolSettingsDataProvider extends DialogItemsManager {
   private static _thisInstance?: ToolSettingsDataProvider;
+  // istanbul ignore next
+  public onUiPropertyChanged = () => { };
 
   constructor() {
     super();
 
+    // istanbul ignore else
     if (!ToolSettingsDataProvider._thisInstance) {
       ToolSettingsDataProvider._thisInstance = this;
     }
@@ -44,6 +40,7 @@ class ToolSettingsDataProvider extends DialogItemsManager {
   private static _handleSyncToolSettingsPropertiesEvent = (args: SyncToolSettingsPropertiesEventArgs): void => {
     const syncArgs: SyncPropertiesChangeEventArgs = { properties: args.syncProperties };
 
+    // istanbul ignore else
     if (ToolSettingsDataProvider._thisInstance)
       ToolSettingsDataProvider._thisInstance.onSyncPropertiesChangeEvent.emit(syncArgs);
   }
@@ -56,6 +53,7 @@ class ToolSettingsDataProvider extends DialogItemsManager {
     return ToolSettingsDataProvider._thisInstance;
   }
 
+  // istanbul ignore next
   public isToolSettingsManager = (): boolean => {
     return true;
   }
@@ -66,7 +64,10 @@ class ToolSettingsDataProvider extends DialogItemsManager {
     if (!activeTool)
       return;
 
+    // istanbul ignore next
     activeTool.applyToolSettingPropertyChange(syncItem);
+    // istanbul ignore next
+    this.onUiPropertyChanged();
   }
 }
 
@@ -82,6 +83,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     super(info, options);
 
     this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
+    this.toolSettingsDP.onUiPropertyChanged = this._handleUiPropertyChanged;
   }
 
   public applyUiPropertyChange(syncItem: DialogPropertySyncItem) {
@@ -92,10 +94,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     // istanbul ignore else
     if ((this.toolSettingsDP as DialogItemsManager).layoutDialogRows()) {
       this.toolSettingsNode = (
-        <FrameworkVersionSwitch
-          v1={<DefaultDialogGridContainer itemsManager={this.toolSettingsDP} componentGenerator={this._componentGenerator} isToolSettings={true} key={Date.now()} />}
-          v2={<WidgetPanelsDefaultToolSettings itemsManager={this.toolSettingsDP} />}
-        />
+        <DefaultDialogGridContainer itemsManager={this.toolSettingsDP} componentGenerator={this._componentGenerator} isToolSettings={true} key={Date.now()} />
       );
       this.horizontalToolSettingNodes = this._componentGenerator.getToolSettingsEntries();
     } else {
@@ -105,6 +104,12 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
   }
   public onInitialize(): void {
     // update the items to be from the active tool
+    this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
+    this.updateToolSettingsNodes();
+  }
+
+  // istanbul ignore next
+  private _handleUiPropertyChanged = () => {
     this.toolSettingsDP.items = ToolUiManager.toolSettingsProperties;
     this.updateToolSettingsNodes();
   }

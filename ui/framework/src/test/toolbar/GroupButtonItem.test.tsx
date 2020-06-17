@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
+import { mount, ReactWrapper, shallow } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-import { mount, shallow, ReactWrapper } from "enzyme";
-import { BadgeType, ToolbarItemUtilities, ActionButton } from "@bentley/ui-abstract";
+import { ActionButton, BadgeType, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
-import { WithDragInteractionProps, GroupToolExpander, GroupTool, NestedGroup, Item, GroupColumn } from "@bentley/ui-ninezone";
-import { GroupButtonItem, KeyboardShortcutManager, ToolbarGroupItem, ToolGroupPanelContext, ToolbarDragInteractionContext } from "../../ui-framework";
+import { GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@bentley/ui-ninezone";
+import { GroupButtonItem, KeyboardShortcutManager, ToolbarDragInteractionContext, ToolbarGroupItem, ToolGroupPanelContext } from "../../ui-framework";
 // import * as GroupItemModule from "../../ui-framework/toolbar/ToolbarGroupItem";
 import TestUtils from "../TestUtils";
 

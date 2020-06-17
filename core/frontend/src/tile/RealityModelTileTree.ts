@@ -6,56 +6,25 @@
  * @module Utils
  */
 
-import { IModelError, Cartographic } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../IModelConnection";
-import {
-  assert,
-  BentleyStatus,
-  compareNumbers,
-  compareStrings,
-  compareStringsOrUndefined,
-  Guid,
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  Matrix3d,
-  Point3d,
-  Range3d,
-  Transform,
-  TransformProps,
-  Vector3d,
-  XYZ,
-  YawPitchRollAngles,
-} from "@bentley/geometry-core";
+import { assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, Guid, Id64String } from "@bentley/bentleyjs-core";
+import { Matrix3d, Point3d, Range3d, Transform, TransformProps, Vector3d, XYZ, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Cartographic, IModelError } from "@bentley/imodeljs-common";
 import { AccessToken, getArrayBuffer, getJson } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
-import {
-  BatchedTileIdMap,
-  RealityTile,
-  RealityTileLoader,
-  createClassifierTileTreeReference,
-  createDefaultViewFlagOverrides,
-  RealityTileParams,
-  RealityTileTree,
-  RealityTileTreeParams,
-  SpatialClassifierTileTreeReference,
-  Tile,
-  TileLoadPriority,
-  TileRequest,
-  TileTree,
-  TileTreeOwner,
-  TileTreeReference,
-  TileTreeSet,
-  TileTreeSupplier,
-} from "./internal";
-import { IModelApp } from "../IModelApp";
+import { DisplayStyleState } from "../DisplayStyleState";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
+import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { RenderMemory } from "../render/RenderMemory";
 import { SpatialClassifiers } from "../SpatialClassifiers";
 import { SceneContext } from "../ViewContext";
-import { RenderMemory } from "../render/RenderMemory";
 import { ViewState } from "../ViewState";
-import { DisplayStyleState } from "../DisplayStyleState";
+import {
+  BatchedTileIdMap, createClassifierTileTreeReference, createDefaultViewFlagOverrides, RealityTile, RealityTileLoader, RealityTileParams,
+  RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileLoadPriority, TileRequest, TileTree, TileTreeOwner,
+  TileTreeReference, TileTreeSet, TileTreeSupplier,
+} from "./internal";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;

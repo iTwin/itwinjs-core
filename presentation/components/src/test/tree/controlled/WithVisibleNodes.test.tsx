@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
-import * as React from "react";
 import { mount } from "enzyme";
+import * as React from "react";
 import * as moq from "typemoq";
-import {
-  ControlledTree, TreeModelSource, TreeEvents, SelectionMode, TreeModel, TreeModelChanges,
-  VisibleTreeNodes, MutableTreeModel, AbstractTreeNodeLoaderWithProvider,
-} from "@bentley/ui-components";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
+import {
+  AbstractTreeNodeLoaderWithProvider, ControlledTree, MutableTreeModel, SelectionMode, TreeEvents, TreeModel, TreeModelChanges, TreeModelSource,
+  VisibleTreeNodes,
+} from "@bentley/ui-components";
+import {
+  DEPRECATED_controlledTreeWithVisibleNodes as controlledTreeWithVisibleNodes,
+} from "../../../presentation-components/tree/controlled/WithVisibleNodes";
 import { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
-import { DEPRECATED_controlledTreeWithVisibleNodes as controlledTreeWithVisibleNodes } from "../../../presentation-components/tree/controlled/WithVisibleNodes";
 
 // tslint:disable:deprecation
 

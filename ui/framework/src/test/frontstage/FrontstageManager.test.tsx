@@ -2,20 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { Provider } from "react-redux";
+import { cleanup, render } from "@testing-library/react";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { MockRender, SpatialViewState, ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, MockRender, ScreenViewport, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
-
-import {
-  FrontstageManager,
-  CoreTools,
-} from "../../ui-framework";
-import { TestFrontstage, TestFrontstage2 } from "./FrontstageTestUtils";
+import { ConfigurableUiContent, CoreTools, FrontstageManager } from "../../ui-framework";
 import TestUtils, { storageMock } from "../TestUtils";
+import { TestFrontstage, TestFrontstage2, TestFrontstage3 } from "./FrontstageTestUtils";
 
 const mySessionStorage = storageMock();
 
@@ -44,6 +43,10 @@ describe("FrontstageManager", () => {
     Object.defineProperty(window, "sessionStorage", propertyDescriptorToRestore);
   });
 
+  it("initialized should return true", () => {
+    expect(FrontstageManager.isInitialized).to.be.true;
+  });
+
   it("findWidget should return undefined when no active frontstage", async () => {
     await FrontstageManager.setActiveFrontstageDef(undefined);
     expect(FrontstageManager.findWidget("xyz")).to.be.undefined;
@@ -57,6 +60,7 @@ describe("FrontstageManager", () => {
     if (frontstageDef) {
       await FrontstageManager.setActiveFrontstage(frontstageDef.id);
       expect(FrontstageManager.activeFrontstageId).to.eq(frontstageDef.id);
+      expect(frontstageDef.applicationData).to.not.be.undefined;
     }
   });
 
@@ -82,7 +86,7 @@ describe("FrontstageManager", () => {
     }
   });
 
-  it("setActiveFrontstage2 should set active frontstage", async () => {
+  it("setActiveFrontstage should set active frontstage", async () => {
     const frontstageProvider = new TestFrontstage2();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     expect(frontstageProvider.frontstageDef).to.not.be.undefined;
@@ -96,6 +100,16 @@ describe("FrontstageManager", () => {
       await FrontstageManager.setActiveFrontstage(frontstageDef.id);
       expect(FrontstageManager.activeFrontstageId).to.eq(frontstageDef.id);
     }
+  });
+
+  it("deactivateFrontstageDef should set active frontstage to undefined", async () => {
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageProvider.frontstageDef);
+
+    await FrontstageManager.deactivateFrontstageDef();
+    expect(FrontstageManager.activeFrontstageDef).to.be.undefined;
   });
 
   it("setWidgetState returns false on invalid id", () => {
@@ -125,6 +139,42 @@ describe("FrontstageManager", () => {
       const item = CoreTools.selectElementCommand;
       item.execute();
       expect(FrontstageManager.activeToolId).to.eq(item.toolId);
+    });
+
+  });
+
+  describe("ConfigurableUiContent", () => {
+
+    it("mouse moves should be handled for frontstage tracking", async () => {
+      render(<Provider store={TestUtils.store} >
+        <ConfigurableUiContent idleTimeout={100} intervalTimeout={100} />
+      </Provider>);
+
+      const divContainer = document.getElementById("uifw-configurableui-wrapper")!;
+
+      const spyDeactivated = sinon.spy();
+      FrontstageManager.onFrontstageDeactivatedEvent.addListener(spyDeactivated);
+
+      const frontstageProvider = new TestFrontstage3();
+      FrontstageManager.addFrontstageProvider(frontstageProvider);
+      await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+      expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageProvider.frontstageDef);
+
+      await TestUtils.tick(200);
+
+      divContainer.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, buttons: 1 }));
+      divContainer.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, buttons: 1 }));
+
+      await TestUtils.tick(200);
+
+      divContainer.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, buttons: 1 }));
+      divContainer.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window, buttons: 1 }));
+
+      await FrontstageManager.deactivateFrontstageDef();
+      expect(FrontstageManager.activeFrontstageDef).to.be.undefined;
+      spyDeactivated.calledOnce.should.true;
+
+      cleanup();
     });
 
   });

@@ -6,14 +6,14 @@
  * @module Widget
  */
 
+import "./TabTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { DraggedTabContext, CursorTypeContext } from "../base/NineZone";
-import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { WidgetIdContext } from "./Widget";
 import { assert } from "../base/assert";
 import { DraggedWidgetContext, useTabTarget } from "../base/DragManager";
-import "./TabTarget.scss";
+import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
+import { getCursorClassName } from "../widget-panels/CursorOverlay";
+import { WidgetIdContext } from "./Widget";
 
 /** @internal */
 export interface WidgetTabTargetProps {
@@ -62,7 +62,8 @@ export function useTarget<T extends Element>(onTargeted: (targeted: boolean) => 
   const ref = React.useRef<T>(null);
   React.useEffect(() => {
     const handleDocumentPointerMove = (e: PointerEvent) => {
-      const newTargeted = !!ref.current && !!e.target && (e.target instanceof Node) && ref.current.contains(e.target);
+      const targetedElement = document.elementFromPoint(e.clientX, e.clientY);
+      const newTargeted = targetedElement === ref.current;
       newTargeted !== targeted.current && onTargeted(newTargeted);
       targeted.current = newTargeted;
     };
@@ -70,6 +71,6 @@ export function useTarget<T extends Element>(onTargeted: (targeted: boolean) => 
     return () => {
       document.removeEventListener("pointermove", handleDocumentPointerMove);
     };
-  });
+  }, [onTargeted]);
   return ref;
 }

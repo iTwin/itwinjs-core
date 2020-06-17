@@ -2,16 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import { render, RenderResult, fireEvent } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
-import { expect } from "chai";
-
 import { RelativePosition } from "@bentley/ui-abstract";
+import { fireEvent, render, RenderResult } from "@testing-library/react";
 import { Popup } from "../../ui-core";
 
-describe("Popup />", () => {
+describe("<Popup />", () => {
 
   it("renders correctly", () => {
     const component = render(<Popup isOpen={true} top={30} left={70} />);

@@ -2,12 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import produce from "immer";
 import { render } from "@testing-library/react";
-import { WidgetTabs, PanelSideContext, WidgetIdContext, createNineZoneState, addPanelWidget, addTab, NineZoneProvider, WidgetStateContext } from "../../ui-ninezone";
+import {
+  addPanelWidget, addTab, createNineZoneState, PanelSideContext, WidgetIdContext, WidgetStateContext, WidgetTabs,
+} from "../../ui-ninezone";
 import { createDOMRect } from "../Utils";
+import { NineZoneProvider } from "../Providers";
 
 describe("WidgetTabs", () => {
   const sandbox = sinon.createSandbox();
@@ -26,7 +29,6 @@ describe("WidgetTabs", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <PanelSideContext.Provider value="left">
           <WidgetIdContext.Provider value="w1">
@@ -47,7 +49,6 @@ describe("WidgetTabs", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <PanelSideContext.Provider value="left">
           <WidgetIdContext.Provider value="w1">
@@ -71,7 +72,6 @@ describe("WidgetTabs", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <PanelSideContext.Provider value="left">
           <WidgetIdContext.Provider value="w1">
@@ -92,7 +92,6 @@ describe("WidgetTabs", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <PanelSideContext.Provider value="top">
           <WidgetIdContext.Provider value="w1">

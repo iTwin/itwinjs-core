@@ -14,11 +14,10 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { GridIndex } from "./GridIndex";
-
 import { Bounds } from "../../spatial/geom/Bounds";
 import { Coordinate } from "../../spatial/geom/Coordinate";
 import { Numbers } from "../../system/runtime/Numbers";
+import { GridIndex } from "./GridIndex";
 
 /**
  * Class Grid defines an infinite 3D grid of cells.

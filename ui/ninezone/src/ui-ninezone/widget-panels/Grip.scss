@@ -5,9 +5,10 @@
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
 .nz-widgetPanels-grip {
-  background: $buic-background-5;
+  background-color: $buic-background-5;
   padding: 0.25em;
   border-radius: 3px;
+  touch-action: none;
 
   &:not(.nz-collapsed) {
     position: absolute;
@@ -91,7 +92,7 @@
     }
   }
 
-  &:hover, &.nz-resizing {
+  @mixin hover-style {
     background-color: $buic-accessory-primary;
 
     > .nz-dot {
@@ -99,10 +100,21 @@
     }
   }
 
+  @media (hover: hover) {
+    &:hover {
+      @include hover-style;
+    }
+  }
+
+  &.nz-active, &.nz-resizing {
+    @include hover-style;
+  }
+
   > .nz-dot {
     $size: 0.25em;
     width: $size;
     height: $size;
-    background-color: $buic-background-1;
+    border-radius: 50%;
+    background-color: $buic-foreground-disabled;
   }
 }

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { IModelApp } from "../IModelApp";
 import { PendingExtension } from "../extension/Extension";
+import { IModelApp } from "../IModelApp";
 
 describe("ExtensionAdmin tests", () => {
   beforeEach(async () => IModelApp.startup());
@@ -14,17 +14,8 @@ describe("ExtensionAdmin tests", () => {
   it("uses the first available ExtensionLoader", async () => {
     let calledFirst = false;
     let calledSecond = false;
-    IModelApp.extensionAdmin.addExtensionLoader({
-      getExtensionName(_extensionRoot: string): string {
-        return _extensionRoot;
-      },
-      async loadExtension(_extensionName: string, _extensionVersion?: string | undefined, _args?: string[] | undefined): Promise<PendingExtension | undefined> {
-        calledFirst = true;
-        return { promise: "fake" } as any;
-      },
-      resolveResourceUrl(name: string) { return name; },
-    }, 1);
-    IModelApp.extensionAdmin.addExtensionLoader({
+
+    IModelApp.extensionAdmin.addExtensionLoaderFront({
       getExtensionName(_extensionRoot: string): string {
         return _extensionRoot;
       },
@@ -33,7 +24,18 @@ describe("ExtensionAdmin tests", () => {
         return { promise: "fake" } as any;
       },
       resolveResourceUrl(name: string) { return name; },
-    }, 2);
+    });
+
+    IModelApp.extensionAdmin.addExtensionLoaderFront({
+      getExtensionName(_extensionRoot: string): string {
+        return _extensionRoot;
+      },
+      async loadExtension(_extensionName: string, _extensionVersion?: string | undefined, _args?: string[] | undefined): Promise<PendingExtension | undefined> {
+        calledFirst = true;
+        return { promise: "fake" } as any;
+      },
+      resolveResourceUrl(name: string) { return name; },
+    });
 
     (window as any).iModelJsVersions = {
       get(_name: string) {
@@ -58,7 +60,7 @@ describe("ExtensionAdmin tests", () => {
         return undefined;
       },
       resolveResourceUrl(name: string) { return name; },
-    }, 1);
+    });
     IModelApp.extensionAdmin.addExtensionLoader({
       getExtensionName(_extensionRoot: string): string {
         return _extensionRoot;
@@ -68,7 +70,7 @@ describe("ExtensionAdmin tests", () => {
         return { promise: "fake" } as any;
       },
       resolveResourceUrl(name: string) { return name; },
-    }, 2);
+    });
 
     (window as any).iModelJsVersions = {
       get(_name: string) {

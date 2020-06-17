@@ -6,8 +6,8 @@
 
 declare module 'https-proxy-agent' {
 
-  import { Agent } from 'https';
-  import { Url } from 'url';
+import { Agent } from "https";
+import { Url } from "url";
 
   declare class HttpsProxyAgent extends Agent {
     public constructor(options: string | Url);

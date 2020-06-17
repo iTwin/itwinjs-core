@@ -6,19 +6,18 @@
  * @module Tree
  */
 
-import { Subject } from "rxjs/internal/Subject";
 import { from } from "rxjs/internal/observable/from";
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
+import { Subject } from "rxjs/internal/Subject";
 import { IDisposable } from "@bentley/bentleyjs-core";
-import {
-  TreeEvents, TreeNodeEventArgs, TreeCheckboxStateChangeEventArgs,
-  TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-} from "./TreeEvents";
 import { TreeModelMutator } from "./internal/TreeModelMutator";
 import { Subscription } from "./Observable";
-import { ITreeNodeLoader } from "./TreeNodeLoader";
-import { TreeModelSource } from "./TreeModelSource";
+import {
+  TreeCheckboxStateChangeEventArgs, TreeEvents, TreeNodeEventArgs, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
+} from "./TreeEvents";
 import { TreeModelNode } from "./TreeModel";
+import { TreeModelSource } from "./TreeModelSource";
+import { ITreeNodeLoader } from "./TreeNodeLoader";
 
 /**
  * Params used for tree node editing.

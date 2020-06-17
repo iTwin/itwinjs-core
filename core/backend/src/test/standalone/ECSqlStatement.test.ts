@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { DbResult, Guid, GuidString, Id64, Id64String, using } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@bentley/geometry-core";
 import { NavigationValue, QueryResponseStatus } from "@bentley/imodeljs-common";
-import { assert } from "chai";
 import { ECDb, ECEnumValue, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -94,6 +94,16 @@ describe("ECSqlStatement", () => {
       assert.equal(rs.rows.length, rowIds.length);
       assert.isTrue(String(rs.rows[0].sap).startsWith("0x"));
 
+    });
+  });
+  it.skip("Null string accessor", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "nullstring.ecdb"), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+      await ecdb.withPreparedStatement(`VALUES(NULL)`, async (stmt: ECSqlStatement) => {
+        stmt.step();
+        const str = stmt.getValue(0).getString();
+        assert.equal(str, "");
+      });
     });
   });
   it("Paging Resultset", async () => {

@@ -7,14 +7,13 @@
  */
 
 import * as React from "react";
-
 import { getDisplayName } from "@bentley/ui-core";
-import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../../dragdrop/DragDropDef";
-import { withTableDragDrop, TableDropTargetProps } from "../../../table/hocs/withDragDrop";
+import { DragSourceArguments, DragSourceProps, DropTargetArguments, DropTargetProps } from "../../../dragdrop/DragDropDef";
 import { Table, TableProps } from "../../../table/component/Table";
-import { BreadcrumbDetailsProps } from "../BreadcrumbDetails";
+import { TableDropTargetProps, withTableDragDrop } from "../../../table/hocs/withDragDrop";
 import { TableDataProvider } from "../../../table/TableDataProvider";
 import { TreeNodeItem } from "../../../tree/TreeDataProvider";
+import { BreadcrumbDetailsProps } from "../BreadcrumbDetails";
 
 // tslint:disable:deprecation
 

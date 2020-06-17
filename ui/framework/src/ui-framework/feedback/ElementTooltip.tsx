@@ -6,20 +6,21 @@
  * @module Notification
  */
 
-import * as React from "react";
 import classnames from "classnames";
-
-import { UiEvent, CommonProps, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-core";
-import { Tooltip, offsetAndContainInContainer } from "@bentley/ui-ninezone";
+import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
 import { ToolTipOptions } from "@bentley/imodeljs-frontend";
+import { CommonProps, Point, PointProps, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
+import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";
+import { MessageDiv } from "../messages/MessageSpan";
+import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
 
 /** [[ElementTooltip]] State.
  * @internal
  */
 interface ElementTooltipState {
   isVisible: boolean;
-  message: HTMLElement | string;
+  message: NotifyMessageType;
   position: PointProps;
   options?: ToolTipOptions;
 }
@@ -29,7 +30,7 @@ interface ElementTooltipState {
  */
 export interface ElementTooltipChangedEventArgs {
   isTooltipVisible: boolean;
-  message: HTMLElement | string;
+  message: NotifyMessageType;
   el?: HTMLElement;
   pt?: XAndY;
   options?: ToolTipOptions;
@@ -46,11 +47,15 @@ export class ElementTooltipChangedEvent extends UiEvent<ElementTooltipChangedEve
 export class ElementTooltip extends React.Component<CommonProps, ElementTooltipState> {
   private static _elementTooltipChangedEvent: ElementTooltipChangedEvent = new ElementTooltipChangedEvent();
   private static _isTooltipVisible: boolean;
+  private static _isTooltipHalted: boolean;
 
   public static get onElementTooltipChangedEvent(): ElementTooltipChangedEvent { return ElementTooltip._elementTooltipChangedEvent; }
   public static get isTooltipVisible(): boolean { return ElementTooltip._isTooltipVisible; }
 
-  public static showTooltip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void {
+  public static showTooltip(el: HTMLElement, message: NotifyMessageType, pt?: XAndY, options?: ToolTipOptions): void {
+    // istanbul ignore if
+    if (ElementTooltip._isTooltipHalted)
+      return;
     ElementTooltip._isTooltipVisible = true;
     ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: true, el, message, pt, options });
   }
@@ -58,6 +63,15 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
   public static hideTooltip(): void {
     ElementTooltip._isTooltipVisible = false;
     ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: false, message: "" });
+  }
+
+  // istanbul ignore next
+  public static get isTooltipHalted(): boolean { return ElementTooltip._isTooltipHalted; }
+  // istanbul ignore next
+  public static set isTooltipHalted(halt: boolean) {
+    ElementTooltip._isTooltipHalted = halt;
+    if (halt && ElementTooltip._isTooltipVisible)
+      ElementTooltip.hideTooltip();
   }
 
   private _size: SizeProps = {
@@ -89,11 +103,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
       "uifw-element-tooltip",
       this.props.className);
 
-    let messageNode: React.ReactNode;
-    if (typeof this.state.message === "string")
-      messageNode = <div>{this.state.message}</div>;
-    else
-      messageNode = <div dangerouslySetInnerHTML={{ __html: this.state.message.outerHTML }} />;
+    const messageNode = <MessageDiv message={this.state.message} />;
 
     return (
       <div className="uifw-element-tooltip-container">
@@ -127,6 +137,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
     this.updatePosition();
   }
 
+  // istanbul ignore next
   private _handleSizeChanged = (size: SizeProps) => {
     this._size = size;
     this.updatePosition();
@@ -149,6 +160,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
       if (position.equals(prevState.position))
         return null;
 
+      // istanbul ignore next
       return {
         position,
       };

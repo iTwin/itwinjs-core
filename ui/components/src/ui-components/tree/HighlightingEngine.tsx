@@ -6,9 +6,9 @@
  * @module Tree
  */
 
-import Highlighter from "react-highlight-words";
-import * as React from "react";
 import "./HighlightingEngine.scss";
+import * as React from "react";
+import Highlighter from "react-highlight-words";
 
 /**
  * Active match info for highlightable [[Tree]]

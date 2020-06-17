@@ -5,7 +5,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { DOMParser } from "xmldom";
-import { SchemaContext, Schema } from "@bentley/ecschema-metadata";
+import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { SchemaXmlFileLocater } from "@bentley/ecschema-locaters";
 import { SchemaReadHelper } from "@bentley/ecschema-metadata/lib/Deserialization/Helper";
 import { XmlParser } from "@bentley/ecschema-metadata/lib/Deserialization/XmlParser";
@@ -134,7 +134,7 @@ export function testGeneratedSchemaTypescript(testCases: SchemaTestCase[]): void
 
 export function createExpectedSchemaTsString(schemaName: string): string {
   const schemaTsString: string =
-`export class ${schemaName} extends Schema {
+    `export class ${schemaName} extends Schema {
   public static get schemaName(): string { return "${schemaName}"; }
 
   public static registerSchema() {

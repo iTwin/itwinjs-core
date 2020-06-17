@@ -6,11 +6,11 @@
  * @module Checkbox
  */
 
-import * as React from "react";
 import classnames from "classnames";
+import * as React from "react";
 import { InputStatus } from "../inputs/InputStatus";
-import { Omit } from "../utils/typeUtils";
 import { CommonProps } from "../utils/Props";
+import { Omit } from "../utils/typeUtils";
 
 /** Properties for [[Checkbox]] React component
  * @public
@@ -50,7 +50,6 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
     e.stopPropagation();
   }
 
-  // istanbul ignore next
   private _onCheckboxBlur = (e: React.FocusEvent) => {
     e.stopPropagation();
   }

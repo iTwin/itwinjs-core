@@ -6,20 +6,18 @@
  * @module Core
  */
 
-import { IDisposable, BeEvent } from "@bentley/bentleyjs-core";
-import { IModelConnection, EventSource, EventSourceManager, IModelApp } from "@bentley/imodeljs-frontend";
+import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
+import { EventSource, EventSourceManager, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  RpcRequestsHandler, RequestPriority, DescriptorOverrides,
-  HierarchyRequestOptions, Node, NodeKey, NodePathElement,
-  ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  Paged, KeySet, InstanceKey, LabelRequestOptions, Ruleset, RulesetVariable, LabelDefinition,
-  PresentationRpcInterface, PresentationRpcEvents, RegisteredRuleset, PresentationUnitSystem,
-  UpdateInfo, HierarchyUpdateInfo, ContentUpdateInfo, PresentationRpcRequestOptions,
-  PartialHierarchyModification, PresentationError, PresentationStatus, PresentationDataCompareOptions,
+  Content, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayValueGroup, DistinctValuesRequestOptions,
+  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged,
+  PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface,
+  PresentationRpcRequestOptions, PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset,
+  RulesetVariable, SelectionInfo, UpdateInfo,
 } from "@bentley/presentation-common";
-import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
-import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { LocalizationHelper } from "./LocalizationHelper";
+import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
+import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 
 /**
  * Properties used to configure [[PresentationManager]]
@@ -226,9 +224,11 @@ export class PresentationManager implements IDisposable {
       managerOptions.locale = this.activeLocale;
     if (this.activeUnitSystem)
       managerOptions.unitSystem = this.activeUnitSystem;
-    return Object.assign({}, managerOptions, requestOptions, {
-      imodel: requestOptions.imodel.getRpcProps(),
-    });
+    return {
+      ...managerOptions,
+      ...requestOptions,
+      ...{ imodel: requestOptions.imodel.getRpcProps() },
+    };
   }
 
   private async addRulesetAndVariablesToOptions<TOptions extends { rulesetOrId: Ruleset | string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
@@ -418,6 +418,25 @@ export class PresentationManager implements IDisposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     return this._requestsHandler.getDistinctValues(this.toRpcTokenOptions(options),
       descriptor.createStrippedDescriptor().toJSON(), keys.toJSON(), fieldName, maximumValueCount);
+  }
+
+  /**
+   * Retrieves distinct values of specific field from the content based on the supplied content descriptor override.
+   * @param requestOptions Options for the request
+   * @alpha
+   */
+  public async getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<PagedResponse<DisplayValueGroup>> {
+    await this.onConnection(requestOptions.imodel);
+    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+    const result = await this._requestsHandler.getPagedDistinctValues({
+      ...this.toRpcTokenOptions(options),
+      descriptor: options.descriptor.createStrippedDescriptor().toJSON(),
+      keys: options.keys.toJSON(),
+    });
+    return {
+      total: result.total,
+      items: result.items.map(DisplayValueGroup.fromJSON),
+    };
   }
 
   /**

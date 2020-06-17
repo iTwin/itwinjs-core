@@ -6,14 +6,12 @@
  * @module Inputs
  */
 
-import * as React from "react";
+import "./NumericInput.scss";
 import classnames from "classnames";
-import { ReactNumericInput, ReactNumericInputProps } from "./ReactNumericInput";
-
+import * as React from "react";
 import { CommonProps } from "../../utils/Props";
 import { Omit } from "../../utils/typeUtils";
-
-import "./NumericInput.scss";
+import { ReactNumericInput, ReactNumericInputProps } from "./ReactNumericInput";
 
 // cSpell:ignore nostyle
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Tweens, Tween, Easing } from "../Tween";
+import { Easing, Tween, Tweens } from "../Tween";
 
 /** adapted from
  * Tween.js - Licensed under the MIT license

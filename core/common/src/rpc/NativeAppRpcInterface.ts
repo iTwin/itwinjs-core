@@ -6,10 +6,10 @@
  * @module RpcInterface
  */
 
+import { GuidString, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { IModelProps, IModelRpcProps } from "../IModel";
-import { LogLevel, OpenMode, GuidString } from "@bentley/bentleyjs-core";
 
 /**
  * Status of downloading a briefcase

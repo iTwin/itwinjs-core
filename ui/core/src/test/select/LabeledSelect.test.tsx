@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { LabeledSelect, InputStatus } from "../../ui-core";
+import { InputStatus, LabeledSelect } from "../../ui-core";
 
 describe("<LabeledSelect />", () => {
   it("should render", () => {

@@ -3,31 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { dispose, Id64String } from "@bentley/bentleyjs-core";
+import { Transform } from "@bentley/geometry-core";
+import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { IModelApp, IModelAppOptions } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { Decorations } from "./Decorations";
-import {
-  GraphicBranch,
-  GraphicBranchOptions,
-} from "./GraphicBranch";
-import {
-  GraphicList,
-  RenderGraphic,
-} from "./RenderGraphic";
-import { Pixel } from "./Pixel";
-import { RenderTarget } from "./RenderTarget";
-import { RenderMemory } from "./RenderMemory";
-import { RenderSystem } from "./RenderSystem";
-import { RenderPlan } from "./RenderPlan";
+import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { GraphicType } from "./GraphicBuilder";
-import { IModelApp, IModelAppOptions } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
+import { Pixel } from "./Pixel";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
-import { MeshParams, PolylineParams, PointStringParams } from "./primitives/VertexTable";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
-import { Transform } from "@bentley/geometry-core";
-import { Id64String, dispose } from "@bentley/bentleyjs-core";
+import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
+import { GraphicList, RenderGraphic } from "./RenderGraphic";
+import { RenderMemory } from "./RenderMemory";
+import { RenderPlan } from "./RenderPlan";
+import { RenderSystem } from "./RenderSystem";
+import { RenderTarget } from "./RenderTarget";
 import { Scene } from "./Scene";
 
 /** Contains extensible mock implementations of the various components of a RenderSystem, intended for use in tests.
@@ -44,7 +38,7 @@ import { Scene } from "./Scene";
 export namespace MockRender {
   /** @internal */
   export abstract class Target extends RenderTarget {
-    protected constructor(private readonly _system: System) { super(); }
+    protected constructor(private readonly _system: RenderSystem) { super(); }
 
     public get renderSystem(): RenderSystem { return this._system; }
     public get wantInvertBlackBackground() { return false; }
@@ -61,7 +55,7 @@ export namespace MockRender {
 
   /** @internal */
   export class OnScreenTarget extends Target {
-    public constructor(system: System, private readonly _canvas: HTMLCanvasElement) { super(system); }
+    public constructor(system: RenderSystem, private readonly _canvas: HTMLCanvasElement) { super(system); }
 
     public get viewRect() { return new ViewRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight); }
     public setViewRect(_rect: ViewRect, _temp: boolean) { }
@@ -69,7 +63,7 @@ export namespace MockRender {
 
   /** @internal */
   export class OffScreenTarget extends Target {
-    public constructor(system: System, private readonly _viewRect: ViewRect) { super(system); }
+    public constructor(system: RenderSystem, private readonly _viewRect: ViewRect) { super(system); }
 
     public get viewRect() { return this._viewRect; }
     public setViewRect(rect: ViewRect, _temp: boolean) { this._viewRect.setFrom(rect); }
@@ -128,7 +122,7 @@ export namespace MockRender {
 
     public doIdleWork(): boolean { return false; }
 
-    public createTarget(canvas: HTMLCanvasElement) { return new OnScreenTarget(this, canvas); }
+    public createTarget(canvas: HTMLCanvasElement): OnScreenTarget { return new OnScreenTarget(this, canvas); }
     public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
 
     public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String) { return new Builder(this, placement, type, viewport, pickableId); }

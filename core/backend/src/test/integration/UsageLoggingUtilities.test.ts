@@ -2,15 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Guid, Config } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { getTestAccessToken, TestBrowserAuthorizationClientConfiguration, TestUsers } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as os from "os";
+import { Config, Guid } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { getTestAccessToken, TestBrowserAuthorizationClientConfiguration, TestUsers } from "@bentley/oidc-signin-tool";
+import { IModelJsAdditionalFeatureData } from "../../IModelDb";
 import { AuthorizedBackendRequestContext, IModelJsNative } from "../../imodeljs-backend";
 import { UsageLoggingUtilities } from "../../usage-logging/UsageLoggingUtilities";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelJsAdditionalFeatureData } from "../../IModelDb";
 
 // Configuration needed
 //    imjs_test_regular_user_name
@@ -118,7 +118,7 @@ describe.skip("UsageLoggingUtilities - OIDC Token (#integration)", () => {
 
       if (mode === TokenMode.NoUserProfile) {
         // fake token that does not contain a user profile
-        tempAccessToken = AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify({ ForeignProjectAccessToken: {} }))!;
+        tempAccessToken = new AccessToken(JSON.stringify({ ForeignProjectAccessToken: {} }))!;
       } else {
         // token from which some user profile information is removed. UlasClient does not utilize this information, and instead defers this task to the ULAS server, which examines the token string itself.
         tempAccessToken = requestContext.accessToken;

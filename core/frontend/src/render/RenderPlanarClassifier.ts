@@ -6,12 +6,9 @@
  * @module Rendering
  */
 
-import {
-  Id64String,
-  IDisposable,
-} from "@bentley/bentleyjs-core";
-import { SceneContext } from "../ViewContext";
+import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { TileTreeReference } from "../tile/internal";
+import { SceneContext } from "../ViewContext";
 
 /** An opaque representation of a planar classifier applied to geometry within a [[Viewport]].
  * @internal

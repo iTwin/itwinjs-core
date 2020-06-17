@@ -7,12 +7,7 @@
  * @module Tools
  */
 
-import {
-  IModelApp,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -42,7 +37,7 @@ export abstract class SourceAspectIdTool extends Tool {
   private async doQuery(queryId: string, copyToClipboard: boolean): Promise<void> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (undefined === imodel)
-      return Promise.resolve();
+      return;
 
     let resultId;
     try {

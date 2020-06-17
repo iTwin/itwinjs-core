@@ -6,10 +6,10 @@
  * @module Tree
  */
 
-import { CheckBoxState } from "@bentley/ui-core";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PageOptions } from "../common/PageOptions";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { CheckBoxState } from "@bentley/ui-core";
+import { PageOptions } from "../common/PageOptions";
 import { ItemStyle } from "../properties/ItemStyle";
 
 /**

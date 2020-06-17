@@ -7,14 +7,15 @@
  * @module Curve
  */
 
-import { Geometry, BeJSONFunctions } from "../Geometry";
+import { BeJSONFunctions, Geometry } from "../Geometry";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { GeometryQuery } from "./GeometryQuery";
+
 /* tslint:disable:variable-name no-empty*/
 
 /**

@@ -14,10 +14,9 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { CRS } from "./CRS";
-
 import { Bounds } from "../geom/Bounds";
 import { Coordinate } from "../geom/Coordinate";
+import { CRS } from "./CRS";
 
 /**
  * Abstract class VerticalModel defines a vertical height/geoid model on top of a certain horizontal datum/ellopsoid.

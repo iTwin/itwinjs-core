@@ -14,10 +14,6 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { FileContent } from "./FileContent";
-import { FileRange } from "./FileRange";
-import { FileStorage } from "./FileStorage";
-
 import { ABuffer } from "../buffer/ABuffer";
 import { AList } from "../collection/AList";
 import { StringMap } from "../collection/StringMap";
@@ -25,6 +21,9 @@ import { ALong } from "../runtime/ALong";
 import { ASystem } from "../runtime/ASystem";
 import { Message } from "../runtime/Message";
 import { CacheList } from "./CacheList";
+import { FileContent } from "./FileContent";
+import { FileRange } from "./FileRange";
+import { FileStorage } from "./FileStorage";
 
 /**
  * Class PageCachedFile defines a paged content cache of a single file.

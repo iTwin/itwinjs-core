@@ -7,13 +7,12 @@
  */
 
 import * as React from "react";
-
 import { OnCancelFunc, RelativePosition } from "@bentley/ui-abstract";
-import { DivWithOutsideClick, Orientation, Point, SizeProps, Size } from "@bentley/ui-core";
-
-import { PositionPopup } from "./PositionPopup";
-import { PopupManager, PopupPropsBase } from "./PopupManager";
+import { DivWithOutsideClick, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
+import { PopupManager, PopupPropsBase } from "./PopupManager";
+import { PositionPopup } from "./PositionPopup";
+import { MessageDiv } from "../messages/MessageSpan";
 
 /** @alpha */
 export interface HTMLElementPopupProps extends PopupPropsBase {
@@ -55,7 +54,7 @@ export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps,
         onSizeKnown={this._onSizeKnown}
       >
         <DivWithOutsideClick onOutsideClick={this.props.onCancel}>
-          <div dangerouslySetInnerHTML={{ __html: this.props.element.outerHTML }} />
+          <MessageDiv message={this.props.element} />
         </DivWithOutsideClick>
       </PositionPopup>
     );

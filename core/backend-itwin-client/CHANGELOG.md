@@ -1,6 +1,42 @@
-# Change Log - @bentley/imodeljs-clients-backend
+# Change Log - @bentley/backend-itwin-client
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Download ChangeSets in chunks
+- Fix URL logging so sensored URL is logged instead of object object
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
+- Changed ChangeSets download API
+- Added unlink for file handler
+- Changeset get sas url just before starting download
+- update imodelbank authorization clients to implement FrontendAuthorizationClient
+- Logging fixes, separated open/download of briefcases a little more. 
+- Throw exception if sas url is expired
+- order imports.
+- Upgrade to Rush 5.23.2
+- rename imodeljs-clients-backend to backend-itwin-client
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+*Version update only*
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+### Updates
+
+- Fixed downloading of files using https/streaming to resolve when the filestream is closed instead of when the input stream is exhausted. 
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT

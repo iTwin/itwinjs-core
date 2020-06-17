@@ -6,10 +6,9 @@
  * @module Tree
  */
 
+import "./ExpansionToggle.scss";
 import classnames from "classnames";
 import * as React from "react";
-
-import "./ExpansionToggle.scss";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[ExpansionToggle]] component

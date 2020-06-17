@@ -64,8 +64,9 @@ You have a few options:
 
 <div id="step4"></div>
 
-<script>
+**[Register Project Here](/getting-started/registration-dashboard?tab=1)**
 
+<script>
   // LaunchDarkly script for turning off last li in step 4.
   $(document).ready(function () {
     var show = ldclient.variation(featureFlags.CreateBlankProject);

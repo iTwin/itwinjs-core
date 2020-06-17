@@ -6,10 +6,9 @@
  * @module Properties
  */
 
-import * as React from "react";
-import { PropertyLabelRendererProps, PropertyLabelRenderer } from "./PropertyLabelRenderer";
-
 import "./PropertyLabelRenderer.scss";
+import * as React from "react";
+import { PropertyLabelRenderer, PropertyLabelRendererProps } from "./PropertyLabelRenderer";
 
 /** Properties of a [[PrimitivePropertyLabelRenderer]] React component
  * @public

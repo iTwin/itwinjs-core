@@ -7,13 +7,13 @@
  * @module CartesianGeometry
  */
 
-import { Geometry, AxisOrder, BeJSONFunctions } from "../Geometry";
+import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
-import { Range3d } from "./Range";
-import { Point2d } from "./Point2dVector2d";
-import { XAndY, XYAndZ, TransformProps } from "./XYZProps";
-import { XYZ, Point3d, Vector3d } from "./Point3dVector3d";
 import { Matrix3d } from "./Matrix3d";
+import { Point2d } from "./Point2dVector2d";
+import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
+import { Range3d } from "./Range";
+import { TransformProps, XAndY, XYAndZ } from "./XYZProps";
 
 /** A transform is an origin and a Matrix3d.
  *
@@ -519,6 +519,14 @@ export class Transform implements BeJSONFunctions {
     return this._matrix.multiplyXYZ(x, y, z, result);
   }
   /** multiply this Transform times other Transform.
+   * ```
+   * equation
+   * \begin{matrix}
+   *    \text{`this` transform with matrix part }\bold{A}\text{ and translation }\bold{a} & \blockTransform{A}{a}\\
+   *    \text{`other` transform with matrix part }\bold{B}\text{ and translation part }\bold{b}\text{ promoted to block transform} & \blockTransform{B}{b} \\
+   * \text{product}& \blockTransform{A}{a}\blockTransform{B}{b}=\blockTransform{AB}{Ab + a}
+   * \end{matrix}
+   * ```
    * @param other right hand transform for multiplication.
    * @param result optional preallocated result to reuse.
    */
@@ -545,6 +553,14 @@ export class Transform implements BeJSONFunctions {
   //   [Q A][R 0] = [QR A]
   //   [0 1][0 1]   [0  1]
   /** multiply this Transform times other Matrix3d, with other considered to be a Transform with 0 translation.
+   * ```
+   * equation
+   * \begin{matrix}
+   *    \text{`this` transform with matrix part }\bold{A}\text{ and translation }\bold{b} & \blockTransform{B}{b}\\
+   *    \text{`other` matrix }\bold{B}\text{ promoted to block transform} & \blockTransform{B}{0} \\
+   * \text{product}& \blockTransform{A}{a}\blockTransform{B}{0}=\blockTransform{AB}{a}
+   * \end{matrix}
+   * ```
    * @param other right hand Matrix3d for multiplication.
    * @param result optional preallocated result to reuse.
    */
@@ -558,7 +574,12 @@ export class Transform implements BeJSONFunctions {
     return result;
   }
 
-  /** transform each of the 8 corners of a range. Return the range of the transformed corners */
+  /**
+   * Return the range of the transformed corners.
+   * * The 8 corners are transformed individually.
+   * * Note that if there is anything other than translation and principal axis scaling in the transform, the volume of the range rotation will increase.
+   *    * Hence to get a "tight" range on rotated geometry, a range computation must be made on the rotated geometry itself.
+   */
   public multiplyRange(range: Range3d, result?: Range3d): Range3d {
     if (range.isNull)
       return range.clone(result);
@@ -595,10 +616,14 @@ export class Transform implements BeJSONFunctions {
       matrixInverse);
   }
   /** Initialize transforms that map each direction of a box (axis aligned) to `[0,1]`.
+   * * The corner coordinates do _not_ need to be in order in any of the x,y,z directions.
+   * * The npcToGlobalTransform (if supplied) maps 000 to the point named point000.
+   * * The npcToGlobalTransform (if supplied) maps 11 to the point named point000.
+   * * The globalToNpc transform is the inverse.
    * @param min the "000" corner of the box
    * @param max the "111" corner of the box
-   * @param npcToGlobal (object created by caller, re-initialized) transform that carries 01 coordinates into the min,max box.
-   * @param globalToNpc (object created by caller, re-initialized) transform that carries world coordinates into 01
+   * @param npcToGlobal (object created by caller, re-initialized here) transform that carries 01 coordinates into the min,max box.
+   * @param globalToNpc (object created by caller, re-initialized here) transform that carries world coordinates into 01
    */
   public static initFromRange(min: Point3d, max: Point3d, npcToGlobal?: Transform, globalToNpc?: Transform) {
     const diag = max.minus(min);

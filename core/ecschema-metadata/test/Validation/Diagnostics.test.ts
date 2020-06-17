@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as Diagnostics from "../../src/Validation/Diagnostic";
-import { Schema } from "../../src/Metadata/Schema";
 import { SchemaContext } from "../../src/Context";
-import { EntityClass, PrimitiveProperty, RelationshipConstraint, RelationshipClass, RelationshipEnd } from "../../src/ecschema-metadata";
+import { EntityClass, PrimitiveProperty, RelationshipClass, RelationshipConstraint, RelationshipEnd } from "../../src/ecschema-metadata";
+import { Schema } from "../../src/Metadata/Schema";
+import * as Diagnostics from "../../src/Validation/Diagnostic";
 
 describe("Diagnostics tests", () => {
   let testSchema: Schema;

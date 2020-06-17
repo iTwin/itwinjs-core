@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelError } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
+import { IModelError } from "@bentley/imodeljs-common";
 import { BackendRequestContext, SnapshotDb } from "../../imodeljs-backend";
 import { IModelSchemaLoader } from "../../IModelSchemaLoader";
 import { IModelTestUtils } from "../IModelTestUtils";

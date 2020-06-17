@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { UnitProps, UnitsProvider, UnitConversion } from "../../src/Interfaces";
-import { BasicUnit, BadUnit } from "../../src/Unit";
+import { UnitConversion, UnitProps, UnitsProvider } from "../../src/Interfaces";
+import { BadUnit, BasicUnit } from "../../src/Unit";
 
 interface ConversionDef {
   numerator: number;
@@ -60,7 +60,7 @@ export class ConversionData implements UnitConversion {
 }
 
 export class TestUnitsProvider implements UnitsProvider {
-  public findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps> {
+  public async findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps> {
     for (const entry of unitData) {
       if (unitFamily) {
         if (entry.unitFamily !== unitFamily)
@@ -68,18 +68,18 @@ export class TestUnitsProvider implements UnitsProvider {
       }
       if (entry.displayLabel === unitLabel || entry.name === unitLabel) {
         const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.alternateLabels);
-        return Promise.resolve(unitProps);
+        return unitProps;
       }
 
       if (entry.alternateLabels && entry.alternateLabels.length > 0) {
         if (entry.alternateLabels.findIndex((ref) => ref === unitLabel) !== -1) {
           const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.alternateLabels);
-          return Promise.resolve(unitProps);
+          return unitProps;
         }
       }
     }
 
-    return Promise.resolve(new BadUnit());
+    return new BadUnit();
   }
 
   public async getUnitsByFamily(unitFamily: string): Promise<UnitProps[]> {
@@ -91,15 +91,15 @@ export class TestUnitsProvider implements UnitsProvider {
       }
       units.push(new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.alternateLabels));
     }
-    return Promise.resolve(units);
+    return units;
   }
 
   public async findUnitByName(unitName: string): Promise<UnitProps> {
     const unitDataEntry = this.findUnitDefinition(unitName);
     if (unitDataEntry) {
-      return Promise.resolve(new BasicUnit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.unitFamily, unitDataEntry.alternateLabels));
+      return new BasicUnit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.unitFamily, unitDataEntry.alternateLabels);
     }
-    return Promise.resolve(new BadUnit());
+    return new BadUnit();
   }
 
   private findUnitDefinition(name: string): UnitDefinition | undefined {
@@ -123,9 +123,9 @@ export class TestUnitsProvider implements UnitsProvider {
       const conversion = new ConversionData();
       conversion.factor = deltaNumerator / deltaDenominator;
       conversion.offset = deltaOffset;
-      return Promise.resolve(conversion);
+      return conversion;
     }
 
-    return Promise.resolve(new ConversionData());
+    return new ConversionData();
   }
 }

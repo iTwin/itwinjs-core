@@ -6,42 +6,19 @@
  * @module Tiles
  */
 
-import {
-  assert,
-  compareBooleans,
-  compareStrings,
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  Range3d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  BatchType,
-  compareIModelTileTreeIds,
-  iModelTileTreeIdToString,
-  PrimaryTileTreeId,
-  ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
-import { IModelConnection } from "../IModelConnection";
-import {
-  IModelTileTree,
-  IModelTileTreeParams,
-  iModelTileTreeParamsFromJSON,
-  TileDrawArgs,
-  TileGraphicType,
-  TileTree,
-  TileTreeOwner,
-  TileTreeReference,
-  TileTreeSupplier,
-} from "./internal";
-import {
-  ViewState,
-  ViewState3d,
-} from "../ViewState";
+import { assert, compareBooleans, compareStrings, Id64String } from "@bentley/bentleyjs-core";
+import { Range3d, Transform } from "@bentley/geometry-core";
+import { BatchType, compareIModelTileTreeIds, iModelTileTreeIdToString, PrimaryTileTreeId, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
 import { SceneContext } from "../ViewContext";
+import { ViewState, ViewState3d } from "../ViewState";
+import { RenderClipVolume } from "../render/RenderClipVolume";
+import {
+  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
+  TileTreeSupplier,
+} from "./internal";
 
 interface PrimaryTreeId {
   readonly treeId: PrimaryTileTreeId;
@@ -118,6 +95,7 @@ const primaryTreeSupplier = new PrimaryTreeSupplier();
 class PrimaryTreeReference extends TileTreeReference {
   protected readonly _view: ViewState;
   protected readonly _model: GeometricModelState;
+  protected readonly _viewFlagOverrides: ViewFlagOverrides;
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
 
@@ -125,6 +103,7 @@ class PrimaryTreeReference extends TileTreeReference {
     super();
     this._view = view;
     this._model = model;
+    this._viewFlagOverrides = ViewFlagOverrides.fromJSON(model.jsonProperties.viewFlagOverrides);
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
@@ -136,8 +115,17 @@ class PrimaryTreeReference extends TileTreeReference {
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
   }
 
+  protected getViewFlagOverrides(_tree: TileTree) {
+    return this._viewFlagOverrides;
+  }
+
   public get castsShadows() {
     return true;
+  }
+
+  protected getClipVolume(_tree: TileTree): RenderClipVolume | undefined {
+    // ###TODO: reduce frequency with which getModelClip() is called
+    return this._view.is3d() ? this._view.getModelClip(this._model.id) : undefined;
   }
 
   public get treeOwner(): TileTreeOwner {
@@ -160,7 +148,7 @@ class PrimaryTreeReference extends TileTreeReference {
   protected createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
     const script = view.scheduleScript;
     const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
-    const edgesRequired = view.viewFlags.edgesRequired();
+    const edgesRequired = this._viewFlagOverrides.edgesRequired(view.viewFlags);
     return { type: BatchType.Primary, edgesRequired, animationId };
   }
 }
@@ -168,7 +156,6 @@ class PrimaryTreeReference extends TileTreeReference {
 class PlanProjectionTreeReference extends PrimaryTreeReference {
   private get _view3d() { return this._view as ViewState3d; }
   private _curTransform?: { transform: Transform, elevation: number };
-  private readonly _viewFlagOverrides = new ViewFlagOverrides();
 
   public constructor(view: ViewState3d, model: GeometricModelState) {
     super(view, model, true);
@@ -177,10 +164,6 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
 
   public get castsShadows() {
     return false;
-  }
-
-  protected getViewFlagOverrides(_tree: TileTree) {
-    return this._viewFlagOverrides;
   }
 
   public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
@@ -244,7 +227,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
 
 /** @internal */
 export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference {
-  if (IModelApp.renderSystem.options.planProjections) {
+  if (false !== IModelApp.renderSystem.options.planProjections) {
     const model3d = view.is3d() ? model.asGeometricModel3d : undefined;
     if (undefined !== model3d && model3d.isPlanProjection)
       return new PlanProjectionTreeReference(view as ViewState3d, model);

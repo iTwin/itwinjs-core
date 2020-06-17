@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { TorusPipe } from "../../solid/TorusPipe";
 import { Arc3d } from "../../curve/Arc3d";
-import { LineString3d } from "../../curve/LineString3d";
 import { CurveFactory } from "../../curve/CurveFactory";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineString3d } from "../../curve/LineString3d";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { TorusPipe } from "../../solid/TorusPipe";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("PipePath", () => {
   it("TorusPipeAlongArc", () => {

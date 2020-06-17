@@ -3,12 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
-import { useCallback } from "react"; // tslint:disable-line: no-duplicate-imports
-import { PresentationUnitSystem } from "@bentley/presentation-common";
-
 import "./UnitSystemSelector.css";
+import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { PresentationUnitSystem } from "@bentley/presentation-common";
 
 export interface UnitSystemSelectorProps {
   selectedUnitSystem: PresentationUnitSystem | undefined;
@@ -16,31 +14,32 @@ export interface UnitSystemSelectorProps {
 }
 
 export default function UnitSystemSelector(props: UnitSystemSelectorProps) {
-  const onUnitSystemSelected = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
-    if (!props.onUnitSystemSelected)
+  const { selectedUnitSystem, onUnitSystemSelected } = props;
+  const memoizedOnUnitSystemSelected = React.useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
+    if (!onUnitSystemSelected)
       return;
     switch (evt.target.value) {
       case PresentationUnitSystem.BritishImperial:
-        props.onUnitSystemSelected(PresentationUnitSystem.BritishImperial);
+        onUnitSystemSelected(PresentationUnitSystem.BritishImperial);
         break;
       case PresentationUnitSystem.Metric:
-        props.onUnitSystemSelected(PresentationUnitSystem.Metric);
+        onUnitSystemSelected(PresentationUnitSystem.Metric);
         break;
       case PresentationUnitSystem.UsCustomary:
-        props.onUnitSystemSelected(PresentationUnitSystem.UsCustomary);
+        onUnitSystemSelected(PresentationUnitSystem.UsCustomary);
         break;
       case PresentationUnitSystem.UsSurvey:
-        props.onUnitSystemSelected(PresentationUnitSystem.UsSurvey);
+        onUnitSystemSelected(PresentationUnitSystem.UsSurvey);
         break;
       default:
-        props.onUnitSystemSelected(undefined);
+        onUnitSystemSelected(undefined);
     }
-  }, [props.onUnitSystemSelected]);
+  }, [onUnitSystemSelected]);
 
   return (
     <div className="UnitSystemSelector">
       {IModelApp.i18n.translate("Sample:controls.notifications.select-unit-system")}:
-      <select onChange={onUnitSystemSelected} value={props.selectedUnitSystem}>
+      <select onChange={memoizedOnUnitSystemSelected} value={selectedUnitSystem}>
         {availableUnitSystems.map(({ label, value }: { label: string, value: string }) => (
           <option value={value} key={value}>{label}</option>
         ))}

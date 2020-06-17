@@ -7,29 +7,26 @@
  */
 
 import * as React from "react";
-
+import { ViewFlags } from "@bentley/imodeljs-common";
 // cSpell:ignore configurableui keyinbrowser
 import {
-  FitViewTool, FlyViewTool, IModelApp, PanViewTool, RotateViewTool, SelectionTool, ViewToggleCameraTool, WalkViewTool,
-  WindowAreaTool, ZoomViewTool, ViewUndoTool, ViewRedoTool,
-  ViewClipDecorationProvider,
-  ViewClipByShapeTool, ViewClipByRangeTool, ViewClipByElementTool, ViewClipByPlaneTool,
-  MeasureDistanceTool, MeasureLocationTool,
+  FitViewTool, FlyViewTool, IModelApp, MeasureDistanceTool, MeasureLocationTool, PanViewTool, RotateViewTool, SelectionTool, ViewClipByElementTool,
+  ViewClipByPlaneTool, ViewClipByRangeTool, ViewClipByShapeTool, ViewClipDecorationProvider, ViewRedoTool, ViewToggleCameraTool, ViewUndoTool,
+  WalkViewTool, WindowAreaTool, ZoomViewTool,
 } from "@bentley/imodeljs-frontend";
-import { GroupItemDef } from "./toolbar/GroupItem";
-import { ViewFlags } from "@bentley/imodeljs-common";
-import { ToolItemDef } from "./shared/ToolItemDef";
-import { CustomItemDef } from "./shared/CustomItemDef";
-import { CommandItemDef } from "./shared/CommandItemDef";
-import { KeyinBrowser } from "./keyinbrowser/KeyinBrowser";
-import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
-import { BaseItemState } from "./shared/ItemDefBase";
-import { ContentViewManager } from "./content/ContentViewManager";
-import { UiFramework } from "./UiFramework";
-import { getSelectionContextSyncEventIds, selectionContextStateFunc, getIsHiddenIfSelectionNotActive } from "./selection/SelectionContextItemDef";
 import { ConditionalBooleanValue, ConditionalStringValue } from "@bentley/ui-abstract";
 import { ToolbarPopupContext } from "@bentley/ui-components";
 import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../ui-framework";
+import { ContentViewManager } from "./content/ContentViewManager";
+import { KeyinBrowser } from "./keyinbrowser/KeyinBrowser";
+import { getIsHiddenIfSelectionNotActive, getSelectionContextSyncEventIds, selectionContextStateFunc } from "./selection/SelectionContextItemDef";
+import { CommandItemDef } from "./shared/CommandItemDef";
+import { CustomItemDef } from "./shared/CustomItemDef";
+import { BaseItemState } from "./shared/ItemDefBase";
+import { ToolItemDef } from "./shared/ToolItemDef";
+import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
+import { GroupItemDef } from "./toolbar/GroupItem";
+import { UiFramework } from "./UiFramework";
 
 // tslint:disable: deprecation
 
@@ -60,6 +57,7 @@ export class CoreTools {
     });
   }
 
+  // istanbul ignore next
   private static _renderKeyInBrowser = ({ closePanel }: PopupButtonChildrenRenderPropArgs) => {
     return (
       <KeyinBrowser onExecute={closePanel} onCancel={closePanel} />
@@ -159,7 +157,7 @@ export class CoreTools {
       description: ViewToggleCameraTool.description,
       isHidden: new ConditionalBooleanValue(() => {
         const activeContentControl = ContentViewManager.getActiveContentControl();
-        return !!activeContentControl?.viewport?.view.is2d();
+        return !(activeContentControl?.viewport?.view.is3d() && activeContentControl?.viewport?.view.supportsCamera());
       }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       execute: () => { IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView); },
     });

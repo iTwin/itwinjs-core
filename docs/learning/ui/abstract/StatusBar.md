@@ -15,10 +15,10 @@ The following example defines a StatusBar item that executes an action when pres
           }));
 ```
 
-The following example defines a StatusBar item that just displays an icon and a label. The label is defined using a [ConditionalStringValue] and will update when the SyncUi Event Id defined, by the string "SampleApp.SET_PLUGIN_UI_VISIBLE", is fired by the application or extension. There is additional information about SyncUi at [SyncUi]($ui-framework:SyncUi).
+The following example defines a StatusBar item that just displays an icon and a label. The label is defined using a [ConditionalStringValue] and will update when the SyncUi Event Id defined, by the string "SampleApp.SET_EXTENSION_UI_VISIBLE", is fired by the application or extension. There is additional information about SyncUi at [SyncUi]($ui-framework:SyncUi).
 
 ```ts
-      const labelCondition = new ConditionalStringValue(() => SamplePluginStateManager.isPluginUiVisible ? "Active" : "Inactive", ["SampleApp.SET_PLUGIN_UI_VISIBLE"]);
+      const labelCondition = new ConditionalStringValue(() => SampleExtensionStateManager.isExtensionUiVisible ? "Active" : "Inactive", ["SampleApp.SET_EXTENSION_UI_VISIBLE"]);
       AbstractStatusBarItemUtilities.createLabelItem("Sample:StatusBarLabel1", StatusBarSection.Center, 200, "icon-hand-2", labelCondition, undefined);
   ```
 

@@ -8,11 +8,10 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
-
 import { ItemDefBase } from "../shared/ItemDefBase";
-import { Task, TaskManager } from "./Task";
-import { UiFramework } from "../UiFramework";
 import { ItemProps } from "../shared/ItemProps";
+import { UiFramework } from "../UiFramework";
+import { Task, TaskManager } from "./Task";
 
 /** Properties for a [[Workflow]].
  * @public

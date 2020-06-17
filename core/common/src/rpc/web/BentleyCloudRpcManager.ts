@@ -9,10 +9,10 @@
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcConfiguration } from "../core/RpcConfiguration";
-import { RpcRequest, RpcRequestEventHandler } from "../core/RpcRequest";
-import { OpenAPIInfo } from "./OpenAPI";
-import { BentleyCloudRpcProtocol } from "./BentleyCloudRpcProtocol";
 import { RpcRequestEvent } from "../core/RpcConstants";
+import { RpcRequest, RpcRequestEventHandler } from "../core/RpcRequest";
+import { BentleyCloudRpcProtocol } from "./BentleyCloudRpcProtocol";
+import { OpenAPIInfo } from "./OpenAPI";
 
 /** Initialization parameters for BentleyCloudRpcConfiguration.
  * @public

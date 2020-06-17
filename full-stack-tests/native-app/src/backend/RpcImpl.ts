@@ -2,12 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs, NativeAppBackend } from "@bentley/imodeljs-backend";
-import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
-import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
-import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import * as nock from "nock";
+import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
+import { IModelBankClient, IModelQuery } from "@bentley/imodelhub-client";
+import {
+  BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelJsFs, NativeAppBackend,
+} from "@bentley/imodeljs-backend";
+import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
 import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
@@ -82,7 +84,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async purgeStorageCache(): Promise<void> {
-    return IModelJsFs.purgeDirSync(IModelHost.configuration!.nativeAppCacheDir!);
+    return IModelJsFs.purgeDirSync(NativeAppBackend.appSettingsCacheDir);
   }
 
   public async purgeBriefcaseCache(): Promise<void> {

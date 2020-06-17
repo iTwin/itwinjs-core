@@ -6,7 +6,7 @@
  * @module Item
  */
 
-import { CommonItemProps, AbstractActionItemProps } from "./AbstractItemProps";
+import { AbstractActionItemProps, CommonItemProps } from "./AbstractItemProps";
 
 /** Properties for a Menu item
  * @beta

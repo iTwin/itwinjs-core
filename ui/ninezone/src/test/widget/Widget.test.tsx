@@ -4,10 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, render, fireEvent } from "@testing-library/react";
-import { createNineZoneState, NineZoneProvider, addPanelWidget, NineZoneDispatch, PanelWidget, PANEL_WIDGET_DRAG_START, PanelSideContext } from "../../ui-ninezone";
+import { act, fireEvent, render } from "@testing-library/react";
+import {
+  addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext,
+  PanelWidget, Widget, WidgetIdContext,
+} from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
-import { addTab } from "../../ui-ninezone/base/NineZoneState";
+import { NineZoneProvider } from "../Providers";
+import { PanelWidgetDragStartAction } from "../../ui-ninezone/base/NineZoneState";
 
 describe("PanelWidget", () => {
   const sandbox = sinon.createSandbox();
@@ -32,7 +36,7 @@ describe("PanelWidget", () => {
       </NineZoneProvider>,
     );
 
-    const titleBar = container.getElementsByClassName("nz-widget-titleBar")[0];
+    const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     act(() => {
       fireEvent.pointerDown(handle);
@@ -40,10 +44,46 @@ describe("PanelWidget", () => {
     });
 
     dispatch.calledOnceWithExactly(sinon.match({
-      type: PANEL_WIDGET_DRAG_START,
+      type: "PANEL_WIDGET_DRAG_START",
       id: "w1",
       newFloatingWidgetId: "newId",
     })).should.true;
+  });
+
+  it("should adjust bounds to keep widget under pointer", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <PanelSideContext.Provider value="left">
+          <PanelWidget widgetId="w1" />
+        </PanelSideContext.Provider>
+      </NineZoneProvider>,
+    );
+
+    const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
+    const handle = titleBar.getElementsByClassName("nz-handle")[0];
+    act(() => {
+      fireEvent.pointerDown(handle);
+      const pointerMove = new MouseEvent("pointermove", {
+        clientX: 230,
+      });
+      document.dispatchEvent(pointerMove);
+    });
+
+    dispatch.calledOnce.should.true;
+    dispatch.firstCall.args[0].type.should.eq("PANEL_WIDGET_DRAG_START");
+    const action = dispatch.firstCall.args[0] as PanelWidgetDragStartAction;
+    action.bounds.should.eql({
+      top: 0,
+      bottom: 200,
+      left: 50,
+      right: 250,
+    });
   });
 
   it("should measure widget bounds", () => {
@@ -53,7 +93,6 @@ describe("PanelWidget", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <PanelSideContext.Provider value="left">
           <PanelWidget widgetId="w1" />
@@ -76,5 +115,31 @@ describe("PanelWidget", () => {
     });
 
     spy.calledOnce.should.true;
+  });
+
+  it("should dispatch FLOATING_WIDGET_BRING_TO_FRONT", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <WidgetIdContext.Provider value="w1">
+          <FloatingWidgetIdContext.Provider value="fw1">
+            <Widget />
+          </FloatingWidgetIdContext.Provider>
+        </WidgetIdContext.Provider>
+      </NineZoneProvider>,
+    );
+
+    const widgetElement = container.getElementsByClassName("nz-widget-widget")[0];
+    fireEvent.click(widgetElement);
+
+    dispatch.calledOnceWithExactly({
+      type: "FLOATING_WIDGET_BRING_TO_FRONT",
+      id: "fw1",
+    }).should.true;
   });
 });

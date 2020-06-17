@@ -6,11 +6,11 @@
  * @module Message
  */
 
+import "./Toast.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Timer, CommonProps, NoChildrenProps, Rectangle } from "@bentley/ui-core";
+import { CommonProps, NoChildrenProps, Rectangle, Timer } from "@bentley/ui-core";
 import { Css } from "../../utilities/Css";
-import "./Toast.scss";
 
 /** Properties of [[Toast]] component.
  * @alpha Review naming of: animateOutTo, content, onAnimatedOut
@@ -30,6 +30,29 @@ export interface ToastProps extends CommonProps, NoChildrenProps {
  * @alpha
  */
 export type ToastDefaultProps = Pick<ToastProps, "timeout">;
+
+enum Stage {
+  Visible,
+  AnimatingOut,
+  AnimatedOut,
+}
+
+class StageHelpers {
+  public static readonly VISIBLE_CLASS_NAME = "nz-stage-visible";
+  public static readonly ANIMATING_OUT_CLASS_NAME = "nz-stage-animating";
+  public static readonly ANIMATED_OUT_CLASS_NAME = "nz-stage-animated";
+
+  public static getCssClassName(state: Stage): string {
+    switch (state) {
+      case Stage.Visible:
+        return StageHelpers.VISIBLE_CLASS_NAME;
+      case Stage.AnimatingOut:
+        return StageHelpers.ANIMATING_OUT_CLASS_NAME;
+      case Stage.AnimatedOut:
+        return StageHelpers.ANIMATED_OUT_CLASS_NAME;
+    }
+  }
+}
 
 /** State of [[Toast]] component. */
 interface ToastState {
@@ -143,28 +166,5 @@ export class Toast extends React.PureComponent<ToastProps, ToastState> {
         this._toast.current.style.height = Css.toPx(0);
       });
     });
-  }
-}
-
-enum Stage {
-  Visible,
-  AnimatingOut,
-  AnimatedOut,
-}
-
-class StageHelpers {
-  public static readonly VISIBLE_CLASS_NAME = "nz-stage-visible";
-  public static readonly ANIMATING_OUT_CLASS_NAME = "nz-stage-animating";
-  public static readonly ANIMATED_OUT_CLASS_NAME = "nz-stage-animated";
-
-  public static getCssClassName(state: Stage): string {
-    switch (state) {
-      case Stage.Visible:
-        return StageHelpers.VISIBLE_CLASS_NAME;
-      case Stage.AnimatingOut:
-        return StageHelpers.ANIMATING_OUT_CLASS_NAME;
-      case Stage.AnimatedOut:
-        return StageHelpers.ANIMATED_OUT_CLASS_NAME;
-    }
   }
 }

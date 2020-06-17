@@ -6,24 +6,23 @@
 /* tslint:disable: no-console */
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-
-import { HalfEdgeGraph, HalfEdge } from "../../topology/Graph";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineString3d } from "../../curve/LineString3d";
+import { Angle } from "../../geometry3d/Angle";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { Sample } from "../../serialization/GeometrySamples";
+import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
+import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgePriorityQueueWithPartnerArray } from "../../topology/HalfEdgePriorityQueue";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Transform } from "../../geometry3d/Transform";
-import { prettyPrint } from "../testFunctions";
+import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
+import { prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Angle } from "../../geometry3d/Angle";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 
 describe("GraphMerge", () => {
 

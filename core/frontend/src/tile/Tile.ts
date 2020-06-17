@@ -6,45 +6,18 @@
  * @module Tiles
  */
 
-import {
-  assert,
-  dispose,
-} from "@bentley/bentleyjs-core";
-import {
-  Arc3d,
-  ClipPlaneContainment,
-  Matrix4d,
-  Point2d,
-  Point3d,
-  Point4d,
-  Range3d,
-  Transform,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  BoundingSphere,
-  ColorDef,
-  ElementAlignedBox3d,
-  Frustum,
-  FrustumPlanes,
-} from "@bentley/imodeljs-common";
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import { Arc3d, ClipPlaneContainment, Matrix4d, Point2d, Point3d, Point4d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { BoundingSphere, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderMemory } from "../render/RenderMemory";
 import { RenderSystem } from "../render/RenderSystem";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { Viewport } from "../Viewport";
 import { SceneContext } from "../ViewContext";
-import {
-  TileContent,
-  TileDrawArgs,
-  TileParams,
-  TileRequest,
-  TileTree,
-  TileTreeLoadStatus,
-  TileUsageMarker,
-} from "./internal";
+import { Viewport } from "../Viewport";
+import { TileContent, TileDrawArgs, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileUsageMarker } from "./internal";
 
 // cSpell:ignore undisplayable bitfield
 
@@ -180,7 +153,7 @@ export abstract class Tile {
   /** @internal */
   public setIsReady(): void {
     this._state = TileState.Ready;
-    IModelApp.viewManager.onNewTilesReady();
+    IModelApp.tileAdmin.onTileLoad.raiseEvent(this);
   }
 
   /** @internal */
@@ -326,12 +299,12 @@ export abstract class Tile {
       if (undefined === children || 0 === children.length)
         this._isLeaf = true;
 
-      IModelApp.viewManager.onNewTilesReady();
+      IModelApp.tileAdmin.onTileChildrenLoad.raiseEvent(this);
     }, (_error: Error) => {
       this._isLeaf = true;
       this._childrenLoadStatus = TileTreeLoadStatus.NotFound;
 
-      IModelApp.viewManager.onNewTilesReady();
+      IModelApp.tileAdmin.onTileChildrenLoad.raiseEvent(this);
     });
 
     return this._childrenLoadStatus;
@@ -371,7 +344,7 @@ export abstract class Tile {
       return true;
 
     // Test against TileTree's own clip volume, if any.
-    if (undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points))
+    if (undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(worldBox.points))
       return true;
 
     // Test against view clip, if any (will be undefined if TileTree does not want view clip applied to it).

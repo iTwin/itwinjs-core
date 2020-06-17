@@ -6,10 +6,10 @@
  * @module PresentationRules
  */
 
-import { RelationshipDirection } from "../../RelationshipDirection";
 import { MultiSchemaClassesSpecification } from "../../ClassSpecifications";
-import { PropertySpecification } from "../PropertySpecification";
+import { RelationshipDirection } from "../../RelationshipDirection";
 import { RelationshipPathSpecification } from "../../RelationshipPathSpecification";
+import { PropertySpecification } from "../PropertySpecification";
 
 /**
  * Meaning of the relationship

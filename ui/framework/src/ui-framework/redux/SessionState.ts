@@ -7,12 +7,11 @@
  */
 
 // The following definitions are causing extract-api issues on linux so for now just using any until we can figure out the issue.
+import { XAndY } from "@bentley/geometry-core";
 // import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { UserInfo } from "@bentley/itwin-client";
-import { createAction, ActionsUnion, DeepReadonly } from "./redux-ts";
-
-import { XAndY } from "@bentley/geometry-core";
 import { MenuItemProps } from "../shared/MenuItem";
+import { ActionsUnion, createAction, DeepReadonly } from "./redux-ts";
 
 // cSpell:ignore configurableui snapmode toolprompt sessionstate imodelid viewid viewportid rulesetid
 
@@ -107,16 +106,30 @@ export interface SessionStateActionsProps {
  * @beta
  */
 export const SessionStateActions = {  // tslint:disable-line:variable-name
-  setUserInfo: (userInfo: UserInfo) => createAction(SessionStateActionId.SetUserInfo, userInfo),
-  setActiveIModelId: (iModelId: string) => createAction(SessionStateActionId.SetActiveIModelId, iModelId),
-  setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => createAction(SessionStateActionId.SetAvailableSelectionScopes, availableSelectionScopes),
+  setUserInfo:
+    // istanbul ignore next
+    (userInfo: UserInfo) => createAction(SessionStateActionId.SetUserInfo, userInfo),
+  setActiveIModelId:
+    // istanbul ignore next
+    (iModelId: string) => createAction(SessionStateActionId.SetActiveIModelId, iModelId),
+  setAvailableSelectionScopes:
+    // istanbul ignore next
+    (availableSelectionScopes: PresentationSelectionScope[]) => createAction(SessionStateActionId.SetAvailableSelectionScopes, availableSelectionScopes),
   setDefaultIModelViewportControlId: (iModelViewportControlId: string) => createAction(SessionStateActionId.SetDefaultIModelViewportControlId, iModelViewportControlId),
   setDefaultViewId: (viewId: string) => createAction(SessionStateActionId.SetDefaultViewId, viewId),
-  setDefaultViewState: (viewState: any) => createAction(SessionStateActionId.SetDefaultViewState, viewState),
+  setDefaultViewState:
+    // istanbul ignore next
+    (viewState: any) => createAction(SessionStateActionId.SetDefaultViewState, viewState),
   setNumItemsSelected: (numSelected: number) => createAction(SessionStateActionId.SetNumItemsSelected, numSelected),
-  setIModelConnection: (iModelConnection: any) => createAction(SessionStateActionId.SetIModelConnection, iModelConnection),
-  setSelectionScope: (activeSelectionScope: string) => createAction(SessionStateActionId.SetSelectionScope, activeSelectionScope),
-  updateCursorMenu: (cursorMenuData: CursorMenuData) => createAction(SessionStateActionId.UpdateCursorMenu, cursorMenuData),
+  setIModelConnection:
+    // istanbul ignore next
+    (iModelConnection: any) => createAction(SessionStateActionId.SetIModelConnection, iModelConnection),
+  setSelectionScope:
+    // istanbul ignore next
+    (activeSelectionScope: string) => createAction(SessionStateActionId.SetSelectionScope, activeSelectionScope),
+  updateCursorMenu:
+    // istanbul ignore next
+    (cursorMenuData: CursorMenuData) => createAction(SessionStateActionId.UpdateCursorMenu, cursorMenuData),
 };
 
 /** Object that contains available actions that modify SessionState. Parent control's props should

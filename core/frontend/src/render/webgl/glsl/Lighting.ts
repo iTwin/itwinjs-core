@@ -6,15 +6,8 @@
  * @module WebGL
  */
 
-import {
-  ProgramBuilder,
-  FragmentShaderComponent,
-  VariableType,
-  VariablePrecision,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { addFrustum } from "./Common";
-
-const enableCelShading = false;
 
 const computeDirectionalLighting = `
 void computeDirectionalLight (inout float diffuse, inout float specular, vec3 normal, vec3 toEye, vec3 lightDir, float lightIntensity, float specularExponent) {
@@ -25,12 +18,6 @@ void computeDirectionalLight (inout float diffuse, inout float specular, vec3 no
   specular += lightIntensity * pow(specularDot, specularExponent);
 }
 `;
-
-const cel = enableCelShading ? `
-float cel(float intensity) {
-  float numCel = u_lightSettings[14];
-  return numCel > 0.0 ? ceil(intensity * numCel) / numCel : intensity;
-}` : `float cel(float intensity) { return intensity; }`;
 
 // mat_weights: x=diffuse y=specular
 const applyLighting = `
@@ -61,7 +48,7 @@ const applyLighting = `
   computeDirectionalLight(directionalDiffuseIntensity, directionalSpecularIntensity, normal ,toEye, portraitDir, portraitIntensity, specularExponent);
 
   const float directionalFudge = 0.92; // leftover from old lighting implementation
-  vec3 diffuseAccum = cel(directionalDiffuseIntensity) * diffuseWeight * rgb * directionalFudge; // directional light is white.
+  vec3 diffuseAccum = directionalDiffuseIntensity * diffuseWeight * rgb * directionalFudge; // directional light is white.
   vec3 specularAccum = directionalSpecularIntensity * specularWeight * specularColor;
 
   // Compute ambient light
@@ -79,7 +66,7 @@ const applyLighting = `
 
   //  diffuse
   float hemiDot = dot(normal, u_upVector);
-  float hemiDiffuseWeight = cel(0.5 * hemiDot + 0.5);
+  float hemiDiffuseWeight = 0.5 * hemiDot + 0.5;
   vec3 hemiColor = mix(ground, sky, hemiDiffuseWeight);
   diffuseAccum += hemiIntensity * hemiColor * rgb;
 
@@ -98,7 +85,11 @@ const applyLighting = `
   // Clamp while preserving hue.
   vec3 litColor = diffuseAccum + specularAccum;
   float maxIntensity = max(litColor.r, max(litColor.g, litColor.b));
-  baseColor.rgb = litColor / max(1.0, maxIntensity);
+  float numCel = u_lightSettings[14];
+  if (numCel > 0.0)
+    baseColor.rgb = baseColor.rgb * ceil(maxIntensity * numCel) / numCel;
+  else
+    baseColor.rgb = litColor / max(1.0, maxIntensity);
 
   return baseColor;
 `;
@@ -112,7 +103,6 @@ export function addLighting(builder: ProgramBuilder) {
   const frag = builder.frag;
 
   frag.addFunction(computeDirectionalLighting);
-  frag.addFunction(cel);
   frag.set(FragmentShaderComponent.ApplyLighting, applyLighting);
 
   frag.addUniform("u_sunDir", VariableType.Vec3, (prog) => {

@@ -6,50 +6,41 @@
  * @module Tree
  */
 
+// css
+import "./Tree.scss";
+import classnames from "classnames";
 // third-party imports
 import _ from "lodash";
 import * as React from "react";
-import classnames from "classnames";
-import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedListRowProps } from "react-virtualized";
-
+import { AutoSizer, List as VirtualizedList, ListRowProps as VirtualizedListRowProps, Size } from "react-virtualized";
 // bentley imports
-import { using, Guid } from "@bentley/bentleyjs-core";
+import { Guid, using } from "@bentley/bentleyjs-core";
 import {
-  Tree as TreeBase, TreeNodePlaceholder, shallowDiffers,
-  CheckBoxState, CheckBoxInfo, NodeCheckboxRenderer,
-  Spinner, SpinnerSize, CommonProps,
+  CheckBoxInfo, CheckBoxState, CommonProps, NodeCheckboxRenderer, shallowDiffers, Spinner, SpinnerSize, Tree as TreeBase, TreeNodePlaceholder,
 } from "@bentley/ui-core";
-
-// tree-related imports
+import { getPropertyRecordAsString } from "../../../common/getPropertyRecordAsString";
 import {
-  BeInspireTree, BeInspireTreeNode, BeInspireTreeNodes, BeInspireTreeNodeConfig,
-  BeInspireTreeEvent, MapPayloadToInspireNodeCallback, toNode, toNodes,
-} from "./BeInspireTree";
-import {
-  TreeDataProvider, TreeNodeItem,
-  DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem,
-  isTreeDataProviderInterface,
-} from "../../TreeDataProvider";
-import { NodeEventManager } from "../NodeEventManager";
-import { NodeLoadingOrchestrator } from "../NodeLoadingOrchestrator";
-import { TreeNodeProps, TreeNode } from "./Node";
-import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
+  MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
+} from "../../../common/selection/SelectionHandler";
 // selection-related imports
 import { SelectionMode } from "../../../common/selection/SelectionModes";
-import {
-  SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
-  OnItemsSelectedCallback, OnItemsDeselectedCallback,
-} from "../../../common/selection/SelectionHandler";
-// node highlighting
-import { HighlightingEngine, HighlightableTreeProps } from "../../HighlightingEngine";
+import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
 // misc
 import { UiComponents } from "../../../UiComponents";
-import { CellEditingEngine, EditableTreeProps } from "../CellEditingEngine";
+// node highlighting
+import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
 import { ITreeImageLoader, TreeImageLoader } from "../../ImageLoader";
-import { getPropertyRecordAsString } from "../../../common/getPropertyRecordAsString";
-
-// css
-import "./Tree.scss";
+import {
+  DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, TreeDataProvider, TreeNodeItem,
+} from "../../TreeDataProvider";
+import { CellEditingEngine, EditableTreeProps } from "../CellEditingEngine";
+import { NodeEventManager } from "../NodeEventManager";
+import { NodeLoadingOrchestrator } from "../NodeLoadingOrchestrator";
+// tree-related imports
+import {
+  BeInspireTree, BeInspireTreeEvent, BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback, toNode, toNodes,
+} from "./BeInspireTree";
+import { TreeNode, TreeNodeProps } from "./Node";
 
 // tslint:disable:deprecation
 
@@ -894,7 +885,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
       return (
         <p className="components-tree-errormessage">
           {this.props.nodeHighlightingProps ?
-            UiComponents.translate("tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
+            UiComponents.i18n.translateWithNamespace(UiComponents.i18nNamespace, "tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
             UiComponents.translate("general.noData")}
         </p>
       );

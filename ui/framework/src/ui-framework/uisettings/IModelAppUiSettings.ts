@@ -6,16 +6,18 @@
  * @module UiSettings
  */
 
-import { UiSettings, UiSettingsStatus, UiSettingsResult } from "@bentley/ui-core";
-import { SettingsStatus } from "@bentley/product-settings-client";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
+import { SettingsStatus } from "@bentley/product-settings-client";
+import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 
 /**
- * Implementation of [[UiSettings]] that uses settings admin from [[IModelApp.settings]].
- * @alpha
+ * Implementation of [[UiSettings]] that uses settings admin from `IModelApp.settings`.
+ * @beta
  */
 export class IModelAppUiSettings implements UiSettings {
   public async getSetting(namespace: string, name: string): Promise<UiSettingsResult> {
+    if (!this.isSignedIn)
+      return { status: UiSettingsStatus.AuthorizationError };
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const result = await IModelApp.settings.getUserSetting(requestContext, namespace, name, true);
     const status = settingsStatusToUiSettingsStatus(result.status);
@@ -26,6 +28,8 @@ export class IModelAppUiSettings implements UiSettings {
   }
 
   public async saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult> {
+    if (!this.isSignedIn)
+      return { status: UiSettingsStatus.AuthorizationError };
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const result = await IModelApp.settings.saveUserSetting(requestContext, setting, namespace, name, true);
     const status = settingsStatusToUiSettingsStatus(result.status);
@@ -36,6 +40,8 @@ export class IModelAppUiSettings implements UiSettings {
   }
 
   public async deleteSetting(namespace: string, name: string): Promise<UiSettingsResult> {
+    if (!this.isSignedIn)
+      return { status: UiSettingsStatus.AuthorizationError };
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const result = await IModelApp.settings.deleteUserSetting(requestContext, namespace, name, true);
     const status = settingsStatusToUiSettingsStatus(result.status);
@@ -44,13 +50,19 @@ export class IModelAppUiSettings implements UiSettings {
       setting: result.setting,
     };
   }
+
+  private get isSignedIn(): boolean {
+    return !!IModelApp.authorizationClient && IModelApp.authorizationClient.hasSignedIn;
+  }
 }
 
 /** @internal */
-export function settingsStatusToUiSettingsStatus(status: SettingsStatus) {
+export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus {
   if (status === SettingsStatus.Success)
     return UiSettingsStatus.Success;
   else if (status === SettingsStatus.SettingNotFound)
     return UiSettingsStatus.NotFound;
+  else if (status === SettingsStatus.AuthorizationError)
+    return UiSettingsStatus.AuthorizationError;
   return UiSettingsStatus.UnknownError;
 }

@@ -8,10 +8,10 @@
 
 import { AbandonedError, assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
 import { ImageSource } from "@bentley/imodeljs-common";
-import { Tile, TileTree } from "./internal";
+import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet } from "../ViewportSet";
-import { IModelApp } from "../IModelApp";
+import { Tile, TileTree } from "./internal";
 
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile]] to execute the request for tile content and
  * convert the result into a renderable graphic. TileRequests are created internally as needed; it is never necessary or useful for external code to create them.
@@ -66,7 +66,7 @@ export class TileRequest {
    */
   public async dispatch(onHttpResponse: () => void): Promise<void> {
     if (this.isCanceled)
-      return Promise.resolve();
+      return;
 
     assert(this._state === TileRequest.State.Queued);
     this._state = TileRequest.State.Dispatched;
@@ -98,7 +98,7 @@ export class TileRequest {
     onHttpResponse();
 
     if (!gotResponse || this.isCanceled)
-      return Promise.resolve();
+      return;
 
     return this.handleResponse(response);
   }
@@ -145,13 +145,13 @@ export class TileRequest {
 
     if (undefined === data) {
       this.setFailed();
-      return Promise.resolve();
+      return;
     }
 
     try {
       const content = await this.tile.readContent(data, IModelApp.renderSystem, () => this.isCanceled);
       if (this.isCanceled)
-        return Promise.resolve();
+        return;
 
       this._state = TileRequest.State.Completed;
       this.tile.setContent(content);
@@ -160,8 +160,6 @@ export class TileRequest {
     } catch (_err) {
       this.setFailed();
     }
-
-    return Promise.resolve();
   }
 }
 

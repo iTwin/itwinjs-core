@@ -8,7 +8,7 @@
 
 import { Rectangle, RectangleProps } from "@bentley/ui-core";
 import { HorizontalAnchor } from "../../widget/Stacked";
-import { WidgetZoneId, ZonesManagerProps, ZonesManager } from "./Zones";
+import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "./Zones";
 
 /** @internal */
 export const RECTANGULAR_DEFAULT_MIN_HEIGHT = 220;
@@ -57,7 +57,7 @@ export abstract class GrowStrategy implements ResizeStrategy {
       return props;
 
     const zonesToShrink = this.getZonesToShrink(zoneId, props);
-    zonesToShrink.map((zoneToShrink) => {
+    zonesToShrink.forEach((zoneToShrink) => {
       const distance = this.getDistanceToZoneToShrink(zoneId, zoneToShrink, props);
       const shrinkBy = Math.max(0, growBy - distance);
       const shrinkStrategy = this.getShrinkStrategy();
@@ -264,7 +264,7 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
     const maxShrinkSelfBy = this.getMaxShrinkSelfBy(zone.bounds);
     const shrinkSelfBy = Math.min(maxShrinkSelfBy, resizeBy);
     const zonesToShrink = this.getZonesToShrink(zoneId, props);
-    zonesToShrink.map((zoneToShrink) => {
+    zonesToShrink.forEach((zoneToShrink) => {
       const distance = this.getDistanceToZoneToShrink(zoneId, zoneToShrink, props);
       const moveSelfBy = Math.max(0, Math.min(resizeBy - shrinkSelfBy, distance));
       const shrinkBy = Math.max(0, resizeBy - shrinkSelfBy - moveSelfBy);

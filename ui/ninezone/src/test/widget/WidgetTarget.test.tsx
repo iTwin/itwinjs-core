@@ -4,10 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, render, fireEvent } from "@testing-library/react";
-import { CursorTypeContext, createNineZoneState, NineZoneProvider, addPanelWidget, WidgetTarget, PanelSideContext } from "../../ui-ninezone";
+import { act, fireEvent, render } from "@testing-library/react";
+import { addPanelWidget, createNineZoneState, CursorTypeContext, PanelSideContext, WidgetTarget } from "../../ui-ninezone";
+import { NineZoneProvider } from "../Providers";
 
 describe("WidgetTarget", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("should render with cursor type", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1");
@@ -44,6 +51,7 @@ describe("WidgetTarget", () => {
       </NineZoneProvider>,
     );
     const target = container.getElementsByClassName("nz-widget-widgetTarget")[0];
+    sandbox.stub(document, "elementFromPoint").returns(target);
     act(() => {
       fireEvent.pointerMove(target);
     });

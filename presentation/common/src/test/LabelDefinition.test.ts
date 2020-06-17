@@ -4,18 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
+import { LabelCompositeValue, LabelDefinition, LabelDefinitionJSON } from "../presentation-common/LabelDefinition";
 import {
-  createRandomLabelDefinitionJSON, createRandomLabelDefinition,
-  createRandomLabelCompositeValue, createRandomLabelCompositeValueJSON,
+  createRandomLabelCompositeValue, createRandomLabelCompositeValueJSON, createRandomLabelDefinition, createRandomLabelDefinitionJSON,
 } from "./_helpers/random";
-import { LabelDefinition, LabelDefinitionJSON, LabelCompositeValue } from "../presentation-common/LabelDefinition";
 
 const createRandomCompositeLabelDefinition = (): LabelDefinition => {
-  return { displayValue: faker.random.word(), rawValue: createRandomLabelCompositeValue(), typeName: "composite" };
+  return { displayValue: faker.random.word(), rawValue: createRandomLabelCompositeValue(), typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME };
 };
 
 const createRandomCompositeLabelDefinitionJSON = (): LabelDefinitionJSON => {
-  return { displayValue: faker.random.word(), rawValue: createRandomLabelCompositeValueJSON(), typeName: "composite" };
+  return { displayValue: faker.random.word(), rawValue: createRandomLabelCompositeValueJSON(), typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME };
 };
 
 describe("LabelDefinition", () => {

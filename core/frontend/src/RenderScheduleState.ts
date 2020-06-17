@@ -6,14 +6,17 @@
  * @module Views
  */
 
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import {
+  ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform,
+  UnionOfConvexClipPlaneSets, Vector3d,
+} from "@bentley/geometry-core";
 import { RenderSchedule, RgbColor } from "@bentley/imodeljs-common";
-import { Range1d, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets, Point4d } from "@bentley/geometry-core";
-import { Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { FeatureSymbology } from "./render/FeatureSymbology";
-import { IModelApp } from "./IModelApp";
 import { DisplayStyleState } from "./DisplayStyleState";
+import { IModelApp } from "./IModelApp";
+import { FeatureSymbology } from "./render/FeatureSymbology";
+import { AnimationBranchState, AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderClipVolume } from "./render/RenderClipVolume";
-import { AnimationBranchStates, AnimationBranchState } from "./render/GraphicBranch";
 
 function interpolate(value0: number, value1: number, fraction: number) {
   return value0 + fraction * (value1 - value0);

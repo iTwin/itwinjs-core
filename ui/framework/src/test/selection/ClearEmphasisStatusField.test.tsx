@@ -5,19 +5,18 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
-import { render, cleanup } from "@testing-library/react";
-import TestUtils from "../TestUtils";
+import { IModelApp, MockRender, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
+import { cleanup, render } from "@testing-library/react";
 import { ClearEmphasisStatusField } from "../../ui-framework/selection/ClearEmphasisStatusField";
+import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "../../ui-framework/selection/HideIsolateEmphasizeManager";
 import { StatusBarFieldId } from "../../ui-framework/statusbar/StatusBarWidgetControl";
-import { ScreenViewport, IModelApp, Viewport, MockRender } from "@bentley/imodeljs-frontend";
-import { SelectionContextUtilities } from "../../ui-framework/selection/SelectionContextUtilities";
+import TestUtils from "../TestUtils";
 
 describe("ClearEmphasisStatusField", () => {
   const viewportMock = moq.Mock.ofType<ScreenViewport>();
-
-  const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(SelectionContextUtilities, "areFeatureOverridesActive")!;
   const featureOverridesActive = (_vp: Viewport) => true;
   const featureOverridesNotActive = (_vp: Viewport) => false;
+  const functionToRestore = HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -27,13 +26,13 @@ describe("ClearEmphasisStatusField", () => {
   after(async () => {
     await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
-    Object.defineProperty(SelectionContextUtilities, "areFeatureOverridesActive", propertyDescriptorToRestore);
+    HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = functionToRestore;
   });
 
   afterEach(cleanup);
 
   it("ClearEmphasisStatusField renders visible", () => {
-    Object.defineProperty(SelectionContextUtilities, "areFeatureOverridesActive", { get: () => featureOverridesActive });
+    HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = featureOverridesActive;
 
     IModelApp.viewManager.setSelectedView(viewportMock.object);
     const component = render(<ClearEmphasisStatusField isInFooterMode={false} hideWhenUnused={true} onOpenWidget={(_widget: StatusBarFieldId) => { }} openWidget={"none"} />);
@@ -42,13 +41,13 @@ describe("ClearEmphasisStatusField", () => {
     // expect(component.container.querySelector("div.uifw-indicator-fade-in")).not.to.be.null;
     // component.debug();
 
-    Object.defineProperty(SelectionContextUtilities, "areFeatureOverridesActive", { get: () => featureOverridesNotActive });
-    SelectionContextUtilities.emphasizeElementsChanged.raiseEvent();
+    HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = featureOverridesNotActive;
+    HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent();
     expect(component.container.querySelector("div.uifw-indicator-fade-out")).not.to.be.null;
   });
 
   it("ClearEmphasisStatusField renders invisible", () => {
-    Object.defineProperty(SelectionContextUtilities, "areFeatureOverridesActive", { get: () => featureOverridesNotActive });
+    HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = featureOverridesNotActive;
     IModelApp.viewManager.setSelectedView(viewportMock.object);
 
     const component = render(<ClearEmphasisStatusField isInFooterMode={false} hideWhenUnused={true} onOpenWidget={(_widget: StatusBarFieldId) => { }} openWidget={"none"} />);
@@ -58,7 +57,7 @@ describe("ClearEmphasisStatusField", () => {
   });
 
   it("ClearEmphasisStatusField renders always", () => {
-    Object.defineProperty(SelectionContextUtilities, "areFeatureOverridesActive", { get: () => featureOverridesNotActive });
+    HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = featureOverridesNotActive;
     IModelApp.viewManager.setSelectedView(viewportMock.object);
 
     const component = render(<ClearEmphasisStatusField isInFooterMode={false} hideWhenUnused={false} onOpenWidget={(_widget: StatusBarFieldId) => { }} openWidget={"none"} />);

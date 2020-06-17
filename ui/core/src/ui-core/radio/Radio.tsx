@@ -6,10 +6,10 @@
  * @module Radio
  */
 
-import * as React from "react";
 import classnames from "classnames";
-import { CommonProps } from "../utils/Props";
+import * as React from "react";
 import { LabeledComponentProps } from "../inputs/LabeledComponentProps";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for [[Radio]] component
  * @public

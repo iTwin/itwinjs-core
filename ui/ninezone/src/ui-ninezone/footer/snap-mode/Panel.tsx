@@ -6,11 +6,11 @@
  * @module SnapMode
  */
 
+import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { TitleBar } from "../dialog/TitleBar";
-import "./Panel.scss";
 
 /** Properties of [[SnapModePanel]] component.
  * @beta

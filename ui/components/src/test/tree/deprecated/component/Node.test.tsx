@@ -2,20 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { render, fireEvent } from "@testing-library/react";
-import { expect } from "chai";
-import { CheckBoxState } from "@bentley/ui-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import TestUtils from "../../../TestUtils";
-import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
-import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
+import { CheckBoxState } from "@bentley/ui-core";
+import { fireEvent, render } from "@testing-library/react";
 import { LoadedImage } from "../../../../ui-components/common/IImageLoader";
-import { ITreeImageLoader, TreeImageLoader } from "../../../../ui-components/tree/ImageLoader";
-import { DEPRECATED_Tree as Tree } from "../../../../ui-components/tree/deprecated/component/Tree";
+import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
 import { BeInspireTree, BeInspireTreeNode } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
 import { TreeNode, TreeNodeIcon } from "../../../../ui-components/tree/deprecated/component/Node";
+import { DEPRECATED_Tree as Tree } from "../../../../ui-components/tree/deprecated/component/Tree";
+import { ITreeImageLoader, TreeImageLoader } from "../../../../ui-components/tree/ImageLoader";
+import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
+import TestUtils from "../../../TestUtils";
 
 // tslint:disable:deprecation
 

@@ -5,18 +5,18 @@
 
 import { expect } from "chai";
 import { SchemaContext } from "../../src/Context";
+import { EntityClass, Enumeration, KindOfQuantity, PropertyCategory, Unit } from "../../src/ecschema-metadata";
 import { AnyECType } from "../../src/Interfaces";
 import { ECClass } from "../../src/Metadata/Class";
+import { Format } from "../../src/Metadata/Format";
 import { AnyProperty } from "../../src/Metadata/Property";
 import { RelationshipClass } from "../../src/Metadata/RelationshipClass";
 import { Schema } from "../../src/Metadata/Schema";
-import { Format } from "../../src/Metadata/Format";
-import { DiagnosticCategory, DiagnosticType, AnyDiagnostic } from "../../src/Validation/Diagnostic";
-import { ISchemaCompareReporter } from "../../src/Validation/SchemaCompareReporter";
+import { AnyDiagnostic, DiagnosticCategory, DiagnosticType } from "../../src/Validation/Diagnostic";
+import { ISchemaChanges, SchemaChanges } from "../../src/Validation/SchemaChanges";
 import { SchemaCompareCodes } from "../../src/Validation/SchemaCompareDiagnostics";
 import { SchemaComparer } from "../../src/Validation/SchemaComparer";
-import { ISchemaChanges, SchemaChanges } from "../../src/Validation/SchemaChanges";
-import { Enumeration, EntityClass, KindOfQuantity, PropertyCategory, Unit } from "../../src/ecschema-metadata";
+import { ISchemaCompareReporter } from "../../src/Validation/SchemaCompareReporter";
 
 class TestSchemaCompareReporter implements ISchemaCompareReporter {
   public changes: SchemaChanges[] = [];

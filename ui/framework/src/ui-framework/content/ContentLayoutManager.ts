@@ -7,13 +7,11 @@
  */
 
 import { UiError } from "@bentley/ui-abstract";
-
-import { ContentLayoutDef } from "./ContentLayout";
-import { ContentGroup } from "./ContentGroup";
-import { ContentLayoutProps } from "./ContentLayoutProps";
-
-import { UiFramework } from "../UiFramework";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { UiFramework } from "../UiFramework";
+import { ContentGroup } from "./ContentGroup";
+import { ContentLayoutDef } from "./ContentLayout";
+import { ContentLayoutProps } from "./ContentLayoutProps";
 
 /** ContentLayout Manager class.
  * @public

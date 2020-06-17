@@ -2,38 +2,23 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import {
-  Angle,
-  ClipPlane,
-  ClipPlaneContainment,
-  Constant,
-  CurvePrimitive,
-  Ellipsoid,
-  GrowableXYZArray,
-  Plane3dByOriginAndUnitNormal,
-  Point2d,
-  Point3d,
-  Point4d,
-  Range1d,
-  Range3d,
-  Ray3d,
-  Transform,
-  Vector3d,
-  Matrix3d,
-  XYAndZ,
-  Arc3d,
-  LongitudeLatitudeNumber,
+  Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ,
 } from "@bentley/geometry-core";
-import { Cartographic, GlobeMode, Frustum, ColorDef, ColorByName } from "@bentley/imodeljs-common";
+import { Cartographic, ColorByName, ColorDef, Frustum, GlobeMode } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
-import { MapTile, WebMercatorTilingScheme } from "./tile/internal";
 import { GraphicBuilder } from "./render/GraphicBuilder";
+import { MapTile, WebMercatorTilingScheme } from "./tile/internal";
 
 const scratchRange = Range3d.createNull();
 const scratchZeroPoint = Point3d.createZero();
 const scratchPoint = Point3d.create();
+const scratchVector = Vector3d.create();
 const scratchCenterPoint = Point3d.createZero();
 const scratchIntersectRay = Ray3d.create(Point3d.create(), Vector3d.create());
 const scratchEyePoint = Point3d.createZero();
@@ -173,16 +158,19 @@ export class BackgroundMapGeometry {
     }
   }
 
-  public getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d, doGlobalScope?: boolean): Range1d {
+  public getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, doGlobalScope?: boolean): Range1d {
     const clipPlanes = frustum.getRangePlanes(false, false, 0);
     const eyePoint = frustum.getEyePoint(scratchEyePoint);
     const viewRotation = frustum.getRotation(scratchViewRotation)!;
     const viewZ = viewRotation.getRow(2);
-    const depthRange = Range1d.createNull();
-    const eyeDepth = eyePoint ? viewZ.dotProduct(eyePoint) : 0;
     const cartoRange = this.cartesianTransitionRange;
-
+    const intersectRange = Range3d.createNull();
+    const doAccumulate = ((point: Point3d) => {
+      viewRotation.multiplyXYZtoXYZ(point, scratchPoint);
+      intersectRange.extend(scratchPoint);
+    });
     if (this.geometry instanceof Plane3dByOriginAndUnitNormal) {
+      // Intersection with a planar background projection...
       let includeHorizon = false;
       const heights = heightRange ? [heightRange.low, heightRange.high] : [0];
       for (const height of heights) {
@@ -191,7 +179,7 @@ export class BackgroundMapGeometry {
           const frustumRay = Ray3d.createStartEnd(eyePoint ? eyePoint : frustum.points[i + 4], frustum.points[i]);
           const thisFraction = frustumRay.intersectionWithPlane(plane, scratchPoint);
           if (undefined !== thisFraction && (!eyePoint || thisFraction > 0))
-            depthRange.extendX(viewZ.dotProduct(scratchPoint));
+            doAccumulate(scratchPoint);
           else
             includeHorizon = true;
         }
@@ -199,15 +187,16 @@ export class BackgroundMapGeometry {
           if (eyePoint !== undefined) {
             const eyeHeight = plane.altitude(eyePoint);
             if (eyeHeight < 0)
-              depthRange.extendX(eyeDepth);
+              doAccumulate(eyePoint);
             else {
               const horizonDistance = Math.sqrt(eyeHeight * eyeHeight + 2 * eyeHeight * Constant.earthRadiusWGS84.equator);
-              depthRange.extendX(eyeDepth - horizonDistance);
+              doAccumulate(eyePoint.plusScaled(viewZ, -horizonDistance, scratchPoint));
             }
           }
         }
       }
     } else {
+      // Intersection with ellipsoid...
       const minOffset = heightRange ? heightRange.low : 0, maxOffset = (heightRange ? heightRange.high : 0) + this.cartesianChordHeight;
       const radiusOffsets = [minOffset, maxOffset];
 
@@ -218,6 +207,7 @@ export class BackgroundMapGeometry {
 
       const toView = Transform.createRefs(Point3d.createZero(), viewRotation);
       const eyePoint4d = eyePoint ? Point4d.createFromPointAndWeight(eyePoint, 1) : Point4d.createFromPointAndWeight(viewZ, 0);
+
       for (const radiusOffset of radiusOffsets) {
         const ellipsoid = this.getEarthEllipsoid(radiusOffset);
         const isInside = eyePoint && ellipsoid.worldToLocal(eyePoint)!.magnitude() < 1.0;
@@ -230,16 +220,25 @@ export class BackgroundMapGeometry {
           undefined !== (extremaPoint = ellipsoid.radiansToPoint(angles.longitudeRadians, angles.latitudeRadians)) &&
           (eyePoint === undefined || viewZ.dotProductStartEnd(extremaPoint, eyePoint) > 0) &&
           clipPlanes.classifyPointContainment([extremaPoint], false) !== ClipPlaneContainment.StronglyOutside)
-          depthRange.extendX(viewZ.dotProduct(extremaPoint));
+          doAccumulate(extremaPoint);
 
         if (isInside) {
-          depthRange.extendX(eyeDepth);
+          if (eyePoint) doAccumulate(eyePoint);
         } else {
           const silhouette = ellipsoid.silhouetteArc(eyePoint4d);
           if (silhouette !== undefined) {
             silhouette.perpendicularVector.clone(scratchSilhouetteNormal);
-            if (scratchSilhouetteNormal.dotProduct(viewZ) < 0)
-              scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
+            // Push the silhouette plane as clip so that we do not include geometry at other side of ellipsoid.
+            // First make sure that it is pointing in the right diretion.
+            if (eyePoint) {
+              // Clip toward eye.
+              if (scratchSilhouetteNormal.dotProduct(viewZ) < 0)
+                scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
+            } else {
+              /* If parallel projection - clip toward side of ellipsoid with BIM geometry */
+              if (Vector3d.createStartEnd(silhouette.center, bimRange.center).dotProduct(scratchSilhouetteNormal) < 0)
+                scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
+            }
             clipPlanes.planes.push(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!);
           } else {
             clipPlanes.planes.push(ClipPlane.createNormalAndPoint(viewZ, center)!);
@@ -255,15 +254,12 @@ export class BackgroundMapGeometry {
               if (undefined !== arc) {
                 arc.announceClipIntervals(clipPlanes, (a0: number, a1: number, cp: CurvePrimitive) => {
                   if (Math.abs(a1 - a0) < 1.0E-8) {
-                    depthRange.extendX(viewZ.dotProduct(cp.fractionToPoint(a0)));   // Tiny sweep - avoid problem with rangeMethod (not worth doing anyway).
+                    doAccumulate(cp.fractionToPoint(a0));   // Tiny sweep - avoid problem with rangeMethod (not worth doing anyway).
                   } else {
                     const segment = cp.clonePartialCurve(a0, a1);
-                    if (segment !== undefined) {
-                      scratchRange.setNull();
-                      segment.extendRange(scratchRange, toView);
-                      depthRange.extendX(scratchRange.low.z);
-                      depthRange.extendX(scratchRange.high.z);
-                    }
+                    if (segment !== undefined)
+                      segment.extendRange(intersectRange, toView);
+
                   }
                 });
               }
@@ -279,14 +275,27 @@ export class BackgroundMapGeometry {
 
           clipPlanes.clipConvexPolygonInPlace(scratchCartoRectangle, scratchWorkArray);
           for (let i = 0; i < scratchCartoRectangle.length; i++)
-            depthRange.extendX(viewZ.dotProduct(scratchCartoRectangle.getPoint3dAtUncheckedPointIndex(i)));
+            doAccumulate(scratchCartoRectangle.getPoint3dAtUncheckedPointIndex(i));
           while (clipPlanes.planes.length > clipPlaneCount)   // Remove pushed silhouette plane.
             clipPlanes.planes.pop();
         }
       }
     }
-    return depthRange;
+
+    if (intersectRange.zLength() < 5) {
+      // For the case where the fitted depth is small (less than 5 meters) we must be viewing planar projection or the
+      // planar portion of the iModel in plan view. In this case use a constant (arbitrarily 100 meters) depth so that the frustum
+      // Z is doesn't change and cause nearly planar geometry to jitter in Z buffer.
+      const zCenter = (intersectRange.low.z + intersectRange.high.z) / 2;
+      const zExpand = 50;
+      return Range1d.createXX(zCenter - zExpand, zCenter + zExpand);
+    } else {
+      const diagonal = intersectRange.diagonal(scratchVector).magnitudeXY();
+      const expansion = diagonal * .01;
+      return Range1d.createXX(intersectRange.low.z - expansion, intersectRange.high.z + expansion);
+    }
   }
+
   public addFrustumDecorations(builder: GraphicBuilder, frustum: Frustum) {
     if (this.geometry instanceof Ellipsoid) {
       const ellipsoid = this.geometry as Ellipsoid;

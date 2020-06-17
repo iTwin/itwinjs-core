@@ -5,16 +5,16 @@
 /* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import * as faker from "faker";
-import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
-import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { NodePathElement, LabelDefinition } from "@bentley/presentation-common";
-import { PageOptions } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { LabelDefinition, NodePathElement } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { PageOptions } from "@bentley/ui-components";
 import { FilteredPresentationTreeDataProvider } from "../../presentation-components/tree/FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
 import { createTreeNodeItem } from "../../presentation-components/tree/Utils";
+import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 
 describe("FilteredTreeDataProvider", () => {
 

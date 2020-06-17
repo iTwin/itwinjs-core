@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { QParams3d, FeatureIndex } from "@bentley/imodeljs-common";
+import { FeatureIndex, QParams3d } from "@bentley/imodeljs-common";
 import { Mesh } from "./mesh/MeshPrimitives";
 
 /** @internal */

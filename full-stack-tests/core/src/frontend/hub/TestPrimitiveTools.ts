@@ -2,41 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { IModelJson as GeomJson, LineSegment3d, LineString3d, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Code, ColorDef, GeometricElement3dProps, GeometryStreamProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import {
-  Logger, Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  IModelJson as GeomJson,
-  LineString3d,
-  Point3d,
-  Vector3d,
-  LineSegment3d,
-  IModelJson,
-  YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import {
-  AccuDrawHintBuilder,
-  AccuDrawShortcuts,
-  BeButtonEvent,
-  DecorateContext,
-  DynamicsContext,
-  EventHandled,
-  GraphicType,
-  HitDetail,
-  IModelApp,
-  PrimitiveTool,
-  SnapStatus,
-  ElementEditor3d,
-  Viewport,
+  AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, DecorateContext, DynamicsContext, ElementEditor3d, EventHandled, GraphicType, HitDetail,
+  IModelApp, PrimitiveTool, SnapStatus, Viewport,
 } from "@bentley/imodeljs-frontend";
-import {
-  ColorDef,
-  GeometryStreamProps,
-  IModelError,
-  IModelStatus,
-  Code,
-  GeometricElement3dProps,
-} from "@bentley/imodeljs-common";
 
 const loggingCategory = "TestPrimitiveTools";
 
@@ -173,7 +145,7 @@ export class PlacementTestTool extends PrimitiveToolEx {
     } else {
       primitive = LineString3d.create(this.points);
     }
-    const geomprops = IModelJson.Writer.toIModelJson(primitive);
+    const geomprops = GeomJson.Writer.toIModelJson(primitive);
 
     const origin = this.points[0];
     const angles = new YawPitchRollAngles();

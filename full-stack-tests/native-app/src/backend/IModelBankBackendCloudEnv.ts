@@ -2,17 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import * as child_process from "child_process";
 import * as fs from "fs";
 import * as fsextra from "fs-extra";
-import * as path from "path";
-import * as child_process from "child_process";
 import * as http from "http";
 import * as https from "https";
+import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Logger, Config } from "@bentley/bentleyjs-core";
-import { IModelCloudEnvironment, IModelBankClient, IModelBankFileSystemContextClient } from "@bentley/imodelhub-client";
+import { Config, Logger } from "@bentley/bentleyjs-core";
+import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
+import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { BasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/BasicAuthorizationClient";
+import { UserInfo } from "@bentley/itwin-client";
 
 export const assetsPath = __dirname + "/../../../lib/test/assets/";
 export const workDir = __dirname + "/../../../lib/test/output/";
@@ -32,18 +33,22 @@ export function getIModelBankCloudEnv(): IModelCloudEnvironment {
   const orchestratorUrl: string = Config.App.get("imjs_test_imodel_bank_url", "");
 
   const basicAuthentication: boolean = !!JSON.parse(Config.App.get("imjs_test_imodel_bank_basic_authentication"));
-  const authorization = basicAuthentication ? new BasicAuthorizationClient() : new IModelBankDummyAuthorizationClient();
+  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any) => {
+    return basicAuthentication
+      ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
+      : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+  };
 
   const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
   const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
 
   const cloudEnv = {
     isIModelHub: false,
-    authorization,
     contextMgr,
     imodelClient: bankClient,
-    shutdown: () => Promise.resolve(0),
-    startup: () => Promise.resolve(),
+    getAuthorizationClient,
+    shutdown: async () => 0,
+    startup: async () => { },
   };
 
   return cloudEnv;
@@ -91,12 +96,12 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
         if (err.errno === "ECONNREFUSED") {
           continue;
         } else {
-          return Promise.reject(err);
+          throw err;
         }
       }
-      return Promise.resolve();
+      return;
     } while (++attempt < maxConnectAttempts);
-    return Promise.reject(new Error("ECONNREFUSED"));
+    throw new Error("ECONNREFUSED");
   }
 
   async function pingServerOnce(url: string, pauseMillis: number): Promise<void> {
@@ -123,10 +128,8 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
       await pingServer(url, 10, 1000);
     } catch (err) {
       Logger.logError(loggingCategory, `Error pinging ${url}, server did not startup in time.`);
-      return Promise.reject(err);
+      throw err;
     }
-
-    return Promise.resolve();
   }
 
   async function doShutdown(): Promise<number> {
@@ -142,7 +145,11 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
   }
 
   const basicAuthentication: boolean = !!JSON.parse(Config.App.get("imjs_test_imodel_bank_basic_authentication"));
-  const authorization = basicAuthentication ? new BasicAuthorizationClient() : new IModelBankDummyAuthorizationClient();
+  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any) => {
+    return basicAuthentication
+      ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
+      : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+  };
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;
   const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
@@ -150,9 +157,9 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
 
   const cloudEnv = {
     isIModelHub: false,
-    authorization,
     contextMgr,
     imodelClient: bankClient,
+    getAuthorizationClient,
     shutdown: doShutdown,
     startup: doStartup,
   };

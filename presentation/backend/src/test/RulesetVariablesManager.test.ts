@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { VariableValueTypes } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 

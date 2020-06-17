@@ -6,8 +6,8 @@
  * @module Timeline
  */
 
-import { BaseTimelineDataProvider, PlaybackSettings } from "@bentley/ui-components";
 import { ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
+import { BaseTimelineDataProvider, PlaybackSettings } from "@bentley/ui-components";
 
 /**  Analysis Timeline Data Provider - handles View that define 'analysisStyle' data.
  * @alpha
@@ -40,10 +40,11 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
         loop: true,
       });
 
-      return Promise.resolve(true);
+      return true;
     }
 
-    return Promise.resolve(false);
+    // istanbul ignore next
+    return false;
   }
 
   public onAnimationFractionChanged = (animationFraction: number) => {

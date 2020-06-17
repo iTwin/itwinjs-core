@@ -3,7 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { NineZoneStagePanelManager, NineZoneStagePanelManagerProps, NineZoneStagePanelPaneManager, getDefaultNineZoneStagePanelManagerProps, HorizontalAnchor, VerticalAnchor } from "../../ui-ninezone";
+import {
+  getDefaultNineZoneStagePanelManagerProps, HorizontalAnchor, NineZoneStagePanelManager, NineZoneStagePanelManagerProps,
+  NineZoneStagePanelPaneManager, VerticalAnchor,
+} from "../../ui-ninezone";
 import { StagePanelType } from "../../ui-ninezone/stage-panels/StagePanel";
 
 describe("NineZoneStagePanelManager", () => {

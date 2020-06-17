@@ -7,7 +7,10 @@
  */
 
 import { Point3d, Vector3d } from "@bentley/geometry-core";
-import { BeButtonEvent, CoordinateLockOverrides, EventHandled, IModelApp, QuantityType, ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection, CoreTools } from "@bentley/imodeljs-frontend";
+import {
+  BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, IModelApp, QuantityType, ToolAssistance, ToolAssistanceImage,
+  ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
+} from "@bentley/imodeljs-frontend";
 import { Element as MarkupElement, G, Marker, SVG } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";

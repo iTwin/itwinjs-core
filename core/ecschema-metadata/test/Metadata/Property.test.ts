@@ -4,23 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-
 import { SchemaContext } from "../../src/Context";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
-import { PrimitiveType, StrengthDirection } from "../../src/ECObjects";
+import { PrimitiveType, StrengthDirection, schemaItemTypeToString } from "../../src/ECObjects";
 import { ECObjectsError } from "../../src/Exception";
 import { ECClass, MutableClass, StructClass } from "../../src/Metadata/Class";
 import { CustomAttribute } from "../../src/Metadata/CustomAttribute";
 import { EntityClass } from "../../src/Metadata/EntityClass";
 import { Enumeration } from "../../src/Metadata/Enumeration";
 import { KindOfQuantity } from "../../src/Metadata/KindOfQuantity";
-import { EnumerationArrayProperty, EnumerationProperty, MutableProperty, NavigationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property, StructArrayProperty, StructProperty } from "../../src/Metadata/Property";
+import {
+  EnumerationArrayProperty, EnumerationProperty, MutableProperty, NavigationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property,
+  StructArrayProperty, StructProperty,
+} from "../../src/Metadata/Property";
 import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
 import { RelationshipClass } from "../../src/Metadata/RelationshipClass";
 import { MutableSchema, Schema } from "../../src/Metadata/Schema";
 import { PropertyType } from "../../src/PropertyTypes";
-import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 describe("Property", () => {
   let testClass: EntityClass;
@@ -1115,13 +1117,14 @@ describe("EnumerationProperty", () => {
 
   describe("toXml", () => {
     let testProperty: EnumerationProperty;
+    let testEnum: Enumeration;
     const newDom = createEmptyXmlDocument();
 
-    beforeEach(() => {
+    beforeEach(async () => {
       const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
-      const testClass = new EntityClass(schema, "TestClass");
-      const testEnumeration = new Enumeration(schema, "TestEnumeration");
-      testProperty = new EnumerationProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testEnumeration.key, async () => testEnumeration));
+      const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
+      testEnum = await (schema as MutableSchema).createEnumeration("TestEnumeration");
+      testProperty = new EnumerationProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
     });
 
     it("Simple serialization", async () => {
@@ -1136,7 +1139,31 @@ describe("EnumerationProperty", () => {
       const serialized = await testProperty.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECProperty");
       expect(serialized.getAttribute("propertyName")).to.eql("TestProperty");
-      expect(serialized.getAttribute("typeName")).to.eql("TestSchema.TestEnumeration");
+      expect(serialized.getAttribute("typeName")).to.eql("TestEnumeration");
+    });
+
+    it("Simple serialization with schema reference", async () => {
+      const context = new SchemaContext();
+      const referencedSchema = new Schema(context, "ReferenceSchema", "ref", 1, 0, 0) as MutableSchema;
+      testEnum = referencedSchema.createEnumerationSync("TestEnumeration");
+      const schema = new Schema(context, "TestSchema", "ts", 1, 0, 0) as MutableSchema;
+      schema.addReferenceSync(referencedSchema);
+
+      const testClass = schema.createEntityClassSync("TestClass") as ECClass as MutableClass;
+      testProperty = new EnumerationProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
+
+      const propertyJson = {
+        name: "TestProperty",
+        type: "PrimitiveProperty",
+        typeName: "ReferenceSchema.TestEnumeration",
+      };
+
+      expect(testProperty).to.exist;
+      await testProperty.fromJSON(propertyJson);
+      const serialized = await testProperty.toXml(newDom);
+      expect(serialized.nodeName).to.eql("ECProperty");
+      expect(serialized.getAttribute("propertyName")).to.eql("TestProperty");
+      expect(serialized.getAttribute("typeName")).to.eql("ref:TestEnumeration");
     });
   });
 });

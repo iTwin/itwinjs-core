@@ -3,18 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow, ReactWrapper } from "enzyme";
-import * as moq from "typemoq";
+import { mount, ReactWrapper, shallow } from "enzyme";
 import * as faker from "faker";
-import sinon from "sinon";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-
+import sinon from "sinon";
+import * as moq from "typemoq";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyCategoryBlock } from "../../../ui-components";
 import { PropertyGrid, PropertyGridCategory } from "../../../ui-components/propertygrid/component/PropertyGrid";
-import { IPropertyDataProvider, PropertyDataChangeEvent, PropertyCategory, PropertyData } from "../../../ui-components/propertygrid/PropertyDataProvider";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import {
+  IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
+} from "../../../ui-components/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 

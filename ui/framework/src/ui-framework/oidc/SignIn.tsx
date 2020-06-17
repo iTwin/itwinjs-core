@@ -7,13 +7,12 @@
  */
 
 import * as React from "react";
-
 import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { CommonProps } from "@bentley/ui-core";
-import { SignIn as SignInBase } from "@bentley/ui-components";
-import { UiFramework } from "../UiFramework";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { SignIn as SignInBase } from "@bentley/ui-components";
+import { CommonProps } from "@bentley/ui-core";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for the [[SignIn]] component
  * @public
@@ -32,7 +31,7 @@ export interface SignInProps extends CommonProps {
 
 /**
  * SignIn React component.
- * `this._oidcClient.signIn` is called when the "Sign In" button is pressed,
+ * `IModelApp.authorizationClient.signIn` is called when the "Sign In" button is pressed,
  * then `props.onSignedIn` is called after sign-in has completed.
  * @public
  */
@@ -46,15 +45,18 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
   public componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
+    // istanbul ignore if
     if (isFrontendAuthorizationClient(oidcClient))
       this._oidcClient = oidcClient;
 
     // istanbul ignore next
     const isAuthorized = this._oidcClient && this._oidcClient.isAuthorized;
+    // istanbul ignore if
     if (isAuthorized)
       this._oidcClient!.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
+  // istanbul ignore next
   private _onUserStateChanged() {
     // istanbul ignore next
     if (this._oidcClient && this._oidcClient.isAuthorized && this.props.onSignedIn)
@@ -87,6 +89,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
      */
     let disableSignInOnClick = true;
     let signingInMessage: string | undefined;
+    // istanbul ignore next
     if (isElectronRenderer) {
       disableSignInOnClick = false;
       const signingInMessageStringId = `UiFramework:signIn.signingInMessage`;

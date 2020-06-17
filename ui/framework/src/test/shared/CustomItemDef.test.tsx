@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-
 import { expect } from "chai";
-import TestUtils from "../TestUtils";
+import * as React from "react";
 import { CustomItemDef } from "../../ui-framework/shared/CustomItemDef";
+import TestUtils from "../TestUtils";
 
 describe("CustomItemDef", () => {
 

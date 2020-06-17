@@ -6,11 +6,10 @@
  * @module Inputs
  */
 
-import * as React from "react";
 import classnames from "classnames";
-
-import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
+import * as React from "react";
 import { CommonProps } from "../utils/Props";
+import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 
 /** Properties for [[InputLabel]] components
  * @public

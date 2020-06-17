@@ -114,4 +114,16 @@ export enum BackendLoggerCategory {
    * @alpha
    */
   Editing = "imodeljs-backend.Editing",
+
+  /** The logger category used by the following classes:
+   * - [[NativeAppBackend]], [[NativeAppStorage]]
+   * @internal
+   */
+  NativeApp = "imodeljs-backend.NativeApp",
+
+  /** The logger category used by the following class:
+   * - [[UsageLoggingUtilities]]
+   * @internal
+   */
+  UsageLogging = "imodeljs-backend.UlasUtilities",
 }

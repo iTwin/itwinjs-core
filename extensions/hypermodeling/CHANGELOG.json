@@ -1,6 +1,54 @@
 {
-  "name": "@bentley/hypermodeling-plugin",
+  "name": "@bentley/hypermodeling-extension",
   "entries": [
+    {
+      "version": "2.1.0",
+      "tag": "@bentley/hypermodeling-extension_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/hypermodeling-extension_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "New hyper modeling marker images."
+          },
+          {
+            "comment": "react to changes in imodeljs-clients"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "#301812 #288370 Fix label font specifications. Added max label width option to Marker."
+          },
+          {
+            "comment": "Rename the hypermodeling-plugin to hypermodeling-extension"
+          },
+          {
+            "comment": "Update to use UiItemManager"
+          },
+          {
+            "comment": "Update to support new iModel.js Extension build system and drop support for the iModel.js module system."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/hypermodeling-plugin_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/hypermodeling-plugin_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
     {
       "version": "1.13.0",
       "tag": "@bentley/hypermodeling-plugin_v1.13.0",

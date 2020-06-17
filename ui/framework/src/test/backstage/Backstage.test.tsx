@@ -2,20 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow } from "enzyme";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
 import {
-  Backstage,
-  CommandLaunchBackstageItem,
-  FrontstageLaunchBackstageItem,
-  TaskLaunchBackstageItem,
-  FrontstageManager,
-  SyncUiEventDispatcher,
+  Backstage, CommandLaunchBackstageItem, FrontstageLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher, TaskLaunchBackstageItem,
 } from "../../ui-framework";
-import TestUtils, { mockUserInfo } from "../TestUtils";
 import { SeparatorBackstageItem } from "../../ui-framework/backstage/Separator";
+import TestUtils, { mockUserInfo } from "../TestUtils";
 
 describe("Backstage", () => {
 

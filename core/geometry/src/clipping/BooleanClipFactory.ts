@@ -6,14 +6,14 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { Clipper, ClipUtilities } from "./ClipUtils";
-import { BooleanClipNodeUnion, BooleanClipNodeIntersection, BooleanClipNodeParity } from "./BooleanClipNode";
+import { BooleanClipNodeIntersection, BooleanClipNodeParity, BooleanClipNodeUnion } from "./BooleanClipNode";
 import { ClipPlane } from "./ClipPlane";
+import { Clipper, ClipUtilities } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 
 /** A BooleanClipFactory is a factory to create objects that implement interior nodes of a tree of boolean clip operations.
- * * The static (factory) methods create specific clip operations
+ * * These methods create specific clip tree types:
  *   * Union
  *   * Intersection
  *   * Parity
@@ -21,6 +21,8 @@ import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
  * * Each construction has a `keepInside` flag that optionally negates the initial result of the parity, intersection, parity, or difference:
  *   * if `keepInside === true`, accept the "inside" of the initial result
  *   * if `keepInside === false`, accept the "outside"  of the initial result
+ * * These methods create various other specialized clippers
+ *   *
  * @public
  */
 export class BooleanClipFactory {

@@ -6,11 +6,8 @@
  * @module DisplayStyles
  */
 
-import {
-  Range1d,
-  Range1dProps,
-} from "@bentley/geometry-core";
-import { ThematicGradientSettingsProps, ThematicGradientSettings } from "./ThematicDisplay";
+import { Range1d, Range1dProps } from "@bentley/geometry-core";
+import { ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
 
 /** Properties for display of analysis data
  * @alpha

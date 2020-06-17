@@ -6,10 +6,7 @@
  * @module Content
  */
 
-import {
-  ClassInfo, ClassInfoJSON,
-  RelatedClassInfo, RelationshipPath, RelationshipPathJSON, RelatedClassInfoJSON,
-} from "../EC";
+import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
 import { Field, FieldJSON, getFieldByName } from "./Fields";
 
 /**
@@ -207,9 +204,10 @@ export class Descriptor implements DescriptorSource {
 
   /** Serialize this object to JSON */
   public toJSON(): DescriptorJSON {
-    return Object.assign({}, this, {
+    return {
+      ...this,
       fields: this.fields.map((field: Field) => field.toJSON()),
-    });
+    };
   }
 
   /** Deserialize [[Descriptor]] from JSON */

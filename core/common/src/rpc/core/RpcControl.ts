@@ -6,15 +6,15 @@
  * @module RpcInterface
  */
 
+import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { IModelRpcProps } from "../../IModel";
+import { IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
-import { RpcManager, RpcInterfaceEndpoints } from "../../RpcManager";
+import { RpcInterfaceEndpoints, RpcManager } from "../../RpcManager";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcInvocation } from "./RpcInvocation";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry } from "./RpcRegistry";
-import { IModelRpcProps } from "../../IModel";
-import { IModelError } from "../../IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
 
 // tslint:disable:space-before-function-paren
 
@@ -98,7 +98,7 @@ export class RpcControlChannel {
         endpoints.push(description);
       });
 
-      return Promise.resolve(endpoints);
+      return endpoints;
     }
   };
 

@@ -6,14 +6,9 @@
  * @module Tiles
  */
 
-import {
-  BeDuration,
-  Id64String,
-} from "@bentley/bentleyjs-core";
+import { BeDuration, Id64String } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import {
-  ElementAlignedBox3d,
-} from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { TileLoadPriority } from "./internal";

@@ -2,33 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
-import { render, cleanup } from "@testing-library/react";
-
-import {
-  WidgetState,
-} from "@bentley/ui-abstract";
-
-import TestUtils from "../TestUtils";
-import {
-  AnyWidgetProps,
-  ToolWidgetDef,
-  ToolButton,
-  GroupButton,
-  ToolWidget,
-  CommandItemDef,
-  ActionItemButton,
-  CoreTools,
-  ItemList,
-  FrontstageManager,
-  GroupItemDef,
-  ToolbarDragInteractionContext,
-} from "../../ui-framework";
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
+import * as React from "react";
+import * as sinon from "sinon";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import { cleanup, render } from "@testing-library/react";
+import {
+  ActionItemButton, AnyWidgetProps, CommandItemDef, CoreTools, FrontstageManager, GroupButton, GroupItemDef, ItemList, ToolbarDragInteractionContext,
+  ToolButton, ToolWidget, ToolWidgetDef,
+} from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 const testCallback = sinon.stub();
 
@@ -41,7 +27,7 @@ const backstageToggleCommand =
 
 describe("ToolWidget", () => {
 
-  describe("Not Plugin-compatible", () => {
+  describe("Not Extension-compatible", () => {
     let horizontalToolbar: React.ReactNode;
     let verticalToolbar: React.ReactNode;
 
@@ -184,7 +170,7 @@ describe("ToolWidget", () => {
     });
   });
 
-  describe("Test Plugin items", () => {
+  describe("Test Extension items", () => {
 
     before(async () => {
       await TestUtils.initializeUiFramework();

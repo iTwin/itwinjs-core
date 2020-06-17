@@ -6,14 +6,14 @@
  * @module RpcInterface
  */
 
+import { DbOpcode, GuidString, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { LockLevel } from "@bentley/imodelhub-client";
+import { CodeProps } from "../Code";
+import { AxisAlignedBox3dProps } from "../geometry/Placement";
+import { IModelConnectionProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { IModelConnectionProps, IModelRpcProps } from "../IModel";
-import { AxisAlignedBox3dProps } from "../geometry/Placement";
-import { Id64String, Id64Array, DbOpcode, GuidString } from "@bentley/bentleyjs-core";
 import { SubCategoryAppearance } from "../SubCategoryAppearance";
-import { CodeProps } from "../Code";
-import { LockLevel } from "@bentley/imodelhub-client";
 
 /** The RPC interface for writing to an iModel.
  * All operations require read+write access.
@@ -49,7 +49,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public async getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]> { return this.forward(arguments); }
   public async getParentChangeset(_iModelToken: IModelRpcProps): Promise<string> { return this.forward(arguments); }
 
-  public async deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array) { return this.forward(arguments); }
+  public async deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void> { return this.forward(arguments); }
   public async createAndInsertPhysicalModel(_tokenProps: IModelRpcProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String> { return this.forward(arguments); }
   public async createAndInsertSpatialCategory(_tokenProps: IModelRpcProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String> { return this.forward(arguments); }
 }

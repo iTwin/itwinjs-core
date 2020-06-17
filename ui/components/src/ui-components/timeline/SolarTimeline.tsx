@@ -9,24 +9,22 @@
 // component is in alpha state - it may change after usability testing - test coverage not complete
 /* istanbul ignore file */
 
-import * as React from "react";
+import "./SolarTimeline.scss";
 import classnames from "classnames";
-import { PlayButton } from "./PlayerButton";
-import { Slider, Rail, Handles, Ticks, SliderItem, GetHandleProps } from "react-compound-slider";
+import * as React from "react";
+import { GetHandleProps, Handles, Rail, Slider, SliderItem, Ticks } from "react-compound-slider";
 import ReactResizeDetector from "react-resize-detector";
+import { ColorByName, ColorDef, HSVColor } from "@bentley/imodeljs-common";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { Popup, CommonProps } from "@bentley/ui-core";
-
+import { CommonProps, Popup } from "@bentley/ui-core";
+import { UiComponents } from "../../ui-components/UiComponents";
+import { HueSlider } from "../color/HueSlider";
+import { SaturationPicker } from "../color/SaturationPicker";
+import { ColorSwatch } from "../color/Swatch";
 import { DayPicker } from "./DayPicker";
 import { SolarDataProvider } from "./interfaces";
+import { PlayButton } from "./PlayerButton";
 import { SpeedTimeline } from "./SpeedTimeline";
-import { SaturationPicker } from "../color/SaturationPicker";
-import { HueSlider } from "../color/HueSlider";
-import { ColorSwatch } from "../color/Swatch";
-import { UiComponents } from "../../ui-components/UiComponents";
-import { HSVColor, ColorDef, ColorByName } from "@bentley/imodeljs-common";
-
-import "./SolarTimeline.scss";
 
 // cSpell:ignore millisec
 const millisecPerMinute = 1000 * 60;
@@ -213,8 +211,8 @@ class Timeline extends React.PureComponent<TimelineProps> {
             <span className="solar-tooltip-text">{sunRiseFormat}</span>
           </div>
         </span>
-        <ReactResizeDetector handleWidth>
-          {(width: number) =>
+        <ReactResizeDetector handleWidth
+          render={({ width }) => (
             <Slider
               mode={(curr, next) => {
                 // hodgepodge way to get around type issue in react-compound-slider package
@@ -266,8 +264,8 @@ class Timeline extends React.PureComponent<TimelineProps> {
                 </Ticks>
               }
             </Slider>
-          }
-        </ReactResizeDetector>
+          )}
+        />
         <span className="sunset">
           &#x263D;
           <div className="sunrise-tip">

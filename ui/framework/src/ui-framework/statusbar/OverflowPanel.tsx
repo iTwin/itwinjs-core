@@ -6,10 +6,10 @@
  * @module ToolSettings
  */
 
+import "./OverflowPanel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./OverflowPanel.scss";
 
 /** Properties of [[StatusBarOverflowPanel]] component.
  * @internal

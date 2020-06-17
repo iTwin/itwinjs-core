@@ -1,6 +1,6 @@
 {
   "name": "@bentley/context-registry-client",
-  "version": "2.0.0-dev.77",
+  "version": "2.2.0-dev.12",
   "description": "iModel.js Context Registry Client",
   "main": "lib/context-registry-client.js",
   "typings": "lib/context-registry-client",
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=context-registry-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/context-registry-client/file.json --tsIndexFile=context-registry-client.ts --onlyJson",
     "lint": "tslint --project . 1>&2",
@@ -37,15 +37,15 @@
     "deep-assign": "^2.0.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.77",
-    "@bentley/itwin-client": "^2.0.0-dev.77"
+    "@bentley/bentleyjs-core": "^2.2.0-dev.12",
+    "@bentley/itwin-client": "^2.2.0-dev.12"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.77",
-    "@bentley/certa": "2.0.0-dev.77",
-    "@bentley/config-loader": "2.0.0-dev.77",
-    "@bentley/itwin-client": "2.0.0-dev.77",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.77",
+    "@bentley/build-tools": "2.2.0-dev.12",
+    "@bentley/certa": "2.2.0-dev.12",
+    "@bentley/config-loader": "2.2.0-dev.12",
+    "@bentley/itwin-client": "2.2.0-dev.12",
+    "@bentley/oidc-signin-tool": "2.2.0-dev.12",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/mocha": "^5.2.5",
@@ -54,7 +54,7 @@
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
     "rimraf": "^3.0.2",
-    "source-map-loader": "^0.2.3",
+    "source-map-loader": "^1.0.0",
     "tslint": "^5.11.0",
     "typescript": "~3.7.4",
     "webpack": "4.42.0"

@@ -43,6 +43,7 @@ public;Entry
 public;EntryContainer
 alpha;EnvMacroSubst
 beta;ExtensionStatus
+public;GeoServiceStatus
 public;GetMetaDataFunction = () => any
 public;Guid
 public;GuidString = string

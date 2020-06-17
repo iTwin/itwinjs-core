@@ -156,6 +156,6 @@ export class RpcDirectRequest extends RpcRequest {
   }
 
   protected async load() {
-    return Promise.resolve(this.fulfillment!.result);
+    return this.fulfillment!.result;
   }
 }

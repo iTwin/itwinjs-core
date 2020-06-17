@@ -4,13 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@bentley/bentleyjs-core";
-import {
-  IModelApp,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
 import { DiagnosticsPanel } from "@bentley/frontend-devtools";
-import { Window } from "./Window";
+import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
 import { Surface } from "./Surface";
+import { Window } from "./Window";
 
 export class DebugWindow extends Window {
   private readonly _windowId: string;

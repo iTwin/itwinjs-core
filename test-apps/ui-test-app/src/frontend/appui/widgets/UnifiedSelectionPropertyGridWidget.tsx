@@ -3,19 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useMemo } from "react";
-import {
-  ConfigurableUiManager,
-  ConfigurableCreateInfo,
-  WidgetControl,
-} from "@bentley/ui-framework";
-import { Orientation, GlobalContextMenu, ContextMenuItem, ContextMenuItemProps } from "@bentley/ui-core";
-import { PropertyGrid, PropertyGridContextMenuArgs, ActionButtonRendererProps, useAsyncValue } from "@bentley/ui-components";
-import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
-import { Field } from "@bentley/presentation-common";
-import { Presentation, FavoritePropertiesScope } from "@bentley/presentation-frontend";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { Field } from "@bentley/presentation-common";
+import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+import { ActionButtonRendererProps, PropertyGrid, PropertyGridContextMenuArgs, useAsyncValue } from "@bentley/ui-components";
+import { ContextMenuItem, ContextMenuItemProps, GlobalContextMenu, Icon, Orientation } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
 
 // create a HOC property grid component that supports unified selection
 // tslint:disable-next-line:variable-name
@@ -25,14 +19,13 @@ export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    if (options && options.iModelConnection && options.rulesetId)
-      this.reactNode = <UnifiedSelectionPropertyGridWidget iModelConnection={options.iModelConnection} rulesetId={options.rulesetId} />;
+    if (options && options.iModelConnection)
+      this.reactNode = <UnifiedSelectionPropertyGridWidget iModelConnection={options.iModelConnection} />;
   }
 }
 
 interface UnifiedSelectionPropertyGridWidgetProps {
   iModelConnection: IModelConnection;
-  rulesetId: string;
 }
 
 export type ContextMenuItemInfo = ContextMenuItemProps & React.Attributes & { label: string };
@@ -48,7 +41,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   constructor(props: UnifiedSelectionPropertyGridWidgetProps) {
     super(props);
     this.state = {
-      dataProvider: createDataProvider(this.props.iModelConnection, this.props.rulesetId),
+      dataProvider: createDataProvider(this.props.iModelConnection),
     };
   }
 
@@ -136,7 +129,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   private _favoriteActionButtonRenderer = (props: ActionButtonRendererProps) => {
     const { dataProvider } = this.state;
     const { property } = props;
-    const field = useAsyncValue(useMemo(() => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
+    const field = useAsyncValue(React.useMemo(() => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
 
     return (
       <div>
@@ -153,7 +146,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
 
   public render() {
     const actionButtonRenderers = [this._favoriteActionButtonRenderer];
-    if (this.props.iModelConnection && this.props.rulesetId)
+    if (this.props.iModelConnection)
       return (
         <div style={{ height: "100%" }}>
           <UnifiedSelectionPropertyGrid
@@ -171,8 +164,8 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   }
 }
 
-function createDataProvider(imodel: IModelConnection, rulesetId: string): PresentationPropertyDataProvider {
-  return new PresentationPropertyDataProvider({ imodel, ruleset: rulesetId });
+function createDataProvider(imodel: IModelConnection): PresentationPropertyDataProvider {
+  return new PresentationPropertyDataProvider({ imodel });
 }
 
 ConfigurableUiManager.registerControl("UnifiedSelectionPropertyGridDemoWidget", UnifiedSelectionPropertyGridWidgetControl);
@@ -198,8 +191,8 @@ class FavoriteActionButton extends React.Component<FavoriteActionButtonProps> {
     return (
       <div onClick={this._onActionButtonClicked}>
         {this.isFavorite() ?
-          <div style={{ width: "20px", height: "20px", background: "orange" }} /> :
-          <div style={{ width: "20px", height: "20px", background: "blue" }} />}
+          <Icon iconSpec="icon-star" /> :
+          <Icon iconSpec="icon-star" />}
       </div>
     );
   }

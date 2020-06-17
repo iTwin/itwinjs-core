@@ -6,28 +6,13 @@
  * @module WebGL
  */
 
+import { assert, compareNumbers, compareStrings, SortedArray } from "@bentley/bentleyjs-core";
 import {
-  assert,
-  compareNumbers,
-  compareStrings,
-  SortedArray,
-} from "@bentley/bentleyjs-core";
-import { RenderPass } from "./RenderFlags";
-import { RenderCommands } from "./RenderCommands";
-import {
-  DrawCommand,
-  DrawCommands,
-  PopBatchCommand,
-  PopBranchCommand,
-  PopCommand,
-  PushBatchCommand,
-  PushBranchCommand,
-  PushCommand,
+  DrawCommand, DrawCommands, PopBatchCommand, PopBranchCommand, PopCommand, PushBatchCommand, PushBranchCommand, PushCommand,
 } from "./DrawCommand";
-import {
-  Layer,
-  LayerContainer,
-} from "./Layer";
+import { Layer, LayerContainer } from "./Layer";
+import { RenderCommands } from "./RenderCommands";
+import { RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
 
 type OpCode = "Idle"| "Container"| "Branch"| "Batch"| "Layer";

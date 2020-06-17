@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { BentleyError, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
 import { ChangeSet } from "@bentley/imodelhub-client";
 import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { AccessToken } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { assert } from "chai";
 import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -36,7 +36,7 @@ describe("IModelOpen (#integration)", () => {
     assert.isDefined(iModel);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
 
-    const badToken = AccessToken.fromJsonWebTokenString("ThisIsABadToken");
+    const badToken = new AccessToken("ThisIsABadToken");
     badRequestContext = new AuthorizedBackendRequestContext(badToken);
   });
 

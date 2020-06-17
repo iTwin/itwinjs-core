@@ -6,8 +6,8 @@
  * @module Collections
  */
 
-import { CloneFunction, shallowClone } from "./SortedArray";
 import { OrderedComparator } from "./Compare";
+import { CloneFunction, shallowClone } from "./SortedArray";
 
 /** @public */
 export type ComputePriorityFunction<T> = (value: T) => number;

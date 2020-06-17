@@ -3,47 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { XAndY } from "@bentley/geometry-core";
+import { FrontendDevTools } from "@bentley/frontend-devtools";
 import {
-  AccuSnap,
-  IModelApp,
-  IModelAppOptions,
-  MessageBoxIconType,
-  MessageBoxType,
-  MessageBoxValue,
-  NotificationManager,
-  NotifyMessageDetails,
-  SelectionTool,
-  SnapMode,
-  TileAdmin,
-  Tool,
-  ToolTipOptions,
-  ExternalServerExtensionLoader,
+  AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, SelectionTool, SnapMode, TileAdmin, Tool,
 } from "@bentley/imodeljs-frontend";
-import { FrontendDevTools, parseToggle } from "@bentley/frontend-devtools";
-import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { showError, showStatus } from "./Utils";
-import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
-import { VersionComparisonTool } from "./VersionComparison";
-import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
-import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
-import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { RecordFpsTool } from "./FpsMonitor";
+import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
+import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
+import { OutputShadersTool } from "./OutputShadersTool";
+import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import {
-  CloneViewportTool,
-  CloseIModelTool,
-  CloseWindowTool,
-  CreateWindowTool,
-  DockWindowTool,
-  FocusWindowTool,
-  MaximizeWindowTool,
-  OpenIModelTool,
-  ReopenIModelTool,
-  ResizeWindowTool,
-  RestoreWindowTool,
-  Surface,
+  CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
+  ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
+import { Notifications } from "./Notifications";
+import { UiManager } from "./UiManager";
+import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { AttachViewTool, DetachViewsTool } from "./AttachViewTool";
+import { VersionComparisonTool } from "./VersionComparison";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -54,89 +32,6 @@ class DisplayTestAppAccuSnap extends AccuSnap {
     this._activeSnaps.length = snaps.length;
     for (let i = 0; i < snaps.length; i++)
       this._activeSnaps[i] = snaps[i];
-  }
-}
-
-class Notifications extends NotificationManager {
-  private _toolTip?: ToolTip;
-  private _el?: HTMLElement;
-  private _tooltipDiv?: HTMLDivElement;
-
-  public outputPrompt(prompt: string) { showStatus(prompt); }
-
-  /** Output a message and/or alert to the user. */
-  public outputMessage(message: NotifyMessageDetails) {
-    showError(message.briefMessage);
-    DisplayTestApp.surface.notifications.addMessage(message);
-  }
-
-  public async openMessageBox(_mbType: MessageBoxType, message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
-    const rootDiv = document.getElementById("root") as HTMLDivElement;
-    if (!rootDiv)
-      return MessageBoxValue.Cancel;
-
-    // create a dialog element.
-    const dialog = IModelApp.makeHTMLElement("dialog", { parent: rootDiv, className: "notification-messagebox" });
-
-    // set up the message
-    const span = IModelApp.makeHTMLElement("span", { parent: dialog, className: "notification-messageboxtext" });
-    if (typeof message === "string")
-      span.innerHTML = message;
-    else
-      span.appendChild(message);
-
-    // make the ok button
-    const button = IModelApp.makeHTMLElement("button", { parent: dialog, className: "notification-messageboxbutton" });
-    button.innerHTML = "Ok";
-
-    const promise = new Promise<MessageBoxValue>((resolve, _rej) => {
-      button.addEventListener("click", () => {
-        dialog.close();
-        rootDiv.removeChild(dialog);
-        resolve(MessageBoxValue.Ok);
-      });
-    });
-
-    // add the dialog to the root div element and show it.
-    dialog.showModal();
-    return promise;
-  }
-
-  public get isToolTipSupported() { return true; }
-  public get isToolTipOpen() { return undefined !== this._toolTip; }
-
-  public clearToolTip(): void {
-    if (!this.isToolTipOpen)
-      return;
-
-    this._toolTip!.dispose();
-    this._el!.removeChild(this._tooltipDiv!);
-    this._toolTip = undefined;
-    this._el = undefined;
-    this._tooltipDiv = undefined;
-  }
-
-  protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void {
-    this.clearToolTip();
-
-    if (undefined === pt) {
-      const rect = el.getBoundingClientRect();
-      pt = { x: rect.width / 2, y: rect.height / 2 };
-    }
-
-    const location = IModelApp.makeHTMLElement("div", { parent: el });
-    const height = 20;
-    const width = 20;
-    location.style.position = "absolute";
-    location.style.top = (pt.y - height / 2) + "px";
-    location.style.left = (pt.x - width / 2) + "px";
-    location.style.width = width + "px";
-    location.style.height = height + "px";
-
-    this._el = el;
-    this._tooltipDiv = location;
-    this._toolTip = new ToolTip(location, { trigger: "manual", html: true, placement: (options && options.placement) ? options.placement as any : "right-start", title: message });
-    this._toolTip!.show();
   }
 }
 
@@ -203,24 +98,11 @@ class ShutDownTool extends Tool {
   }
 }
 
-class Toggle3dManipulationsTool extends Tool {
-  public static toolId = "Toggle3dManipulations";
-  public run(allow?: boolean): boolean {
-    const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp || !vp.view.is3d())
-      return false;
-    if (undefined === allow)
-      allow = !vp.view.allow3dManipulations();
-    if (allow !== vp.view.allow3dManipulations()) {
-      vp.view.setAllow3dManipulations(allow);
-      IModelApp.toolAdmin.startDefaultTool();
-    }
-    return true;
-  }
-  public parseAndRun(...args: string[]): boolean {
-    const enable = parseToggle(args[0]);
-    if (typeof enable !== "string")
-      this.run(enable);
+class LoadHypermodelingTool extends Tool {
+  public static toolId = "LoadHypermodeling";
+
+  public run(_args: any[]): boolean {
+    IModelApp.tools.parseAndRun("load extension localhost:3000/hypermodeling on");
     return true;
   }
 }
@@ -240,28 +122,34 @@ export class DisplayTestApp {
     opts.accuSnap = new DisplayTestAppAccuSnap();
     opts.notifications = new Notifications();
     opts.tileAdmin = TileAdmin.create(DisplayTestApp.tileAdminProps);
+    opts.uiAdmin = new UiManager();
     await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
-    IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);
+    IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     [
+      AttachViewTool,
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
       CreateWindowTool,
+      DetachViewsTool,
       DockWindowTool,
       DrawingAidTestTool,
       FocusWindowTool,
       IncidentMarkerDemoTool,
+      LoadHypermodelingTool,
       MarkupSelectTestTool,
       MarkupTool,
       MaximizeWindowTool,
+      ModelClipTool,
       OpenIModelTool,
+      OutputShadersTool,
       PurgeTileTreesTool,
       RecordFpsTool,
       RefreshTilesTool,
@@ -271,7 +159,6 @@ export class DisplayTestApp {
       SaveImageTool,
       ShutDownTool,
       SVTSelectionTool,
-      Toggle3dManipulationsTool,
       ToggleShadowMapTilesTool,
       VersionComparisonTool,
       ZoomToSelectedElementsTool,

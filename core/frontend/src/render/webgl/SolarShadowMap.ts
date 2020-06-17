@@ -2,36 +2,32 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module WebGL
  */
-import { GL } from "./GL";
-import { dispose, assert } from "@bentley/bentleyjs-core";
+
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, ViewFlags } from "@bentley/imodeljs-common";
 import { RenderType } from "@bentley/webgl-compatibility";
+import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
+import { SceneContext } from "../../ViewContext";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Vector3d, Point3d, Map4d, Matrix3d, Matrix4d, Transform, Range3d } from "@bentley/geometry-core";
-import { Target } from "./Target";
-import { Texture, TextureHandle } from "./Texture";
+import { BranchStack } from "./BranchStack";
+import { BatchState } from "./BatchState";
+import { EVSMGeometry } from "./CachedGeometry";
+import { WebGLDisposable } from "./Disposable";
 import { FrameBuffer } from "./FrameBuffer";
-import { SceneContext } from "../../ViewContext";
-import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
-import {
-  Frustum,
-  FrustumPlanes,
-  RenderTexture,
-  RenderMode,
-  SolarShadowSettings,
-  ViewFlags,
-} from "@bentley/imodeljs-common";
-import { System } from "./System";
-import { RenderState } from "./RenderState";
-import { BatchState, BranchStack } from "./BranchState";
+import { GL } from "./GL";
 import { RenderCommands } from "./RenderCommands";
 import { RenderPass, TextureUnit } from "./RenderFlags";
-import { EVSMGeometry } from "./CachedGeometry";
+import { RenderState } from "./RenderState";
 import { getDrawParams } from "./ScratchDrawParams";
-import { WebGLDisposable } from "./Disposable";
+import { System } from "./System";
+import { Target } from "./Target";
+import { Texture, TextureHandle } from "./Texture";
 
 function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowMap, tree: TileTreeReference, frustumPlanes: FrustumPlanes): TileDrawArgs | undefined {
   class SolarShadowMapDrawArgs extends TileDrawArgs {
@@ -348,7 +344,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     mapToWorld.multiplyPoint3dArrayQuietNormalize(scratchFrustum.points);       // This frustum represents the shadwowing geometry.  Intersect it with background geometry and expand the range depth to include that intersection.
     const backgroundMapGeometry = context.viewport.view.displayStyle.getBackgroundMapGeometry();
     if (undefined !== backgroundMapGeometry) {
-      const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(this._shadowFrustum);
+      const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(this._shadowFrustum, iModel.projectExtents);
       if (!backgroundDepthRange.isNull)
         shadowRange.low.z = Math.min(shadowRange.low.z, backgroundDepthRange.low);
     }
@@ -401,8 +397,6 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
         Geometry.isAlmostEqualNumber(shadowRange.low.z, shadowRange.high.z)) {
         this.clearGraphics(true);
         return;
-        this._shadowFrustum.initFromRange(shadowRange);
-        mapToWorld.multiplyPoint3dArrayQuietNormalize(this._shadowFrustum.points);
       }
 
       const frustumMap = this._shadowFrustum.toMap4d();
@@ -462,7 +456,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     const prevPlan = target.plan;
 
     target.changeFrustum(this._shadowFrustum, this._shadowFrustum.getFraction(), true);
-    target.uniforms.branch.changeViewFlags(viewFlags);
+    target.uniforms.branch.changeRenderPlan(viewFlags, target.plan.is3d, target.plan.hline);
 
     const renderCommands = bundle.renderCommands;
     renderCommands.reset(target, this._branchStack, this._batchState);

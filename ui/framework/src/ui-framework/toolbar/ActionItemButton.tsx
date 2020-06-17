@@ -7,16 +7,14 @@
  */
 
 import * as React from "react";
-
-import { CommonProps, SizeProps, Icon, BadgeUtilities } from "@bentley/ui-core";
+import { BadgeUtilities, CommonProps, Icon, SizeProps } from "@bentley/ui-core";
 import { Item } from "@bentley/ui-ninezone";
-
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
-import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 /** Properties that must be specified for an [[ActionItemButton]] component
  * @public
@@ -37,7 +35,7 @@ const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
   return {
     isEnabled: undefined !== props.isEnabled ? props.isEnabled && props.actionItem.isEnabled : props.actionItem.isEnabled, // tslint:disable-line:deprecation
     isVisible: props.actionItem.isVisible, // tslint:disable-line:deprecation
-    isActive: undefined !== props.actionItem.isActive ? props.actionItem.isActive : false,
+    isActive: undefined !== props.actionItem.isActive ? props.actionItem.isActive : /* istanbul ignore next */ false,
   };
 };
 

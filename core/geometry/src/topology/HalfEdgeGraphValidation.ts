@@ -8,6 +8,7 @@
  */
 // cspell:word FSFP
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
+
 // Search services for HalfEdgeGraph
 /** HalfEdgePointerInspector has methods to check HalfEdge objects for pointer errors.
  * * For a one-step test of the whole graph,

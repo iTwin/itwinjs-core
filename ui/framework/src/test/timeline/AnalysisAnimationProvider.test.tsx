@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as moq from "typemoq";
 import { expect } from "chai";
-
-import { AnalysisAnimationTimelineDataProvider } from "../../ui-framework/timeline/AnalysisAnimationProvider";
+import * as moq from "typemoq";
 import { AnalysisStyle } from "@bentley/imodeljs-common";
 import { ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { AnalysisAnimationTimelineDataProvider } from "../../ui-framework/timeline/AnalysisAnimationProvider";
 
 describe("AnalysisAnimationTimelineDataProvider", () => {
 

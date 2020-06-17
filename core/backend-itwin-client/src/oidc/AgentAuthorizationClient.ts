@@ -6,13 +6,14 @@
  * @module Authentication
  */
 
+import { decode } from "jsonwebtoken";
 import { GrantParams, TokenSet } from "openid-client";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { BackendAuthorizationClientConfiguration, BackendAuthorizationClient } from "./BackendAuthorizationClient";
-import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
+import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
 
-const loggerCategory = ClientsBackendLoggerCategory.Authorization;
+const loggerCategory = BackendITwinClientLoggerCategory.Authorization;
 
 /**
  * Configuration of clients for agent or service applications.
@@ -71,9 +72,10 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     } catch (error) {
       throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", Logger.logError, loggerCategory, () => ({ error: error.error, message: error.message }));
     }
-    const userInfo = BackendAuthorizationClient.parseUserInfo(tokenSet.access_token);
-    this._accessToken = this.createToken(tokenSet, userInfo);
-    return this._accessToken;
+
+    const userProfile: any = decode(tokenSet.access_token, { json: true, complete: false });
+    this._accessToken = AccessToken.fromTokenResponseJson(tokenSet, userProfile);
+    return this._accessToken!;
   }
 
   /**

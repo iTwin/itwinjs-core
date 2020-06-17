@@ -2,25 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
-import {
-  IModelReadRpcInterface,
-  IModelTileRpcInterface,
-  MobileRpcConfiguration,
-  NativeAppRpcInterface,
-  RpcInterfaceDefinition,
-  SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
+import "./SVTRpcImpl"; // just to get the RPC implementation registered
 import * as fs from "fs";
 import * as path from "path";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
+import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { IModelBankClient } from "@bentley/imodelhub-client";
+import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import {
+  IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, NativeAppRpcInterface, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
+} from "@bentley/imodeljs-common";
 import { SVTConfiguration } from "../common/SVTConfiguration";
-import "./SVTRpcImpl"; // just to get the RPC implementation registered
 import SVTRpcInterface from "../common/SVTRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
-import { IModelBankClient } from "@bentley/imodelhub-client";
 
 IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
@@ -66,6 +61,9 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_IDLE_WORK)
     configuration.doIdleWork = false;
 
+  if (undefined !== process.env.SVT_DEBUG_SHADERS)
+    configuration.debugShaders = true;
+
   configuration.useProjectExtents = undefined === process.env.SVT_NO_USE_PROJECT_EXTENTS;
 
   const parseSeconds = (key: string) => {
@@ -105,8 +103,9 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_NO_CANCEL_TILE_REQUESTS)
     configuration.cancelBackendTileRequests = false;
 
-  if (undefined !== process.env.SVT_USE_WEBGL2)
-    configuration.useWebGL2 = true;
+  const useWebGL2Var = process.env.SVT_USE_WEBGL2;
+  if (undefined !== useWebGL2Var && ("0" === useWebGL2Var || "false" === useWebGL2Var.toLowerCase()))
+    configuration.useWebGL2 = false;
 
   const extensions = process.env.SVT_DISABLED_EXTENSIONS;
   if (undefined !== extensions)
@@ -117,7 +116,7 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   configuration.disableEdges = undefined !== process.env.SVT_DISABLE_EDGE_DISPLAY;
 
   const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
-  fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
+  try { fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8"); } catch { }
 
   return configuration;
 }

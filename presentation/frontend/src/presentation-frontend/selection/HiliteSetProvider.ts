@@ -10,11 +10,10 @@ import { once } from "lodash";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  DefaultContentDisplayTypes, KeySet, DEFAULT_KEYS_BATCH_SIZE, ContentFlags, Key, Item,
-  Content, DescriptorOverrides, ContentRequestOptions, Ruleset,
+  Content, ContentFlags, ContentRequestOptions, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset,
 } from "@bentley/presentation-common";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager"; /* tslint:disable-line:no-direct-imports */
 import { Presentation } from "../Presentation";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager"; /* tslint:disable-line:no-direct-imports */
 
 /** @internal */
 // tslint:disable-next-line: no-var-requires

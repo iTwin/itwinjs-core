@@ -1,0 +1,26 @@
+{
+  "name": "internal-tools",
+  "version": "0.0.0",
+  "description": "Internal build tools for Tools for collecting and reporting performance data",
+  "license": "MIT",
+  "main": "bin/internal-tools.js",
+  "bin": {
+    "internal-tools": "./bin/internal-tools.js"
+  },
+  "scripts": {
+    "build": "",
+    "clean": "",
+    "docs": "",
+    "lint": "",
+    "test": "",
+    "cover": ""
+  },
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {
+    "yargs": "^15.0.0"
+  },
+  "devDependencies": {}
+}

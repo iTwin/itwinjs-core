@@ -6,6 +6,7 @@
  * @module iModels
  */
 
+import { GeoServiceStatus } from "@bentley/bentleyjs-core";
 import { XYZProps } from "@bentley/geometry-core";
 
 /** @public */
@@ -18,6 +19,24 @@ export enum GeoCoordStatus {
   VerticalDatumConvertError = 26,
   CSMapError = 4096,
   Pending = -41556,
+}
+
+/** Maps a GeoCoordStatus to the equivalent GeoServiceStatus.
+ * @public
+ */
+export function mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus {
+  switch (s) {
+    case GeoCoordStatus.Success: return GeoServiceStatus.Success;
+    case GeoCoordStatus.NoGCSDefined: return GeoServiceStatus.NoGeoLocation;
+    case GeoCoordStatus.OutOfUsefulRange: return GeoServiceStatus.OutOfUsefulRange;
+    case GeoCoordStatus.OutOfMathematicalDomain: return GeoServiceStatus.OutOfMathematicalDomain;
+    case GeoCoordStatus.NoDatumConverter: return GeoServiceStatus.NoDatumConverter;
+    case GeoCoordStatus.VerticalDatumConvertError: return GeoServiceStatus.VerticalDatumConvertError;
+    case GeoCoordStatus.CSMapError: return GeoServiceStatus.CSMapError;
+    case GeoCoordStatus.Pending: return GeoServiceStatus.Pending;
+    default:
+      throw new Error("GeoCoordStatus -> GeoServiceStatus - Missing enum conversion");
+  }
 }
 
 /** Information required to request conversion of an array of Geographic coordinates (Longitude/Latitude) to iModel coordinates

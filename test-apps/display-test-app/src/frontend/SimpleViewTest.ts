@@ -4,40 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import {
-  BentleyCloudRpcManager,
-  CloudStorageContainerUrl,
-  CloudStorageTileCache,
-  ElectronRpcConfiguration,
-  ElectronRpcManager,
-  IModelReadRpcInterface,
-  IModelTileRpcInterface,
-  MobileRpcConfiguration,
-  MobileRpcManager,
-  NativeAppRpcInterface,
-  DesktopAuthorizationClientConfiguration,
-  RpcConfiguration,
-  RpcInterfaceDefinition,
-  SnapshotIModelRpcInterface,
-  TileContentIdentifier,
-} from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/itwin-client";
-import { BrowserAuthorizationClientConfiguration, BrowserAuthorizationClient, BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
+  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration,
+} from "@bentley/frontend-authorization-client";
 import {
-  FrontendRequestContext,
-  IModelApp,
-  IModelConnection,
-  RenderDiagnostics,
-  RenderSystem,
-  DesktopAuthorizationClient,
-  SnapshotConnection,
+  BentleyCloudRpcManager, CloudStorageContainerUrl, CloudStorageTileCache, DesktopAuthorizationClientConfiguration, ElectronRpcConfiguration,
+  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager, NativeAppRpcInterface,
+  RpcConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface, TileContentIdentifier,
+} from "@bentley/imodeljs-common";
+import {
+  DesktopAuthorizationClient, FrontendRequestContext, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
+import { AccessToken } from "@bentley/itwin-client";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
-import { showStatus } from "./Utils";
 import { SVTConfiguration } from "../common/SVTConfiguration";
-import { DisplayTestApp } from "./App";
 import SVTRpcInterface from "../common/SVTRpcInterface";
-import { setTitle } from "./Title";
+import { DisplayTestApp } from "./App";
 import { Surface } from "./Surface";
+import { setTitle } from "./Title";
+import { showStatus } from "./Utils";
 import { Dock } from "./Window";
 
 RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
@@ -48,6 +32,13 @@ const configuration = {} as SVTConfiguration;
 async function retrieveConfiguration(): Promise<void> {
   return new Promise<void>((resolve, _reject) => {
     if (MobileRpcConfiguration.isMobileFrontend) {
+      if (window) {
+        const urlParams = new URLSearchParams(window.location.hash);
+        urlParams.forEach((val, key) => {
+          (configuration as any)[key] = val;
+          Object.assign(configuration, { iModelName: urlParams.get("iModelName") });
+        });
+      }
       const newConfigurationInfo = JSON.parse(window.localStorage.getItem("imodeljs:env")!);
       Object.assign(configuration, newConfigurationInfo);
       resolve();
@@ -172,8 +163,9 @@ async function main() {
     filterMapDrapeTextures: false !== configuration.filterMapDrapeTextures,
     dpiAwareViewports: false !== configuration.dpiAwareViewports,
     doIdleWork: false !== configuration.doIdleWork,
-    useWebGL2: true === configuration.useWebGL2,
+    useWebGL2: false !== configuration.useWebGL2,
     planProjections: true,
+    debugShaders: true === configuration.debugShaders,
   };
 
   const tileAdminProps = DisplayTestApp.tileAdminProps;
@@ -250,7 +242,7 @@ async function main() {
 async function documentLoaded(): Promise<void> {
   const readyState = /^complete$/;
   if (readyState.test(document.readyState))
-    return Promise.resolve();
+    return;
 
   return new Promise<void>((resolve) => {
     const listener = () => {

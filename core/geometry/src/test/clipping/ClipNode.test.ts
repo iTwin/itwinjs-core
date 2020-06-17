@@ -4,25 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Arc3d } from "../../curve/Arc3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-
-import { ClipPlane } from "../../clipping/ClipPlane";
-
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Loop } from "../../curve/Loop";
-import { BooleanClipNode } from "../../clipping/BooleanClipNode";
+import * as fs from "fs";
 import { BooleanClipFactory } from "../../clipping/BooleanClipFactory";
+import { BooleanClipNode } from "../../clipping/BooleanClipNode";
+import { ClipPlane } from "../../clipping/ClipPlane";
 import { Clipper, ClipUtilities } from "../../clipping/ClipUtils";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
+import { Arc3d } from "../../curve/Arc3d";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { LineString3d } from "../../curve/LineString3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Sample } from "../../serialization/GeometrySamples";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
+
 /* tslint:disable:no-console variable-name */
 /**
  *
@@ -203,3 +205,115 @@ function createTranslatedClipperUnion(allGeometry: GeometryQuery[], count: numbe
   }
   return BooleanClipFactory.createCaptureUnion(clippers, true);
 }
+
+it("MichaelBCover", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const shape0 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
+    "./src/test/testInputs/clipping/base_shape.imjs", "utf8")));
+  const shape1 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
+    "./src/test/testInputs/clipping/shape1.imjs", "utf8")));
+  const shape2 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
+    "./src/test/testInputs/clipping/shape2.imjs", "utf8")));
+  const shape3 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
+    "./src/test/testInputs/clipping/shape3.imjs", "utf8")));
+  // we expect 3 loops
+  let x0 = -10;
+  const dy = 100;
+  const dx = 100.0;
+  const offset = 1.0;
+  if (shape0 instanceof Loop && shape1 instanceof Loop && shape2 instanceof Loop && shape3 instanceof Loop) {
+
+    const area = RegionOps.computeXYArea(shape0)!;
+    const smallShape0 = RegionOps.constructCurveXYOffset(shape0, area > 0 ? offset : -offset);
+    const smallArea = RegionOps.computeXYArea(smallShape0 as Loop)!;
+    ck.testLT(smallArea, area, "confirm area reduction");
+    let y0 = -dy;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape0, x0, y0, offset);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, smallShape0, x0, y0, offset);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape1, x0, y0 + dy, offset);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape2, x0, y0 + 2 * dy, offset);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape3, x0, y0 + 3 * dy, offset);
+
+    for (const baseShape999 of [shape0]) {
+      const baseShape = baseShape999 as Loop;
+      y0 = 0;
+      x0 += 10 * dx;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, Point3d.create(x0, y0), 1.0, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseShape, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape1, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape2, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape3, x0, y0);
+      x0 += dx;
+
+      let yyy = y0 + dy;
+      for (const setB of [[shape1], [shape2], [shape3], [shape1, shape2], [shape2, shape3], [shape1, shape3], [shape1, shape2, shape3]]) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, setB, x0, yyy);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseShape, x0, yyy, 5.0);
+        const shapeMinusB = RegionOps.regionBooleanXY(baseShape, setB, RegionBinaryOpType.AMinusB);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, shapeMinusB, x0 + dx, yyy);
+        const bMinusShape = RegionOps.regionBooleanXY(baseShape, setB, RegionBinaryOpType.Intersection);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, bMinusShape, x0 + 2 * dx, yyy);
+        yyy += dy;
+      }
+      /*
+      x0 += 4 * dx;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseShape, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape1, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape2, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape3, x0, y0);
+      const baseLinestring = baseShape.children[0] as LineString3d;
+      const linestring1 = shape1.children[0] as LineString3d;
+      const linestring2 = shape2.children[0] as LineString3d;
+      const linestring3 = shape3.children[0] as LineString3d;
+
+      const clipper1 = ClipShape.createShape(linestring1.points)!;
+      const clipper2 = ClipShape.createShape(linestring2.points)!;
+      const clipper3 = ClipShape.createShape(linestring3.points)!;
+      clipper1?.ensurePlaneSets();
+      clipper2?.ensurePlaneSets();
+      clipper3?.ensurePlaneSets();
+      const allConvexClips = UnionOfConvexClipPlaneSets.createEmpty();
+      for (const clipper of [clipper1, clipper2, clipper3]) {
+        const planes = clipper.fetchClipPlanesRef()!;
+        for (const convex of planes.convexSets)
+          allConvexClips.addConvexSet(convex);
+      }
+      const currentFragments = [baseLinestring.packedPoints.clone()];
+      const cache = new GrowableXYZArrayCache();
+      x0 += dx;
+      let yy = y0 + 2 * dy;
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(x0, yy, x0 + dx, yy));
+      for (const convexClipper of allConvexClips.convexSets) {
+        const nextFragments: GrowableXYZArray[] = [];
+        for (const fragment of currentFragments) {
+          convexClipper.clipInsidePushOutside(fragment, nextFragments, cache);
+          cache.dropToCache(fragment);
+        }
+        currentFragments.length = 0;
+        for (const fragment of nextFragments) {
+          if (fragment.length > 2) {
+            fragment.push(fragment.front()!);
+            const a = PolygonOps.areaXY(fragment);
+            if (a > 1.0e-4)
+              currentFragments.push(fragment);
+          }
+        }
+        yy += dy;
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(x0, yy, x0 + 0.5 * dx, yy));
+        for (const fragment of currentFragments) {
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(fragment), x0, yy);
+        }
+        if (currentFragments.length === 0)
+          break;
+      }
+      if (currentFragments.length === 0)
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(x0, yy, x0 + dx, yy + dy));
+*/
+      x0 += 100.0;
+    }
+  }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "MichaelBCover");
+  expect(ck.getNumErrors()).equals(0);
+
+});

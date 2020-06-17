@@ -6,20 +6,19 @@
  * @module IModelComponents
  */
 
-import * as React from "react";
-import { useDisposable } from "@bentley/ui-core";
-import { IModelConnection, IModelApp, ViewManager, Viewport, SpatialViewState } from "@bentley/imodeljs-frontend";
-import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
-import { Presentation } from "@bentley/presentation-frontend";
-import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
-import { Ruleset } from "@bentley/presentation-common";
-import { CategoryVisibilityHandler, Category, useCategories, loadCategoriesFromViewport } from "./CategoryVisibilityHandler";
-import { connectIModelConnection } from "../../redux/connectIModel";
-import { useVisibilityTreeRenderer, useVisibilityTreeFiltering, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
-import { VisibilityTreeEventHandler, VisibilityTreeFilterInfo } from "../VisibilityTreeEventHandler";
-import { UiFramework } from "../../UiFramework";
-
 import "./CategoriesTree.scss";
+import * as React from "react";
+import { IModelApp, IModelConnection, SpatialViewState, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
+import { Ruleset } from "@bentley/presentation-common";
+import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
+import { Presentation } from "@bentley/presentation-frontend";
+import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
+import { useDisposable } from "@bentley/ui-core";
+import { connectIModelConnection } from "../../redux/connectIModel";
+import { UiFramework } from "../../UiFramework";
+import { VisibilityTreeEventHandler, VisibilityTreeFilterInfo } from "../VisibilityTreeEventHandler";
+import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
+import { Category, CategoryVisibilityHandler, loadCategoriesFromViewport, useCategories } from "./CategoryVisibilityHandler";
 
 const PAGING_SIZE = 20;
 
@@ -86,6 +85,7 @@ export function CategoryTree(props: CategoryTreeProps) {
   });
 
   const { filteredNodeLoader, isFiltering, nodeHighlightingProps } = useVisibilityTreeFiltering(nodeLoader, props.filterInfo, props.onFilterApplied);
+  // istanbul ignore next
   const viewManager = props.viewManager ?? IModelApp.viewManager;
   const { activeView, allViewports, categoryVisibilityHandler } = props;
   const currentActiveView = activeView ?? viewManager.getFirstOpenView();
@@ -141,7 +141,9 @@ export const IModelConnectedCategoryTree = connectIModelConnection(null, null)(C
 
 function useCategoryVisibilityHandler(viewManager: ViewManager, imodel: IModelConnection, categories: Category[], activeView?: Viewport, allViewports?: boolean, visibilityHandler?: CategoryVisibilityHandler) {
   return useDisposable(React.useCallback(
-    () => visibilityHandler ?? new CategoryVisibilityHandler({ viewManager, imodel, categories, activeView, allViewports }),
+    () =>
+      // istanbul ignore next
+      visibilityHandler ?? new CategoryVisibilityHandler({ viewManager, imodel, categories, activeView, allViewports }),
     [viewManager, imodel, categories, activeView, allViewports, visibilityHandler]),
   );
 }
@@ -160,6 +162,7 @@ async function setViewType(activeView?: Viewport) {
  * @alpha
  */
 export async function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider) {
+  // istanbul ignore next
   const activeView = viewport ?? viewManager.getFirstOpenView();
   const ids = await getCategories(imodel, activeView, filteredProvider);
 

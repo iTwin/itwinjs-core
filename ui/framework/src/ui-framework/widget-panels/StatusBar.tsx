@@ -9,9 +9,9 @@
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
+import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { StatusBar } from "../statusbar/StatusBar";
 import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
-import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 
 /** @internal */
 export function WidgetPanelsStatusBar(props: CommonProps) {

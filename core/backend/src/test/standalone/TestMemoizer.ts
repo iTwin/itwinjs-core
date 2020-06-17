@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { PromiseMemoizer, QueryablePromise, MemoizeFnType, GenerateKeyFnType } from "../../PromiseMemoizer";
+import { GenerateKeyFnType, MemoizeFnType, PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
 
 const generateKeyTestFn: GenerateKeyFnType = (param: number, waitTime: number): string => {
   return `key ${param}:${waitTime}`;

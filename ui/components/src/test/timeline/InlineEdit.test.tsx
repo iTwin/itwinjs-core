@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup } from "@testing-library/react";
 import { expect } from "chai";
+import React from "react";
 import * as sinon from "sinon";
-
+import { cleanup, render } from "@testing-library/react";
 import { InlineEdit } from "../../ui-components/timeline/InlineEdit";
 
 describe("<InlineEdit />", () => {
@@ -15,7 +14,7 @@ describe("<InlineEdit />", () => {
     afterEach(cleanup);
   });
 
-  it("trigger call to componentWillReceiveProps", async () => {
+  it("trigger call to componentDidUpdate", async () => {
     const onTotalDurationChange = sinon.spy();
     const initialDuration = "00:40";
     const revisedDuration = "00:60";
@@ -23,7 +22,7 @@ describe("<InlineEdit />", () => {
     const renderedComponent = render(<InlineEdit className="end-time" defaultValue={initialDuration} onChange={onTotalDurationChange} />);
     expect(renderedComponent).not.to.be.undefined;
 
-    // trigger call to componentWillReceiveProps
+    // trigger call to componentDidUpdate
     renderedComponent.rerender(<InlineEdit className="end-time" defaultValue={revisedDuration} onChange={onTotalDurationChange} />);
   });
 });

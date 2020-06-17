@@ -7,11 +7,10 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-
-import { ProjectServices, ProjectScope, ProjectInfo, ProjectReadStatus } from "./ProjectServices";
-import { UiFramework } from "../UiFramework";
+import { ContextRegistryClient, ContextRegistryRequestQueryOptions, Project } from "@bentley/context-registry-client";
 import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
-import { ContextRegistryClient, Project, ContextRegistryRequestQueryOptions } from "@bentley/context-registry-client";
+import { UiFramework } from "../UiFramework";
+import { ProjectInfo, ProjectReadStatus, ProjectScope, ProjectServices } from "./ProjectServices";
 
 // istanbul ignore next
 class ProjectInfoImpl implements ProjectInfo {
@@ -65,7 +64,7 @@ export class DefaultProjectServices implements ProjectServices {
       }
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
 
     const projects: ProjectInfo[] = [];

@@ -6,12 +6,12 @@
  * @module Tree
  */
 
+import "../WithFilteringSupport.scss";
 import * as React from "react";
 import { AbstractTreeNodeLoaderWithProvider } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
-import { useNodeHighlightingProps, useFilteredNodeLoader } from "./UseControlledTreeFiltering";
+import { useFilteredNodeLoader, useNodeHighlightingProps } from "./UseControlledTreeFiltering";
 import { ControlledTreeWithVisibleNodesProps } from "./WithVisibleNodes";
-import "../WithFilteringSupport.scss";
 
 /**
  * Props that are injected to the ControlledTreeWithFilteringSupport HOC component.

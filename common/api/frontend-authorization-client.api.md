@@ -27,7 +27,7 @@ export interface BrowserAuthorizationCallbackHandlerConfiguration {
 }
 
 // @beta (undocumented)
-export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient {
+export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
     constructor(configuration: BrowserAuthorizationClientConfiguration);
     // (undocumented)
     protected _accessToken?: AccessToken;
@@ -80,7 +80,8 @@ export interface BrowserAuthorizationClientConfiguration {
 }
 
 // @beta (undocumented)
-export interface FrontendAuthorizationClient extends IDisposable, AuthorizationClient {
+export interface FrontendAuthorizationClient extends AuthorizationClient {
+    hasSignedIn: boolean;
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
     signIn(requestContext: ClientRequestContext): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;

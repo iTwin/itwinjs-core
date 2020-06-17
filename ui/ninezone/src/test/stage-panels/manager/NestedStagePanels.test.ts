@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import {
-  NestedStagePanelsManager, NestedStagePanelsManagerProps, StagePanelsManagerProps, getDefaultStagePanelsManagerProps,
-  StagePanelType, StagePanelsManager,
+  getDefaultStagePanelsManagerProps, NestedStagePanelsManager, NestedStagePanelsManagerProps, StagePanelsManager, StagePanelsManagerProps,
+  StagePanelType,
 } from "../../../ui-ninezone";
 
 interface CustomPanelsProps extends StagePanelsManagerProps {

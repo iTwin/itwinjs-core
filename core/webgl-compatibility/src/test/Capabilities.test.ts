@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Capabilities, RenderType, DepthType } from "../Capabilities";
+import { Capabilities, DepthType, RenderType } from "../Capabilities";
 
 function createContext(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes): WebGLRenderingContext | undefined {
   let context = canvas.getContext("webgl", contextAttributes);

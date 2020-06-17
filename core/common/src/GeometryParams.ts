@@ -6,15 +6,12 @@
  * @module Symbology
  */
 
-import {
-  Id64,
-  Id64String,
-} from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ColorDef } from "./ColorDef";
-import { Gradient } from "./Gradient";
-import { IModel } from "./IModel";
 import { AreaPattern } from "./geometry/AreaPattern";
 import { LineStyle } from "./geometry/LineStyle";
+import { Gradient } from "./Gradient";
+import { IModel } from "./IModel";
 
 /** Whether a closed region should be drawn for wireframe display with its internal area filled or not.
  * @public
@@ -114,7 +111,6 @@ export class GeometryParams {
   public styleInfo?: LineStyle.Info;
   /** Optional gradient fill settings for region interiors.
    * Valid when [[fillDisplay]] is not [[FillDisplay.Never]].
-   * @beta
    */
   public gradient?: Gradient.Symb;
   /** Optional area pattern settings for region interiors.

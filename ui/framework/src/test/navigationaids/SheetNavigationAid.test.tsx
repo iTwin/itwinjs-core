@@ -2,20 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow } from "enzyme";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
 import * as moq from "typemoq";
-
-import {
-  SheetNavigationAid,
-  SheetNavigationAidControl,
-  AnyWidgetProps,
-  NavigationWidgetDef,
-  ConfigurableUiManager,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
 import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
+import { AnyWidgetProps, ConfigurableUiManager, NavigationWidgetDef, SheetNavigationAid, SheetNavigationAidControl } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("SheetNavigationAid", () => {
 

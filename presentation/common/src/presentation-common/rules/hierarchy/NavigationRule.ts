@@ -6,12 +6,12 @@
  * @module PresentationRules
  */
 
-import { ChildNodeSpecification } from "./ChildNodeSpecification";
-import { RuleBase } from "../Rule";
 import { CustomizationRule } from "../customization/CustomizationRule";
-import { SubCondition } from "./SubCondition";
-import { RootNodeRule } from "./RootNodeRule";
+import { RuleBase } from "../Rule";
 import { ChildNodeRule } from "./ChildNodeRule";
+import { ChildNodeSpecification } from "./ChildNodeSpecification";
+import { RootNodeRule } from "./RootNodeRule";
+import { SubCondition } from "./SubCondition";
 
 /**
  * Base class for all [[NavigationRule]] implementations. Not

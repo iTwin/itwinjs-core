@@ -3,27 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as enzyme from "enzyme";
+import { createStore, Store } from "redux";
 import * as sinon from "sinon";
+
 import { I18N } from "@bentley/imodeljs-i18n";
-import {
-  UiFramework,
-  FrameworkReducer,
-  FrameworkState,
-  DeepReadonly,
-  ActionsUnion,
-  createAction,
-  ConfigurableUiManager,
-  ContentLayoutProps,
-  ContentGroupProps,
-  combineReducers,
-} from "../ui-framework";
-import { UiComponents } from "@bentley/ui-components";
-import { UiCore, UiSettings, UiSettingsStatus, UiSettingsResult } from "@bentley/ui-core";
-import { Store, createStore } from "redux";
-import { TestContentControl } from "./frontstage/FrontstageTestUtils";
-import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
-import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatcher";
 import { UserInfo } from "@bentley/itwin-client";
+import { PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
+
+import {
+  ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, createAction, DeepReadonly, FrameworkReducer,
+  FrameworkState, UiFramework,
+} from "../ui-framework";
+import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatcher";
+import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
+import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 
 // tslint:disable: completed-docs
 
@@ -103,8 +97,6 @@ export class TestUtils {
       TestUtils.defineContentGroups();
       TestUtils.defineContentLayouts();
 
-      await UiComponents.initialize(TestUtils.i18n);
-      await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiFrameworkInitialized = true;
     }
     ToolUiManager.clearToolSettingsData();
@@ -112,8 +104,6 @@ export class TestUtils {
   }
 
   public static terminateUiFramework() {
-    UiCore.terminate();
-    UiComponents.terminate();
     UiFramework.terminate();
     TestUtils._uiFrameworkInitialized = false;
   }
@@ -206,6 +196,27 @@ export class TestUtils {
     const event = new Event(type, { bubbles: true });
     Object.assign(event, props);
     return event;
+  }
+
+  public static createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString(), editorInfo?: PropertyEditorInfo) {
+    const value: PrimitiveValue = {
+      displayValue,
+      value: rawValue,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      displayLabel: name,
+      name,
+      typename: "string",
+    };
+
+    if (editorInfo)
+      description.editor = editorInfo;
+
+    const property = new PropertyRecord(value, description);
+    property.isReadonly = false;
+    return property;
   }
 
 }

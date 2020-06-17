@@ -2,6 +2,42 @@
   "name": "@bentley/backend-webpack-tools",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/backend-webpack-tools_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/backend-webpack-tools_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Update webpack version to 4.42.0"
+          },
+          {
+            "comment": "Update webpack version to 4.41.5"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/backend-webpack-tools_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/backend-webpack-tools_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/backend-webpack-tools_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",

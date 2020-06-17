@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import * as enzyme from "enzyme";
-import { expect } from "chai";
+import { CommandItemDef, FunctionKey, KeyboardShortcutManager, KeyboardShortcutMenu, KeyboardShortcutProps } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import { KeyboardShortcutMenu, KeyboardShortcutManager, CommandItemDef, KeyboardShortcutProps, FunctionKey } from "../../ui-framework";
 
 describe("KeyboardShortcutMenu", () => {
   const testSpyMethod = sinon.spy();

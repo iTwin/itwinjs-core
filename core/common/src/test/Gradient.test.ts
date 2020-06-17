@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Gradient } from "../Gradient";
 import { Angle } from "@bentley/geometry-core";
+import { Gradient } from "../Gradient";
 
 describe("Gradient.Symb", () => {
   it("should round=-trip through JSON", () => {

@@ -6,25 +6,54 @@
  * @module ConfigurableUi
  */
 
+import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { UiError } from "@bentley/ui-abstract";
-
-import { FrontstageDef } from "../frontstage/FrontstageDef";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ConfigurableCreateInfo, ConfigurableUiElement, ConfigurableUiControlConstructor } from "./ConfigurableUiControl";
 import { ContentGroupManager, ContentGroupProps } from "../content/ContentGroup";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
-import { TaskManager, TaskPropsList } from "../workflow/Task";
-import { WorkflowManager, WorkflowPropsList, WorkflowProps } from "../workflow/Workflow";
-import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
+import { ContentLayoutProps } from "../content/ContentLayoutProps";
+import { FrontstageDef } from "../frontstage/FrontstageDef";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";
-import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
 import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
 import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
 import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid";
-import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
-import { ContentLayoutProps } from "../content/ContentLayoutProps";
+import { TaskManager, TaskPropsList } from "../workflow/Task";
+import { WorkflowManager, WorkflowProps, WorkflowPropsList } from "../workflow/Workflow";
+import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
+import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiElement } from "./ConfigurableUiControl";
+import { ModelessDialogManager } from "../dialog/ModelessDialogManager";
+import { ModalDialogManager } from "../dialog/ModalDialogManager";
+import { MessageManager } from "../messages/MessageManager";
+import { PopupManager } from "../popup/PopupManager";
+import { ActivityTracker } from "./ActivityTracker";
+
+/** Ui Activity Event Args interface.
+ * @internal
+ */
+export interface UiActivityEventArgs {
+  event: Event;
+}
+
+/** Ui Activity Event class.
+ * @internal
+ */
+export class UiActivityEvent extends BeUiEvent<UiActivityEventArgs> { }
+
+/** Ui Interval Event Args interface
+ * @internal
+ */
+export interface UiIntervalEventArgs {
+  idleTimeout?: number;
+}
+
+/** Ui Interval Event class.
+ * @internal
+ */
+export class UiIntervalEvent extends BeUiEvent<UiIntervalEventArgs> { }
 
 /** Configurable Ui Manager maintains controls, Frontstages, Content Groups, Content Layouts, Tasks and Workflows.
  * @public
@@ -32,6 +61,13 @@ import { ContentLayoutProps } from "../content/ContentLayoutProps";
 export class ConfigurableUiManager {
   private static _registeredControls = new Map<string, ConfigurableUiControlConstructor>();
   private static _initialized = false;
+
+  /** @internal */
+  public static readonly activityTracker = new ActivityTracker();
+  /** @internal */
+  public static readonly onUiActivityEvent = new UiActivityEvent();
+  /** @internal */
+  public static readonly onUiIntervalEvent = new UiIntervalEvent();
 
   /** Initializes the ConfigurableUiManager and registers core controls. */
   public static initialize() {
@@ -52,6 +88,9 @@ export class ConfigurableUiManager {
 
     // Initialize the ToolUiManager that manages Tool Settings properties.
     ToolUiManager.initialize();
+
+    // Initialize the modeless dialog manager.
+    ModelessDialogManager.initialize();
 
     this._initialized = true;
   }
@@ -200,6 +239,16 @@ export class ConfigurableUiManager {
     const wrapper = document.getElementById("uifw-configurableui-wrapper");
     const htmlElement = wrapper!;
     return htmlElement;
+  }
+
+  /** @internal */
+  public static closeUi(): void {
+    MessageManager.closeAllMessages();
+    ModelessDialogManager.closeAll();
+    ModalDialogManager.closeAll();
+    KeyboardShortcutManager.closeShortcutsMenu();
+    UiFramework.closeCursorMenu();
+    PopupManager.clearPopups();
   }
 
 }

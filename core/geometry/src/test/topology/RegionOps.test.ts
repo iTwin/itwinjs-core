@@ -6,45 +6,42 @@
 /* tslint:disable: no-console */
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-
-import { Sample } from "../../serialization/GeometrySamples";
-
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
-
-import { RegionOps } from "../../curve/RegionOps";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-
-import { Range3d, Range2d } from "../../geometry3d/Range";
-import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { HalfEdgeGraph } from "../../topology/Graph";
-import { GraphChecker } from "./Graph.test";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Angle } from "../../geometry3d/Angle";
-import { prettyPrint } from "../testFunctions";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Geometry } from "../../Geometry";
-import { Loop } from "../../curve/Loop";
 import { Arc3d } from "../../curve/Arc3d";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { AnyRegion, AnyCurve } from "../../curve/CurveChain";
-import { BagOfCurves, CurveCollection, CurveChain } from "../../curve/CurveCollection";
-import { Path } from "../../curve/Path";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { ChainCollectorContext } from "../../curve/ChainCollectorContext";
+import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
+import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
+import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { Path } from "../../curve/Path";
+import { RegionOps } from "../../curve/RegionOps";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
+import { Range2d, Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { HalfEdgeGraph } from "../../topology/Graph";
+import { HalfEdgeGraphMerge } from "../../topology/Merging";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+import { GraphChecker } from "./Graph.test";
+import * as fs from "fs";
 
 const diegoPathA = [
   {
@@ -904,6 +901,43 @@ describe("RectangleRecognizer", () => {
     ck.testUndefined(RegionOps.rectangleEdgeTransform(Path.create(Arc3d.createUnitCircle())));
     ck.testUndefined(RegionOps.rectangleEdgeTransform(BagOfCurves.create()));
     expect(ck.getNumErrors()).equals(0);
+  });
+  it("3PointTurnChecks", () => {
+    // const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const road = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
+      "./src/test/testInputs/intersections/WilsonShapes/roadShape.imjs", "utf8")));
+    const badShape = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
+      "./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_overlaps.imjs", "utf8")));
+    const goodShape = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
+      "./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_fits.imjs", "utf8")));
+
+    if (road instanceof Loop) {
+      const roadRange = road.range();
+
+      let x0 = -roadRange.low.x;
+      const xStep = 2.0 * roadRange.xLength();
+      const yStep = 1.2 * roadRange.yLength();
+
+      for (const shape of [badShape, goodShape]) {
+        if (shape instanceof Loop) {
+          let y0 = -roadRange.low.y;
+          const splitParts = RegionOps.splitPathsByRegionInOnOutXY(shape, road);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, road, x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape, x0, y0);
+          const dz = 0.1;
+          for (const outputArray of [splitParts.insideParts, splitParts.outsideParts]) {
+            y0 += yStep;
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, road, x0, y0);
+            for (const fragment of outputArray) {
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragment, x0, y0, dz);
+            }
+          }
+        }
+        x0 += xStep;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "3PointTurnChecks");
   });
 
 });

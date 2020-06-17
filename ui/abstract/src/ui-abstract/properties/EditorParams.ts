@@ -6,6 +6,8 @@
  * @module Properties
  */
 
+// cspell:ignore BBGGRR pushable
+
 /**
  * Enum for Property Editor Param Types
  * @beta
@@ -19,9 +21,9 @@ export enum PropertyEditorParamTypes {
   CustomFormattedNumber = "UiAbstract-CustomFormattedNumber",
   IconListData = "UiAbstract-IconListData",
   // JSON = "UiAbstract-JSON",
-  // MultilineText = "UiAbstract-MultilineText",
-  // Range = "UiAbstract-Range",
-  // Slider = "UiAbstract-Slider",
+  MultilineText = "UiAbstract-MultilineText",
+  Range = "UiAbstract-Range",
+  Slider = "UiAbstract-Slider",
   // SuppressUnitLabel = "UiAbstract-SuppressUnitLabel",
   SuppressEditorLabel = "UiAbstract-SuppressEditorLabel",
 }
@@ -149,59 +151,99 @@ export const isSuppressLabelEditorParams = (item: BasePropertyEditorParams): ite
 //   type: PropertyEditorParamTypes.JSON;
 //   json: any;
 // }
-//
-// /**
-//  * Parameters used by PropertyEditors that support defining a minimum and maximum value.
-//  * @alpha
-//  */
-// export interface RangeEditorParams extends BasePropertyEditorParams {
-//   type: PropertyEditorParamTypes.Range;
-//   /** Optionally define the minimum value. */
-//   minimum?: number;
-//   /** Optionally define the maximum value. */
-//   maximum?: number;
-// }
-//
-// /**
-//  * Parameters used to indicate that a Slider should be presented for the property
-//  * and to specify the values needed by the slider.
-//  * @alpha
-//  */
-// export interface SliderEditorParams extends BasePropertyEditorParams {
-//   type: PropertyEditorParamTypes.Slider;
-//   /** Defines the minimum value. */
-//   minimum: number;
-//   /** Defines the maximum value. */
-//   maximum: number;
-//   /** Show buttons at intervals, requires NumButtons to be set. */
-//   intervals?: boolean;
-//   /** Number of interval buttons to display */
-//   numButtons?: number;
-//   /** If Vertical is set, the slider will display in a vertical orientation, default is to draw Horizontally. */
-//   vertical?: boolean;
-//   /** Since slider must work with integer values define factor used to produce a integer (0.1=10, 0.01=100, 0.001=1000). */
-//   valueFactor?: number;
-// }
-//
-// /**
-//  * Parameter that is used to indicate that a multiline text editor should be created.
-//  * The number of rows specified will determine the height of the editor control.
-//  * @alpha
-//  */
-// export interface MultilineTextEditorParams extends BasePropertyEditorParams {
-//   type: PropertyEditorParamTypes.MultilineText;
-//   heightInRows: number;
-// }
-//
+
+/**
+ * Parameters used by PropertyEditors that support defining a minimum and maximum value.
+ * @beta
+ */
+export interface RangeEditorParams extends BasePropertyEditorParams {
+  type: PropertyEditorParamTypes.Range;
+  /** Defines the minimum value. Default is Number.MIN_SAFE_INTEGER. */
+  minimum?: number;
+  /** Defines the maximum value. Default is Number.MAX_SAFE_INTEGER. */
+  maximum?: number;
+  /** Defines the step value. Default is 1. */
+  step?: number;
+  /** Defines the precision. Default is 0. */
+  precision?: number;
+}
+
+/**
+ * Parameters used to indicate that a Slider should be presented for the property
+ * and to specify the values needed by the slider.
+ * @beta
+ */
+export interface SliderEditorParams extends BasePropertyEditorParams {
+  type: PropertyEditorParamTypes.Slider;
+  /** Defines the minimum value. */
+  minimum: number;
+  /** Defines the maximum value. */
+  maximum: number;
+
+  /** Optionally define the width in pixels. */
+  size?: number;
+
+  /** Step value. Default is 0.1. */
+  step?: number;
+  /** The interaction mode. Default is 1. Possible values:
+   * 1 - allows handles to cross each other.
+   * 2 - keeps the sliders from crossing and separated by a step.
+   * 3 - makes the handles pushable and keep them a step apart.
+   */
+  mode?: number;
+
+  /** Indicates whether the display of the Slider values is reversed. */
+  reversed?: boolean;
+
+  /** Indicates whether to show tooltip with the value. The tooltip will be positioned above the Slider, by default. */
+  showTooltip?: boolean;
+  /** Indicates whether the tooltip should show below the Slider instead of above. */
+  tooltipBelow?: boolean;
+  /** Format a value for the tooltip */
+  formatTooltip?: (value: number) => string;
+
+  /** Indicates whether to show min & max values to the left & right of the Slider. */
+  showMinMax?: boolean;
+  /** Image to show for min. */
+  minIconSpec?: string;
+  /** Image to show for max. */
+  maxIconSpec?: string;
+
+  /** Indicates whether to show tick marks under the Slider. */
+  showTicks?: boolean;
+  /** Indicates whether to show tick labels under the tick marks. */
+  showTickLabels?: boolean;
+  /** Format a tick mark value */
+  formatTick?: (tick: number) => string;
+  /** Function to get the tick count. The default tick count is 10. */
+  getTickCount?: () => number;
+  /** Function to get the tick values. This overrides the tick count from getTickCount.
+   * Use this prop if you want to specify your own tick values instead of ticks generated by the slider.
+   * The numbers should be valid numbers in the domain and correspond to the step value.
+   * Invalid values will be coerced to the closet matching value in the domain.
+   */
+  getTickValues?: () => number[];
+}
+
+/**
+ * Parameter that is used to indicate that a multiline text editor should be created.
+ * The number of rows specified will determine the height of the editor control.
+ * @beta
+ */
+export interface MultilineTextEditorParams extends BasePropertyEditorParams {
+  type: PropertyEditorParamTypes.MultilineText;
+  rows: number;
+}
+
 /**
  * Parameters used to display an icon next to property editor.
- * @alpha
+ * @beta
  */
 export interface IconEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.Icon;
   definition: IconDefinition;
 }
-//
+
 // /**
 //  * Parameters used with boolean properties to indicate icon overrides.
 //  * @alpha

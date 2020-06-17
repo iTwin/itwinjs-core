@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Checker } from "../Checker";
 import { expect } from "chai";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
 // import { ClusterableArray } from "../numerics/ClusterableArray";
 // import { prettyPrint } from "./testFunctions";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Angle } from "../../geometry3d/Angle";
-import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
-import { Geometry } from "../../Geometry";
-import { Range2d } from "../../geometry3d/Range";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range2d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
 
 /* tslint:disable: no-console */
 
@@ -485,8 +485,29 @@ describe("GrowableXYArray", () => {
       ck.testPoint3d(p, growablePoints.getPoint3dAtUncheckedPointIndex(i), "wrapper vs growable");
       i++;
     }
-    const growableRange = growablePoints.getRange ();
-    const wrapperRange  = wrapper.getRange ();
-    ck.testRange3d (growableRange, wrapperRange, "growable vs wrapper");
+    const growableRange = growablePoints.getRange();
+    const wrapperRange = wrapper.getRange();
+    ck.testRange3d(growableRange, wrapperRange, "growable vs wrapper");
   });
+  it("removeClosurePoints", () => {
+    const ck = new Checker();
+    const origin = Point3d.create(1, 2, 3);
+    const points = Sample.createSquareWave(origin, 2, 1, 3, 3, 5);    // This has a single closure point !!
+    const wrapper = new Point3dArrayCarrier(points);
+    const originalCount = wrapper.length;
+    const originalTrim = originalCount - 1;
+    GrowableXYZArray.removeClosure(wrapper);
+    ck.testExactNumber(originalTrim, points.length, "original closure point=>no change");
+    GrowableXYZArray.removeClosure(wrapper);
+    ck.testExactNumber(originalTrim, points.length, "no closure point=>no change");
+    for (const numAdd of [1, 3]) {
+      for (let i = 0; i < numAdd; i++)
+        wrapper.push(origin);
+      ck.testExactNumber(originalTrim + numAdd, wrapper.length, "after adding " + numAdd + " closure points");
+      GrowableXYZArray.removeClosure(wrapper);
+      ck.testExactNumber(originalTrim, wrapper.length, "after removeClosure " + numAdd);
+    }
+
+  });
+
 });

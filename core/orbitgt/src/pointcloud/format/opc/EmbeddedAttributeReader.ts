@@ -17,21 +17,21 @@ type float64 = number;
 
 import { ABuffer } from "../../../system/buffer/ABuffer";
 import { LittleEndian } from "../../../system/buffer/LittleEndian";
-import { FileAccess } from "./FileAccess";
-import { AttributeReader } from "./AttributeReader";
-import { ContainerFile } from "./ContainerFile";
-import { ContainerFilePart } from "./ContainerFilePart";
-import { TileReadBuffer } from "./TileReadBuffer";
 import { ABufferInStream } from "../../../system/io/ABufferInStream";
 import { InStream } from "../../../system/io/InStream";
+import { ALong } from "../../../system/runtime/ALong";
+import { ContentLoader } from "../../../system/storage/ContentLoader";
 import { AttributeValue } from "../../model/AttributeValue";
 import { CloudPoint } from "../../model/CloudPoint";
 import { PointAttribute } from "../../model/PointAttribute";
 import { ReadRequest } from "../../model/ReadRequest";
 import { StandardAttributes } from "../../model/StandardAttributes";
 import { TileIndex } from "../../model/TileIndex";
-import { ALong } from "../../../system/runtime/ALong";
-import { ContentLoader } from "../../../system/storage/ContentLoader";
+import { AttributeReader } from "./AttributeReader";
+import { ContainerFile } from "./ContainerFile";
+import { ContainerFilePart } from "./ContainerFilePart";
+import { FileAccess } from "./FileAccess";
+import { TileReadBuffer } from "./TileReadBuffer";
 
 /**
  * Class EmbeddedAttributeReader reads attribute data.

@@ -7,10 +7,10 @@
  */
 
 import { IDisposable } from "@bentley/bentleyjs-core";
-import { Ruleset, SupplementationInfo } from "./rules/Ruleset";
 import { Rule } from "./rules/Rule";
-import { VariablesGroup } from "./rules/Variables";
+import { Ruleset, SupplementationInfo } from "./rules/Ruleset";
 import { SchemasSpecification } from "./rules/SchemasSpecification";
+import { VariablesGroup } from "./rules/Variables";
 
 /**
  * A ruleset that is registered in a ruleset manager.

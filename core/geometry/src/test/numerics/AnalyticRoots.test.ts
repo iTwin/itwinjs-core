@@ -4,16 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { NumberArray } from "../../geometry3d/PointHelpers";
-import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
-import { AnalyticRoots, Degree2PowerPolynomial, PowerPolynomial, TrigPolynomial, SmallSystem, Degree3PowerPolynomial, BilinearPolynomial } from "../../numerics/Polynomials";
-import { Vector2d, Point2d } from "../../geometry3d/Point2dVector2d";
-import { Point4d } from "../../geometry4d/Point4d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Geometry } from "../../Geometry";
 import { Arc3d } from "../../curve/Arc3d";
+import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { NumberArray } from "../../geometry3d/PointHelpers";
+import { Point4d } from "../../geometry4d/Point4d";
+import {
+  AnalyticRoots, BilinearPolynomial, Degree2PowerPolynomial, Degree3PowerPolynomial, PowerPolynomial, SmallSystem, TrigPolynomial,
+} from "../../numerics/Polynomials";
+import { Checker } from "../Checker";
+
 /* tslint:disable:no-console no-trailing-whitespace */
 
 // Toggle for printing in cubic & quartic testers

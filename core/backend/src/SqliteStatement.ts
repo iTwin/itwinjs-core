@@ -6,8 +6,8 @@
  * @module SQLite
  */
 
-import { Id64String, GuidString, DbResult, IDisposable, StatusCodeWithMessage, Config } from "@bentley/bentleyjs-core";
-import { IModelError, ECJsNames } from "@bentley/imodeljs-common";
+import { Config, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { ECJsNames, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 

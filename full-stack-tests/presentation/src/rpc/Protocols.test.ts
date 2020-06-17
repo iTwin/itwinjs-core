@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { BentleyCloudRpcManager, RpcManager, IModelRpcProps, WebAppRpcRequest, RpcConfiguration } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, IModelRpcProps, RpcConfiguration, RpcManager, WebAppRpcRequest } from "@bentley/imodeljs-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
 RpcConfiguration.disableRoutingValidation = true;

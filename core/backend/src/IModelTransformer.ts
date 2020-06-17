@@ -5,15 +5,18 @@
 /** @packageDocumentation
  * @module iModels
  */
+import * as path from "path";
 import { ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
+import {
+  Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement3dProps, IModel, IModelError, ModelProps,
+  Placement3d, PrimitiveTypeCode, PropertyMetaData,
+} from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement3dProps, IModel, IModelError, ModelProps, Placement3d, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
-import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DefinitionPartition, Element, GeometricElement3d, InformationPartitionElement, Subject } from "./Element";
-import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
+import { ChannelRootAspect, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
@@ -80,7 +83,8 @@ export class IModelTransformer extends IModelExportHandler {
     }
     this.sourceDb = this.exporter.sourceDb;
     this.exporter.registerHandler(this);
-    this.exporter.excludeElementAspectClass(ExternalSourceAspect.classFullName);
+    this.exporter.excludeElementAspectClass(ExternalSourceAspect.classFullName); // Provenance specific to the source iModel is not relevant to the target iModel
+    this.exporter.excludeElementAspectClass(ChannelRootAspect.classFullName); // Channel boundaries within the source iModel are not relevant to the target iModel
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
     // initialize importer and targetDb
     if (target instanceof IModelDb) {
@@ -151,6 +155,9 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Iterate all matching ExternalSourceAspects in the target iModel and call a function for each one. */
   private forEachExternalSourceAspect(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
+    if (!this.targetDb.containsClass(ExternalSourceAspect.classFullName)) {
+      throw new IModelError(IModelStatus.BadSchema, "The BisCore schema version of the target database is too old", Logger.logError, loggerCategory);
+    }
     const sql = `SELECT aspect.Identifier,aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
     this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId("scopeId", this.targetScopeElementId);
@@ -207,7 +214,14 @@ export class IModelTransformer extends IModelExportHandler {
    * @note A subclass can override this method to provide custom transform behavior.
    */
   protected onTransformElement(sourceElement: Element): ElementProps {
-    return this.context.cloneElement(sourceElement);
+    const targetElementProps: ElementProps = this.context.cloneElement(sourceElement);
+    if (sourceElement instanceof Subject) {
+      if (targetElementProps.jsonProperties?.Subject?.Job) {
+        // don't propagate source channels into target (legacy bridge case)
+        targetElementProps.jsonProperties.Subject.Job = undefined;
+      }
+    }
+    return targetElementProps;
   }
 
   /** Returns true if a change within sourceElement is detected.
@@ -518,7 +532,7 @@ export class IModelTransformer extends IModelExportHandler {
       if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
         (targetRelationshipProps as any)[propertyName] = this.context.findTargetElementId(sourceRelationship.asAny[propertyName]);
       }
-    }, true);
+    });
     return targetRelationshipProps;
   }
 
@@ -563,7 +577,7 @@ export class IModelTransformer extends IModelExportHandler {
       if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
         (targetElementAspectProps as any)[propertyName] = this.context.findTargetElementId(sourceElementAspect.asAny[propertyName]);
       }
-    }, true);
+    });
     return targetElementAspectProps;
   }
 
@@ -648,6 +662,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @param requestContext The request context
    * @param startChangeSetId Include changes from this changeset up through and including the current changeset.
    * If this parameter is not provided, then just the current changeset will be exported.
+   * @note To form a range of versions to process, set `startChangeSetId` for the start of the desired range and open the source iModel as of the end of the desired range.
    */
   public async processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
     requestContext.enter();

@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-
 import { SchemaContext } from "../../src/Context";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import { ECObjectsError } from "../../src/Exception";
 import { ECClass, MutableClass } from "../../src/Metadata/Class";
+import { CustomAttributeSet } from "../../src/Metadata/CustomAttribute";
 import { EntityClass } from "../../src/Metadata/EntityClass";
 import { Mixin } from "../../src/Metadata/Mixin";
 import { MutableSchema, Schema } from "../../src/Metadata/Schema";
@@ -16,7 +16,6 @@ import { SchemaItem } from "../../src/Metadata/SchemaItem";
 import { SchemaKey } from "../../src/SchemaKey";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
-import { CustomAttributeSet } from "../../src/Metadata/CustomAttribute";
 
 describe("ECClass", () => {
   let schema: Schema;

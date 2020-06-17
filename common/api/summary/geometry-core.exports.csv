@@ -28,6 +28,7 @@ public;BagOfCurves
 public;BarycentricTriangle
 public;BeJSONFunctions
 public;Bezier1dNd
+internal;BezierBezierIntersectionXYRRToRRD 
 internal;class BezierCoffs
 public;BezierCurve3d 
 public;BezierCurve3dH 
@@ -48,6 +49,7 @@ public;BSplineSurface3d
 public;BSplineSurface3dH 
 public;BSplineSurface3dQuery
 public;BSplineWrapMode
+public;ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined
 public;ClipMaskXYZRangePlanes
 public;ClippedPolyfaceBuilders
 public;Clipper
@@ -191,6 +193,7 @@ public;PolyfaceClip
 public;PolyfaceData
 public;PolyfaceQuery
 public;PolyfaceVisitor 
+public;PolygonClipper
 public;PolygonOps
 internal;PolygonWireOffsetContext
 public;PolylineOps
@@ -209,6 +212,7 @@ public;Ray3d
 public;RecurseToCurvesGeometryHandler 
 public;class RecursiveCurveProcessor
 public;class RecursiveCurveProcessorWithStack 
+alpha;RegionBinaryOpType
 internal;RegionMomentsXY 
 beta;RegionOps
 public;RotationalSweep 
@@ -224,6 +228,8 @@ public;SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "rotatio
 public;Sphere 
 internal;SphereImplicit
 public;StandardViewIndex
+alpha;SteppedIndexFunction = (i: number, n: number) => number
+alpha;SteppedIndexFunctionFactory
 public;StrokeCountMap
 public;StrokeOptions
 public;SweepContour

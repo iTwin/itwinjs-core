@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
 import * as express from "express";
-import * as https from "https";
 import * as fs from "fs";
-
-import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import * as https from "https";
+import * as path from "path";
 import { Logger } from "@bentley/bentleyjs-core";
+import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { getRpcInterfaces, initializeBackend } from "./backend";
 
 // tslint:disable:no-console

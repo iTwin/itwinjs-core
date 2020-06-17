@@ -6,30 +6,12 @@
  * @module Tile
  */
 
-import {
-  assert,
-  ByteStream,
-  compareNumbers,
-  compareStringsOrUndefined,
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  Range3d,
-} from "@bentley/geometry-core";
-import {
-  BatchType,
-} from "../FeatureTable";
+import { assert, ByteStream, compareNumbers, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
+import { Range3d } from "@bentley/geometry-core";
+import { BatchType } from "../FeatureTable";
 import { TileProps } from "../TileProps";
-import {
-  CurrentImdlVersion,
-  FeatureTableHeader,
-  ImdlFlags,
-  ImdlHeader,
-} from "./IModelTileIO";
-import {
-  TileReadError,
-  TileReadStatus,
-} from "./TileIO";
+import { CurrentImdlVersion, FeatureTableHeader, ImdlFlags, ImdlHeader } from "./IModelTileIO";
+import { TileReadError, TileReadStatus } from "./TileIO";
 
 /** Describes an iModel tile tree.
  * @internal

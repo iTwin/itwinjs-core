@@ -2,18 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, GeometricElement3dProps, IModel, Placement3d } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
+import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, IModel, PhysicalElementProps, Placement3d } from "@bentley/imodeljs-common";
 import {
   BackendLoggerCategory, BackendRequestContext, DefinitionPartition, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements,
   ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, InformationRecordModel,
-  InformationRecordPartition, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe3d,
+  InformationRecordPartition, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner,
+  TemplateRecipe3d,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { ClassCounter, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, RecordingIModelImporter, TestIModelTransformer } from "../IModelTransformerUtils";
+import {
+  ClassCounter, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, RecordingIModelImporter, TestIModelTransformer,
+} from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("IModelTransformer", () => {
@@ -345,7 +348,7 @@ describe("IModelTransformer", () => {
     const yArray: number[] = [0, 2, 4, 6, 8];
     for (const x of xArray) {
       for (const y of yArray) {
-        const physicalObjectProps1: GeometricElement3dProps = {
+        const physicalObjectProps1: PhysicalElementProps = {
           classFullName: PhysicalObject.classFullName,
           model: sourceModelId,
           category: categoryId,

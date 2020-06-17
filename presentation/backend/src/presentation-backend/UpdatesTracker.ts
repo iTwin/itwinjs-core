@@ -8,7 +8,7 @@
 
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { EventSink } from "@bentley/imodeljs-backend";
-import { PresentationRpcInterface, PresentationRpcEvents } from "@bentley/presentation-common";
+import { PresentationRpcEvents, PresentationRpcInterface } from "@bentley/presentation-common";
 import { NativePlatformDefinition } from "./NativePlatform";
 
 /**

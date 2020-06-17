@@ -2,27 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import TestUtils from "../TestUtils";
 import { expect } from "chai";
+import * as React from "react";
 import * as sinon from "sinon";
-
 import {
-  Frontstage,
-  FrontstageManager,
-  FrontstageProvider,
-  FrontstageProps,
-  ContentLayoutDef,
-  Zone,
-  Widget,
-  ContentGroup,
-  ZoneState,
-  NestedFrontstage,
-  ToolWidget,
-  CoreTools,
-  FrontstageDef,
+  ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, NestedFrontstage,
+  ToolWidget, Widget, Zone, ZoneState,
 } from "../../ui-framework";
-import { TestFrontstage, TestContentControl, AppStatusBarWidgetControl } from "./FrontstageTestUtils";
+import TestUtils from "../TestUtils";
+import { AppStatusBarWidgetControl, TestContentControl, TestFrontstage } from "./FrontstageTestUtils";
 
 class TestNestedFrontstage extends FrontstageProvider {
 

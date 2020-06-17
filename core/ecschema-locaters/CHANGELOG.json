@@ -2,6 +2,45 @@
   "name": "@bentley/ecschema-locaters",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/ecschema-locaters_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/ecschema-locaters_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "order imports."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Adding stub schema locater to schema-locaters package."
+          },
+          {
+            "comment": "Export StubSchemaXmlFileLocater"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/ecschema-locaters_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/ecschema-locaters_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/ecschema-locaters_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",

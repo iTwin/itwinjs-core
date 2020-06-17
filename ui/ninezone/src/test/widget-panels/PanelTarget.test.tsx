@@ -4,19 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, render, fireEvent } from "@testing-library/react";
-import { PanelTarget } from "../../ui-ninezone";
-import { NineZoneProvider, CursorTypeContext } from "../../ui-ninezone/base/NineZone";
-import { createNineZoneState } from "../../ui-ninezone/base/NineZoneState";
-import { PanelStateContext } from "../../ui-ninezone/widget-panels/Panel";
+import { act, fireEvent, render } from "@testing-library/react";
+import { createNineZoneState, CursorTypeContext, PanelStateContext, PanelTarget } from "../../ui-ninezone";
+import { NineZoneProvider } from "../Providers";
 
 describe("PanelTarget", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("should render targeted", () => {
     const nineZone = createNineZoneState();
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <PanelTarget />
@@ -24,6 +27,7 @@ describe("PanelTarget", () => {
       </NineZoneProvider>,
     );
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
+    sandbox.stub(document, "elementFromPoint").returns(target);
     act(() => {
       fireEvent.pointerMove(target);
     });
@@ -35,7 +39,6 @@ describe("PanelTarget", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
           <CursorTypeContext.Provider value="grabbing">
@@ -45,6 +48,7 @@ describe("PanelTarget", () => {
       </NineZoneProvider>,
     );
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
+    sandbox.stub(document, "elementFromPoint").returns(target);
     act(() => {
       fireEvent.pointerMove(target);
     });

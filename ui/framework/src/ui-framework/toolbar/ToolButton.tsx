@@ -7,18 +7,16 @@
  */
 
 import * as React from "react";
-
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { StringGetter, ConditionalStringValue } from "@bentley/ui-abstract";
-import { CommonProps, Icon, BadgeUtilities } from "@bentley/ui-core";
-import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
-
+import { ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
+import { BadgeUtilities, CommonProps, Icon } from "@bentley/ui-core";
+import { getToolbarItemProps, Item } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { BaseItemState } from "../shared/ItemDefBase";
-import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { BaseItemState } from "../shared/ItemDefBase";
 import { ToolItemProps } from "../shared/ItemProps";
+import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 
 /** Properties for the [[ToolButton]] React Component.
@@ -72,7 +70,10 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
       if (this.props.stateFunc) // tslint:disable-line:deprecation
         newState = this.props.stateFunc(newState); // tslint:disable-line:deprecation
 
-      if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
+      // istanbul ignore else
+      if ((this.state.isActive !== newState.isActive) ||
+      /* istanbul ignore next */ (this.state.isEnabled !== newState.isEnabled) ||
+      /* istanbul ignore next */ (this.state.isVisible !== newState.isVisible)) {
         this.setState({
           isActive: newState.isActive,
           isEnabled: newState.isEnabled,

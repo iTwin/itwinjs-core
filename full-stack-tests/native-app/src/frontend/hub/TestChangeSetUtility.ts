@@ -2,17 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { TestRpcInterface } from "../../common/RpcInterfaces";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { TestUserCredentials, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
-import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { AuthorizationClient } from "@bentley/itwin-client";
+import { getAccessTokenFromBackend, TestFrontendAuthorizationClient, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestRpcInterface } from "../../common/RpcInterfaces";
 
 /** Test utility to push an iModel and ChangeSets */
 export class TestChangeSetUtility {
 
-  private _backupAuthorizationClient?: AuthorizationClient;
-  private _testAuthorizationClient?: TestAuthorizationClient;
+  private _backupAuthorizationClient?: FrontendAuthorizationClient;
+  private _testAuthorizationClient?: TestFrontendAuthorizationClient;
 
   private setTestAuthorizationClient() {
     this._backupAuthorizationClient = IModelApp.authorizationClient;
@@ -26,7 +25,7 @@ export class TestChangeSetUtility {
   // Initializes the utility
   public async initialize(projectName: string, iModelBaseName: string, user: TestUserCredentials = TestUsers.manager) {
     const accessToken = await getAccessTokenFromBackend(user);
-    this._testAuthorizationClient = new TestAuthorizationClient(accessToken);
+    this._testAuthorizationClient = new TestFrontendAuthorizationClient(accessToken);
 
     this.setTestAuthorizationClient();
     await TestRpcInterface.getClient().initTestChangeSetUtility(projectName, iModelBaseName);

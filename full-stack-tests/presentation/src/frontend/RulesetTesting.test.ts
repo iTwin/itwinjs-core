@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { ChildNodeSpecificationTypes, ContentSpecificationTypes, RelationshipDirection, Ruleset, RuleTypes } from "@bentley/presentation-common";
-import { ContentBuilder, ContentBuilderResult, HierarchyBuilder } from "@bentley/presentation-testing";
 import { expect } from "chai";
 import * as ChaiJestSnapshot from "chai-jest-snapshot";
 import path from "path";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ChildNodeSpecificationTypes, ContentSpecificationTypes, RelationshipDirection, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { ContentBuilder, ContentBuilderResult, HierarchyBuilder } from "@bentley/presentation-testing";
 import { initialize, terminate } from "../IntegrationTests";
 
 function configureSnapshotLocation(test: Mocha.Runnable, subdirectory: string, instance: ContentBuilderResult) {

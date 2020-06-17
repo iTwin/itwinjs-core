@@ -6,36 +6,20 @@
  * @module RpcInterface
  */
 
-import { RpcProtocol, SerializedRpcRequest, RpcRequestFulfillment } from "../core/RpcProtocol";
-import { MobileRpcConfiguration } from "./MobileRpcManager";
-import { MobileRpcRequest } from "./MobileRpcRequest";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
-import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { RpcEndpoint } from "../core/RpcConstants";
+import { RpcSerializedValue } from "../core/RpcMarshaling";
+import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
-/** @internal */
-declare var bentley: any;
-
-/** @internal */
-export const CHANNEL = "@bentley/imodeljs-mobilegateway";
-
-/** @internal */
-export const interop = (() => {
-  let mobilegateway = null;
-
-  if (typeof window === "undefined" && typeof (bentley) !== "undefined") {
-    // tslint:disable-next-line:no-eval
-    mobilegateway = bentley.imodeljs.servicesTier.require(CHANNEL);
-  }
-
-  return mobilegateway;
-})();
+import { MobileRpcConfiguration } from "./MobileRpcManager";
+import { MobileRpcRequest } from "./MobileRpcRequest";
 
 /** @beta */
 export type MobileRpcChunks = Array<string | Uint8Array>;
 
-interface MobileRpcGateway {
+/** @beta */
+export interface MobileRpcGateway {
   handler: (payload: ArrayBuffer | string, connectionId: number) => void;
   sendString: (message: string, connectionId: number) => void;
   sendBinary: (message: Uint8Array, connectionId: number) => void;
@@ -57,6 +41,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   private _partialFulfillment: RpcRequestFulfillment | undefined = undefined;
   private _partialData: Uint8Array[] = [];
   private _port: number = 0;
+  public static obtainInterop(): MobileRpcGateway { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
 
   public static async encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks> {
     const serialized = await request.protocol.serialize(request);
@@ -256,14 +241,12 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private initializeBackend() {
-    const mobilegateway: MobileRpcGateway = interop as MobileRpcGateway;
+    const mobilegateway = MobileRpcProtocol.obtainInterop();
     if (mobilegateway === undefined || mobilegateway == null) {
       throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol on backend require native bridge to be setup");
     }
 
     mobilegateway.handler = (payload, connectionId) => this.handleMessageFromFrontend(payload, connectionId);
-    (self as any).__imodeljs_mobilegateway_handler__ = mobilegateway.handler;
-    (self as any)._imodeljs_rpc_reconnect_backend = () => this.reset();
   }
 
   private handleMessageFromFrontend(data: string | ArrayBuffer, connectionId: number) {
@@ -319,7 +302,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private sendToFrontend(message: MobileRpcChunks, connection: number): void {
-    const mobilegateway: MobileRpcGateway = interop as MobileRpcGateway;
+    const mobilegateway = MobileRpcProtocol.obtainInterop();
 
     for (const chunk of message) {
       if (typeof (chunk) === "string") {

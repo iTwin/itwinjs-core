@@ -7,22 +7,24 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { configureForPromiseResult } from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { AuthorizationClient } from "@bentley/itwin-client";
-import { SettingsStatus, SettingsAdmin } from "@bentley/product-settings-client";
-import { IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
-import { PropertyFullName, FavoritePropertiesOrderInfo } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
+import { configureForPromiseResult } from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { SettingsAdmin, SettingsStatus } from "@bentley/product-settings-client";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
+import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
+import {
+  IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
+} from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
 
   let storage: IModelAppFavoritePropertiesStorage;
   let settingsAdminMock: moq.IMock<SettingsAdmin>;
-  let authorizationClientMock: moq.IMock<AuthorizationClient>;
+  let authorizationClientMock: moq.IMock<FrontendAuthorizationClient>;
 
   beforeEach(async () => {
     const requestConextMock = moq.Mock.ofType<AuthorizedFrontendRequestContext>();
@@ -30,7 +32,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     sinon.stub(AuthorizedFrontendRequestContext, "create").resolves(requestConextMock.object);
     sinon.stub(IModelApp, "settings").get(() => settingsAdminMock.object);
 
-    authorizationClientMock = moq.Mock.ofType<AuthorizationClient>();
+    authorizationClientMock = moq.Mock.ofType<FrontendAuthorizationClient>();
     authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => true);
     IModelApp.authorizationClient = authorizationClientMock.object;
 

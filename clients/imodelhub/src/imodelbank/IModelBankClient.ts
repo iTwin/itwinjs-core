@@ -6,8 +6,8 @@
  * @module iModelBankClient
  */
 import { AuthorizedClientRequestContext, FileHandler } from "@bentley/itwin-client";
-import { IModelBankHandler } from "./IModelBankHandler";
 import { IModelClient } from "../IModelClient";
+import { IModelBankHandler } from "./IModelBankHandler";
 
 /** Class that allows access to different iModelHub class handlers.
  * Handlers should be accessed through an instance of this class, rather than constructed directly.

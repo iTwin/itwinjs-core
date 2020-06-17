@@ -8,7 +8,7 @@ The Bentley Authorization Service is built on the [IdentityServer4](http://docs.
 
 The API supports common OAuth 2.0 scenarios of Web Frontend Applications, Agent or Service Applications, Desktop and Mobile Applications. All applications need to follow the same basic pattern:
 
-### 1. Register the application to obtain OAuth 2.0 credentials.
+### 1. Register the application to obtain OAuth 2.0 credentials
 
 Use the [developer registration page](../../getting-started/index.md#3-register-your-application) to register your applications and get the credentials. In the case of Frontend, Desktop and Mobile Applications, the credentials will include just a Client Id. In the case of Agent or Service Applications it will include a client Id, client secret, a service user name and a service user password.
 
@@ -29,4 +29,3 @@ After obtaining an access token, the application is then required to pass that t
 AccessTokens have a limited lifetime, typically an hour. The application needs to refresh access tokens using the API when the tokens are about to expire, and ensure that it will remain valid for the duration of the API call.
 
 The imodelJs API calls required to refresh the access token are different in Web Frontend Applications and Agent or Service Applications.
-

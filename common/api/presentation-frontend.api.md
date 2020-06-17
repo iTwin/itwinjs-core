@@ -9,6 +9,8 @@ import { Content } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
+import { DisplayValueGroup } from '@bentley/presentation-common';
+import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
 import { EventSource } from '@bentley/imodeljs-frontend';
 import { Field } from '@bentley/presentation-common';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
@@ -29,6 +31,7 @@ import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
+import { PagedResponse } from '@bentley/presentation-common';
 import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RpcRequestsHandler } from '@bentley/presentation-common';
@@ -177,6 +180,8 @@ export class PresentationManager implements IDisposable {
     }>;
     getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: NodeKey): Promise<number>;
     // @alpha
+    getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<PagedResponse<DisplayValueGroup>>;
+    // @alpha
     loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
     // @alpha
     onContentUpdate: BeEvent<(ruleset: Ruleset, updateInfo: "FULL") => void>;
@@ -225,6 +230,7 @@ export interface RulesetVariablesManager {
     getInt(variableId: string): Promise<number>;
     getInts(variableId: string): Promise<number[]>;
     getString(variableId: string): Promise<string>;
+    onVariableChanged: BeEvent<(variableId: string) => void>;
     setBool(variableId: string, value: boolean): Promise<void>;
     setId64(variableId: string, value: Id64String): Promise<void>;
     setId64s(variableId: string, value: Id64String[]): Promise<void>;

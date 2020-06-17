@@ -4,31 +4,32 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { NumberArray } from "../../geometry3d/PointHelpers";
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Angle } from "../../geometry3d/Angle";
-import { Quadrature } from "../../numerics/Quadrature";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
+import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Arc3d } from "../../curve/Arc3d";
-import { Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, TrigPolynomial, SmallSystem, AnalyticRoots, SphereImplicit, TorusImplicit } from "../../numerics/Polynomials";
-/* tslint:disable:no-console */
-
-import { UnivariateBezier, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, BezierCoffs } from "../../numerics/BezierPolynomials";
-import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
-import { Point4d } from "../../geometry4d/Point4d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
+import { NumberArray } from "../../geometry3d/PointHelpers";
 import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
-import { Sphere } from "../../solid/Sphere";
-import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude";
+import { Point4d } from "../../geometry4d/Point4d";
+/* tslint:disable:no-console */
+import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
+import {
+  AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, SmallSystem, SphereImplicit, TorusImplicit, TrigPolynomial,
+} from "../../numerics/Polynomials";
+import { Quadrature } from "../../numerics/Quadrature";
+import { Sphere } from "../../solid/Sphere";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function testBezier(ck: Checker, bezier: BezierCoffs) {
   for (const f of [0, 0.25, 0.75]) {

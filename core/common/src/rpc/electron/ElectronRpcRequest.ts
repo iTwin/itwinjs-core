@@ -6,10 +6,10 @@
  * @module RpcInterface
  */
 
-import { RpcRequest } from "../core/RpcRequest";
-import { RpcRequestFulfillment } from "../core/RpcProtocol";
-import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 import { RpcProtocolEvent } from "../core/RpcConstants";
+import { RpcRequestFulfillment } from "../core/RpcProtocol";
+import { RpcRequest } from "../core/RpcRequest";
+import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
 /** @beta */
 export class ElectronRpcRequest extends RpcRequest {
@@ -36,10 +36,10 @@ export class ElectronRpcRequest extends RpcRequest {
   protected async load() {
     const fulfillment = this._fulfillment;
     if (!fulfillment) {
-      return Promise.reject("No request fulfillment available.");
+      throw new Error("No request fulfillment available.");
     }
 
-    return Promise.resolve(fulfillment.result);
+    return fulfillment.result;
   }
 
   /** Sets request header values. */

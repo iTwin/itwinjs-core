@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { Id64, using } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
-import { RemoteBriefcaseConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { Descriptor, InstanceKey, KeySet, PresentationRpcInterface, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { expect } from "chai";
 import * as defaultRuleset from "./rulesets/default.json";
 import * as getRelatedDistinctValues from "./rulesets/DistinctValues/getRelatedDistinctValues.json";
 import * as getFilteredNodePaths from "./rulesets/NodePaths/getFilteredNodePaths.json";
 import * as getNodePaths from "./rulesets/NodePaths/getNodePaths.json";
-import { BasicAuthorizationClient } from "./setup/BasicAuthorizationClient";
 import { TestContext } from "./setup/TestContext";
 
 describe("PresentationRpcInterface tests", () => {
@@ -32,7 +32,7 @@ describe("PresentationRpcInterface tests", () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const contextId = testContext.iModelWithChangesets!.contextId;
     const accessToken = testContext.adminUserAccessToken;
-    (IModelApp.authorizationClient as BasicAuthorizationClient).setAccessToken(accessToken);
+    IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     iModel = await RemoteBriefcaseConnection.open(contextId, iModelId);
   });
 

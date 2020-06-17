@@ -2,6 +2,63 @@
   "name": "@bentley/build-tools",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/build-tools_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add inline sources to properly debug ts files"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/build-tools_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "timeout option fixed"
+          },
+          {
+            "comment": "Fix pseudolocalize script to correctly handle the englishDir arg."
+          },
+          {
+            "comment": "order imports."
+          },
+          {
+            "comment": "extract-api: Remove unused `isPresentation` command line arg"
+          },
+          {
+            "comment": "Usage of deprecated APIs is a lint error."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Remove the ignoreargs.js script."
+          },
+          {
+            "comment": "Add extract-api to betools cli"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/build-tools_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/build-tools_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/build-tools_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",
@@ -122,7 +179,7 @@
             "comment": "Add tslint rule banning Math.hypot"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -209,16 +266,13 @@
             "comment": "Adds error handling in api-extractor to handle no lib folder"
           },
           {
-            "comment": "Updates api-=extractor to accept parameters for missing release tags"
-          },
-          {
-            "comment": "\"\""
+            "comment": "Updates api-extractor to accept parameters for missing release tags"
           },
           {
             "comment": "Move to @microsoft/api-extractor 7.0.35 to fix issue when reporting missing tags"
           },
           {
-            "comment": "\"Updates API extractor to v7\""
+            "comment": "Updates API extractor to v7"
           },
           {
             "comment": "Added tools/build/tslint-docs.json. Added SvgPath & SvgSprite to ui-core."
@@ -278,7 +332,7 @@
             "comment": "Changed stripInternal to false so @internal-marked symbols still put in .d.ts files"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -326,7 +380,7 @@
       "comments": {
         "none": [
           {
-            "comment": "added missing dependencies for tslint"
+            "comment": "Added missing dependencies for tslint"
           },
           {
             "comment": "Move to Node 10"

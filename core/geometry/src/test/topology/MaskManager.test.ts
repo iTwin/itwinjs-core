@@ -6,8 +6,8 @@
 /* tslint:disable: no-console */
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
 import { MaskManager } from "../../topology/MaskManager";
+import { Checker } from "../Checker";
 
 describe("MaskManager", () => {
 

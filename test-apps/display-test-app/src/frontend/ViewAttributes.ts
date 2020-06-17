@@ -3,56 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Id64String } from "@bentley/bentleyjs-core";
 import {
-  Id64String,
-} from "@bentley/bentleyjs-core";
+  CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
+} from "@bentley/frontend-devtools";
 import {
-  AmbientOcclusion,
-  BackgroundMapProps,
-  BackgroundMapProviderName,
-  BackgroundMapType,
-  ColorDef,
-  ColorDefProps,
-  EnvironmentProps,
-  GlobeMode,
-  HiddenLine,
-  LightSettings,
-  LightSettingsProps,
-  LinePixels,
-  MonochromeMode,
-  RenderMode,
-  SolarShadowSettings,
-  SolarShadowSettingsProps,
-  TerrainProps,
-  ViewFlags,
-  ViewFlagProps,
+  AmbientOcclusion, BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, ColorDefProps, EnvironmentProps, GlobeMode,
+  HiddenLine, LightSettings, LightSettingsProps, LinePixels, MonochromeMode, RenderMode, SolarShadowSettings, SolarShadowSettingsProps, TerrainProps,
+  ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
-  DisplayStyle2dState,
-  DisplayStyle3dState,
-  DisplayStyleState,
-  Environment,
-  ViewState,
-  ViewState3d,
-  Viewport,
+  DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Environment, Viewport, ViewState, ViewState3d,
 } from "@bentley/imodeljs-frontend";
-import {
-  CheckBox,
-  createCheckBox,
-  ComboBox,
-  ComboBoxEntry,
-  createComboBox,
-  createColorInput,
-  createNestedMenu,
-  createNumericInput,
-  createSlider,
-  Slider,
-} from "@bentley/frontend-devtools";
-import { ToolBarDropDown } from "./ToolBar";
-import { Settings } from "./FeatureOverrides";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
+import { Settings } from "./FeatureOverrides";
 import { ThematicDisplayEditor } from "./ThematicDisplay";
+import { ToolBarDropDown } from "./ToolBar";
 
 type UpdateAttribute = (view: ViewState) => void;
 
@@ -134,23 +101,23 @@ const stylePresets: Style3dPreset[] = [
     solarShadows: {},
   },
   {
-    name: "Schematic",
-    environment: {},
-    backgroundColor: 16777215,
-    viewflags: { visEdges: true, renderMode: 6 },
-    lights: {
-      solar: { direction: [0, -0.6178171353958787, -0.7863218089378106], intensity: 1.95, alwaysEnabled: true },
-      ambient: { intensity: 0.65 },
-      portrait: { intensity: 0 },
-      specularIntensity: 0,
+    name: "Comic Book",
+    environment: {
+      sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
+      ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
     },
+    viewflags: { renderMode: 6, noWeight: false, visEdges: true },
     hline: {
-      visible: { ovrColor: true, color: 0, pattern: 0, width: 2 },
-      hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
+      visible: { ovrColor: true, color: 0, pattern: 0, width: 3 },
       transThreshold: 1,
     },
-    ao: {},
-    solarShadows: {},
+    lights: {
+      solar: { direction: [0.7623, 0.0505, -0.6453], intensity: 1.95, alwaysEnabled: true },
+      ambient: { intensity: 0.2 },
+      portrait: { intensity: 0 },
+      specularIntensity: 0,
+      numCels: 2,
+    },
   },
   {
     name: "Outdoorsy",
@@ -169,6 +136,25 @@ const stylePresets: Style3dPreset[] = [
       portrait: { intensity: 0 },
     },
     hline: {},
+    ao: {},
+    solarShadows: {},
+  },
+  {
+    name: "Schematic",
+    environment: {},
+    backgroundColor: 16777215,
+    viewflags: { visEdges: true, renderMode: 6 },
+    lights: {
+      solar: { direction: [0, -0.6178171353958787, -0.7863218089378106], intensity: 1.95, alwaysEnabled: true },
+      ambient: { intensity: 0.65 },
+      portrait: { intensity: 0 },
+      specularIntensity: 0,
+    },
+    hline: {
+      visible: { ovrColor: true, color: 0, pattern: 0, width: 1 },
+      hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
+      transThreshold: 1,
+    },
     ao: {},
     solarShadows: {},
   },
@@ -810,11 +796,13 @@ export class ViewAttributes {
 
   private addHiddenLineEditor(forHiddenEdges: boolean): HTMLDivElement {
     const style = this._vp.view.is3d() ? this.edgeSettings : HiddenLine.Settings.defaults;
-    const settingsName = forHiddenEdges ? "hidden" : "visible";
-    const settings = style[settingsName];
+    const settings = forHiddenEdges ? style.hidden : style.visible;
     const div = document.createElement("div");
     div.style.paddingLeft = "10px";
     div.hidden = forHiddenEdges ? !this._vp.view.viewFlags.hiddenEdges : !this._vp.view.viewFlags.visibleEdges;
+
+    const getSettings = () => forHiddenEdges ? this.edgeSettings.hidden : this.edgeSettings.visible;
+    const overrideSettings = (newSettings: HiddenLine.Style) => this.overrideEdgeSettings(forHiddenEdges ? { hidden: newSettings.toJSON() } : { visible: newSettings.toJSON() });
 
     // Color override (visible only)
     let colorCb: HTMLInputElement | undefined;
@@ -837,12 +825,10 @@ export class ViewAttributes {
         value: color,
         display: "inline",
         disabled: !settings.ovrColor,
-        handler: (value: string) => this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(ColorDef.create(value)) }),
+        handler: (value: string) => overrideSettings(getSettings().overrideColor(ColorDef.create(value))),
       }).input;
 
-      colorCb.addEventListener("click", () => {
-        this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideColor(colorCb!.checked ? ColorDef.create(colorInput!.value) : undefined) });
-      });
+      colorCb.addEventListener("click", () => overrideSettings(getSettings().overrideColor(colorCb!.checked ? ColorDef.create(colorInput!.value) : undefined)));
     }
 
     // Width override
@@ -867,17 +853,14 @@ export class ViewAttributes {
       min: 1,
       max: 31,
       step: 1,
-      handler: (value) => this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideWidth(value) }),
+      handler: (value) => overrideSettings(getSettings().overrideWidth(value)),
     });
     widthDiv.appendChild(width);
-
-    widthCb.addEventListener("click", () => {
-      this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overrideWidth(widthCb.checked ? parseInt(width.value, 10) : undefined) });
-    });
+    widthCb.addEventListener("click", () => overrideSettings(getSettings().overrideWidth(widthCb.checked ? parseInt(width.value, 10) : undefined)));
 
     // Line style override
     const patternCb = Settings.addStyle(div, settings.pattern ? settings.pattern : LinePixels.Invalid, (select) => {
-      this.overrideEdgeSettings({ [settingsName]: this.edgeSettings[settingsName].overridePattern(parseInt(select.value, 10)) });
+      overrideSettings(getSettings().overridePattern(parseInt(select.value, 10)));
     });
 
     // Synchronization
@@ -887,7 +870,7 @@ export class ViewAttributes {
         return;
       }
 
-      const curStyle = this.edgeSettings[settingsName];
+      const curStyle = getSettings();
       if (undefined !== colorCb && undefined !== colorInput) {
         colorCb.checked = undefined !== curStyle.color;
         colorInput.disabled = !colorCb.checked;

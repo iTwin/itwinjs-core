@@ -2,17 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-
-import { render, cleanup } from "@testing-library/react";
 import { expect } from "chai";
-import TestUtils from "../TestUtils";
-import {
-  Toolbar, CommandItemDef, BaseItemState, GroupItemDef, SyncUiEventDispatcher, CustomItemDef, PopupButton,
-} from "../../ui-framework";
-import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
-import { ItemList } from "../../ui-framework/shared/ItemMap";
+import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
+import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
+import { cleanup, render } from "@testing-library/react";
+import { BaseItemState, CommandItemDef, CustomItemDef, GroupItemDef, PopupButton, SyncUiEventDispatcher, Toolbar } from "../../ui-framework";
+import { ItemList } from "../../ui-framework/shared/ItemMap";
+import TestUtils from "../TestUtils";
 
 // tslint:disable: deprecation
 

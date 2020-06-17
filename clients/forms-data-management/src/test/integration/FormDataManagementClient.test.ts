@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { FormDataManagementClient, FormDefinition, FormInstanceData } from "../../FormDataManagementClient";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { FormDataManagementClient, FormDefinition, FormInstanceData } from "../../FormDataManagementClient";
 import { TestConfig } from "../TestConfig";
 
 chai.should();

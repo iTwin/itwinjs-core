@@ -2,39 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyStatus, Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, Box, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles, IModelJson } from "@bentley/geometry-core";
-import {
-  AreaPattern,
-  BackgroundFill,
-  BRepEntity,
-  Code,
-  ColorByName,
-  ColorDef,
-  FillDisplay,
-  FontProps,
-  FontType,
-  GeometricElement3dProps,
-  GeometricElementProps,
-  GeometryParams,
-  GeometryPartProps,
-  GeometryStreamBuilder,
-  GeometryStreamFlags,
-  GeometryStreamIterator,
-  GeometryStreamProps,
-  Gradient,
-  IModel,
-  LinePixels,
-  LineStyle,
-  MassPropertiesOperation,
-  MassPropertiesRequestProps,
-  TextString,
-  TextStringProps,
-  CreatePolyfaceRequestProps,
-  CreatePolyfaceResponseProps,
-} from "@bentley/imodeljs-common";
+
+import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Angle, Arc3d, Box, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, TextString, TextStringProps } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { BackendRequestContext, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
+import { BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function assertTrue(expr: boolean): asserts expr {
@@ -95,7 +68,7 @@ describe("GeometryStream", () => {
       pointS.y += 0.5; pointE.y += 0.5;
     });
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -185,7 +158,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.create(1.5, 0, 0), Point3d.create(1.5, 5, 0)));
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -263,7 +236,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0)));
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -334,7 +307,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 5, 0)));
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -418,7 +391,7 @@ describe("GeometryStream", () => {
     shape.tryTransformInPlace(xOffset);
     builder.appendGeometry(shape);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -561,7 +534,7 @@ describe("GeometryStream", () => {
     shape.tryTransformInPlace(xOffset);
     builder.appendGeometry(shape);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -647,7 +620,7 @@ describe("GeometryStream", () => {
     const status = builder.appendTextString(textString);
     assert.isTrue(status);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -761,7 +734,7 @@ describe("GeometryStream", () => {
       builder.appendGeometry(geom);
     }
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -792,6 +765,78 @@ describe("GeometryStream", () => {
     }
   });
 
+  it("create GeometricElement3d partToWorld test", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const arc = Arc3d.createXY(Point3d.create(0, 0), 1);
+    const partBuilder = new GeometryStreamBuilder();
+
+    partBuilder.appendGeometry(arc);
+
+    const partProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      geom: partBuilder.geometryStream,
+    };
+
+    const testPart = imodel.elements.createElement(partProps);
+    const partId = imodel.elements.insertElement(testPart);
+    imodel.saveChanges();
+
+    const builder = new GeometryStreamBuilder();
+    const shapePts: Point3d[] = [Point3d.create(1, 1, 0), Point3d.create(2, 1, 0), Point3d.create(2, 2, 0), Point3d.create(1, 2, 0)];
+    const testOrigin = Point3d.create(0.5, 0.5, 0);
+    const testAngles = YawPitchRollAngles.createDegrees(45, 0, 0);
+
+    builder.setLocalToWorld3d(testOrigin, testAngles);
+    builder.appendGeometry(Loop.create(LineString3d.create(shapePts)));
+    shapePts.forEach((pt) => { builder.appendGeometryPart3d(partId, pt, undefined, 0.25); }); // Postion part (arc center) at each vertex...
+
+    const elementProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: builder.geometryStream,
+      placement: { origin: testOrigin, angles: testAngles },
+    };
+
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    // Extract and test value returned
+    const valueElem = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
+    assert.isDefined(valueElem.geom);
+
+    const outPts: Point3d[] = [];
+    const itWorld = GeometryStreamIterator.fromGeometricElement3d(valueElem);
+    for (const entry of itWorld) {
+      if ("partReference" !== entry.primitive.type)
+        continue;
+      assertTrue(partId === entry.primitive.part.id);
+      const valuePart = imodel.elements.getElementProps<GeometryPartProps>({ id: entry.primitive.part.id, wantGeometry: true });
+      assert.isDefined(valuePart.geom);
+
+      const itWorldPart = GeometryStreamIterator.fromGeometryPart(valuePart, undefined, itWorld.partToWorld());
+      for (const partEntry of itWorldPart) {
+        assertTrue(partEntry.primitive.type === "geometryQuery");
+        assertTrue(partEntry.primitive.geometry instanceof Arc3d);
+        outPts.push(partEntry.primitive.geometry.center);
+      }
+    }
+
+    assert.isTrue(outPts.length === shapePts.length);
+    for (let i = 0; i < outPts.length; i++) {
+      assert.isTrue(outPts[i].isAlmostEqual(shapePts[i]));
+    }
+  });
+
   it("create GeometricElement3d wire format appearance check", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
@@ -806,7 +851,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(shape);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -880,7 +925,7 @@ describe("GeometryStream", () => {
 
     builder.appendBRepData(brepProps);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -959,7 +1004,7 @@ describe("GeometryStream", () => {
   });
 });
 
-describe("createPolyfaceFromElement", () => {
+describe("exportGraphics", () => {
   let imodel: SnapshotDb;
 
   before(() => {
@@ -972,7 +1017,7 @@ describe("createPolyfaceFromElement", () => {
     imodel.close();
   });
 
-  it("verify basic functionality", async () => {
+  it("converts to IndexedPolyface", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
@@ -984,7 +1029,7 @@ describe("createPolyfaceFromElement", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(box!);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -997,19 +1042,99 @@ describe("createPolyfaceFromElement", () => {
     const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
 
-    const requestProps: CreatePolyfaceRequestProps = {
-      elementId: newId,
+    const infos: ExportGraphicsInfo[] = [];
+    const onGraphics = (info: ExportGraphicsInfo) => {
+      infos.push(info);
+    };
+    const exportGraphicsOptions: ExportGraphicsOptions = {
+      elementIdArray: [newId],
+      onGraphics,
     };
 
-    const requestContext = new BackendRequestContext();
-    const response: CreatePolyfaceResponseProps = await imodel.createPolyfaceFromElement(requestContext, requestProps);
-    assert.isTrue(IModelStatus.Success === response.status);
-    assert.isTrue(response.results && response.results.length === 1);
-    assert.isTrue(ColorDef.white.tbgr === response.results![0].fillColor);
-    assert.isTrue(ColorDef.white.tbgr === response.results![0].lineColor);
-    const polyface = IModelJson.Reader.parseIndexedMesh(response.results![0].indexedMesh);
-    assert.isTrue(polyface !== undefined);
-    assert.isTrue(polyface!.facetCount === 12);
+    const exportStatus = imodel.exportGraphics(exportGraphicsOptions);
+    assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(infos.length, 1);
+    assert.strictEqual(infos[0].color, ColorDef.white.tbgr);
+    assert.strictEqual(infos[0].mesh.indices.length, 36);
+    assert.strictEqual(infos[0].elementId, newId);
+    const polyface = ExportGraphics.convertToIndexedPolyface(infos[0].mesh);
+    assert.strictEqual(polyface.facetCount, 12);
+    assert.strictEqual(polyface.data.pointCount, 24);
+    assert.strictEqual(polyface.data.normalCount, 24);
+    assert.strictEqual(polyface.data.paramCount, 24);
+  });
+
+  //
+  //
+  //    2---3      6
+  //    | \ |     | \
+  //    0---1    4---5
+  //
+  it("ExportMeshGraphicsVisitor", async () => {
+    const numPoints = 7;
+    const numFacets = 3;
+    const pointData = [0, 0, 0, 1, 0, 0, 0, 2, 0, 1, 2, 0, 2, 0, 0, 4, 0, 0, 3, 2, 0];
+    const paramData = [0, 0, 1, 0, 0, 2, 1, 2, 2, 0, 4, 0, 3, 2];
+    const normalData = new Float32Array(pointData.length);
+    const a0 = 2.0;
+    const a1 = 3.0;
+    const b0 = -2.0;
+    const b1 = 5.0;
+    // make normals functionally related to point coordinates . . . not good normals, but good for tests
+    let paramCursor = 0;
+    for (let i = 0; i < pointData.length; i++) {
+      normalData[i] = a1 * pointData[i] + a0;
+      if ((i + 1) % 3 !== 0)
+        paramData[paramCursor++] = b0 + b1 * pointData[i];
+    }
+    const smallMesh = {
+      points: new Float64Array(pointData),
+      params: new Float32Array(paramData),
+      // normals have one-based index as z ..
+      normals: new Float32Array(normalData),
+      indices: new Int32Array([0, 1, 2, 2, 1, 3, 4, 5, 6]),
+      isTwoSided: true,
+    };
+    const knownArea = 4.0;
+    assert.isTrue(smallMesh.points.length === 3 * numPoints);
+    assert.isTrue(smallMesh.normals.length === 3 * numPoints);
+    assert.isTrue(smallMesh.params.length === 2 * numPoints);
+    assert.isTrue(smallMesh.indices.length === 3 * numFacets);
+    const visitor = ExportGraphicsMeshVisitor.create(smallMesh, 0);
+    assert.isDefined(visitor.paramIndex, "paramIndex defined");
+    assert.isDefined(visitor.paramIndex, "paramIndex defined");
+    let numFacetsA = 0;
+    let indexCursor = 0;
+    let areaSum = 0.0;
+    while (visitor.moveToNextFacet()) {
+      numFacetsA++;
+      assert.isTrue(visitor.point.length === 3);
+      assert.isTrue(smallMesh.indices[indexCursor] === visitor.pointIndex[0]);
+      assert.isTrue(smallMesh.indices[indexCursor + 1] === visitor.pointIndex[1]);
+      assert.isTrue(smallMesh.indices[indexCursor + 2] === visitor.pointIndex[2]);
+      const areaVector = visitor.point.crossProductIndexIndexIndex(0, 1, 2)!;
+      areaSum += areaVector.magnitude() * 0.5;
+      assert.isTrue(smallMesh.indices[indexCursor] === visitor.paramIndex![0]);
+      assert.isTrue(smallMesh.indices[indexCursor + 1] === visitor.paramIndex![1]);
+      assert.isTrue(smallMesh.indices[indexCursor + 2] === visitor.paramIndex![2]);
+      assert.isTrue(smallMesh.indices[indexCursor] === visitor.normalIndex![0]);
+      assert.isTrue(smallMesh.indices[indexCursor + 1] === visitor.normalIndex![1]);
+      assert.isTrue(smallMesh.indices[indexCursor + 2] === visitor.normalIndex![2]);
+      for (let k = 0; k < 3; k++) {
+        const point = visitor.point.getPoint3dAtUncheckedPointIndex(k);
+        const normal = visitor.normal!.getPoint3dAtUncheckedPointIndex(k);
+        const param = visitor.param!.getPoint2dAtUncheckedPointIndex(k);
+        for (let j = 0; j < 3; j++) {
+          assert.isTrue(a0 + a1 * point.at(j) === normal.at(j));
+        }
+        for (let j = 0; j < 2; j++) {
+          assert.isTrue(b0 + b1 * point.at(j) === (j === 0 ? param.x : param.y));
+        }
+      }
+      indexCursor += 3;
+    }
+    assert.isTrue(Math.abs(knownArea - areaSum) < 1.0e-13);
+    assert.isTrue(numFacetsA === numFacets, "facet count");
   });
 });
 
@@ -1038,7 +1163,7 @@ describe("Mass Properties", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(box!);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -1074,7 +1199,7 @@ describe("Mass Properties", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(shape);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,

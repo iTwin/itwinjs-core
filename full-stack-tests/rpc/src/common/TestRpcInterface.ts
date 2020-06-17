@@ -2,8 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterface, RpcManager, RpcOperationsProfile, IModelRpcProps, RpcNotFoundResponse, IModelReadRpcInterface, WipRpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
+import {
+  IModelReadRpcInterface, IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcNotFoundResponse, RpcOperationsProfile,
+  WipRpcInterface,
+} from "@bentley/imodeljs-common";
 
 export interface TestOp1Params {
   a: number;
@@ -175,26 +178,26 @@ export class RpcTransportTestImpl extends RpcInterface implements RpcTransportTe
   }
 
   public async primitive(value: string): Promise<string> {
-    return Promise.resolve(RpcTransportTestImpl.mutateString(value));
+    return RpcTransportTestImpl.mutateString(value);
   }
 
   public async binary(value: Uint8Array): Promise<Uint8Array> {
-    return Promise.resolve(RpcTransportTestImpl.mutateBits(value));
+    return RpcTransportTestImpl.mutateBits(value);
   }
 
   public async mixed(value1: string, value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> {
-    return Promise.resolve({ 0: RpcTransportTestImpl.mutateString(value1), 1: RpcTransportTestImpl.mutateBits(value2) });
+    return { 0: RpcTransportTestImpl.mutateString(value1), 1: RpcTransportTestImpl.mutateBits(value2) };
   }
 
   public async nested(value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> {
-    return Promise.resolve({
+    return {
       a: {
         x: RpcTransportTestImpl.mutateBits(value.a.x),
         y: RpcTransportTestImpl.mutateNumber(value.a.y),
       },
       b: RpcTransportTestImpl.mutateString(value.b),
       c: RpcTransportTestImpl.mutateBits(value.c),
-    });
+    };
   }
 }
 

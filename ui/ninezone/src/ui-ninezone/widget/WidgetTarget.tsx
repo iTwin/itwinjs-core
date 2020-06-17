@@ -6,15 +6,15 @@
  * @module Widget
  */
 
+import "./WidgetTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { DraggedTabContext, CursorTypeContext } from "../base/NineZone";
-import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { assert } from "../base/assert";
 import { DraggedWidgetContext, useWidgetTarget } from "../base/DragManager";
-import { useTarget } from "./TabTarget";
+import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
+import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { PanelSideContext } from "../widget-panels/Panel";
-import "./WidgetTarget.scss";
+import { useTarget } from "./TabTarget";
 
 /** @internal */
 export interface WidgetTargetProps {

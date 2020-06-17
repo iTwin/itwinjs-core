@@ -7,7 +7,9 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext, DefaultRequestOptionsProvider, ECJsonTypeMap, request, RequestOptions, WsgInstance } from "@bentley/itwin-client";
+import {
+  AccessToken, AuthorizedClientRequestContext, DefaultRequestOptionsProvider, ECJsonTypeMap, request, RequestOptions, WsgInstance,
+} from "@bentley/itwin-client";
 import { IModelBaseHandler } from "./BaseHandler";
 
 /** Base class for event shared access signatures. */
@@ -71,9 +73,9 @@ export abstract class IModelHubBaseEvent {
       const result = await request(requestContext, this._lockUrl, options);
 
       if (result.status === 200)
-        return Promise.resolve(true);
+        return true;
     }
-    return Promise.resolve(false);
+    return false;
   }
 }
 

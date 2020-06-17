@@ -3,36 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Geometry, Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d, DeepCompare } from "@bentley/geometry-core";
+import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AmbientOcclusion,
-  BackgroundMapSettings,
-  BackgroundMapType,
-  ColorDef,
-  HiddenLine,
-  RenderMode,
-  SpatialViewDefinitionProps,
-  ViewDefinitionProps,
+  AmbientOcclusion, BackgroundMapSettings, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
-  AuxCoordSystemSpatialState,
-  CategorySelectorState,
-  DisplayStyle3dState,
-  DrawingModelState,
-  DrawingViewState,
-  IModelConnection,
-  MarginPercent,
-  MockRender,
-  ModelSelectorState,
-  SheetModelState,
-  SheetViewState,
-  SpatialModelState,
-  SpatialViewState,
-  StandardView,
-  StandardViewId,
-  ViewState3d,
-  ViewStatus,
-  SnapshotConnection,
+  AuxCoordSystemSpatialState, CategorySelectorState, DisplayStyle3dState, DrawingModelState, DrawingViewState, IModelConnection, MarginPercent,
+  MockRender, ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
+  StandardViewId, ViewState3d, ViewStatus,
 } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 
@@ -290,6 +268,12 @@ describe("ViewState", () => {
     cppView = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, { marginPercent: testParams.margin });
     compareView(viewState, cppView, "LookAtVolume 2");
+
+    assert.isTrue(viewState.getOrigin().isAlmostEqual({ x: 15.16944341639925, y: 14.830556583600767, z: -10.838886832798472 }));
+    assert.isTrue(viewState.getExtents().isAlmostEqual({ x: 18.384776310850253, y: 18.384776310850253, z: 15.877132402714713 }));
+    viewState.adjustAspectRatio(2);
+    assert.isTrue(viewState.getOrigin().isAlmostEqual({ x: 8.66944341639924, y: 8.33055658360076, z: -10.838886832798472 }));
+    assert.isTrue(viewState.getExtents().isAlmostEqual({ x: 36.769552621700505, y: 18.384776310850253, z: 15.877132402714713 }));
   });
 
   // Changes were made in TypeScript to the near/far plane adjustment. The native code hasn't been adjusted to match.

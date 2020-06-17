@@ -3,10 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaFileLocater, FileSchemaKey } from "./SchemaFileLocater";
 import * as path from "path";
 import { DOMParser } from "xmldom";
-import { SchemaKey, ISchemaLocater, Schema, SchemaMatchType, SchemaContext, SchemaReadHelper, XmlParser, ECObjectsError, ECObjectsStatus, ECVersion } from "@bentley/ecschema-metadata";
+import {
+  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
+} from "@bentley/ecschema-metadata";
+import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
 /**
  * A SchemaLocater implementation for locating XML Schema files

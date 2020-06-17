@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup, fireEvent, waitForElement } from "@testing-library/react";
 import { expect } from "chai";
+import React from "react";
 import * as sinon from "sinon";
+import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { BaseSolarDataProvider } from "../../ui-components/timeline/BaseSolarDataProvider";
 import { SolarTimeline } from "../../ui-components/timeline/SolarTimeline";
 import { SpeedTimeline } from "../../ui-components/timeline/SpeedTimeline";
-import { BaseSolarDataProvider } from "../../ui-components/timeline/BaseSolarDataProvider";
 import TestUtils from "../TestUtils";
 
 class TestSolarDataProvider extends BaseSolarDataProvider {

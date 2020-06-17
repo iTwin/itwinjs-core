@@ -6,7 +6,7 @@
  * @module Hooks
  */
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { UiItemsManager } from "@bentley/ui-abstract";
 
 /** React hook that maintains the number of available UiItemsProviders. This allows components to use it to refresh when a

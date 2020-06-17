@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { TabState } from "../base/NineZoneState";
 import { EventEmitter } from "../base/Event";
+import { TabState } from "../base/NineZoneState";
 
 /** @internal */
 export interface WidgetContentManagerProps {

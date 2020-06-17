@@ -6,15 +6,14 @@
  * @module StatusBar
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { FooterIndicator } from "@bentley/ui-ninezone";
-import { StatusFieldProps, ContentViewManager, FrontstageManager, ContentControlActivatedEventArgs, ContentControl } from "@bentley/ui-framework";
-import { Checkbox } from "@bentley/ui-core";
-import { ViewFlags, RenderMode } from "@bentley/imodeljs-common";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
-
 import "./ShadowField.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { Checkbox } from "@bentley/ui-core";
+import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@bentley/ui-framework";
+import { FooterIndicator } from "@bentley/ui-ninezone";
 
 // cspell:ignore statusfield
 

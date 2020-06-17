@@ -2,43 +2,38 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "@bentley/presentation-common/lib/test/_helpers/Promises";
+import "./IModelHostSetup";
 import { expect } from "chai";
-import * as moq from "typemoq";
 import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
-const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
+import * as moq from "typemoq";
+import { ClientRequestContext, DbResult, using } from "@bentley/bentleyjs-core";
+import { BriefcaseDb, ECSqlStatement, ECSqlValue, EventSink, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import {
-  createRandomNodePathElementJSON, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON,
-  createRandomECClassInfoJSON, createRandomRelationshipPathJSON,
-  createRandomECInstanceKeyJSON, createRandomECInstanceKey,
-  createRandomDescriptor, createRandomCategory, createRandomId, createRandomDescriptorJSON,
-  createRandomRelatedClassInfoJSON, createRandomRuleset, createRandomLabelDefinitionJSON,
-  createRandomECInstancesNodeJSON,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
-import "@bentley/presentation-common/lib/test/_helpers/Promises";
-import "./IModelHostSetup";
-import { using, ClientRequestContext, DbResult } from "@bentley/bentleyjs-core";
-import { IModelHost, IModelDb, ECSqlStatement, ECSqlValue, BriefcaseDb, EventSink } from "@bentley/imodeljs-backend";
-import {
-  PageOptions, SelectionInfo, KeySet, PresentationError,
-  HierarchyRequestOptions, Paged, ContentRequestOptions, ContentFlags,
-  PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription,
-  KindOfQuantityInfo, DefaultContentDisplayTypes, LabelRequestOptions, InstanceKey,
-  VariableValueTypes, RequestPriority, LabelDefinition, PresentationUnitSystem, SelectionScope,
-  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions,
-  getLocalesDirectory, PropertyInfoJSON, NodeKey, StandardNodeTypes, NodeJSON, PropertyJSON,
-  ContentJSON, ItemJSON, PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON,
-  DescriptorJSON, SelectClassInfoJSON,
+  ArrayTypeDescription, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON,
+  DistinctValuesRequestOptions, FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory, HierarchyRequestOptions, InstanceKey, ItemJSON,
+  KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions,
+  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions, PresentationError, PresentationUnitSystem,
+  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RequestPriority, SelectClassInfoJSON, SelectionInfo, SelectionScope,
+  StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@bentley/presentation-common";
+import {
+  createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKey,
+  createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId,
+  createRandomLabelDefinitionJSON, createRandomNodePathElementJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON,
+  createRandomRuleset,
+} from "@bentley/presentation-common/lib/test/_helpers/random";
+import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
 import { PresentationManager, PresentationManagerMode, PresentationManagerProps } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
-import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_PUBLIC_ROOT } from "../presentation-backend/Constants";
-import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
+import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 
+const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 describe("PresentationManager", () => {
 
   beforeEach(async () => {
@@ -85,7 +80,7 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly(
             "",
-            [getLocalesDirectory(PRESENTATION_COMMON_PUBLIC_ROOT)],
+            [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
             IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             false,
@@ -391,21 +386,6 @@ describe("PresentationManager", () => {
     beforeEach(() => {
       addonMock.reset();
       manager = new PresentationManager({ addon: addonMock.object });
-    });
-
-    it("adds ruleset variables from options", async () => {
-      const rulesetId = faker.random.word();
-      const variable = { id: faker.random.word(), type: VariableValueTypes.String, value: faker.random.word() };
-      const rulesetVariables = [variable];
-      addonMock
-        .setup((x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.isAny()))
-        .returns(async () => "{}")
-        .verifiable(moq.Times.once());
-      addonMock
-        .setup((x) => x.setRulesetVariableValue(rulesetId, variable.id, variable.type, variable.value))
-        .verifiable(moq.Times.once());
-      await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetOrId: rulesetId, rulesetVariables });
-      addonMock.verifyAll();
     });
 
     it("registers ruleset if `rulesetOrId` is a ruleset", async () => {
@@ -1521,6 +1501,85 @@ describe("PresentationManager", () => {
           rulesetOrId: testData.rulesetOrId,
         };
         const result = await manager.getDistinctValues(ClientRequestContext.current, options, descriptor, new KeySet(), "");
+        verifyWithExpectedResult(result, addonResponse, expectedParams);
+      });
+
+    });
+
+    describe("getPagedDistinctValues", () => {
+
+      it("returns empty result for nested content request", async () => {
+        nativePlatformMock.reset();
+        // what the addon receives
+        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
+        const descriptor = createRandomDescriptor();
+        const fieldDescriptor: FieldDescriptor = {
+          type: FieldDescriptorType.Name,
+          fieldName: faker.random.word(),
+          parent: {
+            type: FieldDescriptorType.Name,
+            fieldName: faker.random.word(),
+          },
+        };
+        // test
+        const options: DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          descriptor,
+          keys,
+          fieldDescriptor,
+        };
+        const result = await manager.getPagedDistinctValues(ClientRequestContext.current, options);
+        nativePlatformMock.verify(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.isAnyString()), moq.Times.never());
+        expect(result).to.deep.eq({
+          total: 0,
+          items: [],
+        });
+      });
+
+      it("returns distinct values", async () => {
+        // what the addon receives
+        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
+        const descriptor = createRandomDescriptor();
+        const fieldDescriptor: FieldDescriptor = {
+          type: FieldDescriptorType.Name,
+          fieldName: faker.random.word(),
+        };
+        const pageOpts: PageOptions = {
+          start: 1,
+          size: 2,
+        };
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetPagedDistinctValues,
+          params: {
+            descriptorOverrides: descriptor.createDescriptorOverrides(),
+            keys: keys.toJSON(),
+            fieldDescriptor,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            paging: pageOpts,
+          },
+        };
+
+        // what the addon returns
+        const addonResponse = {
+          total: 1,
+          items: [{
+            displayValue: "test",
+            groupedRawValues: ["test"],
+          }],
+        };
+        setup(addonResponse);
+
+        // test
+        const options: DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          descriptor,
+          keys,
+          fieldDescriptor,
+          paging: pageOpts,
+        };
+        const result = await manager.getPagedDistinctValues(ClientRequestContext.current, options);
         verifyWithExpectedResult(result, addonResponse, expectedParams);
       });
 

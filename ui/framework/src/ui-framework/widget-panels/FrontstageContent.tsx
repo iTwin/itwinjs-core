@@ -6,8 +6,8 @@
  * @module Frontstage
  */
 import * as React from "react";
-import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { ContentLayout } from "../content/ContentLayout";
+import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 
 /** @internal */
 export function WidgetPanelsFrontstageContent() {

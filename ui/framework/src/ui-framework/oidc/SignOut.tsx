@@ -6,18 +6,15 @@
  * @module OIDC
  */
 
+import "./SignOut.scss";
 import * as React from "react";
-
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { UserInfo } from "@bentley/itwin-client";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { UserInfo } from "@bentley/itwin-client";
 import { getUserColor } from "@bentley/ui-core";
-
 import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
-
-import "./SignOut.scss";
 
 // cSpell:Ignore userprofile signoutprompt
 

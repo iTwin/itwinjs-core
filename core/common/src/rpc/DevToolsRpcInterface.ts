@@ -6,10 +6,10 @@
  * @module RpcInterface
  */
 
-import { RpcInterface } from "../RpcInterface";
-import { RpcManager } from "../RpcManager";
 import { LogLevel } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "../IModel";
+import { RpcInterface } from "../RpcInterface";
+import { RpcManager } from "../RpcManager";
 
 /** Options to get the backend statistics
  * @internal

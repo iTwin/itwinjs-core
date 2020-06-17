@@ -6,16 +6,16 @@
  * @module WidgetPanels
  */
 
+import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { NineZoneDispatchContext } from "../base/NineZone";
-import { PANEL_INITIALIZE, isHorizontalPanelState, PanelState } from "../base/NineZoneState";
-import { WidgetPanelGrip } from "./Grip";
-import { PanelWidget } from "../widget/PanelWidget";
 import { DraggedPanelSideContext } from "../base/DragManager";
-import { PanelTarget } from "./PanelTarget";
+import { NineZoneDispatchContext } from "../base/NineZone";
+import { isHorizontalPanelState, PanelState } from "../base/NineZoneState";
+import { PanelWidget } from "../widget/PanelWidget";
 import { WidgetTarget } from "../widget/WidgetTarget";
-import "./Panel.scss";
+import { WidgetPanelGrip } from "./Grip";
+import { PanelTarget } from "./PanelTarget";
 
 /** @internal */
 export type TopPanelSide = "top";
@@ -88,13 +88,13 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
         : { width: `${panel.size}px` };
   }, [panel.size, panel.side]);
   const ref = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (panel.size !== undefined)
       return;
     const bounds = ref.current?.getBoundingClientRect();
     const newSize = isHorizontalPanelSide(panel.side) ? bounds?.height : bounds?.width;
     newSize && dispatch({
-      type: PANEL_INITIALIZE,
+      type: "PANEL_INITIALIZE",
       side: panel.side,
       size: newSize,
     });

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
-import { render, fireEvent, act, wait } from "@testing-library/react";
+import { act, fireEvent, render, wait } from "@testing-library/react";
 import { TreeNodeEditor } from "../../../../ui-components/tree/controlled/component/TreeNodeEditor";
 import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";

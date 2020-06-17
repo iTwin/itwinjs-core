@@ -6,11 +6,12 @@
  * @module Icon
  */
 
-import * as React from "react";
-import { SvgSprite } from "./SvgSprite";
-import { IconSpecUtilities, ConditionalStringValue } from "@bentley/ui-abstract";
-
 import "./IconComponent.scss";
+import * as React from "react";
+import classnames from "classnames";
+import { ConditionalStringValue, IconSpecUtilities } from "@bentley/ui-abstract";
+import { SvgSprite } from "./SvgSprite";
+import { CommonProps } from "../utils/Props";
 
 /** Prototype for an IconSpec which can be a string, ReactNode or ConditionalStringValue.
  * @public
@@ -20,7 +21,7 @@ export type IconSpec = string | ConditionalStringValue | React.ReactNode;
 /** Properties for the [[Icon]] React component
  * @public
  */
-export interface IconProps {
+export interface IconProps extends CommonProps {
   /** CSS class name or SvgSprite/SvgPath for icon */
   iconSpec?: IconSpec;
 }
@@ -36,20 +37,19 @@ export function Icon(props: IconProps) {
 
   if (iconString) {
     const svgSource = IconSpecUtilities.getSvgSource(iconString);
-    // if string begins with "svg:" then we assume it was imported (into plugin source file) using webpack loader svg-sprite-loader
+    // if string begins with "svg:" then we assume it was imported (into extension source file) using webpack loader svg-sprite-loader
     if (svgSource !== undefined)
       return (
-        <i className="icon core-svg-icon">
+        <i className={classnames("icon", "core-svg-icon", props.className)}>
           <SvgSprite src={svgSource} />
         </i>
       );
 
-    const className = "icon " + iconString;
-    return (<i className={className} />);
+    return (<i className={classnames("icon", iconString, props.className)} />);
   }
 
   return (
-    <i className="icon core-svg-icon">
+    <i className={classnames("icon", "core-svg-icon", props.className)}>
       {props.iconSpec}
     </i>
   );

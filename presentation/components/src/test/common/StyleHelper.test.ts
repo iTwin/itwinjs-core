@@ -6,7 +6,7 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { Node, LabelDefinition } from "@bentley/presentation-common";
+import { LabelDefinition, Node } from "@bentley/presentation-common";
 import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { StyleHelper } from "../../presentation-components/common/StyleHelper";
 

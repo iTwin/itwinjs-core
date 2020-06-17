@@ -6,19 +6,18 @@
  * @module IModelComponents
  */
 
+import "./ModelsTree.scss";
 import * as React from "react";
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { IModelConnection, PerModelCategoryVisibility, Viewport } from "@bentley/imodeljs-frontend";
+import { ContentFlags, DescriptorOverrides, InstanceKey, KeySet, NodeKey, Ruleset } from "@bentley/presentation-common";
+import { ContentDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
+import { ControlledTree, SelectionMode, TreeNodeItem, useVisibleTreeNodes } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
-import { IModelConnection, Viewport, PerModelCategoryVisibility } from "@bentley/imodeljs-frontend";
-import { NodeKey, Ruleset, InstanceKey, KeySet, DescriptorOverrides, ContentFlags } from "@bentley/presentation-common";
-import { ContentDataProvider, usePresentationTreeNodeLoader, IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { TreeNodeItem, ControlledTree, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
-import { UiFramework } from "../../../ui-framework/UiFramework";
 import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
+import { UiFramework } from "../../../ui-framework/UiFramework";
 import { IVisibilityHandler, VisibilityStatus, VisibilityTreeEventHandler, VisibilityTreeFilterInfo } from "../VisibilityTreeEventHandler";
-import { useVisibilityTreeRenderer, useVisibilityTreeFiltering, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
-
-import "./ModelsTree.scss";
+import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
 
 const PAGING_SIZE = 20;
 
@@ -142,6 +141,7 @@ export function ModelsTree(props: ModelsTreeProps) {
 
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : undefined;
 
+  // istanbul ignore next
   const noFilteredDataRenderer = React.useCallback(() => {
     return <VisibilityTreeNoFilteredData
       title={UiFramework.i18n.translate("UiFramework:modelTree.noModelFound")}
@@ -188,6 +188,7 @@ const useVisibilityHandler = (activeView?: Viewport, visibilityHandler?: Visibil
 };
 
 const createVisibilityHandler = (activeView?: Viewport): IVisibilityHandler | undefined => {
+  // istanbul ignore next
   return activeView ? new VisibilityHandler({ viewport: activeView }) : undefined;
 };
 
@@ -287,15 +288,15 @@ export class VisibilityHandler implements IVisibilityHandler {
   }
 
   private getCategoryParentModelId(categoryNode: TreeNodeItem): Id64String | undefined {
-    return categoryNode.extendedData ? categoryNode.extendedData.modelId : undefined;
+    return categoryNode.extendedData ? categoryNode.extendedData.modelId : /* istanbul ignore next */ undefined;
   }
 
   private getElementModelId(elementNode: TreeNodeItem): Id64String | undefined {
-    return elementNode.extendedData ? elementNode.extendedData.modelId : undefined;
+    return elementNode.extendedData ? elementNode.extendedData.modelId : /* istanbul ignore next */ undefined;
   }
 
   private getElementCategoryId(elementNode: TreeNodeItem): Id64String | undefined {
-    return elementNode.extendedData ? elementNode.extendedData.categoryId : undefined;
+    return elementNode.extendedData ? elementNode.extendedData.categoryId : /* istanbul ignore next */ undefined;
   }
 
   private async getSubjectDisplayStatus(ids: Id64String[]): Promise<VisibilityStatus> {
@@ -397,7 +398,9 @@ export class VisibilityHandler implements IVisibilityHandler {
       && categoryId && this.getCategoryDisplayStatus(categoryId, modelId).isDisplayed;
     const isHiddenDueToExclusiveAlwaysDrawnElements = this._props.viewport.isAlwaysDrawnExclusive && this._props.viewport.alwaysDrawn && 0 !== this._props.viewport.alwaysDrawn.size;
     const currNeverDrawn = new Set(this._props.viewport.neverDrawn ? this._props.viewport.neverDrawn : []);
-    const currAlwaysDrawn = new Set(this._props.viewport.alwaysDrawn ? this._props.viewport.alwaysDrawn : []);
+    const currAlwaysDrawn = new Set(this._props.viewport.alwaysDrawn ?
+      this._props.viewport.alwaysDrawn : /* istanbul ignore next */[],
+    );
     elementIds.forEach((elementId) => {
       if (on) {
         currNeverDrawn.delete(elementId);
@@ -443,6 +446,7 @@ export class VisibilityHandler implements IVisibilityHandler {
       .reduce((allModelIds: Id64String[], curr: Id64String[]) => [...allModelIds, ...curr], []);
   }
 
+  // istanbul ignore next
   private async getAssemblyElementIds(assemblyId: Id64String): Promise<Id64String[]> {
     const provider = new AssemblyElementIdsProvider(this._props.viewport.iModel, assemblyId);
     return provider.getElementIds();
@@ -516,6 +520,7 @@ class SubjectModelIdsCache {
   }
 }
 
+// istanbul ignore next
 class RulesetDrivenRecursiveIdsProvider extends ContentDataProvider {
   constructor(imodel: IModelConnection, displayType: string, parentKey: InstanceKey) {
     super({ imodel, ruleset: RULESET_MODELS.id, displayType });
@@ -535,6 +540,7 @@ class RulesetDrivenRecursiveIdsProvider extends ContentDataProvider {
   }
 }
 
+// istanbul ignore next
 class AssemblyElementIdsProvider extends RulesetDrivenRecursiveIdsProvider {
   constructor(imodel: IModelConnection, assemblyId: Id64String) {
     super(imodel, "AssemblyElementsRequest", { className: "BisCore:Element", id: assemblyId });

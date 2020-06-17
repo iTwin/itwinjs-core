@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore focustrap imagecheckbox iconinput
+// cSpell:ignore focustrap imagecheckbox iconinput hocs
 
 export * from "./ui-core/UiCore";
 
@@ -75,6 +75,7 @@ export * from "./ui-core/radio/Radio";
 
 export * from "./ui-core/select/LabeledSelect";
 export * from "./ui-core/select/Select";
+export * from "./ui-core/select/ThemedSelect";
 
 export * from "./ui-core/loading/LoadingBar";
 export * from "./ui-core/loading/LoadingPrompt";
@@ -83,6 +84,10 @@ export * from "./ui-core/loading/LoadingStatus";
 export * from "./ui-core/loading/Spinner";
 
 export * from "./ui-core/messagebox/MessageBox";
+
+export * from "./ui-core/notification/MessageRenderer";
+export * from "./ui-core/notification/MessageType";
+export * from "./ui-core/notification/Tooltip";
 
 export * from "./ui-core/popup/Popup";
 
@@ -130,6 +135,7 @@ export { TreeNode, TreeNodeProps, NodeCheckboxProps, NodeCheckboxRenderer, NodeC
 export { Tree, TreeProps } from "./ui-core/tree/Tree";
 export { TreeNodePlaceholder, TreeNodePlaceholderProps } from "./ui-core/tree/Placeholder";
 
+export * from "./ui-core/uisettings/UiSetting";
 export * from "./ui-core/uisettings/UiSettings";
 export * from "./ui-core/uisettings/LocalUiSettings";
 export * from "./ui-core/uisettings/SessionUiSettings";
@@ -142,6 +148,7 @@ export * from "./ui-core/utils/Size";
 export * from "./ui-core/utils/Timer";
 export * from "./ui-core/utils/UiEvent";
 export * from "./ui-core/utils/flattenChildren";
+export * from "./ui-core/utils/getCssVariable";
 export * from "./ui-core/utils/getDisplayName";
 export * from "./ui-core/utils/getUserColor";
 export * from "./ui-core/utils/shallowDiffers";
@@ -221,6 +228,10 @@ export * from "./ui-core/utils/hooks/useTargeted";
 /**
  * @docs-group-description Loading
  * Components for working with Loading spinner and progress indicator.
+ */
+/**
+ * @docs-group-description Notification
+ * Components for working with a messages and tooltips.
  */
 /**
  * @docs-group-description Popup

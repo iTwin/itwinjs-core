@@ -6,9 +6,9 @@
  * @module iModelHubClient
  */
 
+import * as deepAssign from "deep-assign";
 import { GuidString, Id64String, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, ResponseError, WsgInstance, WsgQuery, WsgRequestOptions } from "@bentley/itwin-client";
-import * as deepAssign from "deep-assign";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { AggregateResponseError, ArgumentCheck, IModelHubError } from "./Errors";
@@ -90,10 +90,9 @@ export class DefaultLockUpdateOptionsProvider {
    * @param options Options that should be augmented.
    */
   public async assignOptions(options: LockUpdateOptions): Promise<void> {
-    const clonedOptions: LockUpdateOptions = Object.assign({}, options);
+    const clonedOptions: LockUpdateOptions = { ...options };
     deepAssign(options, this._defaultOptions);
     deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
-    return Promise.resolve();
   }
 }
 
@@ -480,7 +479,7 @@ export class LockHandler {
               conflictError = ConflictingLocksError.fromError(error);
             }
             if (!updateOptions.continueOnConflict) {
-              return Promise.reject(conflictError);
+              throw conflictError;
             }
           } else {
             aggregateError.errors.push(error);
@@ -490,11 +489,11 @@ export class LockHandler {
     }
 
     if (conflictError) {
-      return Promise.reject(conflictError);
+      throw conflictError;
     }
 
     if (aggregateError.errors.length > 0) {
-      return Promise.reject(aggregateError.errors.length > 1 ? aggregateError : aggregateError.errors[0]);
+      throw aggregateError.errors.length > 1 ? aggregateError : aggregateError.errors[0];
     }
 
     Logger.logTrace(loggerCategory, `Requested ${locks.length} locks for iModel`, () => ({ iModelId }));

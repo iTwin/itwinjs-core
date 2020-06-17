@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
 import { assert, expect } from "chai";
-import { SchemaXmlFileLocater } from "../src/SchemaXmlFileLocater";
+import * as path from "path";
+import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
 import { FileSchemaKey } from "../src/SchemaFileLocater";
-import { SchemaKey, SchemaContext, SchemaMatchType, ECObjectsError, ECObjectsStatus, ECVersion } from "@bentley/ecschema-metadata";
+import { SchemaXmlFileLocater } from "../src/SchemaXmlFileLocater";
 
 describe("SchemaXmlFileLocater tests:", () => {
   let locater: SchemaXmlFileLocater;

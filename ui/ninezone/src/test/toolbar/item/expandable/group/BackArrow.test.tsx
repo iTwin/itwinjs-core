@@ -5,8 +5,8 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BackArrow } from "../../../../../ui-ninezone";
 import * as useTargetedModule from "@bentley/ui-core";
+import { BackArrow } from "../../../../../ui-ninezone";
 
 describe("<BackArrow />", () => {
   const sandbox = sinon.createSandbox();

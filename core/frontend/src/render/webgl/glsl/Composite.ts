@@ -6,14 +6,14 @@
  * @module WebGL
  */
 
-import { TextureUnit, CompositeFlags } from "../RenderFlags";
+import { assert } from "@bentley/bentleyjs-core";
+import { CompositeGeometry } from "../CachedGeometry";
+import { CompositeFlags, TextureUnit } from "../RenderFlags";
 import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
-import { CompositeGeometry } from "../CachedGeometry";
 import { Texture2DHandle } from "../Texture";
+import { addWindowToTexCoords, assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { assignFragColor, addWindowToTexCoords } from "./Fragment";
-import { assert } from "@bentley/bentleyjs-core";
 
 function addHiliteSettings(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_hilite_settings", VariableType.Mat3, (prog) => {
@@ -185,6 +185,10 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
     if (!wantHilite && !wantTranslucent)
       frag.set(FragmentShaderComponent.ComputeBaseColor, computeAmbientOcclusionBaseColor);
   }
+
+  const flagString = (wantHilite ? "-Hilite" : "") + (wantTranslucent ? "-Translucent" : "") + (wantOcclusion ? "-Occlusion" : "");
+  builder.vert.headerComment = "//!V! CombineTextures" + flagString;
+  builder.frag.headerComment = "//!F! CombineTextures" + flagString;
 
   return builder.buildProgram(context);
 }

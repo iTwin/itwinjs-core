@@ -4,35 +4,192 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
-import {
-  IModelApp, PrimitiveTool,
-  BeButtonEvent, EventHandled,
-  AngleDescription, LengthDescription, SurveyLengthDescription,
-  NotifyMessageDetails, OutputMessagePriority,
-  QuantityType, ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
-import {
-  DialogItem, PropertyDescription, DialogItemValue, DialogPropertySyncItem,
-  PropertyEditorParamTypes,
-  ColorEditorParams, InputEditorSizeParams, SuppressLabelEditorParams,
-} from "@bentley/ui-abstract";
-
 import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import {
+  AngleDescription, BeButtonEvent, EventHandled, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
+  QuantityType, SurveyLengthDescription, ToolAssistance, ToolAssistanceImage,
+} from "@bentley/imodeljs-frontend";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
-import { UiFramework, CursorInformation, MenuItemProps } from "@bentley/ui-framework";
+import {
+  ColorEditorParams, DialogItem, DialogItemValue, DialogPropertyItem, DialogPropertySyncItem, InputEditorSizeParams, PropertyChangeResult,
+  PropertyChangeStatus, PropertyDescription, PropertyEditorParamTypes, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent, UiDataProvider,
+} from "@bentley/ui-abstract";
+import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
 
 enum ToolOptions {
-  Red,
-  White,
-  Blue,
-  Yellow,
+  Red = 1,
+  White = 2,
+  Blue = 3,
+  Yellow = 4,
+}
+
+enum ToolOptionNames {
+  Red = "Red",
+  White = "White",
+  Blue = "Blue",
+  Yellow = "Yellow",
+}
+
+class PointOnePopupSettingsProvider extends UiDataProvider {
+  // ------------- Weight ---------------
+  private static _weightName = "weight";
+  private static _getWeightDescription(): PropertyDescription {
+    return {
+      name: this._weightName,
+      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Weight"),
+      typename: "number",
+      editor: {
+        name: "weight-picker",
+      },
+    };
+  }
+
+  private _weightValue: DialogItemValue = { value: 3 };
+
+  public get weight(): number {
+    return this._weightValue.value as number;
+  }
+
+  public set weight(weightVal: number) {
+    this._weightValue.value = weightVal;
+  }
+
+  // ------------- Color ---------------
+  private static _colorOptionPropertyName = "colorOption";
+  private static enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Options." + str); }
+  private static getEnumAsPicklistDescription(): PropertyDescription {
+    return {
+      name: this._colorOptionPropertyName,
+      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
+      typename: "enum",
+      enum: {
+        choices: [
+          { label: this.enumAsPicklistMessage(ToolOptionNames.Red), value: ToolOptions.Red },
+          { label: this.enumAsPicklistMessage(ToolOptionNames.White), value: ToolOptions.White },
+          { label: this.enumAsPicklistMessage(ToolOptionNames.Blue), value: ToolOptions.Blue },
+          { label: this.enumAsPicklistMessage(ToolOptionNames.Yellow), value: ToolOptions.Yellow },
+        ],
+      },
+    };
+  }
+
+  private _colorOptionValue: DialogItemValue = { value: ToolOptions.Blue };
+
+  public get colorOption(): ToolOptions {
+    return this._colorOptionValue.value as ToolOptions;
+  }
+
+  public set colorOption(option: ToolOptions) {
+    this._colorOptionValue.value = option;
+  }
+
+  /** Called by UI to inform data provider of changes.  */
+  public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+    if (properties.length > 0) {
+      for (const prop of properties) {
+        if (prop.propertyName === PointOnePopupSettingsProvider._colorOptionPropertyName) {
+          this.colorOption = (prop.value.value! as number) as ToolOptions;
+          const msg = `Set Color Option = ${this.colorOption}`;
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+          continue;
+        } else if (prop.propertyName === PointOnePopupSettingsProvider._weightName) {
+          this.weight = prop.value.value! as number;
+          const msg = `Set Weight = ${this.weight}`;
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+          continue;
+        }
+      }
+    }
+    return { status: PropertyChangeStatus.Success };
+  }
+
+  /** Used Called by UI to request available properties when UI is manually created. */
+  public supplyDialogItems(): DialogItem[] | undefined {
+    return [
+      { value: this._colorOptionValue, property: PointOnePopupSettingsProvider.getEnumAsPicklistDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } },
+      { value: this._weightValue, property: PointOnePopupSettingsProvider._getWeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 1 } },
+    ];
+  }
+
+  /** Get Sync UI Control Properties Event */
+  public onSyncPropertiesChangeEvent = new SyncPropertiesChangeEvent();
+
+  /** Called by UI to validate a property value */
+  public validateProperty(_item: DialogPropertyItem): PropertyChangeResult {
+    return { status: PropertyChangeStatus.Success };
+  }
+
+  /** Called to sync properties synchronously if a UiDataProvider is active for the UI */
+  public syncProperties(_syncProperties: DialogPropertySyncItem[]) {
+    return;
+  }
+}
+
+class PointTwoPopupSettingsProvider extends UiDataProvider {
+
+  // ------------- text based edit field ---------------
+  private static _sourcePropertyName = "source";
+  private static _getSourceDescription = (): PropertyDescription => {
+    return {
+      name: PointTwoPopupSettingsProvider._sourcePropertyName,
+      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Source"),
+      typename: "string",
+    };
+  }
+
+  private _sourceValue: DialogItemValue = { value: "unknown" };
+
+  public get source(): string {
+    return this._sourceValue.value as string;
+  }
+
+  public set source(option: string) {
+    this._sourceValue.value = option;
+  }
+
+  /** Called by UI to inform data provider of changes.  */
+  public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+    if (properties.length > 0) {
+      for (const prop of properties) {
+        if (prop.propertyName === PointTwoPopupSettingsProvider._sourcePropertyName) {
+          this.source = prop.value.value ? prop.value.value as string : "";
+          const msg = `Set Source = ${this.source}`;
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+          continue;
+        }
+      }
+    }
+    return { status: PropertyChangeStatus.Success };
+  }
+
+  /** Called by UI to request available properties when UI is manually created. */
+  public supplyDialogItems(): DialogItem[] | undefined {
+    return [
+      { value: this._sourceValue, property: PointTwoPopupSettingsProvider._getSourceDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } },
+    ];
+  }
+
+  /** Get Sync UI Control Properties Event */
+  public onSyncPropertiesChangeEvent = new SyncPropertiesChangeEvent();
+
+  /** Called by UI to validate a property value */
+  public validateProperty(_item: DialogPropertyItem): PropertyChangeResult {
+    return { status: PropertyChangeStatus.Success };
+  }
+
+  /** Called to sync properties synchronously if a UiDataProvider is active for the UI */
+  public syncProperties(_syncProperties: DialogPropertySyncItem[]) {
+    return;
+  }
 }
 
 export class ToolWithSettings extends PrimitiveTool {
+  private _pointOnePopupSettingsProvider = new PointOnePopupSettingsProvider();
+  private _pointTwoPopupSettingsProvider = new PointTwoPopupSettingsProvider();
   public static toolId = "ToolWithSettings";
-  public readonly points: Point3d[] = [];
+  public points: Point3d[] = [];
   private _showCoordinatesOnPointerMove = false;
   private _stationFormatterSpec?: FormatterSpec;
   private _lengthDescription = new LengthDescription();
@@ -40,36 +197,6 @@ export class ToolWithSettings extends PrimitiveTool {
 
   private toggleCoordinateUpdate() {
     this._showCoordinatesOnPointerMove = !this._showCoordinatesOnPointerMove;
-  }
-
-  // Tool Setting Properties
-  // ------------- Enum based picklist ---------------
-  private static enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Options." + str); }
-  private static _optionsName = "enumAsPicklist";
-  private static _getEnumAsPicklistDescription = (): PropertyDescription => {
-    return {
-      name: ToolWithSettings._optionsName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Options"),
-      typename: "enum",
-      enum: {
-        choices: [
-          { label: ToolWithSettings.enumAsPicklistMessage("Red"), value: ToolOptions.Red },
-          { label: ToolWithSettings.enumAsPicklistMessage("White"), value: ToolOptions.White },
-          { label: ToolWithSettings.enumAsPicklistMessage("Blue"), value: ToolOptions.Blue },
-          { label: ToolWithSettings.enumAsPicklistMessage("Yellow"), value: ToolOptions.Yellow },
-        ],
-      },
-    };
-  }
-
-  private _optionsValue: DialogItemValue = { value: ToolOptions.Blue };
-
-  public get option(): ToolOptions {
-    return this._optionsValue.value as ToolOptions;
-  }
-
-  public set option(option: ToolOptions) {
-    this._optionsValue.value = option;
   }
 
   // ------------- Color ---------------
@@ -103,42 +230,19 @@ export class ToolWithSettings extends PrimitiveTool {
   private _colorValue: DialogItemValue = { value: ColorByName.blue as number };
 
   public get colorValue(): number {
-    return this._optionsValue.value as number;
+    return this._colorValue.value as number;
   }
 
   public set colorValue(colorVal: number) {
-    this._optionsValue.value = colorVal;
+    this._colorValue.value = colorVal;
   }
 
   public get colorDef(): ColorDef {
-    return ColorDef.create(this._optionsValue.value as number);
+    return ColorDef.create(this._colorValue.value as number);
   }
 
   public set colorDef(colorVal: ColorDef) {
-    this._optionsValue.value = colorVal.tbgr;
-  }
-
-  // ------------- Weight ---------------
-  private static _weightName = "weight";
-  private static _getWeightDescription = (): PropertyDescription => {
-    return {
-      name: ToolWithSettings._weightName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Weight"),
-      typename: "number",
-      editor: {
-        name: "weight-picker",
-      },
-    };
-  }
-
-  private _weightValue: DialogItemValue = { value: 3 };
-
-  public get weight(): number {
-    return this._weightValue.value as number;
-  }
-
-  public set weight(weightVal: number) {
-    this._weightValue.value = weightVal;
+    this._colorValue.value = colorVal.tbgr;
   }
 
   // ------------- boolean based toggle button ---------------
@@ -342,7 +446,11 @@ export class ToolWithSettings extends PrimitiveTool {
   // -------- end of ToolSettings ----------
 
   public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public onPostInstall() {
+    super.onPostInstall();
+    this.setupAndPromptForNextAction();
+    this.points = [];
+  }
   public onUnsuspend(): void { this.provideToolAssistance(); }
 
   /** Establish current tool state and initialize drawing aides following onPostInstall, onDataButtonDown, onUndoPreviousStep, or other events that advance or back up the current tool state.
@@ -352,7 +460,19 @@ export class ToolWithSettings extends PrimitiveTool {
    * Provide tool assistance.
    */
   protected setupAndPromptForNextAction(): void {
+    const offset = IModelApp.uiAdmin.createXAndY(8, 0);
+
+    if (1 === this.points.length)
+      IModelApp.uiAdmin.openToolSettingsPopup(this._pointOnePopupSettingsProvider, IModelApp.uiAdmin.cursorPosition, offset, this._handleToolSettingsPopupCancel, RelativePosition.Right);
+    else if (2 === this.points.length) {
+      IModelApp.uiAdmin.openToolSettingsPopup(this._pointTwoPopupSettingsProvider, IModelApp.uiAdmin.cursorPosition, offset, this._handleToolSettingsPopupCancel, RelativePosition.Right);
+    }
+
     this.provideToolAssistance();
+  }
+
+  private _handleToolSettingsPopupCancel = () => {
+    IModelApp.uiAdmin.closeToolSettingsPopup();
   }
 
   /** A tool is responsible for providing tool assistance appropriate to the current tool state following significant events.
@@ -385,17 +505,27 @@ export class ToolWithSettings extends PrimitiveTool {
       return EventHandled.No;
     }
 
-    if (this.points.length < 2)
-      this.points.push(ev.point.clone());
-    else
-      this.points[1] = ev.point.clone();
+    this.points.push(ev.point.clone());
+    if (2 === this.points.length) {
+      const msg = `Point One -> Color=${this._pointOnePopupSettingsProvider.colorOption} Weight=${this._pointOnePopupSettingsProvider.weight}`;
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    } else if (3 === this.points.length) {
+      const msg = `Point Two -> Source=${this._pointTwoPopupSettingsProvider.source}`;
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+    }
+
     this.toggleCoordinateUpdate();
+    IModelApp.uiAdmin.closeToolSettingsPopup();
+    if (3 === this.points.length)
+      this.points = [];
     this.setupAndPromptForNextAction();
 
     return EventHandled.No;
   }
 
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    IModelApp.uiAdmin.closeToolSettingsPopup();
+
     /* Common reset behavior for primitive tools is calling onReinitialize to restart or exitTool to terminate. */
     this.onReinitialize();
     return EventHandled.No;
@@ -436,9 +566,7 @@ export class ToolWithSettings extends PrimitiveTool {
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
     const readonly = true;
     const toolSettings = new Array<DialogItem>();
-    toolSettings.push({ value: this._optionsValue, property: ToolWithSettings._getEnumAsPicklistDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
     toolSettings.push({ value: this._colorValue, property: ToolWithSettings._getColorDescription(), editorPosition: { rowPriority: 2, columnIndex: 2 } });
-    toolSettings.push({ value: this._weightValue, property: ToolWithSettings._getWeightDescription(), editorPosition: { rowPriority: 3, columnIndex: 2 } });
     toolSettings.push({ value: this._lockValue, property: ToolWithSettings._getLockToggleDescription(), editorPosition: { rowPriority: 5, columnIndex: 2 } });
     toolSettings.push({ value: this._cityValue, property: ToolWithSettings._getCityDescription(), editorPosition: { rowPriority: 10, columnIndex: 2 } });
     toolSettings.push({ value: this._stateValue, property: ToolWithSettings._getStateDescription(), editorPosition: { rowPriority: 10, columnIndex: 4 } });
@@ -469,12 +597,7 @@ export class ToolWithSettings extends PrimitiveTool {
 
   /** Used to send changes from UI back to Tool */
   public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
-    if (updatedValue.propertyName === ToolWithSettings._optionsName) {
-      if (this._optionsValue.value !== updatedValue.value.value) {
-        this.option = updatedValue.value.value as ToolOptions;
-        this.showInfoFromUi(updatedValue);
-      }
-    } else if (updatedValue.propertyName === ToolWithSettings._lockToggleName) {
+    if (updatedValue.propertyName === ToolWithSettings._lockToggleName) {
       this.lock = updatedValue.value.value as boolean;
       this.showInfoFromUi(updatedValue);
     } else if (updatedValue.propertyName === ToolWithSettings._cityName) {
@@ -496,9 +619,6 @@ export class ToolWithSettings extends PrimitiveTool {
     } else if (updatedValue.propertyName === ToolWithSettings._colorName) {
       this.colorValue = updatedValue.value.value as number;
       this.showColorInfoFromUi(updatedValue);
-    } else if (updatedValue.propertyName === ToolWithSettings._weightName) {
-      this.weight = updatedValue.value.value as number;
-      this.showInfoFromUi(updatedValue);
     }
 
     // return true is change is valid

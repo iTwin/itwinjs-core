@@ -2,14 +2,20 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
-import { RpcInterface, RpcManager, IModelRpcProps, Editor3dRpcInterface, BentleyError, IModelStatus, GeometricElement3dProps } from "@bentley/imodeljs-common";
-import { IModelHost } from "../IModelHost";
+
+/** @packageDocumentation
+ * @module RpcInterface
+ */
+
+import { ClientRequestContext, GuidString, Id64Array } from "@bentley/bentleyjs-core";
+import { Point3d, TransformProps, YawPitchRollAngles } from "@bentley/geometry-core";
+import {
+  BentleyError, Editor3dRpcInterface, GeometricElement3dProps, IModelRpcProps, IModelStatus, RpcInterface, RpcManager,
+} from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { GeometricElement3dEditor } from "../ElementEditor";
 import { IModelDb } from "../IModelDb";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ClientRequestContext, Id64Array, GuidString } from "@bentley/bentleyjs-core";
-import { TransformProps, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { IModelHost } from "../IModelHost";
 
 function getEditor(editorId: GuidString): GeometricElement3dEditor {
   const ed = IModelHost.elementEditors.get(editorId);

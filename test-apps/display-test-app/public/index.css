@@ -57,6 +57,10 @@
   z-index: 10;
 }
 
+.overflow-auto {
+  overflow: auto;
+}
+
 .floating-window-container {
   position: absolute;
   display: flex;
@@ -182,6 +186,31 @@
   padding-left:2.5px;
   padding-right:2.5px;
   height: 50px;
+}
+
+.popup-toolbar {
+  display: flex;
+  align-items: center;
+  height: fit-content;
+  width: fit-content;
+  top: 0px;
+  left: 0px;
+  vertical-align: middle;
+}
+
+.popup-toolbar-button {
+  position:relative;
+  background-color: #f0f0f0;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+  padding: 1px;
+  margin: 1px;
+  margin-top: 3px;
+  width: 35px;
+  height: 35px;
+  cursor:pointer;
+  vertical-align: middle;
 }
 
 .status-bar {

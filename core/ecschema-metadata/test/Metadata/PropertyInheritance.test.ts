@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Schema, MutableSchema } from "../../src/Metadata/Schema";
-import { ECClass, MutableClass } from "../../src/Metadata/Class";
-import { PrimitiveType } from "../../src/ECObjects";
 import { SchemaContext } from "../../src/Context";
+import { PrimitiveType } from "../../src/ECObjects";
+import { ECClass, MutableClass } from "../../src/Metadata/Class";
+import { MutableSchema, Schema } from "../../src/Metadata/Schema";
 
 describe("Property Inheritance", () => {
   describe("Struct class with two levels of base classes", () => {

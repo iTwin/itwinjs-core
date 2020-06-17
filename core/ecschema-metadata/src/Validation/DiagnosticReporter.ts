@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
 import { AnyDiagnostic } from "./Diagnostic";
+
 import assert = require("assert");
 
 const translationNamespace = "ECSchemaMetaData";

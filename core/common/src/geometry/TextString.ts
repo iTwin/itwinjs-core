@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { XYZProps, Point3d, YawPitchRollAngles, YawPitchRollProps, Transform, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
 
 /** Properties for a TextString class.
  * @see [[GeometryStreamEntryProps]]

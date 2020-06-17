@@ -6,15 +6,17 @@
  * @module Widget
  */
 
+import "./ContentRenderer.scss";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { WidgetContentManagerContext, WidgetContentContainersContext } from "./ContentManager";
-import { TabsStateContext, WidgetContentNodeContext } from "../base/NineZone";
-import { TabState } from "../base/NineZoneState";
-import "./ContentRenderer.scss";
+import { TabsStateContext, ToolSettingsNodeContext, WidgetContentNodeContext } from "../base/NineZone";
+import { TabState, toolSettingsTabId } from "../base/NineZoneState";
+import { WidgetContentContainersContext, WidgetContentManagerContext } from "./ContentManager";
 
 /** @internal */
 export const WidgetContentRenderers = React.memo(function WidgetContentRenderers() { // tslint:disable-line: variable-name no-shadowed-variable
+  const widgetContent = React.useContext(WidgetContentNodeContext);
+  const toolSettingsContent = React.useContext(ToolSettingsNodeContext);
   const widgetContentContainers = React.useContext(WidgetContentContainersContext);
   const tabs = React.useContext(TabsStateContext);
   const tabEntries = Object.entries(tabs);
@@ -22,7 +24,9 @@ export const WidgetContentRenderers = React.memo(function WidgetContentRenderers
     <>
       {tabEntries.map(([, tab]) => {
         const container = widgetContentContainers[tab.id];
+        const children = tab.id === toolSettingsTabId ? toolSettingsContent : widgetContent;
         return <WidgetContentRenderer
+          children={children}
           key={tab.id}
           renderTo={container}
           tabId={tab.id}
@@ -33,16 +37,19 @@ export const WidgetContentRenderers = React.memo(function WidgetContentRenderers
 });
 
 interface WidgetContentRendererProps {
+  children?: React.ReactNode;
   renderTo: Element | null | undefined;
   tabId: TabState["id"];
 }
 
 /** @internal */
 export const WidgetContentRenderer = React.memo(function WidgetContentRenderer(props: WidgetContentRendererProps) { // tslint:disable-line: variable-name no-shadowed-variable
-  const widgetContent = React.useContext(WidgetContentNodeContext);
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
-  const container = React.useRef(document.createElement("div"));
-  container.current.className = "nz-widget-contentRenderer";
+  const container = React.useRef<HTMLDivElement>(undefined!);
+  if (!container.current) {
+    container.current = document.createElement("div");
+    container.current.className = "nz-widget-contentRenderer";
+  }
   React.useEffect(() => {
     const parent = props.renderTo;
     const child = container.current;
@@ -56,7 +63,7 @@ export const WidgetContentRenderer = React.memo(function WidgetContentRenderer(p
   }, [props.renderTo, widgetContentManager, props.tabId]);
   return ReactDOM.createPortal(
     <TabIdContext.Provider value={props.tabId}>
-      {widgetContent}
+      {props.children}
     </TabIdContext.Provider>,
     container.current,
   );

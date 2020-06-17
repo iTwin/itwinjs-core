@@ -6,12 +6,12 @@
  * @module Authentication
  */
 
-import * as xpath from "xpath";
-import { DOMParser } from "xmldom";
-import { UserInfo } from "./UserInfo";
 import { Base64 } from "js-base64";
+import { DOMParser } from "xmldom";
+import * as xpath from "xpath";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { IncludePrefix } from "./Token";
+import { UserInfo } from "./UserInfo";
 
 /* tslint:disable:deprecation */
 

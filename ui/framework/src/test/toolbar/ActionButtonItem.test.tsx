@@ -2,19 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow } from "enzyme";
-import * as sinon from "sinon";
 import { expect } from "chai";
-
-import { BadgeType, ActionButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
-
-import {
-  ActionButtonItem,
-  KeyboardShortcutManager,
-  ToolbarHelper,
-  CommandItemDef,
-} from "../../ui-framework";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
+import * as sinon from "sinon";
+import { ActionButton, BadgeType, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { ActionButtonItem, CommandItemDef, KeyboardShortcutManager, ToolbarHelper } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
 describe("ActionButtonItem", () => {

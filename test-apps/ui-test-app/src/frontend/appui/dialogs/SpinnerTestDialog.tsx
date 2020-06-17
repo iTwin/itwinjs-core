@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Dialog, Spinner, SpinnerSize, LoadingSpinner, FillCentered } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { Dialog, FillCentered, LoadingSpinner, Spinner, SpinnerSize } from "@bentley/ui-core";
 
 export interface SpinnerTestDialogProps {
   opened: boolean;
@@ -132,11 +131,8 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
   }
 
   private _closeDialog = () => {
-    this.setState({  // eslint-disable-line @typescript-eslint/no-unused-expressions
+    this.setState({
       opened: false,
-    }), () => {
-      if (!this.state.opened)
-        ModalDialogManager.closeDialog();
-    };
+    });
   }
 }

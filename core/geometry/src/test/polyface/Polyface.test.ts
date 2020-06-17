@@ -2,42 +2,43 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IndexedPolyface, Polyface, IndexedPolyfaceVisitor } from "../../polyface/Polyface";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Range3d, Range2d } from "../../geometry3d/Range";
-import { SolidPrimitive } from "../../solid/SolidPrimitive";
-import { LineString3d } from "../../curve/LineString3d";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { Loop } from "../../curve/Loop";
-import { SweepContour } from "../../solid/SweepContour";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
 import * as fs from "fs";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { prettyPrint } from "../testFunctions";
 import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
+import { Path } from "../../curve/Path";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { UVSurface } from "../../geometry3d/GeometryHandler";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { Angle } from "../../geometry3d/Angle";
-import { Cone } from "../../solid/Cone";
-import { Sphere } from "../../solid/Sphere";
-import { Box } from "../../solid/Box";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { MomentData } from "../../geometry4d/MomentData";
-import { Geometry } from "../../Geometry";
-import { TorusPipe } from "../../solid/TorusPipe";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Path } from "../../curve/Path";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range2d, Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { MomentData } from "../../geometry4d/MomentData";
+import { IndexedPolyface, IndexedPolyfaceVisitor, Polyface } from "../../polyface/Polyface";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { Box } from "../../solid/Box";
+import { Cone } from "../../solid/Cone";
+import { SolidPrimitive } from "../../solid/SolidPrimitive";
+import { Sphere } from "../../solid/Sphere";
+import { SweepContour } from "../../solid/SweepContour";
+import { TorusPipe } from "../../solid/TorusPipe";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+
 /* tslint:disable:no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
@@ -224,23 +225,37 @@ describe("Polyface.HelloWorld", () => {
 describe("Polyface.HelloWorld", () => {
   it("Polyface.Compress", () => {
     const ck = new Checker();
-    const polyface = IndexedPolyface.create();
-    // create with duplicate points on edge ..
+    const polyface = IndexedPolyface.create(true, true);
+    // create with duplicate points and params on edge
     polyface.addPoint(Point3d.create(0, 0, 0));
+    polyface.addParam(Point2d.create(0, 0));
     polyface.addPoint(Point3d.create(1, 0, 0));
+    polyface.addParam(Point2d.create(1, 0));
     polyface.addPoint(Point3d.create(1, 1, 0));
+    polyface.addParam(Point2d.create(1, 1));
 
     polyface.addPoint(Point3d.create(1, 1, 0));
+    polyface.addParam(Point2d.create(1, 1));
     polyface.addPoint(Point3d.create(0, 1, 0));
+    polyface.addParam(Point2d.create(0, 1));
     polyface.addPoint(Point3d.create(0, 0, 0));
+    polyface.addParam(Point2d.create(0, 0));
 
-    polyface.addPointIndex(0);
-    polyface.addPointIndex(1);
-    polyface.addPointIndex(2);
+    for (let i = 0; i < 6; ++i)
+      polyface.addNormalXYZ(0, 0, 1); // addNormalXYZ to force redundant normals
+
+    const addIndex = (idx: number) => {
+      polyface.addPointIndex(idx);
+      polyface.addNormalIndex(idx);
+      polyface.addParamIndex(idx);
+    };
+    addIndex(0);
+    addIndex(1);
+    addIndex(2);
     polyface.terminateFacet();
-    polyface.addPointIndex(3);
-    polyface.addPointIndex(4);
-    polyface.addPointIndex(5);
+    addIndex(3);
+    addIndex(4);
+    addIndex(5);
     polyface.terminateFacet();
     polyface.data.compress();
     const loops = PolyfaceQuery.indexedPolyfaceToLoops(polyface);
@@ -251,6 +266,8 @@ describe("Polyface.HelloWorld", () => {
       4 + 2 * Math.sqrt(2));
 
     ck.testExactNumber(4, polyface.data.point.length, "compressed point count");
+    ck.testExactNumber(1, polyface.data.normal!.length, "compressed point count");
+    ck.testExactNumber(4, polyface.data.param!.length, "compressed point count");
     ck.checkpoint("Polyface.Compress");
     expect(ck.getNumErrors()).equals(0);
   });

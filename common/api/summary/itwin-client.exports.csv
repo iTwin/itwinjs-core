@@ -7,20 +7,22 @@ public;AuthorizedClientRequestContext
 public;AuthorizedClientRequestContextProps 
 beta;CancelRequest
 beta;ChangeState = "new" | "modified" | "deleted"
+beta;ChunkedQueryContext
 internal;ClassKeyMapInfo
 beta;class Client
-beta;ClientsLoggerCategory
 internal;ConstructorType = new () => any
 internal;DefaultRequestOptionsProvider
 internal;DefaultWsgRequestOptionsProvider 
+internal;DownloadFailed 
 beta;class ECInstance
 internal;ECJsonTypeMap
 beta;FileHandler
 internal;getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise
 internal;getJson(requestContext: ClientRequestContext, url: string): Promise
 beta;ImsAuthorizationClient 
-internal;IncludePrefix
+beta;IncludePrefix
 beta;isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext
+beta;ITwinClientLoggerCategory
 beta;ProgressCallback = (progress: ProgressInfo) => void
 beta;ProgressInfo
 internal;request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise
@@ -36,6 +38,7 @@ beta;ResponseError
 internal;SamlAccessToken 
 internal;SamlAuthorizationToken 
 internal;class SamlToken
+beta;SasUrlExpired 
 internal;UrlDiscoveryClient 
 internal;UserCancelledError 
 beta;UserInfo

@@ -2,22 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module WebGL
  */
-import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { CachedGeometry } from "./CachedGeometry";
-import { QBufferHandle3d, BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
-import { TechniqueId } from "./TechniqueId";
-import { RenderPass, RenderOrder } from "./RenderFlags";
-import { Target } from "./Target";
-import { GL } from "./GL";
-import { System } from "./System";
-import { dispose, assert } from "@bentley/bentleyjs-core";
+
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { FeatureIndexType } from "@bentley/imodeljs-common";
+import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
+import { CachedGeometry } from "./CachedGeometry";
 import { ShaderProgramParams } from "./DrawCommand";
+import { GL } from "./GL";
+import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle3d } from "./Handle";
+import { RenderOrder, RenderPass } from "./RenderFlags";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
 
 /** @internal */
 export class PointCloudGeometry extends CachedGeometry {

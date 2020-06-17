@@ -7,16 +7,16 @@
  * @module Topology
  */
 
-import { HalfEdgeMask, HalfEdge, HalfEdgeGraph } from "./Graph";
-import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
-import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { PointStreamXYZXYZHandlerBase, VariantPointDataStream } from "../geometry3d/PointStreaming";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
-import { InsertAndRetriangulateContext } from "./InsertAndRetriangulateContext";
+import { PointStreamXYZXYZHandlerBase, VariantPointDataStream } from "../geometry3d/PointStreaming";
+import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
+import { InsertAndRetriangulateContext } from "./InsertAndRetriangulateContext";
 
 /**
  * type for use as signature for xyz data of a single linestring appearing in a parameter list.

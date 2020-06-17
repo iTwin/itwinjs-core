@@ -6,14 +6,18 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes, ColorEditorParams } from "@bentley/ui-abstract"; //
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { ColorPickerButton } from "../color/ColorPickerButton";
-import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import "./ColorEditor.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { ColorDef } from "@bentley/imodeljs-common";
+import {
+  ColorEditorParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+} from "@bentley/ui-abstract"; //
+import { ColorPickerButton } from "../color/ColorPickerButton";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
+import { StandardEditorNames } from "./StandardEditorNames";
 
 /** @internal */
 interface ColorEditorState {
@@ -88,7 +92,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
       if (propertyRecord && this.props.onCommit) {
         const propertyValue = await this.getPropertyValue();
         // istanbul ignore else
-        if (propertyValue) {
+        if (propertyValue !== undefined) {
           this.props.onCommit({ propertyRecord, newValue: propertyValue });
         }
       }
@@ -165,4 +169,4 @@ export class ColorPropertyEditor extends PropertyEditorBase {
   }
 }
 
-PropertyEditorManager.registerEditor("number", ColorPropertyEditor, "color-picker");
+PropertyEditorManager.registerEditor(StandardTypeNames.Number, ColorPropertyEditor, StandardEditorNames.ColorPicker);

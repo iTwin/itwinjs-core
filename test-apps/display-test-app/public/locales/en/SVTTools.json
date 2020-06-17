@@ -47,6 +47,9 @@
     "SaveImage": {
       "keyin": "dta save image"
     },
+    "OutputShaders": {
+      "keyin": "dta output shaders"
+    },
     "ZoomToSelectedElements": {
       "keyin": "dta zoom selected"
     },
@@ -74,8 +77,17 @@
     "RecordFps": {
       "keyin": "dta record fps"
     },
-    "Toggle3dManipulations": {
-      "keyin": "dta manip3d"
+    "AttachView": {
+      "keyin": "dta attach view"
+    },
+    "DetachViews": {
+      "keyin": "dta detach views"
+    },
+    "ModelClip": {
+      "keyin": "dta model clip"
+    },
+    "LoadHypermodeling": {
+      "keyin": "dta hypermodeling"
     }
   }
 }

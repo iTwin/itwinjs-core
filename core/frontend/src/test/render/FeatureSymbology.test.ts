@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ColorDef, Feature, RgbColor, LinePixels, GeometryClass } from "@bentley/imodeljs-common";
-import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { ColorDef, Feature, GeometryClass, LinePixels, RgbColor } from "@bentley/imodeljs-common";
+import { FeatureSymbology } from "../../render/FeatureSymbology";
 
 describe("FeatureSymbology.Appearance", () => {
   it("default constructor works as expected", () => {

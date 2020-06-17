@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
+import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Rule used to create and assign artifacts to specific nodes. The artifacts can be

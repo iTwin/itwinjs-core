@@ -6,34 +6,20 @@
  * @module Geometry
  */
 
-import {
-  Angle,
-  AnyGeometryQuery,
-  GeometryQuery,
-  IModelJson as GeomJson,
-  LowAndHighXYZ,
-  Matrix3d,
-  Point2d,
-  Point3d,
-  Range3d,
-  Transform,
-  TransformProps,
-  Vector3d,
-  XYZProps,
-  YawPitchRollAngles,
-  YawPitchRollProps,
-} from "@bentley/geometry-core";
-
 import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import {
+  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
+  Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
+} from "@bentley/geometry-core";
 import { ColorDef, ColorDefProps } from "../ColorDef";
-import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill } from "../GeometryParams";
+import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps } from "../ElementProps";
+import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
 import { Gradient } from "../Gradient";
-import { TextStringProps, TextString } from "./TextString";
+import { IModelError } from "../IModelError";
+import { AreaPattern } from "./AreaPattern";
 import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
-import { AreaPattern } from "./AreaPattern";
-import { GeometricElement3dProps, GeometricElement2dProps, GeometryPartProps } from "../ElementProps";
-import { IModelError } from "../IModelError";
+import { TextString, TextStringProps } from "./TextString";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
@@ -71,9 +57,7 @@ export interface AreaFillProps {
   backgroundFill?: BackgroundFill;
   /** Set fill color to a specific color. If the fill color the same as the line color, it is an opaque fill, otherwise it is an outline fill */
   color?: ColorDefProps;
-  /** Set fill using gradient properties
-   * @beta
-   */
+  /** Set fill using gradient properties. */
   gradient?: Gradient.SymbProps;
 }
 
@@ -300,7 +284,7 @@ export class GeometryStreamBuilder {
     const partTrans = Transform.createOriginAndMatrix(instanceOrigin, instanceRotation ? instanceRotation.toMatrix3d() : Matrix3d.createIdentity());
     if (undefined !== instanceScale)
       partTrans.matrix.scaleColumnsInPlace(instanceScale, instanceScale, instanceScale);
-    const resultTrans = partTrans.multiplyTransformTransform(this._worldToLocal);
+    const resultTrans = this._worldToLocal.multiplyTransformTransform(partTrans);
     const scales = new Vector3d();
     if (!resultTrans.matrix.normalizeColumnsInPlace(scales))
       return false;
@@ -503,7 +487,7 @@ class IteratorEntry implements GeometryStreamIteratorEntry {
   public setPartReference(id: Id64String, toLocal?: Transform) {
     this._primitive = {
       type: "partReference",
-      part: {id, toLocal },
+      part: { id, toLocal },
     };
   }
 }
@@ -604,7 +588,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
     if (this._entry.localToWorld === undefined || partToLocal === undefined)
       return this._entry.localToWorld;
 
-    return partToLocal.multiplyTransformTransform(this._entry.localToWorld);
+    return this._entry.localToWorld.multiplyTransformTransform(partToLocal);
   }
 
   /** Advance to next displayable geometric entry while updating the current [[GeometryParams]] from appearance related entries.

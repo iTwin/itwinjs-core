@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { BeDuration, GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, RemoteBriefcaseConnection, IModelApp, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
-import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { assert } from "chai";
+import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, MockRender, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
 describe("Opening IModelConnection (#integration)", () => {
@@ -24,10 +24,8 @@ describe("Opening IModelConnection (#integration)", () => {
     const testProjectName = "iModelJsIntegrationTest";
     const testIModelName = "Stadium Dataset 1";
 
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
-
-    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);
+    const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    IModelApp.authorizationClient = authorizationClient;
 
     // Setup a model with a large number of change sets
     testProjectId = await TestUtility.getTestProjectId(testProjectName);
@@ -47,17 +45,17 @@ describe("Opening IModelConnection (#integration)", () => {
 
   const doTest = async (openMode: OpenMode) => {
     const promiseArray = new Array<Promise<IModelConnection>>();
-    let promiseChainWithShortWaits: Promise<void> = Promise.resolve();
-    let promiseChainWithFullWaits: Promise<void> = Promise.resolve();
+    let promiseChainWithShortWaits: Promise<any> = Promise.resolve();
+    let promiseChainWithFullWaits: Promise<any> = Promise.resolve();
     let n = 0;
     while (++n < 10) {
       const openPromise = RemoteBriefcaseConnection.open(testProjectId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
       const waitPromise = BeDuration.wait(5000); // 5 seconds
-      const racePromise = Promise.race([openPromise, waitPromise]).then(() => Promise.resolve());
+      const racePromise = Promise.race([openPromise, waitPromise]);
 
       promiseArray.push(openPromise);
       promiseChainWithShortWaits = promiseChainWithShortWaits.then(async () => racePromise);
-      promiseChainWithFullWaits = promiseChainWithFullWaits.then(async () => openPromise).then(() => Promise.resolve());
+      promiseChainWithFullWaits = promiseChainWithFullWaits.then(async () => openPromise);
     }
 
     await promiseChainWithShortWaits;

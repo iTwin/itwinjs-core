@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { MixinProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { ECClassModifier, SchemaItemType, StrengthDirection } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedEntityClass } from "../Interfaces";
+import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
-import { EntityClass, createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
+import { createNavigationProperty, createNavigationPropertySync, EntityClass } from "./EntityClass";
 import { NavigationProperty } from "./Property";
 import { RelationshipClass } from "./RelationshipClass";
 import { Schema } from "./Schema";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { ECClassModifier, SchemaItemType, StrengthDirection } from "./../ECObjects";
-import { MixinProps } from "./../Deserialization/JsonProps";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedEntityClass } from "./../Interfaces";
-import { SchemaItemKey } from "./../SchemaKey";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * A Typescript class representation of a Mixin.
@@ -47,6 +47,12 @@ export class Mixin extends ECClass {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
+  /**
+   * @alpha Used for schema editing.
+   */
+  protected setAppliesTo(appliesTo: LazyLoadedEntityClass) {
+    this._appliesTo = appliesTo;
+  }
   /**
    * Save this Mixin's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -120,4 +126,14 @@ export class Mixin extends ECClass {
 
     return appliesTo.is(entityClass);
   }
+}
+/**
+ * @internal
+ * An abstract class used for schema editing.
+ */
+export abstract class MutableMixin extends Mixin {
+
+  public abstract setAppliesTo(entityClass: LazyLoadedEntityClass): void;
+  public abstract async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
+  public abstract createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
 }

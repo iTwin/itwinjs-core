@@ -12,11 +12,10 @@ import ReactDataGrid = require("react-data-grid");
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { Timer } from "@bentley/ui-core";
-
-import { TableColumn } from "../component/TableColumn";
-import { ColumnFilterDescriptor, FilterOperator, FilterCompositionLogicalOperator } from "./ColumnFiltering";
-import { ColumnDescription, FilterRenderer, TableDistinctValue } from "../TableDataProvider";
 import { UiComponents } from "../../UiComponents";
+import { TableColumn } from "../component/TableColumn";
+import { ColumnDescription, FilterRenderer, TableDistinctValue } from "../TableDataProvider";
+import { ColumnFilterDescriptor, FilterCompositionLogicalOperator, FilterOperator } from "./ColumnFiltering";
 
 /** @internal */
 export interface ReactDataGridFilter extends ReactDataGrid.Filter {

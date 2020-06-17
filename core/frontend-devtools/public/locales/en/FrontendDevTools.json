@@ -9,9 +9,6 @@
     "ToggleReadPixels": {
       "keyin": "fdt toggle readpixels"
     },
-    "ToggleLogZ": {
-      "keyin": "fdt toggle logz"
-    },
     "ToggleDrapeFrustum": {
       "keyin": "fdt toggle drapefrustum"
     },
@@ -41,6 +38,9 @@
     },
     "ApplyView": {
       "keyin": "fdt apply view"
+    },
+    "ApplyViewById": {
+      "keyin": "fdt apply viewid"
     },
     "ToggleProjectExtents": {
       "keyin": "fdt project extents"
@@ -96,11 +96,8 @@
     "FadeOut": {
       "keyin": "fdt fadeout"
     },
-    "VCIntersectOn": {
-      "keyin": "fdt vcintersect on"
-    },
-    "VCIntersectOff": {
-      "keyin": "fdt vcintersect off"
+    "ToggleVCIntersect": {
+      "keyin": "fdt vcintersect"
     },
     "ToggleTileRequestDecoration": {
       "keyin": "fdt tile requests"
@@ -146,6 +143,27 @@
     },
     "ElementIdFromSourceAspectId": {
       "keyin": "fdt elemId from sourceId"
+    },
+    "Toggle3dManipulations": {
+      "keyin": "fdt 3dmanip"
+    },
+    "AttachRealityModelTool": {
+      "keyin": "fdt attach reality properties"
+    },
+    "ExtensionService": {
+      "keyin": "fdt add extensionService"
+    },
+    "SaveRealityModelTool": {
+      "keyin": "fdt save reality properties"
+    },
+    "ToggleViewAttachments": {
+      "keyin": "fdt attachments"
+    },
+    "ToggleViewAttachmentBoundaries": {
+      "keyin": "fdt attachment bounds"
+    },
+    "ToggleViewAttachmentClipShapes": {
+      "keyin": "fdt attachment clip shapes"
     }
   }
 }

@@ -40,19 +40,19 @@ class WorkerError extends Error {
 
 /** @internal */
 class TestWebWorker {
-  public static add(a: number, b: number): Promise<number> {
-    return Promise.resolve(a + b);
+  public static async add(a: number, b: number): Promise<number> {
+    return a + b;
   }
 
   // example of calculating factorial. Just for illustration, not actually used.
-  public static factorial(a: number): Promise<number> {
+  public static async factorial(a: number): Promise<number> {
     if (a <= 1)
-      Promise.resolve(1);
+      return 1;
     let result: number = 1;
     for (; a > 1; a--) {
       result = result * a;
     }
-    return Promise.resolve(result);
+    return result;
   }
 
   // an example of loading a url and converting it to a ImageBitmap, not actually used.

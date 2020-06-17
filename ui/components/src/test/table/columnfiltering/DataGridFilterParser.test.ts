@@ -5,17 +5,15 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { TestUtils, TestFilterableTable } from "../../TestUtils";
 import {
-  DataGridFilterParser, ReactDataGridFilter, FILTER_PARSER_TIMER_TIMEOUT,
-  NumericFilterData, NumericFilterType, NumericExactMatchData, NumericGreaterThanData, NumericLessThanData,
-  NumericRangeData,
+  DataGridFilterParser, FILTER_PARSER_TIMER_TIMEOUT, NumericExactMatchData, NumericFilterData, NumericFilterType, NumericGreaterThanData,
+  NumericLessThanData, NumericRangeData, ReactDataGridFilter,
 } from "../../../ui-components/table/columnfiltering/DataGridFilterParser";
-import { ColumnDescription, RowItem, FilterRenderer, TableDistinctValue } from "../../../ui-components/table/TableDataProvider";
+import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn";
 import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { TableColumn, ReactDataGridColumn } from "../../../ui-components/table/component/TableColumn";
+import { ColumnDescription, FilterRenderer, RowItem, TableDistinctValue } from "../../../ui-components/table/TableDataProvider";
+import { TestFilterableTable, TestUtils } from "../../TestUtils";
 
 const columns: ColumnDescription[] = [
   {

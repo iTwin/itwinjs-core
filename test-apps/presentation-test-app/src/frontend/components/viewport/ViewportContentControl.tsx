@@ -3,16 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import "./ViewportContentControl.css";
 import * as React from "react";
-import { useState, useCallback, useEffect } from "react"; // tslint:disable-line: no-duplicate-imports
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ViewportComponent } from "@bentley/ui-components";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
+import { ViewportComponent } from "@bentley/ui-components";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
-import ViewDefinitionSelector from "./ViewDefinitionSelector";
 import SelectionScopePicker from "./SelectionScopePicker";
-import "./ViewportContentControl.css";
+import ViewDefinitionSelector from "./ViewDefinitionSelector";
 
 // tslint:disable-next-line:variable-name naming-convention
 const SampleViewport = viewWithUnifiedSelection(ViewportComponent);
@@ -22,13 +21,13 @@ export interface ViewportContentComponentProps {
 }
 
 export default function ViewportContentComponent(props: ViewportContentComponentProps) {
-  const [selectedViewDefinitionId, setSelectedViewDefinitionId] = useState<Id64String | undefined>();
-  const [prevIModel, setPrevIModel] = useState<IModelConnection | undefined>(props.imodel);
+  const [selectedViewDefinitionId, setSelectedViewDefinitionId] = React.useState<Id64String | undefined>();
+  const [prevIModel, setPrevIModel] = React.useState<IModelConnection | undefined>(props.imodel);
   if (prevIModel !== props.imodel) {
     setSelectedViewDefinitionId(undefined);
     setPrevIModel(props.imodel);
   }
-  useEffect(() => {
+  React.useEffect(() => {
     // tslint:disable-next-line: no-floating-promises
     MyAppFrontend.getViewDefinitions(props.imodel).then((definitions) => {
       if (definitions.length)
@@ -36,7 +35,7 @@ export default function ViewportContentComponent(props: ViewportContentComponent
     });
   }, [props.imodel]);
 
-  const onViewDefinitionChanged = useCallback((id?: Id64String) => {
+  const onViewDefinitionChanged = React.useCallback((id?: Id64String) => {
     setSelectedViewDefinitionId(id);
   }, []);
 

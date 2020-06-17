@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ZonesManagerProps, getDefaultZonesManagerProps } from "../../../ui-ninezone";
+import { getDefaultZonesManagerProps, ZonesManagerProps } from "../../../ui-ninezone";
 import { HorizontalAnchor } from "../../../ui-ninezone/widget/Stacked";
 import { getDefaultWidgetManagerProps } from "../../../ui-ninezone/zones/manager/Widget";
 import { WidgetZoneId } from "../../../ui-ninezone/zones/manager/Zones";

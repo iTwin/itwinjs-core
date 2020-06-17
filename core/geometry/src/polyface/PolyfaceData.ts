@@ -7,17 +7,17 @@
  * @module Polyface
  */
 
+import { Geometry } from "../Geometry";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { NumberArray } from "../geometry3d/PointHelpers";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
-import { NumberArray } from "../geometry3d/PointHelpers";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 import { PolyfaceAuxData } from "./AuxData";
 import { FacetFaceData } from "./FacetFaceData";
-import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
-import { Geometry } from "../Geometry";
 
 /**
  * PolyfaceData carries data arrays for point, normal, param, color and their indices.
@@ -372,13 +372,21 @@ export class PolyfaceData {
    * * revise all indexing for the relocated coordinates
    */
   public compress() {
-    const packedData = ClusterableArray.clusterGrowablePoint3dArray(this.point);
-    this.point = packedData.growablePackedPoints!;
-    packedData.updateIndices(this.pointIndex);
-    //    if (this.paramIndex)  // Tracking uv params
-    //      packedData.updateIndices(this.paramIndex);
-    //    if (this.normalIndex) // Tracking normals
-    //      packedData.updateIndices(this.normalIndex);
+    const packedPoints = ClusterableArray.clusterGrowablePoint3dArray(this.point);
+    this.point = packedPoints.growablePackedPoints!;
+    packedPoints.updateIndices(this.pointIndex);
+
+    if (this.normalIndex && this.normal) {
+      const packedNormals = ClusterableArray.clusterGrowablePoint3dArray(this.normal);
+      this.normal = packedNormals.growablePackedPoints!;
+      packedNormals.updateIndices(this.normalIndex);
+    }
+
+    if (this.paramIndex && this.param) {
+      const packedParams = ClusterableArray.clusterGrowablePoint2dArray(this.param);
+      this.param = packedParams.growablePackedPoints;
+      packedParams.updateIndices(this.paramIndex);
+    }
   }
 
   /**

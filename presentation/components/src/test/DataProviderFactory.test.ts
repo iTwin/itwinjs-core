@@ -7,17 +7,18 @@
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomContent, createRandomRuleset, createRandomDescriptor, createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { createRandomPropertyRecord } from "./_helpers/UiComponents";
-import { RulesetsFactory, Content, Item, Ruleset, ContentUpdateInfo } from "@bentley/presentation-common";
-import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
-import { TypeConverterManager, TypeConverter } from "@bentley/ui-components";
-import {
-  IPresentationPropertyDataProvider, PresentationTableDataProvider,
-  DataProvidersFactory, DataProvidersFactoryProps,
-} from "../presentation-components";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { Content, ContentUpdateInfo, Item, Ruleset, RulesetsFactory } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import {
+  createRandomContent, createRandomDescriptor, createRandomPrimitiveField, createRandomRuleset,
+} from "@bentley/presentation-common/lib/test/_helpers/random";
+import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
+import { TypeConverter, TypeConverterManager } from "@bentley/ui-components";
+import {
+  DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider,
+} from "../presentation-components";
+import { createRandomPropertyRecord } from "./_helpers/UiComponents";
 
 describe("DataProvidersFactory", () => {
 

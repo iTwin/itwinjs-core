@@ -16,6 +16,14 @@ export enum Direction {
   Bottom,
 }
 
+/** Available orthogonal directions.
+ * @alpha
+ */
+export enum OrthogonalDirection {
+  Vertical,
+  Horizontal,
+}
+
 /** Helpers for [[Direction]].
  * @internal
  */
@@ -54,14 +62,6 @@ export class DirectionHelpers {
         return OrthogonalDirection.Vertical;
     }
   }
-}
-
-/** Available orthogonal directions.
- * @alpha
- */
-export enum OrthogonalDirection {
-  Vertical,
-  Horizontal,
 }
 
 /** Helpers for [[OrthogonalDirection]].

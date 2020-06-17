@@ -7,14 +7,14 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
-import { Matrix4 } from "../Matrix";
-import { TextureUnit, RenderPass } from "../RenderFlags";
-import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
+import { UniformHandle } from "../Handle";
+import { Matrix4 } from "../Matrix";
+import { RenderPass, TextureUnit } from "../RenderFlags";
+import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { decodeUint16, decodeUint24 } from "./Decode";
-import { addLookupTable } from "./LookupTable";
 import { addInstanceOverrides } from "./Instancing";
+import { addLookupTable } from "./LookupTable";
 
 const initializeVertLUTCoords = `
   g_vertexLUTIndex = decodeUInt24(a_pos);
@@ -112,10 +112,23 @@ export function addModelViewMatrix(vert: VertexShaderBuilder): void {
   }
 }
 
+const computeNormalMatrix = `
+  g_nmx = mat3(MAT_MV);
+  g_nmx[0][0] *= u_frustumScale.x;
+  g_nmx[1][1] *= u_frustumScale.y;
+`;
+
 /** @internal */
 export function addNormalMatrix(vert: VertexShaderBuilder) {
   vert.addGlobal("g_nmx", VariableType.Mat3);
-  vert.addInitializer("g_nmx = mat3(MAT_MV);");
+  vert.addUniform("u_frustumScale", VariableType.Vec2, (prog) => {
+    prog.addGraphicUniform("u_frustumScale", (uniform, params) => {
+      const scale = params.target.uniforms.branch.top.frustumScale;
+      uniform.setUniform2fv([ scale.x, scale.y ]);
+    });
+  });
+
+  vert.addInitializer(computeNormalMatrix);
 }
 
 const scratchLutParams = new Float32Array(4);
@@ -232,7 +245,6 @@ export function replaceLineCode(vert: VertexShaderBuilder, func: string): void {
 
 /** @internal */
 export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
-  assert(!vert.usesInstancedGeometry);
   if (undefined !== vert.find("g_featureAndMaterialIndex"))
     return;
 
@@ -242,7 +254,10 @@ export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
   g_featureAndMaterialIndex = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);`;
 
   vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
-  vert.addInitializer(computeFeatureAndMaterialIndex);
+  if (!vert.usesInstancedGeometry) {
+    // Only needed for material atlas, and instanced geometry never uses material atlas.
+    vert.addInitializer(computeFeatureAndMaterialIndex);
+  }
 }
 
 // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.

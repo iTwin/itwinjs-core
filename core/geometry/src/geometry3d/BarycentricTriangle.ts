@@ -6,8 +6,8 @@
  * @module CartesianGeometry
  */
 
-import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Geometry } from "../Geometry";
+import { Point3d, Vector3d } from "./Point3dVector3d";
 
 /**
  * 3 points defining a triangle to be evaluated with Barycentric coordinates.

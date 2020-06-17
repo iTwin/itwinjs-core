@@ -5,11 +5,12 @@
 /** @packageDocumentation
  * @module iModels
  */
+import * as path from "path";
 import { DbResult, GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { ChangeSet } from "@bentley/imodelhub-client";
 import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import * as path from "path";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
@@ -19,7 +20,6 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./Elemen
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
-import { ChangeSet } from "@bentley/imodelhub-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelExporter;
 
@@ -200,15 +200,16 @@ export class IModelExporter {
    * @param requestContext The request context
    * @param startChangeSetId Include changes from this changeset up through and including the current changeset.
    * If this parameter is not provided, then just the current changeset will be exported.
+   * @note To form a range of versions to export, set `startChangeSetId` for the start of the desired range and open the source iModel as of the end of the desired range.
    */
   public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
     requestContext.enter();
     if (!this.sourceDb.isBriefcaseDb()) {
-      return Promise.reject(new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes", Logger.logError, loggerCategory));
+      throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes", Logger.logError, loggerCategory);
     }
     if ((undefined === this.sourceDb.briefcase.parentChangeSetId) || ("" === this.sourceDb.briefcase.parentChangeSetId)) {
       this.exportAll(); // no changesets, so revert to exportAll
-      return Promise.resolve();
+      return;
     }
     if (undefined === startChangeSetId) {
       startChangeSetId = this.sourceDb.briefcase.currentChangeSetId;
@@ -596,13 +597,15 @@ class ChangedInstanceIds {
       if (undefined !== statusOrResult.error) {
         throw new IModelError(statusOrResult.error.status, "Error processing changeSet", Logger.logError, loggerCategory);
       }
-      const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
-      changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
-      changedInstanceIds.model.addFromJson(result.model);
-      changedInstanceIds.element.addFromJson(result.element);
-      changedInstanceIds.aspect.addFromJson(result.aspect);
-      changedInstanceIds.relationship.addFromJson(result.relationship);
-      changedInstanceIds.font.addFromJson(result.font);
+      if ("" !== statusOrResult.result) {
+        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
+        changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
+        changedInstanceIds.model.addFromJson(result.model);
+        changedInstanceIds.element.addFromJson(result.element);
+        changedInstanceIds.aspect.addFromJson(result.aspect);
+        changedInstanceIds.relationship.addFromJson(result.relationship);
+        changedInstanceIds.font.addFromJson(result.font);
+      }
     });
     return changedInstanceIds;
   }

@@ -3,11 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, IncludePrefix } from "@bentley/itwin-client";
 import { IModelHost } from "../IModelHost";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-
-const loggerCategory: string = "imodeljs-backend.UlasUtilities";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 
 /**
  * @internal
@@ -118,7 +117,7 @@ export class UsageLoggingUtilities {
   private static getApplicationId(requestContext: AuthorizedClientRequestContext): number {
     const defaultId = 2686; // iModel.js
     if (!requestContext.applicationId) {
-      Logger.logWarning(loggerCategory, "ApplicationId was not specified. Set up IModelApp.applicationId for frontend applications, or IModelHost.applicationId for agents");
+      Logger.logWarning(BackendLoggerCategory.UsageLogging, "ApplicationId was not specified. Set up IModelApp.applicationId for frontend applications, or IModelHost.applicationId for agents");
       return defaultId;
     }
 
@@ -132,7 +131,7 @@ export class UsageLoggingUtilities {
    */
   private static getSessionId(requestContext: AuthorizedClientRequestContext): GuidString {
     if (!Guid.isGuid(requestContext.sessionId)) {
-      Logger.logWarning(loggerCategory, "Specified sessionId is not a valid Guid. Set up IModelApp.sessionId for frontend applications, or IModelHost.sessionId for agents");
+      Logger.logWarning(BackendLoggerCategory.UsageLogging, "Specified sessionId is not a valid Guid. Set up IModelApp.sessionId for frontend applications, or IModelHost.sessionId for agents");
       return Guid.empty;
     }
 

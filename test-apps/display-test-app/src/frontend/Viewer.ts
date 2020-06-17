@@ -3,35 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Point2d } from "@bentley/geometry-core";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@bentley/geometry-core";
+import { ModelClipGroup, ModelClipGroups } from "@bentley/imodeljs-common";
 import {
-  imageBufferToPngDataUrl,
-  IModelApp,
-  IModelConnection,
-  NotifyMessageDetails,
-  openImageDataUrlInNewWindow,
-  OutputMessagePriority,
-  ScreenViewport,
-  Tool,
-  Viewport,
-  ViewState,
-  SnapshotConnection,
+  imageBufferToPngDataUrl, IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
+  SnapshotConnection, Tool, Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp, MarkupData } from "@bentley/imodeljs-markup";
-import { createTimeline } from "./Timeline";
-import { CategoryPicker, ModelPicker } from "./IdPicker";
+import { ClassificationsPanel } from "./ClassificationsPanel";
+import { DebugWindow } from "./DebugWindow";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
+import { CategoryPicker, ModelPicker } from "./IdPicker";
+import { SavedViewPicker } from "./SavedViews";
+import { SectionsPanel } from "./SectionTools";
 import { StandardRotations } from "./StandardRotations";
+import { Surface } from "./Surface";
+import { createTimeline } from "./Timeline";
+import { setTitle } from "./Title";
 import { createImageButton, createToolButton, ToolBar } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
-import { SectionsPanel } from "./SectionTools";
-import { SavedViewPicker } from "./SavedViews";
-import { ClassificationsPanel } from "./ClassificationsPanel";
-import { setTitle } from "./Title";
 import { Window } from "./Window";
-import { Surface } from "./Surface";
-import { DebugWindow } from "./DebugWindow";
 
 function saveImage(vp: Viewport) {
   const buffer = vp.readImage(undefined, new Point2d(768, 768), true); // flip vertically...
@@ -73,6 +65,38 @@ export class SaveImageTool extends Tool {
     if (undefined !== vp)
       saveImage(vp);
 
+    return true;
+  }
+}
+
+export class ModelClipTool extends Tool {
+  public static toolId = "ModelClip";
+  public run(_args: any[]): boolean {
+    const view = IModelApp.viewManager.selectedView?.view;
+    if (!view || !view.isSpatialView() || view.modelSelector.models.size < 2)
+      return true;
+
+    const createClip = (vector: Vector3d) => {
+      const plane = ClipPlane.createNormalAndPoint(vector, view.iModel.projectExtents.center)!;
+      const planes = ConvexClipPlaneSet.createPlanes([ plane ]);
+      const primitive = ClipPrimitive.createCapture(planes);
+      return ClipVector.createCapture([ primitive ]);
+    };
+
+    const leftModels: string[] = [];
+    const rightModels: string[] = [];
+    let left = true;
+    view.modelSelector.models.forEach((model) => {
+      (left ? leftModels : rightModels).push(model);
+      left = !left;
+    });
+
+    view.details.modelClipGroups = new ModelClipGroups([
+      ModelClipGroup.create(createClip(Vector3d.unitX().negate()), rightModels),
+      ModelClipGroup.create(createClip(Vector3d.unitZ().negate()), leftModels),
+    ]);
+
+    IModelApp.viewManager.selectedView!.invalidateScene();
     return true;
   }
 }
@@ -173,7 +197,7 @@ export class Viewer extends Window {
   }
 
   private constructor(surface: Surface, view: ViewState, views: ViewList, props: ViewerProps) {
-    super(surface);
+    super(surface, { scrollbars: true });
     surface.element.appendChild(this.container);
 
     this.disableEdges = true === props.disableEdges;
@@ -276,7 +300,7 @@ export class Viewer extends Window {
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue909", // "gyroscope"
-      createDropDown: async (container: HTMLElement) => Promise.resolve(new StandardRotations(container, this.viewport)),
+      createDropDown: async (container: HTMLElement) => new StandardRotations(container, this.viewport),
       tooltip: "Standard rotations",
       only3d: true,
     });

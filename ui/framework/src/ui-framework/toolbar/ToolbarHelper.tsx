@@ -6,24 +6,19 @@
  * @module Toolbar
  */
 import * as React from "react";
-
 import {
-  ToolbarItemUtilities, CommonToolbarItem, ActionButton, GroupButton,
-  CustomButtonDefinition,
-  OnItemExecutedFunc,
-  ConditionalStringValue,
-  StringGetter,
+  ActionButton, CommonToolbarItem, ConditionalStringValue, CustomButtonDefinition, GroupButton, OnItemExecutedFunc, StringGetter, ToolbarItem,
+  ToolbarItemUtilities,
 } from "@bentley/ui-abstract";
-
-import { IconHelper } from "@bentley/ui-core";
-import { ToolItemDef } from "../shared/ToolItemDef";
-import { CommandItemDef } from "../shared/CommandItemDef";
-import { AnyItemDef } from "../shared/AnyItemDef";
-import { CustomItemDef } from "../shared/CustomItemDef";
-import { GroupItemDef } from "./GroupItem";
-import { GroupButtonItem } from "./GroupButtonItem";
-import { ActionButtonItem } from "./ActionButtonItem";
 import { CustomToolbarItem } from "@bentley/ui-components";
+import { IconHelper } from "@bentley/ui-core";
+import { AnyItemDef } from "../shared/AnyItemDef";
+import { CommandItemDef } from "../shared/CommandItemDef";
+import { CustomItemDef } from "../shared/CustomItemDef";
+import { ToolItemDef } from "../shared/ToolItemDef";
+import { ActionButtonItem } from "./ActionButtonItem";
+import { GroupButtonItem } from "./GroupButtonItem";
+import { GroupItemDef } from "./GroupItem";
 
 /** Helper functions for defining an ToolbarComposer.
  * @beta
@@ -81,7 +76,7 @@ export class ToolbarHelper {
   }
 
   /** Helper method to creates a generic toolbar item entry */
-  public static createToolbarItemFromItemDef(itemPriority: number, itemDef: AnyItemDef): CommonToolbarItem {
+  public static createToolbarItemFromItemDef(itemPriority: number, itemDef: AnyItemDef, overrides?: Partial<ToolbarItem>): CommonToolbarItem {
     const isHidden = itemDef.isHidden;
     const isDisabled = itemDef.isDisabled;
     const internalData = new Map<string, any>();  // used to store ReactNode if iconSpec hold a ReactNode
@@ -102,9 +97,10 @@ export class ToolbarHelper {
         execute: itemDef.execute,
         badgeType,
         internalData,
+        ...overrides,
       };
     } else if (itemDef instanceof CustomItemDef) {
-      return ToolbarHelper.createCustomDefinitionToolbarItem(itemPriority, itemDef);
+      return ToolbarHelper.createCustomDefinitionToolbarItem(itemPriority, itemDef, overrides);
     } else if (itemDef instanceof GroupItemDef) {
       const children: Array<ActionButton | GroupButton> = this.constructChildToolbarItems(itemDef.items);
       return {
@@ -119,6 +115,7 @@ export class ToolbarHelper {
         isActive: false,
         badgeType,
         internalData,
+        ...overrides,
       };
     } else if (itemDef instanceof ToolItemDef) {
       return {
@@ -132,16 +129,17 @@ export class ToolbarHelper {
         execute: itemDef.execute,
         badgeType,
         internalData,
+        ...overrides,
       };
     } else {
       throw new Error(`Invalid Item type encountered, item id=${itemDef.id}`);
     }
   }
 
-  public static createToolbarItemsFromItemDefs(itemDefs: AnyItemDef[], startingItemPriority = 10): CommonToolbarItem[] {
+  public static createToolbarItemsFromItemDefs(itemDefs: AnyItemDef[], startingItemPriority = 10, overrides?: Partial<ToolbarItem>): CommonToolbarItem[] {
     let itemPriority = startingItemPriority;
     const items = itemDefs.map((itemDef: AnyItemDef) => {
-      const item = ToolbarHelper.createToolbarItemFromItemDef(itemPriority, itemDef);
+      const item = ToolbarHelper.createToolbarItemFromItemDef(itemPriority, itemDef, overrides);
       itemPriority = itemPriority + 10;
       return item;
     });
@@ -158,14 +156,14 @@ export class ToolbarHelper {
     }
 
     if (ToolbarHelper.isCustomToolbarButton(item)) {
-      return item.buttonNode ? item.buttonNode : null;
+      return item.buttonNode ? /* istanbul ignore next */ item.buttonNode : null;
     }
 
     return null;
   }
 
   /** CustomToolbarButton type guard.
-   * @alpha
+   * @internal
    */
   public static isCustomToolbarButton = (item: CommonToolbarItem): item is CustomToolbarItem => {
     return !!(item as CustomToolbarItem).isCustom && ("buttonNode" in item);

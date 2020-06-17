@@ -6,19 +6,16 @@
  * @module Table
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
-import { Omit, CommonProps, Icon } from "@bentley/ui-core";
-
-import { ItemStyleProvider } from "../../properties/ItemStyle";
-import { EditorContainerProps, EditorContainer } from "../../editors/EditorContainer";
-import { CellItem } from "../TableDataProvider";
-import {
-  PropertyDialogState, PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType,
-} from "../../properties/ValueRendererManager";
-
 import "./TableCell.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps, Icon, Omit } from "@bentley/ui-core";
+import { EditorContainer, EditorContainerProps } from "../../editors/EditorContainer";
+import { ItemStyleProvider } from "../../properties/ItemStyle";
+import {
+  PropertyContainerType, PropertyDialogState, PropertyValueRendererContext, PropertyValueRendererManager,
+} from "../../properties/ValueRendererManager";
+import { CellItem } from "../TableDataProvider";
 
 /**
  * Properties of the [[TableCell]] React component

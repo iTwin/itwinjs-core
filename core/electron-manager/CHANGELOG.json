@@ -2,6 +2,60 @@
   "name": "@bentley/electron-manager",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/electron-manager_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/electron-manager_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to Electron 8"
+          },
+          {
+            "comment": "react to changes in imodeljs-clients"
+          },
+          {
+            "comment": "FrontendAuthorizationClient does not extend IDisposable. "
+          },
+          {
+            "comment": "Update minimum Node version to 10.16.0"
+          },
+          {
+            "comment": "Renamed OIDC constructs for consistency; Removed SAML support. "
+          },
+          {
+            "comment": "order imports."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Update electron version to ^8.2.1"
+          },
+          {
+            "comment": "Update default path for IModelJsElectronManager to be 'dirname' instead of 'dirname/public'"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/electron-manager_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/electron-manager_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/electron-manager_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",
@@ -44,7 +98,7 @@
       "comments": {
         "none": [
           {
-            "comment": "Setup OidcDesktopClient for Electron use cases. "
+            "comment": "Setup OidcDesktopClient for Electron use cases."
           },
           {
             "comment": "Switched to electron version 6.1.5 from 7.1.2"
@@ -89,7 +143,7 @@
       "comments": {
         "none": [
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -173,7 +227,7 @@
             "comment": "Remove unneeded typedoc plugin dependency"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }

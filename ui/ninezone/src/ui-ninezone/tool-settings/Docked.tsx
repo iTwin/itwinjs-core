@@ -6,14 +6,14 @@
  * @module ToolSettings
  */
 
+import "./Docked.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useRefs, useResizeObserver, useOnOutsideClick } from "@bentley/ui-core";
+import { CommonProps, useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { assert } from "../base/assert";
+import { DockedToolSettingsHandle } from "./Handle";
 import { DockedToolSettingsOverflow } from "./Overflow";
 import { ToolSettingsOverflowPanel } from "./Panel";
-import { DockedToolSettingsHandle } from "./Handle";
-import { assert } from "../base/assert";
-import "./Docked.scss";
 
 /** @internal */
 export function onOverflowLabelAndEditorResize() {
@@ -203,13 +203,16 @@ export function getOverflown(width: number, docked: ReadonlyArray<readonly [stri
   }
 
   let j = i;
-  for (; j > 0; j--) {
-    if (j === activeIndex)
-      continue;
-    if (settingsWidth <= width)
-      break;
-    const w = docked[j][1];
-    settingsWidth -= w;
+  // istanbul ignore else
+  if (j < docked.length) {
+    for (; j > 0; j--) {
+      if (j === activeIndex)
+        continue;
+      if (settingsWidth <= width)
+        break;
+      const w = docked[j][1];
+      settingsWidth -= w;
+    }
   }
 
   const overflown = new Array<string>();

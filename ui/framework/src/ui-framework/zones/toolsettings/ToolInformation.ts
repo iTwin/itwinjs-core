@@ -7,12 +7,11 @@
  */
 
 import { UiError } from "@bentley/ui-abstract";
-
-import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
-import { ToolUiProvider } from "./ToolUiProvider";
-import { ToolUiManager } from "./ToolUiManager";
+import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../../UiFramework";
+import { ToolUiManager } from "./ToolUiManager";
+import { ToolUiProvider } from "./ToolUiProvider";
 
 /** Provides information about a tool with a given id, including the ToolUiProvider.
  * @public

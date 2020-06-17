@@ -2,15 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import produce from "immer";
-import { act, render, fireEvent } from "@testing-library/react";
 import { Point } from "@bentley/ui-core";
+import { act, fireEvent, render } from "@testing-library/react";
 import {
-  createNineZoneState, addTab, NineZoneProvider, FloatingTab, addPanelWidget, WIDGET_TAB_DRAG, TabState, WIDGET_TAB_DRAG_END, DragManagerContext,
-  DragTarget, NineZoneDispatch,
+  addPanelWidget, addTab, createNineZoneState, DragManagerContext, DragTarget, FloatingTab, NineZoneDispatch, TabState,
 } from "../../ui-ninezone";
+import { NineZoneProvider } from "../Providers";
 
 interface DragStarterProps {
   tabId: TabState["id"];
@@ -62,7 +62,6 @@ describe("FloatingTab", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <FloatingTab />
       </NineZoneProvider>,
@@ -94,7 +93,7 @@ describe("FloatingTab", () => {
       fireEvent.pointerMove(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_TAB_DRAG,
+      type: "WIDGET_TAB_DRAG",
     })).should.true;
   });
 
@@ -122,7 +121,7 @@ describe("FloatingTab", () => {
       fireEvent.pointerUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_TAB_DRAG_END,
+      type: "WIDGET_TAB_DRAG_END",
       id: "t1",
       target: {
         type: "floatingWidget",
@@ -158,7 +157,7 @@ describe("FloatingTab", () => {
       fireEvent.pointerUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_TAB_DRAG_END,
+      type: "WIDGET_TAB_DRAG_END",
       id: "t1",
       target: {
         type: "tab",
@@ -193,7 +192,7 @@ describe("FloatingTab", () => {
       fireEvent.pointerUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: WIDGET_TAB_DRAG_END,
+      type: "WIDGET_TAB_DRAG_END",
       id: "t1",
       target: {
         type: "panel",

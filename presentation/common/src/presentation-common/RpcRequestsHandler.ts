@@ -6,25 +6,26 @@
  * @module RPC
  */
 
-import { Guid, IDisposable, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
-import { KeySetJSON } from "./KeySet";
-import { PresentationStatus, PresentationError } from "./Error";
+import { ContentJSON } from "./content/Content";
+import { DescriptorJSON, DescriptorOverrides, SelectionInfo } from "./content/Descriptor";
+import { DisplayValueGroupJSON } from "./content/Value";
 import { InstanceKeyJSON } from "./EC";
+import { PresentationError, PresentationStatus } from "./Error";
 import { NodeKeyJSON } from "./hierarchy/Key";
 import { NodeJSON } from "./hierarchy/Node";
 import { NodePathElementJSON } from "./hierarchy/NodePathElement";
+import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
-import { SelectionInfo, DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
-import { ContentJSON } from "./content/Content";
-import { SelectionScope } from "./selection/SelectionScope";
 import {
-  HierarchyRequestOptions, ContentRequestOptions, Paged,
-  SelectionScopeRequestOptions, LabelRequestOptions, PresentationDataCompareOptions,
+  ContentRequestOptions, DistinctValuesRequestOptions, HierarchyRequestOptions, LabelRequestOptions, Paged, PresentationDataCompareOptions,
+  SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
+import { SelectionScope } from "./selection/SelectionScope";
 import { PartialHierarchyModificationJSON } from "./Update";
-import { Omit } from "./Utils";
+import { Omit, PagedResponse } from "./Utils";
 
 /**
  * Configuration parameters for [[RpcRequestsHandler]].
@@ -64,9 +65,10 @@ export class RpcRequestsHandler implements IDisposable {
   private get rpcClient(): PresentationRpcInterface { return RpcManager.getClientForInterface(PresentationRpcInterface); }
 
   private injectClientId<T>(options: T): PresentationRpcRequestOptions<T> {
-    return Object.assign({}, options, {
+    return {
+      ...options,
       clientId: this.clientId,
-    });
+    };
   }
 
   private async requestRepeatedly<TResult, TOptions extends PresentationRpcRequestOptions<unknown>>(func: (opts: TOptions) => PresentationRpcResponse<TResult>, options: TOptions, repeatCount: number = 1): Promise<TResult> {
@@ -146,6 +148,10 @@ export class RpcRequestsHandler implements IDisposable {
   public async getDistinctValues(options: ContentRequestOptions<IModelRpcProps>, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]> {
     return this.request<string[], ContentRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getDistinctValues, options, descriptor, keys, fieldName, maximumValueCount);
+  }
+  public async getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>): Promise<PagedResponse<DisplayValueGroupJSON>> {
+    return this.request<PagedResponse<DisplayValueGroupJSON>, DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>(
+      this.rpcClient, this.rpcClient.getPagedDistinctValues, options);
   }
 
   public async getDisplayLabelDefinition(options: LabelRequestOptions<IModelRpcProps>, key: InstanceKeyJSON): Promise<LabelDefinitionJSON> {

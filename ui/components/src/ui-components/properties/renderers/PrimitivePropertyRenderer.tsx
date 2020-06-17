@@ -6,12 +6,12 @@
  * @module Properties
  */
 
-import * as React from "react";
 import _ from "lodash";
-import { PrimitivePropertyLabelRenderer } from "./label/PrimitivePropertyLabelRenderer";
-import { PropertyView } from "./PropertyView";
-import { SharedRendererProps, PropertyRenderer } from "./PropertyRenderer";
+import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
+import { PrimitivePropertyLabelRenderer } from "./label/PrimitivePropertyLabelRenderer";
+import { PropertyRenderer, SharedRendererProps } from "./PropertyRenderer";
+import { PropertyView } from "./PropertyView";
 
 /** Properties of [[PrimitivePropertyRenderer]] React component
  * @public
@@ -34,7 +34,8 @@ export class PrimitivePropertyRenderer extends React.Component<PrimitiveRenderer
   /** @internal */
   public render() {
     const { children, indentation, ...props } = this.props;
-    const offset = PropertyRenderer.getLabelOffset(this.props.indentation);
+    const offset = PropertyRenderer.getLabelOffset(indentation, props.orientation, props.width, props.columnRatio, props.columnInfo?.minLabelWidth);
+
     return (
       <PropertyView
         {...props}

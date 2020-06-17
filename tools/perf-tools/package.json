@@ -1,6 +1,6 @@
 {
   "name": "@bentley/perf-tools",
-  "version": "2.0.0-dev.77",
+  "version": "2.2.0-dev.12",
   "description": "Tools for collecting and reporting performance data",
   "license": "MIT",
   "repository": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "lint": "tslint --project . 1>&2",
     "extract-api": "betools extract-api --entry=Reporter",
     "test": "",
@@ -30,7 +30,7 @@
     "fs-extra": "^8.1.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.77",
+    "@bentley/build-tools": "2.2.0-dev.12",
     "@types/fs-extra": "^4.0.7",
     "rimraf": "^3.0.2",
     "tslint": "^5.11.0",

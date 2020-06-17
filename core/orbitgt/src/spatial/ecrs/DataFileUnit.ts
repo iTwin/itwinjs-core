@@ -15,6 +15,7 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 import { AList } from "../../system/collection/AList";
+
 /** @internal */
 export class DataFileUnit {
     private static DATA_LINES: AList<string> = null;

@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { NodeFS } from "../system/storage/NodeFS";
 import { OPCReader } from "../pointcloud/format/opc/OPCReader";
 import { PointCloudReader } from "../pointcloud/model/PointCloudReader";
 import { ALong } from "../system/runtime/ALong";
+import { NodeFS } from "../system/storage/NodeFS";
 
 describe("OPC reader tests", () => {
 

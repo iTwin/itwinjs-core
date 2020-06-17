@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { Briefcase as HubBriefcase, BriefcaseQuery, IModelCloudEnvironment, IModelQuery, LockLevel, LockQuery } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
-import { assert } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
@@ -21,7 +22,7 @@ export class TestUtility {
     return new AuthorizedClientRequestContext(accessToken);
   }
 
-  public static async initializeTestProject(testProjectName: string, user: TestUserCredentials): Promise<AccessToken> {
+  public static async initializeTestProject(testProjectName: string, user: TestUserCredentials): Promise<FrontendAuthorizationClient> {
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
     if (cloudParams.iModelBank) {
       this.imodelCloudEnv = new IModelBankCloudEnv(cloudParams.iModelBank.url, false);
@@ -29,13 +30,16 @@ export class TestUtility {
       this.imodelCloudEnv = new IModelHubCloudEnv();
     }
 
-    const accessToken = await this.imodelCloudEnv.authorization.authorizeUser(new ClientRequestContext(), undefined, user);
+    const requestContext = new ClientRequestContext();
+    const authorizationClient = this.imodelCloudEnv.getAuthorizationClient(undefined, user);
+    await authorizationClient.signIn(requestContext);
+    const accessToken = await authorizationClient.getAccessToken();
 
     if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {
       await this.imodelCloudEnv.bootstrapIModelBankProject(new AuthorizedClientRequestContext(accessToken), testProjectName);
     }
 
-    return accessToken;
+    return authorizationClient;
   }
 
   public static async getTestProjectId(projectName: string): Promise<string> {

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import * as fs from "fs";
 import { app, BrowserWindow, BrowserWindowConstructorOptions, protocol } from "electron";
-import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
+import * as fs from "fs";
+import * as path from "path";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { DesktopAuthorizationClientIpc } from "./DesktopAuthorizationClientIpc";
 
 /**
  * A helper class that simplifies the creation of basic single-window desktop applications

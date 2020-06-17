@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as moq from "typemoq";
 import sinon from "sinon";
-import { render } from "@testing-library/react";
-import { CheckBoxState } from "@bentley/ui-core";
+import * as moq from "typemoq";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { ControlledTree } from "../../../../ui-components/tree/controlled/component/ControlledTree";
-import { VisibleTreeNodes, MutableTreeModelNode, TreeModel } from "../../../../ui-components/tree/controlled/TreeModel";
-import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
-import { from } from "../../../../ui-components/tree/controlled/Observable";
-import TestUtils from "../../../TestUtils";
+import { CheckBoxState } from "@bentley/ui-core";
+import { render } from "@testing-library/react";
 import { SelectionMode } from "../../../../ui-components/common/selection/SelectionModes";
-import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
+import { ControlledTree } from "../../../../ui-components/tree/controlled/component/ControlledTree";
+import { from } from "../../../../ui-components/tree/controlled/Observable";
 import { TreeEvents } from "../../../../ui-components/tree/controlled/TreeEvents";
+import { MutableTreeModelNode, TreeModel, VisibleTreeNodes } from "../../../../ui-components/tree/controlled/TreeModel";
+import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
+import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
+import TestUtils from "../../../TestUtils";
 
 describe("ControlledTree", () => {
 
@@ -84,7 +84,7 @@ describe("ControlledTree", () => {
         selectionMode={SelectionMode.Single}
       />);
 
-    const message = container.querySelector(".components-tree-loader");
+    const message = container.querySelector(".components-controlledTree-loader");
     expect(message).to.not.be.null;
   });
 
@@ -98,7 +98,7 @@ describe("ControlledTree", () => {
         selectionMode={SelectionMode.Single}
       />);
 
-    const message = container.querySelector(".components-tree-errormessage");
+    const message = container.querySelector(".components-controlledTree-errorMessage");
     expect(message).to.not.be.null;
   });
 
@@ -113,7 +113,7 @@ describe("ControlledTree", () => {
         selectionMode={SelectionMode.Single}
       />);
 
-    const tree = container.querySelector(".components-tree");
+    const tree = container.querySelector(".components-controlledTree");
     expect(tree).to.not.be.null;
   });
 

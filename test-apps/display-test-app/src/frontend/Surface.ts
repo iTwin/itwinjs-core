@@ -2,18 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  KeyinField,
-  parseArgs,
-} from "@bentley/frontend-devtools";
+import { KeyinField, parseArgs } from "@bentley/frontend-devtools";
 import { Range3d } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
-import {
-  BlankConnection,
-  IModelApp,
-  SnapshotConnection,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { BlankConnection, IModelApp, SnapshotConnection, Tool } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
 import { BrowserFileSelector, selectFileName } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
@@ -22,13 +14,7 @@ import { addSnapModes } from "./SnapModes";
 import { TileLoadIndicator } from "./TileLoadIndicator";
 import { createToolButton, ToolBar } from "./ToolBar";
 import { Viewer, ViewerProps } from "./Viewer";
-import {
-  Dock,
-  NamedWindow,
-  NamedWindowProps,
-  Window,
-  WindowProps,
-} from "./Window";
+import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
 
 export class Surface {
   public readonly element: HTMLElement;
@@ -170,8 +156,6 @@ export class Surface {
     } catch (err) {
       alert("Error opening iModel: " + err.toString());
     }
-
-    return Promise.resolve();
   }
 
   public get firstViewer(): Viewer | undefined {
@@ -314,7 +298,7 @@ export class Surface {
     this.updateFocus();
   }
 
-  private togglePin(window: Window): void {
+  public togglePin(window: Window): void {
     window.isPinned = !window.isPinned;
     this.updateFocus();
   }
@@ -376,7 +360,7 @@ export class Surface {
       this.forceClose(viewer);
   }
 
-  private forceClose(window: Window): void {
+  public forceClose(window: Window): void {
     // NB: Must do this before computing index, because closing a Viewer changes the selected viewport which changes focus which changes order of windows in array.
     window.onClosing();
     const index = this._windows.indexOf(window);

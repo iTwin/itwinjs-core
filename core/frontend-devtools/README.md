@@ -59,12 +59,23 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt metric` - Toggles use of metric quantity formatting, e.g. as used to format output from the measure tools. Turning metric "off" switches to use of imperial units.
 * `fdt fadeout` - Toggles "fade-out" transparency mode for the selected viewport.
 * `fdt tile requests` - When enabled, displays in each viewport the bounding boxes of all tiles currently requested for loading by the viewport that was selected at the time the key-in was executed. Green boxes indicate pending requests; red indicate requests being actively processed.
+* `fdt 3dmanip` - Change the `allow3dManipulations` flag for the 3d view associated with the active viewport.
+* `fdt tiletree bounds` - When enabled, draws bounding boxes representing the volume of each tile tree displayed in the active viewport.
+* `fdt toggle readpixels` - Toggles "read pixels" mode on the active viewport. In this mode, geometry is rendered to the screen as if it was being rendered off-screen for element locate purposes.
+* `fdt attachments` - Toggles display of view attachments in the sheet view associated with the active viewport.
+* `fdt attachment bounds` - Toggles display of bounding boxes around each view attachment in the active viewport.
+* `fdt toggle drapefrustum` - Toggles display of frustum that is used to drape classifiers and background map.
+* `fdt toggle reality preload` - Toggles the display of preloaded reality tile bounding boxes.
+* `fdt toggle reality freeze`  - Toggles the freezing of reality tile loading, when the reality tiles are frozen new reality tiles are not downloaded or purged.
+* `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
+* `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
 
 ### Other key-ins
 
 * `fdt save view` - Copies to the clipboard a JSON representation of the view currently displayed in the active viewport.
 * `fdt apply view` - Accepts an unquoted JSON representation of a view, e.g., as obtained from `fdt save view`, and applies that view to the active viewport.
-* `fdt change view flags` - Changes any number of ViewFlags for the active viewport. Each argument is of the format "flag=value". For boolean flags, the value is `0` for `false` or `1` for `true`. Flag names are case-insensitive.
+* `fdt apply viewid` - Accepts the Id of a persistent ViewDefinition in hexadecimal format and applies that view to the active viewport.
+* `fdt change viewflags` - Changes any number of ViewFlags for the active viewport. Each argument is of the format "flag=value". For boolean flags, the value is `0` for `false` or `1` for `true`. Flag names are case-insensitive.
   * Boolean flags: "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges", "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard"
   * "renderMode": 0 = wireframe, 3 = hidden line, 4 = solid fill, 6 = smooth shade (numeric values of RenderMode enum).
 * `fdt inspect element` - Creates a readable text summary of a geometric element or geometry part. The keyin takes the following arguments (only the first character of each is checked), all of which are optional:
@@ -85,7 +96,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt isolate selection` - Causes all elements except those currently in the selection set to stop drawing.
 * `fdt clear isolate` - Reverse the effects of `fdt isolate selection`.
 * `fdt toggle wiremesh` - Toggles "pseudo-wiremesh" display. This causes surfaces to be rendered using `GL_LINES` instead of `GL_TRIANGLES`. Useful for visualizing the triangles of a mesh - but not suitable for "real" wiremesh display.
-* `fdt tile bounds` - Sets the type of bounding volume decorations that will be displayed for each tile displayed in the view. Accepts at most one argument; if none is specified, it defaults to "volume":
+* `fdt tile bounds` - Sets the type of bounding volume decorations that will be displayed for each tile displayed in the view. Accepts at most one argument; if none is specified, it defaults to "volume", unless tile bounds are already displayed, in which it toggles them back off.
   * "none": Don't display bounding volumes.
   * "volume": Bounding box representing the full range of each tile.
   * "content": Tighter bounding box representing the range of geometry contained within each tile.
@@ -108,12 +119,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "instanced": Display only instanced geometry.
   * "batched": Display only un-instanced (batched) geometry.
   * "all": Display all geometry.
-* `fdt toggle readpixels` - Toggles "read pixels" mode on the active viewport. In this mode, geometry is rendered to the screen as if it was being rendered off-screen for element locate purposes.
-* `fdt toggle drapefrustum` - Toggles display of frustum that is used to drape classifiers and background map.
-* `fdt toggle logz` - Toggles the use of a logarithmic depth buffer for the active viewport.
-  * "modal=0|1" where `1` indicates the output should appear in a modal dialog.
-  * "copy=0|1" where `1` indicates the output should be copied to the clipboard.
-  * If no id is specified, the tool runs in interactive mode: first operating upon the selection set (if any), then allowing the user to select additional elements.
+* `fdt aspect skew` - Change the aspect ratio skew of the active viewport. Accepts the floating point skew; defaults to 1.
 * `fdt reality transition` Creates a rendering schedule to transition between reality model and BIM model display.
   * "x" - Wipe along X axis.
   * "y" - Wipe along Y axis.
@@ -121,6 +127,10 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "transparent" - Fade from reality model to BIM model.
 * `fdt attach reality model` - Attach a "context" reality model to the currently selected viewport.
   * the URL for the reality model root JSON file.
+* `fdt attach reality properties` - Attach a "context" reality model from properties JSON (generally saved from `fdt save reality properties`)
+  * the json properties representing a reality model.  These can be created by using the `fdt save reality modelproperties` keyin.
+* `fdt save reality properties` - Save reality model properties to the clipboard.  These can then be used by the `fdt attach reality properties` keyin.
+  * the name of the context model.  If omitted the first reality model is saved.
 * `fdt layer dump` - Dump to the notification manager a JSON representation of the current plan projection settings for the selected viewport. Optional argument `copy` also copies the JSON to the clipboard.
 * `fdt layer set` - change plan projection settings for the selected viewport. The first argument is required and specifies the plan projection model(s) to be affected, either as `all` or as a comma-separated list of model Ids (e.g., `0x1c,0x9a`). Subsequent arguments are optional and are used to build a PlanProjectionSettings. Any arguments omitted will get their default values. Only the first character of each argument is significant; the name of the setting is separated from the value by an `=` sign:
   * `transparency=`: transparency in [0..1].
@@ -128,10 +138,6 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * `overlay=`: 1 to draw as an overlay, 0 to draw normally (with depth).
   * `priority=`: 1 to enforce subcategory display priority, 0 to ignore.
 * `fdt subcat priority` - Override display priority of one or more subcategories. Only has an effect on plan projection models. The first argument is a comma-separated list of subcategory Ids; the second is the integer priority value. Omit the second argument to clear the overrides for the specified subcategories.
-* `fdt toggle reality preload` - Toggles the display of preloaded reality tile bounding boxes.
-* `fdt toggle reality freeze`  - Toggles the freezing of reality tile loading, when the reality tiles are frozen new reality tiles are not downloaded or purged.
-* `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
-* `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
 * `fdt clip color` - Specify or unspecify a clip color to use for pixels inside or outside the clip region. `<color string>` must be in one of the following forms: "rgb(255,0,0)", "rgba(255,0,0,255)", "rgb(100%,0%,0%)", "hsl(120,50%,50%)", "#rrbbgg", "blanchedAlmond" (see possible values from `ColorByName`; case insensitive). At least one argument must be specified. Arguments can be:
   * "clear": Clear all clip colors
   * "inside `<color string>` | clear": Set or clear an inside clip color
@@ -139,3 +145,8 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt sourceId from elemId` and `fdt elemId from sourceId` - Converts between the Id of an element in the iModel and the corresponding object in the source document from which it originated. Outputs the result to IModelApp.notifications.
 *   * `id=`: the source aspect Id or element Id.
 *   * `copy=`: (optional) 1 to copy the resultant Id to the system clipboard.
+* `fdt add extensionService <context>` - Adds a context id to be used with Extension Service. It's added to the front of loaders list, so the most recently added context will get used first. `<context>` can be one of the following:
+  * `id <id>`, where `<id>` is a Connected Context GUID.
+  * `project <projectName>`.
+  * `asset <assetName>`.
+  * `public` - loads Bentley-published public extensions.

@@ -3,12 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import {
-  ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo,
-} from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { iModelInfoAvailableEvent, ActiveSettingsManager } from "../../api/ActiveSettingsManager";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
+import { ActiveSettingsManager, iModelInfoAvailableEvent } from "../../api/ActiveSettingsManager";
 
 interface ActiveSettingsComponentState {
   modelId: Id64String | undefined;
@@ -41,25 +39,23 @@ export class ActiveSettingsComponent extends React.Component<{}, ActiveSettingsC
 
   private getAllModels(): JSX.Element[] {
     return ActiveSettingsManager.models.cache.map((nid) =>
-      <option key={nid.name}>{nid.name}</option>,
+      <option id={nid.id} key={nid.id}>{nid.name}</option>,
     );
   }
 
   private onSelectModel(event: React.FormEvent<HTMLSelectElement>) {
-    const nid = ActiveSettingsManager.models.cache[event.currentTarget.selectedIndex];
-    IModelApp.toolAdmin.activeSettings.model = nid.id;
+    IModelApp.toolAdmin.activeSettings.model = event.currentTarget.options[event.currentTarget.selectedIndex].id;
     this.updateState();
   }
 
   private getAllCategories(): JSX.Element[] {
     return ActiveSettingsManager.categories.cache.map((nid) =>
-      <option key={nid.name}>{nid.name}</option>,
+      <option id={nid.id} key={nid.id}>{nid.name}</option>,
     );
   }
 
   private onSelectCategory(event: React.FormEvent<HTMLSelectElement>) {
-    const nid = ActiveSettingsManager.categories.cache[event.currentTarget.selectedIndex];
-    IModelApp.toolAdmin.activeSettings.category = nid.id;
+    IModelApp.toolAdmin.activeSettings.category = event.currentTarget.options[event.currentTarget.selectedIndex].id;
     this.updateState();
   }
 

@@ -2,45 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module Tiles
  */
-import { IModelConnection } from "../IModelConnection";
-import {
-  assert,
-  ByteStream,
-  ClientRequestContext,
-  Id64String,
-  JsonUtils,
-  utf8ToString,
-  BeDuration,
-  BeTimePoint,
-} from "@bentley/bentleyjs-core";
-import {
-  TerrainMapTile,
-  GeographicTilingScheme,
-  MapTileGeometryAttributionProvider,
-  MapTileProjection,
-  MapTileTreeReference,
-  MapTilingScheme,
-  QuadId,
-  TerrainTileContent,
-  TerrainTileLoaderBase,
-  Tile,
-  TileAvailability,
-  TileRequest,
-} from "./internal";
-import { request, Response, RequestOptions } from "@bentley/itwin-client";
-import { Range1d, Point2d, Point3d, Vector3d } from "@bentley/geometry-core";
-import {
-  nextPoint3d64FromByteStream,
-  OctEncodedNormal,
-  QPoint2d,
-} from "@bentley/imodeljs-common";
-import { IModelApp } from "../IModelApp";
+
+import { assert, BeDuration, BeTimePoint, ByteStream, ClientRequestContext, Id64String, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
+import { Point2d, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
+import { nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@bentley/imodeljs-common";
+import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { ApproximateTerrainHeights } from "../ApproximateTerrainHeights";
+import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
 import { TerrainMeshPrimitive } from "../render/primitives/mesh/TerrainMeshPrimitive";
 import { RenderSystem } from "../render/RenderSystem";
+import {
+  GeographicTilingScheme, MapTileGeometryAttributionProvider, MapTileProjection, MapTileTreeReference, MapTilingScheme, QuadId, TerrainMapTile,
+  TerrainTileContent, TerrainTileLoaderBase, Tile, TileAvailability, TileRequest,
+} from "./internal";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {

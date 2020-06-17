@@ -6,17 +6,16 @@
  * @module Tree
  */
 
-import { useEffect, useRef, useReducer, useState, useCallback } from "react";
 import { isEqual } from "lodash";
-import {
-  ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider,
-  PagedTreeNodeLoader, TreeModelSource, AbstractTreeNodeLoaderWithProvider,
-} from "@bentley/ui-components";
-import { AsyncTasksTracker } from "@bentley/presentation-common";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import { AsyncTasksTracker } from "@bentley/presentation-common";
+import {
+  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, PagedTreeNodeLoader, TreeModelSource,
+} from "@bentley/ui-components";
 import { FilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
+import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 const FILTERED_DATA_PAGE_SIZE = 20;
 

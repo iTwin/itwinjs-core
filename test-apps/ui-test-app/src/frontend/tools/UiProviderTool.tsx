@@ -9,58 +9,55 @@
 import * as React from "react";
 import { Tool } from "@bentley/imodeljs-frontend";
 import {
-  BadgeType, StageUsage, CommonStatusBarItem, StatusBarSection,
-  UiItemsProvider, UiItemsManager, AbstractStatusBarItemUtilities,
-  ToolbarUsage, ToolbarOrientation, CommonToolbarItem, ToolbarItemUtilities,
-  AbstractWidgetProps,
-  StagePanelLocation, StagePanelSection, ConditionalBooleanValue, ConditionalStringValue,
+  AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
+  ConditionalStringValue, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
-import {
-  withStatusFieldProps, StatusBarItemUtilities,
-  createAction, ActionsUnion, ActionCreatorsObject, ReducerRegistryInstance, StateManager, UiFramework,
-} from "@bentley/ui-framework";
-import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
-import { ShadowField } from "../appui/statusfields/ShadowField";
 import { FillCentered } from "@bentley/ui-core";
+import {
+  ActionCreatorsObject, ActionsUnion, createAction, ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
+} from "@bentley/ui-framework";
+import { ShadowField } from "../appui/statusfields/ShadowField";
+import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 
-// Simulate redux state being added via a plugin
-interface ISamplePluginState {
-  pluginUiVisible?: boolean;
+// Simulate redux state being added via a extension
+interface SampleExtensionState {
+  extensionUiVisible?: boolean;
 }
 
-class SamplePluginStateManager {
-  public static pluginStateManagerLoaded = false;
+class SampleExtensionStateManager {
+  public static extensionStateManagerLoaded = false;
 
-  private static _initialState: ISamplePluginState = {
-    pluginUiVisible: false,
+  private static _initialState: SampleExtensionState = {
+    extensionUiVisible: false,
   };
 
-  private static _reducerName = "samplePluginState";
+  private static _reducerName = "sampleExtensionState";
 
-  public static SET_PLUGIN_UI_VISIBLE = SamplePluginStateManager.createActionName("SET_PLUGIN_UI_VISIBLE");
+  public static SET_EXTENSION_UI_VISIBLE = SampleExtensionStateManager.createActionName("SET_EXTENSION_UI_VISIBLE");
 
-  private static _pluginActions: ActionCreatorsObject = {
-    setDialogVisible: (pluginUiVisible: boolean) =>
-      createAction(SamplePluginStateManager.SET_PLUGIN_UI_VISIBLE, pluginUiVisible),
+  private static _extensionActions: ActionCreatorsObject = {
+    setDialogVisible: (extensionUiVisible: boolean) =>
+      createAction(SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE, extensionUiVisible),
   };
 
   private static createActionName(name: string) {
     // convert to lower case so it can serve as a sync event when called via UiFramework.dispatchActionToStore
-    return `${SamplePluginStateManager._reducerName}:${name}`.toLowerCase();
+    return `${SampleExtensionStateManager._reducerName}:${name}`.toLowerCase();
   }
 
   // reducer
-  public static pluginReducer(
-    state: ISamplePluginState = SamplePluginStateManager._initialState,
+  public static extensionReducer(
+    state: SampleExtensionState = SampleExtensionStateManager._initialState,
     action: any,
-  ): ISamplePluginState {
-    type PluginActionsUnion = ActionsUnion<typeof SamplePluginStateManager._pluginActions>;
+  ): SampleExtensionState {
+    type ExtensionActionsUnion = ActionsUnion<typeof SampleExtensionStateManager._extensionActions>;
 
-    const pluginActionsParam = action as PluginActionsUnion;
+    const extensionActionsParam = action as ExtensionActionsUnion;
 
-    switch (pluginActionsParam.type) {
-      case SamplePluginStateManager.SET_PLUGIN_UI_VISIBLE:
-        return { ...state, pluginUiVisible: action.payload };
+    switch (extensionActionsParam.type) {
+      case SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE:
+        return { ...state, extensionUiVisible: action.payload };
       default:
         return state;
     }
@@ -68,22 +65,22 @@ class SamplePluginStateManager {
 
   public static initialize() {
     ReducerRegistryInstance.registerReducer(
-      SamplePluginStateManager._reducerName,
-      SamplePluginStateManager.pluginReducer,
+      SampleExtensionStateManager._reducerName,
+      SampleExtensionStateManager.extensionReducer,
     );
-    SamplePluginStateManager.pluginStateManagerLoaded = true;
+    SampleExtensionStateManager.extensionStateManagerLoaded = true;
   }
 
-  public static get isPluginUiVisible(): boolean {
+  public static get isExtensionUiVisible(): boolean {
     if (StateManager.isInitialized()) {
-      return StateManager.store.getState().samplePluginState.pluginUiVisible;
+      return StateManager.store.getState().sampleExtensionState.extensionUiVisible;
     } else {
       return false;
     }
   }
 
-  public static set isPluginUiVisible(visible: boolean) {
-    UiFramework.dispatchActionToStore(SamplePluginStateManager.SET_PLUGIN_UI_VISIBLE, visible, true);
+  public static set isExtensionUiVisible(visible: boolean) {
+    UiFramework.dispatchActionToStore(SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE, visible, true);
   }
 }
 
@@ -126,23 +123,23 @@ class TestUiProvider implements UiItemsProvider {
 
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
-        AbstractStatusBarItemUtilities.createActionItem("PluginTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from plugin",
+        AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension",
           () => {
             // tslint:disable-next-line: no-console
             console.log("Got Here!");
           }));
 
-      const isHidden = new ConditionalBooleanValue(() => !SamplePluginStateManager.isPluginUiVisible, [SamplePluginStateManager.SET_PLUGIN_UI_VISIBLE]);
-      const statusBarItem = AbstractStatusBarItemUtilities.createLabelItem("PluginTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello", undefined, { isHidden });
+      const isHidden = new ConditionalBooleanValue(() => !SampleExtensionStateManager.isExtensionUiVisible, [SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE]);
+      const statusBarItem = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello", undefined, { isHidden });
       statusBarItems.push(statusBarItem);
 
-      const labelCondition = new ConditionalStringValue(() => SamplePluginStateManager.isPluginUiVisible ? "Click to Hide" : "Click to Show", [SamplePluginStateManager.SET_PLUGIN_UI_VISIBLE]);
-      const iconCondition = new ConditionalStringValue(() => SamplePluginStateManager.isPluginUiVisible ? "icon-visibility-hide-2" : "icon-visibility", [SamplePluginStateManager.SET_PLUGIN_UI_VISIBLE]);
+      const labelCondition = new ConditionalStringValue(() => SampleExtensionStateManager.isExtensionUiVisible ? "Click to Hide" : "Click to Show", [SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE]);
+      const iconCondition = new ConditionalStringValue(() => SampleExtensionStateManager.isExtensionUiVisible ? "icon-visibility-hide-2" : "icon-visibility", [SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE]);
 
       statusBarItems.push(
-        AbstractStatusBarItemUtilities.createActionItem("PluginTest:StatusBarItem2", StatusBarSection.Center, 110, iconCondition, labelCondition,
+        AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem2", StatusBarSection.Center, 110, iconCondition, labelCondition,
           () => {
-            SamplePluginStateManager.isPluginUiVisible = !SamplePluginStateManager.isPluginUiVisible;
+            SampleExtensionStateManager.isExtensionUiVisible = !SampleExtensionStateManager.isExtensionUiVisible;
           }));
 
       // add entry that supplies react component
@@ -165,21 +162,21 @@ class TestUiProvider implements UiItemsProvider {
 
 /** An Immediate Tool that toggles the test ui provider defined above. */
 export class UiProviderTool extends Tool {
-  public static testPluginLoaded = "";
+  public static testExtensionLoaded = "";
 
   public static toolId = "TestUiProvider";
   public run(_args: any[]): boolean {
     // load state before ui provide so state is available when rendering on load occurs.
-    if (!SamplePluginStateManager.pluginStateManagerLoaded)
-      SamplePluginStateManager.initialize();
+    if (!SampleExtensionStateManager.extensionStateManagerLoaded)
+      SampleExtensionStateManager.initialize();
 
-    if (UiProviderTool.testPluginLoaded.length > 0) {
-      UiItemsManager.unregister(UiProviderTool.testPluginLoaded);
-      UiProviderTool.testPluginLoaded = "";
+    if (UiProviderTool.testExtensionLoaded.length > 0) {
+      UiItemsManager.unregister(UiProviderTool.testExtensionLoaded);
+      UiProviderTool.testExtensionLoaded = "";
     } else {
       const testUiProvider = new TestUiProvider();
       UiItemsManager.register(testUiProvider);
-      UiProviderTool.testPluginLoaded = testUiProvider.id;
+      UiProviderTool.testExtensionLoaded = testUiProvider.id;
     }
 
     return true;

@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Schema } from "../../src/Metadata/Schema";
-import { InvertedUnit } from "../../src/Metadata/InvertedUnit";
-import { ECObjectsError } from "../../src/Exception";
-import { UnitSystem } from "../../src/Metadata/UnitSystem";
-import { Unit } from "../../src/Metadata/Unit";
-import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
 import { SchemaContext } from "../../src/Context";
+import { SchemaItemType, schemaItemTypeToString } from "../../src/ECObjects";
+import { ECObjectsError } from "../../src/Exception";
+import { InvertedUnit } from "../../src/Metadata/InvertedUnit";
+import { Schema } from "../../src/Metadata/Schema";
+import { Unit } from "../../src/Metadata/Unit";
+import { UnitSystem } from "../../src/Metadata/UnitSystem";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 describe("Inverted Unit tests", () => {
@@ -367,8 +367,8 @@ describe("Inverted Unit tests", () => {
       const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
       assert.isDefined(testInvertedUnit);
       const invertedUnitSerialization = testInvertedUnit!.toJSON(true, true);
-      expect(invertedUnitSerialization.unitSystem).to.eql("INTERNATIONAL");
-      expect(invertedUnitSerialization.invertsUnit).to.eql("VERTICAL_PER_HORIZONTAL");
+      expect(invertedUnitSerialization.unitSystem).to.eql("TestSchema.INTERNATIONAL");
+      expect(invertedUnitSerialization.invertsUnit).to.eql("TestSchema.VERTICAL_PER_HORIZONTAL");
     });
     it("sync- Serialization of fully defined inverted unit", () => {
       const ecSchema = Schema.fromJsonSync(jsonOne, new SchemaContext());
@@ -378,8 +378,8 @@ describe("Inverted Unit tests", () => {
       const testInvertedUnit: InvertedUnit = testItem as InvertedUnit;
       assert.isDefined(testInvertedUnit);
       const invertedUnitSerialization = testInvertedUnit!.toJSON(true, true);
-      expect(invertedUnitSerialization.unitSystem).to.eql("INTERNATIONAL");
-      expect(invertedUnitSerialization.invertsUnit).to.eql("VERTICAL_PER_HORIZONTAL");
+      expect(invertedUnitSerialization.unitSystem).to.eql("TestSchema.INTERNATIONAL");
+      expect(invertedUnitSerialization.invertsUnit).to.eql("TestSchema.VERTICAL_PER_HORIZONTAL");
     });
     it("async- JSON stringify serialization of fully defined inverted unit", async () => {
       const ecSchema = await Schema.fromJson(jsonOne, new SchemaContext());
@@ -390,8 +390,8 @@ describe("Inverted Unit tests", () => {
       assert.isDefined(testInvertedUnit);
       const json = JSON.stringify(testInvertedUnit);
       const invertedUnitSerialization = JSON.parse(json);
-      expect(invertedUnitSerialization.unitSystem).to.eql("INTERNATIONAL");
-      expect(invertedUnitSerialization.invertsUnit).to.eql("VERTICAL_PER_HORIZONTAL");
+      expect(invertedUnitSerialization.unitSystem).to.eql("TestSchema.INTERNATIONAL");
+      expect(invertedUnitSerialization.invertsUnit).to.eql("TestSchema.VERTICAL_PER_HORIZONTAL");
     });
     it("sync- JSON stringify serialization of fully defined inverted unit", () => {
       const ecSchema = Schema.fromJsonSync(jsonOne, new SchemaContext());
@@ -402,8 +402,8 @@ describe("Inverted Unit tests", () => {
       assert.isDefined(testInvertedUnit);
       const json = JSON.stringify(testInvertedUnit);
       const invertedUnitSerialization = JSON.parse(json);
-      expect(invertedUnitSerialization.unitSystem).to.eql("INTERNATIONAL");
-      expect(invertedUnitSerialization.invertsUnit).to.eql("VERTICAL_PER_HORIZONTAL");
+      expect(invertedUnitSerialization.unitSystem).to.eql("TestSchema.INTERNATIONAL");
+      expect(invertedUnitSerialization.invertsUnit).to.eql("TestSchema.VERTICAL_PER_HORIZONTAL");
     });
   });
 

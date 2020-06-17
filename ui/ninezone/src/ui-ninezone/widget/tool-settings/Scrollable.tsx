@@ -6,10 +6,10 @@
  * @module ToolSettings
  */
 
+import "./Scrollable.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Scrollable.scss";
 
 /** Properties of [[ScrollableToolSettings]] component.
  * @beta

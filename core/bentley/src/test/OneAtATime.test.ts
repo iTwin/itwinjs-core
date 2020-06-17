@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import { AbandonedError, OneAtATimeAction } from "../OneAtATimeAction";
+import { BeDuration } from "../Time";
+
 const assert = chai.assert;
 const expect = chai.expect;
 
-import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
-import { OneAtATimeAction, AbandonedError } from "../OneAtATimeAction";
-import { BeDuration } from "../Time";
-
 describe("OneAtATime test", () => {
 
   it("OneAtATime", async () => {

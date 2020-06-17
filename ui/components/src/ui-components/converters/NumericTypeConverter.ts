@@ -6,9 +6,10 @@
  * @module TypeConverters
  */
 
-import { TypeConverter, LessGreaterOperatorProcessor, StandardTypeConverterTypeNames } from "./TypeConverter";
-import { TypeConverterManager } from "./TypeConverterManager";
 import { Primitives } from "@bentley/ui-abstract";
+import { LessGreaterOperatorProcessor, TypeConverter } from "./TypeConverter";
+import { TypeConverterManager } from "./TypeConverterManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /**
  * Base Numeric Type Converter.
@@ -71,8 +72,9 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
     return parseFloat(value);
   }
 }
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Float, FloatTypeConverter);
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Double, FloatTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Float, FloatTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Double, FloatTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Number, FloatTypeConverter);
 
 /**
  * Int Type Converter.
@@ -102,5 +104,5 @@ export class IntTypeConverter extends NumericTypeConverterBase {
   }
 }
 
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Int, IntTypeConverter);
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Integer, IntTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Int, IntTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Integer, IntTypeConverter);

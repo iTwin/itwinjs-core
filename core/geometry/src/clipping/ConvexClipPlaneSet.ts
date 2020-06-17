@@ -7,28 +7,28 @@
  * @module CartesianGeometry
  */
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { PolygonOps, IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { Arc3d } from "../curve/Arc3d";
-import { ClipPlane } from "./ClipPlane";
-import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";
-import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { Range3d, Range1d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../geometry3d/PolygonOps";
+import { Range1d, Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { ClipPlane } from "./ClipPlane";
+import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils";
 
 /**
  * A ConvexClipPlaneSet is a collection of ClipPlanes, often used for bounding regions of space.
  * @public
  */
-export class ConvexClipPlaneSet implements Clipper {
+export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   /** Value acting as "at infinity" for coordinates along a ray. */
   public static readonly hugeVal = 1e37;
   private _planes: ClipPlane[];
@@ -214,7 +214,7 @@ export class ConvexClipPlaneSet implements Clipper {
     const planeNormal = points.crossProductIndexIndexIndex(0, 2, 1)!;
     ClipPlane.createNormalAndPointXYZXYZ(planeNormal.x, planeNormal.y, planeNormal.z, x0, y0, z0, false, false, planeOfPolygon);
     if (planeNormal.normalizeInPlace()) {
-      for (let i1 = 0; i1 < n; i1++ , x0 = x1, y0 = y1) {
+      for (let i1 = 0; i1 < n; i1++, x0 = x1, y0 = y1) {
         x1 = points.getXAtUncheckedPointIndex(i1);
         y1 = points.getYAtUncheckedPointIndex(i1);
         nx = -(y1 - y0);
@@ -346,7 +346,7 @@ export class ConvexClipPlaneSet implements Clipper {
    * @param announce function to be called to announce a fraction interval that is within the convex clip volume.
    * @returns true if a segment was announced, false if entirely outside.
    */
-  public announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean {
+  public announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean {
     let fraction: number | undefined;
     if (f1 < f0)
       return false;
@@ -401,7 +401,7 @@ export class ConvexClipPlaneSet implements Clipper {
    * @param announce function to be called to announce a fraction interval that is within the convex clip volume.
    * @returns true if a segment was announced, false if entirely outside.
    */
-  public clipUnboundedSegment(pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean {
+  public clipUnboundedSegment(pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean {
     return this.announceClippedSegmentIntervals(-Number.MAX_VALUE, Number.MAX_VALUE, pointA, pointB, announce);
   }
   /** transform each plane in place. */
@@ -433,7 +433,7 @@ export class ConvexClipPlaneSet implements Clipper {
    * @return the surviving inside part (if any)
    */
   public clipInsidePushOutside(xyz: GrowableXYZArray,
-    outsideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[] | undefined,
     arrayCache: GrowableXYZArrayCache): GrowableXYZArray | undefined {
     const perpendicularRange = Range1d.createNull();
     let newInside = arrayCache.grabFromCache();
@@ -447,7 +447,8 @@ export class ConvexClipPlaneSet implements Clipper {
       IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(plane, insidePart, newInside, newOutside, perpendicularRange);
       if (newOutside.length > 0) {
         // the newOutside fragment is definitely outside the ConvexClipPlaneSet
-        outsideFragments.push(newOutside);    // save the definitely outside part as return data.
+        if (outsideFragments)
+          outsideFragments.push(newOutside);    // save the definitely outside part as return data.
         newOutside = arrayCache.grabFromCache();
         if (newInside.length === 0) {
           insidePart.length = 0;
@@ -700,6 +701,22 @@ export class ConvexClipPlaneSet implements Clipper {
       this._planes.push(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, 1), zLow, invisible)!);
     if (zHigh !== undefined)
       this._planes.push(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -zHigh, invisible)!);
+  }
+  /** Implement appendPolygonClip, as defined in interface PolygonClipper.  /**
+   *
+   * @param xyz input polygon.  This is not changed.
+   * @param insideFragments Array to receive "inside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
+   * @param outsideFragments Array to receive "outside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
+   * @param arrayCache cache for reusable GrowableXYZArray.
+   */
+  public appendPolygonClip(
+    xyz: GrowableXYZArray,
+    insideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache): void {
+    const newInside = this.clipInsidePushOutside(xyz, outsideFragments, arrayCache);
+    if (newInside)
+      insideFragments.push(newInside);
   }
 
   // FUNCTIONS SKIPPED DUE TO BSPLINES, VU, OR NON-USAGE IN NATIVE CODE----------------------------------------------------------------

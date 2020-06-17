@@ -535,6 +535,28 @@ export enum ExtensionStatus {
 }
 
 // @public
+export enum GeoServiceStatus {
+    // (undocumented)
+    CSMapError = 147461,
+    // (undocumented)
+    GEOSERVICESTATUS_BASE = 147456,
+    // (undocumented)
+    NoDatumConverter = 147459,
+    // (undocumented)
+    NoGeoLocation = 65602,
+    // (undocumented)
+    OutOfMathematicalDomain = 147458,
+    // (undocumented)
+    OutOfUsefulRange = 147457,
+    // (undocumented)
+    Pending = 147462,
+    // (undocumented)
+    Success = 0,
+    // (undocumented)
+    VerticalDatumConvertError = 147460
+}
+
+// @public
 export type GetMetaDataFunction = () => any;
 
 // @public
@@ -543,6 +565,7 @@ export namespace Guid {
     export function createValue(): GuidString;
     export function isGuid(value: string): boolean;
     export function isV4Guid(value: string): boolean;
+    export function normalize(value: GuidString): GuidString;
 }
 
 // @public
@@ -679,6 +702,8 @@ export enum IModelHubStatus {
     FailedToGetAssetMembers = 102446,
     // (undocumented)
     FailedToGetAssetPermissions = 102445,
+    // (undocumented)
+    FailedToGetProductSettings = 102448,
     // (undocumented)
     FailedToGetProjectById = 102442,
     // (undocumented)
@@ -1151,6 +1176,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
     ChangeSetRequired = 86025,
+    ChannelConstraintViolation = 86031,
     CodeNotReserved = 86027,
     CodeUnavailable = 86026,
     CodeUsed = 86028,

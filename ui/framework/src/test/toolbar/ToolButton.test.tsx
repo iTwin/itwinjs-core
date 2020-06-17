@@ -2,22 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow } from "enzyme";
-import * as sinon from "sinon";
 import { expect } from "chai";
-
-import {
-  ToolButton,
-  FrontstageManager,
-  KeyboardShortcutManager,
-  SyncUiEventDispatcher,
-  BaseItemState,
-  SyncUiEventId,
-} from "../../ui-framework";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
+import * as sinon from "sinon";
 import { SelectionTool } from "@bentley/imodeljs-frontend";
-import TestUtils from "../TestUtils";
 import { BadgeType } from "@bentley/ui-abstract";
+import { BaseItemState, FrontstageManager, KeyboardShortcutManager, SyncUiEventDispatcher, SyncUiEventId, ToolButton } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("ToolButton", () => {
 

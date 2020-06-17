@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { Geometry } from "../../Geometry";
-import { Checker } from "../Checker";
 import { expect } from "chai";
+import { Geometry } from "../../Geometry";
+import { Segment1d } from "../../geometry3d/Segment1d";
+import { Checker } from "../Checker";
 
 function verifySegment(ck: Checker, a: number, b: number) {
   const s0 = Segment1d.create(a, b);

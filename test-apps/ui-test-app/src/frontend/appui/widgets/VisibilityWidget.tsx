@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { IModelConnection, IModelApp, Viewport } from "@bentley/imodeljs-frontend";
-import { ModelsTree, CategoryTree, WidgetControl, ConfigurableCreateInfo, toggleAllCategories, ModelsTreeSelectionPredicate } from "@bentley/ui-framework";
-import { FilteringInput, SelectableContent, SelectionMode } from "@bentley/ui-components";
-import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { WebFontIcon } from "@bentley/ui-core";
-
 import "./VisibilityWidget.scss";
+import * as React from "react";
+import { IModelApp, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { FilteringInput, SelectableContent, SelectionMode } from "@bentley/ui-components";
+import { WebFontIcon } from "@bentley/ui-core";
+import {
+  CategoryTree, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories, WidgetControl,
+} from "@bentley/ui-framework";
 
 export class VisibilityWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

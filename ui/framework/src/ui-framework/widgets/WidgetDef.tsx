@@ -7,21 +7,19 @@
  */
 
 import * as React from "react";
-
-import { UiError, BadgeType, StringGetter, WidgetState, AbstractWidgetProps, ConditionalStringValue } from "@bentley/ui-abstract";
+import { AbstractWidgetProps, BadgeType, ConditionalStringValue, StringGetter, UiError, WidgetState } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { Direction } from "@bentley/ui-ninezone";
-
-import { UiFramework } from "../UiFramework";
-import { WidgetProps } from "./WidgetProps";
+import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { CommandItemDef } from "../shared/CommandItemDef";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { ItemList } from "../shared/ItemMap";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
+import { WidgetControl } from "./WidgetControl";
+import { WidgetProps } from "./WidgetProps";
 
 /** Widget State Changed Event Args interface.
  * @public
@@ -35,6 +33,11 @@ export interface WidgetStateChangedEventArgs {
  * @public
  */
 export class WidgetStateChangedEvent extends UiEvent<WidgetStateChangedEventArgs> { }
+
+/** @internal */
+export interface WidgetEventArgs {
+  widgetDef: WidgetDef;
+}
 
 /** Widget type enum.
  * @public
@@ -193,6 +196,7 @@ export class WidgetDef {
 
     if (widgetProps.iconSpec !== undefined)
       me._iconSpec = widgetProps.iconSpec;
+    // istanbul ignore if
     if (widgetProps.icon !== undefined)
       me._iconSpec = widgetProps.icon;
 
@@ -364,5 +368,20 @@ export class WidgetDef {
       result = !(result1 || result2);
     }
     return result;
+  }
+
+  /** Opens the widget and makes it visible to the user.
+   * I.e. opens the stage panel or brings the floating widget to front of the screen.
+   * @alpha
+   */
+  public show() {
+    FrontstageManager.onWidgetShowEvent.emit({ widgetDef: this });
+  }
+
+  /** Opens the widget and expands it to fill full size of the stage panel.
+   * @alpha
+   */
+  public expand() {
+    FrontstageManager.onWidgetExpandEvent.emit({ widgetDef: this });
   }
 }

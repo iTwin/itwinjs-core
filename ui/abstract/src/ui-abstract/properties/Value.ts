@@ -6,8 +6,8 @@
  * @module Properties
  */
 
-import { PropertyRecord } from "./Record";
 import { Primitives } from "./PrimitiveTypes";
+import { PropertyRecord } from "./Record";
 
 /**
  * Enumeration for Format of the property value.

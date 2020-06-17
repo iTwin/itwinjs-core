@@ -16,10 +16,8 @@ import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { Issuer } from 'openid-client';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { SamlAccessToken } from '@bentley/itwin-client';
-import { TokenSet } from 'openid-client';
 import { Transform } from 'stream';
 import { TransformCallback } from 'stream';
-import { UserInfo } from '@bentley/itwin-client';
 
 // @beta
 export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
@@ -47,7 +45,9 @@ export class AzureFileHandler implements FileHandler {
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
+    static isUrlExpired(downloadUrl: string, futureSeconds?: number): boolean;
     join(...paths: string[]): string;
+    unlink(filePath: string): void;
     uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
     }
 
@@ -56,14 +56,10 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     constructor(configuration: BackendAuthorizationClientConfiguration);
     // (undocumented)
     protected _configuration: BackendAuthorizationClientConfiguration;
-    // (undocumented)
-    protected createToken(tokenSet: TokenSet, userInfo?: UserInfo): AccessToken;
     discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer>;
     // (undocumented)
     protected getClient(requestContext: ClientRequestContext): Promise<Client>;
-    // (undocumented)
-    static parseUserInfo(jwt: string): UserInfo | undefined;
-}
+    }
 
 // @beta
 export interface BackendAuthorizationClientConfiguration {
@@ -72,17 +68,17 @@ export interface BackendAuthorizationClientConfiguration {
     scope: string;
 }
 
+// @public
+export enum BackendITwinClientLoggerCategory {
+    Authorization = "backend-itwin-client.Authorization",
+    FileHandlers = "backend-itwin-client.FileHandlers"
+}
+
 // @internal
 export class BufferedStream extends Transform {
     constructor(bufferSize: number);
     _flush(callback: TransformCallback): void;
     _transform(chunk: any, encoding: string, callback: TransformCallback): void;
-}
-
-// @public
-export enum ClientsBackendLoggerCategory {
-    Authorization = "backend-itwin-client.Authorization",
-    IModelHub = "imodelhub-client.iModelHub"
 }
 
 // @beta
@@ -97,17 +93,17 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
 export type DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
 
 // @internal
-export class IOSAzureFileHandler implements FileHandler {
-    constructor();
+export class LocalhostHandler implements FileHandler {
     // (undocumented)
-    agent: any;
+    agent: https.Agent;
     basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
-    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string): Promise<void>;
+    unlink(filePath: string): void;
+    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 }
 
 // @beta @deprecated
@@ -144,6 +140,7 @@ export class UrlFileHandler implements FileHandler {
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
+    unlink(filePath: string): void;
     // (undocumented)
     uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
     // (undocumented)

@@ -7,8 +7,7 @@
  */
 
 import * as React from "react";
-
-import { StringGetter, ConditionalStringValue } from "@bentley/ui-abstract";
+import { ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 

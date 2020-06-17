@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
+import { Vector3d, XYZ } from "@bentley/geometry-core";
 import { OctEncodedNormal } from "../OctEncodedNormal";
-import { XYZ, Vector3d } from "@bentley/geometry-core";
 
 function _expectSignsEqual(a: number, b: number) {
   if (a !== 0) {

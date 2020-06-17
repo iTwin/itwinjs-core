@@ -2,60 +2,48 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { Store } from "redux";  // createStore,
-import { Provider, connect } from "react-redux";
-import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
-import {
-  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClientConfiguration,
-  BrowserAuthorizationClient, isFrontendAuthorizationClient, FrontendAuthorizationClient,
-} from "@bentley/frontend-authorization-client";
-import {
-  RpcConfiguration, ElectronRpcManager,
-  BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration,
-} from "@bentley/imodeljs-common";
-import {
-  IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory,
-  ExternalServerExtensionLoader, DesktopAuthorizationClient,
-} from "@bentley/imodeljs-frontend";
-import { MarkupApp } from "@bentley/imodeljs-markup";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Presentation } from "@bentley/presentation-frontend";
-import { getClassName } from "@bentley/ui-abstract";
-import { UiCore } from "@bentley/ui-core";
-import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
-import {
-  UiFramework, FrameworkReducer, AppNotificationManager, FrameworkUiAdmin,   // , FrameworkState
-  IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
-  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, // combineReducers,
-  FrontstageDef,
-  SafeAreaContext,
-  ToolbarDragInteractionContext,
-  StateManager,
-  FrameworkRootState,
-  FrameworkVersion,
-} from "@bentley/ui-framework";
-import getSupportedRpcs from "../common/rpcs";
-import { AppUi } from "./appui/AppUi";
-import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
-import { DeleteElementTool } from "./tools/DeleteElementTool";
-import { PlaceLineStringTool } from "./tools/PlaceLineStringTool";
-import { PlaceBlockTool } from "./tools/PlaceBlockTool";
-import { MoveElementTool } from "./tools/MoveElementTool";
-import { IModelViewportControl } from "./appui/contentviews/IModelViewport";
-
+import "./index.scss";
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
-
-import "./index.scss";
-import { TestAppConfiguration } from "../common/TestAppConfiguration";
-import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import { connect, Provider } from "react-redux";
+import { Store } from "redux"; // createStore,
+import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import {
+  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
+  isFrontendAuthorizationClient,
+} from "@bentley/frontend-authorization-client";
+import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import {
+  AccuSnap, DesktopAuthorizationClient, ExternalServerExtensionLoader, FrontendLoggerCategory, IModelApp, IModelAppOptions, IModelConnection,
+  loggerCategory, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
+} from "@bentley/imodeljs-frontend";
+import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { MarkupApp } from "@bentley/imodeljs-markup";
+import { AccessToken } from "@bentley/itwin-client";
+import { Presentation } from "@bentley/presentation-frontend";
+import { getClassName } from "@bentley/ui-abstract";
+import { BeDragDropContext } from "@bentley/ui-components";
+import {
+  ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkReducer,
+  FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDef, FrontstageManager, IModelInfo, ProjectInfo, SafeAreaContext, StateManager,
+  SyncUiEventDispatcher, ThemeManager, ToolbarDragInteractionContext, UiFramework,
+} from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
-import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
+import getSupportedRpcs from "../common/rpcs";
+import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { ActiveSettingsManager } from "./api/ActiveSettingsManager";
+import { AppUi } from "./appui/AppUi";
+import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
+import { IModelViewportControl } from "./appui/contentviews/IModelViewport";
+import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
+import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
+import { DeleteElementTool } from "./tools/DeleteElementTool";
+import { MoveElementTool } from "./tools/MoveElementTool";
+import { PlaceBlockTool } from "./tools/PlaceBlockTool";
+import { PlaceLineStringTool } from "./tools/PlaceLineStringTool";
+import { ErrorHandling } from "./api/ErrorHandling";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -173,7 +161,7 @@ export class SampleAppIModelApp {
     await IModelApp.startup(opts);
 
     // For testing local extensions only, should not be used in production.
-    IModelApp.extensionAdmin.addExtensionLoader(new ExternalServerExtensionLoader("http://localhost:3000"), 50);
+    IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
 
@@ -211,16 +199,12 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    await UiCore.initialize(IModelApp.i18n);
-    await UiComponents.initialize(IModelApp.i18n);
-
     await Presentation.initialize({
       activeLocale: IModelApp.i18n.languageList()[0],
-    }).then(() => {
-      Presentation.selection.scopes.activeScope = "top-assembly";
     });
+    Presentation.selection.scopes.activeScope = "top-assembly";
 
-    await UiFramework.initialize(undefined, IModelApp.i18n);
+    await UiFramework.initialize(undefined);
 
     // Register tools.
     MoveElementTool.register(this.sampleAppNamespace);
@@ -327,7 +311,7 @@ export class SampleAppIModelApp {
   }
 
   public static async handleWorkOffline() {
-    await SampleAppIModelApp.showFrontstage("Test4");
+    return LocalFileOpenFrontstage.open();
   }
 
   public static async showIModelIndex(contextId: string, iModelId: string) {
@@ -603,8 +587,10 @@ async function main() {
   // initialize logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
-  Logger.setLevel("simple-editor-app", LogLevel.Info);
+  Logger.setLevel(loggerCategory, LogLevel.Info);
   Logger.setLevel(FrontendLoggerCategory.Authorization, LogLevel.Info);
+
+  ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(ErrorHandling.onUnexpectedError(err));
 
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow

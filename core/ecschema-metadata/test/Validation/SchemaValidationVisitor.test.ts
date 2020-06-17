@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import sinon = require("sinon");
-
 import { SchemaContext } from "../../src/Context";
 import { PrimitiveType, RelationshipEnd } from "../../src/ECObjects";
+import { DiagnosticCategory } from "../../src/ecschema-metadata";
 import { ECClass, MutableClass, StructClass } from "../../src/Metadata/Class";
 import { Constant } from "../../src/Metadata/Constant";
+import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
 import { EntityClass } from "../../src/Metadata/EntityClass";
 import { Enumeration } from "../../src/Metadata/Enumeration";
 import { Format } from "../../src/Metadata/Format";
@@ -24,9 +24,11 @@ import { Schema } from "../../src/Metadata/Schema";
 import { Unit } from "../../src/Metadata/Unit";
 import { UnitSystem } from "../../src/Metadata/UnitSystem";
 import { SchemaValidationVisitor } from "../../src/Validation/SchemaValidationVisitor";
-import { TestReporter, TestRuleSet, TestRuleSetB, EmptyRuleSet, TestDiagnostics, IgnoreSuppressionSet, ApplySuppressionSet } from "../TestUtils/DiagnosticHelpers";
-import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
-import { DiagnosticCategory } from "../../src/ecschema-metadata";
+import {
+  ApplySuppressionSet, EmptyRuleSet, IgnoreSuppressionSet, TestDiagnostics, TestReporter, TestRuleSet, TestRuleSetB,
+} from "../TestUtils/DiagnosticHelpers";
+
+import sinon = require("sinon");
 
 describe("SchemaValidationVisitor tests", () => {
   let visitor: SchemaValidationVisitor;

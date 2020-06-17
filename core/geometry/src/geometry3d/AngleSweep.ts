@@ -6,9 +6,10 @@
  * @module CartesianGeometry
  */
 
-import { GrowableFloat64Array } from "./GrowableFloat64Array";
+import { AngleSweepProps, BeJSONFunctions, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
-import { BeJSONFunctions, Geometry, AngleSweepProps } from "../Geometry";
+import { GrowableFloat64Array } from "./GrowableFloat64Array";
+
 /**
  * An `AngleSweep` is a pair of angles at start and end of an interval.
  *

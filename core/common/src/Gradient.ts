@@ -7,21 +7,16 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  AngleProps,
-} from "@bentley/geometry-core";
-import {
-  ImageBuffer,
-  ImageBufferFormat,
-} from "./Image";
-import {
-  ColorDef,
-  ColorDefProps,
-} from "./ColorDef";
-import { ThematicGradientSettingsProps, ThematicGradientSettings, ThematicGradientColorScheme, ThematicGradientMode } from "./ThematicDisplay";
+import { Angle, AngleProps } from "@bentley/geometry-core";
+import { ColorDef, ColorDefProps } from "./ColorDef";
+import { ImageBuffer, ImageBufferFormat } from "./Image";
+import { ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
 
-/** @beta */
+/** Namespace containing types for defining a color gradient, often used for filled planar regions.
+ * @see [[GeometryParams]]
+ * @see [[GraphicParams]]
+ * @public
+ */
 export namespace Gradient {
   /** Flags applied to a [[Gradient.Symb]]. */
   export enum Flags {
@@ -281,7 +276,9 @@ export namespace Gradient {
     /** Returns true if the [[Gradient.Flags.Outline]] flag is set. */
     public get isOutlined(): boolean { return 0 !== (this.flags & Flags.Outline); }
 
-    /** Applies this gradient's settings to produce a bitmap image. */
+    /** Applies this gradient's settings to produce a bitmap image.
+     * @beta
+     */
     public getImage(width: number, height: number): ImageBuffer {
       if (this.mode === Mode.Thematic) {
         // Allow caller to pass in height but not width. Thematic gradients are always one-dimensional.

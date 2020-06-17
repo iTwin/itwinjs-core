@@ -4,12 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import {
-  ConfigurableUiManager,
-  DrawingNavigationAidControl,
-  AnyWidgetProps,
-  NavigationWidgetDef,
-} from "../../ui-framework";
+import { AnyWidgetProps, ConfigurableUiManager, DrawingNavigationAidControl, NavigationWidgetDef } from "../../ui-framework";
 import { TestUtils } from "../TestUtils";
 
 describe("DrawingNavigationAidControl", () => {

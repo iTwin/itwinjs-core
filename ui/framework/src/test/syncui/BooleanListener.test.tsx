@@ -2,14 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
 import { mount } from "enzyme";
-
+import * as React from "react";
+import { BooleanSyncUiListener, SyncUiEventDispatcher } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import {
-  BooleanSyncUiListener, SyncUiEventDispatcher,
-} from "../../ui-framework";
 
 const syncUiEventId = "showhellocomponentchanged";  // must be lower case
 

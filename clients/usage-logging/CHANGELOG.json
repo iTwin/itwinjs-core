@@ -1,0 +1,44 @@
+{
+  "name": "@bentley/usage-logging-client",
+  "entries": [
+    {
+      "version": "2.1.0",
+      "tag": "@bentley/usage-logging-client_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/usage-logging-client_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. "
+          },
+          {
+            "comment": "react to renaming of imodeljs-clients"
+          },
+          {
+            "comment": "Fixed failing ulas tests. "
+          },
+          {
+            "comment": "Renamed OIDC constructs for consistency; Removed SAML support."
+          },
+          {
+            "comment": "create new package from imodeljs-clients"
+          },
+          {
+            "comment": "; substitute current date when posting feature usage without any set start/end dates"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Renamed TestOidcClient and related constructs for consistency"
+          }
+        ]
+      }
+    }
+  ]
+}

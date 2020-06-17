@@ -2,15 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { mount } from "enzyme";
-
 import { UserInfo } from "@bentley/itwin-client";
-
+import { FrontstageManager } from "../../ui-framework";
 import { UserProfileBackstageItem } from "../../ui-framework/backstage/UserProfile";
 import TestUtils, { mockUserInfo } from "../TestUtils";
-import { FrontstageManager } from "../../ui-framework";
 
 describe("UserProfileBackstageItem", () => {
 

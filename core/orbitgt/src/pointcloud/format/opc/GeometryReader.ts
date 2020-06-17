@@ -14,23 +14,22 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { ContainerFilePart } from "./ContainerFilePart";
-import { FileReader } from "./FileReader";
-import { GeometryRecord } from "./GeometryRecord";
-import { TileReadBuffer } from "./TileReadBuffer";
-
+import { Coordinate } from "../../../spatial/geom/Coordinate";
 import { ABuffer } from "../../../system/buffer/ABuffer";
+import { LittleEndian } from "../../../system/buffer/LittleEndian";
 import { Uint16Buffer } from "../../../system/buffer/Uint16Buffer";
 import { Uint8Buffer } from "../../../system/buffer/Uint8Buffer";
-import { LittleEndian } from "../../../system/buffer/LittleEndian";
-import { Coordinate } from "../../../spatial/geom/Coordinate";
+import { ALong } from "../../../system/runtime/ALong";
+import { ContentLoader } from "../../../system/storage/ContentLoader";
 import { CloudPoint } from "../../model/CloudPoint";
 import { Grid } from "../../model/Grid";
 import { PointDataRaw } from "../../model/PointDataRaw";
 import { ReadRequest } from "../../model/ReadRequest";
 import { TileIndex } from "../../model/TileIndex";
-import { ALong } from "../../../system/runtime/ALong";
-import { ContentLoader } from "../../../system/storage/ContentLoader";
+import { ContainerFilePart } from "./ContainerFilePart";
+import { FileReader } from "./FileReader";
+import { GeometryRecord } from "./GeometryRecord";
+import { TileReadBuffer } from "./TileReadBuffer";
 
 /**
  * Class GeometryReader reads geometry data.

@@ -8,8 +8,8 @@
 
 import { AuthStatus, BentleyError, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { IModelApp } from "./IModelApp";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { IModelApp } from "./IModelApp";
 
 const loggerCategory: string = FrontendLoggerCategory.FrontendRequestContext;
 

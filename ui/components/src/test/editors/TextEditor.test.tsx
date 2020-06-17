@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
-import { mount, shallow } from "enzyme";
 import { expect } from "chai";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
+import { IconEditorParams, InputEditorSizeParams, PropertyEditorInfo, PropertyEditorParamTypes } from "@bentley/ui-abstract";
 import { TextEditor } from "../../ui-components/editors/TextEditor";
 import TestUtils from "../TestUtils";
-import { PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams, PropertyEditorInfo } from "@bentley/ui-abstract";
 
 describe("<TextEditor />", () => {
   it("should render", () => {
@@ -17,6 +17,10 @@ describe("<TextEditor />", () => {
 
   it("renders correctly", () => {
     shallow(<TextEditor />).should.matchSnapshot();
+  });
+
+  it("renders correctly with style", () => {
+    shallow(<TextEditor style={{ color: "red" }} />).should.matchSnapshot();
   });
 
   it("getValue returns proper value after componentDidMount & setState", async () => {

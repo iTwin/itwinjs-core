@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { render, fireEvent } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
+import { fireEvent, render } from "@testing-library/react";
 import { TableNonPrimitiveValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
 
 describe("TableNonPrimitiveValueRenderer", () => {

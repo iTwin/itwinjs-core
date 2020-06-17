@@ -7,14 +7,8 @@
  */
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
-import {
-  Vector3d,
-  XYZProps,
-} from "@bentley/geometry-core";
-import {
-  RgbColor,
-  RgbColorProps,
-} from "./RgbColor";
+import { Vector3d, XYZProps } from "@bentley/geometry-core";
+import { RgbColor, RgbColorProps } from "./RgbColor";
 
 function extractIntensity(value: number | undefined, defaultValue: number) {
   const maxIntensity = 5;
@@ -25,7 +19,7 @@ function extractIntensity(value: number | undefined, defaultValue: number) {
  * The light is colored white and oriented in any direction in world coordinates.
  * It will cast shadows if it is above the world XY plane and if the shadows view flag is enabled for the view.
  * By default, the solar light is only applied when shadows are enabled, but can be set to be applied unconditionally.
- * @beta
+ * @public
  */
 export interface SolarLightProps {
   /** Intensity of the light, typically in [0..1] but can range up to 5. Default: 1.0 */
@@ -43,7 +37,7 @@ const defaultSolarDirection = Vector3d.create(0.272166, 0.680414, 0.680414);
 
 /** Describes the solar directional light associated with a [[LightSettings]].
  * @see [[SolarLightProps]].
- * @beta
+ * @public
  */
 export class SolarLight {
   public readonly direction: Readonly<Vector3d>;
@@ -106,7 +100,7 @@ export class SolarLight {
 
 /** Wire format for the ambient light associated with a [[LightSettingsProps]].
  * Ambient light applies equally to all surfaces in the scene.
- * @beta
+ * @public
  */
 export interface AmbientLightProps {
   /** The color of the light. Black is treated as a special case, indicating that the surface's own diffuse color should be used. */
@@ -117,7 +111,7 @@ export interface AmbientLightProps {
 
 /** Describes the ambient light associated with a [[LightSettings]].
  * @see [[AmbientLightProps]]
- * @beta
+ * @public
  */
 export class AmbientLight {
   public readonly color: RgbColor;
@@ -169,7 +163,7 @@ export class AmbientLight {
  * Hemisphere lights are oriented in opposite directions along the world Z axis. Each has its own color; they share one intensity.
  * They are often used to simulate outdoor reflection of light from the ground and sky, so the colors often match the ground and sky colors
  * of the [[SkyBox]].
- * @beta
+ * @public
  */
 export interface HemisphereLightsProps {
   /** The color of the downward-facing light. Default: (143, 205, 255). */
@@ -185,7 +179,7 @@ const defaultLowerHemisphereColor = new RgbColor(120, 143, 125);
 
 /** Describes a pair of hemisphere lights associated with a [[LightSettings]].
  * @see [[HemisphereLightsProps]]
- * @beta
+ * @public
  */
 export class HemisphereLights {
   public readonly upperColor: RgbColor;
@@ -253,28 +247,34 @@ export class HemisphereLights {
  * Specular intensity of all lights is controlled separately.
  * Light intensities are typically expressed in [0..1] but can be as large as 5.
  * @see [[DisplayStyle3dSettingsProps]]
- * @beta
+ * @public
  */
 export interface LightSettingsProps {
+  /** A white portrait light affixed to the camera and pointing directly forward into the scene. */
   portrait?: {
+    /** Intensity, typically in [0..1], maximum 5. Default: 0.3. */
     intensity?: number;
   };
+  /** Solar light settings. */
   solar?: SolarLightProps;
+  /** Hemisphere light settings. */
   hemisphere?: HemisphereLightsProps;
+  /** Ambient light settings. */
   ambient?: AmbientLightProps;
+  /** Specular intensity applied to all lights. */
   specularIntensity?: number;
   /** Applies a [cel-shaded](https://en.wikipedia.org/wiki/Cel_shading) effect. If greater than zero, specifies the number of cels. Continuous lighting intensities
-   * are computed, then quantized to the specified number of cels. Values greater than 254 have no visible effect. Values in [2..4] are typical.
+   * are computed, then quantized to the specified number of cels. Values greater than 254 have no visible effect.
+   * Typically a value of 2 is appropriate if specular intensity is close to zero; 3 if specular intensity is larger.
+   * Cel-shading is often combined with thick, dark visible edges for a cartoon or comic book effect.
    * Default: 0
-   * Currently implemented but disabled.
-   * @internal
    */
   numCels?: number;
 }
 
 /** Describes the lighting for a 3d scene, associated with a [[DisplayStyle3dSettings]] in turn associated with a [DisplayStyle3d]($backend) or [DisplayStyle3dState]($frontend).
  * @see [[LightSettingsProps]]
- * @beta
+ * @public
  */
 export class LightSettings {
   public readonly solar: SolarLight;
@@ -282,7 +282,6 @@ export class LightSettings {
   public readonly hemisphere: HemisphereLights;
   public readonly portraitIntensity: number;
   public readonly specularIntensity: number;
-  /** @internal */
   public readonly numCels: number;
 
   private constructor(solar: SolarLight, ambient: AmbientLight, hemisphere: HemisphereLights, portraitIntensity: number, specularIntensity: number, numCels: number) {
@@ -361,7 +360,7 @@ export class LightSettings {
     if (this === rhs)
       return true;
 
-    return this.portraitIntensity === rhs.portraitIntensity && this.specularIntensity === rhs.specularIntensity
+    return this.portraitIntensity === rhs.portraitIntensity && this.specularIntensity === rhs.specularIntensity && this.numCels === rhs.numCels
       && this.ambient.equals(rhs.ambient) && this.solar.equals(rhs.solar) && this.hemisphere.equals(rhs.hemisphere);
   }
 }

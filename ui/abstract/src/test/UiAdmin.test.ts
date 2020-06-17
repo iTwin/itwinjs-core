@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { UiAdmin } from "../ui-abstract/UiAdmin";
 import { AbstractMenuItemProps } from "../ui-abstract/items/AbstractMenuItemProps";
 import { AbstractToolbarProps } from "../ui-abstract/items/AbstractToolbarProps";
 import { RelativePosition } from "../ui-abstract/items/RelativePosition";
 import { PropertyDescription } from "../ui-abstract/properties/Description";
+import { UiAdmin } from "../ui-abstract/UiAdmin";
+import { UiDataProvider } from "../ui-abstract/dialogs/UiDataProvider";
 
 describe("UiAdmin", () => {
 
@@ -131,6 +132,35 @@ describe("UiAdmin", () => {
 
     expect(uiAdmin.showHTMLElement(display.documentElement, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.false;
     expect(uiAdmin.hideHTMLElement()).to.be.false;
+  });
+
+  it("showCard should return false by default", () => {
+    const html = '<div style="width: 120px; height: 50px; display: flex; justify-content: center; align-items: center; background-color: aqua;">Hello World!</div>';
+    const content = new DOMParser().parseFromString(html, "text/html");
+    const toolbarProps: AbstractToolbarProps = {
+      toolbarId: "test",
+      items: [
+        { id: "tool", itemPriority: 10, label: "tool label", icon: "icon-placeholder", execute: () => { } },
+        { id: "command", itemPriority: 20, label: "command label", icon: "icon-placeholder", execute: () => { } },
+        { id: "command2", itemPriority: 30, label: "command label", icon: "icon-placeholder", execute: () => { } },
+      ],
+    };
+    const spySelect = sinon.fake();
+    const spyCancel = sinon.fake();
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+
+    expect(uiAdmin.showCard(content.documentElement, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.false;
+    expect(uiAdmin.hideCard()).to.be.false;
+  });
+
+  it("openToolSettingsPopup should return false by default", () => {
+    class TestUiDataProvider extends UiDataProvider { }
+    const uiDataProvider = new TestUiDataProvider();
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    const spyCancel = sinon.fake();
+
+    expect(uiAdmin.openToolSettingsPopup(uiDataProvider, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.false;
+    expect(uiAdmin.closeToolSettingsPopup()).to.be.false;
   });
 
 });

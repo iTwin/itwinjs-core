@@ -7,28 +7,13 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import {
-  Point3d,
-  Range3d,
-  Polyface,
-  PolyfaceVisitor,
-  Angle,
-  IndexedPolyface,
-  Point2d,
-} from "@bentley/geometry-core";
-import { VertexMap, VertexKey, VertexKeyProps } from "../VertexKey";
-import {
-  QPoint3d,
-  QPoint3dList,
-  MeshPolyline,
-  MeshEdges,
-  OctEncodedNormal,
-  TextureMapping,
-} from "@bentley/imodeljs-common";
+import { Angle, IndexedPolyface, Point2d, Point3d, Polyface, PolyfaceVisitor, Range3d } from "@bentley/geometry-core";
+import { MeshEdges, MeshPolyline, OctEncodedNormal, QPoint3d, QPoint3dList, TextureMapping } from "@bentley/imodeljs-common";
 import { DisplayParams } from "../DisplayParams";
 import { Triangle, TriangleKey, TriangleSet } from "../Primitives";
-import { Mesh } from "./MeshPrimitives";
 import { StrokesPrimitivePointLists } from "../Strokes";
+import { VertexKey, VertexKeyProps, VertexMap } from "../VertexKey";
+import { Mesh } from "./MeshPrimitives";
 
 /** @internal */
 export class MeshBuilder {

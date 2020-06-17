@@ -6,11 +6,11 @@
  * @module Timeline
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { CommonProps } from "@bentley/ui-core";
-import { Slider, Rail, Handles, SliderItem, GetHandleProps, GetRailProps } from "react-compound-slider";
 import "./SpeedTimeline.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { GetHandleProps, GetRailProps, Handles, Rail, Slider, SliderItem } from "react-compound-slider";
+import { CommonProps } from "@bentley/ui-core";
 
 // component is in alpha state - it may change after usability testing - test coverage not complete
 
@@ -59,7 +59,7 @@ interface SpeedProps extends CommonProps {
 }
 
 /** Speed Timeline used in Solar Timeline component
- * @alpha
+ * @internal
  */
 // tslint:disable-next-line: variable-name
 export function SpeedTimeline(props: SpeedProps) {

@@ -59,6 +59,7 @@ internal;ECObjectsStatus
 beta;ECRuleSet: IRuleSet
 internal;ECStringConstants
 beta;ECVersion
+alpha;Editors
 beta;EntityClass 
 beta;EntityClassProps 
 alpha;EntityMixinChange 
@@ -162,6 +163,7 @@ beta;PropertyCategory
 beta;PropertyCategoryProps 
 alpha;PropertyChanges 
 beta;class PropertyDiagnostic
+alpha;PropertyEditResults
 alpha;PropertyMissing 
 beta;PropertyProps
 beta;PropertyType
@@ -186,12 +188,15 @@ beta;SchemaCompareDiagnostics:
 alpha;SchemaCompareDirection
 alpha;SchemaComparer
 beta;SchemaContext 
+alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
+alpha;SchemaEditResults
 internal;SchemaGraphUtil
 beta;class SchemaItem
 alpha;class SchemaItemChange 
 alpha;SchemaItemChanges 
 beta;class SchemaItemDiagnostic
+alpha;SchemaItemEditResults
 beta;SchemaItemKey
 alpha;SchemaItemMissing 
 beta;SchemaItemProps
@@ -207,6 +212,7 @@ internal;SchemaReadHelper
 alpha;SchemaReferenceDelta 
 alpha;SchemaReferenceMissing 
 beta;SchemaReferenceProps
+beta;SchemaValidater
 beta;SchemaValidationVisitor 
 internal;SchemaWalker
 beta;ScientificType

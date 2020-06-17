@@ -6,14 +6,14 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { render } from "@testing-library/react";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
-import { TreeNodeContent } from "../../../../ui-components/tree/controlled/component/NodeContent";
+import { render } from "@testing-library/react";
 import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
+import { TreeNodeContent } from "../../../../ui-components/tree/controlled/component/NodeContent";
+import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
 import { HighlightableTreeNodeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
 import { TestUtils } from "../../../TestUtils";
-import { PropertyRecord } from "@bentley/ui-abstract";
 
 describe("NodeContent", () => {
   const rendererManagerMock = moq.Mock.ofType<PropertyValueRendererManager>();

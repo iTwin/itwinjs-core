@@ -3,16 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
 import {
-  ButtonGroupEditorParams,
-  DialogItemsManager,
-  DialogItem,
-  DialogItemValue,
-  DialogRow,
-  PropertyEditorParamTypes,
-  PropertyDescription,
-  SuppressLabelEditorParams } from "../../ui-abstract";
+  ButtonGroupEditorParams, DialogItem, DialogItemsManager, DialogItemValue, DialogRow, PropertyDescription, PropertyEditorParamTypes,
+  SuppressLabelEditorParams,
+  UiDataProvider,
+} from "../../ui-abstract";
 import { PrimitiveValue } from "../../ui-abstract/properties/Value";
 
 const value1: DialogItemValue = { value: 3 };
@@ -41,7 +36,7 @@ const getLockToggleDescription = (): PropertyDescription => {
     name: "LockToggle",
     displayLabel: "Lock",
     typename: "boolean",
-    editor: {name: "toggle"},
+    editor: { name: "toggle" },
   };
 };
 const getButtonGroupItemDescription = (): PropertyDescription => {
@@ -74,10 +69,10 @@ const getButtonGroupItemDescription = (): PropertyDescription => {
   };
 };
 
-const lockItem: DialogItem = {value: lockValue, property: getLockToggleDescription(), editorPosition: {rowPriority: 0, columnIndex: 0}};
-const item1: DialogItem = {value: value1, property: getItem1Description(), editorPosition: {rowPriority: 0, columnIndex: 1}, lockProperty: lockItem};
-const item2: DialogItem = {value: value2, property: getItem2Description(), editorPosition: {rowPriority: 0, columnIndex: 2}, isDisabled: true};
-const buttonGroupItem: DialogItem = {value: buttonGroupValue, property: getButtonGroupItemDescription(), editorPosition: {rowPriority: 1, columnIndex: 0}};
+const lockItem: DialogItem = { value: lockValue, property: getLockToggleDescription(), editorPosition: { rowPriority: 0, columnIndex: 0 } };
+const item1: DialogItem = { value: value1, property: getItem1Description(), editorPosition: { rowPriority: 0, columnIndex: 1 }, lockProperty: lockItem };
+const item2: DialogItem = { value: value2, property: getItem2Description(), editorPosition: { rowPriority: 0, columnIndex: 2 }, isDisabled: true };
+const buttonGroupItem: DialogItem = { value: buttonGroupValue, property: getButtonGroupItemDescription(), editorPosition: { rowPriority: 1, columnIndex: 0 } };
 const dialogItems: DialogItem[] = [item1, item2, buttonGroupItem];
 
 describe("DialogItemsManager", () => {
@@ -101,14 +96,14 @@ describe("DialogItemsManager", () => {
       expect(items.length).to.eq(3);
     });
   });
-  describe ("dialogItem", () => {
+  describe("dialogItem", () => {
     it("should want label", () => {
-      const wantsLabel = DialogItemsManager.editorWantsLabel (item1);
-      expect (wantsLabel).to.be.true;
+      const wantsLabel = DialogItemsManager.editorWantsLabel(item1);
+      expect(wantsLabel).to.be.true;
     });
     it("should not want label", () => {
-      const wantsLabel = DialogItemsManager.editorWantsLabel (buttonGroupItem);
-      expect (wantsLabel).to.be.false;
+      const wantsLabel = DialogItemsManager.editorWantsLabel(buttonGroupItem);
+      expect(wantsLabel).to.be.false;
     });
     it("has lock property", () => {
       const hasLockProperty = DialogItemsManager.hasAssociatedLockProperty(item1);
@@ -120,32 +115,40 @@ describe("DialogItemsManager", () => {
     });
     it("has no lock property", () => {
       const hasLockProperty = DialogItemsManager.hasAssociatedLockProperty(item2);
-      expect (hasLockProperty).to.be.false;
+      expect(hasLockProperty).to.be.false;
     });
   });
-  describe ("property record", () => {
+  describe("property record", () => {
     it("should reflect value", () => {
       const record = DialogItemsManager.getPropertyRecord(buttonGroupItem);
       record.should.not.be.undefined;
       const primitiveValue = record.value as PrimitiveValue;
       primitiveValue.should.not.be.undefined;
-      expect (primitiveValue.value).to.eq("One");
+      expect(primitiveValue.value).to.eq("One");
     });
   });
-  describe ("row", () => {
+  describe("row", () => {
     it("has only button groups", () => {
-      const sut = new DialogItemsManager (dialogItems);
+      const sut = new DialogItemsManager(dialogItems);
       const row: DialogRow = sut.rows[1];
       const hasOnlyButtonGroups = DialogItemsManager.onlyContainButtonGroupEditors(row);
 
-      expect (hasOnlyButtonGroups).to.be.true;
+      expect(hasOnlyButtonGroups).to.be.true;
     });
     it("does not have only button groups", () => {
-      const sut = new DialogItemsManager (dialogItems);
+      const sut = new DialogItemsManager(dialogItems);
       const row: DialogRow = sut.rows[0];
       const hasOnlyButtonGroups = DialogItemsManager.onlyContainButtonGroupEditors(row);
 
-      expect (hasOnlyButtonGroups).to.be.false;
+      expect(hasOnlyButtonGroups).to.be.false;
+    });
+  });
+  describe("fromUiDataProvider", () => {
+    it("should create a DialogItemsManager from a UiDataProvider", () => {
+      class TestUiDataProvider extends UiDataProvider { }
+      const uiDataProvider = new TestUiDataProvider();
+      const sut = DialogItemsManager.fromUiDataProvider(uiDataProvider);
+      expect(sut.onSyncPropertiesChangeEvent).to.eq(uiDataProvider.onSyncPropertiesChangeEvent);
     });
   });
 });

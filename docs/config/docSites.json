@@ -42,11 +42,11 @@
       "BIS": "bis",
       "Learning": "learning",
       "API Reference": "reference",
-      "v1.13.0": "changehistory"
+      "v2.1.0": "changehistory"
     },
     "archivedVersions": [
       {
-        "version": "v1.13.0",
+        "version": "v1.14.0",
         "archivedPath": "/v1"
       }
     ],
@@ -71,6 +71,10 @@
       "ui-core": "ui-core",
       "ui-framework": "ui-framework",
       "ui-ninezone": "ui-ninezone",
+      "analytical-backend": "analytical-backend",
+      "linear-referencing-backend": "linear-referencing-backend",
+      "linear-referencing-common": "linear-referencing-common",
+      "physical-material-backend": "physical-material-backend",
       "presentation-backend": "presentation-backend",
       "presentation-common": "presentation-common",
       "presentation-components": "presentation-components",
@@ -83,6 +87,18 @@
       "webgl-compatibility": "webgl-compatibility"
     },
     "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"imodeljs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
-    "ogShareImage": "landing-page/assets/twitter-share.png"
+    "ogShareImage": "landing-page/assets/twitter-share.png",
+    "katexOptions": {
+      "macros": {
+        "\\matrixXY": "{\\begin{bmatrix}#1_{xx}\\ #1_{xy}\\ #1_{xz} \\\\ #1_{yx}\\ #1_{yy}\\ #1_{yz} \\\\ #1_{zx}\\ #1_{zy}\\ #1_{zz}\\end{bmatrix}}",
+        "\\matrixTransposeSubXY": "{\\begin{bmatrix}#1_{xx}\\ #1_{yx}\\ #1_{zx} \\\\ #1_{xy}\\ #1_{yy}\\ #1_{zy} \\\\ #1_{xz}\\ #1_{yz}\\ #1_{zz}\\end{bmatrix}}",
+        "\\blockTransform": "{\\begin{bmatrix}#1 & #2 \\\\ 0 & 1\\end{bmatrix}}",
+        "\\rowMajorMatrixXY": "{\\begin{bmatrix}#1_{xx}\\ #1_{xy}\\ #1_{xz}\\ #1_{yx}\\ #1_{yy}\\ #1_{yz}\\ #1_{zx}\\ #1_{zy}\\ #1_{zz}\\end{bmatrix}}",
+        "\\rowSubXYZ": "{\\begin{bmatrix}#1_{x}\\ #1_{y}\\ #1_{z}\\end{bmatrix}}",
+        "\\columnSubXYZ": "{\\begin{bmatrix}#1_{x}\\\\#1_{y}\\\\#1_{z}\\end{bmatrix}}",
+        "\\columnXYZ": "{\\begin{bmatrix}#1\\\\#2\\\\#3\\end{bmatrix}}",
+        "\\rowXYZ": "{\\begin{bmatrix} #1 & #2 & #3\\end{bmatrix}}"
+      }
+    }
   }
 }

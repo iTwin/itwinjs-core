@@ -7,14 +7,15 @@
  * @module Topology
  */
 
-import { Vector2d, Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
-import { SmallSystem } from "../numerics/Polynomials";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
-import { XYAndZ, XAndY } from "../geometry3d/XYZProps";
+import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
+import { SmallSystem } from "../numerics/Polynomials";
 import { MaskManager } from "./MaskManager";
+
 /** function signature for function of one node with no return type restrictions
  * @internal
  */
@@ -758,6 +759,21 @@ export class HalfEdge {
       result);
   }
 
+  public getPoint3d(result?: Point3d): Point3d {
+    return Point3d.create(this.x, this.y, this.z, result);
+  }
+  public getPoint2d(result?: Point2d): Point2d {
+    return Point2d.create(this.x, this.y, result);
+  }
+  public getVector3dAlongEdge(result?: Vector3d): Vector3d {
+    const nodeB = this.faceSuccessor;
+    return Vector3d.create(nodeB.x - this.x, nodeB.y - this.y, nodeB.z - this.z, result);
+  }
+
+  public getVector2dAlongEdge(result?: Vector2d): Vector2d {
+    const nodeB = this.faceSuccessor;
+    return Vector2d.create(nodeB.x - this.x, nodeB.y - this.y, result);
+  }
   /**
    * Return the interpolated x coordinate between this node and its face successor.
    * @param fraction fractional position along this edge.
@@ -1095,8 +1111,8 @@ export class HalfEdgeGraph {
   /**
    * * Visit each vertex loop of the graph once.
    * * Call the announceVertex function
-   * * continue search if announceFace(graph, node) returns true
-   * * terminate search if announce face (graph, node) returns false
+   * * continue search if announceVertex(graph, node) returns true
+   * * terminate search if announce vertex (graph, node) returns false
    * @param  announceVertex function to apply at one node of each face.
    */
   public announceVertexLoops(announceVertex: GraphNodeFunction) {
@@ -1109,6 +1125,20 @@ export class HalfEdgeGraph {
         break;
     }
   }
+  /**
+   * * Visit each vertex loop of the graph once.
+   * * Call the announceVertex function
+   * * continue search if announceNode(graph, node) returns true
+   * * terminate search if announce face (graph, node) returns false
+   * @param  announceNode function to apply at one node of each face.
+   */
+  public announceNodes(announceNode: GraphNodeFunction) {
+    for (const node of this.allHalfEdges) {
+      if (!announceNode(this, node))
+        break;
+    }
+  }
+
   /** Return the number of nodes in the graph */
   public countNodes(): number { return this.allHalfEdges.length; }
   /** Apply transform to the xyz coordinates in the graph. */

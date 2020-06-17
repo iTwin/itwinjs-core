@@ -5,40 +5,23 @@
 /** @packageDocumentation
  * @module Views
  */
+import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Point3d, Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps,
-  BackgroundMapSettings,
-  Cartographic,
-  ColorDef,
-  ContextRealityModelProps,
-  DisplayStyle3dSettings,
-  DisplayStyleProps,
-  DisplayStyleSettings,
-  EnvironmentProps,
-  GlobeMode,
-  GroundPlane,
-  LightSettings,
-  RenderTexture,
-  SkyBoxImageType,
-  SkyBoxProps,
-  SkyCubeProps,
-  SolarShadowSettings,
-  SubCategoryOverride,
-  ViewFlags,
-  calculateSolarDirection,
+  BackgroundMapProps, BackgroundMapSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings,
+  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, GlobeMode, GroundPlane, LightSettings, RenderTexture, SkyBoxImageType, SkyBoxProps,
+  SkyCubeProps, SolarShadowSettings, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
+import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
+import { ContextRealityModelState } from "./ContextRealityModelState";
 import { ElementState } from "./EntityState";
+import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { JsonUtils, Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
-import { BackgroundMapTileTreeReference, BackgroundTerrainTileTreeReference, TileTreeReference, MapTileTree } from "./tile/internal";
-import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";
-import { Viewport, ScreenViewport } from "./Viewport";
-import { IModelApp } from "./IModelApp";
-import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
-import { Vector3d, Point3d } from "@bentley/geometry-core";
+import { BackgroundMapTileTreeReference, BackgroundTerrainTileTreeReference, MapTileTree, TileTreeReference } from "./tile/internal";
+import { ScreenViewport, Viewport } from "./Viewport";
 
 type BackgroundMapOrTerrainTileTreeReference = BackgroundMapTileTreeReference | BackgroundTerrainTileTreeReference;
 
@@ -98,7 +81,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
    * @note If this display style is associated with a [[Viewport]], prefer to use [[Viewport.backgroundMapSettings]] to change the settings to ensure the Viewport's display updates immediately.
-   * @beta
    */
   public get backgroundMapSettings(): BackgroundMapSettings { return this._backgroundMap.settings; }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
@@ -115,7 +97,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * ``` ts
    *  style.changeBackgroundMapProps({ groundBias: 16.2 });
    * ```
-   * @beta
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.backgroundMapSettings = this.backgroundMapSettings.clone(props);
@@ -683,7 +664,6 @@ export class DisplayStyle3dState extends DisplayStyleState {
     }
   }
 
-  /** @alpha */
   public get lights(): LightSettings { return this.settings.lights; }
   public set lights(lights: LightSettings) { this.settings.lights = lights; }
 
@@ -710,14 +690,13 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
     return this._skyBoxParams;
   }
-  /** @beta */
+  /** The direction of the solar light. */
   public get sunDirection(): Readonly<Vector3d> {
     return this.settings.lights.solar.direction;
   }
 
-  /** Set the solar direction based on time value
+  /** Set the solar light direction based on time value
    * @param time The time in unix time milliseconds.
-   * @beta
    */
   public setSunTime(time: number) {
     let cartoCenter;
@@ -732,9 +711,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     this.settings.lights = this.settings.lights.clone({ solar: { direction: calculateSolarDirection(new Date(time), cartoCenter) } });
   }
 
-  /** Settings controlling shadow display.
-   * @beta
-   */
+  /** Settings controlling shadow display. */
   public get solarShadows(): SolarShadowSettings {
     return this.settings.solarShadows;
   }

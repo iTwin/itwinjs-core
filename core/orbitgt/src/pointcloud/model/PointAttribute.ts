@@ -14,13 +14,12 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { AttributeTypes } from "./AttributeTypes";
-import { AttributeValue } from "./AttributeValue";
-
 import { AList } from "../../system/collection/AList";
 import { ALong } from "../../system/runtime/ALong";
 import { ASystem } from "../../system/runtime/ASystem";
 import { Strings } from "../../system/runtime/Strings";
+import { AttributeTypes } from "./AttributeTypes";
+import { AttributeValue } from "./AttributeValue";
 
 /**
  * Class PointAttribute defines an attribute of a point.

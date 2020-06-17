@@ -6,10 +6,10 @@
  * @module Toolbar
  */
 
+import "./Icon.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ToolbarButton, ToolbarButtonProps } from "./Button";
-import "./Icon.scss";
 
 /** Properties of [[ToolbarButton]] component.
  * @alpha

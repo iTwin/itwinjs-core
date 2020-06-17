@@ -7,11 +7,7 @@
  */
 
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
-
-import {
-  TimelineDataProvider,
-  Milestone, PlaybackSettings,
-} from "./interfaces";
+import { Milestone, PlaybackSettings, TimelineDataProvider } from "./interfaces";
 
 /** Base Timeline Data Provider
  * @alpha
@@ -41,7 +37,7 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
 
   // istanbul ignore next
   public async loadTimelineData(): Promise<boolean> {
-    return Promise.resolve(false);
+    return false;
   }
 
   /** Called to get the initial scrubber location */

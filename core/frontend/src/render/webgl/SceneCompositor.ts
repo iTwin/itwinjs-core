@@ -6,50 +6,39 @@
  * @module WebGL
  */
 
-import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
-import { TextureHandle } from "./Texture";
-import { Target } from "./Target";
-import {
-  AmbientOcclusionGeometry,
-  BlurGeometry,
-  BoundaryType,
-  CachedGeometry,
-  CompositeGeometry,
-  CopyPickBufferGeometry,
-  ScreenPointsGeometry,
-  SingleTexturedViewportQuadGeometry,
-  ViewportQuadGeometry,
-  VolumeClassifierGeometry,
-} from "./CachedGeometry";
-import { Vector2d, Vector3d, Transform } from "@bentley/geometry-core";
-import { TechniqueId } from "./TechniqueId";
-import { System } from "./System";
-import { RenderType, DepthType } from "@bentley/webgl-compatibility";
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import { Transform, Vector2d, Vector3d } from "@bentley/geometry-core";
+import { Feature, PackedFeatureTable, RenderMode, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { DepthType, RenderType } from "@bentley/webgl-compatibility";
+import { IModelConnection } from "../../IModelConnection";
+import { SceneContext } from "../../ViewContext";
+import { ViewRect } from "../../ViewRect";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { ViewRect } from "../../ViewRect";
-import { IModelConnection } from "../../IModelConnection";
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { GL } from "./GL";
+import { BranchState } from "./BranchState";
+import { BatchState } from "./BatchState";
 import {
-  DrawCommands,
-  extractFlashedVolumeClassifierCommands,
-  extractHilitedVolumeClassifierCommands,
-} from "./DrawCommand";
-import { RenderCommands } from "./RenderCommands";
-import { RenderState } from "./RenderState";
-import { CompositeFlags, RenderPass, RenderOrder, TextureUnit } from "./RenderFlags";
-import { BatchState, BranchState } from "./BranchState";
-import { Feature, ViewFlags, PackedFeatureTable, RenderMode, SpatialClassificationProps } from "@bentley/imodeljs-common";
-import { FloatRgba } from "./FloatRGBA";
+  AmbientOcclusionGeometry, BlurGeometry, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, ScreenPointsGeometry,
+  SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
+} from "./CachedGeometry";
 import { Debug } from "./Diagnostics";
+import { WebGLDisposable } from "./Disposable";
+import { DrawCommands, extractFlashedVolumeClassifierCommands, extractHilitedVolumeClassifierCommands } from "./DrawCommand";
+import { FloatRgba } from "./FloatRGBA";
+import { DepthBuffer, FrameBuffer } from "./FrameBuffer";
+import { GL } from "./GL";
+import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
+import { Matrix4 } from "./Matrix";
+import { RenderCommands } from "./RenderCommands";
+import { CompositeFlags, RenderOrder, RenderPass, TextureUnit } from "./RenderFlags";
+import { RenderState } from "./RenderState";
 import { getDrawParams } from "./ScratchDrawParams";
 import { SolarShadowMap } from "./SolarShadowMap";
-import { SceneContext } from "../../ViewContext";
-import { WebGLDisposable } from "./Disposable";
-import { Matrix4 } from "./Matrix";
-import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
+import { TextureHandle } from "./Texture";
 
 function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -777,7 +766,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Enable clipping
     this.target.beginPerfMetricRecord("Enable Clipping");
-    this.target.pushActiveVolume();
+    this.target.pushViewClip();
     this.target.endPerfMetricRecord();
 
     // Render volume classification first so that we only classify the reality data
@@ -830,7 +819,7 @@ abstract class Compositor extends SceneCompositor {
     this.renderLayers(commands, false, RenderPass.OverlayLayers);
     this.target.endPerfMetricRecord();
 
-    this.target.popActiveVolume();
+    this.target.popViewClip();
   }
 
   public get fullHeight(): number { return this.target.viewRect.height; }
@@ -851,7 +840,7 @@ abstract class Compositor extends SceneCompositor {
     const haveRenderCommands = !commands.isEmpty;
     if (haveRenderCommands) {
       this.target.beginPerfMetricRecord("Enable Clipping", true);
-      this.target.pushActiveVolume();
+      this.target.pushViewClip();
       this.target.endPerfMetricRecord(true);
 
       this.target.beginPerfMetricRecord("Render VolumeClassification", true);
@@ -868,23 +857,23 @@ abstract class Compositor extends SceneCompositor {
 
       this.target.beginPerfMetricRecord("Render Translucent Layers", true);
       this.renderLayers(commands, false, RenderPass.TranslucentLayers);
-      this.target.endPerfMetricRecord();
+      this.target.endPerfMetricRecord(true);
 
       this.target.beginPerfMetricRecord("Render Overlay Layers", true);
       this.renderLayers(commands, false, RenderPass.OverlayLayers);
-      this.target.endPerfMetricRecord();
+      this.target.endPerfMetricRecord(true);
 
-      this.target.popActiveVolume();
+      this.target.popViewClip();
     }
 
     if (0 === sceneOverlays.length && (undefined === overlayDecorations || 0 === overlayDecorations.length))
       return;
 
     // Now populate the opaque passes with any pickable world overlays
-    this.target.beginPerfMetricRecord("Overlay Draws");
+    this.target.beginPerfMetricRecord("Overlay Draws", true);
     commands.initForPickOverlays(sceneOverlays, overlayDecorations);
     if (commands.isEmpty) {
-      this.target.endPerfMetricRecord(); // End Overlay Draws record if returning
+      this.target.endPerfMetricRecord(true); // End Overlay Draws record if returning
       return;
     }
 
@@ -900,10 +889,10 @@ abstract class Compositor extends SceneCompositor {
     }
 
     // Render overlays as opaque into the pick buffers. Make sure we use the decoration state (to ignore symbology overrides, esp. the non-locatable flag).
-    this.target.decorationsState.isReadPixelsInProgress = true;
+    this.target.decorationsState.viewFlags.transparency = false;
     this.renderOpaque(commands, CompositeFlags.None, true);
     this.target.endPerfMetricRecord();
-    this.target.decorationsState.isReadPixelsInProgress = false;
+    this.target.decorationsState.viewFlags.transparency = true;
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
@@ -1053,7 +1042,16 @@ abstract class Compositor extends SceneCompositor {
     vf.textures = false;
     vf.transparency = false;
     vf.visibleEdges = false;
-    this._vcBranchState = BranchState.create(top.symbologyOverrides, vf, Transform.createIdentity(), top.clipVolume, top.planarClassifier, top.iModel);
+    this._vcBranchState = new BranchState({
+      symbologyOverrides: top.symbologyOverrides,
+      viewFlags: vf,
+      transform: Transform.createIdentity(),
+      clipVolume: top.clipVolume,
+      planarClassifier: top.planarClassifier,
+      iModel: top.iModel,
+      is3d: top.is3d,
+      edgeSettings: top.edgeSettings,
+    });
 
     this._vcSetStencilRenderState = new RenderState();
     this._vcCopyZRenderState = new RenderState();

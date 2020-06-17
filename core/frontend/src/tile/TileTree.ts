@@ -6,32 +6,14 @@
  * @module Tiles
  */
 
-import {
-  BeDuration,
-  BeTimePoint,
-  dispose,
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  Matrix4d,
-  Range3d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  ElementAlignedBox3d,
-  FrustumPlanes,
-  ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
+import { BeDuration, BeTimePoint, dispose, Id64String } from "@bentley/bentleyjs-core";
+import { Matrix4d, Range3d, Transform } from "@bentley/geometry-core";
+import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
-import {
-  Tile,
-  TileDrawArgs,
-  TileLoadPriority,
-  TileTreeParams,
-} from "./internal";
+import { Tile, TileDrawArgs, TileLoadPriority, TileTreeParams } from "./internal";
 
 /** Describes the current state of a [[TileTree]]. TileTrees are loaded asynchronously and may be unloaded after a period of disuse.
  * @beta

@@ -6,11 +6,10 @@
  * @module Core
  */
 
-import { IDisposable, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelJsNative, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
+import { ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
+import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
 import {
-  PresentationError, PresentationStatus, VariableValueTypes, VariableValueJSON,
-  PartialHierarchyModificationJSON, UpdateInfoJSON,
+  PartialHierarchyModificationJSON, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValueJSON, VariableValueTypes,
 } from "@bentley/presentation-common";
 import { PresentationManagerMode } from "./PresentationManager";
 
@@ -27,6 +26,7 @@ export enum NativePlatformRequestTypes {
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",
   GetDistinctValues = "GetDistinctValues",
+  GetPagedDistinctValues = "GetPagedDistinctValues",
   GetDisplayLabel = "GetDisplayLabel",
 }
 

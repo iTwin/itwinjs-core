@@ -3,10 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  createRandomECInstancesNode, createRandomECInstancesNodeKeyJSON, createRandomLabelDefinitionJSON,
-} from "../_helpers/random";
 import { Node, NodeJSON } from "../../presentation-common/hierarchy/Node";
+import { createRandomECInstancesNode, createRandomECInstancesNodeKeyJSON, createRandomLabelDefinitionJSON } from "../_helpers/random";
 
 const createRandomNodeJSON = (): NodeJSON => {
   return {

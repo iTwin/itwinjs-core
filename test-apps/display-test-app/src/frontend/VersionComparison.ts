@@ -2,29 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
+import { ColorDef, RgbColor } from "@bentley/imodeljs-common";
 import {
-  assert,
-  BeTimePoint,
-} from "@bentley/bentleyjs-core";
-import {
-  ColorDef,
-  RgbColor,
-} from "@bentley/imodeljs-common";
-import {
-  ChangeFlags,
-  FeatureOverrideProvider,
-  FeatureSymbology,
-  IModelApp,
-  IModelConnection,
-  SpatialModelState,
-  SpatialModelTileTrees,
-  SpatialViewState,
-  TileTree,
-  TiledGraphicsProvider,
-  TileTreeReference,
-  Tool,
-  Viewport,
-  SnapshotConnection,
+  ChangeFlags, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialModelState, SpatialModelTileTrees,
+  SpatialViewState, TiledGraphicsProvider, TileTree, TileTreeReference, Tool, Viewport,
 } from "@bentley/imodeljs-frontend";
 
 interface ChangedElems {

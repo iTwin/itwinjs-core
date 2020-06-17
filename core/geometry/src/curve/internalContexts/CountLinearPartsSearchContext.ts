@@ -2,14 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module Curve
  */
-import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
+import { CurveCollection } from "../CurveCollection";
 import { CurvePrimitive } from "../CurvePrimitive";
+import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
-import { CurveCollection } from "../CurveCollection";
+
 /** Algorithmic class: Count LineSegment3d and LineString3d primitives.
  * @internal
  */

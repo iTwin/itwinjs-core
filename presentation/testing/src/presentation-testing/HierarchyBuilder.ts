@@ -6,12 +6,12 @@
  * @module Hierarchies
  */
 import { using } from "@bentley/bentleyjs-core";
-import { Ruleset, Omit, RegisteredRuleset } from "@bentley/presentation-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Presentation } from "@bentley/presentation-frontend";
-import { TreeNodeItem } from "@bentley/ui-components";
+import { Omit, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { PRESENTATION_TREE_NODE_KEY } from "@bentley/presentation-components/lib/presentation-components/tree/Utils"; // tslint:disable-line: no-direct-imports
+import { Presentation } from "@bentley/presentation-frontend";
+import { TreeNodeItem } from "@bentley/ui-components";
 
 /**
  * Structure that describes a Node with any indexed properties

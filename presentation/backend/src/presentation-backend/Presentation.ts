@@ -6,23 +6,20 @@
  * @module Core
  */
 
-import { DisposeFunc, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { RpcManager } from "@bentley/imodeljs-common";
+import { ClientRequestContext, DisposeFunc, Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import {
-  PresentationRpcInterface, PresentationError, PresentationStatus,
-} from "@bentley/presentation-common";
-import { PresentationRpcImpl } from "./PresentationRpcImpl";
+import { RpcManager } from "@bentley/imodeljs-common";
+import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@bentley/presentation-common";
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
+import { PresentationRpcImpl } from "./PresentationRpcImpl";
 import { TemporaryStorage } from "./TemporaryStorage";
 
 const defaultRequestTimeout: number = 90000;
 
 /**
- * Properties that can be used to configure [[Presentation]] API
- * @public
+ * @public @deprecated
  */
-export interface PresentationProps extends PresentationManagerProps {
+export interface PresentationPropsDeprecated extends PresentationManagerProps {
   /**
    * Factory method for creating separate managers for each client
    * @internal
@@ -40,6 +37,29 @@ export interface PresentationProps extends PresentationManagerProps {
    */
   unusedClientLifetime?: number;
 }
+
+/**
+ * @public
+ */
+export interface PresentationPropsNew extends PresentationManagerProps {
+  /**
+   * How much time should an unused client manager be stored in memory
+   * before it's disposed.
+   */
+  requestTimeout?: number;
+
+  /**
+   * Specifies to use single manager for all clients.
+   * @internal
+   */
+  useSingleManager?: boolean;
+}
+
+/**
+ * Properties that can be used to configure [[Presentation]] API
+ * @public
+ */
+export type PresentationProps = PresentationPropsDeprecated | PresentationPropsNew; // tslint:disable-line:deprecation
 
 interface ClientStoreItem {
   context: ClientRequestContext;
@@ -62,6 +82,7 @@ export class Presentation {
   private static _clientsStorage: TemporaryStorage<ClientStoreItem> | undefined;
   private static _requestTimeout: number | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
+  private static _manager: PresentationManager | undefined;
 
   /* istanbul ignore next */
   private constructor() { }
@@ -91,22 +112,27 @@ export class Presentation {
       // using the one registered first. At least we can avoid an exception...
     }
     this._initProps = props || {};
-    this._shutdownListener = IModelHost.onBeforeShutdown.addListener(Presentation.terminate);
+    this._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => Presentation.terminate());
     this._requestTimeout = (props && props.requestTimeout !== undefined)
       ? props.requestTimeout
       : defaultRequestTimeout;
-    this._clientsStorage = new TemporaryStorage<ClientStoreItem>({
-      factory: this.createClientManager,
-      cleanupHandler: this.disposeClientManager,
-      // cleanup unused managers every minute
-      cleanupInterval: 60 * 1000,
-      // by default, manager is disposed after 1 hour of being unused
-      valueLifetime: (props && props.unusedClientLifetime) ? props.unusedClientLifetime : 60 * 60 * 1000,
-      // add some logging
-      onCreated: /* istanbul ignore next */ (id: string) => Logger.logInfo("Presentation", `Created a PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
-      onDisposedSingle: /* istanbul ignore next */ (id: string) => Logger.logInfo("Presentation", `Disposed PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
-      onDisposedAll: /* istanbul ignore next */ () => Logger.logInfo("Presentation", `Disposed all PresentationManager instances.`),
-    });
+
+    if (isSingleManagerProps(this._initProps)) {
+      this._manager = new PresentationManager(Presentation._initProps);
+    } else {
+      this._clientsStorage = new TemporaryStorage<ClientStoreItem>({
+        factory: this.createClientManager,
+        cleanupHandler: this.disposeClientManager,
+        // cleanup unused managers every minute
+        cleanupInterval: 60 * 1000,
+        // by default, manager is disposed after 1 hour of being unused
+        valueLifetime: this._initProps.unusedClientLifetime ?? 60 * 60 * 1000,
+        // add some logging
+        onCreated: /* istanbul ignore next */ (id: string) => Logger.logInfo("Presentation", `Created a PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
+        onDisposedSingle: /* istanbul ignore next */ (id: string) => Logger.logInfo("Presentation", `Disposed PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
+        onDisposedAll: /* istanbul ignore next */ () => Logger.logInfo("Presentation", `Disposed all PresentationManager instances.`),
+      });
+    }
   }
 
   /**
@@ -122,6 +148,10 @@ export class Presentation {
       this._shutdownListener();
       this._shutdownListener = undefined;
     }
+    if (this._manager) {
+      this._manager.dispose();
+      this._manager = undefined;
+    }
     this._initProps = undefined;
     if (this._requestTimeout)
       this._requestTimeout = undefined;
@@ -129,7 +159,7 @@ export class Presentation {
 
   private static createClientManager(clientId: string): ClientStoreItem {
     let manager: PresentationManager;
-    if (Presentation._initProps && Presentation._initProps.clientManagerFactory)
+    if (Presentation._initProps && !isSingleManagerProps(Presentation._initProps) && Presentation._initProps.clientManagerFactory)
       manager = Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps);
     else
       manager = new PresentationManager(Presentation._initProps);
@@ -147,9 +177,12 @@ export class Presentation {
    *        ID is provided, the default [[PresentationManager]] is returned.
    */
   public static getManager(clientId?: string): PresentationManager {
-    if (!Presentation._clientsStorage)
-      throw new PresentationError(PresentationStatus.NotInitialized, "Presentation must be first initialized by calling Presentation.initialize");
-    return Presentation._clientsStorage.getValue(clientId || "").manager;
+    if (this._initProps && isSingleManagerProps(this._initProps) && this._manager)
+      return this._manager;
+    if (this._clientsStorage)
+      return this._clientsStorage.getValue(clientId || "").manager;
+
+    throw new PresentationError(PresentationStatus.NotInitialized, "Presentation must be first initialized by calling Presentation.initialize");
   }
 
   /**
@@ -160,4 +193,8 @@ export class Presentation {
       throw new PresentationError(PresentationStatus.NotInitialized, "Presentation must be first initialized by calling Presentation.initialize");
     return this._requestTimeout;
   }
+}
+
+function isSingleManagerProps(props: PresentationProps): props is PresentationPropsNew {
+  return !!(props as PresentationPropsNew).useSingleManager;
 }

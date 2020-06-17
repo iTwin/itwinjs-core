@@ -1,6 +1,37 @@
 # Change Log - @bentley/build-tools
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Add inline sources to properly debug ts files
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- timeout option fixed
+- Fix pseudolocalize script to correctly handle the englishDir arg.
+- order imports.
+- extract-api: Remove unused `isPresentation` command line arg
+- Usage of deprecated APIs is a lint error.
+- Upgrade to Rush 5.23.2
+- Remove the ignoreargs.js script.
+- Add extract-api to betools cli
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+*Version update only*
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+*Version update only*
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -69,7 +100,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 ### Updates
 
 - Add tslint rule banning Math.hypot
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -116,10 +147,9 @@ Mon, 13 May 2019 15:52:05 GMT
 ### Updates
 
 - Adds error handling in api-extractor to handle no lib folder
-- Updates api-=extractor to accept parameters for missing release tags
-- ""
+- Updates api-extractor to accept parameters for missing release tags
 - Move to @microsoft/api-extractor 7.0.35 to fix issue when reporting missing tags
-- "Updates API extractor to v7"
+- Updates API extractor to v7
 - Added tools/build/tslint-docs.json. Added SvgPath & SvgSprite to ui-core.
 - Fix broken links
 - Fix the extract-api script to use this packages dependency instead of requiring consumers to take a devDep on api-extractor.
@@ -145,7 +175,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Use new buildIModelJsBuild script
 - Remove unneeded typedoc plugin dependency
 - Changed stripInternal to false so @internal-marked symbols still put in .d.ts files
-- upgrade to TypeScript 3.2.2
+- Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT
@@ -182,7 +212,7 @@ Mon, 07 Jan 2019 13:31:34 GMT
 
 ### Updates
 
-- added missing dependencies for tslint
+- Added missing dependencies for tslint
 - Move to Node 10
 
 ## 0.181.0

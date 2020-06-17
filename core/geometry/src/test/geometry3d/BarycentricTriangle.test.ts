@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { BarycentricTriangle } from "../../geometry3d/BarycentricTriangle";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Vector3d, Point3d } from "../../geometry3d/Point3dVector3d";
 import { Angle } from "../../geometry3d/Angle";
+import { BarycentricTriangle } from "../../geometry3d/BarycentricTriangle";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
+import { Checker } from "../Checker";
+
 /* tslint:disable: no-console */
 // cspell:word subtriangle
 function verifyTriangle(ck: Checker, triangle: BarycentricTriangle) {

@@ -6,14 +6,14 @@
  * @module LineWeight
  */
 
-import * as React from "react";
+import "./WeightPickerButton.scss";
 import classnames from "classnames";
+import * as React from "react";
+import ReactResizeDetector from "react-resize-detector";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { Popup, CommonProps } from "@bentley/ui-core";
-import ReactResizeDetector from "react-resize-detector";
+import { CommonProps, Popup } from "@bentley/ui-core";
 import { LineWeightSwatch } from "./Swatch";
-import "./WeightPickerButton.scss";
 
 // cSpell:ignore weightpicker lineweight
 
@@ -124,7 +124,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     if (event.key === "Enter") {
       event.preventDefault();
       event.stopPropagation();
-      const weightButton = document.activeElement as HTMLElement;
+      const weightButton = document.activeElement  as HTMLElement;
       // istanbul ignore else
       if (weightButton.tagName === "BUTTON") {
         try {
@@ -191,8 +191,8 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     );
 
     return (
-      <ReactResizeDetector handleWidth>
-        {(width: number) =>
+      <ReactResizeDetector handleWidth
+        render={({ width }) => (
           <>
             <div ref={this._setTarget} >
               <LineWeightSwatch
@@ -222,8 +222,8 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
               {this.renderPopup(this.props.dropDownTitle)}
             </Popup>
           </>
-        }
-      </ReactResizeDetector>
+        )}
+      />
     );
   }
 }

@@ -6,16 +6,17 @@
  * @module Properties
  */
 
-import * as React from "react";
 import _ from "lodash";
-import { Orientation } from "@bentley/ui-core";
-import { PropertyValueFormat, ArrayValue, PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../ValueRendererManager";
-import { PrimitiveRendererProps, PrimitivePropertyRenderer } from "./PrimitivePropertyRenderer";
-import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
+import * as React from "react";
+import { ArrayValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { Orientation, RatioChangeResult } from "@bentley/ui-core";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { UiComponents } from "../../UiComponents";
+import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../ValueRendererManager";
 import { ActionButtonRenderer } from "./ActionButtonRenderer";
+import { PropertyGridColumnInfo } from "./PropertyGridColumns";
+import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
+import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
 
 /** Properties shared by all renderers and PropertyView
  * @public
@@ -37,8 +38,8 @@ export interface SharedRendererProps {
   onContextMenu?: (property: PropertyRecord, e: React.MouseEvent) => void;
   /** Ratio between label and value cells */
   columnRatio?: number;
-  /** Callback to ratio change event */
-  onColumnRatioChanged?: (ratio: number) => void;
+  /** Callback to column ratio changed event */
+  onColumnRatioChanged?: (ratio: number) => void | RatioChangeResult;
   /** Indicates that properties have *hover* effect */
   isHoverable?: boolean;
   /** Indicates that properties can be selected */
@@ -47,6 +48,16 @@ export interface SharedRendererProps {
   width?: number;
   /** Array of action button renderers @beta */
   actionButtonRenderers?: ActionButtonRenderer[];
+  /** Is resize handle hovered */
+  isResizeHandleHovered?: boolean;
+  /** Callback to hover event change */
+  onResizeHandleHoverChanged?: (isHovered: boolean) => void;
+  /** Is resize handle being dragged */
+  isResizeHandleBeingDragged?: boolean;
+  /** Callback to drag event change */
+  onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
+  /** Information for styling property grid columns */
+  columnInfo?: PropertyGridColumnInfo;
 }
 
 /** Properties of [[PropertyRenderer]] React component
@@ -86,11 +97,25 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
     super(props);
   }
 
-  public static getLabelOffset(indentation?: number) {
+  public static getLabelOffset(indentation?: number, orientation?: Orientation, width?: number, columnRatio?: number, minColumnLabelWidth?: number): number {
     if (!indentation)
       return 0;
 
-    return indentation * 17;
+    const maxIndent = 17;
+    const minIndent = 6;
+    if (orientation !== Orientation.Horizontal || !width || !columnRatio || !minColumnLabelWidth)
+      return indentation * maxIndent;
+
+    const currentSize = Math.ceil(width * columnRatio);
+    const shrinkThreshold = minColumnLabelWidth + (maxIndent * indentation);
+    if (currentSize >= shrinkThreshold)
+      return indentation * maxIndent;
+
+    const minShrink = minColumnLabelWidth + minIndent + (maxIndent * (indentation - 1));
+    if (currentSize <= minShrink)
+      return minIndent + this.getLabelOffset(indentation - 1, orientation, width, columnRatio, minColumnLabelWidth);
+
+    return currentSize - minColumnLabelWidth;
   }
 
   private updateDisplayValue(props: PropertyRendererProps) {
@@ -112,7 +137,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
     // Align value with label if orientation is vertical
     if (this.props.orientation === Orientation.Vertical)
-      displayValue = <span style={{ paddingLeft: PropertyRenderer.getLabelOffset(this.props.indentation) }}>{displayValue}</span>;
+      displayValue = <span style={{ paddingLeft: PropertyRenderer.getLabelOffset(this.props.indentation, this.props.orientation) }}>{displayValue}</span>;
 
     this.setState({ displayValue });
   }
@@ -147,8 +172,9 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
   /** @internal */
   public componentDidUpdate(prevProps: PropertyRendererProps) {
-    if (prevProps.propertyRecord !== this.props.propertyRecord
-      || prevProps.isEditing !== this.props.isEditing)
+    if (prevProps.propertyRecord !== this.props.propertyRecord ||
+      prevProps.isEditing !== this.props.isEditing ||
+      prevProps.orientation !== this.props.orientation)
       this.updateDisplayValue(this.props);
   }
 

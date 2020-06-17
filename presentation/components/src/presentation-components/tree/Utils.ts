@@ -6,28 +6,34 @@
  * @module Tree
  */
 
-import { StyleHelper } from "../common/StyleHelper";
+import { LabelDefinition, Node, NodeKey, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";
-import { Node, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
-import { DelayLoadedTreeNodeItem, PageOptions as UiPageOptions, ItemStyle, ItemColorOverrides } from "@bentley/ui-components";
+import { StyleHelper } from "../common/StyleHelper";
 import { createLabelRecord } from "../common/Utils";
 
 /** @internal */
 export const PRESENTATION_TREE_NODE_KEY = "__presentation-components/key";
 
 /** @internal */
-export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string): DelayLoadedTreeNodeItem[] => {
+export interface CreateTreeNodeItemProps {
+  appendChildrenCountForGroupingNodes?: boolean;
+}
+
+/** @internal */
+export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string, props?: CreateTreeNodeItemProps): DelayLoadedTreeNodeItem[] => {
   const list = new Array<DelayLoadedTreeNodeItem>();
   for (const node of nodes)
-    list.push(createTreeNodeItem(node, parentId));
+    list.push(createTreeNodeItem(node, parentId, props));
   return list;
 };
 
 /** @internal */
-export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): DelayLoadedTreeNodeItem => {
+export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string, props?: CreateTreeNodeItemProps): DelayLoadedTreeNodeItem => {
   const item: DelayLoadedTreeNodeItem = {
     id: [...node.key.pathFromRoot].reverse().join("/"),
-    label: createLabelRecord(node.label, "node_label"),
+    label: createNodeLabelRecord(node, !!props?.appendChildrenCountForGroupingNodes),
   };
   (item as any)[PRESENTATION_TREE_NODE_KEY] = node.key;
 
@@ -75,4 +81,27 @@ export const pageOptionsUiToPresentation = (pageOptions?: UiPageOptions): Presen
   if (pageOptions)
     return { ...pageOptions };
   return undefined;
+};
+
+const createNodeLabelRecord = (node: Node, appendChildrenCountForGroupingNodes: boolean): PropertyRecord => {
+  let labelDefinition = node.label;
+  if (appendChildrenCountForGroupingNodes && NodeKey.isGroupingNodeKey(node.key)) {
+    const countDefinition: LabelDefinition = {
+      displayValue: `(${node.key.groupedInstancesCount})`,
+      rawValue: `(${node.key.groupedInstancesCount})`,
+      typeName: "string",
+    };
+    labelDefinition = {
+      displayValue: `${labelDefinition.displayValue} ${countDefinition.displayValue}`,
+      rawValue: {
+        separator: " ",
+        values: [
+          labelDefinition,
+          countDefinition,
+        ],
+      },
+      typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME,
+    };
+  }
+  return createLabelRecord(labelDefinition, "node_label");
 };

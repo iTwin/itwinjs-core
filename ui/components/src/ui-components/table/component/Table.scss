@@ -141,13 +141,19 @@
   }
 
   .components-cell-editor {
-    background: $buic-background-control !important;
+    // background: $buic-background-control !important;
     height: 100%;
   }
 }
 
+.components-table.striped-rows {
+  .react-grid-Row--even .react-grid-Cell {
+    background-color: $buic-background-striped_row;
+  }
+}
+
 .components-table.row-selection {
-  .react-grid-Cell.row-selected {
+  .react-grid-Row .react-grid-Cell.row-selected {
     background: $buic-row-selection;
   }
 

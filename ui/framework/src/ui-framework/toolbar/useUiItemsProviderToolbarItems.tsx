@@ -7,7 +7,9 @@
  */
 
 import * as React from "react";
-import { UiItemsManager, UiItemsArbiter, StageUsage, CommonToolbarItem, ToolbarUsage, ToolbarOrientation, ToolbarItemsManager } from "@bentley/ui-abstract";
+import {
+  CommonToolbarItem, StageUsage, ToolbarItemsManager, ToolbarOrientation, ToolbarUsage, UiItemsArbiter, UiItemsManager,
+} from "@bentley/ui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
 
@@ -20,8 +22,8 @@ export const useUiItemsProviderToolbarItems = (manager: ToolbarItemsManager, too
   const [items, setItems] = React.useState(manager.items);
   const providersRef = React.useRef("");
   const currentStageRef = React.useRef("");
-  // gathers items from registered plugins - dependent on when a uiItemsProvider is register or unregistered and if the
-  // current stage's composer allows entries from plugins.
+  // gathers items from registered extensions - dependent on when a uiItemsProvider is register or unregistered and if the
+  // current stage's composer allows entries from extensions.
   React.useEffect(() => {
     const uiProviders = uiItemsProviderIds.join("-");
     // istanbul ignore else

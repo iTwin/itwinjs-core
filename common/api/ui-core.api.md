@@ -4,16 +4,24 @@
 
 ```ts
 
+import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
+import { FocusEventHandler } from 'react-select/src/types';
+import { formatGroupLabel } from 'react-select/src/builtins';
+import { getOptionLabel } from 'react-select/src/builtins';
+import { getOptionValue } from 'react-select/src/builtins';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { InputActionMeta } from 'react-select/src/types';
+import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
 import { RelativePosition } from '@bentley/ui-abstract';
+import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { SliderModeFunction } from 'react-compound-slider';
-import { TranslationOptions } from '@bentley/imodeljs-i18n';
+import { ValueType } from 'react-select/src/types';
 
 // @internal
 export class AnnularSector {
@@ -204,19 +212,19 @@ export enum CheckBoxState {
     Partial = 2
 }
 
-// @beta
+// @public
 export class CheckListBox extends React.PureComponent<CommonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface CheckListBoxItemProps extends CommonProps {
     checked?: boolean;
     disabled?: boolean;
@@ -224,7 +232,7 @@ export interface CheckListBoxItemProps extends CommonProps {
     onClick?: () => any;
 }
 
-// @beta
+// @public
 export function CheckListBoxSeparator(): JSX.Element;
 
 // @internal
@@ -399,7 +407,7 @@ export enum Corner {
     TopRight = 1
 }
 
-// @beta
+// @public
 export class Cube extends React.PureComponent<CubeProps> {
     // (undocumented)
     render(): React.ReactNode;
@@ -419,7 +427,7 @@ export interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
     rotMatrix: Matrix3d;
 }
 
-// @beta
+// @public
 export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
     // (undocumented)
     faces?: {
@@ -562,7 +570,7 @@ export interface DivProps extends CommonDivProps {
     mainClassName: string;
 }
 
-// @beta
+// @public
 export const DivWithOutsideClick: {
     new (props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>): {
         ref: React.RefObject<HTMLDivElement>;
@@ -630,17 +638,16 @@ export const DivWithOutsideClick: {
 };
 
 // @public
-export class ElementSeparator extends React.PureComponent<ElementSeparatorProps> {
-    // (undocumented)
-    static defaultProps: Partial<ElementSeparatorProps>;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export const ElementSeparator: (props: ElementSeparatorProps) => JSX.Element;
 
 // @public
 export interface ElementSeparatorProps extends CommonProps {
+    isResizeHandleBeingDragged?: boolean;
+    isResizeHandleHovered?: boolean;
     movableArea?: number;
-    onRatioChanged: (ratio: number) => void;
+    onRatioChanged?: (ratio: number) => void | RatioChangeResult;
+    onResizeHandleDragChanged?: (isDragStarted: boolean) => void;
+    onResizeHandleHoverChanged?: (isHovered: boolean) => void;
     orientation: Orientation;
     ratio: number;
     separatorSize?: number;
@@ -695,7 +702,7 @@ export interface ExpansionToggleProps extends CommonProps {
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-// @beta
+// @public
 export enum Face {
     // (undocumented)
     Back = "back",
@@ -794,6 +801,12 @@ export interface FormProps {
 }
 
 // @internal
+export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string;
+
+// @internal
+export function getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number;
+
+// @internal
 export const getDisplayName: (component: React.ComponentType<any>) => string;
 
 // @internal
@@ -855,16 +868,16 @@ export enum HorizontalAlignment {
     Right = "right"
 }
 
-// @beta
+// @public
 export class HorizontalTabs extends React.PureComponent<TabsProps> {
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
 }
 
 // @public
 export function Icon(props: IconProps): JSX.Element | null;
 
-// @beta
+// @public
 export class IconHelper {
     static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue;
     static getIconReactNode(icon: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): React.ReactNode;
@@ -872,33 +885,33 @@ export class IconHelper {
     static get reactIconKey(): string;
 }
 
-// @beta
+// @public
 export class IconInput extends React.PureComponent<IconInputProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface IconInputProps extends InputProps {
     containerClassName?: string;
     icon: React.ReactNode;
 }
 
 // @public
-export interface IconProps {
+export interface IconProps extends CommonProps {
     iconSpec?: IconSpec;
 }
 
 // @public
 export type IconSpec = string | ConditionalStringValue | React.ReactNode;
 
-// @beta
+// @public
 export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
     // @internal (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface ImageCheckBoxProps extends CommonProps {
     checked?: boolean;
     disabled?: boolean;
@@ -946,7 +959,13 @@ export enum InputStatus {
 }
 
 // @internal
+export const isHTMLElement: (message: MessageType) => message is HTMLElement;
+
+// @internal
 export function isPromiseLike(obj: unknown): obj is PromiseLike<unknown>;
+
+// @internal
+export const isReactMessage: (message: MessageType) => message is ReactMessage;
 
 // @public
 export interface LabeledComponentProps {
@@ -1017,7 +1036,7 @@ export class Line {
     p2: Point;
 }
 
-// @beta
+// @public
 export class LoadingBar extends React.PureComponent<LoadingBarProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingBarProps>;
@@ -1025,14 +1044,14 @@ export class LoadingBar extends React.PureComponent<LoadingBarProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LoadingBarProps extends CommonProps {
     barHeight: number;
     percent: number;
     showPercentage?: boolean;
 }
 
-// @beta
+// @public
 export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingPromptProps>;
@@ -1040,7 +1059,7 @@ export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LoadingPromptProps {
     isDeterminate: boolean;
     // @deprecated
@@ -1055,7 +1074,7 @@ export interface LoadingPromptProps {
     title: string;
 }
 
-// @beta
+// @public
 export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingSpinnerProps>;
@@ -1063,13 +1082,13 @@ export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LoadingSpinnerProps extends SpinnerProps {
     message?: string;
     messageOnTop?: boolean;
 }
 
-// @beta
+// @public
 export class LoadingStatus extends React.PureComponent<LoadingStatusProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingStatusProps>;
@@ -1077,7 +1096,7 @@ export class LoadingStatus extends React.PureComponent<LoadingStatusProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface LoadingStatusProps extends CommonProps {
     message: string;
     percent: number;
@@ -1096,7 +1115,7 @@ export class LocalUiSettings implements UiSettings {
     w: Window;
 }
 
-// @beta
+// @public
 export interface MainTabsProps extends TabsProps {
     mainClassName: string;
 }
@@ -1147,6 +1166,17 @@ export interface MessagedComponentProps {
     messageStyle?: React.CSSProperties;
 }
 
+// @beta
+export function MessageRenderer(props: MessageRendererProps): JSX.Element | null;
+
+// @beta
+export interface MessageRendererProps extends ClassNameProps {
+    // (undocumented)
+    message: MessageType;
+    // (undocumented)
+    useSpan?: boolean;
+}
+
 // @public
 export enum MessageSeverity {
     // (undocumented)
@@ -1163,6 +1193,9 @@ export enum MessageSeverity {
     Warning = 3
 }
 
+// @public
+export type MessageType = string | HTMLElement | ReactMessage;
+
 // @beta
 export function MinimalFeaturedTile(props: TileProps): JSX.Element;
 
@@ -1175,7 +1208,7 @@ export function MutedText(props: TextProps): JSX.Element;
 // @internal
 export function NewBadge(props: CommonProps): JSX.Element;
 
-// @beta
+// @public
 export interface NoChildrenProps {
     // (undocumented)
     children?: undefined;
@@ -1218,10 +1251,21 @@ export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">,
 // @public
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 
-// @beta
+// @public
 export type OmitChildrenProp<T extends {
     children?: React.ReactNode;
 }> = Omit<T, "children">;
+
+// @beta
+export type OptionsType = Array<OptionType>;
+
+// @beta
+export interface OptionType {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    value: any;
+}
 
 // @public
 export enum Orientation {
@@ -1241,6 +1285,8 @@ export class Point implements PointProps {
     getManhattanDistanceTo(other: PointProps): number;
     getOffsetTo(other: PointProps): Point;
     // (undocumented)
+    multiply(factor: number): Point;
+    // (undocumented)
     offset(offset: PointProps): Point;
     // (undocumented)
     offsetX(offset: number): Point;
@@ -1258,7 +1304,7 @@ export class Point implements PointProps {
     readonly y: number;
 }
 
-// @beta
+// @public
 export interface PointProps {
     // (undocumented)
     readonly x: number;
@@ -1266,7 +1312,7 @@ export interface PointProps {
     readonly y: number;
 }
 
-// @beta
+// @public
 export class Popup extends React.Component<PopupProps, PopupState> {
     constructor(props: PopupProps);
     // (undocumented)
@@ -1281,7 +1327,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     render(): React.ReactPortal | null;
     }
 
-// @beta
+// @public
 export interface PopupProps extends CommonProps {
     ariaLabel?: string;
     focusTarget?: React.RefObject<HTMLElement> | string;
@@ -1291,6 +1337,7 @@ export interface PopupProps extends CommonProps {
     moveFocus?: boolean;
     offset: number;
     onClose?: () => void;
+    onEnter?: () => void;
     onOpen?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
     position: RelativePosition;
@@ -1365,11 +1412,23 @@ export class Radio extends React.PureComponent<RadioProps> {
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps {
 }
 
+// @public
+export interface RatioChangeResult {
+    // (undocumented)
+    ratio: number;
+}
+
+// @public
+export interface ReactMessage {
+    // (undocumented)
+    reactNode: React.ReactNode;
+}
+
 // @internal (undocumented)
 export class ReactNumericInput extends React.Component<ReactNumericInputProps, ReactNumericInputState> {
     constructor(props: ReactNumericInputProps);
     componentDidMount(): void;
-    componentDidUpdate(_prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void;
+    componentDidUpdate(prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void;
     componentWillUnmount(): void;
     static defaultProps: {
         step: number;
@@ -1390,10 +1449,6 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     refsInput: HTMLInputElement | undefined;
     render(): JSX.Element;
     static SPEED: number;
-    // (undocumented)
-    UNSAFE_componentWillReceiveProps(props: ReactNumericInputProps): void;
-    // (undocumented)
-    UNSAFE_componentWillUpdate(): void;
     }
 
 // @beta
@@ -1502,7 +1557,7 @@ export class Rectangle implements RectangleProps {
     toProps(): RectangleProps;
 }
 
-// @beta
+// @public
 export interface RectangleProps {
     // (undocumented)
     readonly bottom: number;
@@ -1555,12 +1610,7 @@ export interface SearchBoxProps extends CommonProps {
 }
 
 // @public
-export class Select extends React.PureComponent<SelectProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function Select(props: SelectProps): JSX.Element;
 
 // @public
 export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
@@ -1601,7 +1651,7 @@ export class Size implements SizeProps {
     readonly width: number;
 }
 
-// @beta
+// @public
 export interface SizeProps {
     // (undocumented)
     readonly height: number;
@@ -1609,10 +1659,10 @@ export interface SizeProps {
     readonly width: number;
 }
 
-// @beta
+// @public
 export function Slider(props: SliderProps): JSX.Element;
 
-// @beta
+// @public
 export interface SliderProps extends CommonProps {
     disabled?: boolean;
     formatTick?: (tick: number) => string;
@@ -1676,7 +1726,7 @@ export enum SpinnerSize {
     XLarge = 3
 }
 
-// @beta
+// @public
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
     constructor(props: SplitButtonProps);
     // (undocumented)
@@ -1693,7 +1743,7 @@ export enum SplitButtonActionType {
     List = 1
 }
 
-// @beta
+// @public
 export interface SplitButtonProps extends CommonProps {
     drawBorder?: boolean;
     icon?: IconSpec;
@@ -1704,10 +1754,10 @@ export interface SplitButtonProps extends CommonProps {
 // @beta
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
-// @beta
+// @public
 export function StyledText(props: StyledTextProps): JSX.Element;
 
-// @beta
+// @public
 export interface StyledTextProps extends TextProps {
     mainClassName: string;
 }
@@ -1742,13 +1792,13 @@ export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
 
-// @beta
+// @public
 export class Tabs extends React.PureComponent<MainTabsProps> {
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @public
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
     activeIndex?: number;
     green?: boolean;
@@ -1759,19 +1809,84 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
 // @public
 export class Textarea extends React.PureComponent<TextareaProps> {
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
     static defaultProps: Partial<TextareaProps>;
     // (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @public
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
     rows?: number;
+    setFocus?: boolean;
 }
 
 // @public
 export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement>, CommonProps {
 }
+
+// @beta
+export function ThemedSelect(props: ThemedSelectProps): JSX.Element;
+
+// @beta
+export type ThemedSelectProps = {
+    autoFocus?: boolean;
+    backspaceRemovesValue?: boolean;
+    blurInputOnSelect?: boolean;
+    captureMenuScroll?: boolean;
+    closeMenuOnSelect?: boolean;
+    closeMenuOnScroll?: boolean | EventListener;
+    components?: SelectComponentsConfig<OptionType>;
+    controlShouldRenderValue?: boolean;
+    defaultMenuIsOpen?: boolean;
+    defaultValue?: ValueType<OptionType>;
+    escapeClearsValue?: boolean;
+    filterOption?: ((option: OptionType, rawInput: string) => boolean) | null;
+    formatGroupLabel?: typeof formatGroupLabel;
+    formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => Node;
+    getOptionLabel?: typeof getOptionLabel;
+    getOptionValue?: typeof getOptionValue;
+    hideSelectedOptions?: boolean;
+    id?: string;
+    inputValue?: string;
+    inputId?: string;
+    instanceId?: number | string;
+    isClearable?: boolean;
+    isDisabled?: boolean;
+    isLoading?: boolean;
+    isOptionDisabled?: (option: OptionType, options: OptionsType) => boolean | false;
+    isMulti?: boolean;
+    isMenuFixed?: boolean;
+    isRtl?: boolean;
+    isSearchable?: boolean;
+    minMenuHeight?: number;
+    maxMenuHeight?: number;
+    menuIsOpen?: boolean;
+    menuShouldBlockScroll?: boolean;
+    menuShouldScrollIntoView?: boolean;
+    name?: string;
+    noOptionsMessage?: (obj: {
+        inputValue: string;
+    }) => string | null;
+    onBlur?: FocusEventHandler;
+    onChange?: (value: ValueType<OptionType>, action: ActionMeta<OptionType>) => void;
+    onFocus?: FocusEventHandler;
+    onInputChange?: (newValue: string, actionMeta?: InputActionMeta) => void;
+    onKeyDown?: KeyboardEventHandler;
+    onMenuOpen?: () => void;
+    onMenuClose?: () => void;
+    onMenuScrollToTop?: (e: React.SyntheticEvent<HTMLElement>) => void;
+    onMenuScrollToBottom?: (e: React.SyntheticEvent<HTMLElement>) => void;
+    openMenuOnFocus?: boolean;
+    openMenuOnClick?: boolean;
+    options: OptionsType;
+    pageSize?: number;
+    placeholder?: string;
+    tabIndex?: string;
+    tabSelectsValue?: boolean;
+    value?: ValueType<OptionType>;
+};
 
 // @internal
 export class TildeFinder {
@@ -1840,17 +1955,7 @@ export function Title(props: TextProps): JSX.Element;
 export function Title2(props: TextProps): JSX.Element;
 
 // @public
-export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
-    constructor(props: ToggleProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentDidUpdate(prevProps: ToggleProps): void;
-    // (undocumented)
-    static defaultProps: Partial<ToggleProps>;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function Toggle(props: ToggleProps): JSX.Element;
 
 // @public
 export enum ToggleButtonType {
@@ -1879,6 +1984,19 @@ export const TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35;
 
 // @internal
 export const TOOLBAR_OPACITY_DEFAULT = 0.5;
+
+// @beta
+export function Tooltip(props: TooltipProps): JSX.Element;
+
+// @beta
+export interface TooltipProps extends CommonProps {
+    // (undocumented)
+    below?: boolean;
+    // (undocumented)
+    percent?: number;
+    // (undocumented)
+    value: MessageType;
+}
 
 // @public
 export class Tree extends React.PureComponent<TreeProps> {
@@ -1984,17 +2102,35 @@ export class UiCore {
     static get i18n(): I18N;
     static get i18nNamespace(): string;
     static initialize(i18n: I18N): Promise<void>;
+    static get initialized(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)
     static get packageName(): string;
     static terminate(): void;
     // @internal
-    static translate(key: string | string[], options?: TranslationOptions): string;
+    static translate(key: string | string[]): string;
 }
 
 // @public
 export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
+}
+
+// @beta
+export class UiSetting<T> {
+    constructor(settingNamespace: string, settingName: string, getValue: () => T, applyValue?: ((v: T) => void) | undefined);
+    // (undocumented)
+    applyValue?: ((v: T) => void) | undefined;
+    deleteSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    getSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    getSettingAndApplyValue(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    // (undocumented)
+    getValue: () => T;
+    saveSetting(uiSettings: UiSettings): Promise<UiSettingsResult>;
+    // (undocumented)
+    settingName: string;
+    // (undocumented)
+    settingNamespace: string;
 }
 
 // @beta
@@ -2018,9 +2154,13 @@ export interface UiSettingsResult {
 // @beta
 export enum UiSettingsStatus {
     // (undocumented)
+    AuthorizationError = 4,
+    // (undocumented)
     NotFound = 1,
     // (undocumented)
     Success = 0,
+    // (undocumented)
+    Uninitialized = 3,
     // (undocumented)
     UnknownError = 2
 }
@@ -2059,10 +2199,10 @@ export function useRefEffect<T>(callback: (instance: T | null) => (void | (() =>
 export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
 
 // @internal
-export function useResizeObserver<T extends Element>(onResize?: (width: number) => void, useHeight?: boolean): (instance: T | null) => void;
+export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
 
 // @internal
-export const useTargeted: (elementRef: React.RefObject<Element>) => boolean;
+export const useTargeted: (ref: React.RefObject<Element>) => boolean;
 
 // @public
 export enum VerticalAlignment {
@@ -2074,9 +2214,9 @@ export enum VerticalAlignment {
     Top = 1
 }
 
-// @beta
+// @public
 export class VerticalTabs extends React.PureComponent<TabsProps> {
-    // (undocumented)
+    // @internal (undocumented)
     render(): JSX.Element;
 }
 

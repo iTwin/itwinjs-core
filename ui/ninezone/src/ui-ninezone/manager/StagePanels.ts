@@ -6,10 +6,10 @@
  * @module StagePanels
  */
 
-import { StagePanelsManagerProps, StagePanelsManager } from "../stage-panels/manager/StagePanels";
+import { StagePanelsManager, StagePanelsManagerProps } from "../stage-panels/manager/StagePanels";
 import { StagePanelType } from "../stage-panels/StagePanel";
-import { NineZoneStagePanelManagerProps, NineZoneStagePanelManager, getDefaultNineZoneStagePanelManagerProps } from "./StagePanel";
 import { WidgetZoneId } from "../zones/manager/Zones";
+import { getDefaultNineZoneStagePanelManagerProps, NineZoneStagePanelManager, NineZoneStagePanelManagerProps } from "./StagePanel";
 
 /** Properties used by [[NineZoneStagePanelsManager]].
  * @alpha

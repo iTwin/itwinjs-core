@@ -6,30 +6,17 @@
  * @module ContentView
  */
 
-import {
-  IModelConnection,
-  ViewState,
-  DrawingViewState,
-  SheetViewState,
-  SpatialViewState,
-  EmphasizeElements,
-  EmphasizeElementsProps,
-  ScreenViewport,
-} from "@bentley/imodeljs-frontend";
-import {
-  ViewStateProps,
-  ViewDefinitionProps,
-  CategorySelectorProps,
-  ModelSelectorProps,
-  DisplayStyleProps,
-  SheetProps,
-} from "@bentley/imodeljs-common";
 import { Id64Array } from "@bentley/bentleyjs-core";
-
+import {
+  CategorySelectorProps, DisplayStyleProps, ModelSelectorProps, SheetProps, ViewDefinitionProps, ViewStateProps,
+} from "@bentley/imodeljs-common";
+import {
+  DrawingViewState, EmphasizeElements, EmphasizeElementsProps, IModelConnection, ScreenViewport, SheetViewState, SpatialViewState, ViewState,
+} from "@bentley/imodeljs-frontend";
 import { ViewUtilities } from "../utils/ViewUtilities";
 
 /** SavedViewProps interface for sharing ViewState and EmphasizeElements information.
- * @beta
+ * @public
  */
 export interface SavedViewProps {
   bisBaseClass: string;
@@ -43,7 +30,7 @@ export interface SavedViewProps {
 }
 
 /** SavedView class. Used to serialize/deserialize a ViewState.
- * @beta
+ * @public
  */
 export class SavedView {
 

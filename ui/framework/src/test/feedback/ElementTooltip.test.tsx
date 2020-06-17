@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
 import { mount } from "enzyme";
-import TestUtils from "../TestUtils";
+import * as React from "react";
 import { ElementTooltip } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("ElementTooltip", () => {
 

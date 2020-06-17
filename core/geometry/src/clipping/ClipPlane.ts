@@ -7,22 +7,23 @@
  * @module CartesianGeometry
  */
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { Point4d } from "../geometry4d/Point4d";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Geometry, AxisOrder, PlaneAltitudeEvaluator } from "../Geometry";
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { AnalyticRoots } from "../numerics/Polynomials";
-import { Arc3d } from "../curve/Arc3d";
-import { Clipper, ClipUtilities } from "./ClipUtils";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
+import { Range1d, Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
+import { Matrix4d } from "../geometry4d/Matrix4d";
+import { Point4d } from "../geometry4d/Point4d";
+import { AnalyticRoots } from "../numerics/Polynomials";
+import { Clipper, ClipUtilities, PolygonClipper } from "./ClipUtils";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 
 /** A ClipPlane is a single plane represented as
  * * An inward unit normal (u,v,w)
@@ -37,7 +38,7 @@ import { IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
  * * Given a point and inward normal, the signedDistance is (point DOT normal)
  * @public
  */
-export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
+export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClipper {
   private _inwardNormal: Vector3d;
   /** Construct a parallel plane through the origin.
    * * Move it to the actual position.
@@ -517,4 +518,31 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
       xyzOut.pushWrap(1);
     return xyzOut;
   }
+  /** Implement appendPolygonClip, as defined in interface PolygonClipper.  /**
+   *
+   * @param xyz input polygon.  This is not changed.
+   * @param insideFragments Array to receive "inside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
+   * @param outsideFragments Array to receive "outside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
+   * @param arrayCache cache for reusable GrowableXYZArray.
+   */
+  public appendPolygonClip(
+    xyz: GrowableXYZArray,
+    insideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache): void {
+    const perpendicularRange = Range1d.createNull();
+    const newInside = arrayCache.grabFromCache();
+    const newOutside = arrayCache.grabFromCache();
+    IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(this, xyz, newInside, newOutside, perpendicularRange);
+    captureOrDrop(newInside, 3, insideFragments, arrayCache);
+    captureOrDrop(newOutside, 3, outsideFragments, arrayCache);
+  }
+
+}
+/** if data.length >= minLength threshold, push it to destination; if zero length drop it back to this cache. */
+function captureOrDrop(data: GrowableXYZArray, minLength: number, destination: GrowableXYZArray[], cache: GrowableXYZArrayCache) {
+  if (data.length >= minLength)
+    destination.push(data);
+  else
+    cache.dropToCache(data);
 }

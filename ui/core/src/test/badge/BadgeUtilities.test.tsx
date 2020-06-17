@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
 import { mount } from "enzyme";
-
-import { BadgeUtilities } from "../../ui-core/badge/BadgeUtilities";
+import * as React from "react";
 import { BadgeType } from "@bentley/ui-abstract";
+import { BadgeUtilities } from "../../ui-core/badge/BadgeUtilities";
 
 describe("BadgeUtilities", () => {
 

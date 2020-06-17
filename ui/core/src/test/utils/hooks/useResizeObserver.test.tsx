@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { renderHook, act } from "@testing-library/react-hooks";
-import { useResizeObserver } from "../../../ui-core/utils/hooks/useResizeObserver";
+import { act, renderHook } from "@testing-library/react-hooks";
 import * as ResizeObserverModule from "../../../ui-core/utils/hooks/ResizeObserverPolyfill";
+import { useResizeObserver } from "../../../ui-core/utils/hooks/useResizeObserver";
 import { createDOMRect } from "../../Utils";
 
 describe("useResizeObserver", () => {
@@ -55,13 +55,13 @@ describe("useResizeObserver", () => {
       target: element,
     }], resizeObserverSpy.firstCall.returnValue);
 
-    spy.calledOnceWithExactly(100).should.true;
+    spy.calledOnceWithExactly(100, sinon.match.any).should.true;
   });
 
   it("should call onResize (height)", () => {
     const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
     const spy = sandbox.spy();
-    const { result } = renderHook(() => useResizeObserver(spy, true));
+    const { result } = renderHook(() => useResizeObserver(spy));
     const element = document.createElement("div");
     act(() => {
       result.current(element);
@@ -75,6 +75,6 @@ describe("useResizeObserver", () => {
       target: element,
     }], resizeObserverSpy.firstCall.returnValue);
 
-    spy.calledOnceWithExactly(100).should.true;
+    spy.calledOnceWithExactly(sinon.match.any, 100).should.true;
   });
 });

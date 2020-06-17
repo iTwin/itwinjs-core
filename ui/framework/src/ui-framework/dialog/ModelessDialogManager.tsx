@@ -7,12 +7,10 @@
  */
 
 import * as React from "react";
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { CommonProps } from "@bentley/ui-core";
-
-import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
+import { CommonProps, getCssVariableAsNumber } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
+import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
 
 // cSpell:ignore ZINDEX modeless
 
@@ -27,8 +25,8 @@ interface ModelessDialogInfo {
   zIndex: number;
 }
 
-/** TODO: Need to synch up with _z-index.scss in ui-core */
-const ZINDEX_DEFAULT = 13000;
+/** Used if the 'dialog' z-index CSS variable cannot be read */
+const ZINDEX_DEFAULT = 12000;
 
 /** Modeless Dialog Manager class.
  * @public
@@ -47,6 +45,23 @@ export class ModelessDialogManager {
   private static _idArray = new Array<string>();
 
   private static _topZIndex = ZINDEX_DEFAULT;
+
+  /** Initialize the modeless dialog manager */
+  public static initialize(): void {
+    ModelessDialogManager._topZIndex = ModelessDialogManager.getDialogZIndexDefault();
+  }
+
+  private static getDialogZIndexDefault(): number {
+    const variable = "--uicore-z-index-dialog";
+    const value = getCssVariableAsNumber(variable);
+
+    // istanbul ignore next
+    if (!isNaN(value))
+      return value;
+
+    Logger.logError(UiFramework.loggerCategory(this), `'${variable}' CSS variable not found`);
+    return ZINDEX_DEFAULT;
+  }
 
   /** Open a modeless dialog
    * @param dialog The Dialog to open
@@ -72,12 +87,17 @@ export class ModelessDialogManager {
         ModelessDialogManager._idArray.splice(index, 1);
 
       if (ModelessDialogManager.activeDialog === undefined)
-        ModelessDialogManager._topZIndex = ZINDEX_DEFAULT;
+        ModelessDialogManager._topZIndex = ModelessDialogManager.getDialogZIndexDefault();
 
       this.update();
     } else {
       Logger.logError(UiFramework.loggerCategory(this), `closeDialog: Could not find dialog with id of '${id}'`);
     }
+  }
+
+  /** @internal */
+  public static closeAll(): void {
+    ModelessDialogManager.dialogManager.closeAll();
   }
 
   /** Update the dialogs */
@@ -119,7 +139,7 @@ export class ModelessDialogManager {
 
   /** Get the z-index for a modeless dialog */
   public static getDialogZIndex(id: string): number {
-    let zIndex = ZINDEX_DEFAULT;
+    let zIndex = ModelessDialogManager.getDialogZIndexDefault();
     const dialogInfo = ModelessDialogManager._dialogMap.get(id);
     // istanbul ignore else
     if (dialogInfo)

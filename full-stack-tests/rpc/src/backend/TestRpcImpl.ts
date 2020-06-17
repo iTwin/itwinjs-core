@@ -2,9 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { TestRpcInterface, ZeroMajorRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3, TestNotFoundResponse, TestNotFoundResponseCode, RpcTransportTestImpl, TokenValues } from "../common/TestRpcInterface";
-import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, RpcInvocation, IModelRpcProps } from "@bentley/imodeljs-common";
-import { BentleyError, BentleyStatus, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
+import {
+  IModelRpcProps, RpcInterface, RpcInvocation, RpcManager, RpcOperationsProfile, RpcPendingResponse, RpcRequest,
+} from "@bentley/imodeljs-common";
+import {
+  RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3,
+  TokenValues, ZeroMajorRpcInterface,
+} from "../common/TestRpcInterface";
 
 export async function testInterfaceResource() {
   const data = new Uint8Array(4);
@@ -12,7 +17,7 @@ export async function testInterfaceResource() {
   data[1] = 2;
   data[2] = 3;
   data[3] = 4;
-  return Promise.resolve(data);
+  return data;
 }
 
 let op8Initializer = 0;
@@ -115,7 +120,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async op14(x: number, y: number): Promise<number> {
-    return Promise.resolve(x + y);
+    return x + y;
   }
 
   public async op15(): Promise<void> {

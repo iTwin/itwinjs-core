@@ -1,30 +1,31 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, Id64String, OpenMode, StopWatch, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
+import * as path from "path";
+import { ClientRequestContext, Id64, Id64Arg, Id64String, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
-import { BrowserAuthorizationClient, FrontendAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
-import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery } from "@bentley/projectshare-client";
 import {
-  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
-  IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RenderMode,
-  SnapshotIModelRpcInterface, ViewDefinitionProps, DesktopAuthorizationClientConfiguration,
+  BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
+} from "@bentley/frontend-authorization-client";
+import { HubIModel } from "@bentley/imodelhub-client";
+import {
+  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, DisplayStyleProps, ElectronRpcConfiguration,
+  ElectronRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, MobileRpcConfiguration, MobileRpcManager, RenderMode, RpcConfiguration,
+  SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
-  AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
-  PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
-  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, DesktopAuthorizationClient, SnapshotConnection,
+  AuthorizedFrontendRequestContext, DesktopAuthorizationClient, DisplayStyle3dState, DisplayStyleState, EntityState, FeatureOverrideProvider,
+  FeatureSymbology, FrontendRequestContext, GLTimerResult, IModelApp, IModelAppOptions, IModelConnection, PerformanceMetrics, Pixel, RenderSystem,
+  ScreenViewport, SnapshotConnection, Target, TileAdmin, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
+import { AccessToken } from "@bentley/itwin-client";
+import { ProjectShareClient, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery } from "@bentley/projectshare-client";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeIModelHub } from "./ConnectEnv";
 import { IModelApi } from "./IModelApi";
-import * as path from "path";
-import { HubIModel } from "@bentley/imodelhub-client";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
@@ -84,9 +85,9 @@ function combineFilePaths(additionalPath: string, initPath?: string) {
   if (initPath === undefined || additionalPath[1] === ":") // if additionalPath is full path (like D:), ignore the initial path
     return additionalPath;
   let combined = initPath;
-  while (combined.endsWith("\\") || combined.endsWith("\/"))
+  while (combined.endsWith("\\") || combined.endsWith("/"))
     combined = combined.slice(0, -1);
-  if (additionalPath[0] !== "\\" && additionalPath[0] !== "\/")
+  if (additionalPath[0] !== "\\" && additionalPath[0] !== "/")
     combined += "\\";
   combined += additionalPath;
   return combined;
@@ -131,40 +132,42 @@ function getRenderOpts(): string {
   for (const [key, value] of Object.entries(curRenderOpts)) {
     switch (key) {
       case "disabledExtensions":
-        if (value) value.forEach((ext: string) => {
-          switch (ext) {
-            case "WEBGL_draw_buffers":
-              optString += "-drawBuf";
-              break;
-            case "OES_element_index_uint":
-              optString += "-unsignedInt";
-              break;
-            case "OES_texture_float":
-              optString += "-texFloat";
-              break;
-            case "OES_texture_half_float":
-              optString += "-texHalfFloat";
-              break;
-            case "WEBGL_depth_texture":
-              optString += "-depthTex";
-              break;
-            case "EXT_color_buffer_float":
-              optString += "-floats";
-              break;
-            case "EXT_shader_texture_lod":
-              optString += "-texLod";
-              break;
-            case "ANGLE_instanced_arrays":
-              optString += "-instArrays";
-              break;
-            case "EXT_frag_depth":
-              optString += "-fragDepth";
-              break;
-            default:
-              optString += "-" + ext;
-              break;
+        if (value) {
+          for (const ext of value) {
+            switch (ext) {
+              case "WEBGL_draw_buffers":
+                optString += "-drawBuf";
+                break;
+              case "OES_element_index_uint":
+                optString += "-unsignedInt";
+                break;
+              case "OES_texture_float":
+                optString += "-texFloat";
+                break;
+              case "OES_texture_half_float":
+                optString += "-texHalfFloat";
+                break;
+              case "WEBGL_depth_texture":
+                optString += "-depthTex";
+                break;
+              case "EXT_color_buffer_float":
+                optString += "-floats";
+                break;
+              case "EXT_shader_texture_lod":
+                optString += "-texLod";
+                break;
+              case "ANGLE_instanced_arrays":
+                optString += "-instArrays";
+                break;
+              case "EXT_frag_depth":
+                optString += "-fragDepth";
+                break;
+              default:
+                optString += "-" + ext;
+                break;
+            }
           }
-        });
+        }
         break;
       // case "enableOptimizedSurfaceShaders": // No longer supported
       //   if (value) optString += "+optSurf";
@@ -588,6 +591,7 @@ class DefaultConfigs {
       this.viewName = "V0";
       this.testType = "timing";
       this.csvFormat = "original";
+      this.renderOptions = { useWebGL2: true };
     }
     if (prevConfigs !== undefined) {
       if (prevConfigs.view) this.view = new ViewSize(prevConfigs.view.width, prevConfigs.view.height);
@@ -731,7 +735,6 @@ class SimpleViewState {
   public externalSavedViews?: any[];
   public overrideElements?: any[];
   public selectedElements?: Id64Arg;
-  constructor() { }
 }
 
 class FOProvider implements FeatureOverrideProvider {
@@ -1280,7 +1283,7 @@ async function runTest(testConfig: DefaultConfigs) {
       (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false, undefined);
       debugControl.resultsCallback = undefined; // Turn off glTimer metrics
       for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
-        theViewport!.readPixels(viewRect, pixSelect, (_pixels: any) => { return; });
+        theViewport!.readPixels(viewRect, pixSelect, (_pixels: any) => { });
         finalCPUFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
         finalCPUFrameTimings[i].delete("Scene Time");
       }

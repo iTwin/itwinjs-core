@@ -8,66 +8,28 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import {
-  Angle,
-  AngleSweep,
-  AxisOrder,
-  ClipPlane,
-  ClipShape,
-  ClipVector,
-  Constant,
-  ConvexClipPlaneSet,
-  Ellipsoid,
-  EllipsoidPatch,
-  Matrix3d,
-  Point2d,
-  Point3d,
-  PolygonOps,
-  Range1d,
-  Range3d,
-  Ray3d,
-  Transform,
-  Vector3d,
-  ClipPrimitive,
+  Angle, AngleSweep, AxisOrder, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, Ellipsoid, EllipsoidPatch, Matrix3d,
+  Point2d, Point3d, PolygonOps, Range1d, Range3d, Ray3d, Transform, Vector3d,
 } from "@bentley/geometry-core";
-import {
-  Cartographic,
-  ColorByName,
-  ColorDef,
-  FrustumPlanes,
-  GlobeMode,
-  QPoint3dList,
-  RenderTexture,
-  GeoCoordStatus,
-} from "@bentley/imodeljs-common";
-import {
-  MapTileLoaderBase,
-  MapCartoRectangle,
-  MapTilingScheme,
-  QuadId,
-  RealityTile,
-  RealityTileTree,
-  Tile,
-  WebMapTileContent,
-  TileDrawArgs,
-  TileGraphicType,
-  TileParams,
-  RealityTileTreeParams,
-  TileVisibility,
-  WebMercatorTilingScheme,
-} from "./internal";
-import { ViewingSpace } from "../ViewingSpace";
+import { Cartographic, ColorByName, ColorDef, FrustumPlanes, GeoCoordStatus, GlobeMode, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
+import { ApproximateTerrainHeights } from "../ApproximateTerrainHeights";
+import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { GeoConverter } from "../GeoServices";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { RenderGraphic } from "../render/RenderGraphic";
+import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { RenderSystem } from "../render/RenderSystem";
+import { GraphicBuilder } from "../render/GraphicBuilder";
 import { MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../render/primitives/VertexTable";
-import { ApproximateTerrainHeights } from "../ApproximateTerrainHeights";
+import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderMemory } from "../render/RenderMemory";
-import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
-import { IModelConnection } from "../IModelConnection";
+import { RenderSystem } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
+import { ViewingSpace } from "../ViewingSpace";
+import {
+  MapCartoRectangle, MapTileLoaderBase, MapTilingScheme, QuadId, RealityTile, RealityTileTree, RealityTileTreeParams, Tile, TileDrawArgs,
+  TileGraphicType, TileParams, TileVisibility, WebMapTileContent, WebMercatorTilingScheme,
+} from "./internal";
+import { IModelApp } from "../IModelApp";
 
 const scratchNormal = Vector3d.create();
 const scratchViewZ = Vector3d.create();
@@ -597,8 +559,8 @@ export async function calculateEcefToDb(iModel: IModelConnection, bimElevationBi
 
   const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
   const geoNorth = Point3d.fromJSON(response.geoCoords[1].p);
-  const ecefOrigin = Cartographic.fromDegrees(geoOrigin.x, geoOrigin.y, 0).toEcef()!;
-  const ecefNorth = Cartographic.fromDegrees(geoNorth.x, geoNorth.y, 0).toEcef()!;
+  const ecefOrigin = Cartographic.fromDegrees(geoOrigin.x, geoOrigin.y, geoOrigin.z).toEcef()!;
+  const ecefNorth = Cartographic.fromDegrees(geoNorth.x, geoNorth.y, geoOrigin.z).toEcef()!;
 
   const zVector = Vector3d.createFrom(ecefOrigin);
   const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
@@ -762,6 +724,7 @@ export class MapTileTree extends RealityTileTree {
     if (undefined !== iModelCoordinates.missing) {
       await this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(iModelCoordinates.missing);
       iModelCoordinates = this._gcsConverter!.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
+      IModelApp.tileAdmin.onTileLoad.raiseEvent(tile); // If we had to wait for backend to reproject then we need to make sure that map is displayed.
       assert(undefined === iModelCoordinates.missing);
     }
     for (let i = 0; i < gridPoints.length; i++)

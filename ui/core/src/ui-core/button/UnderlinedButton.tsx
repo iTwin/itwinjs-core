@@ -6,10 +6,9 @@
  * @module Button
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
 import "./UnderlinedButton.scss";
+import classnames from "classnames";
+import * as React from "react";
 
 /** Properties for the [[UnderlinedButton]] React component
  * @public

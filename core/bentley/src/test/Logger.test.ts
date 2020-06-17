@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { using, Logger, LogLevel, PerfLogger, DbResult, GetMetaDataFunction } from "../bentleyjs-core";
-import { EnvMacroSubst } from "../Logger";
 import { BentleyError } from "../BentleyError";
+import { DbResult, GetMetaDataFunction, Logger, LogLevel, PerfLogger, using } from "../bentleyjs-core";
 import { ClientRequestContext } from "../ClientRequestContext";
+import { EnvMacroSubst } from "../Logger";
 import { BeDuration } from "../Time";
 
 let outerr: any[];

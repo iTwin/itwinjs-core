@@ -3,13 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent } from "@bentley/bentleyjs-core";
-import {
-  TreeNodeItem, TreeDataProvider, TreeDataChangesListener,
-  PageOptions,
-  DelayLoadedTreeNodeItem, MutableTreeDataProvider,
-  DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps, DropStatus, DropEffects,
-} from "@bentley/ui-components";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import {
+  DelayLoadedTreeNodeItem, DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps,
+  MutableTreeDataProvider, PageOptions, TreeDataChangesListener, TreeDataProvider, TreeNodeItem,
+} from "@bentley/ui-components";
 
 export enum TreeDragTypes {
   Parent = "parent",

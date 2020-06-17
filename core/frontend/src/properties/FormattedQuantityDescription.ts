@@ -8,8 +8,8 @@
 
 import { FormatterSpec, ParserSpec, QuantityStatus } from "@bentley/imodeljs-quantity";
 import { BaseQuantityDescription, ParseResults } from "@bentley/ui-abstract";
-import { QuantityType } from "../QuantityFormatter";
 import { IModelApp } from "../IModelApp";
+import { QuantityType } from "../QuantityFormatter";
 
 /**
  * Base Quantity Property Description

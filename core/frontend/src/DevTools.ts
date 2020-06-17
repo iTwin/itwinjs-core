@@ -47,11 +47,11 @@ export class DevTools {
     const pingFn = async (): Promise<number> => {
       const start = Date.now();
       await DevToolsRpcInterface.getClient().ping(this._tokenProps);
-      return Promise.resolve(Date.now() - start);
+      return Date.now() - start;
     };
 
     for (let ii = 0; ii < count; ii++)
-      pings[ii] = pingFn().catch(() => Promise.resolve(undefined));
+      pings[ii] = pingFn().catch(async () => undefined);
 
     const pingTimes: Array<number | undefined> = await Promise.all(pings);
 

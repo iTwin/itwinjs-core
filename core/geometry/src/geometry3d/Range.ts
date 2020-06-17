@@ -7,15 +7,16 @@
  * @module CartesianGeometry
  */
 
-import { BeJSONFunctions, Geometry, AxisIndex } from "../Geometry";
+import { AxisIndex, BeJSONFunctions, Geometry } from "../Geometry";
+import { MultiLineStringDataVariant } from "../topology/Triangulation";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Matrix3d } from "./Matrix3d";
 import { Point2d, Vector2d } from "./Point2dVector2d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
+import { PointStreamRangeCollector, VariantPointDataStream } from "./PointStreaming";
 import { Transform } from "./Transform";
 import { LowAndHighXY, LowAndHighXYZ, Range1dProps, Range2dProps, Range3dProps, XAndY, XYAndZ } from "./XYZProps";
-import { PointStreamRangeCollector, VariantPointDataStream } from "./PointStreaming";
-import { MultiLineStringDataVariant } from "../topology/Triangulation";
+
 /**
  * Base class for Range1d, Range2d, Range3d.
  * @public
@@ -1046,6 +1047,24 @@ export class Range1d extends RangeBase {
       this.extendX(other.low);
       this.extendX(other.high);
     }
+  }
+
+  /** Extend only the low limit to x.  Return true if the low limit is changed. */
+  public extendLow(x: number): boolean {
+    if (this.isNull || x < this.low) {
+      this.low = x;
+      return true;
+    }
+    return false;
+  }
+
+  /** Extend only the high limit to x.  Return true if the high limit is changed. */
+  public extendHigh(x: number): boolean {
+    if (this.isNull || x > this.high) {
+      this.high = x;
+      return true;
+    }
+    return false;
   }
 
   /** Return the intersection of ranges. */

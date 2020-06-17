@@ -2,19 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
-import { Range2d, Range3d, Vector3d, Point3d, Range1d } from "@bentley/geometry-core";
-import {
-  QParams2d,
-  QPoint3dList,
-  QParams3d,
-  QPoint2dList,
-  QPoint2d,
-  Quantization,
-  QPoint3d,
-} from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
+import { Point3d, Range1d, Range2d, Range3d, Vector3d } from "@bentley/geometry-core";
+import { QParams2d, QParams3d, QPoint2d, QPoint2dList, QPoint3d, QPoint3dList, Quantization } from "@bentley/imodeljs-common";
 import { RenderMemory } from "../../RenderMemory";
 
 export enum Child { Q00, Q01, Q10, Q11 }

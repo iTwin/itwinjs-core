@@ -7,10 +7,9 @@
  */
 
 import * as React from "react";
-
-import { StatusFieldProps } from "./StatusFieldProps";
-import { ConditionalField } from "./ConditionalField";
 import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";
+import { ConditionalField } from "./ConditionalField";
+import { StatusFieldProps } from "./StatusFieldProps";
 
 // tslint:disable-next-line: variable-name
 const ConditionalFieldWithProps = withStatusFieldProps(ConditionalField);

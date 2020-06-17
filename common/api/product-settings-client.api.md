@@ -6,11 +6,15 @@
 
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { Client } from '@bentley/itwin-client';
+import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { RequestOptions } from '@bentley/itwin-client';
 import { Response } from '@bentley/itwin-client';
 
 // @internal
 export class ConnectSettingsClient extends Client implements SettingsAdmin {
     constructor(applicationId: string);
+    // (undocumented)
+    static readonly apiVersion: string;
     // (undocumented)
     applicationId: string;
     // (undocumented)
@@ -19,7 +23,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     deleteSharedSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
     deleteUserSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
-    // (undocumented)
     formErrorResponse(response: Response): SettingsResult;
     // (undocumented)
     getSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
@@ -29,7 +32,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     getSharedSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
     getSharedSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsMapResult>;
-    // (undocumented)
+    getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
     protected getUrlSearchKey(): string;
     // (undocumented)
     getUserSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
@@ -43,9 +46,13 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     // (undocumented)
     static readonly searchKey: string;
+    // (undocumented)
+    protected setupOptionDefaults(options: RequestOptions): Promise<void>;
+    // (undocumented)
+    protected _url?: string;
 }
 
-// @alpha
+// @beta
 export interface SettingsAdmin {
     deleteSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
     deleteSharedSetting(requestContext: AuthorizedClientRequestContext, namespace: string, name: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult>;
@@ -61,7 +68,7 @@ export interface SettingsAdmin {
     saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, namespace: string, name: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 }
 
-// @alpha
+// @beta
 export class SettingsMapResult {
     // @internal
     constructor(status: SettingsStatus, errorMessage?: string | undefined, settingsMap?: Map<string, any> | undefined);
@@ -73,7 +80,7 @@ export class SettingsMapResult {
     status: SettingsStatus;
 }
 
-// @alpha
+// @beta
 export class SettingsResult {
     // @internal
     constructor(status: SettingsStatus, errorMessage?: string | undefined, setting?: any);
@@ -85,7 +92,7 @@ export class SettingsResult {
     status: SettingsStatus;
 }
 
-// @alpha
+// @beta
 export enum SettingsStatus {
     AuthorizationError = 110593,
     IModelInvalid = 110596,

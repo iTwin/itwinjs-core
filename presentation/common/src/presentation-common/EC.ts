@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Id64String, Id64 } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 
 /**
  * Type of an ECClass ID.
@@ -227,6 +227,37 @@ export namespace RelatedClassInfo {
       relationshipInfo: ClassInfo.fromJSON(json.relationshipInfo),
     };
   }
+
+  /** Check two [[RelatedClassInfo]] or [[StrippedRelatedClassInfo]] for equality */
+  export function equals(lhs: RelatedClassInfo | StrippedRelatedClassInfo, rhs: RelatedClassInfo | StrippedRelatedClassInfo): boolean {
+    return lhs.isForwardRelationship === rhs.isForwardRelationship
+      && getClassName(lhs, "source") === getClassName(rhs, "source")
+      && getClassName(lhs, "target") === getClassName(rhs, "target")
+      && getClassName(lhs, "relationship") === getClassName(rhs, "relationship");
+  }
+
+  function isStripped(info: RelatedClassInfo | StrippedRelatedClassInfo): info is StrippedRelatedClassInfo {
+    const maybeStripped = info as StrippedRelatedClassInfo;
+    return !!maybeStripped.relationshipName && !!maybeStripped.sourceClassName && !!maybeStripped.targetClassName;
+  }
+
+  function getClassName(info: RelatedClassInfo | StrippedRelatedClassInfo, whichClass: "relationship" | "source" | "target"): string {
+    switch (whichClass) {
+      case "source": return isStripped(info) ? info.sourceClassName : info.sourceClassInfo.name;
+      case "target": return isStripped(info) ? info.targetClassName : info.targetClassInfo.name;
+      case "relationship": return isStripped(info) ? info.relationshipName : info.relationshipInfo.name;
+    }
+  }
+
+  /** Strip given [[RelatedClassInfo]] to [[StrippedRelatedClassInfo]] */
+  export function strip(full: RelatedClassInfo): StrippedRelatedClassInfo {
+    return {
+      sourceClassName: full.sourceClassInfo.name,
+      targetClassName: full.targetClassInfo.name,
+      relationshipName: full.relationshipInfo.name,
+      isForwardRelationship: full.isForwardRelationship,
+    };
+  }
 }
 
 /**
@@ -264,4 +295,34 @@ export namespace RelationshipPath {
       isForwardRelationship: !step.isForwardRelationship,
     }));
   }
+
+  /** Check two [[RelationshipPath]] or [[StrippedRelationshipPath]] for equality */
+  export function equals(lhs: Array<RelatedClassInfo | StrippedRelatedClassInfo>, rhs: Array<RelatedClassInfo | StrippedRelatedClassInfo>): boolean {
+    return lhs.length === rhs.length
+      && lhs.every((lhsPart, i) => RelatedClassInfo.equals(lhsPart, rhs[i]));
+  }
+
+  /** Strip given [[RelationshipPath]] to [[StrippedRelationshipPath]] */
+  export function strip(full: RelationshipPath): StrippedRelationshipPath {
+    return full.map(RelatedClassInfo.strip);
+  }
 }
+
+/**
+ * Data structure that contains a subset of [[RelatedClassInfo]] required to
+ * identify the relationship.
+ * @public
+ */
+export interface StrippedRelatedClassInfo {
+  sourceClassName: string;
+  targetClassName: string;
+  relationshipName: string;
+  isForwardRelationship: boolean;
+}
+
+/**
+ * Data structure that contains a subset of [[RelationshipPath]] required to
+ * identify the relationship path.
+ * @public
+ */
+export type StrippedRelationshipPath = StrippedRelatedClassInfo[];

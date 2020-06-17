@@ -6,33 +6,12 @@
  * @module Tiles
  */
 
-import {
-  BeTimePoint,
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  Range3d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  BatchType,
-  ContentIdProvider,
-  ElementAlignedBox3d,
-  TileProps,
-  TileTreeProps,
-  ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
-import { IModelConnection } from "../IModelConnection";
+import { BeTimePoint, Id64String } from "@bentley/bentleyjs-core";
+import { Range3d, Transform } from "@bentley/geometry-core";
+import { BatchType, ContentIdProvider, ElementAlignedBox3d, TileProps, TileTreeProps, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
-import {
-  IModelTile,
-  iModelTileParamsFromJSON,
-  Tile,
-  TileDrawArgs,
-  TileLoadPriority,
-  TileTree,
-  TileTreeParams,
-} from "./internal";
+import { IModelConnection } from "../IModelConnection";
+import { IModelTile, iModelTileParamsFromJSON, Tile, TileDrawArgs, TileLoadPriority, TileTree, TileTreeParams } from "./internal";
 
 /** @internal */
 export interface IModelTileTreeOptions {

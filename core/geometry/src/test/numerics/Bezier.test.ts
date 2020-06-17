@@ -3,22 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// import { Sample } from "../serialization/GeometrySamples";
-import { UnivariateBezier, BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier } from "../../numerics/BezierPolynomials";
-import { Geometry } from "../../Geometry";
-import { PascalCoefficients } from "../../numerics/PascalCoefficients";
+import { expect } from "chai";
 import { LineString3d } from "../../curve/LineString3d";
+import { Geometry } from "../../Geometry";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Checker } from "../Checker";
-import { expect } from "chai";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { Sample } from "../../serialization/GeometrySamples";
 import { Range3d } from "../../geometry3d/Range";
-import { Box } from "../../solid/Box";
-import { Transform } from "../../geometry3d/Transform";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Segment1d } from "../../geometry3d/Segment1d";
+import { Transform } from "../../geometry3d/Transform";
+// import { Sample } from "../serialization/GeometrySamples";
+import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
+import { PascalCoefficients } from "../../numerics/PascalCoefficients";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Box } from "../../solid/Box";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 // import { prettyPrint } from "./testFunctions";
 /* tslint:disable:no-console */
 describe("Bezier", () => {

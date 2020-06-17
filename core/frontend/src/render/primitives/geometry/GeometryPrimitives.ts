@@ -8,20 +8,11 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import {
-  Transform,
-  Range3d,
-  Loop,
-  Path,
-  CurveChain,
-  Point3d,
-  StrokeOptions,
-  IndexedPolyface,
-  PolyfaceBuilder,
-  SweepContour,
+  CurveChain, IndexedPolyface, Loop, Path, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, SweepContour, Transform,
 } from "@bentley/geometry-core";
 import { DisplayParams } from "../DisplayParams";
-import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../Strokes";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../Polyface";
+import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../Strokes";
 
 /** @internal */
 export type PrimitiveGeometryType = Loop | Path | IndexedPolyface;

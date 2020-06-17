@@ -2,13 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { FormatProps } from "./Interfaces";
-import { UnitProps, UnitsProvider, UnitConversion, UnitConversionSpec } from "../Interfaces";
-import { QuantityStatus, QuantityError } from "../Exception";
 import { QuantityConstants } from "../Constants";
-import {
-  FormatType, ScientificType, ShowSignOption, DecimalPrecision, FractionalPrecision, FormatTraits,
-} from "./FormatEnums";
+import { QuantityError, QuantityStatus } from "../Exception";
+import { UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
+import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
+import { FormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
@@ -272,15 +270,15 @@ export class Format implements FormatProps {
   private async createUnit(unitsProvider: UnitsProvider, name: string, label?: string): Promise<void> {
     let newUnit: UnitProps | undefined;
     if (name === undefined || typeof (name) !== "string" || (label !== undefined && typeof (label) !== "string")) // throws if name is undefined or name isn't a string or if label is defined and isn't a string
-      return Promise.reject(new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`));
+      throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
     for (const unit of this.units!) {
       const unitObj = unit[0].name;
       if (unitObj.toLowerCase() === name.toLowerCase()) // duplicate names are not allowed
-        return Promise.reject(new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`));
+        throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
     }
     newUnit = await unitsProvider.findUnit(name);
     if (!newUnit || !newUnit.isValid)
-      return Promise.reject(new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`));
+      throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
     this.units!.push([newUnit, label]);
   }
 
@@ -387,19 +385,19 @@ export class Format implements FormatProps {
       this._units = new Array<[UnitProps, string | undefined]>();
       if (jsonObj.composite.includeZero !== undefined) {
         if (typeof (jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
-          return Promise.reject(new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`));
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
         this._includeZero = jsonObj.composite.includeZero;
       }
       if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
         if (typeof (jsonObj.composite.spacer) !== "string")
-          return Promise.reject(new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`));
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
         if (jsonObj.composite.spacer.length < 0 || jsonObj.composite.spacer.length > 1)
-          return Promise.reject(new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be empty or a string with a single character.`));
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be empty or a string with a single character.`);
         this._spacer = jsonObj.composite.spacer;
       }
       if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
         if (!Array.isArray(jsonObj.composite.units)) { // must be an array
-          return Promise.reject(new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`));
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
         }
         if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
           try {
@@ -410,12 +408,12 @@ export class Format implements FormatProps {
 
             await Promise.all(createUnitPromises);
           } catch (e) {
-            return Promise.reject(e);
+            throw e;
           }
         }
       }
       if (undefined === this.units || this.units.length === 0)
-        return Promise.reject(new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with no valid 'units'`));
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with no valid 'units'`);
     }
   }
 
@@ -516,6 +514,6 @@ export class FormatterSpec {
       }
     }
 
-    return Promise.resolve(new FormatterSpec(name, format, conversions));
+    return new FormatterSpec(name, format, conversions);
   }
 }

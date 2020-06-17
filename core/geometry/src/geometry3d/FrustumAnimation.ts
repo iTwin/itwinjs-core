@@ -7,12 +7,12 @@
  * @module Solid
  */
 
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Transform } from "./Transform";
-import { Point3dArray } from "./PointHelpers";
-import { Matrix3d } from "./Matrix3d";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
+import { Matrix3d } from "./Matrix3d";
+import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Point3dArray } from "./PointHelpers";
+import { Transform } from "./Transform";
 
 /**
  * context for constructing smooth motion a startFrustum and endFrustum.

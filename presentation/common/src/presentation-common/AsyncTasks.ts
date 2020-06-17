@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Guid, IDisposable, GuidString } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, IDisposable } from "@bentley/bentleyjs-core";
 
 /**
  * A helper to track ongoing async tasks. Usage:

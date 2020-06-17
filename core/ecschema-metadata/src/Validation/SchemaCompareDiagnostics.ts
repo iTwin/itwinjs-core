@@ -3,26 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { AnyClass } from "../Interfaces";
+import { Constant } from "../Metadata/Constant";
+import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { EntityClass } from "../Metadata/EntityClass";
-import { Enumeration, AnyEnumerator } from "../Metadata/Enumeration";
+import { AnyEnumerator, Enumeration } from "../Metadata/Enumeration";
 import { Format } from "../Metadata/Format";
 import { InvertedUnit } from "../Metadata/InvertedUnit";
 import { KindOfQuantity } from "../Metadata/KindOfQuantity";
 import { Mixin } from "../Metadata/Mixin";
+import { OverrideFormat } from "../Metadata/OverrideFormat";
 import { PropertyCategory } from "../Metadata/PropertyCategory";
 import { RelationshipClass } from "../Metadata/RelationshipClass";
+import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
+import { Unit } from "../Metadata/Unit";
 import {
   createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
   createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass,
 } from "./Diagnostic";
-import { Constant } from "../Metadata/Constant";
-import { Schema } from "../Metadata/Schema";
-import { AnyClass } from "../Interfaces";
-import { OverrideFormat } from "../Metadata/OverrideFormat";
-import { Unit } from "../Metadata/Unit";
-import { CustomAttribute } from "../Metadata/CustomAttribute";
 
 /**
  * The unique diagnostic codes for Schema comparison.

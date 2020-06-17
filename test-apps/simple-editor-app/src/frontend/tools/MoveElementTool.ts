@@ -2,10 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64Array, Id64, assert } from "@bentley/bentleyjs-core";
-import { Point3d, TransformProps, Transform } from "@bentley/geometry-core";
-import { BeButtonEvent, DynamicsContext, EventHandled, HitDetail, IModelApp, NotifyMessageDetails, OutputMessagePriority, CoreTools, LocateResponse, LocateFilterStatus } from "@bentley/imodeljs-frontend";
+import { assert, Id64, Id64Array } from "@bentley/bentleyjs-core";
+import { Point3d, Transform, TransformProps } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
+import {
+  BeButtonEvent, CoreTools, DynamicsContext, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, NotifyMessageDetails,
+  OutputMessagePriority,
+} from "@bentley/imodeljs-frontend";
 import { PrimitiveToolEx } from "./PrimitiveToolEx";
 
 export class MoveElementTool extends PrimitiveToolEx {

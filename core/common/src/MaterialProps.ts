@@ -6,9 +6,9 @@
  * @module Rendering
  */
 
+import { Id64String } from "@bentley/bentleyjs-core";
 import { DefinitionElementProps } from "./ElementProps";
 import { TextureMapping } from "./TextureMapping";
-import { Id64String } from "@bentley/bentleyjs-core";
 
 /** Contains three array entries ordered as red, green, blue containing values 0 to 1
  * @beta Is an additional type over those in ColorDef needed?

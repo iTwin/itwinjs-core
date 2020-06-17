@@ -6,20 +6,25 @@
  * @module Breadcrumb
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
 import "./Breadcrumb.scss";
+import classnames from "classnames";
 import * as _ from "lodash";
+import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
-import { SplitButton, withOnOutsideClick, MessageSeverity, DialogButtonType, MessageBox, ContextMenu, ContextMenuItem, CommonProps } from "@bentley/ui-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { TreeDataProvider, TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../tree/TreeDataProvider";
-import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
-import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/deprecated/component/BeInspireTree";
-import { UiComponents } from "../UiComponents";
+import {
+  CommonProps, ContextMenu, ContextMenuItem, DialogButtonType, MessageBox, MessageSeverity, SplitButton, withOnOutsideClick,
+} from "@bentley/ui-core";
 import { getPropertyRecordAsString } from "../common/getPropertyRecordAsString";
 import { PropertyValueRendererManager } from "../properties/ValueRendererManager";
+import {
+  BeInspireTree, BeInspireTreeEvent, BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback, toNodes,
+} from "../tree/deprecated/component/BeInspireTree";
+import {
+  DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, TreeDataProvider, TreeNodeItem,
+} from "../tree/TreeDataProvider";
+import { UiComponents } from "../UiComponents";
+import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 
 // tslint:disable:deprecation
 // cspell:ignore itree autocompleting

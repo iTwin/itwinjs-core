@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { FragmentShaderBuilder, VariableType, FragmentShaderComponent, SourceBuilder } from "../ShaderBuilder";
-import { encodeDepthRgb } from "./Decode";
+import { FragmentShaderBuilder, FragmentShaderComponent, SourceBuilder, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
+import { encodeDepthRgb } from "./Decode";
 import { addRenderPass } from "./RenderPass";
 
 /** @internal */
@@ -24,11 +24,11 @@ export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
 
 /** @internal */
 export function addWhiteOnWhiteReversal(frag: FragmentShaderBuilder) {
-  frag.addUniform("u_reverseWhiteOnWhite", VariableType.Float, (prog) => {
+  frag.addUniform("u_reverseWhiteOnWhite", VariableType.Boolean, (prog) => {
     prog.addGraphicUniform("u_reverseWhiteOnWhite", (uniform, params) => {
       const isWhite = params.target.uniforms.style.isWhiteBackground;
-      const doReversal = (isWhite && params.geometry.wantWoWReversal(params.programParams)) ? 1.0 : 0.0;
-      uniform.setUniform1f(doReversal);
+      const doReversal = (isWhite && params.geometry.wantWoWReversal(params.programParams)) ? 1 : 0;
+      uniform.setUniform1i(doReversal);
     });
   });
   frag.set(FragmentShaderComponent.ReverseWhiteOnWhite, reverseWhiteOnWhite);
@@ -54,7 +54,7 @@ const reverseWhiteOnWhite = `
   vec3 color = baseColor.rgb;
   vec3 delta = (color + epsilon) - white;
   vec4 wowColor = vec4(baseColor.rgb * vec3(float(delta.x <= 0.0 || delta.y <= 0.0 || delta.z <= 0.0)), baseColor.a); // set to black if almost white
-  return mix(baseColor, wowColor, floor(u_reverseWhiteOnWhite + 0.5));
+  return u_reverseWhiteOnWhite ? wowColor : baseColor;
 `;
 
 const multiplyAlpha = `
@@ -118,7 +118,7 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
 
   addRenderPass(frag);
   if (System.instance.capabilities.supportsMRTPickShaders) {
-    frag.addDrawBuffersExtension();
+    frag.addDrawBuffersExtension(3);
     frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
   } else {
     addRenderTargetIndex(frag);
@@ -139,7 +139,7 @@ export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
 
   addRenderPass(frag);
   if (System.instance.capabilities.supportsMRTPickShaders) {
-    frag.addDrawBuffersExtension();
+    frag.addDrawBuffersExtension(3);
     frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
   } else {
     addRenderTargetIndex(frag);

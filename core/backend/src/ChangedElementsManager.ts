@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BriefcaseManager } from "./BriefcaseManager";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ChangedElements, ChangedModels, ChangeData } from "@bentley/imodeljs-common";
+import { ChangeData, ChangedElements, ChangedModels } from "@bentley/imodeljs-common";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangedElementsDb } from "./ChangedElementsDb";
 import { IModelJsFs } from "./IModelJsFs";
 

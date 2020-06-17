@@ -8,9 +8,9 @@
 
 import * as React from "react";
 import { UiError } from "@bentley/ui-abstract";
-import { WebFontIcon, SvgSprite, WebFontIconProps } from "@bentley/ui-core";
-import { ImageFileFormat, Image, LoadedBinaryImage, LoadedImage } from "./IImageLoader";
+import { SvgSprite, WebFontIcon, WebFontIconProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
+import { Image, ImageFileFormat, LoadedBinaryImage, LoadedImage } from "./IImageLoader";
 
 /** A class that renders images from data provided by an image loader
  * @internal

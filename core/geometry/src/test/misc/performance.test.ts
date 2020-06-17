@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Geometry } from "../../Geometry";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+
 /* tslint:disable:no-console */
 
 function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResult: boolean) {

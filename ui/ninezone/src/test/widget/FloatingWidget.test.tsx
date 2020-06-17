@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, render, fireEvent } from "@testing-library/react";
-import { createNineZoneState, NineZoneProvider, NineZoneDispatch, FloatingWidget, FLOATING_WIDGET_RESIZE, getResizeBy } from "../../ui-ninezone";
-import { addFloatingWidget } from "../base/NineZoneState.test";
+import { act, fireEvent, render } from "@testing-library/react";
+import { addFloatingWidget, createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch } from "../../ui-ninezone";
+import { NineZoneProvider } from "../Providers";
 
 describe("FloatingWidget", () => {
   it("should render", () => {
@@ -15,7 +15,6 @@ describe("FloatingWidget", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <FloatingWidget
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
@@ -32,7 +31,6 @@ describe("FloatingWidget", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <FloatingWidget
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
@@ -49,7 +47,6 @@ describe("FloatingWidget", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <FloatingWidget
           floatingWidget={nineZone.floatingWidgets.byId.w1!}
@@ -57,7 +54,7 @@ describe("FloatingWidget", () => {
         />
       </NineZoneProvider>,
     );
-    const titleBar = container.getElementsByClassName("nz-widget-titleBar")[0];
+    const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     act(() => {
       fireEvent.pointerDown(handle);
@@ -88,7 +85,7 @@ describe("FloatingWidget", () => {
       fireEvent.pointerMove(handle);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: FLOATING_WIDGET_RESIZE,
+      type: "FLOATING_WIDGET_RESIZE",
       id: "w1",
     })).should.true;
   });

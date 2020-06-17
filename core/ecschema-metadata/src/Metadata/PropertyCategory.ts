@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { PropertyCategoryProps } from "../Deserialization/JsonProps";
+import { SchemaItemType } from "../ECObjects";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { PropertyCategoryProps } from "./../Deserialization/JsonProps";
-import { SchemaItemType } from "./../ECObjects";
 
 /**
  * @beta

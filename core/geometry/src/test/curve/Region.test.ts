@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { UnionRegion } from "../../curve/UnionRegion";
 import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Sample } from "../../serialization/GeometrySamples";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
+import { UnionRegion } from "../../curve/UnionRegion";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
 
 describe("Regions", () => {
   it("UnionRegion", () => {

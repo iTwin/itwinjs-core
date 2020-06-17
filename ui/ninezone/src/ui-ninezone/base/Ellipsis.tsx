@@ -6,10 +6,10 @@
  * @module Base
  */
 
+import "./Ellipsis.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Ellipsis.scss";
 
 /** A component that renders three dots (common for text truncation). Used in overflow buttons.
  * @internal

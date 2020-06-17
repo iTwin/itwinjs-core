@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { render, fireEvent } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { SelectableContent } from "../../ui-components/selectable-content/SelectableContent";
 
 describe("<SelectableContent />", () => {

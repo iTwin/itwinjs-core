@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  Schema, ECClass, EntityClass, PrimitiveProperty, StructProperty, EnumerationProperty, PrimitiveType,
-  SchemaItemType, Enumeration, ECClassModifier, SchemaItem, Mixin, StructClass,
+  ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, Mixin, PrimitiveProperty, PrimitiveType, Schema, SchemaItem, SchemaItemType, StructClass, StructProperty,
 } from "@bentley/ecschema-metadata";
 
 interface TsBentleyModule {

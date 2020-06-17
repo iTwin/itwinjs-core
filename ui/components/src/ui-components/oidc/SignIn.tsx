@@ -6,13 +6,11 @@
  * @module OIDC
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
-import { UiComponents } from "../UiComponents";
-import { CommonProps } from "@bentley/ui-core";
-
 import "./SignIn.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
+import { UiComponents } from "../UiComponents";
 
 /************************************************************************
  * SignInDialog - OIDC sign-in dialog.

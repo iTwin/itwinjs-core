@@ -6,10 +6,10 @@
  * @module Tiles
  */
 
-import * as React from "react";
 import classnames from "classnames";
-import { CommonDivProps } from "../utils/Props";
+import * as React from "react";
 import { Icon } from "../icons/IconComponent";
+import { CommonDivProps } from "../utils/Props";
 
 /** Properties for the [[Tile]] component
  * @beta

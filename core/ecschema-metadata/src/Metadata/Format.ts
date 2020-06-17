@@ -3,19 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { FormatProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import {
+  DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision, parseFormatTrait, parseFormatType,
+  parsePrecision, parseScientificType, parseShowSignOption, ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
+} from "../utils/FormatEnums";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
-import { FormatProps } from "../Deserialization/JsonProps";
-import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import {
-  DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString,
-  FractionalPrecision, parseFormatTrait, parseFormatType, parsePrecision, parseScientificType,
-  parseShowSignOption, ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
-} from "../utils/FormatEnums";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * @beta
@@ -322,4 +321,69 @@ export class Format extends SchemaItem {
 
     return itemElement;
   }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setFormatType(formatType: FormatType) {
+    this._type = formatType;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setRoundFactor(roundFactor: number) {
+    this._roundFactor = roundFactor;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setShowSignOption(signOption: ShowSignOption) {
+    this._showSignOption = signOption;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setDecimalSeparator(separator: string) {
+    this._decimalSeparator = separator;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setThousandSeparator(separator: string) {
+    this._thousandSeparator = separator;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setUomSeparator(separator: string) {
+    this._uomSeparator = separator;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setStationSeparator(separator: string) {
+    this._stationSeparator = separator;
+  }
+}
+
+/**
+ * @internal
+ * An abstract class used for schema editing.
+ */
+export abstract class MutableFormat extends Format {
+  public abstract addUnit(unit: Unit | InvertedUnit, label?: string): void;
+  public abstract setPrecision(precision: number): void;
+  public abstract setFormatType(formatType: FormatType): void;
+  public abstract setRoundFactor(roundFactor: number): void;
+  public abstract setShowSignOption(signOption: ShowSignOption): void;
+  public abstract setDecimalSeparator(separator: string): void;
+  public abstract setThousandSeparator(separator: string): void;
+  public abstract setUomSeparator(separator: string): void;
+  public abstract setStationSeparator(separator: string): void;
 }

@@ -669,4 +669,32 @@ export namespace Guid {
       return v.toString(16);
     });
   }
+
+  /**
+   * Normalize a Guid string if possible. Normalization consists of:
+   * - Convert all characters to lower case
+   * - Trim any leading or trailing whitespace
+   * - Convert to the standard Guid format "8-4-4-4-12", repositioning the '-' characters as necessary, presuming there are exactly 32 hexadecimal digits.
+   * @param value Input value that represents a Guid
+   * @returns Normalized representation of the Guid string. If the normalization fails, return the *original* value unmodified (Note: it is *not* a valid Guid)
+   */
+  export function normalize(value: GuidString): GuidString {
+    const lowerValue = value.toLowerCase().trim();
+
+    // Return if it's already formatted to be a Guid
+    if (isGuid(lowerValue))
+      return lowerValue;
+
+    // Remove any existing "-" characters and position them properly, if there remains exactly 32 hexadecimal digits
+    const noDashValue = lowerValue.replace(/-/g, "");
+    const noDashPattern = /^([0-9a-f]{8})([0-9a-f]{4})([0-9a-f]{4})([0-9a-f]{4})([0-9a-f]{12})$/;
+    if (noDashPattern.test(noDashValue)) {
+      return noDashValue.replace(noDashPattern,
+        (_match: string, p1: string, p2: string, p3: string, p4: string, p5: string) =>
+          p1 + "-" + p2 + "-" + p3 + "-" + p4 + "-" + p5);
+    }
+
+    // Return unmodified string - (note: it is *not* a valid Guid)
+    return value;
+  }
 }

@@ -2,17 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, Code, TestRpcManager, FeatureGates } from "@bentley/imodeljs-common";
-import { BriefcaseDb, IModelDb, IModelHost, Element, ECSqlStatement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
-import { DbResult, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Point3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { RobotWorld } from "./RobotWorldSchema";
-import { Robot } from "./RobotElement";
 import * as path from "path";
+import { ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { Angle, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import {
+  BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost, IModelHostConfiguration, KnownLocations, Platform,
+} from "@bentley/imodeljs-backend";
+import {
+  Code, FeatureGates, IModelReadRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
+} from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Barrier } from "./BarrierElement";
-import { RobotWorldWriteRpcInterface, RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
-import { RobotWorldWriteRpcImpl, RobotWorldReadRpcImpl } from "./RobotWorldRpcImpl";
+import { Robot } from "./RobotElement";
+import { RobotWorldReadRpcImpl, RobotWorldWriteRpcImpl } from "./RobotWorldRpcImpl";
+import { RobotWorld } from "./RobotWorldSchema";
 
 // An example of how to implement a service.
 // This example manages a fictional domain called "robot world",

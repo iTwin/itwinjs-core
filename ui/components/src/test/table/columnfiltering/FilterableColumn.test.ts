@@ -5,14 +5,13 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-
-import { TestUtils, TestFilterableTable } from "../../TestUtils";
-import { ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider";
-import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { TableColumn, ReactDataGridColumn } from "../../../ui-components/table/component/TableColumn";
-import { StandardTypeConverterTypeNames } from "../../../ui-components/converters/TypeConverter";
-import { TableColumnFilterDescriptor } from "../../../ui-components/table/columnfiltering/TableColumnFilterDescriptor";
 import { FilterOperator } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
+import { TableColumnFilterDescriptor } from "../../../ui-components/table/columnfiltering/TableColumnFilterDescriptor";
+import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn";
+import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
+import { ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider";
+import { TestFilterableTable, TestUtils } from "../../TestUtils";
+import { StandardTypeNames } from "../../../ui-components/common/StandardTypeNames";
 
 const columns: ColumnDescription[] = [
   {
@@ -50,11 +49,11 @@ const createRow = (i: number) => {
   const loremIndex = i % 10;
   row.cells.push({
     key: columns[0].key,
-    record: TestUtils.createPropertyRecord(loremIpsum[loremIndex], columns[0], StandardTypeConverterTypeNames.Text),
+    record: TestUtils.createPropertyRecord(loremIpsum[loremIndex], columns[0], StandardTypeNames.Text),
   });
   row.cells.push({
     key: columns[1].key,
-    record: TestUtils.createPropertyRecord(i + 1, columns[1], StandardTypeConverterTypeNames.Integer),
+    record: TestUtils.createPropertyRecord(i + 1, columns[1], StandardTypeNames.Number),
   });
   return row;
 };
@@ -123,7 +122,7 @@ describe("FilterableColumn", () => {
     });
 
     it("filterMemberType should get member type", () => {
-      expect(filterableColumn0.filterMemberType).to.eq(StandardTypeConverterTypeNames.Text);
+      expect(filterableColumn0.filterMemberType).to.eq(StandardTypeNames.Text);
     });
 
     it("showDistinctValueFilters should get proper value", () => {
@@ -159,7 +158,7 @@ describe("FilterableColumn", () => {
 
     it("memberType property should return the column type", () => {
       const columnFilterDescriptor = filterableColumn0.columnFilterDescriptor as TableColumnFilterDescriptor;
-      expect(columnFilterDescriptor.memberType).to.eq(StandardTypeConverterTypeNames.Text);
+      expect(columnFilterDescriptor.memberType).to.eq(StandardTypeNames.Text);
     });
 
     it("memberKey setter should set the key", () => {
@@ -173,11 +172,11 @@ describe("FilterableColumn", () => {
 
     it("memberType setter should set the type", () => {
       const columnFilterDescriptor = filterableColumn0.columnFilterDescriptor as TableColumnFilterDescriptor;
-      columnFilterDescriptor.memberType = StandardTypeConverterTypeNames.Text;
-      expect(columnFilterDescriptor.memberType).to.eq(StandardTypeConverterTypeNames.Text);
-      columnFilterDescriptor.memberType = StandardTypeConverterTypeNames.Boolean;
-      expect(columnFilterDescriptor.memberType).to.eq(StandardTypeConverterTypeNames.Boolean);
-      columnFilterDescriptor.memberType = StandardTypeConverterTypeNames.Text;
+      columnFilterDescriptor.memberType = StandardTypeNames.Text;
+      expect(columnFilterDescriptor.memberType).to.eq(StandardTypeNames.Text);
+      columnFilterDescriptor.memberType = StandardTypeNames.Boolean;
+      expect(columnFilterDescriptor.memberType).to.eq(StandardTypeNames.Boolean);
+      columnFilterDescriptor.memberType = StandardTypeNames.Text;
     });
 
     it("getFilterExpression should return ECExpression for the descriptor", () => {

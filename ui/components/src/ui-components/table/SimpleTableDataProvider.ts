@@ -6,13 +6,12 @@
  * @module Table
  */
 
+import { Primitives, PrimitiveValue, PropertyRecord, PropertyValueFormat, UiError } from "@bentley/ui-abstract";
 import { SortDirection } from "@bentley/ui-core";
-import { Primitives, PropertyRecord, PropertyValueFormat, PrimitiveValue, UiError } from "@bentley/ui-abstract";
-
-import { MutableTableDataProvider, ColumnDescription, RowItem, TableDataChangeEvent, TableDistinctValue } from "./TableDataProvider";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { UiComponents } from "../UiComponents";
-import { DistinctValueCollection, CompositeFilterDescriptorCollection } from "./columnfiltering/ColumnFiltering";
+import { CompositeFilterDescriptorCollection, DistinctValueCollection } from "./columnfiltering/ColumnFiltering";
+import { ColumnDescription, MutableTableDataProvider, RowItem, TableDataChangeEvent, TableDistinctValue } from "./TableDataProvider";
 
 /**
  * A Table Data Provider using an array of items.
@@ -57,12 +56,12 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
 
   /** Retrieves the column descriptions */
   public async getColumns(): Promise<ColumnDescription[]> {
-    return Promise.resolve(this._columns);
+    return this._columns;
   }
 
   /** Retrieves the row count */
   public async getRowsCount(): Promise<number> {
-    return Promise.resolve(this._rowItemIndices.length);
+    return this._rowItemIndices.length;
   }
 
   /** Retrieves a specific row by index */

@@ -7,22 +7,23 @@
  * @module CartesianGeometry
  */
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d } from "../geometry3d/Range";
-import { Angle } from "../geometry3d/Angle";
-import { ClipPlane } from "./ClipPlane";
-import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { PolygonOps } from "../geometry3d/PolygonOps";
-
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
-import { CurveCollection } from "../curve/CurveCollection";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { Arc3d } from "../curve/Arc3d";
-import { LineString3d } from "../curve/LineString3d";
-
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { Arc3d } from "../curve/Arc3d";
+import { CurveCollection } from "../curve/CurveCollection";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Angle } from "../geometry3d/Angle";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
+import { Range1d } from "../geometry3d/Range";
 import { Range1dArray } from "../numerics/Range1dArray";
+import { ClipPlane } from "./ClipPlane";
+import { ClipUtilities, PolygonClipper } from "./ClipUtils";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 
 /**
  * An AlternatingConvexClipTreeNode is a node in a tree structure in which
@@ -44,7 +45,7 @@ import { Range1dArray } from "../numerics/Range1dArray";
  *         at each level are all "enclosing" planes in the usual way.
  *   </ul>
  */
-export class AlternatingCCTreeNode {
+export class AlternatingCCTreeNode implements PolygonClipper {
   public points: Point3d[] = [];
   public planes: ConvexClipPlaneSet = ConvexClipPlaneSet.createEmpty();
   public children: AlternatingCCTreeNode[] = [];
@@ -142,8 +143,58 @@ export class AlternatingCCTreeNode {
     const clipper = new AlternatingCCTreeNodeCurveClipper();
     clipper.appendCurveCollectionClip(this, curves, insideIntervals, outsideIntervals);
   }
+  /**
+   *
+   * @param xyz input polygon.  This is not changed.
+   * @param insideFragments Array to receive "inside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
+   * @param outsideFragments Array to receive "outside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
+   * @param arrayCache cache for reusable GrowableXYZArray.
+   */
+  public appendPolygonClip(
+    xyz: GrowableXYZArray,
+    insideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache): void {
+    // At first level ..
+    // newInside is subject to re-clip by children.
+    // outside is definitively outside
+    const oldOutsideCount = outsideFragments.length;
+    const newInside = this.planes.clipInsidePushOutside(xyz, outsideFragments, arrayCache);
+    if (newInside === undefined) {
+      ClipUtilities.restoreSingletonInPlaceOfMultipleShards (outsideFragments, oldOutsideCount, xyz, arrayCache);
+    } else {
+      let carryForwardA = [newInside];
+      let carryForwardB: GrowableXYZArray[] = [];
+      let tempAB;
+      let shard;
+      for (const c of this.children) {
+        carryForwardB.length = 0;
+        while (undefined !== (shard = carryForwardA.pop())) {
+          // Anything inside this child is truly outside  ...
+          c.appendPolygonClip(shard, outsideFragments, carryForwardB, arrayCache);
+          arrayCache.dropToCache(shard);
+        }
+        tempAB = carryForwardB;
+        carryForwardB = carryForwardA;  // and that is empty
+        carryForwardA = tempAB;
+      }
+      while (undefined !== (shard = carryForwardA.pop())) {
+        insideFragments.push(shard);
+      }
+    }
+  }
+  /**
+   *
+   */
+  public depth(): number {
+    const myDepth = 1;
+    let maxChildDepth = 0;
+    for (const c of this.children) {
+      maxChildDepth = Math.max(maxChildDepth, c.depth());
+    }
+    return myDepth + maxChildDepth;
+  }
 }
-
 /**
  *  Context structure for building an AlternatingConvexClipTreeNode from a polygon.
  *  <ul>

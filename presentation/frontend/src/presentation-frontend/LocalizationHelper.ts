@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Node, LabelCompositeValue, LabelDefinition, Content, Item } from "@bentley/presentation-common";
+import { Content, Item, LabelCompositeValue, LabelDefinition, Node } from "@bentley/presentation-common";
 import { Presentation } from "./Presentation";
 
 const NAMESPACES = ["BisCore", "ECPresentation", "RulesEngine"];
@@ -59,7 +59,7 @@ export class LocalizationHelper {
       compositeValue.values.map((value) => this.translateLabelDefinition(value));
     };
 
-    if (labelDefinition.typeName === "composite")
+    if (labelDefinition.typeName === LabelDefinition.COMPOSITE_DEFINITION_TYPENAME)
       translateComposite(labelDefinition.rawValue as LabelCompositeValue);
     else if (labelDefinition.typeName === "string")
       labelDefinition.rawValue = this.translate(labelDefinition.rawValue as string);

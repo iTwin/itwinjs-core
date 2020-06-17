@@ -6,10 +6,10 @@
  * @module WidgetPanels
  */
 
+import "./CursorOverlay.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CursorTypeContext } from "../base/NineZone";
-import "./CursorOverlay.scss";
 
 /** @internal */
 export type CursorType = "ew-resize" | "ns-resize" | "grabbing";

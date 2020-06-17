@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
+import React from "react";
 import sinon from "sinon";
-import { WeightPickerButton } from "../../ui-components/lineweight/WeightPickerButton";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { cleanup, fireEvent, render } from "@testing-library/react";
+import { WeightPickerButton } from "../../ui-components/lineweight/WeightPickerButton";
 
 describe("<WeightPickerButton/>", () => {
   const colorDef = ColorDef.create(ColorByName.blue);

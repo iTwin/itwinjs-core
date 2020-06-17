@@ -6,10 +6,10 @@
  * @module Widget
  */
 
+import "./NavigationArea.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
-import "./NavigationArea.scss";
 import { ToolbarPanelAlignment } from "../toolbar/Toolbar";
 
 /** Properties of [[NavigationArea]] component.
@@ -35,33 +35,31 @@ export interface NavigationAreaProps extends CommonProps, NoChildrenProps {
  * @note Should be placed in [[Zone]] component.
  * @alpha
  */
-export class NavigationArea extends React.PureComponent<NavigationAreaProps> {
-  public render() {
-    const className = classnames(
-      "nz-navigation-widget",
-      this.props.className);
+export const NavigationArea = React.memo<NavigationAreaProps>(function NavigationArea(props) { // tslint:disable-line: variable-name no-shadowed-variable
+  const className = classnames(
+    "nz-widget-navigationArea",
+    props.className);
 
-    const horizontalToolbar = React.isValidElement(this.props.horizontalToolbar) ? React.cloneElement(this.props.horizontalToolbar, { panelAlignment: ToolbarPanelAlignment.End }) : null;  // ensure proper panel alignment
-    const verticalToolbar = React.isValidElement(this.props.verticalToolbar) ? React.cloneElement(this.props.verticalToolbar, { panelAlignment: ToolbarPanelAlignment.End }) : null;  // ensure proper panel alignment
+  const horizontalToolbar = React.isValidElement(props.horizontalToolbar) ? React.cloneElement(props.horizontalToolbar, { panelAlignment: ToolbarPanelAlignment.End }) : null;  // ensure proper panel alignment
+  const verticalToolbar = React.isValidElement(props.verticalToolbar) ? React.cloneElement(props.verticalToolbar, { panelAlignment: ToolbarPanelAlignment.End }) : null;  // ensure proper panel alignment
 
-    return (
-      <div className={className} style={this.props.style}>
-        <div className="nz-horizontal-toolbar-container"
-          onMouseEnter={this.props.onMouseEnter}
-          onMouseLeave={this.props.onMouseLeave}>
-          {horizontalToolbar}
-        </div>
-        <div className="nz-navigation-aid-container"
-          onMouseEnter={this.props.onMouseEnter}
-          onMouseLeave={this.props.onMouseLeave}>
-          {this.props.navigationAid}
-        </div>
-        <div className="nz-vertical-toolbar-container"
-          onMouseEnter={this.props.onMouseEnter}
-          onMouseLeave={this.props.onMouseLeave}>
-          {verticalToolbar}
-        </div>
+  return (
+    <div className={className} style={props.style}>
+      <div className="nz-horizontal-toolbar-container"
+        onMouseEnter={props.onMouseEnter}
+        onMouseLeave={props.onMouseLeave}>
+        {horizontalToolbar}
       </div>
-    );
-  }
-}
+      <div className="nz-navigation-aid-container"
+        onMouseEnter={props.onMouseEnter}
+        onMouseLeave={props.onMouseLeave}>
+        {props.navigationAid}
+      </div>
+      <div className="nz-vertical-toolbar-container"
+        onMouseEnter={props.onMouseEnter}
+        onMouseLeave={props.onMouseLeave}>
+        {verticalToolbar}
+      </div>
+    </div>
+  );
+});

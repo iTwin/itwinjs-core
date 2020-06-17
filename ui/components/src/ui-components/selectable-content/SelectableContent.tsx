@@ -6,9 +6,8 @@
  * @module SelectableContent
  */
 
-import * as React from "react";
-import { useCallback, useState } from "react"; // tslint:disable-line: no-duplicate-imports
 import "./SelectableContent.scss";
+import * as React from "react";
 
 /**
  * A definition for content displayed in [[ControlledSelectableContent]] and
@@ -39,7 +38,7 @@ export interface ControlledSelectableContentProps {
  */
 export function ControlledSelectableContent(props: ControlledSelectableContentProps) {
   const { onSelectedContentIdChanged } = props;
-  const onContentIdSelected = useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
+  const onContentIdSelected = React.useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
     onSelectedContentIdChanged && onSelectedContentIdChanged(evt.target.value);
   }, [onSelectedContentIdChanged]);
   const selectedContent = props.children.find((contentDef) => contentDef.id === props.selectedContentId) ?? props.children[0];
@@ -76,8 +75,8 @@ export interface SelectableContentProps {
  * @beta
  */
 export function SelectableContent(props: SelectableContentProps) {
-  const [selectedContentId, setSelectedContentId] = useState(props.defaultSelectedContentId);
-  const onSelectedContentIdChanged = useCallback((id: string) => {
+  const [selectedContentId, setSelectedContentId] = React.useState(props.defaultSelectedContentId);
+  const onSelectedContentIdChanged = React.useCallback((id: string) => {
     setSelectedContentId(id);
   }, []);
   return (

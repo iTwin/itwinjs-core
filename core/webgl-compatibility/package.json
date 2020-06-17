@@ -1,13 +1,13 @@
 {
   "name": "@bentley/webgl-compatibility",
-  "version": "2.0.0-dev.77",
+  "version": "2.2.0-dev.12",
   "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
   "license": "MIT",
   "main": "lib/webgl-compatibility.js",
   "imodeljsSharedLibrary": true,
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "npm test -- --cover",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson",
     "extract-api": "betools extract-api --entry=webgl-compatibility",
@@ -34,8 +34,8 @@
   "dependencies": {},
   "peerDependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.77",
-    "@bentley/certa": "2.0.0-dev.77",
+    "@bentley/build-tools": "2.2.0-dev.12",
+    "@bentley/certa": "2.2.0-dev.12",
     "@types/node": "10.14.1",
     "@types/mocha": "^5.2.5",
     "@types/chai": "^4.1.4",
@@ -45,7 +45,7 @@
     "rimraf": "^3.0.2",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
-    "source-map-loader": "^0.2.3",
+    "source-map-loader": "^1.0.0",
     "glob": "^7.1.2",
     "webpack": "4.42.0"
   }

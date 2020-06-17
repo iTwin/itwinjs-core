@@ -2,23 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import {
-  ConfigurableUiManager, ConfigurableCreateInfo,
-  StatusBarWidgetControl, StatusBarWidgetControlArgs, StatusBarComposer,
-  ToolAssistanceField, ActivityCenterField, MessageCenterField,
-  SnapModeField, ViewAttributesStatusField, SectionsStatusField,
-  SelectionScopeField, SelectionInfoField, ClearEmphasisStatusField,
-  StatusBarItem, StatusBarItemUtilities, withStatusFieldProps, withMessageCenterFieldProps,
-  TileLoadingIndicator, FooterModeField,
-} from "@bentley/ui-framework";
-
-import { FooterSeparator } from "@bentley/ui-ninezone";
-import { StatusBarSection, ConditionalBooleanValue } from "@bentley/ui-abstract";
-
-import { DisplayStyleField } from "../statusfields/DisplayStyleField";
-import { SampleAppUiActionId, SampleAppIModelApp } from "../..";
 import "./AppStatusBar.scss";
+import * as React from "react";
+import { ConditionalBooleanValue, StatusBarSection } from "@bentley/ui-abstract";
+import {
+  ActivityCenterField, ClearEmphasisStatusField, ConfigurableUiManager, FooterModeField, MessageCenterField, SectionsStatusField, SelectionInfoField,
+  SelectionScopeField, SnapModeField, StatusBarComposer, StatusBarItem, StatusBarItemUtilities, StatusBarWidgetControl, StatusBarWidgetControlArgs,
+  TileLoadingIndicator, ToolAssistanceField, ViewAttributesStatusField, withMessageCenterFieldProps, withStatusFieldProps,
+} from "@bentley/ui-framework";
+import { FooterSeparator } from "@bentley/ui-ninezone";
+import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
+import { DisplayStyleField } from "../statusfields/DisplayStyleField";
 
 // tslint:disable-next-line: variable-name
 const ToolAssistance = withStatusFieldProps(ToolAssistanceField);
@@ -47,10 +41,6 @@ const FooterMode = withStatusFieldProps(FooterModeField);
 
 export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   private _statusBarItems: StatusBarItem[] | undefined;
-
-  constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
-  }
 
   public get statusBarItems(): StatusBarItem[] {
     if (!this._statusBarItems) {

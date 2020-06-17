@@ -3,18 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
 import { expect } from "chai";
+import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { render, cleanup, wait, fireEvent } from "@testing-library/react";
-
-import { Point3d, Vector3d, Matrix3d, AxisIndex } from "@bentley/geometry-core";
-import { IModelConnection, DrawingViewState, ScreenViewport, ViewManager, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
-
-import { TestUtils } from "../TestUtils";
-import { DrawingNavigationAid, MapMode, DrawingNavigationCanvas } from "../../ui-components/navigationaids/DrawingNavigationAid";
+import { AxisIndex, Matrix3d, Point3d, Vector3d } from "@bentley/geometry-core";
+import { DrawingViewState, IModelConnection, ScreenViewport, ViewManager, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
+import { cleanup, fireEvent, render, wait } from "@testing-library/react";
+import { DrawingNavigationAid, DrawingNavigationCanvas, MapMode } from "../../ui-components/navigationaids/DrawingNavigationAid";
 import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
+import { TestUtils } from "../TestUtils";
 
 // cspell:ignore unrotate
 

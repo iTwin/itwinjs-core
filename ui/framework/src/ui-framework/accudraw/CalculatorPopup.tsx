@@ -7,12 +7,10 @@
  */
 
 import * as React from "react";
-
-import { OnNumberCommitFunc, OnCancelFunc } from "@bentley/ui-abstract";
-import { Icon, DivWithOutsideClick, Size, SizeProps } from "@bentley/ui-core";
-
-import { PositionPopup, PositionPopupContent } from "../popup/PositionPopup";
+import { OnCancelFunc, OnNumberCommitFunc } from "@bentley/ui-abstract";
+import { DivWithOutsideClick, Icon, Size, SizeProps } from "@bentley/ui-core";
 import { PopupManager, PopupPropsBase } from "../popup/PopupManager";
+import { PositionPopup, PositionPopupContent } from "../popup/PositionPopup";
 import { Calculator } from "./Calculator";
 
 /** @alpha */

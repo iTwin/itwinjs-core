@@ -6,22 +6,22 @@
  * @module StatusBar
  */
 
-import * as React from "react";
 import classnames from "classnames";
+import * as React from "react";
 import {
-  StatusBarItemsManager, CommonStatusBarItem, isAbstractStatusBarActionItem, AbstractStatusBarActionItem,
-  isAbstractStatusBarLabelItem, AbstractStatusBarLabelItem, StatusBarLabelSide, StatusBarSection, ConditionalStringValue, ConditionalBooleanValue,
+  AbstractStatusBarActionItem, AbstractStatusBarLabelItem, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue,
+  isAbstractStatusBarActionItem, isAbstractStatusBarLabelItem, StatusBarItemsManager, StatusBarLabelSide, StatusBarSection,
 } from "@bentley/ui-abstract";
-import { Icon, useResizeObserver, useRefs, CommonProps, useOnOutsideClick } from "@bentley/ui-core";
-import { FooterIndicator, eqlOverflown } from "@bentley/ui-ninezone";
-import { StatusBarSpaceBetween, StatusBarLeftSection, StatusBarCenterSection, StatusBarRightSection, StatusBarContext } from "./StatusBar";
-import { isStatusBarItem } from "./StatusBarItem";
-import { useDefaultStatusBarItems } from "./useDefaultStatusBarItems";
-import { useUiItemsProviderStatusBarItems } from "./useUiItemsProviderStatusBarItems";
+import { CommonProps, Icon, useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { eqlOverflown, FooterIndicator } from "@bentley/ui-ninezone";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../ui-framework";
 import { Indicator } from "../statusfields/Indicator";
 import { StatusBarOverflow } from "./Overflow";
 import { StatusBarOverflowPanel } from "./OverflowPanel";
+import { StatusBarCenterSection, StatusBarContext, StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween } from "./StatusBar";
+import { isStatusBarItem } from "./StatusBarItem";
+import { useDefaultStatusBarItems } from "./useDefaultStatusBarItems";
+import { useUiItemsProviderStatusBarItems } from "./useUiItemsProviderStatusBarItems";
 
 /** Private  function to generate a value that will allow the proper order to be maintained when items are placed in overflow panel */
 function getCombinedSectionItemPriority(item: CommonStatusBarItem) {
@@ -139,7 +139,7 @@ function generateActionStatusBarItem(item: AbstractStatusBarActionItem, isInFoot
     isInFooterMode={isInFooterMode} />;
 }
 
-/** local function to combine items from Stage and from Plugins */
+/** local function to combine items from Stage and from Extensions */
 function combineItems(stageItems: ReadonlyArray<CommonStatusBarItem>, addonItems: ReadonlyArray<CommonStatusBarItem>) {
   const items: CommonStatusBarItem[] = [];
   if (stageItems.length)
@@ -333,11 +333,11 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
   const onOverflowClick = React.useCallback(() => {
     setIsOverflowPanelOpen((prev) => !prev);
   }, []);
-  const onOutsideClick = React.useCallback(() => {
+  const onOutsideClick = React.useCallback(/* istanbul ignore next */() => {
     // istanbul ignore next
     setIsOverflowPanelOpen(false);
   }, []);
-  const isOutsideEvent = React.useCallback((e: PointerEvent) => {
+  const isOutsideEvent = React.useCallback(/* istanbul ignore next */(e: PointerEvent) => {
     // istanbul ignore next
     return !!containerRef.current && (e.target instanceof Node) && !containerRef.current.contains(e.target);
   }, []);

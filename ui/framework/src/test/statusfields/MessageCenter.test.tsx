@@ -2,27 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
-import { WidgetState } from "@bentley/ui-abstract";
-
-import TestUtils from "../TestUtils";
-import {
-  MessageCenterField,
-  StatusBarWidgetControl,
-  StatusBar,
-  ConfigurableUiManager,
-  ConfigurableCreateInfo,
-  MessageManager,
-  ConfigurableUiControlType,
-  WidgetDef,
-  StatusBarWidgetControlArgs,
-} from "../../ui-framework";
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
 import { FooterPopup } from "@bentley/ui-ninezone";
+import {
+  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, MessageCenterField, MessageManager, StatusBar, StatusBarWidgetControl,
+  StatusBarWidgetControlArgs, WidgetDef,
+} from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("MessageCenter", () => {
 

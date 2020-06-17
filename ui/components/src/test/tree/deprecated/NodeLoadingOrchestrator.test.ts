@@ -4,17 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Observable } from "rxjs/internal/Observable";
-import { throwError } from "rxjs/internal/observable/throwError";
 import { from } from "rxjs/internal/observable/from";
 import { of } from "rxjs/internal/observable/of";
+import { throwError } from "rxjs/internal/observable/throwError";
 import sinon from "sinon";
 import { TreeNodeItem } from "../../../ui-components";
-import { ResolvablePromise } from "../../test-helpers/misc";
-import { initializeTree, TestTreeDataProvider } from "../TestDataFactories";
-import { extractSequence, waitForUnsubscription } from "../ObservableTestHelpers";
-import { makeObservableCallback, onCancelation, NodeSet, PendingNodeTracker, NodeLoadingOrchestrator, NodeKey } from "../../../ui-components/tree/deprecated/NodeLoadingOrchestrator";
-import { BeInspireTreeNode, BeInspireTree, toNodes, toNode } from "../../../ui-components/tree/deprecated/component/BeInspireTree";
+import { BeInspireTree, BeInspireTreeNode, toNode, toNodes } from "../../../ui-components/tree/deprecated/component/BeInspireTree";
 import { DEPRECATED_Tree as Tree } from "../../../ui-components/tree/deprecated/component/Tree";
+import {
+  makeObservableCallback, NodeKey, NodeLoadingOrchestrator, NodeSet, onCancelation, PendingNodeTracker,
+} from "../../../ui-components/tree/deprecated/NodeLoadingOrchestrator";
+import { ResolvablePromise } from "../../test-helpers/misc";
+import { extractSequence, waitForUnsubscription } from "../ObservableTestHelpers";
+import { initializeTree, TestTreeDataProvider } from "../TestDataFactories";
 
 // tslint:disable:deprecation
 

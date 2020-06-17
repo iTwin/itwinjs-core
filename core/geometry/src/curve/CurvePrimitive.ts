@@ -5,24 +5,24 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { Clipper } from "../clipping/ClipUtils";
+import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { StrokeOptions } from "./StrokeOptions";
-import { Order2Bezier } from "../numerics/BezierPolynomials";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
+import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { NewtonEvaluatorRtoR, Newton1dUnboundedApproximateDerivative } from "../numerics/Newton";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Transform } from "../geometry3d/Transform";
+import { Order2Bezier } from "../numerics/BezierPolynomials";
+import { Newton1dUnboundedApproximateDerivative, NewtonEvaluatorRtoR } from "../numerics/Newton";
 import { GaussMapper } from "../numerics/Quadrature";
-import { IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { LineString3d } from "./LineString3d";
-import { Clipper } from "../clipping/ClipUtils";
-import { CurveLocationDetail, CurveSearchStatus, CurveIntervalRole } from "./CurveLocationDetail";
+import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
+import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
-import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
-import { VariantCurveExtendParameter, CurveExtendOptions } from "./CurveExtendMode";
+import { LineString3d } from "./LineString3d";
+import { StrokeOptions } from "./StrokeOptions";
 
 /** Describes the concrete type of a [[CurvePrimitive]]. Each type name maps to a specific subclass and can be used for type-switching in conditional statements.
  *  - "arc" => [[Arc3d]]
@@ -85,6 +85,10 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @internal
    */
   public endCut?: CurveLocationDetail;
+  /**
+   * data attached by various algorithms (e.g. Region booleans)
+   */
+  public parent?: any;
 
   /** Return the point (x,y,z) on the curve at fractional position.
    * @param fraction fractional position along the geometry.
@@ -563,7 +567,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
    * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
    */
-  public collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean) {
+  public collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, _explodeLinestrings: boolean = false) {
     collectorArray.push(this);
   }
 
@@ -573,9 +577,10 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param collectorArray optional array to receive primitives.   If present, new primitives are ADDED (without clearing the array.)
    * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
    */
-  public collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false): CurvePrimitive[] {
+  public collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false,
+    explodeLinestrings: boolean = false): CurvePrimitive[] {
     const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
-    this.collectCurvePrimitivesGo(results, smallestPossiblePrimitives);
+    this.collectCurvePrimitivesGo(results, smallestPossiblePrimitives, explodeLinestrings);
     return results;
   }
 

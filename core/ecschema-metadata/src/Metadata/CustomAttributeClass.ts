@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { CustomAttributeClassProps } from "../Deserialization/JsonProps";
+import {
+  containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseCustomAttributeContainerType, SchemaItemType,
+} from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECClass } from "./Class";
 import { Schema } from "./Schema";
-import { CustomAttributeClassProps } from "./../Deserialization/JsonProps";
-import { containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseCustomAttributeContainerType, SchemaItemType } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 
 /**
  * A Typescript class representation of an ECCustomAttributeClass.
@@ -57,4 +59,18 @@ export class CustomAttributeClass extends ECClass {
   public async fromJSON(customAttributeProps: CustomAttributeClassProps) {
     this.fromJSONSync(customAttributeProps);
   }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setContainerType(containerType: CustomAttributeContainerType) {
+    this._containerType = containerType;
+  }
+}
+/**
+ * @internal
+ * Used for Schema editing.
+ */
+export abstract class MutableCAClass extends CustomAttributeClass {
+  public abstract setContainerType(containerType: CustomAttributeContainerType): void;
 }

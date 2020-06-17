@@ -11,7 +11,8 @@ import { I18NextXhrBackend } from 'i18next-xhr-backend';
 export class I18N {
     constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: i18next.Callback);
     // @internal
-    getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): string;
+    getEnglishTranslation(namespace: string, key: string | string[], options?: i18next.TranslationOptions): string;
+    getNamespace(name: string): I18NNamespace | undefined;
     // @internal (undocumented)
     languageList(): string[];
     // @internal (undocumented)
@@ -20,7 +21,7 @@ export class I18N {
     translate(key: string | string[], options?: i18next.TranslationOptions): string;
     translateKeys(line: string): string;
     // @internal
-    translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
+    translateWithNamespace(namespace: string, key: string | string[], options?: i18next.TranslationOptions): string;
     // @internal (undocumented)
     unregisterNamespace(name: string): void;
     // @internal
@@ -40,10 +41,6 @@ export class I18NNamespace {
 export interface I18NOptions {
     // (undocumented)
     urlTemplate?: I18NextXhrBackend.LoadPathOption;
-}
-
-// @internal (undocumented)
-export interface TranslationOptions extends i18next.TranslationOptions {
 }
 
 

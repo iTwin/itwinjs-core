@@ -8,11 +8,11 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
-import { UiFramework } from "../UiFramework";
 import { FrameworkState } from "../redux/FrameworkState";
+import { UiFramework } from "../UiFramework";
 
 /** Enum for the Color Theme string.
- * @beta
+ * @public
  */
 export enum ColorTheme {
   Light = "light",
@@ -20,12 +20,12 @@ export enum ColorTheme {
 }
 
 /** The default color theme.
- * @beta
+ * @public
  */
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
 
 /** The default widget opacity.
- * @beta
+ * @public
  */
 export const WIDGET_OPACITY_DEFAULT = 0.90;
 
@@ -34,8 +34,9 @@ export const WIDGET_OPACITY_DEFAULT = 0.90;
 interface ThemeProps {
   /** theme ("light", "dark", etc.) */
   theme: string;
-  /** Widget Opacity */
+  /* Widget Opacity */
   widgetOpacity: number;
+  children?: React.ReactNode;
 }
 
 function mapStateToProps(state: any) {
@@ -83,6 +84,6 @@ class ThemeManagerComponent extends React.Component<ThemeProps> {
 /**
  * ThemeManager handles setting color themes.
  * This React component is Redux connected.
- * @beta
+ * @public
  */
 export const ThemeManager = connect(mapStateToProps)(ThemeManagerComponent); // tslint:disable-line:variable-name

@@ -2,24 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow, mount } from "enzyme";
+import { expect } from "chai";
+import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { expect } from "chai";
-
 import {
-  Backstage as NZ_Backstage,
-} from "@bentley/ui-ninezone";
-import { BackstageItem, UiItemsProvider, BackstageItemUtilities, UiItemsManager, BackstageItemsManager, ConditionalBooleanValue } from "@bentley/ui-abstract";
-import {
-  BackstageComposer,
-  BackstageManager,
-  UiFramework,
-  useGroupedItems,
-  SyncUiEventDispatcher,
-} from "../../ui-framework";
-import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
+  BackstageItem, BackstageItemsManager, BackstageItemUtilities, ConditionalBooleanValue, UiItemsManager, UiItemsProvider,
+} from "@bentley/ui-abstract";
+import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
+import { BackstageComposer, BackstageManager, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../ui-framework";
 import TestUtils from "../TestUtils";
+import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
 
 const uiSyncEventId = "appuiprovider:backstage-item-visibility-changed";
 

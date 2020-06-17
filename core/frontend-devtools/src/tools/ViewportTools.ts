@@ -7,31 +7,24 @@
  * @module Tools
  */
 
-import {
-  ColorDef,
-  Hilite,
-} from "@bentley/imodeljs-common";
-import {
-  IModelApp,
-  TileBoundingBoxes,
-  Tool,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
-import { parseToggle } from "./parseToggle";
+import { ColorDef, Hilite } from "@bentley/imodeljs-common";
+import { IModelApp, TileBoundingBoxes, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { parseArgs } from "./parseArgs";
+import { parseToggle } from "./parseToggle";
 
-/** Freeze or unfreeze the scene for the selected viewport. While the scene is frozen, no new tiles will be selected for drawing within the viewport.
+/** Base class for a tool that toggles some aspect of a Viewport.
  * @beta
  */
-export class FreezeSceneTool extends Tool {
-  public static toolId = "FreezeScene";
+export abstract class ViewportToggleTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
+  protected abstract toggle(vp: Viewport, enable?: boolean): void;
+
   public run(enable?: boolean): boolean {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && (undefined === enable || enable !== vp.freezeScene))
-      vp.freezeScene = !vp.freezeScene;
+    if (undefined !== vp)
+      this.toggle(vp, enable);
 
     return true;
   }
@@ -45,6 +38,18 @@ export class FreezeSceneTool extends Tool {
   }
 }
 
+/** Freeze or unfreeze the scene for the selected viewport. While the scene is frozen, no new tiles will be selected for drawing within the viewport.
+ * @beta
+ */
+export class FreezeSceneTool extends ViewportToggleTool {
+  public static toolId = "FreezeScene";
+
+  protected toggle(vp: Viewport, enable?: boolean): void {
+    if (undefined === enable || enable !== vp.freezeScene)
+      vp.freezeScene = !vp.freezeScene;
+  }
+}
+
 const boundingVolumeNames = [
   "none",
   "volume",
@@ -55,7 +60,7 @@ const boundingVolumeNames = [
 ];
 
 /** Set the tile bounding volume decorations to display in the selected viewport.
- * Omitting the argument turns on Volume bounding boxes.
+ * Omitting the argument turns on Volume bounding boxes if bounding boxes are currently off; otherwise, toggles them off.
  * Allowed inputs are "none", "volume", "content", "both" (volume and content), "children", and "sphere".
  * @beta
  */
@@ -70,7 +75,7 @@ export class ShowTileVolumesTool extends Tool {
       return true;
 
     if (undefined === boxes)
-      boxes = TileBoundingBoxes.Volume;
+      boxes = TileBoundingBoxes.None === vp.debugBoundingBoxes ? TileBoundingBoxes.Volume : TileBoundingBoxes.None;
 
     vp.debugBoundingBoxes = boxes;
     return true;
@@ -223,25 +228,12 @@ export class ChangeEmphasisSettingsTool extends ChangeHiliteTool {
 /** Enables or disables fade-out transparency mode for the selected viewport.
  * @beta
  */
-export class FadeOutTool extends Tool {
+export class FadeOutTool extends ViewportToggleTool {
   public static toolId = "FadeOut";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
 
-  public run(enable?: boolean): boolean {
-    const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && (undefined === enable || enable !== vp.isFadeOutActive))
+  protected toggle(vp: Viewport, enable?: boolean): void {
+    if (undefined === enable || enable !== vp.isFadeOutActive)
       vp.isFadeOutActive = !vp.isFadeOutActive;
-
-    return true;
-  }
-
-  public parseAndRun(...args: string[]): boolean {
-    const enable = parseToggle(args[0]);
-    if (typeof enable !== "string")
-      this.run(enable);
-
-    return true;
   }
 }
 
@@ -306,5 +298,61 @@ export class ViewportAddRealityModel extends Tool {
 
   public parseAndRun(...args: string[]): boolean {
     return this.run(args[0]);
+  }
+}
+
+/** Changes the `allow3dManipulations` flag for the selected viewport if the viewport is displaying a `ViewState3d`.
+ * @alpha
+ */
+export class Toggle3dManipulationsTool extends ViewportToggleTool {
+  public static toolId = "Toggle3dManipulations";
+
+  protected toggle(vp: Viewport, allow?: boolean): void {
+    if (!vp.view.is3d())
+      return;
+
+    if (undefined === allow)
+      allow = !vp.view.allow3dManipulations();
+
+    if (allow !== vp.view.allow3dManipulations()) {
+      vp.view.setAllow3dManipulations(allow);
+      IModelApp.toolAdmin.startDefaultTool();
+    }
+  }
+}
+
+/** Toggles display of view attachments in sheet views.
+ * @beta
+ */
+export class ToggleViewAttachmentsTool extends ViewportToggleTool {
+  public static toolId = "ToggleViewAttachments";
+
+  protected toggle(vp: Viewport, enable?: boolean): void {
+    if (undefined === enable || enable !== vp.wantViewAttachments)
+      vp.wantViewAttachments = !vp.wantViewAttachments;
+  }
+}
+
+/** Toggle display of view attachment boundaries in sheet views.
+ * @beta
+ */
+export class ToggleViewAttachmentBoundariesTool extends ViewportToggleTool {
+  public static toolId = "ToggleViewAttachmentBoundaries";
+
+  protected toggle(vp: Viewport, enable?: boolean): void {
+    if (undefined === enable || enable !== vp.wantViewAttachmentBoundaries)
+      vp.wantViewAttachmentBoundaries = !vp.wantViewAttachmentBoundaries;
+  }
+}
+
+/** Toggle display of view attachment clip shapes in sheet views.
+ * @beta
+ */
+export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
+  public static toolId = "ToggleViewAttachmentClipShapes";
+
+  protected toggle(vp: Viewport, enable?: boolean): void {
+    if (undefined === enable || enable !== vp.wantViewAttachmentClipShapes)
+      vp.wantViewAttachmentClipShapes = !vp.wantViewAttachmentClipShapes;
   }
 }

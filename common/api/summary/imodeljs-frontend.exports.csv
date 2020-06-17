@@ -31,10 +31,7 @@ beta;AngleDescription
 internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
-beta;AppearanceOverrideProps
-internal;class Attachment
-internal;AttachmentList
-internal;enum AttachmentSceneState
+public;AppearanceOverrideProps
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -70,9 +67,7 @@ beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
 alpha;ClipEventType
-beta;ClippingType
 internal;ClipResult
-internal;Clips
 public;Cluster
 internal;CompassMode
 internal;ContextMode
@@ -82,15 +77,17 @@ public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
 internal;CoreTools
-internal;createAttachment(props: ViewAttachmentProps, view: ViewState): Attachment
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
+internal;createEmptyRenderPlan(): RenderPlan
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): OrbitGtTileTree.Reference
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
+internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, useDepthBuffer: boolean, iModel: IModelConnection, forDrape?: boolean): Promise
 internal;CurrentInputState
 internal;CurrentState
+internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
 public;Decorator
@@ -109,6 +106,8 @@ alpha;DrawClipOptions
 public;DrawingModelState 
 public;DrawingViewState 
 public;DynamicsContext 
+alpha;EditingFunctions
+alpha;EditingFunctions
 alpha;EditManipulator
 internal;ElementAgenda
 alpha;ElementEditor3d
@@ -117,8 +116,8 @@ public;ElementPicker
 public;ElementState 
 internal;ElemMethod
 internal;ElemSource
-beta;EmphasizeElements 
-beta;EmphasizeElementsProps
+public;EmphasizeElements 
+public;EmphasizeElementsProps
 beta;EngineeringLengthDescription 
 public;EntityState 
 public;Environment
@@ -141,9 +140,10 @@ public;extractImageSourceDimensions(source: ImageSource): Promise
 alpha;FeatureLogBatchClient
 alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
-beta;FeatureOverrideType
+public;FeatureOverrideType
 public;FeatureSymbology
 alpha;FeatureTrackingManager
+alpha;FeatureTrackingProps
 alpha;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
 alpha;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
 public;FitViewTool 
@@ -156,6 +156,7 @@ internal;FrameCameraViewData
 internal;FrameRenderData
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
+public;Frustum2d
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
@@ -178,6 +179,7 @@ internal;GltfReaderResult
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GraphicBranch 
+internal;GraphicBranchFrustum
 internal;GraphicBranchOptions
 public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
@@ -212,9 +214,6 @@ public;IModelApp
 public;IModelAppOptions
 public;class IModelConnection 
 public;IModelConnection
-alpha;EditingFunctions
-alpha;EditingFunctions
-beta;Tiles
 internal;IModelFrameLifecycle
 internal;IModelTile 
 internal;IModelTileContent 
@@ -294,6 +293,7 @@ public;OrthographicViewState
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
+internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PanViewTool 
 alpha;ParseAndRunResult
 alpha;ParsedKeyin
@@ -340,6 +340,7 @@ internal;class RenderTarget
 beta;RenderTargetDebugControl
 internal;class RenderTerrainMeshGeometry 
 internal;class RenderTextureDrape 
+internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 public;RotateViewTool 
 alpha;RotationMode
 internal;RoundOff
@@ -364,7 +365,6 @@ internal;SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
 alpha;SetupCameraTool 
-internal;SheetBorder
 public;SheetModelState 
 public;SheetViewState 
 internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean
@@ -424,6 +424,7 @@ beta;TileParams
 beta;TileRequest
 beta;TileRequest
 internal;State
+beta;Tiles
 beta;class TileTree
 beta;TileTreeDiscloser
 beta;TileTreeLoadStatus
@@ -438,13 +439,13 @@ public;Tool
 public;ToolAdmin
 public;ToolAdmin
 alpha;ActiveSettings
-beta;ToolAssistance
-beta;ToolAssistanceImage
-beta;ToolAssistanceInputMethod
-beta;ToolAssistanceInstruction
-beta;ToolAssistanceInstructions
-beta;ToolAssistanceKeyboardInfo
-beta;ToolAssistanceSection
+public;ToolAssistance
+public;ToolAssistanceImage
+public;ToolAssistanceInputMethod
+public;ToolAssistanceInstruction
+public;ToolAssistanceInstructions
+public;ToolAssistanceKeyboardInfo
+public;ToolAssistanceSection
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings

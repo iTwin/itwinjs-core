@@ -7,15 +7,15 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-
-import { OperatorValueFilterDescriptor, FilterableTable, FilterOperator } from "./ColumnFiltering";
-import { ColumnFilteringUtilities } from "./ColumnFilteringUtilities";
-import { RowItem } from "../TableDataProvider";
-import { StandardTypeConverterTypeNames, LessGreaterOperatorProcessor, NullableOperatorProcessor } from "../../converters/TypeConverter";
-import { BooleanTypeConverter } from "../../converters/BooleanTypeConverter";
-import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { StringOperatorProcessor } from "../../../ui-components";
+import { BooleanTypeConverter } from "../../converters/BooleanTypeConverter";
+import { LessGreaterOperatorProcessor, NullableOperatorProcessor } from "../../converters/TypeConverter";
+import { StandardTypeNames } from "../../common/StandardTypeNames";
+import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { UiComponents } from "../../UiComponents";
+import { RowItem } from "../TableDataProvider";
+import { FilterableTable, FilterOperator, OperatorValueFilterDescriptor } from "./ColumnFiltering";
+import { ColumnFilteringUtilities } from "./ColumnFilteringUtilities";
 import { NumericRangeData } from "./DataGridFilterParser";
 
 /** Represents a filtering descriptor.
@@ -175,7 +175,7 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
     if (this._value == null)
       return "";
 
-    if (this.memberType === StandardTypeConverterTypeNames.DateTime)
+    if (this.memberType === StandardTypeNames.DateTime)
       return "(" + this.memberKey + " " + filterOperator + this.getJulianDaysFromValue(false) + ")";
     return this.memberKey + " " + filterOperator + " \"" + this._value.toString() + "\"";
   }
@@ -193,14 +193,14 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
     }
 
     switch (this.memberType) {
-      case StandardTypeConverterTypeNames.DateTime: {
+      case StandardTypeNames.DateTime: {
         if (this._value == null)
           return this.memberKey + operator + " Null";
         return prefix + "(" + this.memberKey + " >= " + this.getJulianDaysFromValue(false) + ") AND (" + this.memberKey + " < " + this.getJulianDaysFromValue(true) + ")";
       }
 
-      case StandardTypeConverterTypeNames.Bool:
-      case StandardTypeConverterTypeNames.Boolean:
+      case StandardTypeNames.Bool:
+      case StandardTypeNames.Boolean:
         if (typeof this._value === "string")
           return this.memberKey + operator + new BooleanTypeConverter().convertFromString(this._value).toString();
         if (typeof this._value === "boolean")
@@ -208,7 +208,7 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
         Logger.logError(UiComponents.loggerCategory(this), `getEqualsExpression - invalid value type: ${typeof this._value}`);
         break;
 
-      case StandardTypeConverterTypeNames.Point2d: {
+      case StandardTypeNames.Point2d: {
         if (typeof this._value === "object")
           return prefix + " (ArePointsEqualByValue(" + this.memberKey + ", " + this._value.x + ", " + this._value.y + ") = 1)";
         if (typeof this._value === "string")
@@ -217,7 +217,7 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
         break;
       }
 
-      case StandardTypeConverterTypeNames.Point3d: {
+      case StandardTypeNames.Point3d: {
         if (typeof this._value === "object")
           return prefix + " (ArePointsEqualByValue(" + this.memberKey + ", " + this._value.x + ", " + this._value.y + ", " + this._value.z + ") = 1)";
         if (typeof this._value === "string")
@@ -226,8 +226,8 @@ export class TableFilterDescriptor implements OperatorValueFilterDescriptor {
         break;
       }
 
-      case StandardTypeConverterTypeNames.Double:
-      case StandardTypeConverterTypeNames.Float: {
+      case StandardTypeNames.Double:
+      case StandardTypeNames.Float: {
         if (typeof this._value === "number")
           return prefix + " (AreDoublesEqualByValue(" + this.memberKey + ", " + this._value + ") = 1)";
         if (typeof this._value === "string")

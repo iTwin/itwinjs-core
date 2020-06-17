@@ -1,6 +1,68 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Fix toolbar overflow panel display.
+- Remove border on small app button.
+- Address React warnings about deprecated methods.
+- Contain floating widgets in visible nine zone area.
+- Use react-scripts for demo app.
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- Add support for 2.0 ui Tool and Navigation widgets to react to UiFramework.onUiVisibilityChanged events
+- Removed @deprecated APIs from ui-framework & ui-core and updated NextVersion.md
+- Removed deprecated Expandable item History Tray support
+- fix sizing of SvgSprite icons in backstage.
+- Add missing tilde to scss files
+- Address warning to convert 'start' to 'flex start'
+- Fix bug 292829 where toolbar border displayed when all items are hidden.
+- Update test to avoid warnings.
+- Fixed ReactResizeDetector usage after upgrade. Converted Toggle component to function. Hover/pressed styling in 2.0 Toolbar.
+- Using center of Messages indicator as target. Added CSS classname overrides to StatusBarComposer for sections. UI 2.0 color tweaks.
+- Ui 2.0 - Blur the toolbar item background
+- update styling of widget panel background color
+-  Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead.
+- Upgrade to Rush 5.23.2
+- Fixed Safari browser issues
+- Update StatusBarComposer to support Overflow panel.
+- Ui 2.0 - Toolbar display changes
+- Updated Toolbar colors/opacity for Ui 2.0
+- Move common hooks to ui-core.
+- Move react to peerDependencies.
+- Learning documentation for ui-core
+- TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
+- Ability to drag docked tool settings to widget mode.
+- Support for floating widget targets.
+- Fix safe area insets for bottom zones w/o footer. 
+- Keep active tab visible.
+- Reparent widget content when dragging widget around.
+- Floating widget stacking order.
+- Map children to panes fix.
+- Upgraded icons-generic-webfont to ^1.0.0
+- Update auto-generated dialog items to work with the Tool Settings Bar.
+- Update stage panels to not hide overflow to popups are not clipped.
+- Minor styling changes
+- Remove support for the iModel.js module system by no longer delivering modules.
+- Update how overflow toolsetting panel is constructed.
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+*Version update only*
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+*Version update only*
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -39,7 +101,6 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 - Invoke onTargetChanged when component unmounts.
 - No longer accessing this.state or this.props in setState updater - flagged by lgtm report
-- Update sinon version.
 - Added support for NotifyMessageDetails.displayTime for Toast messages
 - Ability to determine available tool settings width.
 - Fix code analysis report issues.
@@ -109,7 +170,7 @@ Tue, 10 Sep 2019 12:09:49 GMT
 
 ### Updates
 
-- #165662. Allow an app to specify touch-specific instructions in tool assistance.
+- Allow an app to specify touch-specific instructions in tool assistance.
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT
@@ -119,7 +180,7 @@ Tue, 13 Aug 2019 20:25:53 GMT
 - Update to use latest icon library
 - Add support for BackstageComposer so Plugins can add backstage items.
 - Added CursorPrompt, improved Pointer messages
-- #159907. Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button
+- Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button
 - Updated generic icon package
 - Moved Point, PointProps, Rectangle, RectangleProps, Size and SizeProps to ui-core from ui-ninezone
 - Improved ToolAssistance item spacing. ViewSelector shows current view.
@@ -215,7 +276,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Added support for UI color themes
 - Display status message above status indicator popup.
 - Update to use newer generic-icons-webfont package.
-- upgrade to TypeScript 3.2.2
+- Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT
@@ -367,7 +428,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 ### Updates
 
 - Updated to TypeScript 3.1
-- fixed height issues with widget content
+- Fixed height issues with widget content
 
 ## 0.163.0
 Wed, 31 Oct 2018 20:55:37 GMT

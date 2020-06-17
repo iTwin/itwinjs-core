@@ -6,13 +6,13 @@
  * @module RpcInterface
  */
 
-import { RpcInterface, RpcInterfaceImplementation, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcInterfaceEndpoints } from "../../RpcManager";
-import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
-import { RpcControlChannel } from "./RpcControl";
-import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { RpcConfiguration, RpcPendingQueue, initializeRpcRequest } from "../../imodeljs-common";
+import { IModelError } from "../../IModelError";
+import { initializeRpcRequest, RpcConfiguration, RpcPendingQueue } from "../../imodeljs-common";
+import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "../../RpcInterface";
+import { RpcInterfaceEndpoints } from "../../RpcManager";
+import { RpcControlChannel } from "./RpcControl";
+import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 
 // tslint:disable:ban-types
 
@@ -66,15 +66,14 @@ export class RpcRegistry {
       requests.push(channel.describeEndpoints());
     }
 
-    return Promise.all(requests).then((responses) => {
-      const endpoints = responses.reduce((a, b) => a.concat(b), []);
-      for (const endpoint of endpoints) {
-        const definition = this.definitionClasses.get(endpoint.interfaceName);
-        endpoint.compatible = (definition && RpcInterface.isVersionCompatible(endpoint.interfaceVersion, definition.interfaceVersion)) ? true : false;
-      }
+    const responses = await Promise.all(requests);
+    const endpoints = responses.reduce((a, b) => a.concat(b), []);
+    for (const endpoint of endpoints) {
+      const definition = this.definitionClasses.get(endpoint.interfaceName);
+      endpoint.compatible = (definition && RpcInterface.isVersionCompatible(endpoint.interfaceVersion, definition.interfaceVersion)) ? true : false;
+    }
 
-      return endpoints;
-    });
+    return endpoints;
   }
 
   public getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T {

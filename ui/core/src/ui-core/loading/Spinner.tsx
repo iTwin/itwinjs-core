@@ -6,9 +6,8 @@
  * @module Loading
  */
 
-import * as React from "react";
-
 import "./Spinner.scss";
+import * as React from "react";
 
 // cspell:ignore xlarge
 

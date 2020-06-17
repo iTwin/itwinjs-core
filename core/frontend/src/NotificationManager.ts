@@ -5,10 +5,10 @@
 /** @packageDocumentation
  * @module Notifications
  */
-import { Point2d, XAndY } from "@bentley/geometry-core";
-import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { Point2d, XAndY } from "@bentley/geometry-core";
 import { RelativePosition } from "@bentley/ui-abstract";
+import { IModelApp } from "./IModelApp";
 import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 
 // cSpell:words messagebox
@@ -115,19 +115,19 @@ export class NotifyMessageDetails {
   public relativePosition = RelativePosition.TopRight;
 
   /** Constructor
-   *  @param priority        The priority this message should be accorded by the NotificationManager.
-   *  @param briefMsg        A short message that conveys the simplest explanation of the issue.
-   *  @param detailedMsg     A comprehensive message that explains the issue in detail and potentially offers a solution.
-   *  @param msgType         The type of message.
-   *  @param openAlert       Whether an alert box should be displayed or not, and if so what kind.
+   * @param priority          The priority this message should be accorded by the NotificationManager.
+   * @param briefMessage      A short message that conveys the simplest explanation of the issue.
+   * @param detailedMessage   A comprehensive message that explains the issue in detail and potentially offers a solution.
+   * @param msgType           The type of message.
+   * @param openAlert         Whether an alert box should be displayed or not, and if so what kind.
    */
   public constructor(public priority: OutputMessagePriority, public briefMessage: HTMLElement | string,
     public detailedMessage?: HTMLElement | string, public msgType = OutputMessageType.Toast, public openAlert = OutputMessageAlert.None) { }
 
   /** Set OutputMessageType.Pointer message details.
-   * @param viewport            Viewport over which to display the Pointer type message.
-   * @param displayPoint        Point at which to display the Pointer type message.
-   * @param relativePosition    Position relative to displayPoint at which to display the Pointer type message.
+   * @param viewport          Viewport over which to display the Pointer type message.
+   * @param displayPoint      Point at which to display the Pointer type message.
+   * @param relativePosition  Position relative to displayPoint at which to display the Pointer type message.
    */
   public setPointerTypeDetails(viewport: HTMLElement, displayPoint: XAndY, relativePosition = RelativePosition.TopRight) {
     this.viewport = viewport;
@@ -137,7 +137,7 @@ export class NotifyMessageDetails {
   }
 
   /** Set OutputMessageType.InputField message details.
-   * @param inputField            Input field that message pertains. The message will be shown just below this input field element.
+   * @param inputField        Input field that message pertains. The message will be shown just below this input field element.
    */
   public setInputFieldTypeDetails(inputField: HTMLElement) {
     this.inputField = inputField;
@@ -193,7 +193,7 @@ export class NotificationManager {
    * @param _icon         The MessageBox icon type.
    * @return the response from the user.
    */
-  public async openMessageBox(_mbType: MessageBoxType, _message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> { return Promise.resolve(MessageBoxValue.Ok); }
+  public async openMessageBox(_mbType: MessageBoxType, _message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> { return MessageBoxValue.Ok; }
 
   /**
    * Set up for activity messages.
@@ -257,7 +257,6 @@ export class NotificationManager {
 
   /** Setup tool assistance instructions for a tool. The instructions include the main instruction, which includes the current prompt.
    * @param instructions The tool assistance instructions.
-   * @alpha
    */
   public setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
     this.outputPrompt(instructions ? instructions.mainInstruction.text : "");

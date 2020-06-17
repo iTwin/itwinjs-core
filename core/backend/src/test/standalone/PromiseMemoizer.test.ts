@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
+import { BeDuration } from "@bentley/bentleyjs-core";
 import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, AccessToken } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
-import { TestMemoizer, testFn } from "./TestMemoizer";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { testFn, TestMemoizer } from "./TestMemoizer";
 
 describe("PromiseMemoizer", () => {
   let requestContextRegular: AuthorizedBackendRequestContext;
@@ -31,8 +31,8 @@ describe("PromiseMemoizer", () => {
   const { memoize: memoizeTest, deleteMemoized: deleteMemoizedTest } = new PromiseMemoizer<string>(testFunction, generateTestFunctionKey, maxCacheSize);
 
   before(async () => {
-    const fakeRegularAccessToken = AccessToken.fromJsonWebTokenString("Regular", new Date(), new Date());
-    const fakeManagerAccessToken = AccessToken.fromJsonWebTokenString("Manager", new Date(), new Date());
+    const fakeRegularAccessToken = new AccessToken("Regular", new Date(), new Date());
+    const fakeManagerAccessToken = new AccessToken("Manager", new Date(), new Date());
 
     requestContextRegular = new AuthorizedBackendRequestContext(fakeRegularAccessToken);
     requestContextManager = new AuthorizedBackendRequestContext(fakeManagerAccessToken);
@@ -42,8 +42,8 @@ describe("PromiseMemoizer", () => {
     const startTime = Date.now();
     const qp: QueryablePromise<string> = memoizeTest(requestContextRegular, "contextId2", "iModelId2", SyncMode.FixedVersion, IModelVersion.latest());
     await qp.promise;
-    const endTime = Date.now();
-    assert.isAbove(endTime - startTime, 950);
+    const elapsedTime = Date.now() - startTime;
+    assert.isAbove(elapsedTime, 900);
   });
 
   it("should be able to memoize and deleteMemoized function calls", async () => {

@@ -2,10 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-
-import { Input, Button, NumericInput } from "@bentley/ui-core";
 import "./MobxDemoView.scss";
+import * as React from "react";
+import { Button, Input, NumericInput } from "@bentley/ui-core";
 
 interface MobxDemoViewProps {
   birds: string[];

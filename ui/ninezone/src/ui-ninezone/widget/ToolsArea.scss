@@ -33,7 +33,7 @@
     }
 
     > .nz-vertical-toolbar-container {
-      height: 100%;
+      height: calc(100% - 60px);
       display: inline-flex;
       flex-direction: column;
       @include nz-widget-opacity;

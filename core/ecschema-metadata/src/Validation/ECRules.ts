@@ -14,10 +14,9 @@ import { Mixin } from "../Metadata/Mixin";
 import { AnyProperty, PrimitiveProperty, Property } from "../Metadata/Property";
 import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
 import {
-  ClassDiagnostic, PropertyDiagnostic, SchemaItemDiagnostic, RelationshipConstraintDiagnostic,
-  createSchemaItemDiagnosticClass, createPropertyDiagnosticClass, createClassDiagnosticClass,
-  createRelationshipConstraintDiagnosticClass, createCustomAttributeContainerDiagnosticClass,
-  CustomAttributeContainerDiagnostic,
+  ClassDiagnostic, createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
+  createRelationshipConstraintDiagnosticClass, createSchemaItemDiagnosticClass, CustomAttributeContainerDiagnostic, PropertyDiagnostic,
+  RelationshipConstraintDiagnostic, SchemaItemDiagnostic,
 } from "./Diagnostic";
 import { IRuleSet } from "./Rules";
 
@@ -474,6 +473,9 @@ export async function* customAttributeNotOfConcreteClass(container: CustomAttrib
 export async function* customAttributeSchemaMustBeReferenced(container: CustomAttributeContainerProps, customAttribute: CustomAttribute): AsyncIterable<CustomAttributeContainerDiagnostic<any[]>> {
   const schema = container.schema;
   const caSchema = customAttribute.className.split(".")[0];
+  if (caSchema === schema.name)
+    return;
+
   if (schema.references.some((s) => s.name === caSchema))
     return;
 

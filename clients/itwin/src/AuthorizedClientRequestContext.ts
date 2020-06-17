@@ -6,7 +6,7 @@
  * @module Authentication
  */
 
-import { Guid, ClientRequestContext, ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ClientRequestContextProps, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken } from "./Token";
 
 /** The properties of AuthorizedClientRequestContext.
@@ -20,7 +20,7 @@ export interface AuthorizedClientRequestContextProps extends ClientRequestContex
  * This context includes an [[AccessToken]] that carries authorization information. For services that do not require authorization
  * it's sufficient to pass an instance of the base class [[ClientRequestContext]].
  * @see [ClientRequestContext rules]($docs/learning/backend/managingclientrequestcontext.md).
- * @see [[ClientRequestContext]]
+ * @see [ClientRequestContext]($bentley)
  * @public
  */
 export class AuthorizedClientRequestContext extends ClientRequestContext implements AuthorizedClientRequestContextProps {

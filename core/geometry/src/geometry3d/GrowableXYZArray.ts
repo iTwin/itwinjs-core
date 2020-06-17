@@ -8,15 +8,14 @@
  */
 
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { XYAndZ } from "./XYZProps";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Range3d, Range1d } from "./Range";
-import { Transform } from "./Transform";
-import { Matrix3d } from "./Matrix3d";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
-
+import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
+import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Range1d, Range3d } from "./Range";
+import { Transform } from "./Transform";
+import { XYAndZ } from "./XYZProps";
 
 /** `GrowableXYArray` manages a (possibly growing) Float64Array to pack xy coordinates.
  * @public
@@ -451,7 +450,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     let j0, j1;
     let a;
     const data = this._data;
-    for (let i0 = 0, i1 = n - 1; i0 < i1; i0++ , i1--) {
+    for (let i0 = 0, i1 = n - 1; i0 < i1; i0++, i1--) {
       j0 = 3 * i0;
       j1 = 3 * i1;
       a = data[j0]; data[j0] = data[j1]; data[j1] = a;
@@ -906,6 +905,15 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       i++;
     }
     return range;
+  }
+  /**
+   * remove trailing point(s) within tolerance of the start point.
+   * @param points
+   * @param tolerance
+   */
+  public static removeClosure(points: IndexedReadWriteXYZCollection, tolerance: number = Geometry.smallMetricDistance) {
+    while (points.length > 1 && points.distanceIndexIndex(0, points.length - 1)! < tolerance)
+      points.pop();
   }
   /**
    * * Triangle for (unchecked!) for three points identified by index

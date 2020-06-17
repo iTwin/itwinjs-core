@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { Rectangle } from "../Rectangle";
 import { Point } from "../Point";
+import { Rectangle } from "../Rectangle";
 
 /** Returns the shortest distance from the element to the mouse.
  * @internal

@@ -2,23 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ColorByName } from "@bentley/imodeljs-common";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  PropertyRecord, PrimitiveValue, PropertyValueFormat,
-  PropertyDescription, ArrayValue, StructValue, PropertyEditorParamTypes,
-  ParseResults,
-  ButtonGroupEditorParams,
-  ColorEditorParams,
-  CustomFormattedNumberParams,
-  BasePropertyEditorParams,
-  PropertyEditorInfo,
+  ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, ParseResults, PrimitiveValue,
+  PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValueFormat, StructValue,
 } from "@bentley/ui-abstract";
-import {
-  UiComponents, ColumnDescription, FilterableTable, CompositeFilterDescriptorCollection,
-} from "../ui-components";
-import { UiCore } from "@bentley/ui-core";
-import { ColorByName } from "@bentley/imodeljs-common";
+import { ColumnDescription, CompositeFilterDescriptorCollection, FilterableTable, UiComponents } from "../ui-components";
 import { TableFilterDescriptorCollection } from "../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
+import { StandardEditorNames } from "../ui-components/editors/StandardEditorNames";
+import { StandardTypeNames } from "../ui-components/common/StandardTypeNames";
 
 // cSpell:ignore buttongroup
 
@@ -43,13 +36,11 @@ export class TestUtils {
       (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
 
       await UiComponents.initialize(TestUtils.i18n);
-      await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiComponentsInitialized = true;
     }
   }
 
   public static terminateUiComponents() {
-    UiCore.terminate();
     UiComponents.terminate();
     TestUtils._uiComponentsInitialized = false;
   }
@@ -84,7 +75,7 @@ export class TestUtils {
     const description: PropertyDescription = {
       displayLabel: name,
       name,
-      typename: "string",
+      typename: StandardTypeNames.String,
     };
 
     if (editorInfo)
@@ -108,7 +99,7 @@ export class TestUtils {
     const description: PropertyDescription = {
       displayLabel: name,
       name,
-      typename: "array",
+      typename: StandardTypeNames.Array,
     };
     const property = new PropertyRecord(value, description);
     property.isReadonly = false;
@@ -127,7 +118,7 @@ export class TestUtils {
     const description: PropertyDescription = {
       displayLabel: name,
       name,
-      typename: "struct",
+      typename: StandardTypeNames.Struct,
     };
     const property = new PropertyRecord(value, description);
     property.isReadonly = false;
@@ -144,7 +135,7 @@ export class TestUtils {
     const description: PropertyDescription = {
       displayLabel: name,
       name,
-      typename: "enum",
+      typename: StandardTypeNames.Enum,
     };
 
     const propertyRecord = new PropertyRecord(value, description);
@@ -194,7 +185,7 @@ export class TestUtils {
     const description: PropertyDescription = {
       displayLabel: name,
       name,
-      typename: "boolean",
+      typename: StandardTypeNames.Boolean,
       editor: editor ? { name: editor } : undefined,
     };
 
@@ -215,7 +206,7 @@ export class TestUtils {
     const description: PropertyDescription = {
       name: propertyName,
       displayLabel: propertyName,
-      typename: "number",
+      typename: StandardTypeNames.Number,
       editor: {
         name: "color-picker",
         params: [
@@ -253,9 +244,9 @@ export class TestUtils {
     const description: PropertyDescription = {
       name: propertyName,
       displayLabel: propertyName,
-      typename: "number",
+      typename: StandardTypeNames.Number,
       editor: {
-        name: "weight-picker",
+        name: StandardEditorNames.WeightPicker,
       },
     };
 
@@ -277,9 +268,9 @@ export class TestUtils {
     const description: PropertyDescription = {
       name: propertyName,
       displayLabel: propertyName,
-      typename: "number",
+      typename: StandardTypeNames.Number,
       editor: {
-        name: "number-custom",
+        name: StandardEditorNames.NumberCustom,
         params: [
           {
             type: PropertyEditorParamTypes.CustomFormattedNumber,
@@ -302,6 +293,29 @@ export class TestUtils {
         description.editor!.params!.push(params);
       });
     }
+
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.isReadonly = false;
+    return propertyRecord;
+  }
+
+  public static createNumericProperty(propertyName: string, numericValue: number, editorName: string, editorParams?: BasePropertyEditorParams[]) {
+
+    const value: PrimitiveValue = {
+      displayValue: "",
+      value: numericValue,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      name: propertyName,
+      displayLabel: propertyName,
+      typename: StandardTypeNames.Number,
+      editor: {
+        name: editorName,
+        params: editorParams,
+      },
+    };
 
     const propertyRecord = new PropertyRecord(value, description);
     propertyRecord.isReadonly = false;

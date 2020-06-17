@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
+import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Rule that allows configuring check boxes for certain nodes.

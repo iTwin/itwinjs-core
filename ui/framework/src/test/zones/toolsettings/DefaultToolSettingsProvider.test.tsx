@@ -2,13 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-import { render, cleanup } from "@testing-library/react";
-
+import * as React from "react";
+import {
+  ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
+  SuppressLabelEditorParams,
+} from "@bentley/ui-abstract";
+import { cleanup, render } from "@testing-library/react";
+import {
+  ConfigurableUiManager, CoreTools, DefaultToolSettingsProvider, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
+  SyncToolSettingsPropertiesEventArgs, ToolUiManager, Widget, Zone,
+} from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
-import { ConfigurableUiManager, DefaultToolSettingsProvider, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, CoreTools, ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../../../ui-framework";
-import { DialogItemValue, DialogItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams, DialogPropertySyncItem, ButtonGroupEditorParams } from "@bentley/ui-abstract";
 
 describe("DefaultToolUiSettingsProvider", () => {
 

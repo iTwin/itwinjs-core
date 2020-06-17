@@ -6,38 +6,17 @@
  * @module Tiles
  */
 
-import {
-  assert,
-  ByteStream,
-} from "@bentley/bentleyjs-core";
-import {
-  Point3d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  BatchType,
-  CompositeTileHeader,
-  TileFormat,
-  ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
-import { Viewport } from "../Viewport";
-import {
-  B3dmReader,
-  BatchedTileIdMap,
-  createDefaultViewFlagOverrides,
-  GltfReader,
-  I3dmReader,
-  RealityTile,
-  Tile,
-  TileContent,
-  TileDrawArgs,
-  TileLoadPriority,
-  TileRequest,
-  readPointCloudTileContent,
-} from "./internal";
+import { assert, ByteStream } from "@bentley/bentleyjs-core";
+import { Point3d, Transform } from "@bentley/geometry-core";
+import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
-import { IModelApp } from "../IModelApp";
+import { Viewport } from "../Viewport";
+import {
+  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfReader, I3dmReader, readPointCloudTileContent, RealityTile, Tile, TileContent,
+  TileDrawArgs, TileLoadPriority, TileRequest,
+} from "./internal";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({ lighting: false });
 

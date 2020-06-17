@@ -6,31 +6,31 @@
  * @module WebGL
  */
 
-import { QPoint3dList, QParams3d, RenderTexture, RenderMode, Npc, QPoint2dList, QParams2d } from "@bentley/imodeljs-common";
-import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Vector2d, Point2d, Vector3d, Angle } from "@bentley/geometry-core";
-import { BufferHandle, QBufferHandle3d, BuffersContainer, BufferParameters, QBufferHandle2d } from "./Handle";
-import { Target } from "./Target";
-import { DrawParams, ShaderProgramParams } from "./DrawCommand";
-import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
-import { RenderPass, RenderOrder, CompositeFlags, FlashMode } from "./RenderFlags";
-import { LineCode } from "./EdgeOverrides";
-import { GL } from "./GL";
-import { System } from "./System";
-import { RenderMemory } from "../RenderMemory";
-import { ColorInfo } from "./ColorInfo";
-import { VertexLUT } from "./VertexLUT";
-import { TextureHandle } from "./Texture";
-import { MaterialInfo } from "./Material";
+import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@bentley/geometry-core";
+import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@bentley/imodeljs-common";
 import { SkyBox } from "../../DisplayStyleState";
-import { InstancedGeometry } from "./InstancedGeometry";
-import { SurfaceGeometry, MeshGeometry, EdgeGeometry, SilhouetteEdgeGeometry } from "./Mesh";
-import { TerrainMeshGeometry } from "./TerrainMesh";
+import { TesselatedPolyline } from "../primitives/VertexTable";
+import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
+import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
+import { DrawParams, ShaderProgramParams } from "./DrawCommand";
+import { LineCode } from "./LineCode";
 import { fromSumOf, FrustumUniformType } from "./FrustumUniforms";
+import { GL } from "./GL";
+import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle2d, QBufferHandle3d } from "./Handle";
+import { InstancedGeometry } from "./InstancedGeometry";
+import { MaterialInfo } from "./Material";
+import { EdgeGeometry, MeshGeometry, SilhouetteEdgeGeometry, SurfaceGeometry } from "./Mesh";
 import { PointCloudGeometry } from "./PointCloud";
+import { CompositeFlags, FlashMode, RenderOrder, RenderPass } from "./RenderFlags";
+import { System } from "./System";
+import { Target } from "./Target";
+import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
+import { TerrainMeshGeometry } from "./TerrainMesh";
+import { TextureHandle } from "./Texture";
+import { VertexLUT } from "./VertexLUT";
 
 const scratchVec3a = new Vector3d();
 const scratchVec3b = new Vector3d();
@@ -271,23 +271,6 @@ export abstract class IndexedGeometry extends CachedGeometry {
 
   public get qOrigin() { return this._params.positions.origin; }
   public get qScale() { return this._params.positions.scale; }
-}
-
-/** A geometric primitive representative of a set of clipping planes to clip a volume of space.
- * @internal
- */
-export class ClipMaskGeometry extends IndexedGeometry {
-  public constructor(indices: Uint32Array, vertices: QPoint3dList) {
-    super(IndexedGeometryParams.createFromList(vertices, indices)!);
-  }
-
-  public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addClipVolume(this._params.positions.bytesUsed + this._params.indices.bytesUsed);
-  }
-
-  public get techniqueId(): TechniqueId { return TechniqueId.ClipMask; }
-  public getRenderPass(_target: Target): RenderPass { return RenderPass.None; }
-  public get renderOrder(): RenderOrder { return RenderOrder.UnlitSurface; }
 }
 
 /** a cube of quads in normalized device coordinates for skybox rendering techniques

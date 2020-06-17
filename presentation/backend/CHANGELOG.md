@@ -1,6 +1,46 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+
+## 2.1.0
+Thu, 28 May 2020 22:48:59 GMT
+
+### Updates
+
+- Pass ruleset variables with request options instead of setting them in variables manager.
+- Added ability to use single manager for all clients
+
+## 2.0.0
+Wed, 06 May 2020 13:17:49 GMT
+
+### Updates
+
+- Clean up deprecated APIs
+- Change argument lists to props object
+- Move some @beta APIs to @public
+- When loading related SpatialLocationType and PhysicalType properties, also load their Aspect properties
+- Fix aspect relationship class names in BisCore supplemental ruleset
+- Fix presentation backend not finding its assets when webpacked
+- Fix assets lookup on electron and add a way to override the path
+- Use correct physical element ID when looking for related functional element when calculating functional-assembly and functional-top-assembly scoped selection
+- Fix functional scopes for `BisCore.GeometricElement3d` elements
+- Added ability to control hierarchy cache location
+- Log when `PresentationManager` instances are created and disposed
+- Return related functional element key when computing 3d element selection
+- Separate tests from source
+- Add ability to set active units system for property values formatting
+- Add ability to compare hierarchies created using different rules
+- Upgrade to Rush 5.23.2
+
+## 1.14.1
+Wed, 22 Apr 2020 19:04:00 GMT
+
+*Version update only*
+
+## 1.14.0
+Tue, 31 Mar 2020 15:44:19 GMT
+
+*Version update only*
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -69,7 +109,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 - Add ability to force-load all hierarchy with the given imodel and ruleset
 - Add module descriptions
 - Added Ruleset and Ruleset variables to request options to make presentation backend stateless
-- upgrade to TypeScript 3.6.2
+- Upgrade to TypeScript 3.6.2
 
 ## 1.4.0
 Tue, 10 Sep 2019 12:09:49 GMT
@@ -118,7 +158,7 @@ Mon, 13 May 2019 15:52:05 GMT
 ### Updates
 
 - Adds parameter for api-extractor to validate missing release tags
-- remove requirement that JavaScript classnames match BIS classnames
+- Remove requirement that JavaScript classnames match BIS classnames
 - Fix broken links
 - Fix marshaling class instances through RPC by removing use of Readonly
 - Fix content requests for BisCore.Element instances when only the base class name is specified (usual case when selecting elements from the viewport)
@@ -151,7 +191,7 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Remove unneeded typedoc plugin dependency
 - Add hardcoded implementations for 'element', 'assembly', 'top-assembly', 'category', 'model' selection scopes
 - RPC Interface changes to optimize getting first page of nodes/content
-- upgrade to TypeScript 3.2.2
+- Upgrade to TypeScript 3.2.2
 
 ## 0.188.0
 Wed, 16 Jan 2019 16:36:09 GMT
@@ -188,14 +228,14 @@ Mon, 07 Jan 2019 13:31:34 GMT
 
 ### Updates
 
-- move to Node 10
+- Move to Node 10
 
 ## 0.181.0
 Fri, 04 Jan 2019 13:02:40 GMT
 
 ### Updates
 
-- move to Node 10
+- Move to Node 10
 
 ## 0.180.0
 Wed, 02 Jan 2019 15:18:23 GMT

@@ -2,24 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles, Cone } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import {
-  AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
-  GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps,
-  ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, Placement3d, PlanProjectionSettings, RelatedElement,
-  SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, TextureFlags,
-} from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
+import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
-  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
-  ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
-  FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
-  InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
-  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SpatialLocationModel, SubCategory, Subject, TemplateRecipe3d, Texture, ViewDefinition, SnapshotDb,
+  Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
+  FontType, GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator,
+  GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, PlanProjectionSettings,
+  RelatedElement, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, TextureFlags,
+} from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import {
+  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d,
+  DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element,
+  ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
+  ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb,
+  IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, Model,
+  ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship,
+  RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SubCategory, Subject, TemplateRecipe3d, Texture,
+  ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -138,7 +142,7 @@ export namespace IModelTransformerUtils {
     const informationRecordId3: Id64String = sourceDb.elements.insertElement(informationRecordProps3);
     assert.isTrue(Id64.isValidId64(informationRecordId3));
     // Insert PhysicalObject1
-    const physicalObjectProps1: GeometricElement3dProps = {
+    const physicalObjectProps1: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
       category: spatialCategoryId,
@@ -153,19 +157,19 @@ export namespace IModelTransformerUtils {
     const physicalObjectId1: Id64String = sourceDb.elements.insertElement(physicalObjectProps1);
     assert.isTrue(Id64.isValidId64(physicalObjectId1));
     // Insert PhysicalObject1 children
-    const childObjectProps1A: GeometricElement3dProps = physicalObjectProps1;
+    const childObjectProps1A: PhysicalElementProps = physicalObjectProps1;
     childObjectProps1A.userLabel = "ChildObject1A";
     childObjectProps1A.parent = new ElementOwnsChildElements(physicalObjectId1);
     childObjectProps1A.placement!.origin = Point3d.create(0, 1, 1);
     const childObjectId1A: Id64String = sourceDb.elements.insertElement(childObjectProps1A);
     assert.isTrue(Id64.isValidId64(childObjectId1A));
-    const childObjectProps1B: GeometricElement3dProps = childObjectProps1A;
+    const childObjectProps1B: PhysicalElementProps = childObjectProps1A;
     childObjectProps1B.userLabel = "ChildObject1B";
     childObjectProps1B.placement!.origin = Point3d.create(1, 0, 1);
     const childObjectId1B: Id64String = sourceDb.elements.insertElement(childObjectProps1B);
     assert.isTrue(Id64.isValidId64(childObjectId1B));
     // Insert PhysicalObject2
-    const physicalObjectProps2: GeometricElement3dProps = {
+    const physicalObjectProps2: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
       category: sourcePhysicalCategoryId,
@@ -180,7 +184,7 @@ export namespace IModelTransformerUtils {
     const physicalObjectId2: Id64String = sourceDb.elements.insertElement(physicalObjectProps2);
     assert.isTrue(Id64.isValidId64(physicalObjectId2));
     // Insert PhysicalObject3
-    const physicalObjectProps3: GeometricElement3dProps = {
+    const physicalObjectProps3: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
       category: sourcePhysicalCategoryId,
@@ -190,7 +194,7 @@ export namespace IModelTransformerUtils {
     };
     const physicalObjectId3: Id64String = sourceDb.elements.insertElement(physicalObjectProps3);
     assert.isTrue(Id64.isValidId64(physicalObjectId3));
-    const sourcePhysicalElementProps: GeometricElement3dProps = {
+    const sourcePhysicalElementProps: PhysicalElementProps = {
       classFullName: "TestTransformerSource:SourcePhysicalElement",
       model: physicalModelId,
       category: sourcePhysicalCategoryId,
@@ -208,7 +212,7 @@ export namespace IModelTransformerUtils {
       commonString: "Common",
       commonDouble: 7.3,
       extraString: "Extra",
-    } as GeometricElement3dProps;
+    } as PhysicalElementProps;
     const sourcePhysicalElementId: Id64String = sourceDb.elements.insertElement(sourcePhysicalElementProps);
     assert.isTrue(Id64.isValidId64(sourcePhysicalElementId));
     assert.doesNotThrow(() => sourceDb.elements.getElement(sourcePhysicalElementId));
@@ -770,7 +774,7 @@ export namespace IModelTransformerUtils {
     const physicalModelId = PhysicalModel.insert(teamDb, IModel.rootSubjectId, `Physical${teamName}`);
     assert.isTrue(Id64.isValidId64(physicalModelId));
     // insert PhysicalObject-team1 using team SpatialCategory
-    const physicalObjectProps1: GeometricElement3dProps = {
+    const physicalObjectProps1: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
       category: teamSpatialCategoryId,
@@ -785,7 +789,7 @@ export namespace IModelTransformerUtils {
     const physicalObjectId1: Id64String = teamDb.elements.insertElement(physicalObjectProps1);
     assert.isTrue(Id64.isValidId64(physicalObjectId1));
     // insert PhysicalObject2 using "shared" SpatialCategory
-    const physicalObjectProps2: GeometricElement3dProps = {
+    const physicalObjectProps2: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
       category: sharedSpatialCategoryId,
@@ -869,7 +873,7 @@ export namespace IModelTransformerUtils {
     // Cylinder component
     const cylinderTemplateId: Id64String = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Cylinder");
     assert.exists(iModelDb.models.getModel<PhysicalModel>(cylinderTemplateId));
-    const cylinderProps: GeometricElement3dProps = {
+    const cylinderProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: cylinderTemplateId,
       category: componentCategoryId,
@@ -882,7 +886,7 @@ export namespace IModelTransformerUtils {
     // Assembly component
     const assemblyTemplateId: Id64String = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Assembly");
     assert.exists(iModelDb.models.getModel<PhysicalModel>(assemblyTemplateId));
-    const assemblyHeadProps: GeometricElement3dProps = {
+    const assemblyHeadProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: assemblyTemplateId,
       category: componentCategoryId,
@@ -892,7 +896,7 @@ export namespace IModelTransformerUtils {
       geom: createCylinder(1),
     };
     const assemblyHeadId: Id64String = iModelDb.elements.insertElement(assemblyHeadProps);
-    const childBoxProps: GeometricElement3dProps = {
+    const childBoxProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: assemblyTemplateId,
       category: componentCategoryId,

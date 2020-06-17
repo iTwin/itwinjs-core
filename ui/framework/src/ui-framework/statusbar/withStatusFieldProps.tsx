@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-
 import { StatusFieldProps } from "../statusfields/StatusFieldProps";
 import { StatusBarContext } from "./StatusBar";
 

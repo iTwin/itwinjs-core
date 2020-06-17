@@ -7,11 +7,9 @@
  */
 
 import * as React from "react";
-
-import { TargetChangeHandler } from "../frontstage/FrontstageComposer";
-
-import { MergeTarget, BackTarget, WidgetZoneId, ZoneTargetType } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
+import { BackTarget, MergeTarget, WidgetZoneId, ZoneTargetType } from "@bentley/ui-ninezone";
+import { TargetChangeHandler } from "../frontstage/FrontstageComposer";
 
 /** Properties for the [[ZoneTargets]] component.
  * @internal

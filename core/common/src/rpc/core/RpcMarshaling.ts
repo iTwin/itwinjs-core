@@ -8,9 +8,9 @@
 
 // tslint:disable:no-string-literal
 
+import { Readable } from "stream";
 import { BentleyStatus, IModelError } from "../../IModelError";
 import { RpcProtocol } from "./RpcProtocol";
-import { Readable } from "stream";
 
 let marshalingTarget: RpcSerializedValue;
 let chunkThreshold = 0;

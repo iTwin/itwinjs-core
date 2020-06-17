@@ -7,24 +7,22 @@
  */
 
 import * as React from "react";
-
+import { Logger } from "@bentley/bentleyjs-core";
 import {
-  CommonToolbarItem, ToolbarItemsManager, ToolbarUsage, ToolbarOrientation, ToolbarItemUtilities,
-  GroupButton, ActionButton, ConditionalBooleanValue,
+  ActionButton, CommonToolbarItem, ConditionalBooleanValue, GroupButton, ToolbarItemsManager, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
 } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { ToolbarWithOverflow } from "@bentley/ui-components";
-import { Logger } from "@bentley/bentleyjs-core";
-import { Direction, ToolbarPanelAlignment, Toolbar } from "@bentley/ui-ninezone";
+import { ToolbarItem, ToolbarOpacitySetting, ToolbarWithOverflow } from "@bentley/ui-components";
+import { Direction, Toolbar, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
+import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
+import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { ToolbarHelper } from "./ToolbarHelper";
 import { useDefaultToolbarItems } from "./useDefaultToolbarItems";
 import { useUiItemsProviderToolbarItems } from "./useUiItemsProviderToolbarItems";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
-import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
-import { ToolbarDragInteractionContext } from "./DragInteraction";
-import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
-import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 /** Private function to set up sync event monitoring of toolbar items */
 function useToolbarItemSyncEffect(itemsManager: ToolbarItemsManager, syncIdsOfInterest: string[]) {
@@ -76,9 +74,13 @@ function nestedAddItemToSpecifiedParentGroup(items: ReadonlyArray<ActionButton |
       }
     });
 
+    // istanbul ignore else
     if (foundIndices.length) {
       // process in reverse order so groupChildren can be reduced as we find matches
-      foundIndices.sort((a, b) => a - b).reverse().forEach((foundIndex) => {
+      foundIndices.sort(
+        // istanbul ignore next
+        (a, b) => a - b,
+      ).reverse().forEach((foundIndex) => {
         newChildren.push(groupChildren[foundIndex]);
         groupChildren.splice(foundIndex);
       });
@@ -109,7 +111,10 @@ function addItemToSpecifiedParentGroup(items: readonly CommonToolbarItem[], grou
     // istanbul ignore else
     if (foundIndices.length) {
       // process in reverse order so groupChildren can be reduced as we find matches
-      foundIndices.sort((a, b) => a - b).reverse().forEach((foundIndex) => {
+      foundIndices.sort(
+        // istanbul ignore next
+        (a, b) => a - b,
+      ).reverse().forEach((foundIndex) => {
         newChildren.push(groupChildren[foundIndex]);
         groupChildren.splice(foundIndex);
       });
@@ -133,10 +138,15 @@ function cloneGroup(inGroup: GroupButton): GroupButton {
   return clonedGroup;
 }
 
+function getItemSortValue(item: ToolbarItem) {
+  const groupValue = undefined === item.groupPriority ? 0 : /* istanbul ignore next */ item.groupPriority;
+  return groupValue * 10000 + item.itemPriority;
+}
+
 function getSortedChildren(group: GroupButton): ReadonlyArray<ActionButton | GroupButton> {
   const sortedChildren = group.items
     .filter((item) => !(ConditionalBooleanValue.getValue(item.isHidden)))
-    .sort((a, b) => a.itemPriority - b.itemPriority)
+    .sort((a, b) => getItemSortValue(a) - getItemSortValue(b))
     .map((i) => {
       if (ToolbarItemUtilities.isGroupButton(i)) {
         return { ...i, items: getSortedChildren(i) };
@@ -146,7 +156,7 @@ function getSortedChildren(group: GroupButton): ReadonlyArray<ActionButton | Gro
   return sortedChildren;
 }
 
-/** local function to combine items from Stage and from Plugins */
+/** local function to combine items from Stage and from Extensions */
 function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems: ReadonlyArray<CommonToolbarItem>) {
   let items: CommonToolbarItem[] = [];
   const groupChildren: Array<ActionButton | GroupButton> = [];
@@ -188,7 +198,7 @@ function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems
 
   const availableItems = items
     .filter((item) => !(ConditionalBooleanValue.getValue(item.isHidden)))
-    .sort((a, b) => a.itemPriority - b.itemPriority)
+    .sort((a, b) => getItemSortValue(a) - getItemSortValue(b))
     .map((i) => {
       if (ToolbarItemUtilities.isGroupButton(i)) {
         return { ...i, items: getSortedChildren(i) };
@@ -202,7 +212,8 @@ function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems
 const useProximityOpacitySetting = () => {
   const [proximityOpacity, setProximityOpacity] = React.useState(UiShowHideManager.useProximityOpacity);
   React.useEffect(() => {
-    const handleUiVisibilityChanged = (_args: UiVisibilityEventArgs) => {
+    // istanbul ignore next
+    const handleUiVisibilityChanged = () => {
       setProximityOpacity(UiShowHideManager.useProximityOpacity);
     };
     UiFramework.onUiVisibilityChanged.addListener(handleUiVisibilityChanged);
@@ -287,7 +298,7 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
     panelAlignment={panelAlignment}
     items={toolbarItems}
     useDragInteraction={isDragEnabled}
-    useProximityOpacity={useProximityOpacity && !UiFramework.isMobile()}
+    toolbarOpacitySetting={useProximityOpacity && !UiFramework.isMobile() ? ToolbarOpacitySetting.Proximity : /* istanbul ignore next */ ToolbarOpacitySetting.Defaults}
   />;
 
 }

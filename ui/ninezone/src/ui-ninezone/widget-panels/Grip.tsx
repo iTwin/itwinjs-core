@@ -6,20 +6,20 @@
  * @module WidgetPanels
  */
 
+import "./Grip.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Point, Rectangle, Timer } from "@bentley/ui-core";
-import { PanelSide, isHorizontalPanelSide, PanelStateContext } from "./Panel";
-import { NineZoneDispatchContext } from "../base/NineZone";
-import { PANEL_TOGGLE_COLLAPSED, PANEL_RESIZE } from "../base/NineZoneState";
 import { assert } from "../base/assert";
 import { useDragPanelGrip, UseDragPanelGripArgs } from "../base/DragManager";
-import "./Grip.scss";
+import { NineZoneDispatchContext } from "../base/NineZone";
+import { isHorizontalPanelSide, PanelSide, PanelStateContext } from "./Panel";
 
 /** Resize grip of [[WidgetPanel]] component.
  * @internal
  */
 export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint:disable-line: variable-name no-shadowed-variable
+  const [active, setActive] = React.useState(false);
   const panel = React.useContext(PanelStateContext);
   assert(panel);
   const dispatch = React.useContext(NineZoneDispatchContext);
@@ -27,7 +27,7 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint
   const initialPointerPosition = React.useRef<Point>();
   const handleResize = React.useCallback((resizeBy: number) => {
     dispatch({
-      type: PANEL_RESIZE,
+      type: "PANEL_RESIZE",
       side,
       resizeBy,
     });
@@ -35,20 +35,24 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint
   const dragStartTimer = React.useRef(new Timer(300));
   const handleDoubleClick = React.useCallback(() => {
     dispatch({
-      type: PANEL_TOGGLE_COLLAPSED,
+      type: "PANEL_TOGGLE_COLLAPSED",
       side,
     });
   }, [dispatch, side]);
+  const [handleClick] = useDoubleClick(handleDoubleClick);
   const [handleResizeStart, ref, resizing] = useResizeGrip<HTMLDivElement>(side, handleResize);
   const handlePointerDown = React.useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     initialPointerPosition.current = new Point(e.clientX, e.clientY);
     dragStartTimer.current.start();
+    setActive(true);
   }, []);
   const handlePointerUp = React.useCallback(() => {
     initialPointerPosition.current = undefined;
     dragStartTimer.current.stop();
-  }, []);
+    handleClick();
+    setActive(false);
+  }, [handleClick]);
   const handlePointerMove = React.useCallback((e: React.PointerEvent) => {
     if (!initialPointerPosition.current)
       return;
@@ -69,13 +73,13 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint
   const className = classnames(
     "nz-widgetPanels-grip",
     `nz-${side}`,
+    active && "nz-active",
     panel.collapsed && "nz-collapsed",
     resizing && "nz-resizing",
   );
   return (
     <div
       className={className}
-      onDoubleClick={handleDoubleClick}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -135,3 +139,26 @@ export const useResizeGrip = <T extends HTMLElement>(
 
   return [handlePointerDown, ref, resizing];
 };
+
+/** @internal */
+export function useDoubleClick(onDoubleClick?: () => void): [
+  () => void
+] {
+  const timer = React.useRef(new Timer(300));
+  const clickCount = React.useRef(0);
+  timer.current.setOnExecute(() => {
+    clickCount.current = 0;
+  });
+  const handleClick = React.useCallback(() => {
+    timer.current.start();
+    clickCount.current++;
+    if (clickCount.current === 2) {
+      onDoubleClick && onDoubleClick();
+      clickCount.current = 0;
+      timer.current.stop();
+    }
+  }, [onDoubleClick]);
+  return [
+    handleClick,
+  ];
+}

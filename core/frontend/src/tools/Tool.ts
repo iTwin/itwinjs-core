@@ -8,12 +8,12 @@
 
 import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
-import { I18NNamespace, I18N } from "@bentley/imodeljs-i18n";
+import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
+import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 
@@ -336,14 +336,12 @@ export class Tool {
   /** The minimum number of arguments allowed by [[parseAndRun]]. If subclasses override [[parseAndRun]], they should also
    * override this method to indicate the minimum number of arguments their implementation expects. UI controls can use
    * this information to ensure the tool has enough information to execute.
-   * @beta
    */
   public static get minArgs(): number { return 0; }
 
   /** The maximum number of arguments allowed by [[parseAndRun]], or undefined if there is no maximum.
    * If subclasses override [[parseAndRun]], they should also override this method to indicate the maximum
    * number of arguments their implementation expects.
-   * @beta
    */
   public static get maxArgs(): number | undefined { return 0; }
 
@@ -436,7 +434,6 @@ export class Tool {
    * @note if you override this method, you must also override the static [[minArgs]] and [[maxArgs]] getters.
    * @note Generally, implementers of this method are **not** expected to call `super.parseAndRun(...)`. Instead, call your
    * [[run]] method with the appropriate (parsed) arguments directly.
-   * @beta
    */
   public parseAndRun(..._args: string[]): boolean {
     return this.run();

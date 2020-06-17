@@ -7,16 +7,15 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import {
-  createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
-  createRandomECClassInfo, createRandomECInstanceKey, createRandomRelationshipPath,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
-import {
-  PresentationError,
-  PropertyValueFormat, PrimitiveTypeDescription, PropertiesField, Property, Item,
-  ArrayTypeDescription, StructTypeDescription, NestedContentField, NestedContentValue,
+  ArrayTypeDescription, Item, NestedContentField, NestedContentValue, PresentationError, PrimitiveTypeDescription, PropertiesField, Property,
+  PropertyValueFormat, StructTypeDescription,
 } from "@bentley/presentation-common";
+import {
+  createRandomCategory, createRandomECClassInfo, createRandomECInstanceKey, createRandomPrimitiveField, createRandomPrimitiveTypeDescription,
+  createRandomRelationshipPath,
+} from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PrimitiveValue } from "@bentley/ui-abstract";
-import { ContentBuilder, getLinks, FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
+import { ContentBuilder, FIELD_NAMES_SEPARATOR, getLinks } from "../../presentation-components/common/ContentBuilder";
 
 describe("ContentBuilder", () => {
 

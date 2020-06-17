@@ -3,15 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseStatus, ClientRequestContext, GuidString, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { Briefcase as HubBriefcase, BriefcaseQuery, HubIModel } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
-import { BriefcaseDownloader, BriefcaseProps, IModelError, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as os from "os";
+import * as path from "path";
 import * as readline from "readline";
-import { AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseEntry, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs } from "../../imodeljs-backend";
+import { BriefcaseStatus, ClientRequestContext, GuidString, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { Briefcase as HubBriefcase, BriefcaseQuery, HubIModel } from "@bentley/imodelhub-client";
+import { BriefcaseDownloader, BriefcaseProps, IModelError, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import {
+  AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseEntry, BriefcaseIdValue, BriefcaseManager, Element, IModelDb,
+  IModelHost, IModelHostConfiguration, IModelJsFs, KnownLocations,
+} from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
@@ -26,6 +30,7 @@ async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext
 
 describe("BriefcaseManager (#integration)", () => {
   let testProjectId: string;
+  const testProjectName = "iModelJsIntegrationTest";
 
   let readOnlyTestIModel: TestIModelInfo;
   const readOnlyTestVersions = ["FirstVersion", "SecondVersion", "ThirdVersion"];
@@ -61,16 +66,20 @@ describe("BriefcaseManager (#integration)", () => {
     // IModelTestUtils.setupDebugLogLevels();
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
+    testProjectId = await HubUtility.queryProjectIdByName(requestContext, testProjectName);
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadOnlyTest");
     noVersionsTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "NoVersionsTest");
     readWriteTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadWriteTest");
 
     // Purge briefcases that are close to reaching the acquire limit
+    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "ReadOnlyTest");
+    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "NoVersionsTest");
+    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "ReadWriteTest");
+    await HubUtility.purgeAcquiredBriefcases(requestContext, testProjectName, "Stadium Dataset 1");
     managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
-    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
-    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "NoVersionsTest");
-    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadWriteTest");
+    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "ReadOnlyTest");
+    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "NoVersionsTest");
+    await HubUtility.purgeAcquiredBriefcases(managerRequestContext, testProjectName, "ReadWriteTest");
   });
 
   after(() => {
@@ -316,6 +325,39 @@ describe("BriefcaseManager (#integration)", () => {
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelPullAndPush2);
   });
 
+  it("should set the briefcase cache directory to expected locations", async () => {
+    const config = new IModelHostConfiguration();
+    const cacheSubDir = `v${(BriefcaseManager as any)._cacheMajorVersion}_${(BriefcaseManager as any)._cacheMinorVersion}`;
+
+    // Test legacy 1.0 cache location
+    await IModelHost.shutdown();
+    config.briefcaseCacheDir = path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"); // tslint:disable-line:deprecation
+    await IModelHost.startup(config);
+    let expectedDir = path.join(path.normalize(config.briefcaseCacheDir), cacheSubDir); // tslint:disable-line:deprecation
+    assert.strictEqual(expectedDir, (BriefcaseManager as any).cacheDir); // tslint:disable-line:deprecation
+
+    // Test 2.0 cache default location
+    await IModelHost.shutdown();
+    config.briefcaseCacheDir = undefined; // tslint:disable-line:deprecation
+    await IModelHost.startup(config);
+    expectedDir = path.join((IModelHost as any).getDefaultCacheDir(), "bc", cacheSubDir);
+    assert.strictEqual(expectedDir, (BriefcaseManager as any).cacheDir);
+
+    // Test 2.0 custom cache location
+    await IModelHost.shutdown();
+    config.briefcaseCacheDir = undefined; // tslint:disable-line:deprecation
+    config.cacheDir = KnownLocations.tmpdir;
+    await IModelHost.startup(config);
+    expectedDir = path.join(KnownLocations.tmpdir, "bc", cacheSubDir);
+    assert.strictEqual(expectedDir, (BriefcaseManager as any).cacheDir);
+
+    // Restore defaults
+    await IModelHost.shutdown();
+    config.briefcaseCacheDir = undefined; // tslint:disable-line:deprecation
+    config.cacheDir = undefined;
+    await IModelHost.startup(config);
+  });
+
   it("should be able to reuse existing briefcases from a previous session", async () => {
     let iModelShared = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion, IModelVersion.latest());
     assert.exists(iModelShared);
@@ -368,7 +410,7 @@ describe("BriefcaseManager (#integration)", () => {
   // TODO: This test succeeds on Linux when it's expected to fail
   it.skip("should be able to gracefully error out if a bad cache dir is specified", async () => {
     const config = new IModelHostConfiguration();
-    config.briefcaseCacheDir = "\\\\blah\\blah\\blah";
+    config.cacheDir = "\\\\blah\\blah\\blah";
     await IModelTestUtils.shutdownBackend();
 
     let exceptionThrown = false;
@@ -430,22 +472,14 @@ describe("BriefcaseManager (#integration)", () => {
     let exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId1);
     assert.isTrue(exists);
 
-    const iModel2 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullOnly, IModelVersion.latest());
-    const briefcaseId2: number = iModel2.briefcase.briefcaseId;
-    exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId2);
-    assert.isTrue(exists);
-
     await BriefcaseManager.purgeCache(managerRequestContext);
 
     exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId1);
     assert.isFalse(exists);
-
-    exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId2);
-    assert.isFalse(exists);
   });
 
   it("Open iModel-s with various names causing potential issues on Windows/Unix", async () => {
-    const projectId: string = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
+    const projectId: string = await HubUtility.queryProjectIdByName(managerRequestContext, testProjectName);
 
     let iModelName = "iModel Name With Spaces";
     let iModelId = await createIModelOnHub(managerRequestContext, projectId, iModelName);
@@ -471,26 +505,31 @@ describe("BriefcaseManager (#integration)", () => {
     assert.isDefined(iModel);
   });
 
-  it("should reuse a briefcaseId when re-opening iModel-s for pullOnly and pullAndPush workflows", async () => {
+  it("should set appropriate briefcae ids for FixedVersion, PullOnly and PullAndPush workflows", async () => {
+    const iModel1 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.FixedVersion, IModelVersion.latest());
+    assert.equal(BriefcaseIdValue.Standalone, iModel1.briefcase.briefcaseId);
+
+    const iModel2 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullOnly, IModelVersion.latest());
+    assert.equal(BriefcaseIdValue.Standalone, iModel2.briefcase.briefcaseId);
+
+    const iModel3 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
+    assert.isTrue(iModel3.briefcase.briefcaseId >= BriefcaseIdValue.FirstValid && iModel3.briefcase.briefcaseId <= BriefcaseIdValue.LastValid);
+
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel1);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel2);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel3);
+  });
+
+  it("should reuse a briefcaseId when re-opening iModel-s for pullAndPush workflows", async () => {
     const iModel1 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
     const briefcaseId1: number = iModel1.briefcase.briefcaseId;
-    const iModel2 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullOnly, IModelVersion.latest());
-    const briefcaseId2: number = iModel2.briefcase.briefcaseId;
-    assert.notStrictEqual(briefcaseId1, briefcaseId2); // PullOnly and PullAndPush should allocate different briefcase ids
-
     iModel1.close(); // Keeps the briefcase by default
-    iModel2.close(); // Keeps the briefcase by default
 
     const iModel3 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullAndPush, IModelVersion.latest());
     const briefcaseId3: number = iModel3.briefcase.briefcaseId;
     assert.strictEqual(briefcaseId3, briefcaseId1);
 
-    const iModel4 = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, testProjectId, readOnlyTestIModel.id, SyncMode.PullOnly, IModelVersion.latest());
-    const briefcaseId4: number = iModel4.briefcase.briefcaseId;
-    assert.strictEqual(briefcaseId4, briefcaseId2);
-
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel3);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel4);
   });
 
   it("should reuse a briefcaseId when re-opening iModel-s of different versions for pullAndPush and pullOnly workflows", async () => {

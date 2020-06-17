@@ -14,13 +14,12 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { Block } from "./Block";
-
 import { Coordinate } from "../../spatial/geom/Coordinate";
+import { StringMap } from "../../system/collection/StringMap";
 import { BlockIndex } from "../model/BlockIndex";
 import { Grid } from "../model/Grid";
 import { GridIndex } from "../model/GridIndex";
-import { StringMap } from "../../system/collection/StringMap";
+import { Block } from "./Block";
 
 /**
  * Class Level defines a resolution level of a pointcloud.

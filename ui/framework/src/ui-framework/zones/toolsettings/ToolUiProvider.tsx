@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { ConfigurableUiControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 import { UiDataProvider } from "@bentley/ui-abstract";
+import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
 import { ToolSettingsEntry } from "../../widget-panels/ToolSettings";
 
 /**
@@ -38,6 +38,7 @@ export class ToolUiProvider extends ConfigurableUiControl {
 
   /** Tool Settings Data Provider */
   public get dataProvider(): UiDataProvider | undefined { return this._dataProvider; }
+  // istanbul ignore next
   public set dataProvider(d: UiDataProvider | undefined) { this._dataProvider = d; }
 
   /** Gets the type of ConfigurableUiControl, which is 'ToolUiProvider' in this case */

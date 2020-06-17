@@ -6,12 +6,11 @@
  * @module SearchBox
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { CommonProps } from "../utils/Props";
-import { UiCore } from "../UiCore";
-
 import "./SearchBox.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { UiCore } from "../UiCore";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for [[SearchBox]] component
  * @public

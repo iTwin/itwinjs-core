@@ -14,16 +14,15 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { CRS } from "./CRS";
-import { DataFileUnit } from "./DataFileUnit";
-import { Operation } from "./Operation";
-import { Unit } from "./Unit";
-
 import { AList } from "../../system/collection/AList";
 import { StringMap } from "../../system/collection/StringMap";
 import { ASystem } from "../../system/runtime/ASystem";
 import { Numbers } from "../../system/runtime/Numbers";
 import { Strings } from "../../system/runtime/Strings";
+import { CRS } from "./CRS";
+import { DataFileUnit } from "./DataFileUnit";
+import { Operation } from "./Operation";
+import { Unit } from "./Unit";
 
 /**
  * Class Registry defines the EPSG registry of coordinate reference systems (CRS).

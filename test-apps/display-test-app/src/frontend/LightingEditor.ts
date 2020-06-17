@@ -3,28 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput, createTextBox } from "@bentley/frontend-devtools";
 import { Vector3d } from "@bentley/geometry-core";
-import {
-  ColorDef,
-  LightSettings,
-  LightSettingsProps,
-  RenderMode,
-  RgbColor,
-  SolarShadowSettings,
-  ViewFlags,
-} from "@bentley/imodeljs-common";
-import {
-  Viewport,
-  ViewState,
-} from "@bentley/imodeljs-frontend";
-import {
-  CheckBox,
-  createButton,
-  createCheckBox,
-  createColorInput,
-  createLabeledNumericInput,
-  createTextBox,
-} from "@bentley/frontend-devtools";
+import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings, ViewFlags } from "@bentley/imodeljs-common";
+import { Viewport, ViewState } from "@bentley/imodeljs-frontend";
 
 type Update = (view: ViewState) => void;
 
@@ -49,6 +31,18 @@ export class LightingEditor {
     this.addAmbient(content);
     this.addHemisphere(content);
 
+    const celInput = createLabeledNumericInput({
+      parent: content,
+      min: 0,
+      max: 255,
+      step: 1,
+      display: "block",
+      name: "Num Cels",
+      id: this._nextId,
+      value: vp.view.displayStyle.is3d() ? vp.view.displayStyle.lights.numCels : 0,
+      handler: (value) => this.updateSettings({ numCels: value }),
+    });
+
     const resetButton = createButton({
       parent: content,
       value: "Reset",
@@ -62,6 +56,8 @@ export class LightingEditor {
     this._updates.push((view: ViewState) => {
       const visible = view.is3d() && view.viewFlags.lighting;
       content.style.display = visible ? "" : "none";
+      if (view.displayStyle.is3d())
+        celInput.input.value = view.displayStyle.lights.numCels.toString();
     });
   }
 

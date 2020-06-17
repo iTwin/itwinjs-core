@@ -3,10 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-
 import { LogLevel } from "@bentley/bentleyjs-core";
 import { DevTools, IModelConnection } from "@bentley/imodeljs-frontend";
-
 import { TestContext } from "./setup/TestContext";
 
 describe("DevTools", () => {

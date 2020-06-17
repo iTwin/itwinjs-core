@@ -7,17 +7,17 @@
  */
 
 import {
-  assert, BeEvent, BentleyStatus, BeTimePoint, DbResult, Dictionary, dispose, Id64, Id64Arg, Id64Array, Id64Set,
-  Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence, DbOpcode, GuidString,
+  assert, BeEvent, BentleyStatus, DbResult, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, BisCodeSpec, BriefcaseProps, Cartographic, CodeProps, CodeSpec, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams,
-  FontMap, FontMapProps, GeoCoordStatus, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus, IModelRpcProps, IModelVersion, IModelWriteRpcInterface,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
-  RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance,
-  ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, RpcManager,
+  AxisAlignedBox3d, BriefcaseProps, Cartographic, CodeSpec, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap, FontMapProps,
+  GeoCoordStatus, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion,
+  IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit,
+  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent,
+  SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
+import { EditingFunctions } from "./EditingFunctions";
 import { EntityState } from "./EntityState";
 import { EventSource, EventSourceManager } from "./EventSource";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -27,9 +27,8 @@ import { IModelApp } from "./IModelApp";
 import { ModelState } from "./ModelState";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
+import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
-import { LockLevel } from "@bentley/imodelhub-client";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -74,7 +73,7 @@ export abstract class IModelConnection extends IModel {
   /** The set of Tiles for this IModelConnection.
    * @beta
    */
-  public readonly tiles: IModelConnection.Tiles;
+  public readonly tiles: Tiles;
   /** A cache of information about SubCategories chiefly used for rendering.
    * @internal
    */
@@ -98,14 +97,14 @@ export abstract class IModelConnection extends IModel {
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
 
-  private _editing: IModelConnection.EditingFunctions | undefined;
+  private _editing: EditingFunctions | undefined;
 
   /** General editing functions
    * @alpha
    */
-  public get editing(): IModelConnection.EditingFunctions {
+  public get editing(): EditingFunctions {
     if (this._editing === undefined)
-      this._editing = new IModelConnection.EditingFunctions(this);
+      this._editing = new EditingFunctions(this);
     return this._editing;
   }
 
@@ -203,6 +202,12 @@ export abstract class IModelConnection extends IModel {
     // wait until we get the full list of base classes from backend
     if (this.isOpen) {
       const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.getRpcProps(), className);
+
+      // Make sure some other async code didn't register this class while we were await-ing above
+      ctor = IModelApp.lookupEntityClass(className) as T | undefined;
+      if (undefined !== ctor)
+        return ctor;
+
       // walk through the list until we find a registered base class
       baseClasses.some((baseClass: string) => {
         const test = IModelApp.lookupEntityClass(baseClass) as T | undefined;
@@ -227,7 +232,7 @@ export abstract class IModelConnection extends IModel {
     this.views = new IModelConnection.Views(this);
     this.selectionSet = new SelectionSet(this);
     this.hilited = new HiliteSet(this);
-    this.tiles = new IModelConnection.Tiles(this);
+    this.tiles = new Tiles(this);
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
@@ -321,7 +326,6 @@ export abstract class IModelConnection extends IModel {
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
-   * @beta
    */
   public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
     let result: QueryResponse;
@@ -386,7 +390,7 @@ export abstract class IModelConnection extends IModel {
 
   private _toolTipRpc = new OneAtATimeAction<string[]>((id: string) => IModelReadRpcInterface.getClient().getToolTipMessage(this.getRpcProps(), id));
   /** Request a tooltip from the backend.
-   * @note callers must gracefully handle Promise rejected with AbandonedError
+   * @note If another call to this method occurs before preceding call(s) return, all preceding calls will be abandoned - only the most recent will resolve. Therefore callers must gracefully handle Promise rejected with AbandonedError.
    */
   public async getToolTipMessage(id: Id64String): Promise<string[]> {
     return this.isOpen ? this._toolTipRpc.request(id) : [];
@@ -408,16 +412,18 @@ export abstract class IModelConnection extends IModel {
       this._noGcsDefined = true;
 
     if (this._noGcsDefined)
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     const geoConverter = this.geoServices.getConverter()!;
     const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([spatial]);
 
     if (this._noGcsDefined = (1 !== coordResponse.geoCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.geoCoords[0].s))
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    if (GeoCoordStatus.Success !== coordResponse.geoCoords[0].s)
-      throw new IModelError(IModelStatus.BadRequest, "Error converting spatial to cartographic");
+    if (GeoCoordStatus.Success !== coordResponse.geoCoords[0].s) {
+      const geoServiceStatus = mapToGeoServiceStatus(coordResponse.geoCoords[0].s);
+      throw new IModelError(geoServiceStatus, "Error converting spatial to cartographic");
+    }
 
     const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
     return Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z, result);
@@ -454,17 +460,19 @@ export abstract class IModelConnection extends IModel {
       this._noGcsDefined = true;
 
     if (this._noGcsDefined)
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
     const geoConverter = this.geoServices.getConverter()!;
     const geoCoord = Point3d.create(cartographic.longitudeDegrees, cartographic.latitudeDegrees, cartographic.height); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
     const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoCoord]);
 
     if (this._noGcsDefined = (1 !== coordResponse.iModelCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.iModelCoords[0].s))
-      throw new IModelError(IModelStatus.NoGeoLocation, "iModel is not GeoLocated");
+      throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    if (GeoCoordStatus.Success !== coordResponse.iModelCoords[0].s)
-      throw new IModelError(IModelStatus.BadRequest, "Error converting cartographic to spatial");
+    if (GeoCoordStatus.Success !== coordResponse.iModelCoords[0].s) {
+      const geoServiceStatus = mapToGeoServiceStatus(coordResponse.iModelCoords[0].s);
+      throw new IModelError(geoServiceStatus, "Error converting cartographic to spatial");
+    }
 
     result = result ? result : Point3d.createZero();
     result.setFromJSON(coordResponse.iModelCoords[0].p);
@@ -836,6 +844,8 @@ export class SnapshotConnection extends IModelConnection {
    * @note This method is intended for desktop or mobile applications and should not be used for web applications.
    */
   public static async openFile(filePath: string): Promise<SnapshotConnection> {
+    RpcManager.setIModel({ iModelId: "undefined", key: filePath });
+
     const openResponse = await SnapshotIModelRpcInterface.getClient().openFile(filePath);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
     const connection = new SnapshotConnection(openResponse);
@@ -847,6 +857,8 @@ export class SnapshotConnection extends IModelConnection {
    * @note This method is primarily intended for web applications.
    */
   public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
+    RpcManager.setIModel({ iModelId: "undefined", key: fileKey });
+
     const openResponse = await SnapshotIModelRpcInterface.getClient().openRemote(fileKey);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
     const connection = new SnapshotConnection(openResponse);
@@ -920,7 +932,6 @@ export namespace IModelConnection {
     /** Given a set of modelIds, return the subset of corresponding models that are not currently loaded.
      * @param modelIds The set of model Ids
      * @returns The subset of the supplied Ids corresponding to models that are not currently loaded, or undefined if all of the specified models are loaded.
-     * @beta
      */
     public filterLoaded(modelIds: Id64Arg): Id64Set | undefined {
       let unloaded: Set<string> | undefined;
@@ -951,7 +962,9 @@ export namespace IModelConnection {
             this.loaded.set(modelState.id, modelState as ModelState); // save it in loaded set
           }
         }
-      } catch (err) { } // ignore error, we had nothing to do.
+      } catch (err) {
+        // ignore error, we had nothing to do.
+      }
     }
 
     /** Query for a set of model ranges by ModelIds. */
@@ -968,7 +981,7 @@ export namespace IModelConnection {
       const iModel = this._iModel;
       if (!iModel.isOpen)
         return [];
-      const params: ModelQueryParams = Object.assign({}, queryParams); // make a copy
+      const params: ModelQueryParams = { ...queryParams }; // make a copy
       params.from = queryParams.from || ModelState.classFullName; // use "BisCore:Model" as default class name
       params.where = queryParams.where || "";
       if (!queryParams.wantPrivate) {
@@ -1045,12 +1058,12 @@ export namespace IModelConnection {
      */
     public async getById(codeSpecId: Id64String): Promise<CodeSpec> {
       if (!Id64.isValid(codeSpecId))
-        return Promise.reject(new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggerCategory, () => ({ codeSpecId })));
+        throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggerCategory, () => ({ codeSpecId }));
 
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
       if (!found)
-        return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory));
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory);
 
       return found;
     }
@@ -1064,7 +1077,7 @@ export namespace IModelConnection {
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.name === name);
       if (!found)
-        return Promise.reject(new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory));
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory);
 
       return found;
     }
@@ -1084,7 +1097,7 @@ export namespace IModelConnection {
       if (iModel.isClosed)
         return [];
 
-      const params: ViewQueryParams = Object.assign({}, queryParams); // make a copy
+      const params: ViewQueryParams = { ...queryParams }; // make a copy
       params.from = queryParams.from || ViewState.classFullName; // use "BisCore:ViewDefinition" as default class name
       params.where = queryParams.where || "";
       if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {
@@ -1129,7 +1142,7 @@ export namespace IModelConnection {
       const className = viewProps.viewDefinitionProps.classFullName;
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
       if (undefined === ctor)
-        return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps));
+        throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps);
 
       const viewState = ctor.createFromProps(viewProps, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector
@@ -1146,7 +1159,7 @@ export namespace IModelConnection {
       const intValues = new Uint32Array(val.buffer, 0, 4);
 
       if (intValues[1] !== ImageSourceFormat.Jpeg && intValues[1] !== ImageSourceFormat.Png)
-        return Promise.reject(new Error("Invalid thumbnail"));
+        throw new Error("Invalid thumbnail");
 
       return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
     }
@@ -1165,404 +1178,6 @@ export namespace IModelConnection {
       new Uint32Array(val.buffer, 16, 2).set([low32, high32]); // viewId is 8 bytes starting at offset 16
       val.set(thumbnail.image, 24); // image data at offset 24
       return IModelWriteRpcInterface.getClient().saveThumbnail(this._iModel.getRpcProps(), val);
-    }
-
-  }
-
-  /** Provides access to [[TileTree]]s associated with an IModelConnection.
-   * @beta
-   */
-  export class Tiles {
-    private _iModel: IModelConnection;
-    private readonly _treesBySupplier = new Map<TileTreeSupplier, Dictionary<any, TreeOwner>>();
-    private _disposed = false;
-
-    /** @internal */
-    public get isDisposed() { return this._disposed; }
-
-    constructor(iModel: IModelConnection) { this._iModel = iModel; }
-
-    /** @internal */
-    public dispose(): void {
-      this.reset();
-      this._disposed = true;
-    }
-
-    /** Intended strictly for tests.
-     * @internal
-     */
-    public reset(): void {
-      for (const supplier of this._treesBySupplier)
-        supplier[1].forEach((_key, value) => value.dispose());
-
-      this._treesBySupplier.clear();
-    }
-
-    /** @internal */
-    public async getTileTreeProps(id: string): Promise<TileTreeProps> {
-      return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id);
-    }
-
-    /** @internal */
-    public async getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array> {
-      return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId, isCanceled, guid, qualifier);
-    }
-
-    /** @internal */
-    public async purgeTileTrees(modelIds: Id64Array | undefined): Promise<void> {
-      return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
-    }
-
-    /** Obtain the owner of a TileTree. The `id` is unique within all tile trees associated with `supplier`; its specific structure is an implementation detail known only to the supplier. */
-    public getTileTreeOwner(id: any, supplier: TileTreeSupplier): TileTreeOwner {
-      let trees = this._treesBySupplier.get(supplier);
-      if (undefined === trees) {
-        trees = new Dictionary<any, TreeOwner>((lhs, rhs) => supplier.compareTileTreeIds(lhs, rhs));
-        this._treesBySupplier.set(supplier, trees);
-      }
-
-      let tree = trees.get(id);
-      if (undefined === tree) {
-        tree = new TreeOwner(id, supplier, this._iModel);
-        trees.set(id, tree);
-      }
-
-      return tree;
-    }
-
-    /** Disposes of all [[TileTree]]s belonging to `supplier` and removes `supplier` from the set of known tile tree suppliers. */
-    public dropSupplier(supplier: TileTreeSupplier): void {
-      const trees = this._treesBySupplier.get(supplier);
-      if (undefined === trees)
-        return;
-
-      trees.forEach((_key, value) => value.dispose());
-      this._treesBySupplier.delete(supplier);
-    }
-
-    /** Invokes a function on each extant TileTreeOwner. */
-    public forEachTreeOwner(func: (owner: TileTreeOwner) => void): void {
-      for (const dict of this._treesBySupplier.values())
-        dict.forEach((_key, value) => func(value));
-    }
-
-    /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees. */
-    public purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void {
-      // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTreeReferences exist pointing to a given Owner.
-      for (const entry of this._treesBySupplier) {
-        const dict = entry[1];
-        dict.forEach((_treeId, owner) => {
-          const tree = owner.tileTree;
-          if (undefined !== tree && tree.lastSelectedTime.milliseconds < olderThan.milliseconds)
-            if (undefined === exclude || !exclude.has(tree))
-              owner.dispose();
-        });
-      }
-    }
-
-    /** @internal */
-    public onEcefChanged(): void {
-      for (const supplier of this._treesBySupplier.keys()) {
-        if (supplier.isEcefDependent)
-          this.dropSupplier(supplier);
-      }
-    }
-  }
-
-  /**
-   * General editing functions. See IModelApp.elementEditor for editing 3D elements.
-   * @alpha
-   */
-  export class EditingFunctions {
-    private _connection: IModelConnection;
-    private _concurrencyControl?: EditingFunctions.ConcurrencyControl;
-    private _models?: EditingFunctions.ModelEditor;
-    private _categories?: EditingFunctions.CategoryEditor;
-    private _codes?: EditingFunctions.Codes;
-
-    /** @private */
-    public constructor(c: IModelConnection) {
-      if (c.isReadonly)
-        throw new IModelError(IModelStatus.ReadOnly, "EditingFunctions not available", Logger.logError, loggerCategory);
-      this._connection = c;
-    }
-
-    /**
-     * Concurrency control functions
-     * @alpha
-     */
-    public get concurrencyControl(): IModelConnection.EditingFunctions.ConcurrencyControl {
-      if (this._concurrencyControl === undefined)
-        this._concurrencyControl = new EditingFunctions.ConcurrencyControl(this._connection);
-      return this._concurrencyControl;
-    }
-
-    /**
-     * Model-editing functions
-     * @alpha
-     */
-    public get models(): IModelConnection.EditingFunctions.ModelEditor {
-      if (this._models === undefined)
-        this._models = new EditingFunctions.ModelEditor(this._connection);
-      return this._models;
-    }
-
-    /**
-     * Category-editing functions
-     * @alpha
-     */
-    public get categories(): IModelConnection.EditingFunctions.CategoryEditor {
-      if (this._categories === undefined)
-        this._categories = new EditingFunctions.CategoryEditor(this._connection);
-      return this._categories;
-    }
-
-    /**
-     * Code-creation functions
-     * @alpha
-     */
-    public get codes(): IModelConnection.EditingFunctions.Codes {
-      if (this._codes === undefined)
-        this._codes = new EditingFunctions.Codes(this._connection);
-      return this._codes;
-    }
-
-    /**
-     * Delete elements
-     * @param ids The elements to delete
-     * @alpha
-     */
-    public async deleteElements(ids: Id64Array) {
-      await IModelWriteRpcInterface.getClient().requestResources(this._connection.getRpcProps(), ids, [], DbOpcode.Delete);
-      return IModelWriteRpcInterface.getClient().deleteElements(this._connection.getRpcProps(), ids);
-    }
-
-    /** Update the project extents of this iModel.
-     * @param newExtents The new project extents as an AxisAlignedBox3d
-     * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem updating the extents.
-     * @alpha
-     */
-    public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
-      if (OpenMode.ReadWrite !== this._connection.openMode)
-        return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
-      return IModelWriteRpcInterface.getClient().updateProjectExtents(this._connection.getRpcProps(), newExtents.toJSON());
-    }
-
-    /** Commit pending changes to this iModel
-     * @param description Optional description of the changes
-     * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem saving changes.
-     * @alpha
-     */
-    public async saveChanges(description?: string): Promise<void> {
-      if (OpenMode.ReadWrite !== this._connection.openMode)
-        return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
-
-      const affectedModels = await IModelWriteRpcInterface.getClient().getModelsAffectedByWrites(this._connection.getRpcProps()); // TODO: Remove this when we get tile healing
-
-      await IModelWriteRpcInterface.getClient().saveChanges(this._connection.getRpcProps(), description);
-
-      IModelApp.viewManager.refreshForModifiedModels(affectedModels); // TODO: Remove this when we get tile healing
-    }
-
-    /**
-     * Query if there are local changes that have not yet been pushed to the iModel server.
-     * @alpha
-     */
-    // tslint:disable-next-line:prefer-get
-    public async hasPendingTxns(): Promise<boolean> {
-      return IModelWriteRpcInterface.getClient().hasPendingTxns(this._connection.getRpcProps());
-    }
-
-    /**
-     * Query if there are in-memory changes that have not yet been saved to the briefcase.
-     * @alpha
-     */
-    // tslint:disable-next-line:prefer-get
-    public async hasUnsavedChanges(): Promise<boolean> {
-      return IModelWriteRpcInterface.getClient().hasUnsavedChanges(this._connection.getRpcProps());
-    }
-
-    /**
-     * Query the parent Changeset of the briefcase
-     * @alpha
-     */
-    public async getParentChangeset(): Promise<string> {
-      return IModelWriteRpcInterface.getClient().getParentChangeset(this._connection.getRpcProps());
-    }
-  }
-
-  /**
-   * @alpha
-   */
-  export namespace EditingFunctions {
-
-    /**
-     * Helper class for defining Codes.
-     * @alpha
-     */
-    export class Codes {
-      private _connection: IModelConnection;
-
-      /** @private */
-      public constructor(c: IModelConnection) {
-        this._connection = c;
-      }
-
-      /**
-       * Helper function to create a CodeProps object
-       * @param specName Code spec
-       * @param scope Scope element ID
-       * @param value Code value
-       * @alpha
-       */
-      public async makeCode(specName: string, scope: Id64String, value: string): Promise<CodeProps> {
-        const modelCodeSpec = await this._connection.codeSpecs.getByName(specName);
-        return { scope, spec: modelCodeSpec.id, value };
-      }
-
-      /**
-       * Helper function to create a CodeProps object for a model
-       * @param scope Scope element ID
-       * @param value Code value
-       * @alpha
-       */
-      public async makeModelCode(scope: Id64String, value: string): Promise<CodeProps> {
-        return this.makeCode(BisCodeSpec.informationPartitionElement, scope, value);
-      }
-    }
-
-    /** Helper class for creating SpatialCategories.
-     * @alpha
-     */
-    export class CategoryEditor {
-      private _connection: IModelConnection;
-      private _rpc: IModelWriteRpcInterface;
-
-      /** @private */
-      public constructor(c: IModelConnection) {
-        this._connection = c;
-        this._rpc = IModelWriteRpcInterface.getClient();
-      }
-
-      /** Create and insert a new SpatialCategory. This first obtains the necessary locks and reserves the Code. This method is not suitable for creating many Categories.
-       * @alpha
-       */
-      public async createAndInsertSpatialCategory(scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
-        return this._rpc.createAndInsertSpatialCategory(this._connection.getRpcProps(), scopeModelId, categoryName, appearance);
-      }
-    }
-
-    /** Helper class for creating and editing models.
-     * @alpha
-     */
-    export class ModelEditor {
-      private _connection: IModelConnection;
-      private _rpc: IModelWriteRpcInterface;
-
-      /** @private */
-      public constructor(c: IModelConnection) {
-        this._connection = c;
-        this._rpc = IModelWriteRpcInterface.getClient();
-      }
-
-      /** Create and insert a new PhysicalPartition element and a SpatialModel. This first obtains the necessary locks and reserves the Code. This method is not suitable for creating many models.
-       * @alpha
-       */
-      public async createAndInsertPhysicalModel(newModelCode: CodeProps, privateModel?: boolean): Promise<Id64String> {
-        return this._rpc.createAndInsertPhysicalModel(this._connection.getRpcProps(), newModelCode, !!privateModel);
-      }
-
-    }
-
-    /** Concurrency control functions.
-     * @alpha
-     */
-    export class ConcurrencyControl {
-      private _connection: IModelConnection;
-      private _rpc: IModelWriteRpcInterface;
-
-      /** @private */
-      public constructor(c: IModelConnection) {
-        this._connection = c;
-        this._rpc = IModelWriteRpcInterface.getClient();
-      }
-
-      /** Send all pending requests for locks and codes to the server. */
-      public async request(): Promise<void> {
-        return this._rpc.doConcurrencyControlRequest(this._connection.getRpcProps());
-      }
-
-      /** Lock a model.
-       * @param modelId The model
-       * @param level The lock level
-       * @alpha
-       */
-      public async lockModel(modelId: Id64String, level: LockLevel = LockLevel.Shared): Promise<void> {
-        return this._rpc.lockModel(this._connection.getRpcProps(), modelId, level);
-      }
-
-      /** Pull and merge new server changes and then (optionally) push local changes.
-       * @param comment description of new changeset
-       * @param doPush Pass false if you only want to pull and merge. Pass true to pull, merge, and push. The default is true (do the push).
-       * @alpha
-       */
-      public async pullMergePush(comment: string, doPush: boolean = true): Promise<GuidString> {
-        return this._rpc.pullMergePush(this._connection.getRpcProps(), comment, doPush);
-      }
-    }
-  }
-}
-
-class TreeOwner implements TileTreeOwner {
-  private _tileTree?: TileTree;
-  private _loadStatus: TileTreeLoadStatus = TileTreeLoadStatus.NotLoaded;
-  private readonly _supplier: TileTreeSupplier;
-  private readonly _iModel: IModelConnection;
-
-  public readonly id: any;
-
-  public get tileTree(): TileTree | undefined { return this._tileTree; }
-  public get loadStatus(): TileTreeLoadStatus { return this._loadStatus; }
-
-  public constructor(id: any, supplier: TileTreeSupplier, iModel: IModelConnection) {
-    this.id = id;
-    this._supplier = supplier;
-    this._iModel = iModel;
-  }
-
-  public load(): TileTree | undefined {
-    this._load(); // tslint:disable-line no-floating-promises
-    return this.tileTree;
-  }
-
-  public async loadTree(): Promise<TileTree | undefined> {
-    await this._load();
-    return this.tileTree;
-  }
-
-  public dispose(): void {
-    this._tileTree = dispose(this._tileTree);
-    this._loadStatus = TileTreeLoadStatus.NotLoaded;
-  }
-
-  private async _load(): Promise<void> {
-    if (TileTreeLoadStatus.NotLoaded !== this.loadStatus)
-      return;
-
-    this._loadStatus = TileTreeLoadStatus.Loading;
-    let tree: TileTree | undefined;
-    let newStatus: TileTreeLoadStatus;
-    try {
-      tree = await this._supplier.createTileTree(this.id, this._iModel);
-      newStatus = undefined !== tree && !tree.rootTile.contentRange.isNull ? TileTreeLoadStatus.Loaded : TileTreeLoadStatus.NotFound;
-    } catch (err) {
-      newStatus = (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.NotFound;
-    }
-
-    if (TileTreeLoadStatus.Loading === this._loadStatus) {
-      this._tileTree = tree;
-      this._loadStatus = newStatus;
-      IModelApp.viewManager.onNewTilesReady();
     }
   }
 }

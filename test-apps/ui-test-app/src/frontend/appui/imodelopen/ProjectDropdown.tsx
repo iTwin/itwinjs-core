@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
+import "./ProjectDropdown.scss";
 import classnames from "classnames";
+import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Popup } from "@bentley/ui-core";
 import { ProjectInfo } from "@bentley/ui-framework";
 import { ProjectDialog } from "./ProjectDialog";
-import "./ProjectDropdown.scss";
 
 /** Properties for the [[ProjectDropdown]] component */
 export interface ProjectDropdownProps {

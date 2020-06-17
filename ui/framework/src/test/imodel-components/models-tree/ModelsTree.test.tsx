@@ -2,24 +2,32 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import * as path from "path";
 // tslint:disable: no-direct-imports
 import * as React from "react";
-import { expect } from "chai";
 import * as sinon from "sinon";
-import * as path from "path";
-import { render, waitForElement, cleanup, fireEvent } from "@testing-library/react";
+import { BeEvent, Id64, Id64String, using } from "@bentley/bentleyjs-core";
+import {
+  IModelConnection, PerModelCategoryVisibility, SnapshotConnection, SpatialViewState, Viewport, ViewState, ViewState3d,
+} from "@bentley/imodeljs-frontend";
+import {
+  BaseNodeKey, ECInstancesNodeKey, InstanceKey, KeySet, LabelDefinition, Node, NodeKey, NodePathElement, StandardNodeTypes,
+} from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { using, BeEvent, Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { IModelConnection, ViewState, PerModelCategoryVisibility, Viewport, ViewState3d, SpatialViewState, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { isPromiseLike } from "@bentley/ui-core";
-import { TreeNodeItem, TreeDataChangesListener, SelectionMode } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { SelectionManager, SelectionChangeEvent, Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
-import { NodeKey, KeySet, ECInstancesNodeKey, StandardNodeTypes, InstanceKey, BaseNodeKey, NodePathElement, Node, LabelDefinition } from "@bentley/presentation-common";
-import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting, HierarchyBuilder } from "@bentley/presentation-testing";
-import { ModelsTree, VisibilityHandler, RULESET_MODELS, VisibilityHandlerProps, ModelsTreeNodeType } from "../../../ui-framework/imodel-components/models-tree/ModelsTree";
+import { Presentation, PresentationManager, RulesetManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
+import {
+  HierarchyBuilder, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
+} from "@bentley/presentation-testing";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { SelectionMode, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
+import { isPromiseLike } from "@bentley/ui-core";
+import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import {
+  ModelsTree, ModelsTreeNodeType, RULESET_MODELS, VisibilityHandler, VisibilityHandlerProps,
+} from "../../../ui-framework/imodel-components/models-tree/ModelsTree";
 import TestUtils from "../../TestUtils";
 
 describe("ModelsTree", () => {
@@ -255,7 +263,7 @@ describe("ModelsTree", () => {
         const node = createModelNode();
         setupDataProvider([node]);
         visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
-        visibilityHandlerMock.setup(async (x) => x.changeVisibility(node, moq.It.isAny(), true)).returns(async () => Promise.resolve()).verifiable();
+        visibilityHandlerMock.setup(async (x) => x.changeVisibility(node, moq.It.isAny(), true)).returns(async () => { }).verifiable();
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));

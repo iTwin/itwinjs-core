@@ -6,9 +6,9 @@
  * @module PresentationRules
  */
 
-import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 import { RelationshipDirection } from "../RelationshipDirection";
 import { SchemasSpecification } from "../SchemasSpecification";
+import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 
 /**
  * Creates nodes for all related instances for parent ECInstance node.

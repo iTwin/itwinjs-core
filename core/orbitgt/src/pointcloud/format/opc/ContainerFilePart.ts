@@ -15,9 +15,9 @@ type float32 = number;
 type float64 = number;
 
 
-import { FileAccess } from "./FileAccess";
 import { ALong } from "../../../system/runtime/ALong";
 import { ASystem } from "../../../system/runtime/ASystem";
+import { FileAccess } from "./FileAccess";
 
 /**
  * Class ContainerFilePart defines a part in a container file.

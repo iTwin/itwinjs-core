@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import * as sinon from "sinon";
+import { Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { initialize, terminate } from "../../IntegrationTests";
 
 const RULESET: Ruleset = {
@@ -124,6 +125,25 @@ describe("TreeDataProvider", async () => {
     expect(count).to.not.eq(0);
     expect(nodes).to.not.be.undefined;
     expect(getNodesSpy).to.be.calledOnce;
+  });
+
+  it("shows grouping node children counts", async () => {
+    const ruleset: Ruleset = {
+      id: Guid.createValue(),
+      rules: [{
+        ruleType: RuleTypes.RootNodes,
+        specifications: [{
+          specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+          classes: { schemaName: "BisCore", classNames: ["Model"] },
+          arePolymorphic: true,
+          groupByLabel: true,
+        }],
+      }],
+    };
+    provider = new PresentationTreeDataProvider({ imodel, ruleset, appendChildrenCountForGroupingNodes: true });
+
+    const nodes = await provider.getNodes(undefined);
+    expect(nodes).to.matchSnapshot();
   });
 
 });

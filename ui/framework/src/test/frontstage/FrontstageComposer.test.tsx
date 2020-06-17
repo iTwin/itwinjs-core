@@ -2,25 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { mount } from "enzyme";
-import { expect } from "chai";
-
-import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { Logger } from "@bentley/bentleyjs-core";
-import { NineZoneManagerProps, getDefaultZonesManagerProps, getDefaultNineZoneStagePanelsManagerProps, StagePanelsManager } from "@bentley/ui-ninezone";
-
-import TestUtils from "../TestUtils";
+import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import {
-  ModalFrontstageInfo, FrontstageManager, FrontstageComposer,
-  ContentLayoutDef, ContentGroup, StagePanelDef, CoreTools,
+  getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, StagePanelsManager,
+} from "@bentley/ui-ninezone";
+import {
+  ContentGroup, ContentLayoutDef, CoreTools, FrontstageComposer, FrontstageManager, ModalFrontstageInfo, StagePanelDef,
 } from "../../ui-framework";
-import { TestFrontstage, TestContentControl } from "./FrontstageTestUtils";
+import { isCollapsedToPanelState } from "../../ui-framework/frontstage/FrontstageComposer";
 import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
 import { getNestedStagePanelKey } from "../../ui-framework/stagepanels/StagePanel";
 import { StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
-import { isCollapsedToPanelState } from "../../ui-framework/frontstage/FrontstageComposer";
+import TestUtils from "../TestUtils";
+import { TestContentControl, TestFrontstage } from "./FrontstageTestUtils";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";

@@ -7,17 +7,18 @@
 // import { Range1d } from "../Range";
 // import { Matrix3d, Transform } from "../geometry3d/Transform";
 
-import { TransitionConditionalProperties, TransitionSpiral3d } from "../../curve/TransitionSpiral";
-import { Angle } from "../../geometry3d/Angle";
-import { Checker } from "../Checker";
 import { expect } from "chai";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { TransitionConditionalProperties, TransitionSpiral3d } from "../../curve/TransitionSpiral";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Transform } from "../../geometry3d/Transform";
-import { Segment1d } from "../../geometry3d/Segment1d";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Geometry } from "../../Geometry";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Segment1d } from "../../geometry3d/Segment1d";
+import { Transform } from "../../geometry3d/Transform";
+import { Checker } from "../Checker";
+
 /* tslint:disable:no-console */
 describe("TransitionSpiralProperties", () => {
   it("HelloWorld", () => {

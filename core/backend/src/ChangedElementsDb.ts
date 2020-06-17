@@ -6,17 +6,17 @@
  * @module ChangedElementsDb
  */
 
+import * as path from "path";
 import { DbResult, GuidString, IDisposable, OpenMode } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ChangeSet } from "@bentley/imodelhub-client";
 import { ChangeData, ChangedElements, ChangedModels, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import * as path from "path";
-import { IModelHost } from "./IModelHost";
-import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager, ChangeSetToken } from "./BriefcaseManager";
+import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECDbOpenMode } from "./ECDb";
-import { ChangeSummaryManager, ChangeSummaryExtractContext } from "./ChangeSummaryManager";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { IModelHost } from "./IModelHost";
 
 /** An ChangedElementsDb file
  * @internal

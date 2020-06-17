@@ -8,56 +8,48 @@
 
 const copyrightNotice = 'Copyright © 2017-2020 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import {
-  BeDuration,
-  ClientRequestContext,
-  Guid,
-  GuidString,
-  Logger,
-  SerializedClientRequestContext,
-  dispose,
-} from "@bentley/bentleyjs-core";
+import { BeDuration, ClientRequestContext, dispose, Guid, GuidString, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { AccessToken, IncludePrefix, AuthorizationClient } from "@bentley/itwin-client";
-import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { AccuSnap } from "./AccuSnap";
+import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
+import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
+import { UiAdmin } from "@bentley/ui-abstract";
+import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
+import { AccuSnap } from "./AccuSnap";
+import * as auxCoordState from "./AuxCoordSys";
+import * as categorySelectorState from "./CategorySelectorState";
+import * as displayStyleState from "./DisplayStyleState";
 import { ElementLocateManager } from "./ElementLocateManager";
+import { EntityState } from "./EntityState";
+import { ExtensionAdmin } from "./extension/ExtensionAdmin";
+import { FeatureToggleClient } from "./FeatureToggleClient";
+import { FeatureTrackingManager } from "./FeatureTrackingManager";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { FrontendRequestContext } from "./FrontendRequestContext";
+import * as modelselector from "./ModelSelectorState";
+import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./QuantityFormatter";
-import { FrontendRequestContext } from "./FrontendRequestContext";
 import { RenderSystem } from "./render/RenderSystem";
+import { System } from "./render/webgl/System";
+import * as sheetState from "./Sheet";
 import { TentativePoint } from "./TentativePoint";
+import { TerrainProvider } from "./TerrainProvider";
+import { TileAdmin } from "./tile/internal";
+import * as accudrawTool from "./tools/AccuDrawTool";
+import * as clipViewTool from "./tools/ClipViewTool";
+import * as extensionTool from "./tools/ExtensionTool";
+import * as idleTool from "./tools/IdleTool";
+import * as measureTool from "./tools/MeasureTool";
+import * as selectTool from "./tools/SelectTool";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
-import { ViewManager } from "./ViewManager";
-import { WebGLRenderCompatibilityInfo, queryRenderCompatibility } from "@bentley/webgl-compatibility";
-import { TileAdmin } from "./tile/internal";
-import { EntityState } from "./EntityState";
-import { TerrainProvider } from "./TerrainProvider";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { ExtensionAdmin } from "./extension/ExtensionAdmin";
-import { UiAdmin } from "@bentley/ui-abstract";
-import { FeatureTrackingManager } from "./FeatureTrackingManager";
-import { FeatureToggleClient } from "./FeatureToggleClient";
-import { System } from "./render/webgl/System";
-
-import * as idleTool from "./tools/IdleTool";
-import * as selectTool from "./tools/SelectTool";
-import * as extensionTool from "./tools/ExtensionTool";
 import * as viewTool from "./tools/ViewTool";
-import * as clipViewTool from "./tools/ClipViewTool";
-import * as measureTool from "./tools/MeasureTool";
-import * as accudrawTool from "./tools/AccuDrawTool";
-import * as modelState from "./ModelState";
-import * as sheetState from "./Sheet";
+import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
-import * as displayStyleState from "./DisplayStyleState";
-import * as modelselector from "./ModelSelectorState";
-import * as categorySelectorState from "./CategorySelectorState";
-import * as auxCoordState from "./AuxCoordSys";
 
 // tslint:disable-next-line: no-var-requires
 require("./IModeljs-css");
@@ -95,7 +87,7 @@ export interface IModelAppOptions {
   /** If present, supplies the [[I18N]] for this session. May be either an I18N instance or an I18NOptions used to create an I18N */
   i18n?: I18N | I18NOptions;
   /** If present, supplies the authorization information for various frontend APIs */
-  authorizationClient?: AuthorizationClient;
+  authorizationClient?: FrontendAuthorizationClient;
   /** @internal */
   sessionId?: GuidString;
   /** @internal */
@@ -199,7 +191,7 @@ export class IModelApp {
    */
   public static eventSourceOptions: EventSourceOptions = { pollInterval: 3000, prefetchLimit: 512 };
   /** Provides authorization information for various frontend APIs */
-  public static authorizationClient?: AuthorizationClient;
+  public static authorizationClient?: FrontendAuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
   public static readonly tools = new ToolRegistry();
   /** A uniqueId for this session */
@@ -302,7 +294,12 @@ export class IModelApp {
    * and/or performance.
    * @beta
    */
-  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return queryRenderCompatibility(System.createContext); }
+  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
+    if (undefined === System.instance || undefined === System.instance.options.useWebGL2)
+      return queryRenderCompatibility(true, System.createContext);
+    else
+      return queryRenderCompatibility(System.instance.options.useWebGL2, System.createContext);
+  }
 
   /**
    * This method must be called before any iModel.js frontend services are used.
@@ -477,9 +474,7 @@ export class IModelApp {
       IModelApp.viewManager.renderLoop();
       IModelApp.tileAdmin.process();
     } catch (exception) {
-      ToolAdmin.exceptionHandler(exception).then(() => { // tslint:disable-line:no-floating-promises
-        close(); // this does nothing in a web browser, closes electron.
-      });
+      ToolAdmin.exceptionHandler(exception); // tslint:disable-line:no-floating-promises
 
       IModelApp._wantEventLoop = false;
       IModelApp._animationRequested = true; // unrecoverable after exception, don't request any further frames.
@@ -653,4 +648,16 @@ export class IModelApp {
       notice: this.applicationVersion + "<br>" + copyrightNotice,
     });
   }
+
+  /** Format the tooltip strings returned by [[IModelConnection.getToolTipMessage]].
+   * @alpha
+   */
+  public static formatElementToolTip(msg: string[]): HTMLElement {
+    let out = "";
+    msg.forEach((line) => out += IModelApp.i18n.translateKeys(line) + "<br>");
+    const div = document.createElement("div");
+    div.innerHTML = out;
+    return div;
+  }
+
 }

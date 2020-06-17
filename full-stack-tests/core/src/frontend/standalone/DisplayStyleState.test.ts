@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { Vector3d } from "@bentley/geometry-core";
 import { DisplayStyle3dProps } from "@bentley/imodeljs-common";
 import { DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { expect } from "chai";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;

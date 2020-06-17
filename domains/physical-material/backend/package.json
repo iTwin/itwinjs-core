@@ -1,0 +1,66 @@
+{
+  "name": "@bentley/physical-material-backend",
+  "version": "2.2.0-dev.12",
+  "main": "lib/physical-material-backend.js",
+  "typings": "lib/physical-material-backend",
+  "license": "MIT",
+  "engines": {
+    "node": ">=10.16.0 <13.0"
+  },
+  "scripts": {
+    "build": "tsc 1>&2",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "cover": "nyc npm test",
+    "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/physical-material-backend/file.json --tsIndexFile=./physical-material-backend.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=physical-material-backend",
+    "lint": "tslint --project . 1>&2",
+    "test": "betools test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/domains/physical-material/backend"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^2.2.0-dev.12",
+    "@bentley/imodeljs-backend": "^2.2.0-dev.12",
+    "@bentley/imodeljs-common": "^2.2.0-dev.12"
+  },
+  "//devDependencies": [
+    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "2.2.0-dev.12",
+    "@bentley/build-tools": "2.2.0-dev.12",
+    "@bentley/imodeljs-backend": "2.2.0-dev.12",
+    "@bentley/imodeljs-common": "2.2.0-dev.12",
+    "@types/chai": "^4.1.4",
+    "@types/fs-extra": "^4.0.7",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "10.14.1",
+    "chai": "^4.1.2",
+    "cpx": "^1.5.0",
+    "mocha": "^5.2.0",
+    "nyc": "^14.0.0",
+    "rimraf": "^3.0.2",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.7.4"
+  },
+  "TODO-dependencies": {
+    "@bentley/physicalmaterial-schema": "~1.0.1"
+  },
+  "nyc": {
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+  }
+}

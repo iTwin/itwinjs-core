@@ -8,19 +8,19 @@
 
 import { Id64String } from "@bentley/bentleyjs-core";
 import { Range3dProps } from "@bentley/geometry-core";
+import { ElementProps } from "../ElementProps";
+import { EntityQueryParams } from "../EntityProps";
+import { GeoCoordinatesResponseProps, IModelCoordinatesResponseProps } from "../GeoCoordinateServices";
+import { GeometrySummaryRequestProps } from "../GeometrySummary";
+import { IModelConnectionProps, IModelRpcProps } from "../IModel";
+import { MassPropertiesRequestProps, MassPropertiesResponseProps } from "../MassProperties";
+import { ModelProps } from "../ModelProps";
+import { QueryLimit, QueryPriority, QueryQuota, QueryResponse } from "../Paging";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { RpcNotFoundResponse } from "./core/RpcControl";
-import { EntityQueryParams } from "../EntityProps";
-import { IModelRpcProps, IModelConnectionProps } from "../IModel";
-import { ModelProps } from "../ModelProps";
-import { ElementProps } from "../ElementProps";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
-import { MassPropertiesRequestProps, MassPropertiesResponseProps } from "../MassProperties";
-import { GeometrySummaryRequestProps } from "../GeometrySummary";
-import { IModelCoordinatesResponseProps, GeoCoordinatesResponseProps } from "../GeoCoordinateServices";
 import { ViewStateProps } from "../ViewProps";
-import { QueryPriority, QueryResponse, QueryLimit, QueryQuota } from "../Paging";
+import { RpcNotFoundResponse } from "./core/RpcControl";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)
@@ -75,6 +75,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
   /** @beta */
   public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
-  /** @alpha */
+  /** @beta */
   public async getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string> { return this.forward(arguments); }
 }

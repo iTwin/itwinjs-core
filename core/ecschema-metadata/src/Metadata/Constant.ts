@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { ConstantProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedPhenomenon } from "../Interfaces";
+import { SchemaItemKey } from "../SchemaKey";
 import { Phenomenon } from "./Phenomenon";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { ConstantProps } from "./../Deserialization/JsonProps";
-import { SchemaItemType } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedPhenomenon } from "./../Interfaces";
-import { SchemaItemKey } from "./../SchemaKey";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * A Constant is a specific type of Unit that represents a number.
@@ -105,4 +105,40 @@ export class Constant extends SchemaItem {
   public async fromJSON(constantProps: ConstantProps) {
     this.fromJSONSync(constantProps);
   }
+
+  /**
+   * @alpha Used in schema editing.
+   * @param phenomenon A LazyLoadedPhenomenon.
+   */
+  protected setPhenomenon(phenomenon: LazyLoadedPhenomenon) {
+    this._phenomenon = phenomenon;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setDefinition(definition: string) {
+    this._definition = definition;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setNumerator(numerator: number) {
+    this._numerator = numerator;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setDenominator(denominator: number) {
+    this._denominator = denominator;
+  }
+}
+
+export abstract class MutableConstant extends Constant {
+  public abstract setPhenomenon(phenomenon: LazyLoadedPhenomenon): void;
+  public abstract setDefinition(definition: string): void;
+  public abstract setNumerator(numerator: number): void;
+  public abstract setDenominator(denominator: number): void;
 }

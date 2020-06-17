@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-
 import { CommonProps } from "@bentley/ui-core";
 import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
 
@@ -42,6 +41,11 @@ export class ModalDialogManager {
    */
   public static closeDialog(dialog?: React.ReactNode): void {
     ModalDialogManager.dialogManager.closeDialog(dialog);
+  }
+
+  /** @internal */
+  public static closeAll(): void {
+    ModalDialogManager.dialogManager.closeAll();
   }
 
   /** Update the dialogs */

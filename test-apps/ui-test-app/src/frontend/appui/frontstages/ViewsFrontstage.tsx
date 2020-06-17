@@ -3,105 +3,51 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
 import { BeDuration } from "@bentley/bentleyjs-core";
-
 import {
-  IModelConnection,
-  IModelApp,
-  ActivityMessageDetails,
-  ActivityMessageEndReason,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  OutputMessageType,
-  ViewState,
+  ActivityMessageDetails, ActivityMessageEndReason, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
+  ScreenViewport, ViewState,
 } from "@bentley/imodeljs-frontend";
-
-import {
-  BadgeType, RelativePosition, ToolbarItemUtilities,
-  CommonToolbarItem, StagePanelLocation, ConditionalBooleanValue,
-} from "@bentley/ui-abstract";
-import { ScrollView, Point } from "@bentley/ui-core";
-
 import { NodeKey } from "@bentley/presentation-common";
-
 import {
-  FrontstageProvider,
-  ZoneState,
-  ContentLayoutDef,
-  ContentLayoutProps,
-  ContentGroup,
-  ContentProps,
-  ModalDialogManager,
-  IModelConnectedViewSelector,
-  ModelSelectorWidgetControl,
-  Frontstage,
-  Zone,
-  Widget,
-  GroupItemDef,
-  CoreTools,
-  SyncUiEventId,
-  WidgetState,
-  ContentViewManager,
-  StagePanel,
-  FrontstageManager,
-  CommandItemDef,
-  ModelessDialogManager,
-  UiFramework,
-  WIDGET_OPACITY_DEFAULT,
-  ContentLayoutManager,
-  SavedViewLayout,
-  SavedViewLayoutProps,
-  CustomItemDef,
-  CursorInformation,
-  CursorUpdatedEventArgs,
-  CursorPopupManager,
-  CursorPopupContent,
-  VisibilityWidget,
-  VisibilityComponentHierarchy,
-  ZoneLocation,
-  StagePanelHeader,
-  StagePanelState,
-  BasicToolWidget,
-  BasicNavigationWidget,
-  ToolbarHelper,
-  ModelsTreeNodeType,
-  MessageManager,
-  ConfigurableUiManager,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, StagePanelLocation, ToolbarItemUtilities, WidgetState,
+} from "@bentley/ui-abstract";
+import { SelectionMode } from "@bentley/ui-components";
+import { Point, ScrollView } from "@bentley/ui-core";
+import {
+  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager,
+  ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
+  CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef, HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler,
+  HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager, ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType,
+  SavedViewLayout, SavedViewLayoutProps, StagePanel, StagePanelHeader, StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework,
+  VisibilityComponentHierarchy, VisibilityWidget, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
-
-import { AppUi } from "../AppUi";
-import { TestRadialMenu } from "../dialogs/TestRadialMenu";
-import { CalculatorDialog } from "../dialogs/CalculatorDialog";
-import { AppTools } from "../../tools/ToolSpecifications";
-import { ViewportDialog } from "../dialogs/ViewportDialog";
-import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
-
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
-
-// cSpell:Ignore contentviews statusbars
-import { IModelViewportControl } from "../contentviews/IModelViewport";
-import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
-import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
-import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
-import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
-
-import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
-import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
-import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
-import {/* ViewportWidgetControl, */ ViewportWidget } from "../widgets/ViewportWidget";
-import { NestedAnimationStage } from "./NestedAnimationStage";
-import { ExampleForm } from "../forms/ExampleForm";
-
 // SVG Support - SvgPath or SvgSprite
 // import { SvgPath } from "@bentley/ui-core";
-
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
-import { SelectionMode } from "@bentley/ui-components";
+import { AppTools } from "../../tools/ToolSpecifications";
+import { AppUi } from "../AppUi";
+// cSpell:Ignore contentviews statusbars uitestapp
+import { IModelViewportControl } from "../contentviews/IModelViewport";
+import { CalculatorDialog } from "../dialogs/CalculatorDialog";
+import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
+import { TestRadialMenu } from "../dialogs/TestRadialMenu";
+import { ViewportDialog } from "../dialogs/ViewportDialog";
+import { ExampleForm } from "../forms/ExampleForm";
+import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
+import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
+import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
+import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
+import { ViewportWidget } from "../widgets/ViewportWidget";
+import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
+import { NestedAnimationStage } from "./NestedAnimationStage";
 
 export class ViewsFrontstage extends FrontstageProvider {
+  public static stageId = "ViewsFrontstage";
+  public static unifiedSelectionPropertyGridId = "UnifiedSelectionPropertyGrid";
   private _additionalTools = new AdditionalTools();
 
   public static savedViewLayoutProps: string;
@@ -123,8 +69,51 @@ export class ViewsFrontstage extends FrontstageProvider {
     allowedZones: [2, 7],
   };
 
+  private async applyVisibilityOverrideToSpatialViewports(frontstageDef: FrontstageDef, processedViewport: ScreenViewport, action: HideIsolateEmphasizeAction) {
+    frontstageDef?.contentControls?.forEach(async (cc) => {
+      const vp = cc.viewport;
+      if (vp !== processedViewport && vp?.view?.isSpatialView() && vp.iModel === processedViewport.iModel) {
+        switch (action) {
+          case HideIsolateEmphasizeAction.ClearHiddenIsolatedEmphasized:
+            HideIsolateEmphasizeManager.clearEmphasize(vp);
+            break;
+          case HideIsolateEmphasizeAction.EmphasizeSelectedElements:
+            await HideIsolateEmphasizeManager.emphasizeSelected(vp);
+            break;
+          case HideIsolateEmphasizeAction.HideSelectedCategories:
+            await HideIsolateEmphasizeManager.hideSelectedElementsCategory(vp);
+            break;
+          case HideIsolateEmphasizeAction.HideSelectedElements:
+            HideIsolateEmphasizeManager.hideSelected(vp);
+            break;
+          case HideIsolateEmphasizeAction.HideSelectedModels:
+            await HideIsolateEmphasizeManager.hideSelectedElementsModel(vp);
+            break;
+          case HideIsolateEmphasizeAction.IsolateSelectedCategories:
+            await HideIsolateEmphasizeManager.isolateSelectedElementsCategory(vp);
+            break;
+          case HideIsolateEmphasizeAction.IsolateSelectedElements:
+            HideIsolateEmphasizeManager.isolateSelected(vp);
+            break;
+          case HideIsolateEmphasizeAction.IsolateSelectedModels:
+            await HideIsolateEmphasizeManager.isolateSelectedElementsModel(vp);
+            break;
+          default:
+            break;
+        }
+      }
+    });
+  }
+
+  private _onEmphasizeElementsChangedHandler = (args: EmphasizeElementsChangedArgs) => {
+    if (FrontstageManager.activeFrontstageDef && FrontstageManager.activeFrontstageId === ViewsFrontstage.stageId)
+      this.applyVisibilityOverrideToSpatialViewports(FrontstageManager.activeFrontstageDef, args.viewport, args.action); // tslint:disable-line: no-floating-promises
+  }
+
   constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
     super();
+
+    HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(this._onEmphasizeElementsChangedHandler);
   }
 
   /** Get the CustomItemDef for ViewSelector  */
@@ -164,12 +153,12 @@ export class ViewsFrontstage extends FrontstageProvider {
     }
     const myContentGroup: ContentGroup = new ContentGroup({ contents: contentProps });
     return (
-      <Frontstage id="ViewsFrontstage"
+      <Frontstage id={ViewsFrontstage.stageId}
         defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage="MyUsage"
-        version={1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
+        version={3} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
         contentManipulationTools={
           < Zone
             widgets={
@@ -208,14 +197,6 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={250}
             widgets={
               [
-                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget}
-                  syncEventIds={[SampleAppUiActionId.setTestProperty]}
-                  stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-                />,
-                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl}
-                  syncEventIds={[SampleAppUiActionId.setTestProperty]}
-                  stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-                />,
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
                   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true}
                   syncEventIds={[SampleAppUiActionId.setTestProperty]}
@@ -231,9 +212,7 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={350}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
-              /*<Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,*/
+                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
                 applicationData={{
                   iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
@@ -257,7 +236,7 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={
               [
                 <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                  applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} badgeType={BadgeType.New} />,
+                  applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
                 /* <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
                    applicationData={{ projectName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
               ]}
@@ -276,15 +255,16 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={
               [
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
+                  id={ViewsFrontstage.unifiedSelectionPropertyGridId}
                   control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
-                  applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }}
-                  syncEventIds={[SyncUiEventId.SelectionSetChanged]}
-                  stateFunc={(): WidgetState => {
-                    const activeContentControl = ContentViewManager.getActiveContentControl();
-                    if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0))
-                      return WidgetState.Open;
-                    return WidgetState.Closed;
-                  }}
+                  applicationData={{ iModelConnection: this.iModelConnection }}
+                // syncEventIds={[SyncUiEventId.SelectionSetChanged]}
+                // stateFunc={(): WidgetState => {
+                //   const activeContentControl = ContentViewManager.getActiveContentControl();
+                //   if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0))
+                //     return WidgetState.Open;
+                //   return WidgetState.Closed;
+                // }}
                 />,
                 <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               ]}
@@ -497,8 +477,10 @@ class AdditionalTools {
   }
 
   private get _spinnerTestDialogItem() {
+    const id = "spinners";
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog", execute: () => { ModalDialogManager.openDialog(<SpinnerTestDialog opened={true} />); },
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog",
+      execute: () => { ModelessDialogManager.openDialog(<SpinnerTestDialog opened={true} />, id); },
     });
   }
 
@@ -557,7 +539,7 @@ class AdditionalTools {
 
           // Add applicationData to the ContentProps
           savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
-            contentProps.applicationData = { viewState: viewStates[index], iModelConnection, rulesetId: "Items" };
+            contentProps.applicationData = { viewState: viewStates[index], iModelConnection };
           });
           const contentGroup = new ContentGroup(savedViewLayoutProps.contentGroupProps);
 
@@ -677,19 +659,42 @@ class AdditionalTools {
       AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand,
       AppTools.toggleLengthFormatCommand,
     ]);
-    const item = ToolbarItemUtilities.createGroupButton("tool-formatting-setting", 135, "icon-placeholder", "set formatting units", children, { badgeType: BadgeType.New });
+    const item = ToolbarItemUtilities.createGroupButton("tool-formatting-setting", 135, "icon-placeholder", "set formatting units", children, { badgeType: BadgeType.New, groupPriority: 30 });
     return item;
   }
 
   // cSpell:enable
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
-    ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef),
-    ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage),
-    ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1),
-    ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2),
-    ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef),
-    ToolbarHelper.createToolbarItemFromItemDef(130, AppTools.toolWithSettings),
-    ToolbarHelper.createToolbarItemFromItemDef(135, AppTools.toggleHideShowItemsCommand),
+    ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),
+    ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage, { groupPriority: -10 }),
+    ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1, { groupPriority: 20 }),
+    ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2, { groupPriority: 20 }),
+    ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef, { groupPriority: 20 }),
+    ToolbarHelper.createToolbarItemFromItemDef(130, AppTools.toolWithSettings, { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(135, AppTools.toggleHideShowItemsCommand, { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(140, new CommandItemDef({
+      commandId: "Show widget",
+      iconSpec: "icon-placeholder",
+      label: "Show widget",
+      execute: () => {
+        const frontstageDef = FrontstageManager.activeFrontstageDef;
+        if (!frontstageDef)
+          return;
+        const widgetDef = frontstageDef.findWidgetDef("uitestapp-test-wd3");
+        if (!widgetDef)
+          return;
+        widgetDef.show();
+      },
+    }), { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(140, new CommandItemDef({
+      commandId: "Restore layout",
+      iconSpec: "icon-placeholder",
+      label: "Restore layout",
+      execute: () => {
+        const frontstageDef = FrontstageManager.findFrontstageDef("ViewsFrontstage");
+        frontstageDef && frontstageDef.restoreLayout();
+      },
+    }), { groupPriority: 30 }),
     this.formatGroupItemsItem(),
   ];
 
@@ -711,7 +716,7 @@ class AdditionalTools {
     ]);
 
     const groupHiddenCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
-    const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.anotherGroup", 130, "icon-placeholder", IModelApp.i18n.translate("SampleApp:buttons.anotherGroup"), children, { badgeType: BadgeType.New, isHidden: groupHiddenCondition });
+    const item = ToolbarItemUtilities.createGroupButton("SampleApp:buttons.anotherGroup", 130, "icon-placeholder", IModelApp.i18n.translate("SampleApp:buttons.anotherGroup"), children, { badgeType: BadgeType.New, isHidden: groupHiddenCondition, groupPriority: 30 });
     return item;
   }
 
@@ -739,5 +744,5 @@ class AdditionalTools {
       ],
       badgeType: BadgeType.New,
     }),
-  ], 100), this.getMiscGroupItem()];
+  ], 100, { groupPriority: 20 }), this.getMiscGroupItem()];
 }

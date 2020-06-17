@@ -1,6 +1,6 @@
 {
   "name": "@bentley/itwin-client",
-  "version": "2.0.0-dev.77",
+  "version": "2.2.0-dev.12",
   "description": "Base client package for iTwin applications",
   "main": "lib/itwin-client.js",
   "typings": "lib/itwin-client",
@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=itwin-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson",
     "lint": "tslint --project . 1>&2",
@@ -31,19 +31,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.77"
+    "@bentley/bentleyjs-core": "^2.2.0-dev.12"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/certa": "2.0.0-dev.77",
-    "@bentley/bentleyjs-core": "2.0.0-dev.77",
-    "@bentley/build-tools": "2.0.0-dev.77",
-    "@bentley/config-loader": "2.0.0-dev.77",
-    "@bentley/geometry-core": "2.0.0-dev.77",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.71",
+    "@bentley/certa": "2.2.0-dev.12",
+    "@bentley/bentleyjs-core": "2.2.0-dev.12",
+    "@bentley/build-tools": "2.2.0-dev.12",
+    "@bentley/config-loader": "2.2.0-dev.12",
+    "@bentley/geometry-core": "2.2.0-dev.12",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/js-base64": "^2.3.1",
@@ -63,7 +62,7 @@
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
     "webpack": "4.42.0",
-    "source-map-loader": "^0.2.3"
+    "source-map-loader": "^1.0.0"
   },
   "dependencies": {
     "deep-assign": "^2.0.0",

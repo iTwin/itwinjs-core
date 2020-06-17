@@ -3,26 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
+import { assert } from "@bentley/bentleyjs-core";
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { ClassProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { AnyClass, LazyLoadedECClass } from "../Interfaces";
+import { SchemaItemKey, SchemaKey } from "../SchemaKey";
+import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { EntityClass } from "./EntityClass";
 import { Enumeration } from "./Enumeration";
 import {
-  EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty,
-  PrimitiveProperty, Property, StructArrayProperty, StructProperty,
+  EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property, StructArrayProperty, StructProperty,
 } from "./Property";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { ClassProps } from "./../Deserialization/JsonProps";
-import {
-  classModifierToString, ECClassModifier,
-  parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType,
-} from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { AnyClass, LazyLoadedECClass } from "./../Interfaces";
-import { SchemaItemKey, SchemaKey } from "./../SchemaKey";
-import { assert } from "@bentley/bentleyjs-core";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * A common abstract class for all of the ECClass types.
@@ -645,6 +641,15 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
     return this.traverseBaseClassesSync(SchemaItem.equalByKey, targetClass);
   }
+
+  /**
+   * @alpha
+   * A setter method used specifically for schema editing.
+   * @param modifier
+   */
+  protected setModifier(modifier: ECClassModifier) {
+    this._modifier = modifier;
+  }
 }
 
 /**
@@ -666,7 +671,7 @@ export class StructClass extends ECClass {
  */
 export abstract class MutableClass extends ECClass {
   public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
-
+  public abstract setModifier(modifier: ECClassModifier): void;
   public abstract async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
   public abstract async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
   public abstract async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
@@ -688,4 +693,5 @@ export abstract class MutableClass extends ECClass {
 
   public abstract async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
   public abstract createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty;
+
 }

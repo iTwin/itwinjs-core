@@ -6,12 +6,12 @@
  * @module Widget
  */
 
-import { Logger, BeUiEvent } from "@bentley/bentleyjs-core";
-import { StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsArbiter } from "@bentley/ui-abstract";
-
-import { WidgetDef } from "./WidgetDef";
-import { ZoneLocation } from "../zones/Zone";
+import { BeUiEvent, Logger } from "@bentley/bentleyjs-core";
+import { StagePanelLocation, StagePanelSection, UiItemsArbiter, UiItemsManager } from "@bentley/ui-abstract";
 import { UiFramework } from "../UiFramework";
+import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
+import { WidgetDef } from "./WidgetDef";
+import { createStableWidgetDef } from "./StableWidgetDef";
 
 /** Information about WidgetDefs in the WidgetManager
  * @internal
@@ -54,8 +54,34 @@ export class WidgetsChangedEvent extends BeUiEvent<WidgetsChangedEventArgs> { }
 export interface WidgetProvider {
   /** Id of provider */
   readonly id: string;
-  /** Get WidgetDefs matching the given criteria */
+  /** Get WidgetDefs matching the given criteria.
+   * @note It is recommended to provide custom unique ids to returned widget defs.
+   * Semi-stable id is used when auto-generated `widgetDef` id is detected,
+   * but correctness of such id depends on widget index in the returned array.
+   */
   getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection): ReadonlyArray<WidgetDef> | undefined;
+}
+
+function isZoneLocation(location: ZoneLocation | StagePanelLocation): location is ZoneLocation {
+  return location >= ZoneLocation.TopLeft && location <= ZoneLocation.BottomRight;
+}
+
+function getLocationName(location: ZoneLocation | StagePanelLocation) {
+  return isZoneLocation(location) ? ZoneLocation[location] : StagePanelLocation[location];
+}
+
+function getWidgetManagerStableWidgetId(stageUsage: string | undefined, location: ZoneLocation | StagePanelLocation, section: StagePanelSection,
+  index: number) {
+  return `uifw-wm-${stageUsage || ""}-${getLocationName(location)}-${StagePanelSection[section]}-${index}`;
+}
+
+function getWidgetProviderStableWidgetId(providerId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation,
+  section: StagePanelSection, index: number) {
+  return `uifw-wp-${providerId}-${stageUsage}-${getLocationName(location)}-${StagePanelSection[section]}-${index}`;
+}
+
+function getAddonStableWidgetId(stageUsage: string, location: StagePanelLocation, section: StagePanelSection, index: number) {
+  return `uifw-addon-${stageUsage}-${StagePanelLocation[location]}-${StagePanelSection[section]}-${index}`;
 }
 
 /** Widget Manager class.
@@ -88,6 +114,9 @@ export class WidgetManager {
   }
 
   /** Adds a WidgetDef for use in a Frontstage.
+   * @note Added `widgetDef` must return unique id to correctly save/restore App layout.
+   * Semi-stable id is generated when auto-generated `widgetDef` id is detected,
+   * but correctness of such id depends on `addWidgetDef` call order and widget location.
    */
   public addWidgetDef(widgetDef: WidgetDef, stageId: string | undefined, stageUsage: string | undefined, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection): boolean {
     if (stageId === undefined && stageUsage === undefined) {
@@ -96,9 +125,16 @@ export class WidgetManager {
     }
 
     section = (section !== undefined) ? section : StagePanelSection.Start;
-    const newWidget: WidgetInfo = { widgetDef, stageId, stageUsage, location, section };
+    const index = this._widgets.reduce((acc, info) => {
+      if (info.stageId === stageId && info.stageUsage === stageUsage && info.location === location && info.section === section)
+        return acc + 1;
+      return acc;
+    }, 0);
+    const stableId = getWidgetManagerStableWidgetId(stageUsage, location, section, index);
+    const stableWidget = createStableWidgetDef(widgetDef, stableId);
+    const newWidget: WidgetInfo = { widgetDef: stableWidget, stageId, stageUsage, location, section };
 
-    const oldWidgets = this._widgets.filter((info) => info.widgetDef.id !== widgetDef.id);
+    const oldWidgets = this._widgets.filter((info) => info.widgetDef.id !== newWidget.widgetDef.id);
     const updatedWidgets = [
       ...oldWidgets,
       newWidget,
@@ -157,37 +193,42 @@ export class WidgetManager {
   /** Gets WidgetDefs for a Frontstage location.
    */
   public getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection): ReadonlyArray<WidgetDef> | undefined {
-    section = (section !== undefined) ? section : StagePanelSection.Start;
+    const definedSection = section === undefined ? StagePanelSection.Start : section;
 
     const widgetInfos = this._widgets.filter((info) => {
       return (!info.stageId || info.stageId === stageId)
         && (!info.stageUsage || info.stageUsage === stageUsage)
         && info.location === location
-        && info.section === section;
+        && info.section === definedSection;
     });
 
     let widgetDefs = widgetInfos.map((info) => info.widgetDef);
 
     // Consult the providers
-    this._providers.forEach((p) => {
-      const wds = p.getWidgetDefs(stageId, stageUsage, location, section);
-      if (wds)
-        widgetDefs = widgetDefs.concat(wds);
+    this._providers.forEach((p, index) => {
+      const wds = p.getWidgetDefs(stageId, stageUsage, location, definedSection);
+      if (wds) {
+        const stableWds = wds.map((wd) => {
+          const stableId = getWidgetProviderStableWidgetId(p.id, stageUsage, location, definedSection, index);
+          return createStableWidgetDef(wd, stableId);
+        });
+        widgetDefs = widgetDefs.concat(stableWds);
+      }
     });
 
     // Consult the UiItemsManager to get any "addon" widgets
     if (location in StagePanelLocation) {
-      const widgets = UiItemsManager.getWidgets(stageId, stageUsage, location as StagePanelLocation, section);
+      const widgets = UiItemsManager.getWidgets(stageId, stageUsage, location as StagePanelLocation, definedSection);
       const updatedWidgets = UiItemsArbiter.updateWidgets(widgets);
-      if (updatedWidgets.length > 0) {
-        updatedWidgets.forEach((abstractProps) => {
-          const wd = new WidgetDef(WidgetDef.createWidgetPropsFromAbstractProps(abstractProps));
-          widgetDefs.push(wd);
-        });
-      }
+      updatedWidgets.forEach((abstractProps, index) => {
+        const props = WidgetDef.createWidgetPropsFromAbstractProps(abstractProps);
+        const stableId = getAddonStableWidgetId(stageUsage, location as StagePanelLocation, definedSection, index);
+        const stableProps = getStableWidgetProps(props, stableId);
+        const wd = new WidgetDef(stableProps);
+        widgetDefs.push(wd);
+      });
     }
 
     return widgetDefs.length > 0 ? widgetDefs : undefined;
   }
-
 }

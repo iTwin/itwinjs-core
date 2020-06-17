@@ -7,15 +7,10 @@
  * @module Widgets
  */
 
-import {
-  IModelApp,
-  MessageBoxIconType,
-  MessageBoxType,
-  ParseAndRunResult,
-} from "@bentley/imodeljs-frontend";
+import { IModelApp, MessageBoxIconType, MessageBoxType, ParseAndRunResult } from "@bentley/imodeljs-frontend";
 import { createButton } from "../ui/Button";
+import { appendDataListEntries, createDataList, DataList, DataListEntry } from "../ui/DataList";
 import { createTextBox, TextBox } from "../ui/TextBox";
-import { createDataList, DataList, DataListEntry, appendDataListEntries } from "../ui/DataList";
 
 function keyinsToDataListEntries(keyins: string[]): DataListEntry[] {
   const entries: DataListEntry[] = [];
@@ -134,19 +129,19 @@ export class KeyinField {
     ev.stopPropagation();
 
     if (undefined === this._history || 0 === this._history.length)
-      return Promise.resolve();
+      return;
 
     // NB: History list is ordered by most to least recent so moving "backwards" means incrementing the index.
     const direction = ev.key === "ArrowDown" ? 1 : (ev.key === "ArrowUp" ? 1 : 0);
     if (0 === direction)
-      return Promise.resolve();
+      return;
 
     ev.preventDefault();
     ev.stopPropagation();
 
     if (this._historyIndex === undefined) {
       if (direction < 0)
-        return Promise.resolve();
+        return;
       else
         this._historyIndex = -1;
     }
@@ -157,8 +152,6 @@ export class KeyinField {
       if (this._historyIndex >= 0)
         this.textBox.textbox.value = this._history[newIndex];
     }
-
-    return Promise.resolve();
   }
 
   private resetHistoryIndex(): void {

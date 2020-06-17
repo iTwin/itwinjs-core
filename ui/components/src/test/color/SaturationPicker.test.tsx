@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
+import React from "react";
 import sinon from "sinon";
-import { SaturationPicker } from "../../ui-components/color/SaturationPicker";
 import { HSVColor } from "@bentley/imodeljs-common";
+import { cleanup, fireEvent, render } from "@testing-library/react";
+import { SaturationPicker } from "../../ui-components/color/SaturationPicker";
 
 describe("<SaturationPicker />", () => {
   const hsv = new HSVColor(30, 30, 30);

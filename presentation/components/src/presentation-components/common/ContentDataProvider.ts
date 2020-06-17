@@ -9,16 +9,14 @@
 import memoize from "micro-memoize";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
 import {
-  KeySet, DEFAULT_KEYS_BATCH_SIZE, PageOptions, SelectionInfo,
-  ContentRequestOptions, Content, Descriptor, Field,
-  Ruleset, DescriptorOverrides,
+  Content, ContentRequestOptions, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, Field, KeySet, PageOptions, Ruleset, SelectionInfo,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
-import { findField } from "./Utils";
 import { RulesetRegistrationHelper } from "./RulesetRegistrationHelper";
+import { findField } from "./Utils";
 
 /**
  * Properties for invalidating content cache.
@@ -151,6 +149,7 @@ export class ContentDataProvider implements IContentDataProvider {
     this._imodel = props.imodel;
     this._keys = new KeySet();
     this._previousKeysGuid = this._keys.guid;
+    this._pagingSize = props.pagingSize;
     if (!props.doNotListenForPresentationUpdates)
       Presentation.presentation.onContentUpdate.addListener(this.onContentUpdate);
     this.invalidateCache(CacheInvalidationProps.full());

@@ -6,30 +6,30 @@
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
+import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
-import * as faker from "faker";
+import { BeEvent, Guid } from "@bentley/bentleyjs-core";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
+import {
+  ArrayTypeDescription, CategoryDescription, Content, ContentFlags, ContentUpdateInfo, Descriptor, Field, Item, NestedContentField,
+  NestedContentValue, PresentationError, PropertiesField, Property, PropertyValueFormat, RegisteredRuleset, Ruleset, StructTypeDescription,
+  ValuesDictionary,
+} from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
-  createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
-  createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath, createRandomPropertiesField, createRandomNestedContentField,
+  createRandomCategory, createRandomDescriptor, createRandomECClassInfo, createRandomECInstanceKey, createRandomNestedContentField,
+  createRandomPrimitiveField, createRandomPrimitiveTypeDescription, createRandomPropertiesField, createRandomRelationshipPath,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { BeEvent, Guid } from "@bentley/bentleyjs-core";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PropertyRecord, PrimitiveValue } from "@bentley/ui-abstract";
 import {
-  ValuesDictionary, Descriptor, Field,
-  CategoryDescription, Content, ContentFlags, Item,
-  NestedContentValue, NestedContentField, Property,
-  ArrayTypeDescription, PropertyValueFormat, PropertiesField, StructTypeDescription,
-  PresentationError, RegisteredRuleset, Ruleset, ContentUpdateInfo,
-} from "@bentley/presentation-common";
-import { Presentation, PresentationManager, FavoritePropertiesManager, RulesetManager, FavoritePropertiesScope } from "@bentley/presentation-frontend";
-import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
-import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
+  FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager, RulesetManager,
+} from "@bentley/presentation-frontend";
+import { PrimitiveValue, PropertyRecord } from "@bentley/ui-abstract";
 import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
+import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
+import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 
 const favoritesCategoryName = "Favorite";
 /**

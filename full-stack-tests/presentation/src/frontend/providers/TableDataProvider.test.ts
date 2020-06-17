@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { initialize, terminate } from "../../IntegrationTests";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, InstanceKey, ContentSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { ContentSpecificationTypes, InstanceKey, KeySet, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { PresentationTableDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { SortDirection } from "@bentley/ui-core";
+import { initialize, terminate } from "../../IntegrationTests";
 
 const RULESET: Ruleset = {
   id: "localization test",
@@ -129,9 +129,9 @@ describe("TableDataProvider", async () => {
       await provider.sort(0, SortDirection.Ascending); // sort by display label (column index = 0)
       const rows = await Promise.all([0, 1, 2].map(async (index: number) => provider.getRow(index)));
       // expected order:
-      // BisCore.DictionaryModel (dictionary model)
-      // DgnV8Bridge (repository model)
-      // Properties_60InstancesWithUrl2 (physical model)
+      // "" (repository model)
+      // "BisCore.DictionaryModel" (dictionary model)
+      // "Properties_60InstancesWithUrl2" (physical model)
       expect(rows).to.matchSnapshot();
     });
 
@@ -141,9 +141,9 @@ describe("TableDataProvider", async () => {
       await provider.sort(0, SortDirection.Descending); // sort by display label (column index = 0)
       const rows = await Promise.all([0, 1, 2].map(async (index: number) => provider.getRow(index)));
       // expected order:
-      // Properties_60InstancesWithUrl2 (physical model)
-      // DgnV8Bridge (repository model)
-      // BisCore.DictionaryModel (dictionary model)
+      // "Properties_60InstancesWithUrl2" (physical model)
+      // "BisCore.DictionaryModel" (dictionary model)
+      // "" (repository model)
       expect(rows).to.matchSnapshot();
     });
 

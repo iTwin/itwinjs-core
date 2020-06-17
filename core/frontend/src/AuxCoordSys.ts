@@ -6,15 +6,17 @@
  * @module Views
  */
 
-import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel, Npc, ColorDef, LinePixels } from "@bentley/imodeljs-common";
-import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, Matrix3d, Transform, Arc3d, AngleSweep } from "@bentley/geometry-core";
 import { JsonUtils } from "@bentley/bentleyjs-core";
+import { Angle, AngleSweep, Arc3d, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, YawPitchRollAngles } from "@bentley/geometry-core";
+import {
+  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Code, ColorDef, IModel, LinePixels, Npc,
+} from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { ViewState } from "./ViewState";
-import { DecorateContext } from "./ViewContext";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { Viewport, CoordSystem } from "./Viewport";
+import { DecorateContext } from "./ViewContext";
+import { CoordSystem, Viewport } from "./Viewport";
+import { ViewState } from "./ViewState";
 
 /** @public */
 export enum ACSType {

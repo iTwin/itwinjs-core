@@ -6,19 +6,20 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { IndexedXYZCollection, IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
-import { Range3d } from "./Range";
-import { PolygonOps } from "./PolygonOps";
-import { Loop } from "../curve/Loop";
-import { RegionOps } from "../curve/RegionOps";
-import { Point3d } from "./Point3dVector3d";
-import { XAndY } from "./XYZProps";
-import { LineString3d } from "../curve/LineString3d";
+import { AnyRegion } from "../curve/CurveChain";
 import { CurveChain } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { AnyRegion } from "../curve/CurveChain";
-import { UnionRegion } from "../curve/UnionRegion";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
 import { ParityRegion } from "../curve/ParityRegion";
+import { RegionOps } from "../curve/RegionOps";
+import { UnionRegion } from "../curve/UnionRegion";
+import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
+import { Point3d } from "./Point3dVector3d";
+import { PolygonOps } from "./PolygonOps";
+import { Range3d } from "./Range";
+import { XAndY } from "./XYZProps";
+
 /** abstract base class for area-related queries of a loop.
  * * subclasses have particular logic for `Loop` and polygon data.
  * @internal

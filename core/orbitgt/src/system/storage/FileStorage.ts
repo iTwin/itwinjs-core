@@ -14,12 +14,11 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { FileContent } from "./FileContent";
-import { FileRange } from "./FileRange";
-
 import { ABuffer } from "../buffer/ABuffer";
 import { AList } from "../collection/AList";
 import { ALong } from "../runtime/ALong";
+import { FileContent } from "./FileContent";
+import { FileRange } from "./FileRange";
 
 /**
  * Class FileStorage defines access methods to file content in a certain file storage account.

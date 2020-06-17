@@ -7,7 +7,7 @@
  */
 
 import { Guid } from "@bentley/bentleyjs-core";
-import { Ruleset, RegisteredRuleset } from "@bentley/presentation-common";
+import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 
 /**
  * Presentation ruleset registry.

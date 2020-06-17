@@ -2,12 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, SpatialViewDefinition, GeometricElement3d, DisplayStyle3d, StandaloneDb } from "@bentley/imodeljs-backend";
-import { OpenMode, DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { Placement3d, RenderMode, ViewFlags, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
-import { YawPitchRollAngles, Point3d, Vector3d, Range3d, StandardViewIndex } from "@bentley/geometry-core";
+import { readFileSync, unlinkSync, writeFileSync } from "fs";
 import * as Yargs from "yargs";
-import { readFileSync, writeFileSync, unlinkSync } from "fs";
+import { DbResult, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Point3d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import {
+  DisplayStyle3d, ECSqlStatement, GeometricElement3d, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, SpatialViewDefinition, StandaloneDb,
+  ViewDefinition,
+} from "@bentley/imodeljs-backend";
+import { ColorDef, ElementAlignedBox3d, Placement3d, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 
 interface ImportInputArgs {
   input: string;

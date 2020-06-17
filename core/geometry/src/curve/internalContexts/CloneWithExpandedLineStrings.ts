@@ -2,14 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module Curve
  */
+
+import { CurveCollection } from "../CurveCollection";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 import { CloneCurvesContext } from "./CloneCurvesContext";
-import { CurveCollection } from "../CurveCollection";
+
 /**
  * Algorithmic class for cloning with linestrings expanded to line segments
  * @internal

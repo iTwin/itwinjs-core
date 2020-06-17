@@ -2,13 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Angle, Geometry, Matrix3d } from "@bentley/geometry-core";
-import { ECSqlStatement, ExportGraphics, ExportGraphicsInfo, ExportGraphicsLines, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo, IModelHost, SnapshotDb, Texture } from "@bentley/imodeljs-backend";
-import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
 import * as yargs from "yargs";
+import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Angle, Geometry, Matrix3d } from "@bentley/geometry-core";
+import {
+  ECSqlStatement, ExportGraphics, ExportGraphicsInfo, ExportGraphicsLines, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo,
+  ExportPartInstanceInfo, ExportPartLinesInfo, IModelHost, SnapshotDb, Texture,
+} from "@bentley/imodeljs-backend";
+import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
 
 const CHORD_TOL = 0.001;
 const ANGLE_TOL = Angle.degreesToRadians(45);

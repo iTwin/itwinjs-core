@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Checker } from "../Checker";
 import { expect } from "chai";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Geometry } from "../../Geometry";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
+import { Checker } from "../Checker";
 
 function exerciseLineSegment3d(ck: Checker, segmentA: LineSegment3d) {
   const a = 4.2;

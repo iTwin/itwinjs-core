@@ -6,20 +6,17 @@
  * @module Picker
  */
 
-import * as React from "react";
-import { CommonProps, withOnOutsideClick, SizeProps } from "@bentley/ui-core";
-import { PopupItem } from "@bentley/ui-components";
-import {
-  Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally,
-} from "@bentley/ui-ninezone";
-import classnames from "classnames";
-import { UiFramework } from "../UiFramework";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
-import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
-
 import "./ListPicker.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { PopupItem } from "@bentley/ui-components";
+import { CommonProps, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
+import { containHorizontally, ExpandableItem, Group, GroupColumn, Item, Panel, withContainIn } from "@bentley/ui-ninezone";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
+import { ToolbarDragInteractionContext } from "../toolbar/DragInteraction";
+import { UiFramework } from "../UiFramework";
 
 // tslint:disable-next-line:variable-name
 const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false);
@@ -174,7 +171,10 @@ function getListPanel(props: ListPickerProps): React.ReactNode {
             key={itemIndex.toString()}
             label={item.name}
             isActive={item.enabled}
-            onClick={() => { props.setEnabled(item, !item.enabled); }}
+            onClick={
+              // istanbul ignore next
+              () => { props.setEnabled(item, !item.enabled); }
+            }
           />
         );
       case ListItemType.Separator:
@@ -198,6 +198,7 @@ function getListPanel(props: ListPickerProps): React.ReactNode {
         } else {
           return (<div key={itemIndex.toString()} />);
         }
+      // istanbul ignore next
       default:
         return (<div key={itemIndex.toString()} />);
     }
@@ -262,8 +263,9 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
 
   /** Renders ListPickerBase */
   public render() {
-    const icon = this.props.iconSpec ? (typeof this.props.iconSpec === "string" ? <i className={"icon " + (this.props.iconSpec)} /> :
-      <i className="icon uifw-item-svg-icon">{this.props.iconSpec}</i>) : <i className="icon icon-list" />;
+    const icon = this.props.iconSpec ? /* istanbul ignore next */ (typeof this.props.iconSpec === "string" ?
+      /* istanbul ignore next */ <i className={"icon " + (this.props.iconSpec)} /> : <i className="icon uifw-item-svg-icon">{this.props.iconSpec}</i>) :
+      <i className="icon icon-list" />;
 
     return (
       <ToolbarDragInteractionContext.Consumer>
@@ -402,7 +404,7 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
  * @beta
  */
 function ListPickerPopupItem(props: ListPickerProps) {
-  const icon = props.iconSpec ? (typeof props.iconSpec === "string" ? <i className={"icon " + (props.iconSpec)} /> :
+  const icon = props.iconSpec ? /* istanbul ignore next */ (typeof props.iconSpec === "string" ? <i className={"icon " + (props.iconSpec)} /> :
     <i className="icon uifw-item-svg-icon">{props.iconSpec}</i>) : <i className="icon icon-list" />;
 
   return (

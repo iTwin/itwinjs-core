@@ -4,9 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
-
 import { SchemaContext } from "../../src/Context";
 import { Format } from "../../src/Metadata/Format";
 import { InvertedUnit } from "../../src/Metadata/InvertedUnit";
@@ -14,6 +11,8 @@ import { OverrideFormat } from "../../src/Metadata/OverrideFormat";
 import { Schema } from "../../src/Metadata/Schema";
 import { Unit } from "../../src/Metadata/Unit";
 import { FormatTraits, FractionalPrecision, ShowSignOption } from "../../src/utils/FormatEnums";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 
 function createSchemaJson(format: any) {
   return createSchemaJsonWithItems({

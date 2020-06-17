@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { SchemaChanges, ChangeType } from "../../src/Validation/SchemaChanges";
 import {
-  Schema, SchemaContext, SchemaCompareDiagnostics, EntityClass, PrimitiveProperty, Mixin,
-  Enumeration, AnyEnumerator, RelationshipClass, RelationshipConstraint, RelationshipEnd, CustomAttributeClass, KindOfQuantity, Format, Unit, PropertyCategory, InvertedUnit, Phenomenon, Constant, SchemaItemType,
+  AnyEnumerator, Constant, CustomAttributeClass, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveProperty,
+  PropertyCategory, RelationshipClass, RelationshipConstraint, RelationshipEnd, Schema, SchemaCompareDiagnostics, SchemaContext, SchemaItemType, Unit,
 } from "../../src/ecschema-metadata";
+import { ChangeType, SchemaChanges } from "../../src/Validation/SchemaChanges";
 
 describe("SchemaChanges tests", () => {
   let schema: Schema;

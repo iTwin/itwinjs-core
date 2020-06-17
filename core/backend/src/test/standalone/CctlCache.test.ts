@@ -2,10 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { LockLevel, LockType } from "@bentley/imodelhub-client";
-import { CodeProps, SyncMode } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
+import { LockLevel, LockType } from "@bentley/imodelhub-client";
+import { CodeProps, SyncMode } from "@bentley/imodeljs-common";
 import { ConcurrencyControl, IModelJsFs } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -33,40 +33,43 @@ describe("ConcurrencyControl.StateCache", () => {
     if (!cctl.open())
       cctl.create();
 
-    assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.None);
-    assert.isFalse(cctl.isLockHeld({ type: LockType.Db, objectId: "1", level: LockLevel.Shared }));
-    assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.None);
-    cctl.insertLocks([{ type: LockType.Db, objectId: "1", level: LockLevel.Shared }]);
-    assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.Shared);
-    assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.None);
-    cctl.clear();
-    assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.None);
-    cctl.insertLocks([{ type: LockType.Db, objectId: "1", level: LockLevel.Shared }, { type: LockType.Db, objectId: "2", level: LockLevel.Exclusive }]);
-    assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.Shared);
-    assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.Exclusive);
-    cctl.clear();
-
     const code: CodeProps = { scope: "1", spec: "2", value: "3" };
     const code2: CodeProps = { scope: "1", spec: "2", value: "2" };
-    assert.isFalse(cctl.isCodeReserved(code));
-    assert.isFalse(cctl.isCodeReserved(code2));
-    assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.None);
-    cctl.insertCodes([code]);
-    assert.isTrue(cctl.isCodeReserved(code));
-    assert.isFalse(cctl.isCodeReserved(code2));
-    cctl.clear();
-    assert.isFalse(cctl.isCodeReserved(code));
-    assert.isFalse(cctl.isCodeReserved(code2));
+    try {
+      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.None);
+      assert.isFalse(cctl.isLockHeld({ type: LockType.Db, objectId: "1", level: LockLevel.Shared }));
+      assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.None);
+      cctl.insertLocks([{ type: LockType.Db, objectId: "1", level: LockLevel.Shared }]);
+      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.Shared);
+      assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.None);
+      cctl.clear();
+      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.None);
+      cctl.insertLocks([{ type: LockType.Db, objectId: "1", level: LockLevel.Shared }, { type: LockType.Db, objectId: "2", level: LockLevel.Exclusive }]);
+      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.Shared);
+      assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.Exclusive);
+      cctl.clear();
 
-    cctl.insertCodes([code, code2]);
-    cctl.insertLocks([{ type: LockType.Db, objectId: "1", level: LockLevel.Shared }, { type: LockType.Db, objectId: "2", level: LockLevel.Exclusive }]);
-    assert.isTrue(cctl.isCodeReserved(code));
-    assert.isTrue(cctl.isCodeReserved(code2));
-    assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.Shared);
-    assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.Exclusive);
+      assert.isFalse(cctl.isCodeReserved(code));
+      assert.isFalse(cctl.isCodeReserved(code2));
+      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.None);
+      cctl.insertCodes([code]);
+      assert.isTrue(cctl.isCodeReserved(code));
+      assert.isFalse(cctl.isCodeReserved(code2));
+      cctl.clear();
+      assert.isFalse(cctl.isCodeReserved(code));
+      assert.isFalse(cctl.isCodeReserved(code2));
 
-    cctl.saveChanges();
-    cctl.close(false);
+      cctl.insertCodes([code, code2]);
+      cctl.insertLocks([{ type: LockType.Db, objectId: "1", level: LockLevel.Shared }, { type: LockType.Db, objectId: "2", level: LockLevel.Exclusive }]);
+      assert.isTrue(cctl.isCodeReserved(code));
+      assert.isTrue(cctl.isCodeReserved(code2));
+      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.Shared);
+      assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.Exclusive);
+
+      cctl.saveChanges();
+    } finally {
+      cctl.close(false);
+    }
 
     assert.throws(() => {
       cctl.isCodeReserved(code);
@@ -77,11 +80,14 @@ describe("ConcurrencyControl.StateCache", () => {
     });
 
     assert.isTrue(cctl.open());
-
-    assert.isTrue(cctl.isCodeReserved(code));
-    assert.isTrue(cctl.isCodeReserved(code2));
-    assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.Shared);
-    assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.Exclusive);
+    try {
+      assert.isTrue(cctl.isCodeReserved(code));
+      assert.isTrue(cctl.isCodeReserved(code2));
+      assert.equal(cctl.getHeldLock(LockType.Db, "1"), LockLevel.Shared);
+      assert.equal(cctl.getHeldLock(LockType.Db, "2"), LockLevel.Exclusive);
+    } finally {
+      cctl.close(false);
+    }
   });
 
 });

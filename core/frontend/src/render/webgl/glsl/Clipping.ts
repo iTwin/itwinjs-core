@@ -7,14 +7,11 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ProgramBuilder, VariableType, VariablePrecision, FragmentShaderComponent } from "../ShaderBuilder";
-import { addModelViewMatrix } from "./Vertex";
-import { addWindowToTexCoords } from "./Fragment";
 import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
-import { ClipDef } from "../TechniqueFlags";
 import { addEyeSpace } from "./Common";
-import { ClippingType } from "../../RenderClipVolume";
+import { addModelViewMatrix } from "./Vertex";
 
 const getClipPlaneFloat = `
   vec4 getClipPlane(int index) {
@@ -33,9 +30,7 @@ export const unpackFloat = `
     float sign = (temp - exponent) * 2.0;
     exponent = exponent - bias;
     sign = -(sign * 2.0 - 1.0);
-    float unpacked = sign * v.x * (1.0 / 256.0); // shift right 8
-    unpacked += sign * v.y * (1.0 / 65536.0); // shift right 16
-    unpacked += sign * v.z * (1.0 / 16777216.0); // shift right 24
+    float unpacked = dot(sign * v.xyz, vec3(1.0 / 256.0, 1.0 / 65536.0, 1.0 / 16777216.0)); // shift x right 8, y right 16 and z right 24
     return unpacked * pow(10.0, exponent);
   }
 `;
@@ -63,34 +58,48 @@ const calcClipPlaneDist = `
   }
 `;
 
-const applyClipPlanes = `
+const applyClipPlanesPrelude = `
   int numPlaneSets = 1;
   int numSetsClippedBy = 0;
   bool clippedByCurrentPlaneSet = false;
-  for (int i = 0; i < MAX_CLIPPING_PLANES; i++)
-      {
-      if (i >= u_numClips)
-          break;
+`;
 
-      vec4 plane = getClipPlane(i);
-      if (plane.xyz == vec3(0.0)) // indicates start of new clip plane set
-          {
-          numPlaneSets = numPlaneSets + 1;
-          numSetsClippedBy += int(clippedByCurrentPlaneSet);
-          clippedByCurrentPlaneSet = false;
-          }
-      else if (!clippedByCurrentPlaneSet && calcClipPlaneDist(v_eyeSpace, plane) < 0.0)
-          clippedByCurrentPlaneSet = true;
-      }
+const applyClipPlanesLoopWebGL1 = `
+  for (int i = 0; i < MAX_CLIPPING_PLANES; i++) {
+    if (i >= u_numClips)
+      break;
+`;
+
+const applyClipPlanesLoopWebGL2 = `
+  for (int i = 0; i < u_numClips; i++) {
+`;
+
+const applyClipPlanesPostlude = `
+    vec4 plane = getClipPlane(i);
+    if (plane.x == 2.0) { // indicates start of new UnionOfConvexClipPlaneSets
+      if (numSetsClippedBy + int(clippedByCurrentPlaneSet) == numPlaneSets)
+        break;
+
+      numPlaneSets = 1;
+      numSetsClippedBy = 0;
+      clippedByCurrentPlaneSet = false;
+    } else if (plane.xyz == vec3(0.0)) { // indicates start of new clip plane set
+      numPlaneSets = numPlaneSets + 1;
+      numSetsClippedBy += int(clippedByCurrentPlaneSet);
+      clippedByCurrentPlaneSet = false;
+    } else if (!clippedByCurrentPlaneSet && calcClipPlaneDist(v_eyeSpace, plane) < 0.0) {
+      clippedByCurrentPlaneSet = true;
+    }
+  }
 
   numSetsClippedBy += int(clippedByCurrentPlaneSet);
   if (numSetsClippedBy == numPlaneSets) {
     if (u_outsideRgba.a > 0.0) {
       g_clipColor = u_outsideRgba.rgb;
       return true;
-    }
-    else
+    } else {
       discard;
+    }
   } else if (u_insideRgba.a > 0.0) {
     g_clipColor = u_insideRgba.rgb;
     return true;
@@ -99,24 +108,11 @@ const applyClipPlanes = `
   return false;
 `;
 
-const applyClipMask = `
-  vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
-  vec4 texel = TEXTURE(s_clipSampler, tc);
-  if (texel.r < 0.5)
-    discard;
-  return false;
-`;
+const applyClipPlanesWebGL1 = applyClipPlanesPrelude + applyClipPlanesLoopWebGL1 + applyClipPlanesPostlude;
+const applyClipPlanesWebGL2 = applyClipPlanesPrelude + applyClipPlanesLoopWebGL2 + applyClipPlanesPostlude;
 
 /** @internal */
-export function addClipping(prog: ProgramBuilder, clipDef: ClipDef) {
-  if (clipDef.type === ClippingType.Mask)
-    addClippingMask(prog);
-  else if (clipDef.type === ClippingType.Planes)
-    addClippingPlanes(prog, clipDef.numberOfPlanes);
-}
-
-function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
-  assert(maxClipPlanes > 0);
+export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
   const frag = prog.frag;
   const vert = prog.vert;
 
@@ -124,7 +120,8 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   prog.addUniform("u_numClips", VariableType.Int, (program) => {
     program.addGraphicUniform("u_numClips", (uniform, params) => {
       const doClipping = true; // set to false to visualize pre-shader culling of geometry...
-      const numClips = (doClipping && params.target.hasClipVolume) ? params.target.clips.count : 0;
+      const clip = doClipping ? params.target.currentClipVolume : undefined;
+      const numClips = clip?.texture?.height ?? 0;
       assert(numClips > 0 || !doClipping);
       uniform.setUniform1i(numClips);
     });
@@ -132,13 +129,17 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
 
   prog.addUniform("u_outsideRgba", VariableType.Vec4, (program) => {
     program.addGraphicUniform("u_outsideRgba", (uniform, params) => {
-      params.target.clips.outsideRgba.bind(uniform);
+      const clip = params.target.currentClipVolume;
+      if (clip)
+        clip.outsideRgba.bind(uniform);
     });
   });
 
   prog.addUniform("u_insideRgba", VariableType.Vec4, (program) => {
     program.addGraphicUniform("u_insideRgba", (uniform, params) => {
-      params.target.clips.insideRgba.bind(uniform);
+      const clip = params.target.currentClipVolume;
+      if (clip)
+        clip.insideRgba.bind(uniform);
     });
   });
 
@@ -152,28 +153,14 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
   }
 
   frag.addFunction(calcClipPlaneDist);
-  frag.maxClippingPlanes = maxClipPlanes;
   frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
     program.addGraphicUniform("s_clipSampler", (uniform, params) => {
-      const texture = params.target.clips.texture;
-      assert(texture !== undefined);
-      if (texture !== undefined)
-        texture.bindSampler(uniform, TextureUnit.ClipVolume);
-    });
-  }, VariablePrecision.High);
-  frag.set(FragmentShaderComponent.ApplyClipping, applyClipPlanes);
-}
-
-function addClippingMask(prog: ProgramBuilder) {
-  prog.frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
-    program.addGraphicUniform("s_clipSampler", (uniform, params) => {
-      const texture = params.target.clipMask;
+      const texture = params.target.currentClipVolume?.texture;
       assert(texture !== undefined);
       if (texture !== undefined)
         texture.bindSampler(uniform, TextureUnit.ClipVolume);
     });
   }, VariablePrecision.High);
 
-  addWindowToTexCoords(prog.frag);
-  prog.frag.set(FragmentShaderComponent.ApplyClipping, applyClipMask);
+  frag.set(FragmentShaderComponent.ApplyClipping, isWebGL2 ? applyClipPlanesWebGL2 : applyClipPlanesWebGL1);
 }

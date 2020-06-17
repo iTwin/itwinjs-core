@@ -3,12 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
-import {
-  IModelReadRpcInterface, IModelWriteRpcInterface,
-  IModelTileRpcInterface, DevToolsRpcInterface,
-} from "@bentley/imodeljs-common";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
+import { PresentationRpcInterface } from "@bentley/presentation-common";
 
 // tslint:disable:ter-indent
 
@@ -19,10 +16,16 @@ export interface Backend {
   path: string;
 }
 
+/**
+ * Holds the information required to u identify an iModel
+ */
 export interface IModelData {
-  id: string;
-  projectId: string;
+  useName: boolean; // Defines whether or not to use the name of the iModel
+  id?: string; // The iModel Id - This is not required
   name?: string; // The name is not required to actually get the iModel, only the id.
+  useProjectName: boolean;
+  projectId?: string;
+  projectName?: string;
   changeSetId?: string;
 }
 
@@ -124,31 +127,40 @@ export class Settings {
       this.gprid = process.env.GPRID;
 
     //  Parse the iModel variables
-    if (undefined === process.env.IMODEL_PROJECTID)
-      throw new Error("Missing the 'IMODEL_PROJECTID' setting.");
+    if (!process.env.IMODEL_PROJECTID && !process.env.IMODEL_PROJECTNAME)
+      throw new Error("Missing the 'IMODEL_PROJECTID' or 'IMODEL_PROJECTNAME' setting.");
 
-    if (undefined === process.env.IMODEL_IMODELID)
-      throw new Error("Missing the 'IMODEL_IMODELID' setting.");
+    if (!process.env.IMODEL_IMODELID && !process.env.IMODEL_IMODELNAME)
+      throw new Error("Missing the 'IMODEL_IMODELID' or 'IMODEL_IMODELNAME' setting.");
 
+    // Note: This is kind of messy but we don't sign-in to resolve the Names into IDs until the TestContext.
     this.iModels.push({
-      projectId: process.env.IMODEL_PROJECTID,
+      useName: !process.env.IMODEL_IMODELID,
       id: process.env.IMODEL_IMODELID,
-      // Neither of the next 2 are needed but since they'll be undefined anyway, just always set it.
       name: process.env.IMODEL_IMODELNAME,
+      useProjectName: !process.env.IMODEL_PROJECTID,
+      projectId: process.env.IMODEL_PROJECTID,
+      projectName: process.env.IMODEL_PROJECTNAME,
+
+      // Neither of the next 2 are needed but since they'll be undefined anyway, just always set it.
       changeSetId: process.env.IMODEL_CHANGESETID,
     });
 
     // If write rpc interface is defined expect a separate iModel to be used.
     if (this.runiModelWriteRpcTests) {
-      if (undefined === process.env.IMODEL_WRITE_PROJECTID)
-        throw new Error("Missing the 'IMODEL_WRITE_PROJECTID' setting.");
+      if (!process.env.IMODEL_WRITE_PROJECTID && !process.env.IMODEL_WRITE_PROJECTNAME)
+        throw new Error("Missing the 'IMODEL_WRITE_PROJECTID' or 'IMODEL_WRITE_PROJECTNAME' setting.");
 
-      if (undefined === process.env.IMODEL_WRITE_IMODELID)
-        throw new Error("Missing the 'IMODEL_WRITE_IMODELID' setting.");
+      if (!process.env.IMODEL_WRITE_IMODELID && !process.env.IMODEL_WRITE_IMODELNAME)
+        throw new Error("Missing the 'IMODEL_WRITE_IMODELID' or 'IMODEL_WRITE_IMODELNAME' setting.");
 
       this.iModels.push({
-        projectId: process.env.IMODEL_WRITE_PROJECTID,
+        useName: !process.env.IMODEL_WRITE_IMODELID,
         id: process.env.IMODEL_WRITE_IMODELID,
+        name: process.env.IMODEL_WRITE_IMODELNAME,
+        useProjectName: !process.env.IMODEL_WRITE_PROJECTID,
+        projectId: process.env.IMODEL_WRITE_PROJECTID,
+        projectName: process.env.IMODEL_WRITE_PROJECTNAME,
       });
     }
 
@@ -177,7 +189,6 @@ export class Settings {
       email: process.env.USER_WITH_ACCESS_USERNAME || "",
       password: process.env.USER_WITH_ACCESS_PASSWORD || "",
     });
-    // this.users.push([process.env.USER_WITHOUT_ACCESS_USERNAME || "", process.env.USER_WITHOUT_ACCESS_PASSWORD || ""]);
   }
 
   public toString(): string {

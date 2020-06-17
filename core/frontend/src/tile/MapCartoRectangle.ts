@@ -6,15 +6,9 @@
  * @module Tiles
  */
 
-import {
-  Angle,
-  Range2d,
-} from "@bentley/geometry-core";
+import { Angle, Range2d } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
-
-import {
-  MapTilingScheme,
-} from "./internal";
+import { MapTilingScheme } from "./internal";
 
 const scratchMercatorFractionRange = Range2d.createNull();
 

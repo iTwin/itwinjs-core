@@ -2,6 +2,156 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/ui-ninezone_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix toolbar overflow panel display."
+          },
+          {
+            "comment": "Remove border on small app button."
+          },
+          {
+            "comment": "Address React warnings about deprecated methods."
+          },
+          {
+            "comment": "Contain floating widgets in visible nine zone area."
+          },
+          {
+            "comment": "Use react-scripts for demo app."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/ui-ninezone_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for 2.0 ui Tool and Navigation widgets to react to UiFramework.onUiVisibilityChanged events"
+          },
+          {
+            "comment": "Removed @deprecated APIs from ui-framework & ui-core and updated NextVersion.md"
+          },
+          {
+            "comment": "Removed deprecated Expandable item History Tray support"
+          },
+          {
+            "comment": "fix sizing of SvgSprite icons in backstage."
+          },
+          {
+            "comment": "Add missing tilde to scss files"
+          },
+          {
+            "comment": "Address warning to convert 'start' to 'flex start'"
+          },
+          {
+            "comment": "Fix bug 292829 where toolbar border displayed when all items are hidden."
+          },
+          {
+            "comment": "Update test to avoid warnings."
+          },
+          {
+            "comment": "Fixed ReactResizeDetector usage after upgrade. Converted Toggle component to function. Hover/pressed styling in 2.0 Toolbar."
+          },
+          {
+            "comment": "Using center of Messages indicator as target. Added CSS classname overrides to StatusBarComposer for sections. UI 2.0 color tweaks."
+          },
+          {
+            "comment": "Ui 2.0 - Blur the toolbar item background"
+          },
+          {
+            "comment": "update styling of widget panel background color"
+          },
+          {
+            "comment": " Updates to remove need for svg-sprite-loader, use defualt CRA svgr loader instead."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Fixed Safari browser issues"
+          },
+          {
+            "comment": "Update StatusBarComposer to support Overflow panel."
+          },
+          {
+            "comment": "Ui 2.0 - Toolbar display changes"
+          },
+          {
+            "comment": "Updated Toolbar colors/opacity for Ui 2.0"
+          },
+          {
+            "comment": "Move common hooks to ui-core."
+          },
+          {
+            "comment": "Move react to peerDependencies."
+          },
+          {
+            "comment": "Learning documentation for ui-core"
+          },
+          {
+            "comment": "TOC for UI 2.0 Docs, @alpha to @beta, Components Examples"
+          },
+          {
+            "comment": "Ability to drag docked tool settings to widget mode."
+          },
+          {
+            "comment": "Support for floating widget targets."
+          },
+          {
+            "comment": "Fix safe area insets for bottom zones w/o footer. "
+          },
+          {
+            "comment": "Keep active tab visible."
+          },
+          {
+            "comment": "Reparent widget content when dragging widget around."
+          },
+          {
+            "comment": "Floating widget stacking order."
+          },
+          {
+            "comment": "Map children to panes fix."
+          },
+          {
+            "comment": "Upgraded icons-generic-webfont to ^1.0.0"
+          },
+          {
+            "comment": "Update auto-generated dialog items to work with the Tool Settings Bar."
+          },
+          {
+            "comment": "Update stage panels to not hide overflow to popups are not clipped."
+          },
+          {
+            "comment": "Minor styling changes"
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          },
+          {
+            "comment": "Update how overflow toolsetting panel is constructed."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/ui-ninezone_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/ui-ninezone_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/ui-ninezone_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",
@@ -66,9 +216,6 @@
           },
           {
             "comment": "No longer accessing this.state or this.props in setState updater - flagged by lgtm report"
-          },
-          {
-            "comment": "Update sinon version."
           },
           {
             "comment": "Added support for NotifyMessageDetails.displayTime for Toast messages"
@@ -233,7 +380,7 @@
       "comments": {
         "none": [
           {
-            "comment": "#165662. Allow an app to specify touch-specific instructions in tool assistance."
+            "comment": "Allow an app to specify touch-specific instructions in tool assistance."
           }
         ]
       }
@@ -254,7 +401,7 @@
             "comment": "Added CursorPrompt, improved Pointer messages"
           },
           {
-            "comment": "#159907. Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button"
+            "comment": "Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button"
           },
           {
             "comment": "Updated generic icon package"
@@ -488,7 +635,7 @@
             "comment": "Update to use newer generic-icons-webfont package."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -719,7 +866,7 @@
             "comment": "Updated to TypeScript 3.1"
           },
           {
-            "comment": "fixed height issues with widget content"
+            "comment": "Fixed height issues with widget content"
           }
         ]
       }

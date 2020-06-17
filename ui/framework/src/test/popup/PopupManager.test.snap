@@ -68,13 +68,43 @@ exports[`PopupManager PopupRenderer PopupRenderer should render HTMLElement 1`] 
           <div>
             <Component>
               <div>
-                <div
-                  dangerouslySetInnerHTML={
-                    Object {
-                      "__html": "<html><head></head><body><div class=\\"test-element\\">Hello World!</div></body></html>",
-                    }
+                <MessageDiv
+                  message={
+                    <html>
+                      <head />
+                      <body>
+                        <div
+                          class="test-element"
+                        >
+                          Hello World!
+                        </div>
+                      </body>
+                    </html>
                   }
-                />
+                >
+                  <MessageRenderer
+                    message={
+                      <html>
+                        <head />
+                        <body>
+                          <div
+                            class="test-element"
+                          >
+                            Hello World!
+                          </div>
+                        </body>
+                      </html>
+                    }
+                  >
+                    <div
+                      dangerouslySetInnerHTML={
+                        Object {
+                          "__html": "<html><head></head><body><div class=\\"test-element\\">Hello World!</div></body></html>",
+                        }
+                      }
+                    />
+                  </MessageRenderer>
+                </MessageDiv>
               </div>
             </Component>
           </div>

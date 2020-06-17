@@ -7,9 +7,9 @@
  */
 
 import { Matrix4d } from "@bentley/geometry-core";
-import { desync, sync } from "./Sync";
-import { Matrix4 } from "./Matrix";
 import { UniformHandle } from "./Handle";
+import { Matrix4 } from "./Matrix";
+import { desync, sync } from "./Sync";
 
 /** Maintains uniform variable state associated with a Target's ViewRect.
  * @internal

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/orbitgt-core",
-  "version": "2.0.0-dev.77",
+  "version": "2.2.0-dev.12",
   "description": "",
   "main": "lib/imodeljs-orbitgt.js",
   "typings": "lib/imodeljs-orbitgt",
@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:test-assets",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-orbitgt/file.json --tsIndexFile=./imodeljs-orbitgt.ts --onlyJson",
     "extract-api": "betools extract-api --entry=imodeljs-orbitgt",
@@ -38,8 +38,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.77",
-    "@bentley/build-tools": "2.0.0-dev.77",
+    "@bentley/bentleyjs-core": "2.2.0-dev.12",
+    "@bentley/build-tools": "2.2.0-dev.12",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

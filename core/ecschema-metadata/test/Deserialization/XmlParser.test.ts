@@ -5,17 +5,16 @@
 
 import sinon = require("sinon");
 import { assert, expect } from "chai";
-
-import { ECObjectsError } from "../../src/Exception";
-import { XmlParser } from "../../src/Deserialization/XmlParser";
-import { createSchemaXmlWithItems, createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import {
-  EntityClassProps, EnumerationProps, EnumeratorProps, FormatProps, InvertedUnitProps,
-  MixinProps, PhenomenonProps, ConstantProps, PrimitivePropertyProps, EnumerationPropertyProps, PrimitiveArrayPropertyProps, NavigationPropertyProps,
-  PropertyCategoryProps, SchemaProps, StructArrayPropertyProps, SchemaReferenceProps,
-} from "../../src/Deserialization/JsonProps";
-import { CustomAttributeClass, Schema, SchemaContext } from "../../src/ecschema-metadata";
 import { CAProviderTuple } from "../../src/Deserialization/AbstractParser";
+import {
+  ConstantProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, EnumeratorProps, FormatProps, InvertedUnitProps, MixinProps,
+  NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, SchemaProps,
+  SchemaReferenceProps, StructArrayPropertyProps,
+} from "../../src/Deserialization/JsonProps";
+import { XmlParser } from "../../src/Deserialization/XmlParser";
+import { CustomAttributeClass, Schema, SchemaContext } from "../../src/ecschema-metadata";
+import { ECObjectsError } from "../../src/Exception";
+import { createSchemaJsonWithItems, createSchemaXmlWithItems } from "../TestUtils/DeserializationHelpers";
 
 describe("XmlParser", () => {
   const INT_MAX = 2147483647;

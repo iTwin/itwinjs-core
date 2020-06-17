@@ -15,18 +15,18 @@ type float32 = number;
 type float64 = number;
 
 
-import { FileAccess } from "./FileAccess";
 import { ABuffer } from "../../../system/buffer/ABuffer";
 import { LittleEndian } from "../../../system/buffer/LittleEndian";
-import { ContainerFilePart } from "./ContainerFilePart";
+import { AList } from "../../../system/collection/AList";
 import { ABufferInStream } from "../../../system/io/ABufferInStream";
 import { InStream } from "../../../system/io/InStream";
-import { AList } from "../../../system/collection/AList";
 import { ALong } from "../../../system/runtime/ALong";
 import { ASystem } from "../../../system/runtime/ASystem";
 import { Message } from "../../../system/runtime/Message";
 import { Strings } from "../../../system/runtime/Strings";
 import { FileStorage } from "../../../system/storage/FileStorage";
+import { ContainerFilePart } from "./ContainerFilePart";
+import { FileAccess } from "./FileAccess";
 
 /**
  * Class ContainerFile defines a single file that contains multiple internal parts.

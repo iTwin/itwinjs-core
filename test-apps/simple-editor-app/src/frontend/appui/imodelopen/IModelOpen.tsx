@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import classnames from "classnames";
-import { UiFramework, IModelInfo, ProjectInfo, ProjectScope } from "@bentley/ui-framework";
-import { IModelList } from "./IModelList";
-import { ProjectDropdown } from "./ProjectDropdown";
-import { BlockingPrompt } from "./BlockingPrompt";
 import "./IModelOpen.scss";
 import "./Common.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { IModelInfo, ProjectInfo, ProjectScope, UiFramework } from "@bentley/ui-framework";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { BlockingPrompt } from "./BlockingPrompt";
+import { IModelList } from "./IModelList";
+import { ProjectDropdown } from "./ProjectDropdown";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {

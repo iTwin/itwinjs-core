@@ -6,14 +6,12 @@
  * @module Utilities
  */
 
-import * as React from "react";
+import "./NewBadge.scss";
 import classnames from "classnames";
-
+import * as React from "react";
 import { CommonProps } from "../utils/Props";
 import { Badge } from "./Badge";
-
 import newBadgeIcon from "./new-feature-badge.svg?sprite";
-import "./NewBadge.scss";
 
 /** New Badge React component
  * @internal

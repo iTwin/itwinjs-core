@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import * as path from "path";
+import * as React from "react";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { HierarchyBuilder, initialize, terminate } from "@bentley/presentation-testing";
 import { cleanup, render } from "@testing-library/react";
-import { expect } from "chai";
-import * as path from "path";
-import * as React from "react";
 import { ConfigurableUiControlType, ModelSelectorWidget, ModelSelectorWidgetControl, WidgetDef, WidgetProps } from "../../ui-framework";
 import { ModelSelectorDataProvider } from "../../ui-framework/pickers/ModelSelector/ModelSelectorDefinitions";
 import TestUtils from "../TestUtils";

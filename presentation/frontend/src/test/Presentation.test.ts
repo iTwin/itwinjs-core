@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
 
+import "./_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import "./_helpers/MockFrontendEnvironment";
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { PresentationError } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { Presentation, SelectionManager } from "../presentation-frontend";
-import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
-import { PresentationManager } from "../presentation-frontend/PresentationManager";
+import { IConnectivityInformationProvider } from "../presentation-frontend/ConnectivityInformationProvider";
 import { FavoritePropertiesManager } from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import { IFavoritePropertiesStorage } from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
-import { IConnectivityInformationProvider } from "../presentation-frontend/ConnectivityInformationProvider";
+import { PresentationManager } from "../presentation-frontend/PresentationManager";
+import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
 
 describe("Presentation", () => {
 

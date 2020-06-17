@@ -6,29 +6,19 @@
  * @module Tiles
  */
 
-import {
-  BeTimePoint,
-} from "@bentley/bentleyjs-core";
-import {
-  ClipVector,
-  Map4d,
-  Point3d,
-  Range3d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  FrustumPlanes,
-  ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
-import { Tile, TileGraphicType, TileTree } from "./internal";
-import { SceneContext } from "../ViewContext";
-import { ViewingSpace } from "../ViewingSpace";
+import { BeTimePoint } from "@bentley/bentleyjs-core";
+import { ClipVector, Map4d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
-import { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
+import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "../render/RenderSystem";
+import { SceneContext } from "../ViewContext";
+import { ViewingSpace } from "../ViewingSpace";
+import { CoordSystem } from "../Viewport";
+import { Tile, TileGraphicType, TileTree } from "./internal";
 
 const scratchRange = new Range3d();
 const scratchPoint = Point3d.create();
@@ -66,13 +56,29 @@ export class TileDrawArgs {
   public parentsAndChildrenExclusive: boolean;
   /** Tiles that we want to draw and that are ready to draw. May not actually be selected, e.g. if sibling tiles are not yet ready. */
   public readonly readyTiles = new Set<Tile>();
+  /** For perspective views, the view-Z of the near plane. */
+  private readonly _nearViewZ?: number;
 
   /** Compute the size of this tile on screen in pixels. */
   public getPixelSize(tile: Tile): number {
     const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
     const center = this.getTileCenter(tile);
 
+    if (this.context.viewport.view.isCameraEnabled()) {
+      // Find point on tile bounding sphere closest to eye.
+      const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
+      if (toEye) {
+        toEye.scaleInPlace(radius);
+        center.addInPlace(toEye);
+      }
+    }
+
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
+    if (undefined !== this._nearViewZ && viewPt.z > this._nearViewZ) {
+      // Limit closest point on tile bounding sphere to the near plane.
+      viewPt.z = this._nearViewZ;
+    }
+
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
     const pixelSizeAtPt = this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
     return 0 !== pixelSizeAtPt ? radius / pixelSizeAtPt : 1.0e-3;
@@ -131,11 +137,13 @@ export class TileDrawArgs {
     this.planarClassifier = context.getPlanarClassifierForModel(tree.modelId);
     this.drape = context.getTextureDrapeForModel(tree.modelId);
 
-    // NB: Culling is currently feature-gated - ignore view clip if feature not enabled.
-    if (context.viewFlags.clipVolume && false !== tree.viewFlagOverrides.clipVolumeOverride)
+    // NB: If the tile tree has its own clip, do not also apply the view's clip.
+    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolumeOverride && undefined === clip)
       this.viewClip = undefined === context.viewport.outsideClipColor ? context.viewport.view.getViewClip() : undefined;
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
+    if (context.viewport.view.isCameraEnabled())
+      this._nearViewZ = context.viewport.getFrustum(CoordSystem.View).frontCenter.z;
   }
 
   /** A multiplier applied to a [[Tile]]'s `maximumSize` property to adjust level of detail.
@@ -150,8 +158,13 @@ export class TileDrawArgs {
   /** @internal */
   public getTileRadius(tile: Tile): number {
     let range: Range3d = tile.range.clone(scratchRange);
+    if (tile.tree.is2d) {
+      // 2d tiles have a fixed Z range of [-1, 1]. Sometimes (e.g., hypermodeling) we draw them within a 3d view. Prevent Z from artificially expanding the radius.
+      range.low.z = range.high.z = 0;
+    }
+
     range = this.location.multiplyRange(range, range);
-    return 0.5 * (tile.tree.is3d ? range.low.distance(range.high) : range.low.distanceXY(range.high));
+    return 0.5 * range.low.distance(range.high);
   }
 
   /** @internal */
@@ -195,7 +208,7 @@ export class TileDrawArgs {
 
   /** @internal */
   public markChildrenLoading(): void {
-    this.context.hasMissingTiles = true;
+    this.context.markChildrenLoading();
   }
 
   /** Indicate that the specified tile is being used for some purpose by the [[SceneContext]]'s [[Viewport]]. Typically "used" means "displayed", but the exact meaning is up to the [[TileTree]] - for example, "used" might also mean that the tile's children are being used. A tile that is "in use" by any [[Viewport]] will not be discarded. */

@@ -8,10 +8,10 @@
 
 import { ColorDef } from "@bentley/imodeljs-common";
 import { RenderPlan } from "../RenderPlan";
-import { FloatRgb, FloatRgba } from "./FloatRGBA";
-import { sync, desync } from "./Sync";
-import { UniformHandle } from "./Handle";
 import { ColorInfo } from "./ColorInfo";
+import { FloatRgb, FloatRgba } from "./FloatRGBA";
+import { UniformHandle } from "./Handle";
+import { desync, sync } from "./Sync";
 
 /** Maintains state of uniforms associated with the DisplayStyleState.
  * @internal

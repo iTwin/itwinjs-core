@@ -37,4 +37,10 @@ export enum FrontendLoggerCategory {
    * @alpha
    */
   EditorConnection = "imodeljs-frontend.EditorConnection",
+
+  /**
+   * The logger category used by FeatureTrackingManager
+   * @alpha
+   */
+  FeatureTracking = "imodeljs-frontend.FeatureTracking",
 }

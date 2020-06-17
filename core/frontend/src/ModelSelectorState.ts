@@ -7,9 +7,9 @@
  */
 
 import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+import { ModelSelectorProps } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { ModelSelectorProps } from "@bentley/imodeljs-common";
 
 /** The state of a [ModelSelector]($backend). It holds a set of ids of GeometricModels for a [[SpatialViewState]].
  * It defines the set of [[ModelState]]s drawn within the view as a set of IDs.

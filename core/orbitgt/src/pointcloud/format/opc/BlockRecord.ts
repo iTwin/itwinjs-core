@@ -17,10 +17,10 @@ type float64 = number;
 import { LittleEndian } from "../../../system/buffer/LittleEndian";
 import { InStream } from "../../../system/io/InStream";
 import { OutStream } from "../../../system/io/OutStream";
-import { BlockIndex } from "../../model/BlockIndex";
-import { GridIndex } from "../../model/GridIndex";
 import { ALong } from "../../../system/runtime/ALong";
 import { Numbers } from "../../../system/runtime/Numbers";
+import { BlockIndex } from "../../model/BlockIndex";
+import { GridIndex } from "../../model/GridIndex";
 
 /**
  * Class BlockRecord defines a (32x32x32) block of tiles.

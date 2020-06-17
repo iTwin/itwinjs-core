@@ -6,21 +6,25 @@
  * @module CartesianGeometry
  */
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../geometry3d/Range";
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { Geometry } from "../Geometry";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Arc3d } from "../curve/Arc3d";
-import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
-import { CurvePrimitive, AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { ClipPrimitive } from "./ClipPrimitive";
-import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { Loop } from "../curve/Loop";
-import { LineString3d } from "../curve/LineString3d";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { ClipVector } from "./ClipVector";
-import { Geometry } from "../Geometry";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Range1d, Range3d } from "../geometry3d/Range";
 import { ClipPlane } from "./ClipPlane";
+import { ClipPrimitive } from "./ClipPrimitive";
+import { ClipVector } from "./ClipVector";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { LineStringOffsetClipperContext } from "./internalContexts/LineStringOffsetClipperContext";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 
 /** Enumerated type for describing where geometry lies with respect to clipping planes.
  * @public
@@ -72,7 +76,27 @@ export interface Clipper {
    */
   announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
 }
-
+/**
+ * Interface for clipping polygons.
+ * Supported by:
+ * * AlternatingCCTreeNode
+ * * ConvexClipPlaneSet
+ * @public
+ */
+export interface PolygonClipper {
+  /**
+   *
+   * @param xyz input polygon.  This is not changed.
+   * @param insideFragments Array to receive "inside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
+   * @param outsideFragments Array to receive "outside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
+   * @param arrayCache cache for reusable GrowableXYZArray.
+   */
+  appendPolygonClip(
+    xyz: GrowableXYZArray,
+    insideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache): void;
+}
 /** Static class whose various methods are functions for clipping geometry
  * @public
  */
@@ -455,5 +479,48 @@ export class ClipUtilities {
         return true;
     }
     return false;
+  }
+  /**
+   * Specialized logic for replacing clip fragments by an equivalent singleton.
+   * * If there are baseCount + 1 or fewer fragments, do nothing.
+   * * If there are more than baseCount+1 fragments:
+   *   * drop them all to the cache
+   *   * push a copy of the singleton.
+   * * The use case for this is that a multi-step clipper (e.g. UnionOfConvexClipPlaneSets) may produce many fragments, and then be able to determine
+   *     that they really are the original pre-clip polygon unchanged.
+   * * The baseCount+1 case is the case where the entire original singleton is still a singleton and can be left alone.
+   * * Calling this replacer shuffles the original back into the fragment array, and drops the fragments.
+   * * This determination is solely within the logic of the caller.
+   * @param shards array of fragments
+   * @param baseCount original count
+   * @param singleton single array which may be a replacement for multiple fragments
+   * @param cache cache for array management
+   */
+  public static restoreSingletonInPlaceOfMultipleShards(fragments: GrowableXYZArray[], baseCount: number, singleton: GrowableXYZArray, arrayCache: GrowableXYZArrayCache) {
+    if (fragments.length > baseCount + 1) {
+      while (fragments.length > baseCount) {
+        const f = fragments.pop();
+        arrayCache.dropToCache(f);
+      }
+      fragments.push(arrayCache.grabAndFill(singleton));
+    }
+  }
+
+  /**
+   * Create a UnionOfConvexClipPlaneSets for a volume defined by a path and offsets.
+   * @param points points along the path.
+   * @param positiveOffsetLeft offset to left.  0 is clip on the path.
+   * @param positiveOffsetRight offset to the right.  0 is clip on the path.
+   * @param z0 z for lower clipping plane.  If undefined, unbounded in positive z
+   * @param z1 z for upper clipping plane.  If undefined, unbounded in negative z.
+   * @alpha
+   */
+  public static createXYOffsetClipFromLineString(points: Point3d[] | IndexedXYZCollection,
+    leftOffset: number, rightOffset: number, z0: number, z1: number): UnionOfConvexClipPlaneSets {
+    if (Array.isArray(points)) {
+      return LineStringOffsetClipperContext.createClipBetweenOffsets(
+        new Point3dArrayCarrier(points), leftOffset, rightOffset, z0, z1);
+    }
+    return LineStringOffsetClipperContext.createClipBetweenOffsets(points, leftOffset, rightOffset, z0, z1);
   }
 }

@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { IDisposable, BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
 import { IModelApp, NativeApp } from "@bentley/imodeljs-frontend";
 

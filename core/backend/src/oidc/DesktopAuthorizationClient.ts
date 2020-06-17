@@ -8,22 +8,21 @@
  * @module Authentication
  */
 
-import { BeEvent, BentleyError, AuthStatus, Logger, assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ImsAuthorizationClient, request, RequestOptions } from "@bentley/itwin-client";
+import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { DesktopAuthorizationClientConfiguration, defaultDesktopAuthorizationClientExpiryBuffer } from "@bentley/imodeljs-common";
+import { defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
+import { AccessToken, ImsAuthorizationClient, request, RequestOptions } from "@bentley/itwin-client";
 import {
-  GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN,
-  AuthorizationNotifier, AuthorizationServiceConfiguration, BaseTokenRequestHandler, TokenRequestHandler,
-  AuthorizationRequestJson, AuthorizationRequest, AuthorizationResponse, AuthorizationError,
-  TokenRequestJson, TokenRequest, TokenResponse, RevokeTokenRequestJson, RevokeTokenRequest,
+  AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
+  BaseTokenRequestHandler, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, RevokeTokenRequest, RevokeTokenRequestJson, TokenRequest,
+  TokenRequestHandler, TokenRequestJson, TokenResponse,
 } from "@openid/appauth";
-import { NodeRequestor, NodeCrypto } from "@openid/appauth/built/node_support";
+import { NodeCrypto, NodeRequestor } from "@openid/appauth/built/node_support";
 import { StringMap } from "@openid/appauth/built/types";
-import { ElectronTokenStore } from "./ElectronTokenStore";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequestHandler";
 import { ElectronAuthorizationEvents } from "./ElectronAuthorizationEvents";
+import { ElectronAuthorizationRequestHandler } from "./ElectronAuthorizationRequestHandler";
+import { ElectronTokenStore } from "./ElectronTokenStore";
 import { LoopbackWebServer } from "./LoopbackWebServer";
 
 const loggerCategory = BackendLoggerCategory.Authorization;
@@ -175,7 +174,7 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     await this.makeRevokeTokenRequest(requestContext);
   }
 
-  private async getUserInfo(requestContext: ClientRequestContext, tokenResponse: TokenResponse): Promise<UserInfo | undefined> {
+  private async getUserProfile(requestContext: ClientRequestContext, tokenResponse: TokenResponse): Promise<any | undefined> {
     requestContext.enter();
     const options: RequestOptions = {
       method: "GET",
@@ -186,15 +185,19 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
     };
 
     const response = await request(requestContext, this._configuration!.userInfoEndpoint!, options);
-    return UserInfo.fromTokenResponseJson(response.body);
+    return response?.body;
   }
 
   private async createAccessTokenFromResponse(requestContext: ClientRequestContext, tokenResponse: TokenResponse): Promise<AccessToken> {
-    const startsAt: Date = new Date(tokenResponse.issuedAt * 1000);
-    const expiresAt: Date = new Date((tokenResponse.issuedAt + tokenResponse.expiresIn!) * 1000);
-    const userInfo: UserInfo | undefined = await this.getUserInfo(requestContext, tokenResponse);
-    const accessToken = AccessToken.fromJsonWebTokenString(tokenResponse.accessToken, startsAt, expiresAt, userInfo);
-    return accessToken;
+    const profile = await this.getUserProfile(requestContext, tokenResponse);
+
+    const json = {
+      access_token: tokenResponse.accessToken,
+      expires_at: tokenResponse.issuedAt + (tokenResponse.expiresIn ?? 0),
+      expires_in: tokenResponse.expiresIn,
+    };
+
+    return AccessToken.fromTokenResponseJson(json, profile);
   }
 
   private async setTokenResponse(requestContext: ClientRequestContext, tokenResponse: TokenResponse | undefined) {
@@ -218,7 +221,8 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
   }
 
   private isValidToken(tokenResponse: TokenResponse): boolean {
-    return tokenResponse.isValid(this._clientConfiguration.expiryBuffer || defaultDesktopAuthorizationClientExpiryBuffer);
+    const buffer = this._clientConfiguration.expiryBuffer || defaultDesktopAuthorizationClientExpiryBuffer;
+    return tokenResponse.isValid(-buffer);
   }
 
   private async refreshAccessToken(requestContext: ClientRequestContext, refreshToken: string): Promise<AccessToken> {
@@ -279,10 +283,6 @@ export class DesktopAuthorizationClient extends ImsAuthorizationClient implement
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
   public get hasSignedIn(): boolean {
     return !!this._tokenResponse;
-  }
-
-  /** Disposes the resources held by this client */
-  public dispose(): void {
   }
 
   /** Swap the authorization code for a refresh token and access token */

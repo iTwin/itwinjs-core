@@ -6,39 +6,19 @@
  * @module Picker
  */
 
-import * as React from "react";
 import classnames from "classnames";
-import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
-import {
-  SpatialViewState,
-  SpatialModelState,
-} from "@bentley/imodeljs-frontend";
+import * as React from "react";
+import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
+import { SpatialModelState, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import { DEPRECATED_treeWithFilteringSupport } from "@bentley/presentation-components";
+import { DEPRECATED_Tree, FilteringInput, SelectionMode, TreeNodeItem } from "@bentley/ui-components";
 import {
-  DEPRECATED_Tree,
-  TreeNodeItem,
-  FilteringInput,
-  SelectionMode,
-} from "@bentley/ui-components";
-import {
-  CheckBoxInfo,
-  CheckBoxState,
-  isPromiseLike,
-  NodeCheckboxRenderProps,
-  ImageCheckBox,
-  LoadingSpinner,
-  SpinnerSize,
-  GlobalContextMenu,
-  ContextMenuItem,
+  CheckBoxInfo, CheckBoxState, ContextMenuItem, GlobalContextMenu, ImageCheckBox, isPromiseLike, LoadingSpinner, NodeCheckboxRenderProps, SpinnerSize,
 } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ListItem, ListItemType } from "../ListPicker";
-import {
-  CategoryModelTreeProps,
-  CategoryModelTreeState,
-  Groups,
-} from "./ModelSelectorDefinitions";
+import { CategoryModelTreeProps, CategoryModelTreeState, Groups } from "./ModelSelectorDefinitions";
 
 /**
  * Tree which displays and manages models or categories contained in an iModel.

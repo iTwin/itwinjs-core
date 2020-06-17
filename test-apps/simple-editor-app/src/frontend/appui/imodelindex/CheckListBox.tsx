@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import classnames from "classnames";
-import { CommonProps, Checkbox } from "@bentley/ui-core";
 import "./CheckListBox.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { Checkbox, CommonProps } from "@bentley/ui-core";
 
 /**
  * Properties for the [[CheckListBoxItem]] component.
@@ -25,11 +25,6 @@ export interface CheckListBoxItemProps extends CommonProps {
  * @internal
  */
 export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
-
-  constructor(props: CheckListBoxItemProps, context?: any) {
-    super(props, context);
-  }
-
   private _onClick = () => {
     if (this.props.onClick) {
       this.props.onClick();

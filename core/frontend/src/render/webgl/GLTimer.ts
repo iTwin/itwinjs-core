@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { System } from "./System";
-import { GLTimerResult, GLTimerResultCallback } from "./../RenderSystem";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
+import { GLTimerResult, GLTimerResultCallback } from "../RenderSystem";
+import { System } from "./System";
 
 abstract class DisjointTimerExtension {
   public abstract get isSupported(): boolean;

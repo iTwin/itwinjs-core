@@ -6,18 +6,17 @@
  * @module Cursor
  */
 
-import * as React from "react";
-
-import { RelativePosition } from "@bentley/ui-abstract";
-import { CommonProps, CommonDivProps, Div, PointProps, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
-import { TitleBar } from "@bentley/ui-ninezone";
-
 import "./CursorPopup.scss";
+import * as React from "react";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { CommonDivProps, CommonProps, Div, PointProps, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
+import { TitleBar } from "@bentley/ui-ninezone";
 import { CursorPopupFadeOutEventArgs, CursorPopupManager } from "./CursorPopupManager";
+
 import classnames = require("classnames");
 
 /** Properties for the [[CursorPopup]] React component
- * @beta
+ * @public
  */
 export interface CursorPopupProps extends CommonProps {
   id: string;
@@ -48,7 +47,7 @@ interface CursorPopupState {
 }
 
 /** CursorPopup React component
- * @beta
+ * @public
  */
 export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupState> {
 
@@ -194,7 +193,7 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
 }
 
 /** CursorPopup content with padding
- * @beta
+ * @public
  */
 export function CursorPopupContent(props: CommonDivProps) {
   return <Div {...props} mainClassName="uifw-cursorpopup-content" />;

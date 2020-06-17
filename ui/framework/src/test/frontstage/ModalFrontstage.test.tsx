@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
+import { FrontstageManager, ModalFrontstage, ModalFrontstageInfo } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import { ModalFrontstageInfo, FrontstageManager, ModalFrontstage } from "../../ui-framework";
 
 const navigationBackSpy = sinon.spy();
 const closeModalSpy = sinon.spy();
@@ -64,7 +63,9 @@ describe("ModalFrontstage", () => {
     const modalFrontstage = new TestModalFrontstage();
 
     const changedEventSpy = sinon.spy();
+    const closedEventSpy = sinon.spy();
     const removeListener = FrontstageManager.onModalFrontstageChangedEvent.addListener(changedEventSpy);
+    const removeListener2 = FrontstageManager.onModalFrontstageClosedEvent.addListener(closedEventSpy);
 
     FrontstageManager.openModalFrontstage(modalFrontstage);
     expect(changedEventSpy.calledOnce).to.be.true;
@@ -86,8 +87,10 @@ describe("ModalFrontstage", () => {
 
     FrontstageManager.closeModalFrontstage();
     expect(changedEventSpy.calledThrice).to.be.true;
+    expect(closedEventSpy.calledOnce).to.be.true;
 
     removeListener();
+    removeListener2();
   });
 
 });

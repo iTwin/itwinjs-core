@@ -2,16 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module Rendering
  */
-import { Target } from "./Target";
+
+import {
+  ClipUtilities, ConvexClipPlaneSet, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range1d, Range2d, Range3d,
+  Ray3d, Transform,
+} from "@bentley/geometry-core";
+import { Frustum, FrustumPlanes, Npc, RenderMode } from "@bentley/imodeljs-common";
 import { TileTreeReference } from "../../tile/internal";
-import { Frustum, RenderMode, FrustumPlanes, Npc } from "@bentley/imodeljs-common";
-import { Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d, Map4d, Range1d, Range2d, ConvexClipPlaneSet, ClipUtilities, GrowableXYZArray } from "@bentley/geometry-core";
-import { RenderState } from "./RenderState";
-import { ViewState3d } from "../../ViewState";
 import { ViewingSpace } from "../../ViewingSpace";
+import { ViewState3d } from "../../ViewState";
+import { RenderState } from "./RenderState";
+import { Target } from "./Target";
 
 export class PlanarTextureProjection {
   private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
@@ -26,7 +31,7 @@ export class PlanarTextureProjection {
     const drapedTileTree = drapedRef.treeOwner.tileTree;
     const drapeTileTree = drapeRef.treeOwner.tileTree;
     if (undefined === drapedTileTree || undefined === drapeTileTree)
-      return { };
+      return {};
 
     const textureZ = texturePlane.getNormalRef();
     // const textureDepth = textureZ.dotProduct(texturePlane.getOriginRef());

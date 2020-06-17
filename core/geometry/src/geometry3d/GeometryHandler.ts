@@ -7,37 +7,37 @@
  * @module ArraysAndInterfaces
  */
 
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { CoordinateXYZ } from "../curve/CoordinateXYZ";
-import { UnionRegion } from "../curve/UnionRegion";
-import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
-import { ParityRegion } from "../curve/ParityRegion";
-import { Loop } from "../curve/Loop";
-import { Path } from "../curve/Path";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
+import { BezierCurveBase } from "../bspline/BezierCurveBase";
+import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
+import { Arc3d } from "../curve/Arc3d";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Path } from "../curve/Path";
+import { PointString3d } from "../curve/PointString3d";
+import { TransitionSpiral3d } from "../curve/TransitionSpiral";
+import { UnionRegion } from "../curve/UnionRegion";
 import { IndexedPolyface } from "../polyface/Polyface";
-import { Sphere } from "../solid/Sphere";
-import { Cone } from "../solid/Cone";
 import { Box } from "../solid/Box";
-import { TorusPipe } from "../solid/TorusPipe";
+import { Cone } from "../solid/Cone";
 import { LinearSweep } from "../solid/LinearSweep";
 import { RotationalSweep } from "../solid/RotationalSweep";
 import { RuledSweep } from "../solid/RuledSweep";
-import { TransitionSpiral3d } from "../curve/TransitionSpiral";
-
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { Arc3d } from "../curve/Arc3d";
-import { LineString3d } from "../curve/LineString3d";
-import { PointString3d } from "../curve/PointString3d";
+import { Sphere } from "../solid/Sphere";
+import { TorusPipe } from "../solid/TorusPipe";
 import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
-import { BezierCurveBase } from "../bspline/BezierCurveBase";
-import { GeometryQuery } from "../curve/GeometryQuery";
 import { Vector2d } from "./Point2dVector2d";
+import { Point3d, Vector3d } from "./Point3dVector3d";
+
 /**
  * * `GeometryHandler` defines the base abstract methods for double-dispatch geometry computation.
  * * User code that wants to handle one or all of the commonly known geometry types implements a handler class.

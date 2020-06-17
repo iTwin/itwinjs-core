@@ -7,12 +7,13 @@
  * @module RpcInterface
  */
 
-import { ClientRequestContext, IModelStatus, Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ProgressInfo, ProgressCallback } from "@bentley/itwin-client";
+import { ClientRequestContext, Config, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
   BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, Events, IModelError, IModelProps, IModelRpcProps, IModelVersion, InternetConnectivityStatus,
-  NativeAppRpcInterface, OpenBriefcaseOptions, OverriddenBy, QueuedEvent, RequestBriefcaseProps, RpcInterface, RpcManager, StorageValue, TileTreeContentIds,
+  NativeAppRpcInterface, OpenBriefcaseOptions, OverriddenBy, QueuedEvent, RequestBriefcaseProps, RpcInterface, RpcManager, StorageValue,
+  TileTreeContentIds,
 } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext, ProgressCallback, ProgressInfo } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { EmitStrategy, EventSinkManager } from "../EventSink";
@@ -180,7 +181,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    * @param key Key to locate the briefcase in the disk cache
    */
   public async deleteBriefcase(key: BriefcaseKey): Promise<void> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const requestContext = ClientRequestContext.current;
     await BriefcaseManager.delete(requestContext, key);
   }
 

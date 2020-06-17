@@ -6,14 +6,13 @@
  * @module SelectionSet
  */
 
-import {
-  PropertyEditorParamTypes, ButtonGroupEditorParams, SuppressLabelEditorParams,
-  DialogItem, DialogPropertySyncItem, DialogItemValue,
-  PropertyDescription,
-} from "@bentley/ui-abstract";
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
+import {
+  ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
+  SuppressLabelEditorParams,
+} from "@bentley/ui-abstract";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -21,9 +20,9 @@ import { Pixel } from "../render/Pixel";
 import { DecorateContext } from "../ViewContext";
 import { ViewRect } from "../ViewRect";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, EventHandled, InputSource, CoordinateLockOverrides, CoreTools } from "./Tool";
+import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
-import { ToolAssistance, ToolAssistanceImage, ToolAssistanceSection, ToolAssistanceInstruction, ToolAssistanceInputMethod } from "./ToolAssistance";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 
 // cSpell:ignore buttongroup
 

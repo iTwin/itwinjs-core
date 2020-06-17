@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "2.0.0-dev.77",
+  "version": "2.2.0-dev.12",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -14,7 +14,7 @@
     "copy:assets": "cpx \"./src/**/*.{*css,svg}\" ./lib && cpx \"./public/**/*\" ./lib/public",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-core/file.json --tsIndexFile=./ui-core.ts --onlyJson",
     "lint": "npm run tslint && npm run eslint",
@@ -34,10 +34,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.77",
-    "@bentley/geometry-core": "^2.0.0-dev.77",
-    "@bentley/imodeljs-i18n": "^2.0.0-dev.77",
-    "@bentley/ui-abstract": "^2.0.0-dev.77",
+    "@bentley/bentleyjs-core": "^2.2.0-dev.12",
+    "@bentley/geometry-core": "^2.2.0-dev.12",
+    "@bentley/imodeljs-i18n": "^2.2.0-dev.12",
+    "@bentley/ui-abstract": "^2.2.0-dev.12",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -46,12 +46,12 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/geometry-core": "2.0.0-dev.77",
-    "@bentley/build-tools": "2.0.0-dev.77",
-    "@bentley/bentleyjs-core": "2.0.0-dev.77",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.77",
-    "@bentley/ui-abstract": "2.0.0-dev.77",
-    "@bentley/react-scripts": "3.4.1-dev.27",
+    "@bentley/geometry-core": "2.2.0-dev.12",
+    "@bentley/build-tools": "2.2.0-dev.12",
+    "@bentley/bentleyjs-core": "2.2.0-dev.12",
+    "@bentley/imodeljs-i18n": "2.2.0-dev.12",
+    "@bentley/ui-abstract": "2.2.0-dev.12",
+    "@bentley/react-scripts": "3.4.1",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -60,11 +60,13 @@
     "@types/chai-spies": "^1.0.0",
     "@types/classnames": "^2.2.3",
     "@types/enzyme": "3.9.3",
+    "@types/lodash": "^4.14.0",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/react": "^16.8.0",
     "@types/react-autosuggest": "^9.3.11",
     "@types/react-dom": "^16.8.0",
+    "@types/react-select": "^3.0.4",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "@types/testing-library__react-hooks": "^3.1.0",
@@ -104,9 +106,11 @@
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.5",
     "classnames": "^2.2.5",
+    "lodash": "^4.17.10",
     "prop-types": "^15.7.2",
     "react-autosuggest": "^9.4.3",
     "react-compound-slider": "^2.5.0",
+    "react-select": "^3.0.4",
     "resize-observer-polyfill": "1.5.1",
     "svg-sprite-loader": "4.2.1"
   },
@@ -119,8 +123,8 @@
       "ts-node/register"
     ],
     "check-coverage": true,
-    "statements": 97.6,
-    "branches": 93.6,
+    "statements": 97.7,
+    "branches": 93.8,
     "functions": 98.7,
     "lines": 97.7
   }

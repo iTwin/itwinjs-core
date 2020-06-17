@@ -9,13 +9,11 @@
 // cSpell:ignore statusfields
 
 import * as React from "react";
-// tslint:disable-next-line: no-duplicate-imports
-import { useState, useEffect } from "react";
+import { useActiveViewport } from "../hooks/useActiveViewport";
 import { Indicator } from "../statusfields/Indicator";
-import { SelectionContextUtilities } from "./SelectionContextUtilities";
 import { StatusFieldProps } from "../statusfields/StatusFieldProps";
 import { UiFramework } from "../UiFramework";
-import { useActiveViewport } from "../hooks/useActiveViewport";
+import { HideIsolateEmphasizeActionHandler } from "./HideIsolateEmphasizeManager";
 
 /** Clear Emphasis StatusField Props
  * @beta
@@ -28,38 +26,40 @@ interface ClearEmphasisStatusFieldProps extends StatusFieldProps {
  * @beta
  */
 export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps) {
-  const [toolTip] = useState(UiFramework.translate("tools.clearVisibility"));
+  const [toolTip] = React.useState(UiFramework.translate("tools.clearVisibility"));
   const activeViewport = useActiveViewport();
-  const [showIndicator, setShowIndicator] = useState(false);
+  const [showIndicator, setShowIndicator] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // istanbul ignore next
     const onEmphasizeChange = () => {
       // istanbul ignore next
-      const hasEmphasizeElements = !!activeViewport && SelectionContextUtilities.areFeatureOverridesActive(activeViewport);
+      const hasEmphasizeElements = !!activeViewport && UiFramework.hideIsolateEmphasizeActionHandler.areFeatureOverridesActive(activeViewport);
       setShowIndicator(hasEmphasizeElements || !props.hideWhenUnused);
     };
 
     // istanbul ignore next
-    setShowIndicator((!!activeViewport && SelectionContextUtilities.areFeatureOverridesActive(activeViewport)) || !props.hideWhenUnused);
+    setShowIndicator((!!activeViewport && UiFramework.hideIsolateEmphasizeActionHandler.areFeatureOverridesActive(activeViewport)) || !props.hideWhenUnused);
 
-    SelectionContextUtilities.emphasizeElementsChanged.addListener(onEmphasizeChange);
+    HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(onEmphasizeChange);
+    // istanbul ignore if
     if (activeViewport)
       activeViewport.onFeatureOverridesChanged.addListener(onEmphasizeChange);
 
     return () => {
+      // istanbul ignore if
       if (activeViewport)
         activeViewport.onFeatureOverridesChanged.removeListener(onEmphasizeChange);
 
-      SelectionContextUtilities.emphasizeElementsChanged.removeListener(onEmphasizeChange);
+      HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.removeListener(onEmphasizeChange);
     };
   }, [activeViewport, props.hideWhenUnused]);
 
   const classes = (showIndicator) ? "uifw-indicator-fade-in" : "uifw-indicator-fade-out";
 
   // istanbul ignore next
-  const clearEmphasize = () => {
-    SelectionContextUtilities.clearEmphasize(activeViewport);
+  const clearEmphasize = async () => {
+    await UiFramework.hideIsolateEmphasizeActionHandler.processClearEmphasize();
   };
 
   return (

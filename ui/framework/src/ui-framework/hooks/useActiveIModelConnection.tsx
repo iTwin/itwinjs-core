@@ -6,11 +6,11 @@
  * @module Hooks
  */
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { UiFramework } from "../UiFramework";
 import { SessionStateActionId } from "../redux/SessionState";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiFramework } from "../UiFramework";
 
 /** React hook that maintains the active IModelConnection. For this hook to work properly the
  * IModelConnection must be set using UiFramework.setIModelConnection method. This also requires

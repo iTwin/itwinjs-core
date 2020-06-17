@@ -31,13 +31,13 @@ export interface CommonProps extends ClassNameProps {
 export interface CommonDivProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps { }
 
 /** Props used by components that do not expect children to be passed in.
- * @beta
+ * @public
  */
 export interface NoChildrenProps {
   children?: undefined;
 }
 
 /** Omit children property from T.
- * @beta
+ * @public
  */
 export type OmitChildrenProp<T extends { children?: React.ReactNode; }> = Omit<T, "children">;

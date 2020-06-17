@@ -1,0 +1,17 @@
+{
+  "cwd": "../..",
+  "reporter": [
+    "text-summary",
+    "lcov",
+    "cobertura"
+  ],
+  "require": [
+    "source-map-support/register"
+  ],
+  "extension": [
+    ".ts",
+    ".tsx"
+  ],
+  "cache": false,
+  "clean": false
+}

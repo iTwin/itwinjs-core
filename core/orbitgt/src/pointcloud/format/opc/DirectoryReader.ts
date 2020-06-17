@@ -14,6 +14,15 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
+import { ABuffer } from "../../../system/buffer/ABuffer";
+import { AList } from "../../../system/collection/AList";
+import { ABufferInStream } from "../../../system/io/ABufferInStream";
+import { ALong } from "../../../system/runtime/ALong";
+import { ASystem } from "../../../system/runtime/ASystem";
+import { ContentLoader } from "../../../system/storage/ContentLoader";
+import { BlockIndex } from "../../model/BlockIndex";
+import { GridIndex } from "../../model/GridIndex";
+import { TileIndex } from "../../model/TileIndex";
 import { BlockRecord } from "./BlockRecord";
 import { ContainerFilePart } from "./ContainerFilePart";
 import { DirectoryRecord } from "./DirectoryRecord";
@@ -21,16 +30,6 @@ import { FileAccess } from "./FileAccess";
 import { FileReader } from "./FileReader";
 import { FileRecord } from "./FileRecord";
 import { TileRecord } from "./TileRecord";
-
-import { ABuffer } from "../../../system/buffer/ABuffer";
-import { ABufferInStream } from "../../../system/io/ABufferInStream";
-import { BlockIndex } from "../../model/BlockIndex";
-import { GridIndex } from "../../model/GridIndex";
-import { TileIndex } from "../../model/TileIndex";
-import { AList } from "../../../system/collection/AList";
-import { ALong } from "../../../system/runtime/ALong";
-import { ASystem } from "../../../system/runtime/ASystem";
-import { ContentLoader } from "../../../system/storage/ContentLoader";
 
 /**
  * Class DirectoryReader reads the tile and block directory.

@@ -6,14 +6,12 @@
  * @module SplitButton
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
-import { ContextMenu } from "../contextmenu/ContextMenu";
-import { CommonProps } from "../utils/Props";
-import { IconSpec, Icon } from "../icons/IconComponent";
-
 import "./SplitButton.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { ContextMenu } from "../contextmenu/ContextMenu";
+import { Icon, IconSpec } from "../icons/IconComponent";
+import { CommonProps } from "../utils/Props";
 
 // TODO: implement
 /** @internal */
@@ -23,7 +21,7 @@ export enum SplitButtonActionType {
 }
 
 /** Properties for [[SplitButton]] component
- * @beta
+ * @public
  */
 export interface SplitButtonProps extends CommonProps {
   /** Label to display in click area. */
@@ -43,7 +41,7 @@ interface SplitButtonState {
 
 /**
  * SplitButton with an action button on the left and an arrow button that displays a context menu on the right.
- * @beta
+ * @public
  */
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
   private _arrowElement: HTMLElement | null = null;
@@ -68,7 +66,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     const classNames = classnames(
       "core-split-button",
       this.props.className,
-      this.state.expanded && "expanded",
+      this.state.expanded && "core-expanded",
       this.props.drawBorder && "core-split-button-border");
 
     return (
@@ -79,8 +77,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
         <div data-testid="core-split-button-label" onClick={this.props.onClick} className={"core-split-button-label"}>{icon} {this.props.label}</div>
         <div className={classnames("core-split-button-divider", this.props.drawBorder && "core-split-button-border")} />
         <div className={"core-split-button-arrow"} ref={(el) => { this._arrowElement = el; }} onClick={this._handleClick} tabIndex={0} onKeyUp={this._handleKeyUp}>
-          <div className={classnames("core-split-button-arrow-icon", "icon", "icon-chevron-down")} >
-          </div>
+          <div className={classnames("core-split-button-arrow-icon", "icon", "icon-chevron-down")} />
           <ContextMenu
             ref={(el) => { this._menu = el; }}
             selectedIndex={0}
@@ -100,6 +97,8 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     if ((event.keyCode === 13 /*<Return>*/ || event.keyCode === 40 /*<Down>*/) && !this.state.expanded) {
       this._closing = false;
       this._open();
+    } else {
+      this._closing = false;
     }
   }
 
@@ -122,6 +121,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     if (this.state.expanded) {
       event.stopPropagation();
       this.setState({ expanded: false });
+      this._closing = false;
     } else {
       this._open();
     }

@@ -6,10 +6,10 @@
  * @module Topology
  */
 
-import { HalfEdge } from "./Graph";
-import { XYAndZ } from "../geometry3d/XYZProps";
 import { Geometry } from "../Geometry";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+import { XYAndZ } from "../geometry3d/XYZProps";
+import { HalfEdge } from "./Graph";
 
 /**
  * Enumeration of categorization of "where" a HalfEdgePositionDetail is sitting in the graph.

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as fs from "fs";
 import * as path from "path";
 import { ECSchemaXmlContext, SchemaKey } from "../../ECSchemaXmlContext";
 import { KnownTestLocations } from "../KnownTestLocations";
-import * as fs from "fs";
 
 describe("ECSchemaXmlContext", () => {
 

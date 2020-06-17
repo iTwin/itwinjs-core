@@ -2,23 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
-
+import { mount } from "enzyme";
+import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
 import { FooterSeparator } from "@bentley/ui-ninezone";
-
-import TestUtils from "../TestUtils";
 import {
-  StatusBar,
-  StatusBarWidgetControl,
-  ConfigurableCreateInfo,
-  ConfigurableUiControlType,
-  WidgetDef,
-  StatusBarWidgetControlArgs,
-  FooterModeField,
+  ConfigurableCreateInfo, ConfigurableUiControlType, FooterModeField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
 } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("FooterModeField", () => {
 

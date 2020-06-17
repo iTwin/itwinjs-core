@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import faker from "faker";
 import { expect } from "chai";
+import faker from "faker";
+import { DbResult, Id64 } from "@bentley/bentleyjs-core";
+import { CodeSpecs, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, Model, Subject } from "@bentley/imodeljs-backend";
+import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, IModelError } from "@bentley/imodeljs-common";
+import { Ruleset } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Id64, DbResult } from "@bentley/bentleyjs-core";
-import { CodeSpec, CodeScopeSpec, BisCodeSpec, Code, IModelError, DefinitionElementProps } from "@bentley/imodeljs-common";
-import { IModelDb, CodeSpecs, Subject, DefinitionPartition, Model, DefinitionModel, ECSqlStatement } from "@bentley/imodeljs-backend";
-import { Ruleset } from "@bentley/presentation-common";
-import { RulesetEmbedder, DuplicateRulesetHandlingStrategy } from "../presentation-backend/RulesetEmbedder";
-import * as RulesetElements from "../presentation-backend/domain/RulesetElements";
 import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain";
+import * as RulesetElements from "../presentation-backend/domain/RulesetElements";
+import { DuplicateRulesetHandlingStrategy, RulesetEmbedder } from "../presentation-backend/RulesetEmbedder";
 
 describe("RulesetEmbedder", () => {
   let embedder: RulesetEmbedder;

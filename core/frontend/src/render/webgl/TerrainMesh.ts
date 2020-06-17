@@ -2,25 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
-import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
-import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
-import { QBufferHandle3d, QBufferHandle2d, BufferHandle, BufferParameters } from "./Handle";
-import { TechniqueId } from "./TechniqueId";
-import { RenderPass, RenderOrder } from "./RenderFlags";
-import { Target } from "./Target";
-import { GL } from "./GL";
-import { dispose, assert } from "@bentley/bentleyjs-core";
-import { RenderGraphic } from "../RenderGraphic";
+
+/** @packageDocumentation
+ * @module WebGL
+ */
+
+import { assert, dispose } from "@bentley/bentleyjs-core";
+import { Range3d, Transform } from "@bentley/geometry-core";
+import { PackedFeatureTable, RenderTexture } from "@bentley/imodeljs-common";
 import { GraphicBranch } from "../GraphicBranch";
+import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
+import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { RenderSystem, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
 import { AttributeMap } from "./AttributeMap";
-import { System } from "./System";
-import { RenderTexture, PackedFeatureTable } from "@bentley/imodeljs-common";
-import { Range3d, Transform } from "@bentley/geometry-core";
-import { Primitive } from "./Primitive";
+import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
+import { GL } from "./GL";
+import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./Handle";
 import { Matrix4 } from "./Matrix";
+import { Primitive } from "./Primitive";
+import { RenderOrder, RenderPass } from "./RenderFlags";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
 
 /** @internal */
 export class TerrainTextureParams {
@@ -131,7 +135,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
       const texturesPerMesh = TerrainTextureParams.maxTexturesPerMesh;
       for (let i = 0; i < textures.length;) {
         const meshTextures = [];
-        for (let j = 0; j < texturesPerMesh && i < textures.length; j++ , i++)
+        for (let j = 0; j < texturesPerMesh && i < textures.length; j++, i++)
           meshTextures.push(textures[i]);
 
         meshes.push(new TerrainMeshGeometry(terrainMesh._terrainMeshParams, TerrainTextureParams.create(meshTextures), terrainMesh._transform));

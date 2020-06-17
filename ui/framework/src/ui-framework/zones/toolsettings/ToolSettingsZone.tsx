@@ -7,27 +7,20 @@
  */
 
 import * as React from "react";
-import { CommonProps, RectangleProps, PointProps } from "@bentley/ui-core";
+import { CommonProps, PointProps, RectangleProps } from "@bentley/ui-core";
 import {
-  ToolSettings,
-  ToolSettingsTab,
-  Zone,
-  TitleBarButton,
-  ResizeHandle,
-  ZoneManagerProps,
-  ZoneTargetType,
-  WidgetZoneId,
+  ResizeHandle, TitleBarButton, ToolSettings, ToolSettingsTab, WidgetZoneId, Zone, ZoneManagerProps, ZoneTargetType,
 } from "@bentley/ui-ninezone";
-import { WidgetChangeHandler, TargetChangeHandler } from "../../frontstage/FrontstageComposer";
+import { ZoneTargets } from "../../dragdrop/ZoneTargets";
+import { TargetChangeHandler, WidgetChangeHandler } from "../../frontstage/FrontstageComposer";
 import { FrontstageManager } from "../../frontstage/FrontstageManager";
-import { ToolUiManager } from "../toolsettings/ToolUiManager";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
+import { SafeAreaContext } from "../../safearea/SafeAreaContext";
 import { UiFramework } from "../../UiFramework";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
-import { SafeAreaContext } from "../../safearea/SafeAreaContext";
-import { ZoneTargets } from "../../dragdrop/ZoneTargets";
-import { Outline } from "../Outline";
 import { getFloatingZoneBounds, getFloatingZoneStyle } from "../FrameworkZone";
+import { Outline } from "../Outline";
+import { ToolUiManager } from "../toolsettings/ToolUiManager";
 
 // cSpell:ignore safearea
 

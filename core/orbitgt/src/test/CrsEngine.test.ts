@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Downloader } from "../system/runtime/Downloader";
-import { DownloaderNode } from "../system/runtime/DownloaderNode";
 import { CRSManager } from "../spatial/crs/CRSManager";
 import { OnlineEngine } from "../spatial/ecrs/OnlineEngine";
 import { Bounds } from "../spatial/geom/Bounds";
 import { Coordinate } from "../spatial/geom/Coordinate";
+import { Downloader } from "../system/runtime/Downloader";
+import { DownloaderNode } from "../system/runtime/DownloaderNode";
 
 describe("CRS engine tests", () => {
 

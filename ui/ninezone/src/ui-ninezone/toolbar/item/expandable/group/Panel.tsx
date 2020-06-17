@@ -6,10 +6,10 @@
  * @module Toolbar
  */
 
+import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Panel.scss";
 
 /** Properties of [[Panel]] component.
  * @alpha

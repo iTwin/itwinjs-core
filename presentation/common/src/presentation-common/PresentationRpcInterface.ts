@@ -7,24 +7,24 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { RpcInterface, IModelRpcProps } from "@bentley/imodeljs-common";
-import { NodeKeyJSON } from "./hierarchy/Key";
-import { NodePathElementJSON } from "./hierarchy/NodePathElement";
-import { NodeJSON } from "./hierarchy/Node";
-import { LabelDefinitionJSON } from "./LabelDefinition";
-import { SelectionInfo, DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
+import { IModelRpcProps, RpcInterface } from "@bentley/imodeljs-common";
 import { ContentJSON } from "./content/Content";
-import {
-  HierarchyRequestOptions, ContentRequestOptions,
-  LabelRequestOptions, SelectionScopeRequestOptions, Paged,
-  PresentationDataCompareOptions,
-} from "./PresentationManagerOptions";
-import { KeySetJSON } from "./KeySet";
+import { DescriptorJSON, DescriptorOverrides, SelectionInfo } from "./content/Descriptor";
+import { DisplayValueGroupJSON } from "./content/Value";
 import { InstanceKeyJSON } from "./EC";
-import { Omit } from "./Utils";
-import { SelectionScope } from "./selection/SelectionScope";
 import { PresentationStatus } from "./Error";
+import { NodeKeyJSON } from "./hierarchy/Key";
+import { NodeJSON } from "./hierarchy/Node";
+import { NodePathElementJSON } from "./hierarchy/NodePathElement";
+import { KeySetJSON } from "./KeySet";
+import { LabelDefinitionJSON } from "./LabelDefinition";
+import {
+  ContentRequestOptions, DistinctValuesRequestOptions, HierarchyRequestOptions, LabelRequestOptions, Paged, PresentationDataCompareOptions,
+  SelectionScopeRequestOptions,
+} from "./PresentationManagerOptions";
+import { SelectionScope } from "./selection/SelectionScope";
 import { PartialHierarchyModificationJSON } from "./Update";
+import { Omit, PagedResponse } from "./Utils";
 
 /**
  * Base options for all presentation RPC requests.
@@ -59,6 +59,11 @@ export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<Hierarchy
  */
 export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequestOptions<any>>;
 /**
+ * Data structure for distinct values' request options.
+ * @alpha
+ */
+export type DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions<DistinctValuesRequestOptions<any, DescriptorJSON, KeySetJSON>>;
+/**
  * Data structure for label request options.
  * @public
  */
@@ -89,7 +94,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // tslint:disable-line: naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.1.0";
+  public static interfaceVersion = "2.2.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -109,6 +114,8 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getContent(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<ContentJSON | undefined> { return this.forward(arguments); }
   public async getContentAndSize(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<{ content?: ContentJSON, size: number }> { return this.forward(arguments); }
   public async getDistinctValues(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]> { return this.forward(arguments); }
+  /** @alpha */
+  public async getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> { return this.forward(arguments); }
 
   public async getDisplayLabelDefinition(_token: IModelRpcProps, _options: LabelRpcRequestOptions, _key: InstanceKeyJSON): PresentationRpcResponse<LabelDefinitionJSON> { return this.forward(arguments); }
   public async getDisplayLabelDefinitions(_token: IModelRpcProps, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<LabelDefinitionJSON[]> { return this.forward(arguments); }

@@ -4,17 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { createRandomECInstanceKeyJSON, createRandomECInstanceKey } from "../_helpers/random";
 import {
-  Value, ValuesArray, ValuesMap, NestedContentValue,
-  ValuesArrayJSON, ValuesMapJSON,
-  DisplayValuesArrayJSON, DisplayValuesMapJSON,
-  NestedContentValueJSON,
-  DisplayValue,
-  DisplayValuesArray,
-  DisplayValuesMap,
+  DisplayValue, DisplayValueGroup, DisplayValuesArray, DisplayValuesArrayJSON, DisplayValuesMap, DisplayValuesMapJSON, NestedContentValue,
+  NestedContentValueJSON, Value, ValuesArray, ValuesArrayJSON, ValuesMap, ValuesMapJSON,
 } from "../../presentation-common/content/Value";
 import { InstanceKey } from "../../presentation-common/EC";
+import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "../_helpers/random";
 
 describe("Value", () => {
 
@@ -276,6 +271,38 @@ describe("DisplayValue", () => {
         a: faker.random.word(),
       };
       expect(DisplayValue.toJSON(v)).to.deep.eq(v);
+    });
+
+  });
+
+});
+
+describe("DisplayValueGroup", () => {
+
+  describe("fromJSON", () => {
+
+    it("returns valid DisplayValueGroup object", () => {
+      expect(DisplayValueGroup.fromJSON({
+        displayValue: "test",
+        groupedRawValues: ["a"],
+      })).to.deep.eq({
+        displayValue: "test",
+        groupedRawValues: ["a"],
+      });
+    });
+
+  });
+
+  describe("toJSON", () => {
+
+    it("returns valid JSON", () => {
+      expect(DisplayValueGroup.toJSON({
+        displayValue: "test",
+        groupedRawValues: ["a"],
+      })).to.deep.eq({
+        displayValue: "test",
+        groupedRawValues: ["a"],
+      });
     });
 
   });

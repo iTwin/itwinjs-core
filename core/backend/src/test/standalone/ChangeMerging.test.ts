@@ -2,11 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ChangeSetApplyOption, ChangeSetStatus, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
+
 import { assert } from "chai";
 import * as path from "path";
-import { ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, IModelJsNative, SpatialCategory, StandaloneDb } from "../../imodeljs-backend";
+import { ChangeSetApplyOption, ChangeSetStatus, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import {
+  ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb,
+} from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -53,8 +57,6 @@ describe("ChangeMerging", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("testImodel.bim");
     IModelJsFs.copySync(seedFileName, testFileName);
     const upgradedDb = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
-    upgradedDb.nativeDb.enableTxnTesting();
-    upgradedDb.saveChanges();
     createChangeSet(upgradedDb);
 
     // Open copies of the seed file.

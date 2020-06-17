@@ -14,10 +14,9 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { Registry } from "./Registry";
-
 import { ASystem } from "../../system/runtime/ASystem";
 import { Numbers } from "../../system/runtime/Numbers";
+import { Registry } from "./Registry";
 
 /**
  * Class Unit defines a unit of measure.

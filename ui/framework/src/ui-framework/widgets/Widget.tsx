@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-
 import { WidgetProps } from "./WidgetProps";
 
 /** Widget React component.

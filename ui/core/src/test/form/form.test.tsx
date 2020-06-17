@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { render, fireEvent, cleanup } from "@testing-library/react";
 import { expect } from "chai";
-
-import { FieldDefinitions, Form, FieldValues } from "../../ui-core";
+import * as React from "react";
+import { cleanup, fireEvent, render } from "@testing-library/react";
+import { FieldDefinitions, FieldValues, Form } from "../../ui-core";
 import TestUtils from "../TestUtils";
 
 describe("<Form />", () => {

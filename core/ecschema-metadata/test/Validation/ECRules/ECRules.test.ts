@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as Rules from "../../../src/Validation/ECRules";
 import { assert } from "@bentley/bentleyjs-core";
+import * as Rules from "../../../src/Validation/ECRules";
 
 describe("ECRules Tests", () => {
 

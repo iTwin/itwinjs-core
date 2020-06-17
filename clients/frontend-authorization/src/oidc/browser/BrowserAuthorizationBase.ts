@@ -8,8 +8,8 @@
  */
 
 import { UserManager, UserManagerSettings } from "oidc-client";
-import { BrowserAuthorizationLogger } from "./BrowserAuthorizationLogger";
 import { assert, isElectronRenderer } from "@bentley/bentleyjs-core";
+import { BrowserAuthorizationLogger } from "./BrowserAuthorizationLogger";
 
 export abstract class BrowserAuthorizationBase<TConfig> {
   protected _userManager: UserManager;

@@ -3,24 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { FooterSeparator } from "@bentley/ui-ninezone";
-import { StatusBarSection, ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, StatusBarSection } from "@bentley/ui-abstract";
 import {
-  ConfigurableUiManager, ConfigurableCreateInfo, ToolAssistanceField, ActivityCenterField, MessageCenterField,
-  SnapModeField, StatusBarItem, StatusBarItemUtilities,
-  StatusBarWidgetControl, StatusBarWidgetControlArgs, StatusBarComposer,
-  withStatusFieldProps, withMessageCenterFieldProps, FooterModeField,
+  ActivityCenterField, ConfigurableUiManager, FooterModeField, MessageCenterField, SnapModeField, StatusBarComposer, StatusBarItem,
+  StatusBarItemUtilities, StatusBarWidgetControl, StatusBarWidgetControlArgs, ToolAssistanceField, withMessageCenterFieldProps, withStatusFieldProps,
 } from "@bentley/ui-framework";
-
-import { SampleAppUiActionId, SampleAppIModelApp } from "../..";
+import { FooterSeparator } from "@bentley/ui-ninezone";
+import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
 export class SmallStatusBarWidgetControl extends StatusBarWidgetControl {
   private _statusBarItems: StatusBarItem[] | undefined;
-
-  constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
-  }
 
   private get statusBarItems(): StatusBarItem[] {
     // tslint:disable-next-line: variable-name

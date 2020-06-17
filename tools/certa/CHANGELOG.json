@@ -2,6 +2,54 @@
   "name": "@bentley/certa",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/certa_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/certa_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to use Electron 8 for the electron test runner"
+          },
+          {
+            "comment": "order imports."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Update to handle an async callback in Electron."
+          },
+          {
+            "comment": "Update electron version to ^8.2.1"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/certa_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Switch to using puppeteer chrome-80 instead of chrome-stable"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/certa_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/certa_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",
@@ -74,7 +122,7 @@
       "comments": {
         "none": [
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -119,7 +167,7 @@
             "comment": "Update to puppeteer 1.13.0 (current chrome-stable)"
           },
           {
-            "comment": "Fixed frontend debugging issues.  "
+            "comment": "Fixed frontend debugging issues."
           }
         ]
       }
@@ -131,7 +179,7 @@
       "comments": {
         "none": [
           {
-            "comment": "\"Adds copyright header to readme\""
+            "comment": "Adds copyright header to readme"
           },
           {
             "comment": "Update the version of nyc to 14.0.0"

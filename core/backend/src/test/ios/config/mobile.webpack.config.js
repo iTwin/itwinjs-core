@@ -88,7 +88,6 @@ module.exports = {
   },
   externals: {
     "@bentley/imodeljs-native/package.json": "@bentley/imodeljs-native/package.json",
-    "@bentley/imodeljs-native/loadNativePlatform.js": "@bentley/imodeljs-native/loadNativePlatform.js",
     "electron": "electron",
     "IModelJsFs": "IModelJsFs",
     "./IModelJsFs": "IModelJsFs",

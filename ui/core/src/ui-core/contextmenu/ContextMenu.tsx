@@ -6,20 +6,15 @@
  * @module ContextMenu
  */
 
+import "./ContextMenu.scss";
+import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import classnames from "classnames";
-
 import { BadgeType } from "@bentley/ui-abstract";
-
-import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
-import { Omit } from "../utils/typeUtils";
-import { CommonProps } from "../utils/Props";
-
-import "./ContextMenu.scss";
 import { BadgeUtilities } from "../badge/BadgeUtilities";
-
-const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
+import { CommonProps } from "../utils/Props";
+import { Omit } from "../utils/typeUtils";
+import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
 
 /** Enum to specify where a [[ContextMenu]] should anchor to its parent element
  * @public
@@ -164,6 +159,11 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     this._hotKeyMap.set(index, hotKey);
   }
 
+  private _handleOnOutsideClick = (event: MouseEvent) => {
+    if (this.props.opened && this.props.onOutsideClick)
+      this.props.onOutsideClick(event);
+  }
+
   public render(): JSX.Element {
     const {
       opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect,
@@ -187,7 +187,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
         data-testid="core-context-menu-root"
         {...props}
         ref={this._rootRef}>
-        <DivWithOutsideClick onOutsideClick={onOutsideClick}>
+        <DivWithOutsideClick onOutsideClick={this._handleOnOutsideClick}>
           <div
             ref={this._menuRef}
             tabIndex={0}

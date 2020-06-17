@@ -6,13 +6,11 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstanceKey, createRandomTransientId, createRandomDescriptor } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, DEFAULT_KEYS_BATCH_SIZE, Content, Item } from "@bentley/presentation-common";
-import {
-  Presentation, PresentationManager, RulesetManager, HiliteSetProvider,
-} from "../../presentation-frontend";
+import { Content, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { createRandomDescriptor, createRandomECInstanceKey, createRandomTransientId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { HiliteSetProvider, Presentation, PresentationManager, RulesetManager } from "../../presentation-frontend";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
 describe("HiliteSetProvider", () => {

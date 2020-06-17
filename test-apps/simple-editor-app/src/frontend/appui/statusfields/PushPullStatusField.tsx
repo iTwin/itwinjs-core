@@ -2,16 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, OutputMessageAlert, EventSourceManager, AuthorizedFrontendRequestContext, IModelConnection } from "@bentley/imodeljs-frontend";
-import { IModelWriteRpcInterface } from "@bentley/imodeljs-common";
-import { ChangeSetPostPushEvent, ChangeSetQuery } from "@bentley/imodelhub-client";
-import { Spinner, SpinnerSize, Icon } from "@bentley/ui-core";
-import { UiFramework, StatusFieldProps } from "@bentley/ui-framework";
-import { ErrorHandling } from "../../api/ErrorHandling";
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { FooterIndicator } from "@bentley/ui-ninezone";
 import "./PushPullField.scss";
+import * as React from "react";
+import { BeEvent } from "@bentley/bentleyjs-core";
+import { ChangeSetPostPushEvent, ChangeSetQuery } from "@bentley/imodelhub-client";
+import { IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import {
+  AuthorizedFrontendRequestContext, EventSourceManager, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority,
+  OutputMessageType,
+} from "@bentley/imodeljs-frontend";
+import { Icon, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { StatusFieldProps, UiFramework } from "@bentley/ui-framework";
+import { FooterIndicator } from "@bentley/ui-ninezone";
+import { ErrorHandling } from "../../api/ErrorHandling";
 
 function translate(prompt: string) {
   return IModelApp.i18n.translate("SampleApp:statusFields." + prompt);

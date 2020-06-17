@@ -2,16 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { mount, shallow } from "enzyme";
-import TestUtils from "./TestUtils";
-import {
-  ToolWidget,
-  ActionItemButton,
-  MarkupTools,
-} from "../ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import * as React from "react";
 import { MarkupApp } from "@bentley/imodeljs-markup";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import { ActionItemButton, MarkupTools, ToolWidget } from "../ui-framework";
+import TestUtils from "./TestUtils";
 
 describe("MarkupToolDefinitions", () => {
 

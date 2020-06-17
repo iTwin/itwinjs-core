@@ -5,8 +5,10 @@
 import { Compiler, DefinePlugin } from "webpack";
 import { IModelJsOptionsDefaulter } from "../utils/IModelJsOptionsDefaulter";
 
-// tslint:disable-next-line:no-var-requires variable-name
+// tslint:disable:no-var-requires variable-name
+const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
 const ExternalsPlugin = require("webpack/lib/ExternalsPlugin");
+// tslint:enable:no-var-requires variable-name
 
 export class FrontendDefaultsPlugin {
   constructor(private _enableSourcemaps = true) { }
@@ -17,7 +19,7 @@ export class FrontendDefaultsPlugin {
     new DefinePlugin({
       "global.GENTLY": false,
     }).apply(compiler);
-
+    new FilterWarningsPlugin({ exclude: /Failed to parse source map/ }).apply(compiler);
     new ExternalsPlugin("commonjs", [
       "electron",
     ]).apply(compiler);

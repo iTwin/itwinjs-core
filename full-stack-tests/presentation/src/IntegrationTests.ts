@@ -3,20 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // tslint:disable:no-direct-imports
+import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import * as chai from "chai";
+import * as cpx from "cpx";
 import * as fs from "fs";
 import * as path from "path";
-import * as cpx from "cpx";
-import * as chai from "chai";
 import sinonChai from "sinon-chai";
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { LoggingNamespaces, RequestPriority } from "@bentley/presentation-common";
-import { PresentationProps as PresentationBackendProps, Presentation as PresentationBackend } from "@bentley/presentation-backend";
-import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
-import { NoRenderApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
-import { initialize as initializeTesting, terminate as terminateTesting, PresentationTestingInitProps } from "@bentley/presentation-testing";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { I18NOptions } from "@bentley/imodeljs-i18n";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
+import { Presentation as PresentationBackend, PresentationProps as PresentationBackendProps } from "@bentley/presentation-backend";
+import { LoggingNamespaces, RequestPriority } from "@bentley/presentation-common";
+import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
+import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
 
 chai.use(sinonChai);
 
@@ -81,11 +83,17 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     activeLocale: "en-PSEUDO",
   };
 
+  const frontendAppOptions: IModelAppOptions = {
+    authorizationClient: props.useClientServices
+      ? TestUtility.getAuthorizationClient(TestUsers.regular)
+      : undefined,
+  };
+
   const presentationTestingInitProps: PresentationTestingInitProps = {
     backendProps: backendInitProps,
     frontendProps: frontendInitProps,
     frontendApp: IntegrationTestsApp,
-    useClientServices: props.useClientServices ?? false,
+    frontendAppOptions,
   };
 
   await initializeTesting(presentationTestingInitProps);

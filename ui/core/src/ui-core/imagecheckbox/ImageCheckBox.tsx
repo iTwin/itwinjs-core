@@ -6,14 +6,14 @@
  * @module Checkbox
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { CommonProps } from "../utils/Props";
 import "./ImageCheckBox.scss";
+import classnames from "classnames";
+import * as React from "react";
 import { Icon } from "../icons/IconComponent";
+import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[ImageCheckBox]] component
- * @beta
+ * @public
  */
 export interface ImageCheckBoxProps extends CommonProps {
   /** Image for the "checked" state */
@@ -36,7 +36,7 @@ export interface ImageCheckBoxProps extends CommonProps {
 
 /**
  * ImageCheckBox React component shows a checked or unchecked image
- * @beta
+ * @public
  */
 export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
 

@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { TriDiagonalSystem } from "../../numerics/TriDiagonalSystem";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { TriDiagonalSystem } from "../../numerics/TriDiagonalSystem";
+import { Checker } from "../Checker";
+
 /* tslint:disable:variable-name no-console*/
 
 class TestFixture {

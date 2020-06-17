@@ -2,12 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
-import { GraphicType, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
-import { DisplayParams, Geometry, Mesh, MeshBuilder, PolyfacePrimitive, PolyfacePrimitiveList, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointLists, ToleranceRatio, Triangle } from "@bentley/imodeljs-frontend/lib/render-primitives";
+import {
+  GraphicType, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+} from "@bentley/imodeljs-frontend";
+import {
+  DisplayParams, Geometry, Mesh, MeshBuilder, PolyfacePrimitive, PolyfacePrimitiveList, PrimitiveBuilder, StrokesPrimitiveList,
+  StrokesPrimitivePointLists, ToleranceRatio, Triangle,
+} from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
-import { assert, expect } from "chai";
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }

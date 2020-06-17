@@ -7,9 +7,9 @@
  */
 
 import * as React from "react";
+import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { UnderlinedButton } from "@bentley/ui-core";
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { useAsyncValue } from "../common/UseAsyncValue";
 
 /** Render a single anchor tag */

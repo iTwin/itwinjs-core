@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode, Config } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
-import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
-import { IModelReadRpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
+import { Config, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
+import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
+import { IModelReadRpcInterface, RpcManager } from "@bentley/imodeljs-common";
+
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
@@ -87,16 +88,16 @@ export class IModelTestUtils {
   public static async startupIModelHost(): Promise<void> {
     // The host configuration.
     // The defaults will work for most backends.
-    // Here is an example of how the briefcasesCacheDir property of the host configuration
+    // Here is an example of how the cacheDir property of the host configuration
     // could be set from an environment variable, which could be set by a cloud deployment mechanism.
-    let briefcaseCacheDir = process.env.MY_SERVICE_BRIEFCASES_DIR;
-    if (briefcaseCacheDir === undefined) {
+    let cacheDir = process.env.MY_SERVICE_CACHE_DIR;
+    if (cacheDir === undefined) {
       const tempDir = process.env.MY_SERVICE_TMP_DIR || KnownLocations.tmpdir;
-      briefcaseCacheDir = path.join(tempDir, "iModelJs_cache");
+      cacheDir = path.join(tempDir, "iModelJs_cache");
     }
 
     const imHostConfig = new IModelHostConfiguration();
-    imHostConfig.briefcaseCacheDir = briefcaseCacheDir;
+    imHostConfig.cacheDir = cacheDir;
 
     // Start up IModelHost, supplying the configuration.
     await IModelHost.startup(imHostConfig);

@@ -15,12 +15,12 @@ type float32 = number;
 type float64 = number;
 
 
-import { ABuffer } from "./ABuffer";
 import { InStream } from "../io/InStream";
 import { OutStream } from "../io/OutStream";
 import { ALong } from "../runtime/ALong";
 import { Numbers } from "../runtime/Numbers";
 import { Strings } from "../runtime/Strings";
+import { ABuffer } from "./ABuffer";
 
 /**
  * Helper class for reading multi-byte numbers.

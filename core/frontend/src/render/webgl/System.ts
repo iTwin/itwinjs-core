@@ -6,108 +6,59 @@
  * @module WebGL
  */
 
+import { assert, BentleyStatus, Dictionary, dispose, Id64String } from "@bentley/bentleyjs-core";
+import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import {
-  ColorDef,
-  ElementAlignedBox3d,
-  Gradient,
-  IModelError,
-  ImageBuffer,
-  PackedFeatureTable,
-  QParams3d,
-  QPoint3d,
-  QPoint3dList,
-  RenderMaterial,
+  ElementAlignedBox3d, Gradient, ImageBuffer, IModelError, PackedFeatureTable, RenderMaterial,
   RenderTexture,
 } from "@bentley/imodeljs-common";
-import {
-  ClipUtilities,
-  ClipVector,
-  HalfEdge,
-  HalfEdgeGraph,
-  HalfEdgeMask,
-  IndexedPolyface,
-  IndexedPolyfaceVisitor,
-  Point2d,
-  Point3d,
-  PolyfaceBuilder,
-  Range3d,
-  StrokeOptions,
-  Transform,
-  Triangulator,
-} from "@bentley/geometry-core";
-import {
-  Capabilities,
-  DepthType,
-} from "@bentley/webgl-compatibility";
-import {
-  GraphicBranch,
-  GraphicBranchOptions,
-} from "../GraphicBranch";
-import {
-  GraphicList,
-  RenderGraphic,
-  RenderGraphicOwner,
-} from "../RenderGraphic";
-import { InstancedGraphicParams } from "../InstancedGraphicParams";
-import { RenderClipVolume } from "../RenderClipVolume";
-import { RenderTarget } from "../RenderTarget";
-import { RenderMemory } from "../RenderMemory";
-import {
-  GLTimerResultCallback,
-  RenderDiagnostics,
-  RenderSystem,
-  RenderSystemDebugControl,
-  RenderTerrainMeshGeometry,
-  TerrainTexture,
-} from "../RenderSystem";
+import { Capabilities, DepthType } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
-import { OnScreenTarget, OffScreenTarget } from "./Target";
-import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
-import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
-import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { PointStringParams, MeshParams, PolylineParams } from "../primitives/VertexTable";
-import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
-import {
-  Batch,
-  Branch,
-  Graphic,
-  GraphicOwner,
-  GraphicsArray,
-} from "./Graphic";
-import {
-  Layer,
-  LayerContainer,
-} from "./Layer";
-import { IModelConnection } from "../../IModelConnection";
-import { assert, BentleyStatus, Dictionary, dispose, Id64String } from "@bentley/bentleyjs-core";
-import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
+import { BackgroundMapTileTreeReference, TileTreeReference } from "../../tile/internal";
+import { ToolAdmin } from "../../tools/ToolAdmin";
 import { Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
-import { RenderState } from "./RenderState";
-import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
-import { RenderBuffer } from "./RenderBuffer";
-import { TextureHandle, Texture } from "./Texture";
+import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
+import { GraphicBuilder, GraphicType } from "../GraphicBuilder";
+import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
+import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
+import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
+import { MeshParams, PointStringParams, PolylineParams } from "../primitives/VertexTable";
+import { RenderClipVolume } from "../RenderClipVolume";
+import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
+import { RenderMemory } from "../RenderMemory";
+import {
+  DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderTerrainMeshGeometry, TerrainTexture,
+} from "../RenderSystem";
+import { RenderTarget } from "../RenderTarget";
+import { BackgroundMapDrape } from "./BackgroundMapDrape";
+import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
+import { ClipVolume } from "./ClipVolume";
+import { Debug } from "./Diagnostics";
+import { WebGLDisposable } from "./Disposable";
+import { LineCode } from "./LineCode";
+import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
-import { PolylineGeometry } from "./Polyline";
-import { PointStringGeometry } from "./PointString";
+import { Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
+import { UniformHandle } from "./Handle";
+import { Layer, LayerContainer } from "./Layer";
+import { Material } from "./Material";
 import { MeshGraphic } from "./Mesh";
 import { PointCloudGeometry } from "./PointCloud";
-import { TerrainMeshGeometry } from "./TerrainMesh";
-import { LineCode } from "./EdgeOverrides";
-import { Material } from "./Material";
-import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
-import { SkyCubePrimitive, SkySpherePrimitive, Primitive } from "./Primitive";
-import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
+import { PointStringGeometry } from "./PointString";
+import { PolylineGeometry } from "./Polyline";
+import { Primitive, SkyCubePrimitive, SkySpherePrimitive } from "./Primitive";
+import { RenderBuffer } from "./RenderBuffer";
 import { TextureUnit } from "./RenderFlags";
-import { UniformHandle } from "./Handle";
-import { Debug } from "./Diagnostics";
-import { BackgroundMapTileTreeReference, TileTreeReference } from "../../tile/internal";
-import { BackgroundMapDrape } from "./BackgroundMapDrape";
-import { ToolAdmin } from "../../tools/ToolAdmin";
-import { WebGLDisposable } from "./Disposable";
+import { RenderState } from "./RenderState";
+import { OffScreenTarget, OnScreenTarget } from "./Target";
+import { Techniques } from "./Technique";
+import { TerrainMeshGeometry } from "./TerrainMesh";
+import { Texture, TextureHandle } from "./Texture";
 
 // tslint:disable:no-const-enum
 
@@ -370,6 +321,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   private _lineCodeTexture?: TextureHandle;
   private _noiseTexture?: TextureHandle;
   private _techniques?: Techniques;
+  public readonly debugShaderFiles: DebugShaderFile[] = [];
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
@@ -380,6 +332,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
   public get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
+  public get isWebGL2(): boolean { return this.capabilities.isWebGL2; }
 
   public setDrawBuffers(attachments: GLenum[]): void { this._extensions.setDrawBuffers(attachments); }
 
@@ -388,7 +341,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
-  public static createContext(canvas: HTMLCanvasElement, inputContextAttributes?: WebGLContextAttributes, useWebGL2?: boolean): WebGLRenderingContext | WebGL2RenderingContext | undefined {
+  public static createContext(canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLRenderingContext | WebGL2RenderingContext | undefined {
     let contextAttributes: WebGLContextAttributes = { powerPreference: "high-performance" };
     if (undefined !== inputContextAttributes) {
       // NOTE: Order matters with spread operator - if caller wants to override powerPreference, he should be able to.
@@ -416,8 +369,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     if (null === canvas)
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
 
-    const useWebGL2 = (undefined === options.useWebGL2 ? false : options.useWebGL2);
-    const context = System.createContext(canvas, optionsIn?.contextAttributes, useWebGL2);
+    const useWebGL2 = (undefined === options.useWebGL2 ? true : options.useWebGL2);
+    const context = System.createContext(canvas, useWebGL2, optionsIn?.contextAttributes);
     if (undefined === context) {
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain WebGL context");
     }
@@ -623,11 +576,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public createClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
-    let clipVolume: RenderClipVolume | undefined = ClipMaskVolume.create(clipVector);
-    if (undefined === clipVolume)
-      clipVolume = ClipPlanesVolume.create(clipVector);
-
-    return clipVolume;
+    return ClipVolume.create(clipVector);
   }
   public createBackgroundMapDrape(drapedTree: TileTreeReference, mapTree: BackgroundMapTileTreeReference) {
     return BackgroundMapDrape.create(drapedTree, mapTree);
@@ -662,129 +611,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   private getIdMap(imodel: IModelConnection): IdMap {
     const map = this.resourceCache.get(imodel);
     return undefined !== map ? map : this.createIModelMap(imodel);
-  }
-
-  public createSheetTilePolyfaces(corners: Point3d[], clip?: ClipVector): IndexedPolyface[] {
-    const sheetTilePolys: IndexedPolyface[] = [];
-
-    // Texture params for this sheet tile will always go from (0,0) to (1,1). However, we may be dealing with a tile that is a sub-division. Store the
-    // lower-left corner to subtract from point values later to get UV params.
-    const sheetTileRange = Range3d.createArray(corners);
-    const sheetTileScale = 1 / (sheetTileRange.high.x - sheetTileRange.low.x);
-    const sheetTileOrigin = sheetTileRange.low;
-
-    let clippedPolygons: Point3d[][];
-    if (clip !== undefined)
-      clippedPolygons = ClipUtilities.clipPolygonToClipShape(corners, clip.clips[0]); // ###TODO: Currently assume that there is only one shape...
-    else
-      clippedPolygons = [corners];
-
-    if (clippedPolygons.length === 0)
-      return sheetTilePolys;    // return empty
-
-    // The result of clipping will be several polygons, which may lie next to each other, or be detached, and can be of any length. Let's stitch these into a single polyface.
-    const strokeOptions = new StrokeOptions();
-    strokeOptions.needParams = true;
-    strokeOptions.shouldTriangulate = true;
-    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
-
-    for (const polygon of clippedPolygons) {
-      if (polygon.length < 3)
-        continue;
-      else if (polygon.length === 3) {
-        const params: Point2d[] = [];
-        for (const point of polygon) {
-          const paramUnscaled = point.minus(sheetTileOrigin);
-          params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
-        }
-        polyfaceBuilder.addTriangleFacet(polygon, params);
-
-      } else if (polygon.length === 4) {
-        const params: Point2d[] = [];
-        for (const point of polygon) {
-          const paramUnscaled = point.minus(sheetTileOrigin);
-          params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
-        }
-        polyfaceBuilder.addQuadFacet(polygon, params);
-
-      } else {
-        // ### TODO: There are a lot of inefficiencies here (what if it is a simple convex polygon... we must adjust UV params ourselves afterwards, a PolyfaceVisitor....)
-        // We are also assuming that when we use the polyface visitor, it will iterate over the points in order of the entire array
-        const triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(polygon);
-        Triangulator.flipTriangles(triangulatedPolygon);
-
-        triangulatedPolygon.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
-          if (!edge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
-            const trianglePoints: Point3d[] = [];
-            const params: Point2d[] = [];
-
-            edge.collectAroundFace((node: HalfEdge) => {
-              const point = Point3d.create(node.x, node.y, 0.5);
-              trianglePoints.push(point);
-              const paramUnscaled = point.minus(sheetTileOrigin);
-              params.push(Point2d.create(paramUnscaled.x * sheetTileScale, paramUnscaled.y * sheetTileScale));
-            });
-
-            assert(trianglePoints.length === 3);
-            polyfaceBuilder.addTriangleFacet(trianglePoints, params);
-          }
-          return true;
-        });
-      }
-    }
-
-    sheetTilePolys.push(polyfaceBuilder.claimPolyface());
-    return sheetTilePolys;
-  }
-
-  public createSheetTile(tile: RenderTexture, polyfaces: IndexedPolyface[], tileColor: ColorDef): GraphicList {
-    const sheetTileGraphics: GraphicList = [];
-
-    for (const polyface of polyfaces) {
-      const rawParams = polyface.data.param;
-      if (rawParams === undefined)
-        return sheetTileGraphics;   // return empty
-
-      const meshArgs = new MeshArgs();
-      const pts = polyface.data.point.getPoint3dArray();
-
-      meshArgs.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(pts)));  // use these point params
-      for (const point of pts)
-        meshArgs.points.push(QPoint3d.create(point, meshArgs.points.params));
-
-      const uvs: Point2d[] = rawParams.getPoint2dArray();
-
-      const pointIndices: number[] = [];
-      const uvIndices: number[] = [];
-      const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
-      while (visitor.moveToNextFacet()) {
-        for (let i = 0; i < 3; i++) {
-          pointIndices.push(visitor.clientPointIndex(i));
-          uvIndices.push(visitor.clientParamIndex(i));
-        }
-      }
-
-      // make uv arrangement and indices match that of points
-      // this is necessary because MeshArgs assumes vertIndices refers to both points and UVs
-      // output uvsOut to clippedTile
-      let j = 0;
-      const uvsOut: Point2d[] = [];
-      for (const pointIdx of pointIndices)
-        uvsOut[pointIdx] = uvs[uvIndices[j++]];   // passing the reference should not matter
-
-      meshArgs.textureUv = uvsOut;
-      meshArgs.vertIndices = pointIndices;
-      meshArgs.texture = tile;
-      meshArgs.material = undefined;
-      meshArgs.isPlanar = true;
-      meshArgs.colors.initUniform(tileColor);
-
-      const mesh = this.createTriMesh(meshArgs);
-      if (mesh !== undefined)
-        sheetTileGraphics.push(mesh);
-    }
-
-    return sheetTileGraphics;
   }
 
   private bindTexture(unit: TextureUnit, target: GL.Texture.Target, texture: TextureBinding, makeActive: boolean): void {

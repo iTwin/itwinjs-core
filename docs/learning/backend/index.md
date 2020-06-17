@@ -6,9 +6,11 @@ Backend code is the portion of an app that:
 * Has access to the local file system
 * Can use native libraries
 
-A backend package can be a [service](../../learning/App.md#agents-and-services), an [agent](../../learning/App.md#agents-and-services), or an [app-specific backend](../../learning/App.md#app-backend). See the [app architecture overview](../../learning/SoftwareArchitecture.md) for how iModel.js apps are structured.
+A backend package can be a [service](../../learning/App.md#agents-and-services), an [agent](../../learning/App.md#agents-and-services), or an [app-specific backend](../../learning/App.md#app-backend).
 
-See [best practices](./BestPractices.md) for writing backend code.
+* See the [app architecture overview](../../learning/SoftwareArchitecture.md) for how iModel.js apps are structured.
+* See [iModel contents](./iModelContents.md) for guidance on whether a data type belongs in the iModel or should be stored in a separate repository.
+* See [best practices](./BestPractices.md) for writing backend code.
 
 App backends require the `@bentley/imodeljs-backend` npm package.
 The [common packages](../common/index.md) will also be required. Please also note the [supported platforms](../SupportedPlatforms.md).

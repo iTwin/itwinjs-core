@@ -6,32 +6,32 @@
  * @module WebGL
  */
 
-import { dispose, assert } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { SurfaceBitIndex, RenderPass, RenderOrder } from "./RenderFlags";
-import { LUTGeometry, PolylineBuffers, CachedGeometry } from "./CachedGeometry";
-import { VertexIndices, SurfaceType, MeshParams, SegmentEdgeParams, SilhouetteParams, TesselatedPolyline } from "../primitives/VertexTable";
-import { LineCode } from "./EdgeOverrides";
-import { ColorInfo } from "./ColorInfo";
-import { Graphic } from "./Graphic";
-import { VertexLUT } from "./VertexLUT";
-import { Primitive } from "./Primitive";
-import { FloatRgba } from "./FloatRGBA";
-import { ShaderProgramParams } from "./DrawCommand";
-import { RenderCommands } from "./RenderCommands";
-import { Target } from "./Target";
-import { createMaterialInfo, MaterialInfo } from "./Material";
-import { Texture } from "./Texture";
-import { FeatureIndexType, FillFlags, RenderMode, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
-import { System } from "./System";
-import { BufferHandle, BuffersContainer, BufferParameters } from "./Handle";
-import { GL } from "./GL";
-import { TechniqueId } from "./TechniqueId";
+import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { MeshParams, SegmentEdgeParams, SilhouetteParams, SurfaceType, TesselatedPolyline, VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
-import { InstanceBuffers } from "./InstancedGeometry";
 import { AttributeMap } from "./AttributeMap";
+import { CachedGeometry, LUTGeometry, PolylineBuffers } from "./CachedGeometry";
+import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
+import { ShaderProgramParams } from "./DrawCommand";
+import { LineCode } from "./LineCode";
+import { FloatRgba } from "./FloatRGBA";
+import { GL } from "./GL";
+import { Graphic } from "./Graphic";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
+import { InstanceBuffers } from "./InstancedGeometry";
+import { createMaterialInfo, MaterialInfo } from "./Material";
+import { Primitive } from "./Primitive";
+import { RenderCommands } from "./RenderCommands";
+import { RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
+import { System } from "./System";
+import { Target } from "./Target";
+import { TechniqueId } from "./TechniqueId";
+import { Texture } from "./Texture";
+import { VertexLUT } from "./VertexLUT";
 
 /** @internal */
 export class MeshData implements WebGLDisposable {
@@ -207,9 +207,15 @@ export abstract class MeshGeometry extends LUTGeometry {
     this.mesh = mesh;
   }
 
-  protected computeEdgeWeight(params: ShaderProgramParams): number { return params.target.getEdgeWeight(params, this.edgeWidth); }
-  protected computeEdgeLineCode(params: ShaderProgramParams): number { return params.target.getEdgeLineCode(params, this.edgeLineCode); }
-  protected computeEdgeColor(target: Target): ColorInfo { return target.isEdgeColorOverridden ? target.edgeColor : this.colorInfo; }
+  protected computeEdgeWeight(params: ShaderProgramParams): number {
+    return params.target.computeEdgeWeight(params.renderPass, this.edgeWidth);
+  }
+  protected computeEdgeLineCode(params: ShaderProgramParams): number {
+    return params.target.computeEdgeLineCode(params.renderPass, this.edgeLineCode);
+  }
+  protected computeEdgeColor(target: Target): ColorInfo {
+    return target.computeEdgeColor(this.colorInfo);
+  }
   protected computeEdgePass(target: Target): RenderPass {
     if (target.isDrawingShadowMap)
       return RenderPass.None;
@@ -423,23 +429,12 @@ export class SurfaceGeometry extends MeshGeometry {
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const system = System.instance;
-    const gl = system.context;
-    const offset = RenderOrder.BlankingRegion === this.renderOrder;
     const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this._buffers;
-
-    if (offset) {
-      gl.enable(GL.POLYGON_OFFSET_FILL);
-      gl.polygonOffset(1.0, 1.0);
-    }
 
     bufs.bind();
     const primType = system.drawSurfacesAsWiremesh ? GL.PrimitiveType.Lines : GL.PrimitiveType.Triangles;
     system.drawArrays(primType, 0, this._numIndices, numInstances);
     bufs.unbind();
-
-    if (offset) {
-      gl.disable(GL.POLYGON_OFFSET_FILL);
-    }
   }
 
   public wantMixMonochromeColor(target: Target): boolean {
@@ -544,6 +539,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
     const useMaterial = wantMaterials(vf);
     flags[SurfaceBitIndex.IgnoreMaterial] = useMaterial ? 0 : 1;
+    flags[SurfaceBitIndex.HasMaterialAtlas] = useMaterial && this.hasMaterialAtlas ? 1 : 0;
 
     flags[SurfaceBitIndex.ApplyLighting] = 0;
     flags[SurfaceBitIndex.NoFaceFront] = 0;
@@ -577,7 +573,8 @@ export class SurfaceGeometry extends MeshGeometry {
       flags[SurfaceBitIndex.MultiplyAlpha] = 0;
     }
 
-    flags[SurfaceBitIndex.TransparencyThreshold] = 0;
+    // The transparency threshold controls how transparent a surface must be to allow light to pass through; more opaque surfaces cast shadows.
+    flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;
     flags[SurfaceBitIndex.BackgroundFill] = 0;
     switch (params.renderPass) {
       // NB: We need this for opaque pass due to SolidFill (must compute transparency, discard below threshold, render opaque at or above threshold)
@@ -600,8 +597,6 @@ export class SurfaceGeometry extends MeshGeometry {
         }
       }
     }
-
-    flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;
   }
 
   private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData) {

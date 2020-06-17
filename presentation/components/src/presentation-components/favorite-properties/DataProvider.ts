@@ -6,13 +6,13 @@
  * @module FavoriteProperties
  */
 
+import { Id64Arg, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { CategoryDescription, Ruleset } from "@bentley/presentation-common";
-import { IElementPropertyDataProvider, PropertyData } from "@bentley/ui-components";
-import { Presentation, getScopeId } from "@bentley/presentation-frontend";
+import { CategoryDescription, KeySet, Ruleset } from "@bentley/presentation-common";
+import { getScopeId, Presentation } from "@bentley/presentation-frontend";
+import { PropertyData } from "@bentley/ui-components";
 import { translate } from "../common/Utils";
 import { PresentationPropertyDataProvider } from "../propertygrid/DataProvider";
-import { using } from "@bentley/bentleyjs-core";
 
 /** @internal */
 export const FAVORITES_CATEGORY_NAME = "Favorite";
@@ -27,6 +27,15 @@ export const getFavoritesCategory = (): CategoryDescription => {
     expand: true,
   };
 };
+
+/**
+ * An data provider interface for returning Favorite properties for the given elements
+ * @beta
+ */
+export interface IFavoritePropertiesDataProvider {
+  /** Returns property data for an element. */
+  getData: (imodel: IModelConnection, elementIds: Id64Arg | KeySet) => Promise<PropertyData>;
+}
 
 /** @beta */
 export interface FavoritePropertiesDataProviderProps {
@@ -44,7 +53,7 @@ export interface FavoritePropertiesDataProviderProps {
  * Presentation Rules-driven element favorite properties data provider implementation.
  * @beta
  */
-export class FavoritePropertiesDataProvider implements IElementPropertyDataProvider {
+export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataProvider {
 
   private _customRuleset?: Ruleset | string;
   private _propertyDataProviderFactory: (imodel: IModelConnection, ruleset?: Ruleset | string) => PresentationPropertyDataProvider;
@@ -76,27 +85,27 @@ export class FavoritePropertiesDataProvider implements IElementPropertyDataProvi
   }
 
   /**
-   * Returns PropertyData for the specified element.
+   * Returns PropertyData for the specified elements.
    * PropertyData only contains a single category for favorite properties (if there are any).
    */
-  public async getData(imodel: IModelConnection, elementId: string): Promise<PropertyData> {
-    const key = await Presentation.selection.scopes.computeSelection(
-      imodel,
-      elementId,
-      getScopeId(Presentation.selection.scopes.activeScope));
+  public async getData(imodel: IModelConnection, elementIds: Id64Arg | KeySet): Promise<PropertyData> {
+    if (elementIds instanceof KeySet) {
+      return using(this._propertyDataProviderFactory(imodel, this._customRuleset), async (propertyDataProvider) => {
+        propertyDataProvider.keys = elementIds;
+        propertyDataProvider.includeFieldsWithNoValues = this.includeFieldsWithNoValues;
+        propertyDataProvider.includeFieldsWithCompositeValues = this.includeFieldsWithCompositeValues;
+        const propertyData = await propertyDataProvider.getData();
 
-    return using(this._propertyDataProviderFactory(imodel, this._customRuleset), async (propertyDataProvider) => {
-      propertyDataProvider.keys = key;
-      propertyDataProvider.includeFieldsWithNoValues = this.includeFieldsWithNoValues;
-      propertyDataProvider.includeFieldsWithCompositeValues = this.includeFieldsWithCompositeValues;
-      const propertyData = await propertyDataProvider.getData();
+        // leave only favorite properties
+        const favoritesCategory = getFavoritesCategory();
+        propertyData.categories = propertyData.categories.filter((c) => c.name === favoritesCategory.name);
+        propertyData.records = propertyData.records.hasOwnProperty(favoritesCategory.name) ?
+          { [favoritesCategory.name]: propertyData.records[favoritesCategory.name] } : {};
+        return propertyData;
+      });
+    }
 
-      // leave only favorite properties
-      const favoritesCategory = getFavoritesCategory();
-      propertyData.categories = propertyData.categories.filter((c) => c.name === favoritesCategory.name);
-      propertyData.records = propertyData.records.hasOwnProperty(favoritesCategory.name) ?
-        { [favoritesCategory.name]: propertyData.records[favoritesCategory.name] } : {};
-      return propertyData;
-    });
+    const keys = await Presentation.selection.scopes.computeSelection(imodel, elementIds, getScopeId(Presentation.selection.scopes.activeScope));
+    return this.getData(imodel, keys);
   }
 }

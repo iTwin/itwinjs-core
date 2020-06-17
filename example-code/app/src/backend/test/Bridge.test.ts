@@ -3,19 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { KnownTestLocations } from "./KnownTestLocations";
-import { RobotWorldEngine } from "../RobotWorldEngine";
-import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
-import { Robot } from "../RobotElement";
-import { Barrier } from "../BarrierElement";
-import { Project } from "@bentley/context-registry-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
+import { Project } from "@bentley/context-registry-client";
+import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import {
+  BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
+  OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,
+} from "@bentley/imodeljs-backend";
 import { BriefcaseProps, ColorByName, IModel, SyncMode } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { Barrier } from "../BarrierElement";
+import { Robot } from "../RobotElement";
+import { RobotWorldEngine } from "../RobotWorldEngine";
+import { KnownTestLocations } from "./KnownTestLocations";
+
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ Bridge.source-data.example-code
@@ -61,7 +65,7 @@ async function queryIModelByName(requestContext: AuthorizedClientRequestContext,
   if (iModels.length === 0)
     return undefined;
   if (iModels.length > 1)
-    return Promise.reject(`Too many iModels with name ${iModelName} found`);
+    throw new Error(`Too many iModels with name ${iModelName} found`);
   return iModels[0];
 }
 

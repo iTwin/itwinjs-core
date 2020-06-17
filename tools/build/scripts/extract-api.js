@@ -8,6 +8,7 @@ const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 const argv = require("yargs").argv;
 const fs = require("fs-extra");
 const path = require("path");
+const paths = require("./config/paths");
 
 if (argv.entry === undefined) {
   console.log("No argument found");
@@ -27,8 +28,8 @@ const config = {
   mainEntryPointFilePath: `${entryPointFileName}.d.ts`,
   apiReport: {
     enabled: true,
-    reportFolder: "../../../common/api",
-    reportTempFolder: "../../../common/temp/api"
+    reportFolder: path.resolve(path.join(paths.rushCommon, "/api")),
+    reportTempFolder: path.resolve(path.join(paths.rushCommon, "/temp/api")),
   },
   docModel: {
     enabled: false
@@ -103,8 +104,8 @@ spawn(require.resolve(".bin/api-extractor"), args).then((code) => {
 
   const extractSummaryArgs = [
     path.resolve(__dirname, "extract-api-summary.js"),
-    "--apiSignature", path.resolve(`../../common/api/${entryPointFileName}.api.md`),
-    "--outDir", path.resolve("../../common/api/summary")
+    "--apiSignature", path.resolve(path.join(paths.rushCommon, `/api/${entryPointFileName}.api.md`)),
+    "--outDir", path.resolve(path.join(paths.rushCommon, "/api/summary")),
   ];
 
   spawn("node", extractSummaryArgs).then((code) => {

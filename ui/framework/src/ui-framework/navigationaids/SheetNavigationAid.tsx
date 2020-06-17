@@ -6,21 +6,18 @@
  * @module NavigationAids
  */
 
-import * as React from "react";
+import "./SheetNavigationAid.scss";
 import classnames from "classnames";
-
-import { IModelConnection, IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
-import { Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
-import { ViewportComponentEvents, ViewIdChangedEventArgs } from "@bentley/ui-components";
-
+import * as React from "react";
+import { IModelApp, IModelConnection, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { ViewIdChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
+import { CommonProps, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
+import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { NavigationAidControl } from "./NavigationAidControl";
-import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
-import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
-import { SheetsModalFrontstage, CardContainer, CardSelectedEventArgs } from "./SheetsModalFrontstage";
-
-import "./SheetNavigationAid.scss";
+import { CardContainer, CardSelectedEventArgs, SheetsModalFrontstage } from "./SheetsModalFrontstage";
 
 /** A Sheet Navigation Aid control.
  * @alpha
@@ -109,31 +106,38 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
       sheetData: [],
     };
 
+    // istanbul ignore else
     if (!this.props.iModelConnection || !this.props.iModelConnection.views.getViewList)
       return stateData;
 
+    // istanbul ignore next
     let viewId = "";
+    // istanbul ignore next
     if (this._viewport) {
       viewId = this._viewport.view.id.toString();
     }
 
+    // istanbul ignore next
     const sheets = await this.props.iModelConnection.views.getViewList({ from: "BisCore.SheetViewDefinition" });
+    // istanbul ignore next
     sheets.forEach((viewSpec: IModelConnection.ViewSpec, index: number) => {
       stateData.sheetData.push({ name: viewSpec.name, viewId: viewSpec.id });
       if (viewSpec.id === viewId)
         stateData.index = index;
     });
 
+    // istanbul ignore next
     return stateData;
   }
 
   /** @internal */
   public render(): React.ReactNode {
-    const name = (this.state.sheetData.length > 0) ? this.state.sheetData[this.state.index].name : "";
+    const name = (this.state.sheetData.length > 0) ? /* istanbul ignore next */ this.state.sheetData[this.state.index].name : "";
     const sheet = UiFramework.translate("general.sheet");
     const ofStr = UiFramework.translate("general.of");
 
     let content: React.ReactNode;
+    // istanbul ignore if
     if (this.state.sheetData.length > 0) {
       content = (
         <>
@@ -160,13 +164,13 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
 
   /** Sets index of newly selected card */
   private _handleCardSelected = (event: CardSelectedEventArgs) => {
-    if (event)
-      this.setState({
-        index: event.index,
-      });
+    event && this.setState({
+      index: event.index,
+    });
   }
 
   /** Updates view to the next lowest index in sheetData */
+  // istanbul ignore next
   private _handleOnClickLeftArrow = () => {
     this.setState(
       (prevState) => ({ index: prevState.index <= 0 ? prevState.sheetData.length - 1 : prevState.index - 1 }),
@@ -174,6 +178,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   }
 
   /** Updates view to next highest index in sheetData */
+  // istanbul ignore next
   private _handleOnClickRightArrow = () => {
     this.setState(
       (prevState) => ({ index: (prevState.index + 1) % prevState.sheetData.length }),
@@ -181,18 +186,21 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   }
 
   /** Handles a Viewport change & synchs the index */
+  // istanbul ignore next
   private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
     if (args.current) {
       this._handleViewportChanged(args.current);
     }
   }
 
+  // istanbul ignore next
   private _handleViewIdChanged = (args: ViewIdChangedEventArgs) => {
     if (this._viewport === args.viewport)
       this._handleViewportChanged(args.viewport as ScreenViewport);
   }
 
   /** Handles a Viewport change & synchs the index */
+  // istanbul ignore next
   private _handleViewportChanged = (viewport: ScreenViewport) => {
     const className = ViewUtilities.getBisBaseClass(viewport.view.classFullName);
 
@@ -211,6 +219,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   }
 
   /** Updates view to currently set sheet */
+  // istanbul ignore next
   private async _updateView() {
     const viewState = await this.props.iModelConnection.views.load(this.state.sheetData[this.state.index].viewId);
     if (this._viewport)
@@ -218,11 +227,13 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   }
 
   /** Creates a new SheetsModalFrontstage */
+  // istanbul ignore next
   private modalFrontstage(): ModalFrontstageInfo {
     return new SheetsModalFrontstage(this.state.sheetData, this.props.iModelConnection, this.state.index);
   }
 
   /** Opens a new SheetsModelFrontstage on sheetName click */
+  // istanbul ignore next
   private _handleOnClickSheetName = () => {
     FrontstageManager.openModalFrontstage(this.modalFrontstage());
   }

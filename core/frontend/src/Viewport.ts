@@ -7,98 +7,44 @@
  */
 
 import {
-  assert,
-  BeDuration,
-  BeEvent,
-  BeTimePoint,
-  compareStrings,
-  dispose,
-  IDisposable,
-  Id64,
-  Id64Arg,
-  Id64Set,
-  Id64String,
-  SortedArray,
-  StopWatch,
+  assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
-  Angle,
-  AngleSweep,
-  Arc3d,
-  Geometry,
-  LowAndHighXY,
-  LowAndHighXYZ,
-  Map4d,
-  Matrix3d,
-  Plane3dByOriginAndUnitNormal,
-  Point2d,
-  Point3d,
-  Point4d,
-  Range1d,
-  Range3d,
-  Ray3d,
-  SmoothTransformBetweenFrusta,
-  Transform,
-  Vector3d,
-  XAndY,
-  XYAndZ,
-  XYZ,
+  Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
+  Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle,
-  BackgroundMapProps,
-  BackgroundMapSettings,
-  Camera,
-  Cartographic,
-  ColorDef,
-  Easing,
-  EasingFunction,
-  ElementProps,
-  Frustum,
-  GlobeMode,
-  GridOrientationType,
-  Hilite,
-  ImageBuffer,
-  Interpolation,
-  LightSettings,
-  NpcCenter,
-  Placement2d,
-  Placement2dProps,
-  Placement3d,
-  Placement3dProps,
-  PlacementProps,
-  SolarShadowSettings,
-  SubCategoryAppearance,
-  SubCategoryOverride,
-  Tweens,
-  ViewFlags,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, Easing, EasingFunction, ElementProps, Frustum, GlobeMode,
+  GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d, Placement2dProps, Placement3d, Placement3dProps,
+  PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
+import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ToolTipOptions } from "./NotificationManager";
+import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
-import { GraphicList } from "./render/RenderGraphic";
-import { RenderPlan } from "./render/RenderPlan";
 import { Pixel } from "./render/Pixel";
-import { Decorations } from "./render/Decorations";
-import { RenderTarget } from "./render/RenderTarget";
+import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
+import { createRenderPlanFromViewport } from "./render/RenderPlan";
+import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { TileTreeReference, TileTreeSet, TileBoundingBoxes } from "./tile/internal";
-import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
+import { TileBoundingBoxes, TileTreeReference, TileTreeSet } from "./tile/internal";
 import { EventController } from "./tools/EventController";
-import { DecorateContext, SceneContext } from "./ViewContext";
-import { MarginPercent, ViewState, ViewStatus, ViewState3d, ViewState2d, ViewPose, ViewPose3d } from "./ViewState";
-import { ViewRect } from "./ViewRect";
-import { ViewingSpace } from "./ViewingSpace";
 import { ToolSettings } from "./tools/ToolSettings";
-import { GlobalLocation, eyeToCartographicOnGlobe, metersToRange, ViewGlobalLocationConstants, areaToEyeHeight } from "./ViewGlobalLocation";
+import { DecorateContext, SceneContext } from "./ViewContext";
+import { areaToEyeHeight, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
+import { ViewingSpace } from "./ViewingSpace";
+import { ViewRect } from "./ViewRect";
+import { MarginPercent, ViewPose, ViewPose3d, ViewState, ViewState2d, ViewState3d, ViewStatus } from "./ViewState";
+import { SheetViewState } from "./Sheet";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -839,6 +785,11 @@ export abstract class Viewport implements IDisposable {
   /** Event invoked immediately when [[changeView]] is called to replace the current [[ViewState]] with a different one.
    */
   public readonly onChangeView = new BeEvent<(vp: Viewport, previousViewState: ViewState) => void>();
+  /** Event invoked immediately when the viewport is disposed.
+   * @see [[Viewport.dispose]].
+   * @beta
+   */
+  public readonly onDisposed = new BeEvent<(vp: Viewport) => void>();
 
   private _view!: ViewState;
   private readonly _viewportId: number;
@@ -927,6 +878,42 @@ export abstract class Viewport implements IDisposable {
    */
   public lastFlashedElem?: string;
 
+  private _wantViewAttachments = true;
+  /** For debug purposes, controls whether or not view attachments are displayed in sheet views.
+   * @internal
+   */
+  public get wantViewAttachments() { return this._wantViewAttachments; }
+  public set wantViewAttachments(want: boolean) {
+    if (want !== this._wantViewAttachments) {
+      this._wantViewAttachments = want;
+      this.invalidateScene();
+    }
+  }
+
+  private _wantViewAttachmentBoundaries = false;
+  /** For debug purposes, controls whether or not the boundary of each view attachment is displayed in a sheet view.
+   * @internal
+   */
+  public get wantViewAttachmentBoundaries() { return this._wantViewAttachmentBoundaries; }
+  public set wantViewAttachmentBoundaries(want: boolean) {
+    if (want !== this._wantViewAttachmentBoundaries) {
+      this._wantViewAttachmentBoundaries = want;
+      this.invalidateScene();
+    }
+  }
+
+  private _wantViewAttachmentClipShapes = false;
+  /** For debug purposes, controls whether or not graphics representing the clipping shapes of each view attachment are displayed in a sheet view.
+   * @internal
+   */
+  public get wantViewAttachmentClipShapes() { return this._wantViewAttachmentClipShapes; }
+  public set wantViewAttachmentClipShapes(want: boolean) {
+    if (want !== this._wantViewAttachmentClipShapes) {
+      this._wantViewAttachmentClipShapes = want;
+      this.invalidateScene();
+    }
+  }
+
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
   private static _nextViewportId = 1;
@@ -946,12 +933,10 @@ export abstract class Viewport implements IDisposable {
   private _outsideClipColor?: ColorDef;
   private _insideClipColor?: ColorDef;
 
-  /** @alpha */
   public get lightSettings(): LightSettings | undefined {
     return this.displayStyle.is3d() ? this.displayStyle.settings.lights : undefined;
   }
 
-  /** @alpha */
   public setLightSettings(settings: LightSettings) {
     if (this.displayStyle.is3d()) {
       this.displayStyle.settings.lights = settings;
@@ -960,9 +945,7 @@ export abstract class Viewport implements IDisposable {
     }
   }
 
-  /** Settings controlling shadow display for this viewport. Only applicable to 3d views.
-   * @beta
-   */
+  /** Settings controlling shadow display for this viewport. Only applicable to 3d views. */
   public get solarShadowSettings(): SolarShadowSettings | undefined {
     return this.view.displayStyle.is3d() ? this.view.displayStyle.settings.solarShadows : undefined;
   }
@@ -1173,10 +1156,19 @@ export abstract class Viewport implements IDisposable {
    */
   public isSubCategoryVisible(id: Id64String): boolean { return this.view.isSubCategoryVisible(id); }
 
-  private invalidateShadows(): void {
+  /** Some changes may or may not require us to invalidate the scene.
+   * Specifically, when shadows are enabled or we are displaying view attachments, the following changes may affect the visibility or transparency of elements or features:
+   * - Viewed categories and subcategories;
+   * - Always/never drawn elements
+   * - Symbology overrides.
+   */
+  private maybeInvalidateScene(): void {
     // When shadows are being displayed and the set of displayed categories changes, we must invalidate the scene so that shadows will be regenerated.
     // Same occurs when changing feature symbology overrides (e.g., always/never-drawn element sets, transparency override)
-    if (this._sceneValid && this.view.displayStyle.wantShadows)
+    if (!this._sceneValid)
+      return;
+
+    if (this.view.displayStyle.wantShadows || this.view instanceof SheetViewState)
       this.invalidateScene();
   }
 
@@ -1189,7 +1181,7 @@ export abstract class Viewport implements IDisposable {
    */
   public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false): void {
     this._changeFlags.setViewedCategories();
-    this.invalidateShadows();
+    this.maybeInvalidateScene();
 
     if (!display) {
       this.view.categorySelector.dropCategories(categories);
@@ -1242,7 +1234,7 @@ export abstract class Viewport implements IDisposable {
     const json = undefined !== curOvr ? curOvr.toJSON() : {};
     json.invisible = !display;
     this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json)); // will set the ChangeFlag appropriately
-    this.invalidateShadows();
+    this.maybeInvalidateScene();
   }
 
   /** The settings controlling how a background map is displayed within a view.
@@ -1377,11 +1369,10 @@ export abstract class Viewport implements IDisposable {
       return;
 
     // Need to redraw once models are available. Don't want to trigger events again.
-    return this.iModel.models.load(models).then(() => {
-      this.invalidateScene();
-      if (this.view.isSpatialView())
-        this.view.markModelSelectorChanged();
-    });
+    await this.iModel.models.load(models);
+    this.invalidateScene();
+    if (this.view.isSpatialView())
+      this.view.markModelSelectorChanged();
   }
 
   /** Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
@@ -1455,6 +1446,7 @@ export abstract class Viewport implements IDisposable {
     this._target = dispose(this._target);
     this.subcategories.dispose();
     IModelApp.tileAdmin.forgetViewport(this);
+    this.onDisposed.raiseEvent(this);
   }
 
   /** Enables or disables continuous rendering. Ideally, during each render frame a Viewport will do as little work as possible.
@@ -1510,7 +1502,7 @@ export abstract class Viewport implements IDisposable {
 
       this._alwaysDrawnExclusive = false;
       this._changeFlags.setAlwaysDrawn();
-      this.invalidateShadows();
+      this.maybeInvalidateScene();
     }
   }
 
@@ -1521,7 +1513,7 @@ export abstract class Viewport implements IDisposable {
     if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
       this.neverDrawn.clear();
       this._changeFlags.setNeverDrawn();
-      this.invalidateShadows();
+      this.maybeInvalidateScene();
     }
   }
 
@@ -1531,7 +1523,7 @@ export abstract class Viewport implements IDisposable {
   public setNeverDrawn(ids: Id64Set): void {
     this._neverDrawn = ids;
     this._changeFlags.setNeverDrawn();
-    this.invalidateShadows();
+    this.maybeInvalidateScene();
   }
 
   /** Specify the Ids of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
@@ -1544,7 +1536,7 @@ export abstract class Viewport implements IDisposable {
     this._alwaysDrawn = ids;
     this._alwaysDrawnExclusive = exclusive;
     this._changeFlags.setAlwaysDrawn();
-    this.invalidateShadows();
+    this.maybeInvalidateScene();
   }
 
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
@@ -1584,7 +1576,7 @@ export abstract class Viewport implements IDisposable {
    */
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
-    this.invalidateShadows();
+    this.maybeInvalidateScene();
   }
 
   /** @internal */
@@ -2062,10 +2054,10 @@ export abstract class Viewport implements IDisposable {
     }
 
     const ignoreError: ViewChangeOptions = {
-      ... options,
+      ...options,
       onExtentsError: () => ViewStatus.Success,
     };
-    view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, ignoreError );
+    view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, ignoreError);
     this.synchWithView(options);
   }
 
@@ -2334,7 +2326,7 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   protected validateRenderPlan() {
-    this.target.changeRenderPlan(RenderPlan.createFromViewport(this));
+    this.target.changeRenderPlan(createRenderPlanFromViewport(this));
     this._renderPlanValid = true;
   }
 
@@ -2555,6 +2547,8 @@ export abstract class Viewport implements IDisposable {
     this.discloseTileTrees(trees);
     for (const tree of trees.trees)
       tree.collectStatistics(stats);
+
+    this.view.collectNonTileTreeStatistics(stats);
   }
 
   /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.
@@ -3242,12 +3236,12 @@ export class TwoWayViewportSync {
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
 
-  public static create(view: ViewState, viewRect?: ViewRect, lockAspectRatio = false) {
+  public static create(view: ViewState, viewRect?: ViewRect, lockAspectRatio = false, target?: RenderTarget) {
     const rect = new ViewRect(0, 0, 1, 1);
     if (undefined !== viewRect)
       rect.setFrom(viewRect);
 
-    const vp = new this(IModelApp.renderSystem.createOffscreenTarget(rect));
+    const vp = new this(target ?? IModelApp.renderSystem.createOffscreenTarget(rect));
     vp._isAspectRatioLocked = lockAspectRatio;
     vp.changeView(view);
     vp._decorationsValid = true;

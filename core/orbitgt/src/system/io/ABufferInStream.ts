@@ -14,9 +14,8 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { InStream } from "./InStream";
-
 import { ABuffer } from "../buffer/ABuffer";
+import { InStream } from "./InStream";
 
 /**
  * Class ABufferInStream defines a stream on top of a buffer.

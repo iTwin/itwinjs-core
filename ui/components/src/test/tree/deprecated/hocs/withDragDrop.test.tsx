@@ -2,17 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-import * as sinon from "sinon";
-import { render, cleanup } from "@testing-library/react";
+import * as React from "react";
 import ReactTestUtils from "react-dom/test-utils";
+import * as sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { cleanup, render } from "@testing-library/react";
 import { DEPRECATED_Tree as Tree } from "../../../../ui-components";
-import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
-import { DEPRECATED_withTreeDragDrop } from "../../../../ui-components/tree/deprecated/hocs/withDragDrop";
-import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../../ui-components/dragdrop/DragDropDef";
+import {
+  DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps,
+} from "../../../../ui-components/dragdrop/DragDropDef";
 import { BeInspireTree } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
+import { DEPRECATED_withTreeDragDrop } from "../../../../ui-components/tree/deprecated/hocs/withDragDrop";
+import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
 
 // tslint:disable:deprecation
 

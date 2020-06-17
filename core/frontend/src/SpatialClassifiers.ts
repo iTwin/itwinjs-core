@@ -6,9 +6,7 @@
  * @module SpatialClassification
  */
 
-import {
-  SpatialClassificationProps,
-} from "@bentley/imodeljs-common";
+import { SpatialClassificationProps } from "@bentley/imodeljs-common";
 
 /** @internal */
 export interface SpatialClassifiersContainer {

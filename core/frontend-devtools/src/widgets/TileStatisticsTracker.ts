@@ -7,14 +7,10 @@
  * @module Widgets
  */
 
-import {
-  IModelApp,
-  TileAdmin,
-  Viewport,
-} from "@bentley/imodeljs-frontend";
+import { IModelApp, TileAdmin, Viewport } from "@bentley/imodeljs-frontend";
+import { createButton } from "../ui/Button";
 import { createCheckBox } from "../ui/CheckBox";
 import { createNumericInput } from "../ui/NumericInput";
-import { createButton } from "../ui/Button";
 
 type GetStatValue = (stats: TileAdmin.Statistics, vp: Viewport) => number;
 interface StatEntry {

@@ -6,21 +6,8 @@
 import { compareNumbers } from "@bentley/bentleyjs-core";
 import { GlobeMode } from "@bentley/imodeljs-common";
 import {
-  createTileTreeFromImageryProvider,
-  ImageryProviderEPSG3857,
-  IModelApp,
-  IModelConnection,
-  MapTileTreeReference,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  Extension,
-  ScreenViewport,
-  TiledGraphicsProvider,
-  TileGraphicType,
-  TileTree,
-  TileTreeOwner,
-  TileTreeReference,
-  TileTreeSupplier,
+  createTileTreeFromImageryProvider, Extension, ImageryProviderEPSG3857, IModelApp, IModelConnection, MapTileTreeReference, NotifyMessageDetails,
+  OutputMessagePriority, ScreenViewport, TiledGraphicsProvider, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -147,6 +134,7 @@ class WMSGraphicsProvider implements TiledGraphicsProvider {
 class WMSExtension extends Extension {
   public readonly imageryProviders: WMSImageryProvider[] = [];
   public readonly treeSupplier: TileTreeSupplier;
+  protected _defaultNs = "WmsExtension";
   private _currentImageryType = WMSImageryType.Precipitation;
   private _i18NNamespace?: I18NNamespace;
   private _graphicsProvider?: WMSGraphicsProvider;
@@ -161,11 +149,11 @@ class WMSExtension extends Extension {
 
   /** Invoked the first time this extension is loaded. */
   public async onLoad(_args: string[]): Promise<void> {
-    this._i18NNamespace = this.i18n.registerNamespace("WmsExtension");
+    this._i18NNamespace = this.i18n.getNamespace(this._defaultNs);
     const logoImage = this.resolveResourceUrl("wmsExtension.svg");
 
-    this.imageryProviders.push(new WMSImageryProvider(WMSImageryType.Temperature, this.i18n, this._i18NNamespace, logoImage));
-    this.imageryProviders.push(new WMSImageryProvider(WMSImageryType.Precipitation, this.i18n, this._i18NNamespace, logoImage));
+    this.imageryProviders.push(new WMSImageryProvider(WMSImageryType.Temperature, this.i18n, this._i18NNamespace!, logoImage));
+    this.imageryProviders.push(new WMSImageryProvider(WMSImageryType.Precipitation, this.i18n, this._i18NNamespace!, logoImage));
   }
 
   /** Invoked each time this extension is loaded. */

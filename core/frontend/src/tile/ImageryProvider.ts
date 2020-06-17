@@ -6,33 +6,13 @@
  * @module Tiles
  */
 
-import {
-  assert,
-  BentleyError,
-  IModelStatus,
-  ClientRequestContext,
-} from "@bentley/bentleyjs-core";
+import { assert, BentleyError, ClientRequestContext, IModelStatus } from "@bentley/bentleyjs-core";
 import { Range2d } from "@bentley/geometry-core";
-import {
-  BackgroundMapProviderName,
-  BackgroundMapType,
-  ImageSource,
-  ImageSourceFormat,
-} from "@bentley/imodeljs-common";
-import {
-  request,
-  RequestOptions,
-  Response,
-} from "@bentley/itwin-client";
-import { ScreenViewport } from "../Viewport";
+import { BackgroundMapProviderName, BackgroundMapType, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
+import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../IModelApp";
-import {
-  MapTileTreeReference,
-  MapTilingScheme,
-  QuadId,
-  Tile,
-  WebMercatorTilingScheme,
-} from "./internal";
+import { ScreenViewport } from "../Viewport";
+import { MapTileTreeReference, MapTilingScheme, QuadId, Tile, WebMercatorTilingScheme } from "./internal";
 
 /** @internal */
 export interface MapTileGeometryAttributionProvider {

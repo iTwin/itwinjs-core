@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { expect } from "chai";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Vector3d } from "../../geometry3d/Point3dVector3d";
 import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
-import * as bsiChecker from "../Checker";
 import { Point4d } from "../../geometry4d/Point4d";
+import * as bsiChecker from "../Checker";
+
 /* tslint:disable:no-console */
 
 function rotatexyzw(xyzw: Point4d): Point4d {

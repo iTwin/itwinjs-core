@@ -6,49 +6,39 @@
  * @module WebGL
  */
 
-import {
-  Matrix4d,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  FrustumUniforms,
-  FrustumUniformType,
-} from "./FrustumUniforms";
+import { Matrix4d, Vector3d } from "@bentley/geometry-core";
 import { RenderPlan } from "../RenderPlan";
-import { HiliteUniforms } from "./HiliteUniforms";
-import { StyleUniforms } from "./StyleUniforms";
-import { ViewRectUniforms } from "./ViewRectUniforms";
 import { BatchUniforms } from "./BatchUniforms";
 import { BranchUniforms } from "./BranchUniforms";
-import { ShadowUniforms } from "./ShadowUniforms";
-import { LightingUniforms } from "./LightingUniforms";
-import { ThematicUniforms } from "./ThematicUniforms";
+import { FrustumUniforms, FrustumUniformType } from "./FrustumUniforms";
 import { UniformHandle } from "./Handle";
+import { HiliteUniforms } from "./HiliteUniforms";
+import { LightingUniforms } from "./LightingUniforms";
 import { Matrix4 } from "./Matrix";
+import { ShadowUniforms } from "./ShadowUniforms";
+import { StyleUniforms } from "./StyleUniforms";
+import { desync, sync, SyncObserver, SyncToken } from "./Sync";
 import { Target } from "./Target";
-import {
-  desync,
-  sync,
-  SyncObserver,
-  SyncToken,
-} from "./Sync";
+import { ThematicUniforms } from "./ThematicUniforms";
+import { ViewRectUniforms } from "./ViewRectUniforms";
 
 class PixelWidthFactor {
-  /** The pixel width factor depends on both the frustum and the view rect. */
+  /** The pixel width factor depends on both the frustum and the view rect. It also depends on the frustum scale associated with the current Branch. */
   private readonly _rectSync: SyncObserver = {};
   private readonly _frustumSync: SyncObserver = {};
+  private readonly _branchSync: SyncObserver = {};
   private _factor = 0;
   public syncKey = 0;
 
   public bind(uniform: UniformHandle, uniforms: TargetUniforms): void {
-    if (!sync(uniforms.frustum, this._frustumSync) || !sync(uniforms.viewRect, this._rectSync))
-      this.compute(uniforms.frustum, uniforms.viewRect.width, uniforms.viewRect.height);
+    if (!sync(uniforms.frustum, this._frustumSync) || !sync(uniforms.viewRect, this._rectSync) || !sync(uniforms.branch, this._branchSync))
+      this.compute(uniforms.frustum, uniforms.viewRect.width, uniforms.viewRect.height, uniforms.branch.top.frustumScale);
 
     if (!sync(this, uniform))
       uniform.setUniform1f(this._factor);
   }
 
-  private compute(frustumUniforms: FrustumUniforms, width: number, height: number): void {
+  private compute(frustumUniforms: FrustumUniforms, width: number, height: number, scale: { x: number; y: number; }): void {
     desync(this);
 
     const frustumPlanes = frustumUniforms.planes;
@@ -65,11 +55,11 @@ class PixelWidthFactor {
     if (FrustumUniformType.Perspective === frustumUniforms.type) {
       const inverseNear = 1.0 / frustum[0];
       const tanTheta = top * inverseNear;
-      halfPixelHeight = tanTheta / height;
-      halfPixelWidth = tanTheta / width;
+      halfPixelHeight = scale.x * tanTheta / height;
+      halfPixelWidth = scale.y * tanTheta / width;
     } else {
-      halfPixelWidth = 0.5 * (right - left) / width;
-      halfPixelHeight = 0.5 * (top - bottom) / height;
+      halfPixelWidth = scale.x * 0.5 * (right - left) / width;
+      halfPixelHeight = scale.y * 0.5 * (top - bottom) / height;
     }
 
     this._factor = Math.sqrt(halfPixelWidth * halfPixelWidth + halfPixelHeight * halfPixelHeight);
@@ -145,7 +135,7 @@ export class TargetUniforms {
   private readonly _sunDirection = new SunDirection();
 
   public constructor(target: Target) {
-    this.frustum = new FrustumUniforms(target);
+    this.frustum = new FrustumUniforms();
     this.branch = new BranchUniforms(target);
     this.batch = new BatchUniforms(target, this.branch.createBatchState());
     this.shadow = new ShadowUniforms(target);

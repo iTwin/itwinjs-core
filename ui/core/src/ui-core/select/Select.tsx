@@ -6,8 +6,8 @@
  * @module Select
  */
 
-import * as React from "react";
 import classnames from "classnames";
+import * as React from "react";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for [[Select]] component
@@ -36,37 +36,49 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
   setFocus?: boolean;
 }
 
+function getCurrentDefaultValue(defaultValue: string | undefined, placeholderValue: string | undefined) {
+  if (defaultValue)
+    return defaultValue;
+
+  return placeholderValue;
+}
+
 /** Basic select component is a wrapper for the `<select>` HTML element.
  * @public
  */
-export class Select extends React.PureComponent<SelectProps> {
-  private _selectElement = React.createRef<HTMLSelectElement>();
+export function Select(props: SelectProps) {
+  const selectElement = React.useRef<HTMLSelectElement>(null);
+  const placeholderValue = React.useRef("placeholder");
+  const isInitialMount = React.useRef(true);
 
-  public componentDidMount() {
-    if (this.props.setFocus && this._selectElement.current) {
-      this._selectElement.current.focus();
-    }
-  }
+  React.useEffect(() => {
+    if (props.setFocus && selectElement.current)
+      selectElement.current.focus();
+  }, [props]);
 
-  public render(): JSX.Element {
-    const { required, options, setFocus, className, defaultValue, ...otherProps } = this.props as any; // pluck off values that will be explicitly set below
-    const showPlaceholder = !!this.props.placeholder && !this.props.value && !this.props.defaultValue;
-    const isRequired = showPlaceholder || required;
-    const placeholderValue = "placeholder";
-    return (
-      <select ref={this._selectElement} {...otherProps}
-        required={isRequired}
-        className={classnames("uicore-inputs-select", className)}
-        defaultValue={showPlaceholder ? placeholderValue : defaultValue}>
-        {showPlaceholder &&
-          <option className="placeholder" disabled key="" value={placeholderValue}>{this.props.placeholder}</option>
-        }
-        {options instanceof Array ?
-          options.map((value, index) => <option key={index} value={value}>{value}</option>)
-          :
-          Object.keys(options).map((key) => <option key={key} value={key}>{options[key]}</option>)
-        }
-      </select>
-    );
-  }
+  React.useEffect(() => {
+    isInitialMount.current = false;
+  }, []);
+
+  const { value: selectValue, required, options, setFocus, className, defaultValue, ...otherProps } = props as any; // pluck off values that will be explicitly set below
+  const showPlaceholder = React.useMemo(() => props.placeholder && (!selectValue || selectValue === placeholderValue.current) && !defaultValue, [defaultValue, selectValue, props.placeholder]);
+  const isRequired = React.useMemo(() => showPlaceholder || required, [required, showPlaceholder]);
+  const currentDefaultValue = React.useMemo(() => getCurrentDefaultValue(defaultValue, showPlaceholder ? placeholderValue.current : undefined), [defaultValue, showPlaceholder]);
+
+  return (
+    <select ref={selectElement} {...otherProps}
+      required={isRequired}
+      className={classnames("uicore-inputs-select", className)}
+      value={(!isInitialMount.current && !selectValue) ? currentDefaultValue : selectValue}
+      defaultValue={currentDefaultValue}>
+      {showPlaceholder &&
+        <option className="placeholder" disabled key="" value={placeholderValue.current}>{props.placeholder}</option>
+      }
+      {options instanceof Array ?
+        options.map((value, index) => <option key={index} value={value}>{value}</option>)
+        :
+        Object.keys(options).map((key) => <option key={key} value={key}>{options[key]}</option>)
+      }
+    </select>
+  );
 }

@@ -2,30 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, ReactWrapper } from "enzyme";
 import { expect } from "chai";
+import { mount, ReactWrapper } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
-import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
+import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
+import { LocalUiSettings, Toggle } from "@bentley/ui-core";
 import { FooterPopup, TitleBarButton } from "@bentley/ui-ninezone";
-import { Toggle, LocalUiSettings } from "@bentley/ui-core";
-
-import TestUtils, { storageMock } from "../../TestUtils";
 import {
-  StatusBar,
-  ToolAssistanceField,
-  StatusBarWidgetControl,
-  ConfigurableCreateInfo,
-  ConfigurableUiControlType,
-  WidgetDef,
-  StatusBarWidgetControlArgs,
-  AppNotificationManager,
-  CursorPopupManager,
-  FrontstageManager,
+  AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, CursorPopupManager, FrontstageManager, StatusBar, StatusBarWidgetControl,
+  StatusBarWidgetControlArgs, ToolAssistanceField, WidgetDef,
 } from "../../../ui-framework";
+import TestUtils, { storageMock } from "../../TestUtils";
 
 describe("ToolAssistanceField", () => {
   const uiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);

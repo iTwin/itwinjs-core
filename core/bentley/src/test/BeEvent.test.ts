@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect, assert } from "chai";
+import { assert, expect } from "chai";
 import { BeEvent, BeEventList } from "../bentleyjs-core";
 
 // tslint:disable:no-empty

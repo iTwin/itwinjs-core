@@ -6,8 +6,8 @@
  * @module Backstage
  */
 
-import { PropsHelper } from "../utils/PropsHelper";
 import { BackstageActionItem as UIA_BackstageActionItem, BackstageStageLauncher as UIA_BackstageStageLauncher } from "@bentley/ui-abstract";
+import { PropsHelper } from "../utils/PropsHelper";
 import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 
 /** Used to specify the item type added to the backstage menu.
@@ -78,7 +78,7 @@ export class BackstageItemUtilities {
     const tooltipSpec = PropsHelper.getStringSpec(props.tooltip, props.tooltipKey);
 
     return {
-      isEnabled: undefined !== !props.isEnabled ? !!props.isEnabled : false,
+      isEnabled: undefined !== !props.isEnabled ? !!props.isEnabled : /* istanbul ignore next */false,
       label: PropsHelper.getStringFromSpec(labelSpec),
       subtitle: PropsHelper.getStringFromSpec(subtitleSpec),
       tooltip: PropsHelper.getStringFromSpec(tooltipSpec),

@@ -15,3 +15,19 @@ exports[`<TextEditor /> renders correctly 1`] = `
   type="text"
 />
 `;
+
+exports[`<TextEditor /> renders correctly with style 1`] = `
+<Input
+  className="components-cell-editor components-text-editor"
+  data-testid="components-text-editor"
+  defaultValue=""
+  onChange={[Function]}
+  readOnly={false}
+  style={
+    Object {
+      "color": "red",
+    }
+  }
+  type="text"
+/>
+`;

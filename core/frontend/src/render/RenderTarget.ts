@@ -6,38 +6,24 @@
  * @module Rendering
  */
 
-import {
-  Id64String,
-  IDisposable,
-} from "@bentley/bentleyjs-core";
-import {
-  Point2d,
-  Transform,
-  XAndY,
-} from "@bentley/geometry-core";
-import {
-  Frustum,
-  ImageBuffer,
-  SpatialClassificationProps,
-} from "@bentley/imodeljs-common";
-import { ViewRect } from "../ViewRect";
-import { Viewport } from "../Viewport";
-import { SceneContext } from "../ViewContext";
+import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { Point2d, Transform, XAndY } from "@bentley/geometry-core";
+import { Frustum, ImageBuffer, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { HiliteSet } from "../SelectionSet";
+import { SceneContext } from "../ViewContext";
+import { Viewport } from "../Viewport";
+import { ViewRect } from "../ViewRect";
 import { CanvasDecoration } from "./CanvasDecoration";
-import { RenderMemory } from "./RenderMemory";
-import {
-  RenderSystem,
-  RenderTextureDrape,
-} from "./RenderSystem";
-import { AnimationBranchStates } from "./GraphicBranch";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
-import { GraphicType } from "./GraphicBuilder";
-import { GraphicList } from "./RenderGraphic";
-import { RenderPlan } from "./RenderPlan";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
+import { AnimationBranchStates } from "./GraphicBranch";
+import { GraphicType } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
+import { GraphicList } from "./RenderGraphic";
+import { RenderMemory } from "./RenderMemory";
+import { RenderPlan } from "./RenderPlan";
+import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
 import { Scene } from "./Scene";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
@@ -59,8 +45,6 @@ export enum PrimitiveVisibility {
 export interface RenderTargetDebugControl {
   /** If true, render to the screen as if rendering off-screen for readPixels(). */
   drawForReadPixels: boolean;
-  /** If true, use log-z depth buffer (assuming supported by client). */
-  useLogZ: boolean;
   /** @alpha */
   primitiveVisibility: PrimitiveVisibility;
   /** @internal */
@@ -90,15 +74,6 @@ export interface RenderTargetDebugControl {
  */
 export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
   public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined { return undefined; }
-
-  public static get frustumDepth2d(): number { return 1.0; } // one meter
-  public static get maxDisplayPriority(): number { return (1 << 23) - 32; }
-  public static get minDisplayPriority(): number { return -this.maxDisplayPriority; }
-
-  /** Returns a transform mapping an object's display priority to a depth from 0 to frustumDepth2d. */
-  public static depthFromDisplayPriority(priority: number): number {
-    return (priority - this.minDisplayPriority) / (this.maxDisplayPriority - this.minDisplayPriority) * this.frustumDepth2d;
-  }
 
   public abstract get renderSystem(): RenderSystem;
 

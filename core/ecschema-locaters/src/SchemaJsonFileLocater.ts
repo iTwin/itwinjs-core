@@ -5,9 +5,11 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import {
+  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType,
+} from "@bentley/ecschema-metadata";
+import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
-import { SchemaFileLocater, FileSchemaKey } from "./SchemaFileLocater";
-import { SchemaKey, ISchemaLocater, ECObjectsError, ECObjectsStatus, ECVersion, Schema, SchemaMatchType, SchemaContext } from "@bentley/ecschema-metadata";
 /**
  * A SchemaLocator implementation for locating JSON Schema files
  * from the file system using configurable search paths.

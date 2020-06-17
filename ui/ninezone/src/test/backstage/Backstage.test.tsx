@@ -27,11 +27,11 @@ describe("<Backstage />", () => {
   });
 
   it("should render header", () => {
-    shallow(<Backstage header={"my header"} />).should.matchSnapshot();
+    shallow(<Backstage header="my header" />).should.matchSnapshot();
   });
 
   it("should render footer", () => {
-    shallow(<Backstage footer={"my footer"} />).should.matchSnapshot();
+    shallow(<Backstage footer="my footer" />).should.matchSnapshot();
   });
 
   it("renders safe area aware correctly", () => {

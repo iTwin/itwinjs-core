@@ -6,47 +6,20 @@
  * @module WebGL
  */
 
+import { assert } from "@bentley/bentleyjs-core";
+import { OvrFlags, RenderOrder, TextureUnit } from "../RenderFlags";
 import {
-  ProgramBuilder,
-  ShaderBuilder,
-  VertexShaderBuilder,
-  FragmentShaderBuilder,
-  VariableType,
+  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
   VertexShaderComponent,
-  VariablePrecision,
-  FragmentShaderComponent,
 } from "../ShaderBuilder";
-import {
-  OvrFlags,
-  RenderOrder,
-  TextureUnit,
-} from "../RenderFlags";
-import {
-  FeatureMode,
-  TechniqueFlags,
-} from "../TechniqueFlags";
-import {
-  addAlpha,
-  addFeatureAndMaterialLookup,
-  addLineWeight,
-  replaceLineCode,
-  replaceLineWeight,
-} from "./Vertex";
-import {
-  addWindowToTexCoords,
-  assignFragColor,
-  computeLinearDepth,
-} from "./Fragment";
-import {
-  addExtractNthBit,
-  addEyeSpace,
-  addUInt32s,
-} from "./Common";
+import { System } from "../System";
+import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
+import { addExtractNthBit, addEyeSpace, addUInt32s } from "./Common";
 import { decodeDepthRgb } from "./Decode";
+import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
-import { assert } from "@bentley/bentleyjs-core";
-import { System } from "../System";
+import { addAlpha, addFeatureAndMaterialLookup, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
 
 // tslint:disable:no-const-enum
 
@@ -232,9 +205,8 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
         let flags = 0.0;
         if (params.geometry.isEdge) {
-          const edgeOvrs = params.target.getEdgeOverrides(params.renderPass);
-          if (undefined !== edgeOvrs)
-            flags = edgeOvrs.computeOvrFlags();
+          const settings = params.target.currentEdgeSettings;
+          flags = settings.computeOvrFlags(params.renderPass, params.target.currentViewFlags);
         }
 
         if (!params.geometry.allowColorOverride)
@@ -277,7 +249,8 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       // 3: both
       vert.addUniform("u_transparencyDiscardFlags", VariableType.Int, (prog) => {
         prog.addGraphicUniform("u_transparencyDiscardFlags", (uniform, params) => {
-          let flags = params.target.currentViewFlags.transparency ? 1 : 0;
+          // During readPixels() we force transparency off. Make sure to ignore a Branch that turns it back on.
+          let flags = params.target.currentViewFlags.transparency && !params.target.isReadPixelsInProgress ? 1 : 0;
           if (!params.geometry.alwaysRenderTranslucent)
             flags += 2;
 
@@ -473,11 +446,7 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
     return true;
 
   // In 2d, display priority controls draw order of different elements.
-  if (kFrustumType_Ortho2d == u_frustum.z)
-    return false;
-
-  // Only planar stuff is permitted to show through other, non-planar surfaces.
-  if (depthAndOrder.x < kRenderOrder_PlanarBit || u_renderOrder >= kRenderOrder_PlanarBit)
+  if (!u_checkInterElementDiscard)
     return false;
 
   // Use a tighter tolerance for two different elements since we're only fighting roundoff error.
@@ -486,6 +455,7 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
 
 // This only adds the constants that are actually used in shader code.
 export function addRenderOrderConstants(builder: ShaderBuilder) {
+  builder.addConstant("kRenderOrder_BlankingRegion", VariableType.Float, RenderOrder.BlankingRegion.toFixed(1));
   builder.addConstant("kRenderOrder_Linear", VariableType.Float, RenderOrder.Linear.toFixed(1));
   builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, RenderOrder.Silhouette.toFixed(1));
   builder.addConstant("kRenderOrder_UnlitSurface", VariableType.Float, RenderOrder.UnlitSurface.toFixed(1));
@@ -566,8 +536,8 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
 
   vert.set(VertexShaderComponent.CheckForLateDiscard, isBelowTransparencyThreshold);
   vert.addUniform("u_transparencyThreshold", VariableType.Float, (prog) => {
-    prog.addProgramUniform("u_transparencyThreshold", (uniform, params) => {
-      uniform.setUniform1f(params.target.transparencyThreshold);
+    prog.addGraphicUniform("u_transparencyThreshold", (uniform, params) => {
+      uniform.setUniform1f(params.target.currentTransparencyThreshold);
     });
   });
 
@@ -582,6 +552,12 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
       addEyeSpace(builder);
       frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscard);
     } else {
+      frag.addUniform("u_checkInterElementDiscard", VariableType.Boolean, (prog) => {
+        prog.addGraphicUniform("u_checkInterElementDiscard", (uniform, params) => {
+          uniform.setUniform1i(params.target.uniforms.branch.top.is3d ? 1 : 0);
+        });
+      });
+
       addFeatureIndex(vert);
       addLineWeight(vert);
 

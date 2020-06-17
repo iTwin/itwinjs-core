@@ -7,12 +7,10 @@
  */
 
 import * as React from "react";
-
-import { ScreenViewport, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { IModelConnection, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
-
-import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl } from "../configurableui/ConfigurableUiControl";
+import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 
 /** ControlControl Activated Event Args interface.
  * @public
@@ -71,6 +69,7 @@ export class ContentControl extends ConfigurableUiControl {
   /** The React node associated with this control. */
   public get reactNode(): React.ReactNode {
     if (!this._keyAdded && React.isValidElement(this._reactNode)) {
+      // istanbul ignore else
       if (!(this._reactNode as React.ReactElement<any>).key)
         this._reactNode = React.cloneElement(this._reactNode, { key: this.controlId });
       this._keyAdded = true;

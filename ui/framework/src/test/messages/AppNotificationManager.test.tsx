@@ -3,13 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as React from "react";
 import { expect } from "chai";
 import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
+import {
+  ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert,
+  OutputMessagePriority, OutputMessageType,
+} from "@bentley/imodeljs-frontend";
+import { AppNotificationManager, ElementTooltip, MessageManager, ModalDialogManager, ModalDialogRenderer } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import { AppNotificationManager, MessageManager, ElementTooltip, ModalDialogManager, ModalDialogRenderer } from "../../ui-framework";
-import { NotifyMessageDetails, OutputMessagePriority, MessageBoxType, MessageBoxIconType, ActivityMessageDetails, ActivityMessageEndReason, OutputMessageType, OutputMessageAlert, MessageBoxValue } from "@bentley/imodeljs-frontend";
 
 describe("AppNotificationManager", () => {
 
@@ -136,6 +139,25 @@ describe("AppNotificationManager", () => {
     expect(showMethod.calledOnce).to.be.true;
     expect(hideMethod.calledOnce).to.be.true;
     expect(notifications.isToolTipSupported).to.be.true;
+  });
+
+  it("ElementTooltip with a React component", () => {
+    const showMethod = sinon.spy(ElementTooltip, "showTooltip");
+    const hideMethod = sinon.spy(ElementTooltip, "hideTooltip");
+    let divElement: HTMLElement | null;
+    mount(<div ref={(el) => { divElement = el; }} />);
+    const reactNode = <span>Tooltip message</span>;
+    MessageManager.openToolTip(divElement!, { reactNode });
+    notifications.clearToolTip();
+    expect(showMethod.calledOnce).to.be.true;
+    expect(hideMethod.calledOnce).to.be.true;
+  });
+
+  it("ActivityMessage with a React component", () => {
+    const spyMethod = sinon.spy(MessageManager, "setupActivityMessageValues");
+    const reactNode = <span>Activity message</span>;
+    MessageManager.outputActivityMessage({ reactNode }, 50);
+    expect(spyMethod.calledOnce).to.be.true;
   });
 
 });

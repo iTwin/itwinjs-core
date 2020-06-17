@@ -6,19 +6,19 @@
  * @module WebGL
  */
 
-import { FragmentShaderComponent, VariableType, ShaderBuilder, VertexShaderComponent, ProgramBuilder } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { assignFragColor } from "./Fragment";
-import { createViewportQuadBuilder } from "./ViewportQuad";
-import { FloatRgb, FloatRgba } from "../FloatRGBA";
 import { ColorDef, SpatialClassificationProps } from "@bentley/imodeljs-common";
-import { SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry, BoundaryType, ScreenPointsGeometry } from "../CachedGeometry";
-import { Texture2DHandle } from "../Texture";
-import { TextureUnit } from "../RenderFlags";
 import { AttributeMap } from "../AttributeMap";
-import { TechniqueId } from "../TechniqueId";
-import { unquantizeVertexPosition } from "./Vertex";
+import { BoundaryType, ScreenPointsGeometry, SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry } from "../CachedGeometry";
+import { FloatRgb, FloatRgba } from "../FloatRGBA";
+import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { ShaderProgram } from "../ShaderProgram";
 import { System } from "../System";
+import { TechniqueId } from "../TechniqueId";
+import { Texture2DHandle } from "../Texture";
+import { assignFragColor } from "./Fragment";
+import { unquantizeVertexPosition } from "./Vertex";
+import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computehiliteColor = "return vec4(u_hilite_color.rgb, 1.0);";
 
@@ -78,7 +78,7 @@ function setScratchColor(display: SpatialClassificationProps.Display, hilite: Fl
 
 /** @internal */
 export function createVolClassColorUsingStencilProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
-  const builder = createViewportQuadBuilder(true); // TODO: I think this should pass in false since there are no textures being used.
+  const builder = createViewportQuadBuilder(false);
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computehiliteColor);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
@@ -93,6 +93,10 @@ export function createVolClassColorUsingStencilProgram(context: WebGLRenderingCo
       scratchColor.bind(uniform);
     });
   });
+
+  builder.vert.headerComment = "//!V! VolClassColorUsingStencil";
+  builder.frag.headerComment = "//!F! VolClassColorUsingStencil";
+
   return builder.buildProgram(context);
 }
 
@@ -124,6 +128,9 @@ export function createVolClassCopyZProgram(context: WebGLRenderingContext | WebG
     frag.addExtension("GL_EXT_frag_depth");
   frag.set(FragmentShaderComponent.FinalizeDepth, depthFromTexture);
 
+  builder.vert.headerComment = "//!V! VolClassCopyZ";
+  builder.frag.headerComment = "//!F! VolClassCopyZ";
+
   return builder.buildProgram(context);
 }
 
@@ -152,6 +159,9 @@ export function createVolClassCopyZUsingPointsProgram(context: WebGLRenderingCon
       scratchColor.bind(uniform);
     });
   });
+
+  builder.vert.headerComment = "//!V! VolClassCopyZUsingPoints";
+  builder.frag.headerComment = "//!F! VolClassCopyZUsingPoints";
 
   return builder.buildProgram(context);
 }
@@ -203,6 +213,9 @@ export function createVolClassSetBlendProgram(context: WebGLRenderingContext | W
     });
   });
 
+  builder.vert.headerComment = "//!V! VolClassSetBlend";
+  builder.frag.headerComment = "//!F! VolClassSetBlend";
+
   return builder.buildProgram(context);
 }
 
@@ -222,6 +235,9 @@ export function createVolClassBlendProgram(context: WebGLRenderingContext | WebG
       Texture2DHandle.bindSampler(uniform, geom.texture, TextureUnit.Zero);
     });
   });
+
+  builder.vert.headerComment = "//!V! VolClassBlend";
+  builder.frag.headerComment = "//!F! VolClassBlend";
 
   return builder.buildProgram(context);
 }

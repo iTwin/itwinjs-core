@@ -8,14 +8,17 @@
 // /render/webgl/* which are subject to change at any time.
 
 export * from "./render/webgl/AttributeMap";
+export * from "./render/webgl/BatchState";
 export * from "./render/webgl/BatchUniforms";
+export * from "./render/webgl/BranchStack";
 export * from "./render/webgl/BranchState";
 export * from "./render/webgl/CachedGeometry";
+export * from "./render/webgl/ClippingProgram";
 export * from "./render/webgl/ClipVolume";
 export * from "./render/webgl/ColorInfo";
 export * from "./render/webgl/Diagnostics";
 export * from "./render/webgl/DrawCommand";
-export * from "./render/webgl/EdgeOverrides";
+export * from "./render/webgl/EdgeSettings";
 export * from "./render/webgl/FeatureOverrides";
 export * from "./render/webgl/FloatRGBA";
 export * from "./render/webgl/FrameBuffer";
@@ -23,8 +26,10 @@ export * from "./render/webgl/FrustumUniforms";
 export * from "./render/webgl/GL";
 export * from "./render/webgl/Graphic";
 export * from "./render/webgl/Handle";
+export * from "./render/webgl/LineCode";
 export * from "./render/webgl/Matrix";
 export * from "./render/webgl/Mesh";
+export * from "./render/webgl/normalizeViewFlags";
 export * from "./render/webgl/PlanarClassifier";
 export * from "./render/webgl/PointString";
 export * from "./render/webgl/Polyline";

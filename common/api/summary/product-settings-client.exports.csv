@@ -1,7 +1,7 @@
 sep=;
 Release Tag;API Item
 internal;ConnectSettingsClient 
-alpha;SettingsAdmin
-alpha;SettingsMapResult
-alpha;SettingsResult
-alpha;SettingsStatus
+beta;SettingsAdmin
+beta;SettingsMapResult
+beta;SettingsResult
+beta;SettingsStatus

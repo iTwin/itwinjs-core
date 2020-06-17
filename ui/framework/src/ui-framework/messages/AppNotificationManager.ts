@@ -6,26 +6,15 @@
  * @module Notification
  */
 
-import { RelativePosition } from "@bentley/ui-abstract";
-import {
-  ActivityMessageDetails,
-  ActivityMessageEndReason,
-  MessageBoxIconType,
-  MessageBoxType,
-  MessageBoxValue,
-  NotificationManager,
-  NotifyMessageDetails,
-  ToolTipOptions,
-  OutputMessageType,
-  ToolAssistanceInstructions,
-  ToolAssistance,
-} from "@bentley/imodeljs-frontend";
-
 import { XAndY } from "@bentley/geometry-core";
-
-import { MessageManager } from "./MessageManager";
-import { UiFramework } from "../UiFramework";
+import {
+  ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails,
+  ToolAssistance, ToolAssistanceInstructions, ToolTipOptions,
+} from "@bentley/imodeljs-frontend";
+import { RelativePosition } from "@bentley/ui-abstract";
 import { ElementTooltip } from "../feedback/ElementTooltip";
+import { UiFramework } from "../UiFramework";
+import { MessageManager } from "./MessageManager";
 import { PointerMessage } from "./Pointer";
 
 /**
@@ -53,12 +42,7 @@ export class AppNotificationManager extends NotificationManager {
 
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails): void {
-    if (message.msgType === OutputMessageType.Pointer) {
-      PointerMessage.showMessage(message);
-    } else if (message.msgType === OutputMessageType.InputField && message.inputField) {
-      MessageManager.displayInputFieldMessage(message.inputField, message.briefMessage, message.detailedMessage, message.priority);
-    }
-    MessageManager.addMessage(message);
+    MessageManager.outputMessage(message);
   }
 
   /** Output a MessageBox and wait for response from the user.
@@ -109,6 +93,7 @@ export class AppNotificationManager extends NotificationManager {
 
     return result;
   }
+
   /** Update message position created with [[OutputMessageType.Pointer]].
    * @param displayPoint        Point at which to display the Pointer type message.
    * @param relativePosition    Position relative to displayPoint at which to display the Pointer type message.
@@ -152,10 +137,10 @@ export class AppNotificationManager extends NotificationManager {
 
   /** Setup tool assistance instructions for a tool. The instructions include the main instruction, which includes the current prompt.
    * @param instructions The tool assistance instructions.
-   * @beta
+   * @public
    */
   public setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
-    MessageManager.outputPrompt(instructions ? instructions.mainInstruction.text : "");
+    MessageManager.outputPrompt(instructions ? instructions.mainInstruction.text : /* istanbul ignore next */ "");
     MessageManager.setToolAssistance(instructions);
   }
 

@@ -2,12 +2,9 @@
 
 exports[`<ToggleEditor /> renders correctly 1`] = `
 <Toggle
-  buttonType={1}
   className="components-cell-editor"
   data-testid="components-toggle-editor"
   isOn={false}
   onChange={[Function]}
-  rounded={true}
-  showCheckmark={false}
 />
 `;

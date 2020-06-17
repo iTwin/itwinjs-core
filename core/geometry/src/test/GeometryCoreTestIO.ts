@@ -2,25 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { prettyPrint } from "./testFunctions";
-import { Geometry } from "../Geometry";
 import * as fs from "fs";
-import { IModelJson } from "../serialization/IModelJsonSchema";
 import { Arc3d } from "../curve/Arc3d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Range3d, Range2d } from "../geometry3d/Range";
-import { LineString3d } from "../curve/LineString3d";
-import { MomentData } from "../geometry4d/MomentData";
-import { AngleSweep } from "../geometry3d/AngleSweep";
-import { Polyface } from "../polyface/Polyface";
-import { PolygonOps } from "../geometry3d/PolygonOps";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Loop } from "../curve/Loop";
-import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { UVSurface } from "../geometry3d/GeometryHandler";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { GeometryQuery } from "../curve/GeometryQuery";
 import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOffsetContext";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { Geometry } from "../Geometry";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { UVSurface } from "../geometry3d/GeometryHandler";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Point3d } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
+import { Range2d, Range3d } from "../geometry3d/Range";
+import { MomentData } from "../geometry4d/MomentData";
+import { Polyface } from "../polyface/Polyface";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { IModelJson } from "../serialization/IModelJsonSchema";
+import { prettyPrint } from "./testFunctions";
+
 /* tslint:disable:no-console */
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
@@ -57,14 +58,20 @@ export class GeometryCoreTestIO {
     if (!points || points.length === 0)
       return;
     if (points.length <= 2) {
-      const linestring = LineString3d.create(points);
-      this.createAndCaptureXYMarker(collection, 0, linestring.packedPoints.getPoint3dArray(), dx, dy, dz);
+      // const linestring = LineString3d.create(points);
+      // this.createAndCaptureXYMarker(collection, 0, linestring.packedPoints.getPoint3dArray(), dx, dy, dz);
       this.captureGeometry(collection, LineString3d.create(points), dx, dy, dz);
     }
     this.captureGeometry(collection, Loop.createPolygon(points), dx, dy, dz);
   }
+  public static createAndCaptureLoops(collection: GeometryQuery[], points: IndexedXYZCollection[] | Point3d[][] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (!points || points.length === 0)
+      return;
+    for (const loop of points)
+      this.createAndCaptureLoop(collection, loop, dx, dy, dz);
+  }
 
-  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!newGeometry)
       return;
     if (newGeometry instanceof GeometryQuery) {
@@ -73,9 +80,19 @@ export class GeometryCoreTestIO {
         GeometryCoreTestIO.captureGeometry(collection, g1, dx, dy, dz);
       return;
     }
-    if (Array.isArray(newGeometry)) {
+    if (newGeometry instanceof IndexedXYZCollection) {
+      const linestring = LineString3d.create(newGeometry);
+      this.captureGeometry(collection, linestring, dx, dy, dz);
+      return;
+    }
+    if (Array.isArray(newGeometry) && newGeometry.length > 0) {
+      if (newGeometry[0] instanceof Point3d) {
+        const linestring = LineString3d.create(newGeometry);
+        this.captureGeometry(collection, linestring, dx, dy, dz);
+        return;
+      }
       for (const g of newGeometry)
-        this.captureCloneGeometry(collection, g, dx, dy, dz);
+        this.captureCloneGeometry(collection, g as GeometryQuery, dx, dy, dz);
     }
   }
   /**

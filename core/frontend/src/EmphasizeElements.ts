@@ -6,24 +6,38 @@
  * @module Rendering
  */
 
-import { FeatureOverrideProvider, Viewport } from "./Viewport";
+import { Id64, Id64Arg, Id64Array, Id64Set } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps, RgbColor } from "@bentley/imodeljs-common";
-import { Id64Set, Id64Arg, Id64Array, Id64 } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./render/FeatureSymbology";
+import { FeatureOverrideProvider, Viewport } from "./Viewport";
 
-/** Whether override includes both color and alpha, only color, or only alpha.
- * @beta
+/** Options for overriding element appearance.
+ * @see [[EmphasizeElements]]
+ * @see [[AppearanceOverrideProps]]
+ * @public
  */
-export enum FeatureOverrideType { ColorOnly, AlphaOnly, ColorAndAlpha }
+export enum FeatureOverrideType {
+  /** Override color only. */
+  ColorOnly,
+  /** Override alpha only. */
+  AlphaOnly,
+  /** Override both color and alpha. */
+  ColorAndAlpha,
+}
 
-/** @beta */
+/** JSON representation of an appearance override in an [[EmphasizeElementsProps]].
+ * @see [[EmphasizeElements]].
+ * @public
+ */
 export interface AppearanceOverrideProps {
   overrideType?: FeatureOverrideType;
   color?: ColorDefProps;
   ids?: Id64Array;
 }
 
-/** @beta */
+/** JSON representation of an [[EmphasizeElements]].
+ * @public
+ */
 export interface EmphasizeElementsProps {
   neverDrawn?: Id64Array;
   alwaysDrawn?: Id64Array;
@@ -35,7 +49,7 @@ export interface EmphasizeElementsProps {
 }
 
 /** An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
- * @beta
+ * @public
  */
 export class EmphasizeElements implements FeatureOverrideProvider {
   private _defaultAppearance?: FeatureSymbology.Appearance;
@@ -43,7 +57,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   private _overrideAppearance?: Map<number, Id64Set>;
   private readonly _emphasizedAppearance = FeatureSymbology.Appearance.fromJSON({ emphasized: true });
 
-  /** If true, all overridden and emphasized elements will also have the "emphasis" effect applied to them. This causes them to be hilited using the current [Viewport.emphasisSettings]. */
+  /** If true, all overridden and emphasized elements will also have the "emphasis" effect applied to them. This causes them to be hilited using the current [[Viewport.emphasisSettings]]. */
   public wantEmphasis = false;
 
   /** Establish active feature overrides to emphasize elements and apply color/transparency overrides.
@@ -457,6 +471,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   /** @return true if provider is currently overriding the display of any elements. */
   public isActive(vp: Viewport): boolean { return (undefined !== this.getNeverDrawnElements(vp) || undefined !== this.getAlwaysDrawnElements(vp) || undefined !== this.getOverriddenElements()); }
 
+  /** Serialize to JSON representation.
+   * @see [[EmphasizeElements.fromJSON]]
+   */
   public toJSON(vp: Viewport): EmphasizeElementsProps {
     const props: EmphasizeElementsProps = {};
     const neverDrawn = this.getNeverDrawnElements(vp);
@@ -495,6 +512,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return props;
   }
 
+  /** Initialize from JSON representation.
+   * @see [[EmphasizeElements.toJSON]]
+   */
   public fromJSON(props: EmphasizeElementsProps, vp: Viewport): boolean {
     let changed = false;
     if (undefined !== props.neverDrawn && this.setNeverDrawnElements(new Set<string>(props.neverDrawn), vp, true))

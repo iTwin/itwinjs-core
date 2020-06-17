@@ -6,14 +6,14 @@
  * @module WebGL
  */
 
-import { AuxChannel, AuxParamChannel, AuxDisplacementChannel } from "../../primitives/AuxChannelTable";
-import { VertexShaderComponent, VertexShaderBuilder, VariableType } from "../ShaderBuilder";
-import { DrawParams } from "../DrawCommand";
-import { octDecodeNormal } from "./Surface";
-import { AnalysisStyle, ThematicGradientSettings } from "@bentley/imodeljs-common";
 import { assert } from "@bentley/bentleyjs-core";
+import { AnalysisStyle, ThematicGradientSettings } from "@bentley/imodeljs-common";
+import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
+import { DrawParams } from "../DrawCommand";
 import { TextureUnit } from "../RenderFlags";
+import { VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { IsThematic } from "../TechniqueFlags";
+import { octDecodeNormal } from "./Surface";
 
 const initialize = `
   g_anim_step = vec2(1.0) / u_animLUTParams.xy;

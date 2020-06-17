@@ -34,7 +34,7 @@ export class MyIModelApp {
 
 ## Example of Defining Dynamic Reducer needed by a Plugin
 
-The code snippet below defines a class that provides a Reducer and registers it with the ReducerRegistry in its initialize `SamplePluginStateManager.method`. Note that the createActionName method return a lowercase string, this allows the action name to server as the SyncUiEventId when the state is changed via a call to ([UiFramework.dispatchActionToStore]($ui-framework)).
+The code snippet below defines a class that provides a Reducer and registers it with the ReducerRegistry in its initialize `SampleExtensionStateManager.method`. Note that the createActionName method return a lowercase string, this allows the action name to server as the SyncUiEventId when the state is changed via a call to ([UiFramework.dispatchActionToStore]($ui-framework)).
 
 ```ts
 // Class that specifies Redux Reducer for a plugin
@@ -42,7 +42,7 @@ interface ISamplePluginState {
   pluginUiVisible?: boolean;
 }
 
-class SamplePluginStateManager {
+class SampleExtensionStateManager {
   public static pluginStateManagerLoaded = false;
 
   private static _initialState: ISamplePluginState = {
@@ -51,29 +51,29 @@ class SamplePluginStateManager {
 
   private static _reducerName = "samplePluginState";
 
-  public static SET_PLUGIN_UI_VISIBLE = SamplePluginStateManager.createActionName("SET_PLUGIN_UI_VISIBLE");
+  public static SET_EXTENSION_UI_VISIBLE = SampleExtensionStateManager.createActionName("SET_EXTENSION_UI_VISIBLE");
 
-  private static _pluginActions: ActionCreatorsObject = {
+  private static _extensionActions: ActionCreatorsObject = {
     setDialogVisible: (pluginUiVisible: boolean) =>
-      createAction(SamplePluginStateManager.SET_PLUGIN_UI_VISIBLE, pluginUiVisible),
+      createAction(SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE, pluginUiVisible),
   };
 
   private static createActionName(name: string) {
     // convert to lower case so it can serve as a sync event when called via UiFramework.dispatchActionToStore
-    return `${SamplePluginStateManager._reducerName}:${name}`.toLowerCase();
+    return `${SampleExtensionStateManager._reducerName}:${name}`.toLowerCase();
   }
 
   // reducer
-  public static pluginReducer(
-    state: ISamplePluginState = SamplePluginStateManager._initialState,
+  public static reducer(
+    state: ISamplePluginState = SampleExtensionStateManager._initialState,
     action: any,
   ): ISamplePluginState {
-    type PluginActionsUnion = ActionsUnion<typeof SamplePluginStateManager._pluginActions>;
+    type ExtensionActionsUnion = ActionsUnion<typeof SampleExtensionStateManager._extensionActions>;
 
-    const pluginActionsParam = action as PluginActionsUnion;
+    const pluginActionsParam = action as ExtensionActionsUnion;
 
     switch (pluginActionsParam.type) {
-      case SamplePluginStateManager.SET_PLUGIN_UI_VISIBLE:
+      case SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE:
         return { ...state, pluginUiVisible: action.payload };
       default:
         return state;
@@ -82,13 +82,13 @@ class SamplePluginStateManager {
 
   public static initialize() {
     ReducerRegistryInstance.registerReducer(
-      SamplePluginStateManager._reducerName,
-      SamplePluginStateManager.pluginReducer,
+      SampleExtensionStateManager._reducerName,
+      SampleExtensionStateManager.reducer,
     );
-    SamplePluginStateManager.pluginStateManagerLoaded = true;
+    SampleExtensionStateManager.pluginStateManagerLoaded = true;
   }
 
-  public static get isPluginUiVisible(): boolean {
+  public static get isExtensionUiVisible(): boolean {
     if (StateManager.isInitialized()) {
       return StateManager.store.getState().samplePluginState.pluginUiVisible;
     } else {
@@ -96,9 +96,9 @@ class SamplePluginStateManager {
     }
   }
 
-  public static set isPluginUiVisible(visible: boolean) {
+  public static set isExtensionUiVisible(visible: boolean) {
     // dispatch both action to update store and UiSyncEvent.
-    UiFramework.dispatchActionToStore(SamplePluginStateManager.SET_PLUGIN_UI_VISIBLE, visible, true);
+    UiFramework.dispatchActionToStore(SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE, visible, true);
   }
 }
 ```

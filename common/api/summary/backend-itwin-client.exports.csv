@@ -5,11 +5,12 @@ beta;AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfigura
 internal;AzureFileHandler 
 beta;class BackendAuthorizationClient 
 beta;BackendAuthorizationClientConfiguration
+public;BackendITwinClientLoggerCategory
 internal;BufferedStream 
-public;ClientsBackendLoggerCategory
 beta;DelegationAuthorizationClient 
 beta;DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration
 internal;IOSAzureFileHandler 
+internal;LocalhostHandler 
 beta;OidcAgentClient = AgentAuthorizationClient
 beta;OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration
 beta;OidcDelegationClient = DelegationAuthorizationClient

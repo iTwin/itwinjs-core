@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-const expect = chai.expect;
-
 import { TestContext } from "./setup/TestContext";
+
+const expect = chai.expect;
 
 describe("Operational: Execute Query", () => {
   it("should successfully execute a simple query", async function () {

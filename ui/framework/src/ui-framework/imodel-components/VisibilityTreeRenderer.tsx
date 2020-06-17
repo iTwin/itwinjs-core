@@ -7,9 +7,11 @@
  */
 
 import * as React from "react";
-import { NodeCheckboxRenderProps, ImageCheckBox } from "@bentley/ui-core";
-import { TreeRendererProps, TreeRenderer, TreeImageLoader, TreeNodeRendererProps, TreeNodeRenderer, AbstractTreeNodeLoaderWithProvider } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider, useControlledTreeFiltering } from "@bentley/presentation-components";
+import {
+  AbstractTreeNodeLoaderWithProvider, TreeImageLoader, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps,
+} from "@bentley/ui-components";
+import { ImageCheckBox, NodeCheckboxRenderProps } from "@bentley/ui-core";
 import { VisibilityTreeFilterInfo } from "./VisibilityTreeEventHandler";
 
 /**
@@ -38,7 +40,7 @@ export const createVisibilityTreeNodeRenderer = (iconsEnabled: boolean, descript
       checkboxRenderer={visibilityTreeNodeCheckboxRenderer}
       descriptionEnabled={descriptionEnabled}
       imageLoader={iconsEnabled ? imageLoader : undefined}
-      className={props.node.checkbox.isVisible ? "with-checkbox" : undefined}
+      className="with-checkbox"
     />
   );
 };

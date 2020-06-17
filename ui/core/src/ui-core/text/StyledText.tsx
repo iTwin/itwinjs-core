@@ -6,12 +6,12 @@
  * @module Text
  */
 
-import * as React from "react";
 import classnames from "classnames";
+import * as React from "react";
 import { TextProps } from "./TextProps";
 
 /** Properties for [[StyledText]] component
- * @beta
+ * @public
  */
 export interface StyledTextProps extends TextProps {
   /** Main CSS class name */
@@ -19,7 +19,7 @@ export interface StyledTextProps extends TextProps {
 }
 
 /** The base component for other text components that pass a main CSS class name.
- * @beta
+ * @public
  */
 export function StyledText(props: StyledTextProps) {
   const { mainClassName, className, style, children, ...spanProps } = props;

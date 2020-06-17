@@ -5,16 +5,18 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { Id64, ClientRequestContext, Id64String, DbOpcode, assert, Id64Array, GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import {
-  IModelConnectionProps, IModelRpcProps, IModelWriteRpcInterface, RpcInterface, RpcManager, ThumbnailProps, ImageSourceFormat, AxisAlignedBox3dProps,
-  CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance, Code, SyncMode,
-} from "@bentley/imodeljs-common";
+import { assert, ClientRequestContext, DbOpcode, GuidString, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { LockLevel, LockType } from "@bentley/imodelhub-client";
+import {
+  AxisAlignedBox3dProps, Code, CodeProps, ElementProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelRpcProps, IModelWriteRpcInterface,
+  RelatedElement, RpcInterface, RpcManager, SubCategoryAppearance, SyncMode, ThumbnailProps,
+} from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb, IModelDb } from "../IModelDb";
-import { ConcurrencyControl, AuthorizedBackendRequestContext, PhysicalPartition, SubjectOwnsPartitionElements, PhysicalModel, SpatialCategory, Element } from "../imodeljs-backend";
+import {
+  AuthorizedBackendRequestContext, ConcurrencyControl, Element, PhysicalModel, PhysicalPartition, SpatialCategory, SubjectOwnsPartitionElements,
+} from "../imodeljs-backend";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 
 class EditingFunctions {
@@ -102,12 +104,10 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     const props: ThumbnailProps = { format: int32Val[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: int32Val[2], height: int32Val[3], image: new Uint8Array(val.buffer, 24, int32Val[0]) };
     const id = Id64.fromLocalAndBriefcaseIds(int32Val[4], int32Val[5]);
     if (!Id64.isValid(id) || props.width === undefined || props.height === undefined || props.image.length <= 0)
-      return Promise.reject(new Error("bad args"));
+      throw new Error("bad args");
 
     if (0 !== IModelDb.findByKey(tokenProps.key).views.saveThumbnail(id, props))
-      return Promise.reject(new Error("failed to save thumbnail"));
-
-    return Promise.resolve();
+      throw new Error("failed to save thumbnail");
   }
 
   public async lockModel(tokenProps: IModelRpcProps, modelId: Id64String, level: LockLevel): Promise<void> {

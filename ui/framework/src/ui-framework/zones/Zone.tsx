@@ -7,25 +7,23 @@
  */
 
 import * as React from "react";
-
 import { WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
-  ZoneTargetType, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps, WidgetManagerProps, ToolSettingsWidgetManagerProps,
-  ToolSettingsWidgetMode, DisabledResizeHandles,
+  DisabledResizeHandles, DraggedWidgetManagerProps, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps, WidgetZoneId,
+  ZoneManagerProps, ZoneTargetType,
 } from "@bentley/ui-ninezone";
-
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
-import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
+import { TargetChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
-import { WidgetProps } from "../widgets/WidgetProps";
 import { WidgetDef, WidgetStateChangedEventArgs, WidgetType } from "../widgets/WidgetDef";
+import { WidgetProps } from "../widgets/WidgetProps";
 import { WidgetTabs } from "../widgets/WidgetStack";
 import { FrameworkZone } from "./FrameworkZone";
 import { StatusBarZone } from "./StatusBarZone";
-import { ZoneState, ZoneDef } from "./ZoneDef";
 import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { ZoneDef, ZoneState } from "./ZoneDef";
 
 /** Enum for [[Zone]] Location.
  * @public
@@ -56,7 +54,10 @@ export interface ZoneProps extends CommonProps {
   /** Describes preferred initial width of the zone. */
   initialWidth?: number;
 
-  /** Properties for the Widgets in this Zone. */
+  /** Properties for the Widgets in this Zone.
+   * @note Stable `WidgetProps["id"]` is generated if id is not provided to correctly save and restore App layout.
+   * [[Frontstage]] version must be increased when Widget location is changed or new widgets are added/removed.
+   */
   widgets?: Array<React.ReactElement<WidgetProps>>;
 
   /** @internal */
@@ -85,6 +86,17 @@ export interface ZoneRuntimeProps {
   zone: ZoneManagerProps;
 }
 
+/** @internal */
+export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string) {
+  let props = widgetProps;
+  if (props.id === undefined)
+    props = {
+      ...props,
+      id: stableId,
+    };
+  return props;
+}
+
 /** Zone React component.
  * A Zone is a standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.
  * @public
@@ -99,24 +111,17 @@ export class Zone extends React.Component<ZoneProps> {
 
     // istanbul ignore else
     if (props.widgets) {
-      props.widgets.forEach((widgetNode: React.ReactElement<WidgetProps>) => {
-        const widgetDef = Zone.createWidgetDef(widgetNode);
-        // istanbul ignore else
-        if (widgetDef) {
-          zoneDef.addWidgetDef(widgetDef);
-        }
+      props.widgets.forEach((widgetNode, index) => {
+        // istanbul ignore if
+        if (!React.isValidElement(widgetNode))
+          return;
+
+        const stableId = `uifw-z-${ZoneLocation[zoneDef.zoneLocation]}-${index}`;
+        const stableProps = getStableWidgetProps(widgetNode.props, stableId);
+        const widgetDef = new WidgetDef(stableProps);
+        zoneDef.addWidgetDef(widgetDef);
       });
     }
-  }
-
-  private static createWidgetDef(widgetNode: React.ReactElement<WidgetProps>): WidgetDef | undefined {
-    let widgetDef: WidgetDef | undefined;
-
-    // istanbul ignore else
-    if (React.isValidElement(widgetNode))
-      widgetDef = new WidgetDef(widgetNode.props);
-
-    return widgetDef;
   }
 
   public componentDidMount(): void {
@@ -140,7 +145,8 @@ export class Zone extends React.Component<ZoneProps> {
     if (runtimeProps.zone.widgets.length === 1) {
       if (zoneDef.isToolSettings && isToolSettingsWidgetManagerProps(runtimeProps.widget) && runtimeProps.widget.mode === ToolSettingsWidgetMode.TitleBar) {
         const widgetDef = zoneDef.getSingleWidgetDef();
-        const isClosed = widgetDef ? (widgetDef.state === WidgetState.Closed || widgetDef.state === WidgetState.Hidden) : false;
+        const isClosed = widgetDef ? (widgetDef.state === WidgetState.Closed || widgetDef.state === WidgetState.Hidden)
+          : /* istanbul ignore next */ false;
         return (
           <ToolSettingsZone
             className={this.props.className}
@@ -148,7 +154,7 @@ export class Zone extends React.Component<ZoneProps> {
             getWidgetContentRef={runtimeProps.getWidgetContentRef}
             isClosed={isClosed}
             isHidden={runtimeProps.isHidden}
-            lastPosition={runtimeProps.draggedWidget && runtimeProps.draggedWidget.lastPosition}
+            lastPosition={runtimeProps.draggedWidget && /* istanbul ignore next */ runtimeProps.draggedWidget.lastPosition}
             style={this.props.style}
             targetChangeHandler={runtimeProps.targetChangeHandler}
             targetedBounds={runtimeProps.ghostOutline}
@@ -191,7 +197,7 @@ export class Zone extends React.Component<ZoneProps> {
       } else if (zDef.widgetCount === 1 && zDef.widgetDefs[0].widgetType !== WidgetType.Rectangular) {
         /** Return free-form nzWidgetProps */
         const widgetDef = zDef.widgetDefs[0];
-        widgetElement = (widgetDef.isVisible) ? widgetDef.reactNode : null;
+        widgetElement = (widgetDef.isVisible) ? widgetDef.reactNode : /* istanbul ignore next */ null;
       }
     }
 
@@ -230,7 +236,7 @@ export class Zone extends React.Component<ZoneProps> {
       return;
 
     const zoneDef = runtimeProps.zoneDefProvider.getZoneDef(id);
-    // istanbul ignore else
+    // istanbul ignore if
     if (!zoneDef)
       return;
 
@@ -251,6 +257,7 @@ export class Zone extends React.Component<ZoneProps> {
   }
 
   private getWidgetIdForDef(widgetDef: WidgetDef): WidgetZoneId | undefined {
+    // istanbul ignore if
     if (!this.props.runtimeProps)
       return undefined;
 

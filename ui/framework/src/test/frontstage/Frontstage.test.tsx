@@ -2,30 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount, shallow } from "enzyme";
-import * as sinon from "sinon";
 import { expect } from "chai";
-
-import TestUtils from "../TestUtils";
-import { WidgetState, StagePanelLocation, StagePanelSection } from "@bentley/ui-abstract";
-import {
-  Frontstage,
-  FrontstageManager,
-  FrontstageComposer,
-  CoreTools,
-  getExtendedZone,
-  ZoneDefProvider,
-  WidgetDef,
-  UiFramework,
-  WidgetProvider,
-} from "../../ui-framework";
+import { mount, shallow } from "enzyme";
+import * as React from "react";
+import * as sinon from "sinon";
+import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { StagePanelLocation, StagePanelSection, WidgetState } from "@bentley/ui-abstract";
 import { getDefaultZonesManagerProps } from "@bentley/ui-ninezone";
-import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
-
-import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
-import { ZoneDef } from "../../ui-framework/zones/ZoneDef";
+import {
+  CoreTools, Frontstage, FrontstageComposer, FrontstageManager, getExtendedZone, UiFramework, WidgetDef, WidgetProvider, ZoneDefProvider,
+} from "../../ui-framework";
 import { ZoneLocation } from "../../ui-framework/zones/Zone";
+import { ZoneDef } from "../../ui-framework/zones/ZoneDef";
+import TestUtils from "../TestUtils";
+import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
 
 describe("Frontstage", () => {
   const sandbox = sinon.createSandbox();

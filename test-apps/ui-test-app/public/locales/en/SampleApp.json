@@ -44,10 +44,10 @@
   },
   "backstage": {
     "command": "Command",
-    "testFrontstage1": "Test 1 Frontstage",
-    "testFrontstage2": "Test 2 Frontstage",
-    "testFrontstage3": "Test 3 Frontstage",
-    "testFrontstage4": "Test 4 Frontstage",
+    "testFrontstage1": "Panels Showcase",
+    "testFrontstage2": "Tree & PropertyGrid Content",
+    "testFrontstage3": "Table Content",
+    "testFrontstage4": "Test Messages & Dialogs",
     "testFrontstage5": "Test 5 Frontstage",
     "viewIModel": "View iModel",
     "testFrontstage6": "Settings",
@@ -125,6 +125,7 @@
     "alertMessageBox": "Alert",
     "noIconMessageBox": "No Icon Message",
     "openMessageBox": "Open Message Box",
+    "openSeveralMessages": "Open Several Messages",
     "setLengthFormatMetric": "Set Format Metric",
     "setLengthFormatImperial": "Set Format Imperial",
     "toggleLengthFormat": "Toggle Length Format (Imperial/Metric)",
@@ -181,6 +182,7 @@
         "Lock": "Lock",
         "City": "City",
         "Color": "Color",
+        "Source": "Source",
         "Weight": "Weight",
         "State": "State",
         "Station": "Station",
@@ -231,6 +233,17 @@
       "keyin": "TestUiProvider Toggle",
       "description": "Toggle test UiProvider",
       "flyover": "Toggle test UiProvider"
+    },
+    "TestLayoutManager": {
+      "RestoreLayout": {
+        "keyin": "layout restore",
+        "description": "Restore layout"
+      }
+    },
+    "OpenPropertyGrid": {
+      "keyin": "Test OpenPropertyGrid",
+      "description": "Open Property Grid",
+      "flyover": "Open Property Grid"
     },
     "select": "Select",
     "fitView": "Fit View",

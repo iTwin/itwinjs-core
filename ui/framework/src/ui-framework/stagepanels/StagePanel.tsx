@@ -9,15 +9,16 @@
 import * as React from "react";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import {
-  StagePanelType as NZ_StagePanelType, NestedStagePanelKey, NestedStagePanelsManagerProps,
-  NineZoneStagePanelManagerProps, WidgetZoneId, ZonesManagerWidgetsProps,
+  NestedStagePanelKey, NestedStagePanelsManagerProps, NineZoneStagePanelManagerProps, StagePanelType as NZ_StagePanelType, WidgetZoneId,
+  ZonesManagerWidgetsProps,
 } from "@bentley/ui-ninezone";
-import { StagePanelState as StagePanelState, StagePanelDef } from "./StagePanelDef";
+import { StagePanelChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { WidgetProps } from "../widgets/WidgetProps";
 import { WidgetTabs } from "../widgets/WidgetStack";
-import { StagePanelChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { ZoneLocation } from "../zones/Zone";
 import { FrameworkStagePanel } from "./FrameworkStagePanel";
+import { PanelStateChangedEventArgs, StagePanelDef, StagePanelState as StagePanelState } from "./StagePanelDef";
 
 /** Available StagePanel locations.
  * ------------------------------------------------------------------------------------
@@ -42,7 +43,10 @@ import { FrameworkStagePanel } from "./FrameworkStagePanel";
  * @alpha
  */
 export interface StagePanelZoneProps {
-  /** Properties for the Widgets in this Zone. */
+  /** Properties for the Widgets in this Zone.
+   * @note Stable `WidgetProps["id"]` is generated if id is not provided to correctly save and restore App layout.
+   * [[Frontstage]] version must be increased when Widget location is changed or new widgets are added/removed.
+   */
   widgets: Array<React.ReactElement<WidgetProps>>;
   /** Any application data to attach to this Zone. */
   applicationData?: any;
@@ -80,7 +84,10 @@ export interface StagePanelProps {
   resizable: boolean;
   /** Default size of the panel. */
   size?: number;
-  /** Properties for the Widgets in this Panel. */
+  /** Properties for the Widgets in this Panel.
+   * @note Stable `WidgetProps["id"]` is generated if id is not provided to correctly save and restore App layout.
+   * [[Frontstage]] version must be increased when Widget location is changed or new widgets are added/removed.
+   */
   widgets?: Array<React.ReactElement<WidgetProps>>;
 
   /** Properties for the Panel Zones in this Panel. @alpha */
@@ -112,16 +119,36 @@ export interface StagePanelRuntimeProps {
   zoneDefProvider: ZoneDefProvider;
 }
 
+interface StagePanelComponentState {
+  panelState: StagePanelState;
+}
+
 /** Frontstage Panel React component.
  * @alpha
  */
-export class StagePanel extends React.Component<StagePanelProps> {
+export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {
   public static readonly defaultProps: StagePanelDefaultProps = {
     resizable: true,
   };
 
+  public constructor(props: StagePanelProps) {
+    super(props);
+
+    this.state = {
+      panelState: this.props.runtimeProps?.panelDef.panelState || StagePanelState.Open,
+    };
+  }
+
   public static initializeStagePanelDef(panelDef: StagePanelDef, props: StagePanelProps, panelLocation: StagePanelLocation): void {
     panelDef.initializeFromProps(props, panelLocation);
+  }
+
+  public componentDidMount() {
+    FrontstageManager.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
+  }
+
+  public componentWillUnmount() {
+    FrontstageManager.onPanelStateChangedEvent.removeListener(this._handlePanelStateChangedEvent);
   }
 
   public render(): React.ReactNode {
@@ -137,6 +164,7 @@ export class StagePanel extends React.Component<StagePanelProps> {
         location={panelDef.location}
         renderPane={this._handleRenderPane}
         widgetCount={panelDef.widgetCount}
+        panelState={this.state.panelState}
         {...props}
         {...otherRuntimeProps}
       />
@@ -161,6 +189,16 @@ export class StagePanel extends React.Component<StagePanelProps> {
         {widgetDef.reactNode}
       </div>
     );
+  }
+
+  private _handlePanelStateChangedEvent = ({ panelDef, panelState }: PanelStateChangedEventArgs) => {
+    // istanbul ignore else
+    if (panelDef !== this.props.runtimeProps?.panelDef)
+      return;
+    // istanbul ignore next
+    this.setState({
+      panelState,
+    });
   }
 }
 

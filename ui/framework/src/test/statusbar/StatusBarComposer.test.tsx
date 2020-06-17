@@ -2,32 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-import { render, cleanup, fireEvent } from "@testing-library/react";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import {
+  AbstractStatusBarItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, StageUsage, StatusBarLabelSide, StatusBarSection, UiItemsManager,
+  UiItemsProvider,
+} from "@bentley/ui-abstract";
+import { cleanup, fireEvent, render } from "@testing-library/react";
+import {
+  ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarComposer, StatusBarItem,
+  StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef, WidgetState, withMessageCenterFieldProps, withStatusFieldProps,
+} from "../../ui-framework";
 import TestUtils from "../TestUtils";
 import { createDOMRect } from "../Utils";
-
-import {
-  StatusBarWidgetControl,
-  ConfigurableCreateInfo,
-  StatusBar,
-  WidgetDef,
-  ConfigurableUiControlType,
-  StatusBarComposer,
-  StatusBarItem,
-  StatusBarItemUtilities,
-  MessageCenterField,
-  withStatusFieldProps,
-  withMessageCenterFieldProps,
-  ActivityCenterField,
-  SyncUiEventDispatcher,
-  WidgetState,
-} from "../../ui-framework";
-import { StatusBarSection, UiItemsProvider, CommonStatusBarItem, StageUsage, AbstractStatusBarItemUtilities, UiItemsManager, StatusBarLabelSide, ConditionalBooleanValue } from "@bentley/ui-abstract";
 
 describe("StatusBarComposer", () => {
   class TestUiProvider implements UiItemsProvider {
@@ -48,13 +38,13 @@ describe("StatusBarComposer", () => {
 
       if (stageUsage === StageUsage.General) {
         statusBarItems.push(
-          AbstractStatusBarItemUtilities.createActionItem("PluginTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from plugin", () => { }));
+          AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension", () => { }));
         statusBarItems.push(
-          AbstractStatusBarItemUtilities.createLabelItem("PluginTest:StatusBarLabel1", StatusBarSection.Center, 105, "icon-hand-2-condition", "Hello", undefined, { isHidden: hiddenCondition }));
+          AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 105, "icon-hand-2-condition", "Hello", undefined, { isHidden: hiddenCondition }));
         statusBarItems.push(
-          AbstractStatusBarItemUtilities.createLabelItem("PluginTest:StatusBarLabel2", StatusBarSection.Center, 120, "icon-hand-2", "Hello2", StatusBarLabelSide.Left));
+          AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel2", StatusBarSection.Center, 120, "icon-hand-2", "Hello2", StatusBarLabelSide.Left));
         statusBarItems.push(
-          AbstractStatusBarItemUtilities.createActionItem("PluginTest:StatusBarItem2", StatusBarSection.Center, 110, "icon-visibility-hide-2", "toggle items", () => { }));
+          AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem2", StatusBarSection.Center, 110, "icon-visibility-hide-2", "toggle items", () => { }));
       }
       return statusBarItems;
     }
@@ -245,7 +235,7 @@ describe("StatusBarComposer", () => {
       wrapper.unmount();
     });
 
-    it("StatusBarComposer should support plugin items", async () => {
+    it("StatusBarComposer should support extension items", async () => {
       const items: StatusBarItem[] = [
         StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 10, <AppStatusBarComponent />),
         StatusBarItemUtilities.createStatusBarItem("test2", StatusBarSection.Left, 5, <AppStatusBarComponent />, { isHidden: true }),

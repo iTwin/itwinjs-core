@@ -6,17 +6,14 @@
  * @module Popup
  */
 
+import "./Popup.scss";
+import classnames from "classnames";
 // cSpell:ignore focustrap focusable
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import classnames from "classnames";
-
 import { RelativePosition } from "@bentley/ui-abstract";
-
-import { CommonProps } from "../utils/Props";
 import { FocusTrap } from "../focustrap/FocusTrap";
-
-import "./Popup.scss";
+import { CommonProps } from "../utils/Props";
 
 /** @internal */
 interface PopupPoint {
@@ -25,7 +22,7 @@ interface PopupPoint {
 }
 
 /** Properties for the [[Popup]] component
- * @beta
+ * @public
  */
 export interface PopupProps extends CommonProps {
   /** Show or hide the box shadow (defaults to true) */
@@ -46,6 +43,8 @@ export interface PopupProps extends CommonProps {
   onOutsideClick?: (e: MouseEvent) => void;
   /** Function called when the popup is closed */
   onClose?: () => void;
+  /** Function called when the popup is closed on Enter */
+  onEnter?: () => void;
   /** Offset from the parent (defaults to 4) */
   offset: number;
   /** Target element to position popup */
@@ -71,7 +70,7 @@ interface PopupState {
 }
 
 /** Popup React component displays a popup relative to an optional target element.
- * @beta
+ * @public
  */
 export class Popup extends React.Component<PopupProps, PopupState> {
   private _popup: HTMLElement | null = null;
@@ -178,7 +177,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return;
 
     if (event.key === "Escape" || event.key === "Enter") {
-      this._onClose();
+      this._onClose(event.key === "Enter");
     }
   }
 
@@ -200,13 +199,15 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     });
   }
 
-  private _onClose() {
+  private _onClose(enterKey?: boolean) {
     if (!this.state.isOpen)
       return;
 
     this._unBindWindowEvents();
 
     this.setState({ isOpen: false }, () => {
+      if (enterKey && this.props.onEnter)
+        this.props.onEnter();
       if (this.props.onClose)
         this.props.onClose();
     });

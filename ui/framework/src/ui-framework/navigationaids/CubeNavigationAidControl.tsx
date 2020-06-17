@@ -7,13 +7,12 @@
  */
 
 import * as React from "react";
-
 import { CubeNavigationAid } from "@bentley/ui-components";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { NavigationAidControl } from "./NavigationAidControl";
 
 /** Navigation Aid that displays an interactive rotation cube for Spatial views that synchronizes with the rotation of the iModel Viewport
- * @beta
+ * @public
  */
 export class CubeNavigationAidControl extends NavigationAidControl {
   public static navigationAidId = "CubeNavigationAid";

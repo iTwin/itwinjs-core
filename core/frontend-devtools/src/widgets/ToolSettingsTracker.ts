@@ -7,13 +7,11 @@
  * @module Widgets
  */
 
-import {
-  Viewport, ToolSettings, IModelApp, ScreenViewport,
-} from "@bentley/imodeljs-frontend";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { IModelApp, ScreenViewport, ToolSettings, Viewport } from "@bentley/imodeljs-frontend";
 import { createCheckBox } from "../ui/CheckBox";
-import { createNumericInput, createLabeledNumericInput } from "../ui/NumericInput";
 import { createNestedMenu } from "../ui/NestedMenu";
+import { createLabeledNumericInput, createNumericInput } from "../ui/NumericInput";
 
 /** Allows the global settings controlling the behavior of viewing tools to be customized.
  * @alpha

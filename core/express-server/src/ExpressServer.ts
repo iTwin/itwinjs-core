@@ -40,6 +40,7 @@ export class IModelJsExpressServer {
     this._app.get("/v3/swagger.json", (req, res) => this._protocol.handleOpenApiDescriptionRequest(req, res));
     this._app.post("*", async (req, res) => this._protocol.handleOperationPostRequest(req, res));
     this._app.get(/\/imodel\//, async (req, res) => this._protocol.handleOperationGetRequest(req, res));
+    this._app.get("/ping", async (_req, res) => res.status(200).send("Success"));
     // for all HTTP requests, identify the server.
     this._app.use("*", (_req, resp) => { resp.send("<h1>IModelJs RPC Server</h1>"); });
   }

@@ -6,9 +6,10 @@
  * @module TypeConverters
  */
 
-import { PropertyDescription, EnumerationChoice, Primitives } from "@bentley/ui-abstract";
-import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
+import { EnumerationChoice, Primitives, PropertyDescription } from "@bentley/ui-abstract";
+import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /**
  * Enum Type Converter.
@@ -45,4 +46,4 @@ export class EnumTypeConverter extends TypeConverter {
   }
 }
 
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Enum, EnumTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Enum, EnumTypeConverter);

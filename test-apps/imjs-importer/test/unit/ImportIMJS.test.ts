@@ -6,6 +6,7 @@ import "mocha";
 import { expect } from "chai";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { ImportIMJS } from "../../src/ImportIMJS";
+
 describe("ImportIMJS", () => {
     beforeEach(() => {
         IModelHost.startup();

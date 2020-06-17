@@ -1,6 +1,6 @@
 {
   "name": "@bentley/projectshare-client",
-  "version": "2.0.0-dev.77",
+  "version": "2.2.0-dev.12",
   "description": "iModel.js ProjectShare Client",
   "main": "lib/projectshare-client.js",
   "typings": "lib/projectshare-client",
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",
     "extract-api": "betools extract-api --entry=projectshare-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/projectshare-client/file.json --tsIndexFile=projectshare-client.ts --onlyJson",
@@ -35,17 +35,17 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.77",
-    "@bentley/itwin-client": "^2.0.0-dev.77"
+    "@bentley/bentleyjs-core": "^2.2.0-dev.12",
+    "@bentley/itwin-client": "^2.2.0-dev.12"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.77",
-    "@bentley/build-tools": "2.0.0-dev.77",
-    "@bentley/certa": "2.0.0-dev.77",
-    "@bentley/config-loader": "2.0.0-dev.77",
-    "@bentley/context-registry-client": "2.0.0-dev.77",
-    "@bentley/itwin-client": "2.0.0-dev.77",
-    "@bentley/oidc-signin-tool": "2.0.0-dev.77",
+    "@bentley/bentleyjs-core": "2.2.0-dev.12",
+    "@bentley/build-tools": "2.2.0-dev.12",
+    "@bentley/certa": "2.2.0-dev.12",
+    "@bentley/config-loader": "2.2.0-dev.12",
+    "@bentley/context-registry-client": "2.2.0-dev.12",
+    "@bentley/itwin-client": "2.2.0-dev.12",
+    "@bentley/oidc-signin-tool": "2.2.0-dev.12",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
@@ -53,7 +53,7 @@
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
     "rimraf": "^3.0.2",
-    "source-map-loader": "^0.2.3",
+    "source-map-loader": "^1.0.0",
     "tslint": "^5.11.0",
     "typescript": "~3.7.4",
     "webpack": "4.42.0"

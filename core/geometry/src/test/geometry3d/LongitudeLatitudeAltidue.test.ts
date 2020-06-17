@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Checker } from "../Checker";
 import { expect } from "chai";
 import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude";
+import { Checker } from "../Checker";
 
 describe("LongitudeLatitudeNumber", () => {
   it("create", () => {

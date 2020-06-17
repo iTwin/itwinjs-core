@@ -9,6 +9,7 @@
     "projectId": "04b7b40e-8bd2-4335-9232-40e61c32b7a9",
     "imodelId": "ce4f86f7-08a9-4437-a2ad-048cf0c8a705"
   },
+  "rootDir": "./lib/test/output",
   "bigDatasets": [
     {
       "projId": "94b99b9d-8a0e-4ac0-98e7-40bdd0c2bfdd",
@@ -17,7 +18,8 @@
       "modelName": "CS_ALL_2.1.0.227",
       "csStart": 0,
       "csEnd": "",
-      "csType": "All"
+      "csType": "All",
+      "setup": false
     }
   ]
 }

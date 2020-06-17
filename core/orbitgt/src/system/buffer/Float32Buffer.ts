@@ -12,9 +12,9 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
+import { Numbers } from "../runtime/Numbers";
 import { ABuffer } from "./ABuffer";
 import { LittleEndian } from "./LittleEndian";
-import { Numbers } from "../runtime/Numbers";
 
 /**
  * Define a signed 32-bit float typed buffer.

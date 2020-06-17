@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup, fireEvent, waitForElement } from "@testing-library/react";
 import { expect } from "chai";
+import React from "react";
 import sinon from "sinon";
-import { EnumButtonGroupEditor } from "../../ui-components/editors/EnumButtonGroupEditor";
-import { PropertyUpdatedArgs, EditorContainer } from "../../ui-components/editors/EditorContainer";
-import TestUtils from "../TestUtils";
 import { PrimitiveValue } from "@bentley/ui-abstract";
+import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
+import { EnumButtonGroupEditor } from "../../ui-components/editors/EnumButtonGroupEditor";
+import TestUtils from "../TestUtils";
 
 describe("<EnumButtonGroupEditor />", () => {
   afterEach(cleanup);

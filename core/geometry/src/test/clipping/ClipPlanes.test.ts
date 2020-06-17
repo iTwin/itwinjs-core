@@ -4,36 +4,39 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Checker } from "../Checker";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { Range1d, Range3d } from "../../geometry3d/Range";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Transform } from "../../geometry3d/Transform";
-import { PolygonOps, Point3dArrayPolygonOps, IndexedXYZCollectionPolygonOps } from "../../geometry3d/PolygonOps";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Arc3d } from "../../curve/Arc3d";
-import { LineString3d } from "../../curve/LineString3d";
-
-import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-
-import { ClipPlaneContainment, Clipper, ClipUtilities, ClipStatus } from "../../clipping/ClipUtils";
 import { ClipPlane } from "../../clipping/ClipPlane";
+import { Clipper, ClipPlaneContainment, ClipStatus, ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
-import { Sample } from "../../serialization/GeometrySamples";
-
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Arc3d } from "../../curve/Arc3d";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
-import { prettyPrint } from "../testFunctions";
-import { Matrix4d } from "../../geometry4d/Matrix4d";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
+import { IndexedXYZCollectionPolygonOps, Point3dArrayPolygonOps, PolygonOps } from "../../geometry3d/PolygonOps";
+import { Range1d, Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
+import { Transform } from "../../geometry3d/Transform";
+import { Matrix4d } from "../../geometry4d/Matrix4d";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+import { Box } from "../../solid/Box";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
+import { LinearSweep } from "../../solid/LinearSweep";
+import { Cone } from "../../solid/Cone";
+
 /* tslint:disable:no-console no-trailing-whitespace */
 
 Checker.noisy.clipPlane = false;
@@ -1078,4 +1081,87 @@ describe("CurveClips", () => {
     expect(ck.getNumErrors()).equals(0);
 
   });
+  it("StairwellClipViaSweptPolyline", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0.0;
+    const x1 = 5.0;
+    const x2 = 10.0;
+    const y0 = 0.0;
+
+    // Outline a rectangle in xz plane at the bottom of the stairwell
+    const a = 1.0;  // stair clearance width.
+    const b = 2.5;  // stair clearance height
+    const baseRectangle = [Point3d.create(0, 0), Point3d.create(a, 0), Point3d.create(a, 0, b), Point3d.create(0, 0, b), Point3d.create(0, 0)];
+    const sweepVector = Vector3d.create(0, 1, 0.8);
+    // create uncapped sweep
+    const clipper = ConvexClipPlaneSet.createSweptPolyline(baseRectangle, sweepVector)!;
+
+    // make a mesh box for something to punch ..
+    const box = Box.createRange(Range3d.createXYZXYZ(-1, 1, 0, 3, 2, 5), true)!;
+    const builder = PolyfaceBuilder.create();
+    builder.addBox(box);
+    const target = builder.claimPolyface();
+    const clipBuilders = ClippedPolyfaceBuilders.create(true, true, true);
+    PolyfaceClip.clipPolyfaceInsideOutside(target, clipper, clipBuilders);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, target, x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseRectangle, x0, y0);
+    GeometryCoreTestIO.captureGeometry(allGeometry,
+      LineSegment3d.create(baseRectangle[0], baseRectangle[0].plusScaled(sweepVector, 5.0)), x0, y0);
+    const clip0 = clipBuilders.claimPolyface(0, false);
+    const clip1 = clipBuilders.claimPolyface(1, true);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip0, x1, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip1, x2, y0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "StairwellClip");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+  it("StairwellClipViaLinearSweep", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0.0;
+    const x0A = 10.0;
+    const x1 = 20.0;
+    const x2 = 30.0;
+    let y0 = 0.0;
+
+    // Outline a rectangle in xz plane at the bottom of the stairwell
+    const a = 1.0;  // stair clearance width.
+    const b = 2.0;  // stair clearance height
+    const baseRectangle = [Point3d.create(0, 0), Point3d.create(a, 0), Point3d.create(a, 0, b), Point3d.create(0, 0, b), Point3d.create(0, 0)];
+    const sweepVector = Vector3d.create(0, 3, 2.4);
+    for (const capped of [false, true]) {
+      const sweptSolid = LinearSweep.create(Loop.create(LineString3d.create(baseRectangle)), sweepVector, true)!;
+      // create uncapped sweep
+      const contour = sweptSolid.getSweepContourRef();
+      const clipper = contour.sweepToUnionOfConvexClipPlaneSets(sweepVector, capped, capped)!;
+
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptSolid, x0A, y0);
+      const builder = PolyfaceBuilder.create();
+      // make a mesh box for something to punch ..
+      /*
+      const box = Box.createRange(Range3d.createXYZXYZ(-1, 1, 0, 3, 5, 4), true)!;
+      builder.addBox(box);
+      */
+      const cone = Cone.createAxisPoints(Point3d.create(0, 4, 0), Point3d.create(0, 3, 4), 3, 2, true)!;
+      builder.addCone(cone);
+      const target = builder.claimPolyface();
+      const clipBuilders = ClippedPolyfaceBuilders.create(true, true, true);
+      PolyfaceClip.clipPolyfaceInsideOutside(target, clipper, clipBuilders);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, target, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseRectangle, x0, y0);
+      GeometryCoreTestIO.captureGeometry(allGeometry,
+        LineSegment3d.create(baseRectangle[0], baseRectangle[0].plusScaled(sweepVector, 5.0)), x0, y0);
+      const clip0 = clipBuilders.claimPolyface(0, false);
+      const clip1 = clipBuilders.claimPolyface(1, true);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip0, x1, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip1, x2, y0);
+      y0 += 15.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "StairwellClipViaLinearSweep");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+
 });

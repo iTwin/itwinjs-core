@@ -6,19 +6,10 @@
  * @module WebGL
  */
 
-import {
-  ColorDef,
-  LightSettings,
-  RgbColor,
-} from "@bentley/imodeljs-common";
-import {
-  FloatRgb,
-} from "./FloatRGBA";
-import {
-  sync,
-  desync,
-} from "./Sync";
+import { ColorDef, LightSettings, RgbColor } from "@bentley/imodeljs-common";
+import { FloatRgb } from "./FloatRGBA";
 import { UniformHandle } from "./Handle";
+import { desync, sync } from "./Sync";
 
 /** Maintains state of uniforms associated with a DisplayStyle3dState's LightSettings.
  * A single float array stored as:

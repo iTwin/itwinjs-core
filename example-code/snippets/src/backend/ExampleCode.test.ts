@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { ClientRequestContext, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { BisCoreSchema, ClassRegistry, ConcurrencyControl, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
-import { assert } from "chai";
-import { IModelTestUtils } from "./IModelTestUtils";
 import { IModelHubError } from "@bentley/imodelhub-client";
+import { BisCoreSchema, ClassRegistry, ConcurrencyControl, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
+import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {

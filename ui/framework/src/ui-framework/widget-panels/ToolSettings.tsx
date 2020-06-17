@@ -6,11 +6,12 @@
  * @module ToolSettings
  */
 
-import * as React from "react";
-import { DockedToolSettings, DockedToolSetting } from "@bentley/ui-ninezone";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import "./ToolSettings.scss";
+import * as React from "react";
+import { DockedToolSetting, DockedToolSettings, ScrollableWidgetContent, ToolSettingsStateContext } from "@bentley/ui-ninezone";
+import { useActiveFrontstageDef } from "../frontstage/Frontstage";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";
 
 /** Defines a ToolSettings property entry.
  * @beta
@@ -31,10 +32,18 @@ function TsLabel({ children }: { children: React.ReactNode }) {
 /** @internal */
 export function WidgetPanelsToolSettings() {
   const frontstageDef = useActiveFrontstageDef();
-  const settings = useToolSettings();
+  const toolSettings = React.useContext(ToolSettingsStateContext);
   const topCenterZone = frontstageDef?.topCenter;
-  if (!topCenterZone || !topCenterZone.isToolSettings)
+  if (!topCenterZone || !topCenterZone.isToolSettings || toolSettings.type === "widget")
     return null;
+  return (
+    <ToolSettingsDockedContent />
+  );
+}
+
+/** @internal */
+export function ToolSettingsDockedContent() {
+  const settings = useHorizontalToolSettingNodes();
   // for the overflow to work properly each setting in the DockedToolSettings should be wrapped by a DockedToolSetting component
   return (
     <DockedToolSettings>
@@ -44,7 +53,7 @@ export function WidgetPanelsToolSettings() {
 }
 
 /** @internal */
-export function useToolSettings() {
+export function useHorizontalToolSettingNodes() {
   const [settings, setSettings] = React.useState(FrontstageManager.activeToolSettingsProvider?.horizontalToolSettingNodes);
 
   React.useEffect(() => {
@@ -74,7 +83,7 @@ export interface ToolSettingsGridProps {
  * @beta
  */
 export function ToolSettingsGrid({ settings }: ToolSettingsGridProps) {
-  return (
+  const grid = (
     <div className="uifw-standard-toolsettings-two-column-grid">
       {settings && settings.map((setting: ToolSettingsEntry, index: number) => {
         return (
@@ -84,6 +93,48 @@ export function ToolSettingsGrid({ settings }: ToolSettingsGridProps) {
           </React.Fragment>
         );
       })}
-    </div >
+    </div>
   );
+  return (
+    <FrameworkVersionSwitch
+      v1={grid}
+      v2={(
+        <ScrollableWidgetContent>
+          {grid}
+        </ScrollableWidgetContent>
+      )}
+    />
+
+  );
+}
+
+/** @internal */
+export function useToolSettingsNode() {
+  const [settings, setSettings] = React.useState(FrontstageManager.activeToolSettingsProvider?.toolSettingsNode);
+  React.useEffect(() => {
+    const handleToolActivatedEvent = () => {
+      const nodes = FrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
+      setSettings(nodes);
+    };
+    FrontstageManager.onToolActivatedEvent.addListener(handleToolActivatedEvent);
+    return () => {
+      FrontstageManager.onToolActivatedEvent.removeListener(handleToolActivatedEvent);
+    };
+  }, [setSettings]);
+  return settings;
+}
+
+/** @internal */
+export function ToolSettingsContent() {
+  const toolSettings = React.useContext(ToolSettingsStateContext);
+  // This is needed to remount underlaying components tree when going into widget state.
+  if (toolSettings.type === "docked")
+    return null;
+  return <ToolSettingsWidgetContent />;
+}
+
+/** @internal */
+export function ToolSettingsWidgetContent() {
+  const node = useToolSettingsNode();
+  return <>{node}</>;
 }

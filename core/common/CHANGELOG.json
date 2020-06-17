@@ -2,6 +2,216 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/imodeljs-common_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improved log message written on rpc error"
+          },
+          {
+            "comment": "Change default origin mode for terrain to Geodetic. "
+          },
+          {
+            "comment": "Fix transforms for creating and querying part instance geometry in world coordinate."
+          },
+          {
+            "comment": "channel rules"
+          },
+          {
+            "comment": "Optimize thematic sensor display by culling sensors based on a distanceCutoff property on ThematicDisplaySensorSettings."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/imodeljs-common_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add freeze method and degrees accessors to Cartographic class"
+          },
+          {
+            "comment": "Show min/max window error for mouse wheel zoom."
+          },
+          {
+            "comment": "Show min/max window error for mouse wheel zoom."
+          },
+          {
+            "comment": "Make animation state of a display style persistent."
+          },
+          {
+            "comment": "Send a default pending message since Azure strips content-type header if no data is present"
+          },
+          {
+            "comment": "Monitor progress of downloading briefcases, ability to cancel download of briefcases. "
+          },
+          {
+            "comment": "Added to DisplayStyle3dSettings: MonochromeMode, LightSettings."
+          },
+          {
+            "comment": "Simplify GeometryStreamIteratorEntry (breaking API change)."
+          },
+          {
+            "comment": "constructor of ColorDef wasn't setting transparency properly for rgba() strings"
+          },
+          {
+            "comment": "added ColorDef.toRgbaString"
+          },
+          {
+            "comment": "Deprecate members of SectionLocationProps pending refactor."
+          },
+          {
+            "comment": "Support for progress/cancel from ios"
+          },
+          {
+            "comment": "EcefLocation can now optionally preserve a meaningful cartographic origin."
+          },
+          {
+            "comment": "Fix for electron request lifecycle."
+          },
+          {
+            "comment": "IModelTokenProps.key is now a required member"
+          },
+          {
+            "comment": "Include model extents with ViewStateProps for drawing views."
+          },
+          {
+            "comment": "hsl color conversion wasn't working if s===0"
+          },
+          {
+            "comment": "Remove deprecated APIs; see NextVersion.md for details."
+          },
+          {
+            "comment": "Fix documentation of RenderSchedule time units."
+          },
+          {
+            "comment": "Fix for EcefLocation.createFromCartographicOrigin."
+          },
+          {
+            "comment": "ColorDef, HSVColor, and HSLColor are immutable types."
+          },
+          {
+            "comment": "react to changes in imodeljs-clients"
+          },
+          {
+            "comment": "Promote properties from IModelToken onto IModel"
+          },
+          {
+            "comment": "Support suspend/resume in mobile apps."
+          },
+          {
+            "comment": "Store current mobile RPC port in protocol."
+          },
+          {
+            "comment": "Added file size."
+          },
+          {
+            "comment": "Supply RPC routing props for SnapshotIModelRpcInterface open methods\""
+          },
+          {
+            "comment": "MobileRpcConfiguration throws exception"
+          },
+          {
+            "comment": "Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline. "
+          },
+          {
+            "comment": "Refactored NativeApp API and RPC interfaces. This continues to be WIP. "
+          },
+          {
+            "comment": "Added DownloadBriefcaseOptions and OpenBriefcaseOptions as parameters to the download/open calls for a briefcase. "
+          },
+          {
+            "comment": "Added new interface for native app"
+          },
+          {
+            "comment": "VSTS#217447, 162382: Cleanups to implementation of downloading/opening/discovering briefcases in native applications (WIP). "
+          },
+          {
+            "comment": "Handle null JSON in ViewDetails."
+          },
+          {
+            "comment": "Renamed OIDC constructs for consistency; Removed SAML support."
+          },
+          {
+            "comment": "OrbitGT point cloud interface."
+          },
+          {
+            "comment": "Support OrbitGT Point Clouds"
+          },
+          {
+            "comment": "Fix BackgroundMapSettings.toJSON() discarding the 'useDepthBuffer' flag."
+          },
+          {
+            "comment": "Add mechanism for preloading reality tiles by frustum."
+          },
+          {
+            "comment": "react to new clients packages from imodeljs-clients"
+          },
+          {
+            "comment": "IModelRpcProps replaces IModelToken and IModelTokenProps"
+          },
+          {
+            "comment": "Change RenderTexture.Type to a non-const enum"
+          },
+          {
+            "comment": "Remove 'const' from exported enums."
+          },
+          {
+            "comment": "Remove check for contextId in BentleyCloudRpcProtocol since remote snapshots are now possible."
+          },
+          {
+            "comment": "\"Default to text if no content-type in RPC request handling."
+          },
+          {
+            "comment": "React to BentleyCloudRpcManager change."
+          },
+          {
+            "comment": "Track active RPC requests"
+          },
+          {
+            "comment": "RPC fix"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "support for editing"
+          },
+          {
+            "comment": "Add API for thematic display."
+          },
+          {
+            "comment": "Alpha feature: thematic sensor display."
+          },
+          {
+            "comment": "Rename GlobeMode: ThreeD => Ellipsoid, Columbus => Plane."
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          },
+          {
+            "comment": "Add a ViewFlag to control white-on-white reversal."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/imodeljs-common_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/imodeljs-common_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/imodeljs-common_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",
@@ -116,7 +326,7 @@
             "comment": "Code quality report fixes"
           },
           {
-            "comment": "fix warnings from static analysis"
+            "comment": "Fix warnings from static analysis"
           },
           {
             "comment": "Add PropertyMetaData.isNavigation"
@@ -149,7 +359,7 @@
             "comment": "Change SectionLocationProps.clipGeometry type to string. Add get/set ClipVector methods on SectionLocation."
           },
           {
-            "comment": "mark bias as alpha"
+            "comment": "Mark bias as alpha"
           },
           {
             "comment": "Update to allow Node 12"
@@ -245,10 +455,10 @@
       "comments": {
         "none": [
           {
-            "comment": "added support for blank IModelConnections"
+            "comment": "Added support for blank IModelConnections"
           },
           {
-            "comment": "Fixed reporting of errors when the ClientRequestContext is established at the backend. "
+            "comment": "Fixed reporting of errors when the ClientRequestContext is established at the backend."
           },
           {
             "comment": "Add DisplayStyleSettings.subCategoryOverrides"
@@ -266,7 +476,7 @@
             "comment": "Refine planar projection frustum calculation"
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -281,10 +491,10 @@
             "comment": "Add documentation for RenderSchedule"
           },
           {
-            "comment": "fix casing of displayStyle.contextRealityModels"
+            "comment": "Fix casing of displayStyle.contextRealityModels"
           },
           {
-            "comment": "Fixed reporting of errors when the ClientRequestContext is established at the backend. "
+            "comment": "Fixed reporting of errors when the ClientRequestContext is established at the backend."
           },
           {
             "comment": "Electron IPC transport fix for large messages."
@@ -446,10 +656,10 @@
             "comment": "Put sourcemap in npm package."
           },
           {
-            "comment": "add SVG to ImageSourceFormat"
+            "comment": "Add SVG to ImageSourceFormat"
           },
           {
-            "comment": "add imodeljs-markup"
+            "comment": "Add imodeljs-markup"
           },
           {
             "comment": "New tile cache naming scheme."
@@ -485,7 +695,7 @@
             "comment": "Upgrade TypeDoc dependency to 0.14.2"
           },
           {
-            "comment": "only save viewing volume for view undo rather than cloning ViewState"
+            "comment": "Only save viewing volume for view undo rather than cloning ViewState"
           }
         ]
       }
@@ -515,10 +725,10 @@
       "comments": {
         "none": [
           {
-            "comment": "allow to check if frontend is ios wkwebview"
+            "comment": "Allow to check if frontend is ios wkwebview"
           },
           {
-            "comment": "allow subclasses of Range to use static methods"
+            "comment": "Allow subclasses of Range to use static methods"
           },
           {
             "comment": "Changes package.json to include api-extractor and adds api-extractor.json"
@@ -593,7 +803,7 @@
             "comment": "Tile requests can optionally specify a retryInterval."
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -608,7 +818,7 @@
             "comment": "Changed Elements Db support for addon changes and generating the changed elements cache. Added WipRpcInterface methods to get changed elements list and check if a changeset is processed in the cache. Bumped WipRpcInterface version. Integration tests for changed elements db."
           },
           {
-            "comment": "Fix error in semver parsing.\""
+            "comment": "Fix error in semver parsing."
           }
         ]
       }
@@ -626,10 +836,10 @@
       "comments": {
         "none": [
           {
-            "comment": "Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. "
+            "comment": "Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current."
           },
           {
-            "comment": "Add TextureProps for use by new backend Texture API"
+            "comment": "Add TextureProps for use by new backend Texture API."
           }
         ]
       }
@@ -647,7 +857,7 @@
       "comments": {
         "none": [
           {
-            "comment": "Add support for general 3d tilesets"
+            "comment": "Add support for general 3d tilesets."
           },
           {
             "comment": "Fix drag select decorator when cursor moves out of view. Doc fixes."
@@ -665,7 +875,7 @@
             "comment": "Add ambient occlusion structures."
           },
           {
-            "comment": "Change iModelReadRpcInterface' version because Geocoordinate calculation methods added."
+            "comment": "Change iModelReadRpcInterface version because Geocoordinate calculation methods added."
           }
         ]
       }
@@ -688,9 +898,6 @@
       "date": "Wed, 02 Jan 2019 15:18:23 GMT",
       "comments": {
         "none": [
-          {
-            "comment": "merge"
-          },
           {
             "comment": "Do not send X-Application-Version header if empty."
           },

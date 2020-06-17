@@ -8,24 +8,18 @@
 
 import { once } from "lodash";
 import memoize from "micro-memoize";
-import {
-  PropertyData, PropertyDataChangeEvent, IPropertyDataProvider, PropertyCategory,
-} from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/ui-abstract";
 import {
-  CategoryDescription, DescriptorOverrides,
-  Field, DefaultContentDisplayTypes, ContentFlags, Ruleset,
-  Descriptor, NestedContentField, Item,
-  PresentationError, PresentationStatus, Value,
-  PropertyValueFormat as PresentationPropertyValueFormat,
-  InstanceKey,
+  CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, InstanceKey, Item, NestedContentField,
+  PresentationError, PresentationStatus, PropertyValueFormat as PresentationPropertyValueFormat, Ruleset, Value,
 } from "@bentley/presentation-common";
-import { Presentation, FavoritePropertiesScope } from "@bentley/presentation-frontend";
-import { ContentDataProvider, IContentDataProvider, CacheInvalidationProps } from "../common/ContentDataProvider";
-import { priorityAndNameSortFunction, createLabelRecord } from "../common/Utils";
-import { ContentBuilder, filterMatchingFieldPaths, applyOptionalPrefix } from "../common/ContentBuilder";
-import { getFavoritesCategory, FAVORITES_CATEGORY_NAME } from "../favorite-properties/DataProvider";
+import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
+import { applyOptionalPrefix, ContentBuilder, filterMatchingFieldPaths } from "../common/ContentBuilder";
+import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
+import { createLabelRecord, priorityAndNameSortFunction } from "../common/Utils";
+import { FAVORITES_CATEGORY_NAME, getFavoritesCategory } from "../favorite-properties/DataProvider";
 
 /** @internal */
 // tslint:disable-next-line: no-var-requires

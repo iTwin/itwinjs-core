@@ -11,7 +11,7 @@ import { IModelApp } from "../IModelApp";
 import { CoreTools } from "./Tool";
 
 /** Tool Assistance known images
- * @beta
+ * @public
  */
 export enum ToolAssistanceImage {
   /** When Keyboard is specified, ToolAssistanceInstruction.keyboardInfo should be set. */
@@ -51,7 +51,7 @@ export enum ToolAssistanceImage {
 }
 
 /** Input Method for Tool Assistance instruction
- * @beta
+ * @public
  */
 export enum ToolAssistanceInputMethod {
   /** Instruction applies to both touch & mouse input methods */
@@ -63,7 +63,7 @@ export enum ToolAssistanceInputMethod {
 }
 
 /** Tool Assistance image keyboard keys
- * @beta
+ * @public
  */
 export interface ToolAssistanceKeyboardInfo {
   /** Text for keys to display */
@@ -73,7 +73,7 @@ export interface ToolAssistanceKeyboardInfo {
 }
 
 /** Interface used to describe a Tool Assistance instruction.
- * @beta
+ * @public
  */
 export interface ToolAssistanceInstruction {
   /** Name of icon WebFont entry, or if specifying an SVG symbol, use "svg:" prefix to imported symbol Id.
@@ -91,7 +91,7 @@ export interface ToolAssistanceInstruction {
 }
 
 /** Interface used to describe a Tool Assistance section with a label and a set of instructions.
- * @beta
+ * @public
  */
 export interface ToolAssistanceSection {
   /** Instructions in the section. */
@@ -101,7 +101,7 @@ export interface ToolAssistanceSection {
 }
 
 /** Interface used to describe Tool Assistance for a tool's state.
- * @beta
+ * @public
  */
 export interface ToolAssistanceInstructions {
   /** The main instruction. */
@@ -111,7 +111,7 @@ export interface ToolAssistanceInstructions {
 }
 
 /** Tool Assistance helper methods.
- * @beta
+ * @public
  */
 export class ToolAssistance {
 

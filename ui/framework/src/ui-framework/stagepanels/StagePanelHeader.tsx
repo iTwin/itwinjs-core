@@ -6,13 +6,13 @@
  * @module Frontstage
  */
 
+import "./StagePanelHeader.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { StagePanelState } from "./StagePanelDef";
-import "./StagePanelHeader.scss";
 
 /** Properties of a [[StagePanelHeader]] component
  * @alpha
@@ -53,9 +53,11 @@ export class StagePanelHeader extends React.PureComponent<StagePanelHeaderProps>
 
   private _handleCollapseButtonClick = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    // istanbul ignore if
     if (!activeFrontstageDef)
       return;
     const stagePanel = activeFrontstageDef.getStagePanelDef(this.props.location);
+    // istanbul ignore if
     if (!stagePanel)
       return;
     stagePanel.panelState = StagePanelState.Minimized;

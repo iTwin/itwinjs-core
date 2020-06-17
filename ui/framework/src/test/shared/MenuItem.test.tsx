@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { mount } from "enzyme";
 import { expect } from "chai";
+import { mount } from "enzyme";
+import * as React from "react";
 import * as sinon from "sinon";
-
 import { BadgeType } from "@bentley/ui-abstract";
 import { ContextMenuItem, ContextSubMenu } from "@bentley/ui-core";
-
-import { MenuItem, MenuItemProps, MenuItemHelpers } from "../../ui-framework/shared/MenuItem";
-import { render, cleanup } from "@testing-library/react";
+import { cleanup, render } from "@testing-library/react";
+import { MenuItem, MenuItemHelpers, MenuItemProps } from "../../ui-framework/shared/MenuItem";
 import TestUtils from "../TestUtils";
 
 describe("MenuItem", () => {

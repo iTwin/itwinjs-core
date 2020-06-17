@@ -6,12 +6,12 @@
  * @module Table
  */
 
-import {
-  ColumnFilterDescriptor, FilterableColumn, FieldFilterDescriptor, FilterCompositionLogicalOperator,
-  DistinctValuesFilterDescriptor, OperatorValueFilterDescriptor, CompositeFilterDescriptor,
-  FilterOperator, DistinctValueCollection, FilterDescriptorCollection, OperatorValueFilterDescriptorCollection,
-} from "./ColumnFiltering";
 import { RowItem } from "../TableDataProvider";
+import {
+  ColumnFilterDescriptor, CompositeFilterDescriptor, DistinctValueCollection, DistinctValuesFilterDescriptor, FieldFilterDescriptor, FilterableColumn,
+  FilterCompositionLogicalOperator, FilterDescriptorCollection, FilterOperator, OperatorValueFilterDescriptor,
+  OperatorValueFilterDescriptorCollection,
+} from "./ColumnFiltering";
 
 /** A ColumnFilterDescriptor for TableColumn.
  * @internal

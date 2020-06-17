@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Surface } from "./Surface";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { Surface } from "./Surface";
 
 class DragState {
   private _newX = 0;
@@ -342,6 +342,7 @@ export interface WindowProps {
   left?: number;
   width?: number;
   height?: number;
+  scrollbars?: boolean;
 }
 
 export abstract class Window {
@@ -374,6 +375,8 @@ export abstract class Window {
 
     this._header = new WindowHeader(this, this.container, undefined !== props ? props.title : undefined);
     this.contentDiv = IModelApp.makeHTMLElement("div", { className: "floating-window", parent: this.container });
+    if (props && props.scrollbars)
+      this.contentDiv.classList.add("overflow-auto");
   }
 
   // Do not set directly - use Surface.togglePin(window)
@@ -417,6 +420,10 @@ export abstract class Window {
 
   public resizeContent(w: number, h: number): void {
     this._header.resizeContent(w, h);
+  }
+
+  public setHeaderVisible(visible: boolean): void {
+    this._header.element.style.display = visible ? "block" : "none";
   }
 }
 

@@ -6,13 +6,10 @@
  * @module WebGL
  */
 
-import {
-  BeTimePoint,
-  StopWatch,
-} from "@bentley/bentleyjs-core";
+import { BeTimePoint, StopWatch } from "@bentley/bentleyjs-core";
 import { GLTimerResultCallback } from "../RenderSystem";
-import { System } from "./System";
 import { FrameBuffer } from "./FrameBuffer";
+import { System } from "./System";
 
 interface AllTimePoints {
   begin: BeTimePoint;

@@ -6,6 +6,7 @@
 
 import { CommonProps } from '@bentley/ui-core';
 import * as CSS from 'csstype';
+import { Draft } from 'immer';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { Omit } from '@bentley/ui-core';
 import { OmitChildrenProp } from '@bentley/ui-core';
@@ -16,6 +17,12 @@ import * as React from 'react';
 import { Rectangle } from '@bentley/ui-core';
 import { RectangleProps } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
+
+// @internal (undocumented)
+export const ActiveTabIdContext: React.Context<string | undefined>;
+
+// @internal (undocumented)
+export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial<FloatingWidgetState>, widgetArgs?: Partial<WidgetState>): NineZoneState;
 
 // @internal (undocumented)
 export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], widgetArgs?: Partial<WidgetState>): NineZoneState;
@@ -196,7 +203,7 @@ export type ContentZoneId = 5;
 export function createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelState;
 
 // @internal
-export function createNineZoneState(): NineZoneState;
+export function createNineZoneState(args?: Partial<NineZoneState>): NineZoneState;
 
 // @internal (undocumented)
 export function createPanelsState(): PanelsState;
@@ -205,7 +212,10 @@ export function createPanelsState(): PanelsState;
 export function createPanelState(side: PanelSide): PanelState;
 
 // @internal (undocumented)
-export function createTabState(id: TabState["id"]): TabState;
+export function createTabsState(args?: Partial<TabsState>): TabsState;
+
+// @internal (undocumented)
+export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState;
 
 // @internal (undocumented)
 export function createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState;
@@ -328,6 +338,12 @@ export interface DockedToolSettingsOverflowProps extends ToolSettingProps {
 export interface DockedToolSettingsProps extends CommonProps {
     children?: React.ReactNode;
     panelContainer?: React.ComponentType;
+}
+
+// @internal
+export interface DockedToolSettingsState {
+    // (undocumented)
+    readonly type: "docked";
 }
 
 // @internal (undocumented)
@@ -492,23 +508,20 @@ export interface ExpandableItemProps extends CommonProps {
 }
 
 // @internal
-export const FLOATING_WIDGET_BRING_TO_FRONT = "FLOATING_WIDGET_BRING_TO_FRONT";
-
-// @internal
-export const FLOATING_WIDGET_RESIZE = "FLOATING_WIDGET_RESIZE";
-
-// @internal
 export function FloatingTab(): JSX.Element;
 
 // @internal (undocumented)
 export const FloatingWidget: React.NamedExoticComponent<FloatingWidgetProps>;
+
+// @internal (undocumented)
+export function floatingWidgetBringToFront(state: Draft<NineZoneState>, floatingWidgetId: FloatingWidgetState["id"]): void;
 
 // @internal
 export interface FloatingWidgetBringToFrontAction {
     // (undocumented)
     readonly id: FloatingWidgetState["id"];
     // (undocumented)
-    readonly type: typeof FLOATING_WIDGET_BRING_TO_FRONT;
+    readonly type: "FLOATING_WIDGET_BRING_TO_FRONT";
 }
 
 // @internal (undocumented)
@@ -529,7 +542,7 @@ export interface FloatingWidgetResizeAction {
     // (undocumented)
     readonly resizeBy: RectangleProps;
     // (undocumented)
-    readonly type: typeof FLOATING_WIDGET_RESIZE;
+    readonly type: "FLOATING_WIDGET_RESIZE";
 }
 
 // @internal (undocumented)
@@ -813,15 +826,6 @@ export function isHorizontalPanelState(state: PanelState): state is HorizontalPa
 // @internal (undocumented)
 export function isTabTarget(target: DragTarget): target is TabTarget;
 
-// @internal (undocumented)
-export function isTabTargetPanelState(state: TabTargetState): state is TabTargetPanelState;
-
-// @internal (undocumented)
-export function isTabTargetTabState(state: TabTargetState): state is TabTargetTabState;
-
-// @internal (undocumented)
-export function isTabTargetWidgetState(state: TabTargetState): state is TabTargetWidgetState;
-
 // @beta
 export class Item extends React.PureComponent<ItemProps> {
     // (undocumented)
@@ -854,6 +858,9 @@ export interface ItemsProps extends CommonProps {
 
 // @internal (undocumented)
 export type LeftPanelSide = "left";
+
+// @internal (undocumented)
+export const MeasureContext: React.Context<() => Rectangle>;
 
 // @beta
 export class MergeTarget extends React.PureComponent<MergeTargetProps> {
@@ -972,10 +979,7 @@ export class MessageProgress extends React.PureComponent<ProgressProps> {
 }
 
 // @alpha
-export class NavigationArea extends React.PureComponent<NavigationAreaProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export const NavigationArea: React.NamedExoticComponent<NavigationAreaProps>;
 
 // @alpha
 export interface NavigationAreaProps extends CommonProps, NoChildrenProps {
@@ -1043,7 +1047,10 @@ export interface NestedToolSettingsProps extends CommonProps {
 }
 
 // @internal
-export type NineZoneActionTypes = PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction;
+export function NineZone(props: NineZoneProps): JSX.Element;
+
+// @internal
+export type NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetSendBackAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction;
 
 // @internal (undocumented)
 export const NineZoneContext: React.Context<NineZoneState>;
@@ -1142,16 +1149,34 @@ export interface NineZoneNestedStagePanelsManagerProps extends NestedStagePanels
 }
 
 // @internal
-export function NineZoneProvider(props: NineZoneProviderProps): JSX.Element;
-
-// @internal
-export interface NineZoneProviderProps {
+export interface NineZoneProps {
     // (undocumented)
     children?: React.ReactNode;
     // (undocumented)
     dispatch: NineZoneDispatch;
     // (undocumented)
     state: NineZoneState;
+    // (undocumented)
+    toolSettingsContent?: React.ReactNode;
+    // (undocumented)
+    widgetContent?: React.ReactNode;
+}
+
+// @internal (undocumented)
+export function NineZoneProvider(props: NineZoneProviderProps): JSX.Element;
+
+// @internal (undocumented)
+export interface NineZoneProviderProps {
+    // (undocumented)
+    children?: React.ReactNode;
+    // (undocumented)
+    dispatch: NineZoneDispatch;
+    // (undocumented)
+    measure: () => Rectangle;
+    // (undocumented)
+    state: NineZoneState;
+    // (undocumented)
+    toolSettingsContent?: React.ReactNode;
     // (undocumented)
     widgetContent?: React.ReactNode;
 }
@@ -1232,7 +1257,11 @@ export interface NineZoneState {
     // (undocumented)
     readonly panels: PanelsState;
     // (undocumented)
+    readonly size: SizeProps;
+    // (undocumented)
     readonly tabs: TabsState;
+    // (undocumented)
+    readonly toolSettings: ToolSettingsState;
     // (undocumented)
     readonly widgets: WidgetsState;
 }
@@ -1295,31 +1324,13 @@ export class Panel extends React.PureComponent<PanelProps> {
 }
 
 // @internal
-export const PANEL_INITIALIZE = "PANEL_INITIALIZE";
-
-// @internal
-export const PANEL_RESIZE = "PANEL_RESIZE";
-
-// @internal
-export const PANEL_TOGGLE_COLLAPSED = "PANEL_TOGGLE_COLLAPSED";
-
-// @internal
-export const PANEL_TOGGLE_PINNED = "PANEL_TOGGLE_PINNED";
-
-// @internal
-export const PANEL_TOGGLE_SPAN = "PANEL_TOGGLE_SPAN";
-
-// @internal
-export const PANEL_WIDGET_DRAG_START = "PANEL_WIDGET_DRAG_START";
-
-// @internal
 export interface PanelInitializeAction {
     // (undocumented)
     readonly side: PanelSide;
     // (undocumented)
     readonly size: number;
     // (undocumented)
-    readonly type: typeof PANEL_INITIALIZE;
+    readonly type: "PANEL_INITIALIZE";
 }
 
 // @internal (undocumented)
@@ -1337,7 +1348,7 @@ export interface PanelResizeAction {
     // (undocumented)
     readonly side: PanelSide;
     // (undocumented)
-    readonly type: typeof PANEL_RESIZE;
+    readonly type: "PANEL_RESIZE";
 }
 
 // @internal
@@ -1415,7 +1426,7 @@ export interface PanelToggleCollapsedAction {
     // (undocumented)
     readonly side: PanelSide;
     // (undocumented)
-    readonly type: typeof PANEL_TOGGLE_COLLAPSED;
+    readonly type: "PANEL_TOGGLE_COLLAPSED";
 }
 
 // @internal
@@ -1423,7 +1434,7 @@ export interface PanelTogglePinnedAction {
     // (undocumented)
     readonly side: PanelSide;
     // (undocumented)
-    readonly type: typeof PANEL_TOGGLE_PINNED;
+    readonly type: "PANEL_TOGGLE_PINNED";
 }
 
 // @internal
@@ -1431,7 +1442,7 @@ export interface PanelToggleSpanAction {
     // (undocumented)
     readonly side: HorizontalPanelSide;
     // (undocumented)
-    readonly type: typeof PANEL_TOGGLE_SPAN;
+    readonly type: "PANEL_TOGGLE_SPAN";
 }
 
 // @internal (undocumented)
@@ -1448,7 +1459,7 @@ export interface PanelWidgetDragStartAction {
     // (undocumented)
     readonly side: PanelSide;
     // (undocumented)
-    readonly type: typeof PANEL_WIDGET_DRAG_START;
+    readonly type: "PANEL_WIDGET_DRAG_START";
 }
 
 // @internal (undocumented)
@@ -1480,6 +1491,14 @@ export interface PointerCaptorProps extends CommonProps {
 export interface ProgressProps extends CommonProps, NoChildrenProps {
     progress: number;
     status: Status;
+}
+
+// @internal
+export interface ResizeAction {
+    // (undocumented)
+    readonly size: SizeProps;
+    // (undocumented)
+    readonly type: "RESIZE";
 }
 
 // @alpha
@@ -1538,6 +1557,9 @@ export enum ResizeHandle {
     // (undocumented)
     Top = 1
 }
+
+// @internal (undocumented)
+export function restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): SizeProps;
 
 // @internal (undocumented)
 export type RightPanelSide = "right";
@@ -1602,6 +1624,9 @@ export interface ScrollableWidgetContentProps {
     // (undocumented)
     children?: React.ReactNode;
 }
+
+// @internal (undocumented)
+export const SendBack: React.NamedExoticComponent<object>;
 
 // @internal (undocumented)
 export function sideToCursorType(side: PanelSide): CursorType;
@@ -2239,6 +2264,17 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
     }
 
 // @internal
+export interface ToolSettingsDragStartAction {
+    // (undocumented)
+    readonly newFloatingWidgetId: FloatingWidgetState["id"];
+    // (undocumented)
+    readonly type: "TOOL_SETTINGS_DRAG_START";
+}
+
+// @internal (undocumented)
+export const ToolSettingsNodeContext: React.Context<React.ReactNode>;
+
+// @internal
 export const ToolSettingsOverflowPanel: React.ForwardRefExoticComponent<ToolSettingsOverflowPanelProps & React.RefAttributes<HTMLDivElement>>;
 
 // @internal
@@ -2276,11 +2312,20 @@ export interface ToolSettingsProps extends CommonProps {
     title?: string;
 }
 
+// @internal
+export type ToolSettingsState = DockedToolSettingsState | WidgetToolSettingsState;
+
+// @internal (undocumented)
+export const ToolSettingsStateContext: React.Context<ToolSettingsState>;
+
 // @beta
 export class ToolSettingsTab extends React.PureComponent<ToolSettingsTabProps> {
     // (undocumented)
     render(): JSX.Element;
 }
+
+// @internal (undocumented)
+export const toolSettingsTabId = "nz-tool-settings-tab";
 
 // @beta
 export interface ToolSettingsTabProps extends CommonProps {
@@ -2344,6 +2389,9 @@ export interface TooltipProps extends CommonProps {
 export type TopPanelSide = "top";
 
 // @internal (undocumented)
+export function useDoubleClick(onDoubleClick?: () => void): [() => void];
+
+// @internal (undocumented)
 export function useDraggedItemId<T extends DragItem>(type: T["type"]): T["id"] | undefined;
 
 // @internal (undocumented)
@@ -2403,6 +2451,15 @@ export interface UseDragTabArgs {
 }
 
 // @internal (undocumented)
+export function useDragToolSettings(args: UseDragToolSettingsArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void;
+
+// @internal (undocumented)
+export interface UseDragToolSettingsArgs {
+    // (undocumented)
+    newWidgetDragItemId: WidgetDragItem["id"];
+}
+
+// @internal (undocumented)
 export function useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition }: DragItemDragStartArgs) => void;
 
 // @internal (undocumented)
@@ -2412,7 +2469,7 @@ export interface UseDragWidgetArgs {
     // (undocumented)
     onDragEnd?: (target: DragTarget | undefined) => void;
     // (undocumented)
-    onDragStart?: (updateWidgetId: UpdateWidgetDragItemFn) => void;
+    onDragStart?: (updateWidgetId: UpdateWidgetDragItemFn, initialPointerPosition: PointProps) => void;
     // (undocumented)
     widgetId: WidgetState["id"];
 }
@@ -2526,27 +2583,6 @@ export interface VerticalPanelState extends PanelState {
 // @internal (undocumented)
 export const Widget: React.NamedExoticComponent<WidgetProps>;
 
-// @internal
-export const WIDGET_DRAG = "WIDGET_DRAG";
-
-// @internal
-export const WIDGET_DRAG_END = "WIDGET_DRAG_END";
-
-// @internal
-export const WIDGET_TAB_CLICK = "WIDGET_TAB_CLICK";
-
-// @internal
-export const WIDGET_TAB_DOUBLE_CLICK = "WIDGET_TAB_DOUBLE_CLICK";
-
-// @internal
-export const WIDGET_TAB_DRAG = "WIDGET_TAB_DRAG";
-
-// @internal
-export const WIDGET_TAB_DRAG_END = "WIDGET_TAB_DRAG_END";
-
-// @internal
-export const WIDGET_TAB_DRAG_START = "WIDGET_TAB_DRAG_START";
-
 // @alpha
 export class WidgetContent extends React.PureComponent<WidgetContentProps> {
     // (undocumented)
@@ -2615,7 +2651,7 @@ export interface WidgetDragAction {
     // (undocumented)
     readonly floatingWidgetId: FloatingWidgetState["id"];
     // (undocumented)
-    readonly type: typeof WIDGET_DRAG;
+    readonly type: "WIDGET_DRAG";
 }
 
 // @internal
@@ -2623,9 +2659,9 @@ export interface WidgetDragEndAction {
     // (undocumented)
     readonly floatingWidgetId: FloatingWidgetState["id"];
     // (undocumented)
-    readonly target: WidgetTargetState | undefined;
+    readonly target: WidgetTargetState;
     // (undocumented)
-    readonly type: typeof WIDGET_DRAG_END;
+    readonly type: "WIDGET_DRAG_END";
 }
 
 // @internal (undocumented)
@@ -2740,6 +2776,18 @@ export interface WidgetProviderProps {
 }
 
 // @internal
+export interface WidgetSendBackAction {
+    // (undocumented)
+    readonly floatingWidgetId: FloatingWidgetState["id"] | undefined;
+    // (undocumented)
+    readonly side: PanelSide | undefined;
+    // (undocumented)
+    readonly type: "WIDGET_SEND_BACK";
+    // (undocumented)
+    readonly widgetId: WidgetState["id"];
+}
+
+// @internal
 export interface WidgetsState {
     // (undocumented)
     readonly [id: string]: WidgetState;
@@ -2766,6 +2814,9 @@ export const WidgetStateContext: React.Context<WidgetState | undefined>;
 // @internal
 export const WidgetTab: React.NamedExoticComponent<WidgetTabProps>;
 
+// @internal (undocumented)
+export const WidgetTabBar: React.NamedExoticComponent<object>;
+
 // @internal
 export interface WidgetTabClickAction {
     // (undocumented)
@@ -2773,7 +2824,7 @@ export interface WidgetTabClickAction {
     // (undocumented)
     readonly side: PanelSide | undefined;
     // (undocumented)
-    readonly type: typeof WIDGET_TAB_CLICK;
+    readonly type: "WIDGET_TAB_CLICK";
     // (undocumented)
     readonly widgetId: WidgetState["id"];
 }
@@ -2787,7 +2838,7 @@ export interface WidgetTabDoubleClickAction {
     // (undocumented)
     readonly side: PanelSide | undefined;
     // (undocumented)
-    readonly type: typeof WIDGET_TAB_DOUBLE_CLICK;
+    readonly type: "WIDGET_TAB_DOUBLE_CLICK";
     // (undocumented)
     readonly widgetId: WidgetState["id"];
 }
@@ -2797,7 +2848,7 @@ export interface WidgetTabDragAction {
     // (undocumented)
     readonly dragBy: PointProps;
     // (undocumented)
-    readonly type: typeof WIDGET_TAB_DRAG;
+    readonly type: "WIDGET_TAB_DRAG";
 }
 
 // @internal
@@ -2807,7 +2858,7 @@ export interface WidgetTabDragEndAction {
     // (undocumented)
     readonly target: TabTargetState;
     // (undocumented)
-    readonly type: typeof WIDGET_TAB_DRAG_END;
+    readonly type: "WIDGET_TAB_DRAG_END";
 }
 
 // @internal
@@ -2821,7 +2872,7 @@ export interface WidgetTabDragStartAction {
     // (undocumented)
     readonly side: PanelSide | undefined;
     // (undocumented)
-    readonly type: typeof WIDGET_TAB_DRAG_START;
+    readonly type: "WIDGET_TAB_DRAG_START";
     // (undocumented)
     readonly widgetId: WidgetState["id"];
 }
@@ -2881,6 +2932,15 @@ export interface WidgetTabTargetProps {
 // @internal (undocumented)
 export const WidgetTarget: React.NamedExoticComponent<WidgetTargetProps>;
 
+// @internal
+export interface WidgetTargetFloatingWidgetState {
+    // (undocumented)
+    readonly type: "floatingWidget";
+}
+
+// @internal
+export type WidgetTargetPanelState = TabTargetPanelState;
+
 // @internal (undocumented)
 export interface WidgetTargetProps {
     // (undocumented)
@@ -2890,10 +2950,19 @@ export interface WidgetTargetProps {
 }
 
 // @internal
-export type WidgetTargetState = TabTargetPanelState | TabTargetWidgetState | TabTargetTabState;
+export type WidgetTargetState = WidgetTargetPanelState | WidgetTargetWidgetState | WidgetTargetTabState | WidgetTargetFloatingWidgetState;
 
-// @internal (undocumented)
-export const WidgetTitleBar: React.NamedExoticComponent<object>;
+// @internal
+export type WidgetTargetTabState = TabTargetTabState;
+
+// @internal
+export type WidgetTargetWidgetState = TabTargetWidgetState;
+
+// @internal
+export interface WidgetToolSettingsState {
+    // (undocumented)
+    readonly type: "widget";
+}
 
 // @internal (undocumented)
 export const widgetZoneColumnIds: ReadonlyArray<WidgetZoneId>;

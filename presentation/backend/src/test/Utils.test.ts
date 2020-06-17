@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { IModelDb, ECSqlStatement, ECSqlValue } from "@bentley/imodeljs-backend";
 import { DbResult } from "@bentley/bentleyjs-core";
+import { ECSqlStatement, ECSqlValue, IModelDb } from "@bentley/imodeljs-backend";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { getElementKey } from "../presentation-backend/Utils";
 

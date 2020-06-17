@@ -36,6 +36,10 @@ module.exports = {
         test: /@azure[\/\\]storage-blob|azure-storage|AzureFileHandler|UrlFileHandler/,
         use: "null-loader"
       },
+      {
+        test: /websocket\.js$/,
+        use: "null-loader"
+      },
     ]
   },
   stats: "errors-only",
@@ -46,7 +50,6 @@ module.exports = {
     mainFields: ['module', 'main']
   },
   externals: {
-    "@bentley/imodeljs-native/loadNativePlatform.js": "@bentley/imodeljs-backend/node_modules/@bentley/imodeljs-native/loadNativePlatform.js",
     "electron": "commonjs electron",
     "fs": "fs",
     "process": "process",

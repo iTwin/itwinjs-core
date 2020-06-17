@@ -2,16 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { expect } from "chai";
-
-import TestUtils from "../../TestUtils";
+import * as React from "react";
+import { Icon, Input, Slider } from "@bentley/ui-core";
 import {
-  ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget,
-  FrontstageProps, ConfigurableCreateInfo, ToolUiProvider, ContentControl, CoreTools, ToolSettingsEntry, ToolSettingsGrid,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
+  ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider, Widget, Zone,
 } from "../../../ui-framework";
 import { ToolInformation } from "../../../ui-framework/zones/toolsettings/ToolInformation";
-import { Slider, Icon, Input } from "@bentley/ui-core";
+import TestUtils from "../../TestUtils";
 
 describe("ToolUiProvider", () => {
 

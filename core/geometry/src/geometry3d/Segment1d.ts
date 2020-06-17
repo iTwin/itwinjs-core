@@ -8,6 +8,7 @@
  */
 
 import { Geometry } from "../Geometry";
+
 /**
  * * A Segment1d is an interval of an axis named x.
  * * The interval is defined by two values x0 and x1.

@@ -6,10 +6,11 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
+import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
 import { Point3d, Vector3d } from "./Point3dVector3d";
-import { BeJSONFunctions, Geometry, AxisOrder } from "../Geometry";
-import { Transform } from "./Transform";
 import { Ray3d } from "./Ray3d";
+import { Transform } from "./Transform";
+
 /**
  * A Point3dVector3dVector3d is an origin and a pair of vectors.
  * This defines a plane with a (possibly skewed) uv coordinate grid

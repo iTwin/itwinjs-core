@@ -2,19 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel, Config } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelHost, IModelHostConfiguration, FileNameResolver } from "@bentley/imodeljs-backend";
-import { IModelJsExpressServer } from "@bentley/express-server";
-import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import * as path from "path";
-
-import { rpcInterfaces } from "../common/RpcInterfaces";
 import "./RpcImpl";
-import { CloudEnv } from "./cloudEnv";
-
 // Sets up certa to allow a method on the frontend to get an access token
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
+import * as path from "path";
+import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { IModelJsExpressServer } from "@bentley/express-server";
+import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import { rpcInterfaces } from "../common/RpcInterfaces";
+import { CloudEnv } from "./cloudEnv";
 
 // tslint:disable:no-console
 
@@ -37,7 +35,7 @@ async function init() {
   Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
-  Logger.setLevel("imodeljs-backend.ConcurrencyControl", LogLevel.Trace);
+  Logger.setLevel("imodeljs-backend.ConcurrencyControl", LogLevel.Error);
 
   if (ElectronRpcConfiguration.isElectron) {
     ElectronRpcManager.initializeImpl({}, rpcInterfaces);

@@ -7,12 +7,12 @@
  * @module Authentication
  */
 
-import { BeEvent, ClientRequestContext, isElectronRenderer, electronRenderer, assert, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo } from "@bentley/itwin-client";
+import { assert, BeEvent, ClientRequestContext, electronRenderer, isElectronRenderer, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { DesktopAuthorizationClientConfiguration, defaultDesktopAuthorizationClientExpiryBuffer } from "@bentley/imodeljs-common";
-import { FrontendRequestContext } from "../FrontendRequestContext";
+import { defaultDesktopAuthorizationClientExpiryBuffer, DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
+import { AccessToken } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { FrontendRequestContext } from "../FrontendRequestContext";
 
 const ipc = isElectronRenderer ? electronRenderer.ipcRenderer : undefined;
 
@@ -44,14 +44,7 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
   private createAccessToken(accessTokenObj: any): AccessToken | undefined {
     if (!accessTokenObj)
       return undefined;
-    const startsAt = accessTokenObj._startsAt === undefined ? undefined : new Date(accessTokenObj._startsAt);
-    const expiresAt = accessTokenObj._expiresAt === undefined ? undefined : new Date(accessTokenObj._expiresAt);
-    let userInfo: UserInfo | undefined;
-    if (accessTokenObj._userInfo !== undefined) {
-      userInfo = new UserInfo(accessTokenObj._userInfo.id, accessTokenObj._userInfo.email,
-        accessTokenObj._userInfo.profile, accessTokenObj._userInfo.organization, accessTokenObj._userInfo.featureTracking);
-    }
-    return AccessToken.fromJsonWebTokenString(accessTokenObj._jwt, startsAt, expiresAt, userInfo);
+    return AccessToken.fromJson(accessTokenObj);
   }
 
   /** Wrapper around ipc.send to add log traces */
@@ -152,10 +145,5 @@ export class DesktopAuthorizationClient implements FrontendAuthorizationClient {
         }
       });
     });
-  }
-
-  /** Disposes of any resources owned */
-  public dispose(): void {
-    this.ipcSend("DesktopAuthorizationClient.dispose");
   }
 }

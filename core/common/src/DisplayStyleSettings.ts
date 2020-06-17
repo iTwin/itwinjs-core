@@ -6,51 +6,25 @@
  * @module DisplayStyles
  */
 
-import {
-  assert,
-  Id64,
-  Id64String,
-  JsonUtils,
-} from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { XYZProps } from "@bentley/geometry-core";
-import { HiddenLine } from "./HiddenLine";
 import { AmbientOcclusion } from "./AmbientOcclusion";
-import {
-  SolarShadowSettings,
-  SolarShadowSettingsProps,
-} from "./SolarShadows";
+import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
+import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
+import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
-import {
-  ViewFlagProps,
-  ViewFlags,
-} from "./ViewFlags";
+import { GroundPlaneProps } from "./GroundPlane";
+import { HiddenLine } from "./HiddenLine";
+import { LightSettings, LightSettingsProps } from "./LightSettings";
+import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
+import { RenderSchedule } from "./RenderSchedule";
+import { SkyBoxProps } from "./SkyBox";
+import { SolarShadowSettings, SolarShadowSettingsProps } from "./SolarShadows";
+import { SpatialClassificationProps } from "./SpatialClassificationProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { SubCategoryOverride } from "./SubCategoryOverride";
-import { GroundPlaneProps } from "./GroundPlane";
-import { SkyBoxProps } from "./SkyBox";
-import {
-  ColorDef,
-  ColorDefProps,
-} from "./ColorDef";
-import {
-  AnalysisStyle,
-  AnalysisStyleProps,
-} from "./AnalysisStyle";
-import { RenderSchedule } from "./RenderSchedule";
-import {
-  BackgroundMapProps,
-  BackgroundMapSettings,
-} from "./BackgroundMapSettings";
-import { SpatialClassificationProps } from "./SpatialClassificationProps";
-import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
-import {
-  LightSettings,
-  LightSettingsProps,
-} from "./LightSettings";
-import {
-  ThematicDisplay,
-  ThematicDisplayProps,
-} from "./ThematicDisplay";
+import { ThematicDisplay, ThematicDisplayProps } from "./ThematicDisplay";
+import { ViewFlagProps, ViewFlags } from "./ViewFlags";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -157,21 +131,13 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
    * @beta
    */
   thematic?: ThematicDisplayProps;
-  /** Settings controlling display of visible and hidden edges.
-   * @beta
-   */
+  /** Settings controlling display of visible and hidden edges. */
   hline?: HiddenLine.SettingsProps;
-  /** Settings controlling display of ambient occlusion, stored in Props.
-   * @beta
-   */
+  /** Settings controlling display of ambient occlusion, stored in Props. */
   ao?: AmbientOcclusion.Props;
-  /** Settings controlling display of solar shadows, stored in Props.
-   * @beta
-   */
+  /** Settings controlling display of solar shadows, stored in Props. */
   solarShadows?: SolarShadowSettingsProps;
-  /** Scene lights. Incomplete.
-   * @alpha
-   */
+  /** Settings controlling how the scene is lit. */
   lights?: LightSettingsProps;
   /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply.
    * @beta
@@ -206,7 +172,7 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
 
 /** Provides access to the settings defined by a [[DisplayStyle]] or [[DisplayStyleState]], and ensures that
  * the style's JSON properties are kept in sync.
- * @beta
+ * @public
  */
 export class DisplayStyleSettings {
   protected readonly _json: DisplayStyleSettingsProps;
@@ -474,7 +440,7 @@ export class DisplayStyleSettings {
 
 /** Provides access to the settings defined by a [[DisplayStyle3d]] or [[DisplayStyle3dState]], and ensures that
  * the style's JSON properties are kept in sync.
- * @beta
+ * @public
  */
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _thematic: ThematicDisplay;
@@ -528,7 +494,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   /** @internal */
   public toJSON(): DisplayStyle3dSettingsProps { return this._json3d; }
 
-  /** The settings that control thematic display. */
+  /** The settings that control thematic display.
+   * @beta
+   */
   public get thematic(): ThematicDisplay { return this._thematic; }
   public set thematic(thematic: ThematicDisplay) {
     this._thematic = thematic;
@@ -571,7 +539,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._json3d.environment = environment;
   }
 
-  /** @alpha */
   public get lights(): LightSettings {
     return this._lights;
   }

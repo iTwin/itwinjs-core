@@ -6,16 +6,14 @@
  * @module Cube
  */
 
-import * as React from "react";
-import classnames from "classnames";
-
 import "./Cube.scss";
-
+import classnames from "classnames";
+import * as React from "react";
 import { Matrix3d } from "@bentley/geometry-core";
 import { CommonProps } from "../utils/Props";
 
 /** Cube Face enumeration
- * @beta
+ * @public
  */
 export enum Face {
   None = "",
@@ -28,7 +26,7 @@ export enum Face {
 }
 
 /** Properties for the [[Cube]] React component
- * @beta
+ * @public
  */
 export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
   faces?: { [key: string]: React.ReactNode };
@@ -36,7 +34,7 @@ export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, Comm
 }
 
 /** Cube React component used by the 3d Cube Navigation Aid
- * @beta
+ * @public
  */
 export class Cube extends React.PureComponent<CubeProps> {
   public render(): React.ReactNode {
@@ -73,7 +71,7 @@ export class CubeFace extends React.Component<CubeFaceProps> {
     const { rotMatrix, face, style, children, ...props } = this.props;
     if (face === Face.None)
       return null;
-    const classes = classnames("face", face);
+    const classes = classnames("face", this.getCSSClassNameFromFace(face));
     // orient face (flip because of y axis reversal, rotate as necessary)
     let reorient: Matrix3d = Matrix3d.createRowValues(1, 0, 0, 0, -1, 0, 0, 0, 1);
     // Position face correctly (applies to rotation, as well as translation)
@@ -125,5 +123,14 @@ export class CubeFace extends React.Component<CubeFaceProps> {
         {children}
       </div>
     );
+  }
+
+  private getCSSClassNameFromFace(face: Face): string {
+    let className = "";
+
+    if (face !== Face.None)
+      className = `cube-${face}`;
+
+    return className;
   }
 }

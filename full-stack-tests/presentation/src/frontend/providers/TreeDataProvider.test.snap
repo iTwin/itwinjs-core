@@ -139,3 +139,280 @@ Array [
   },
 ]
 `;
+
+exports[`TreeDataProvider shows grouping node children counts 1`] = `
+Array [
+  Object {
+    "__presentation-components/key": Object {
+      "className": "BisCore:DefinitionModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "6d7786f45f5e88415096ac2dfbb907dd",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "description": "A container for persisting definition elements.",
+    "hasChildren": true,
+    "id": "6d7786f45f5e88415096ac2dfbb907dd",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "composite",
+      },
+      "value": Object {
+        "displayValue": "Definition Model (1)",
+        "value": Object {
+          "parts": Array [
+            Object {
+              "displayValue": "Definition Model",
+              "rawValue": "Definition Model",
+              "typeName": "string",
+            },
+            Object {
+              "displayValue": "(1)",
+              "rawValue": "(1)",
+              "typeName": "string",
+            },
+          ],
+          "separator": " ",
+        },
+        "valueFormat": 0,
+      },
+    },
+  },
+  Object {
+    "__presentation-components/key": Object {
+      "className": "BisCore:DictionaryModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "8f13001b46c898fb42b0ab828de0af8d",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "description": "The singleton container for repository-specific definition elements.",
+    "hasChildren": true,
+    "id": "8f13001b46c898fb42b0ab828de0af8d",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "composite",
+      },
+      "value": Object {
+        "displayValue": "Dictionary Model (1)",
+        "value": Object {
+          "parts": Array [
+            Object {
+              "displayValue": "Dictionary Model",
+              "rawValue": "Dictionary Model",
+              "typeName": "string",
+            },
+            Object {
+              "displayValue": "(1)",
+              "rawValue": "(1)",
+              "typeName": "string",
+            },
+          ],
+          "separator": " ",
+        },
+        "valueFormat": 0,
+      },
+    },
+  },
+  Object {
+    "__presentation-components/key": Object {
+      "className": "BisCore:DocumentListModel",
+      "groupedInstancesCount": 2,
+      "pathFromRoot": Array [
+        "11fc254a5edca22c7f495e520e67ffb9",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "description": "Contains a list of document elements.",
+    "hasChildren": true,
+    "id": "11fc254a5edca22c7f495e520e67ffb9",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "composite",
+      },
+      "value": Object {
+        "displayValue": "Document List (2)",
+        "value": Object {
+          "parts": Array [
+            Object {
+              "displayValue": "Document List",
+              "rawValue": "Document List",
+              "typeName": "string",
+            },
+            Object {
+              "displayValue": "(2)",
+              "rawValue": "(2)",
+              "typeName": "string",
+            },
+          ],
+          "separator": " ",
+        },
+        "valueFormat": 0,
+      },
+    },
+  },
+  Object {
+    "__presentation-components/key": Object {
+      "className": "Generic:GroupModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "d6d49a51079cf2dd82c636a9750aa762",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "hasChildren": true,
+    "id": "d6d49a51079cf2dd82c636a9750aa762",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "composite",
+      },
+      "value": Object {
+        "displayValue": "Group Model (1)",
+        "value": Object {
+          "parts": Array [
+            Object {
+              "displayValue": "Group Model",
+              "rawValue": "Group Model",
+              "typeName": "string",
+            },
+            Object {
+              "displayValue": "(1)",
+              "rawValue": "(1)",
+              "typeName": "string",
+            },
+          ],
+          "separator": " ",
+        },
+        "valueFormat": 0,
+      },
+    },
+  },
+  Object {
+    "__presentation-components/key": Object {
+      "className": "BisCore:LinkModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "827968b23d9163a0e7217a5e14e36445",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "description": "A container for persisting link elements.",
+    "hasChildren": true,
+    "id": "827968b23d9163a0e7217a5e14e36445",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "composite",
+      },
+      "value": Object {
+        "displayValue": "Link Model (1)",
+        "value": Object {
+          "parts": Array [
+            Object {
+              "displayValue": "Link Model",
+              "rawValue": "Link Model",
+              "typeName": "string",
+            },
+            Object {
+              "displayValue": "(1)",
+              "rawValue": "(1)",
+              "typeName": "string",
+            },
+          ],
+          "separator": " ",
+        },
+        "valueFormat": 0,
+      },
+    },
+  },
+  Object {
+    "__presentation-components/key": Object {
+      "className": "BisCore:PhysicalModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "e395c49d7bb2f8076b56d6feeb11a859",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "description": "A container for persisting physical elements that model physical space.",
+    "hasChildren": true,
+    "id": "e395c49d7bb2f8076b56d6feeb11a859",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "composite",
+      },
+      "value": Object {
+        "displayValue": "Physical Model (1)",
+        "value": Object {
+          "parts": Array [
+            Object {
+              "displayValue": "Physical Model",
+              "rawValue": "Physical Model",
+              "typeName": "string",
+            },
+            Object {
+              "displayValue": "(1)",
+              "rawValue": "(1)",
+              "typeName": "string",
+            },
+          ],
+          "separator": " ",
+        },
+        "valueFormat": 0,
+      },
+    },
+  },
+  Object {
+    "__presentation-components/key": Object {
+      "className": "BisCore:RepositoryModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "6cc05a018a233f0a5ff7ecced18b1331",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "description": "The singleton container of repository-related information elements.",
+    "hasChildren": true,
+    "id": "6cc05a018a233f0a5ff7ecced18b1331",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "composite",
+      },
+      "value": Object {
+        "displayValue": "Repository Model (1)",
+        "value": Object {
+          "parts": Array [
+            Object {
+              "displayValue": "Repository Model",
+              "rawValue": "Repository Model",
+              "typeName": "string",
+            },
+            Object {
+              "displayValue": "(1)",
+              "rawValue": "(1)",
+              "typeName": "string",
+            },
+          ],
+          "separator": " ",
+        },
+        "valueFormat": 0,
+      },
+    },
+  },
+]
+`;

@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, IndexMap, compareNumbers } from "@bentley/bentleyjs-core";
+import { assert, compareNumbers, IndexMap } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
 
 /** @internal */

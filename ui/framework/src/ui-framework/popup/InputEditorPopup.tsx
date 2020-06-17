@@ -7,13 +7,11 @@
  */
 
 import * as React from "react";
-
-import { OnCancelFunc, OnValueCommitFunc, PropertyRecord, PropertyValueFormat, Primitives } from "@bentley/ui-abstract";
-import { DivWithOutsideClick, SizeProps, Size } from "@bentley/ui-core";
+import { OnCancelFunc, OnValueCommitFunc, Primitives, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "@bentley/ui-components";
-
-import { PositionPopup, PositionPopupContent } from "./PositionPopup";
+import { DivWithOutsideClick, Size, SizeProps } from "@bentley/ui-core";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
+import { PositionPopup, PositionPopupContent } from "./PositionPopup";
 
 /** @alpha */
 export class InputEditorCommitHandler {

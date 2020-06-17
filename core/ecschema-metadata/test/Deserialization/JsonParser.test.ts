@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ECObjectsError } from "../../src/Exception";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
+import { ECObjectsError } from "../../src/Exception";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 describe("JsonParser", () => {

@@ -6,17 +6,17 @@
  * @module Widget
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { Rectangle, CommonProps, Point, PointProps } from "@bentley/ui-core";
-import { Widget, WidgetProvider } from "./Widget";
-import { FloatingWidgetState, WidgetState, FLOATING_WIDGET_RESIZE } from "../base/NineZoneState";
-import { WidgetTitleBar } from "./TitleBar";
-import { assert } from "../base/assert";
-import { useIsDraggedItem, useDragResizeHandle, UseDragResizeHandleArgs } from "../base/DragManager";
-import { NineZoneDispatchContext } from "../base/NineZone";
-import { WidgetContentContainer } from "./ContentContainer";
 import "./FloatingWidget.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps, Point, PointProps, Rectangle } from "@bentley/ui-core";
+import { assert } from "../base/assert";
+import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
+import { NineZoneDispatchContext } from "../base/NineZone";
+import { FloatingWidgetState, WidgetState } from "../base/NineZoneState";
+import { WidgetContentContainer } from "./ContentContainer";
+import { WidgetTabBar } from "./TabBar";
+import { Widget, WidgetProvider } from "./Widget";
 
 /** @internal */
 export type FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom";
@@ -81,7 +81,7 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
       className={className}
       style={props.style}
     >
-      <WidgetTitleBar />
+      <WidgetTabBar />
       <WidgetContentContainer />
       <FloatingWidgetHandle handle="left" />
       <FloatingWidgetHandle handle="top" />
@@ -109,7 +109,7 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
     const offset = relativePosition.current.getOffsetTo(newRelativePosition);
     const resizeBy = getResizeBy(handle, offset);
     dispatch({
-      type: FLOATING_WIDGET_RESIZE,
+      type: "FLOATING_WIDGET_RESIZE",
       id,
       resizeBy,
     });
@@ -128,7 +128,11 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
     handleDragStart({
       initialPointerPosition,
     });
-  }, [handleDragStart]);
+    dispatch({
+      type: "FLOATING_WIDGET_BRING_TO_FRONT",
+      id,
+    });
+  }, [dispatch, handleDragStart, id]);
   const ref = React.useRef<HTMLDivElement>(null);
   const className = classnames(
     "nz-widget-floatingWidget_handle",

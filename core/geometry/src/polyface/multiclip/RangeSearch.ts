@@ -6,13 +6,14 @@
  * @module RangeSearch
  */
 
-import { Range2d } from "../../geometry3d/Range";
-import { RangeLengthData } from "../RangeLengthData";
-import { UsageSums } from "../../numerics/UsageSums";
 import { Geometry } from "../../Geometry";
-import { Range2dSearchInterface } from "./Range2dSearchInterface";
+import { Range2d } from "../../geometry3d/Range";
+import { UsageSums } from "../../numerics/UsageSums";
+import { RangeLengthData } from "../RangeLengthData";
 import { GriddedRaggedRange2dSetWithOverflow } from "./GriddedRaggedRange2dSetWithOverflow";
 import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray";
+import { Range2dSearchInterface } from "./Range2dSearchInterface";
+
 /** Class with static members to work with various range searchers. */
 export class RangeSearch {
   public static readonly smallCountLimit = 40;

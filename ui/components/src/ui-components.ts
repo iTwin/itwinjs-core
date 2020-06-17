@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore iconpicker lineweight
+// cSpell:ignore iconpicker lineweight hocs
 
 export { UiComponents } from "./ui-components/UiComponents";
 
@@ -22,6 +22,7 @@ export * from "./ui-components/common/selection/SelectionHandler";
 export * from "./ui-components/common/showhide/ShowHideDialog";
 export * from "./ui-components/common/showhide/ShowHideItem";
 export * from "./ui-components/common/showhide/ShowHideMenu";
+export * from "./ui-components/common/StandardTypeNames";
 export * from "./ui-components/common/UseAsyncValue";
 
 export * from "./ui-components/converters/TypeConverter";
@@ -43,17 +44,21 @@ export * from "./ui-components/dragdrop/withDragSource";
 export * from "./ui-components/dragdrop/withDropTarget";
 export * from "./ui-components/dragdrop/BeDragDropContext";
 
-export * from "./ui-components/editors/EditorContainer";
-export * from "./ui-components/editors/PropertyEditorManager";
-export * from "./ui-components/editors/TextEditor";
-export * from "./ui-components/editors/EnumEditor";
-export * from "./ui-components/editors/EnumButtonGroupEditor";
 export * from "./ui-components/editors/BooleanEditor";
-export * from "./ui-components/editors/ToggleEditor";
 export * from "./ui-components/editors/ColorEditor";
-export * from "./ui-components/editors/WeightEditor";
 export * from "./ui-components/editors/CustomNumberEditor";
+export * from "./ui-components/editors/EditorContainer";
+export * from "./ui-components/editors/EnumButtonGroupEditor";
+export * from "./ui-components/editors/EnumEditor";
 export * from "./ui-components/editors/IconEditor";
+export * from "./ui-components/editors/NumericInputEditor";
+export * from "./ui-components/editors/PropertyEditorManager";
+export * from "./ui-components/editors/SliderEditor";
+export * from "./ui-components/editors/StandardEditorNames";
+export * from "./ui-components/editors/TextEditor";
+export * from "./ui-components/editors/TextareaEditor";
+export * from "./ui-components/editors/ToggleEditor";
+export * from "./ui-components/editors/WeightEditor";
 
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";
@@ -86,9 +91,11 @@ export * from "./ui-components/timeline/SolarTimeline";
 export * from "./ui-components/timeline/BaseSolarDataProvider";
 
 export * from "./ui-components/toolbar/Toolbar";
+export * from "./ui-components/toolbar/ToolbarWithOverflow";
 export * from "./ui-components/toolbar/PopupItem";
 export * from "./ui-components/toolbar/PopupItemWithDrag";
 export * from "./ui-components/toolbar/Item";
+export * from "./ui-components/toolbar/utilities/Direction";
 
 export * from "./ui-components/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 export * from "./ui-components/properties/renderers/label/PrimitivePropertyLabelRenderer";
@@ -126,7 +133,7 @@ export * from "./ui-components/table/component/Table";
 export * from "./ui-components/table/component/TableColumn";
 export * from "./ui-components/table/hocs/withDragDrop";
 
-export * from "./ui-components/tooltip/UITooltipRenderer";
+export * from "./ui-components/favorite/FavoritePropertiesRenderer";
 
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/SimpleTreeDataProvider";
@@ -172,6 +179,10 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
 /**
  * @docs-group-description DragDrop
  * Classes and Higher Order Components for working with the DragDrop API.
+ */
+/**
+ * @docs-group-description Favorite
+ * Classes and components for displaying favorite properties.
  */
 /**
  * @docs-group-description Filtering

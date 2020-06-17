@@ -6,6 +6,10 @@
 /** @packageDocumentation
  * @module Authentication
  */
+import { AuthStatus, BentleyError, Logger } from "@bentley/bentleyjs-core";
+import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
+
+const loggerCategory = ITwinClientLoggerCategory.Authorization;
 
 /** Information on the authenticated user.
  * @beta
@@ -28,21 +32,28 @@ export class UserInfo {
     public featureTracking?: { ultimateSite: string, usageCountryIso: string },
   ) { }
 
-  /** Creates UserInfo from JSON obtained from typical Oidc clients
-   * @internal
+  /** Creates a strongly typed UserInfo object from untyped JSON with the same properties as [[UserInfo]]
+   * @see [[UserInfo.fromTokenResponseJson]] for use cases that involve parsing responses from typical Authorization Client-s.
+   * @throws [BentleyError]($bentley) if the supplied json parameter is undefined
+   * @beta
    */
-  public static fromJson(jsonObj: any): UserInfo | undefined {
+  public static fromJson(jsonObj: any): UserInfo {
     if (!jsonObj)
-      return undefined;
+      throw new BentleyError(AuthStatus.Error, "Expected valid json to be passed to UserInfo.fromTokenResponseJson", Logger.logError, loggerCategory, () => jsonObj);
     return new UserInfo(jsonObj.id, jsonObj.email, jsonObj.profile, jsonObj.organization, jsonObj.featureTracking);
   }
 
-  /** Creates UserInfo from JSON obtained from typical Oidc clients
+  /**
+   * Creates UserInfo from the typical token response obtained from Authorization servers
+   * - Note that we map these fields from the token response to different names in UserInfo to keep with typescript guidelines.
+   * - Only basic validation is done - the input parameter must be defined
+   * @see [[UserInfo.fromJson]] for use cases that involve serialization/deserialization of UserInfo
+   * @throws [BentleyError]($bentley) if the supplied json parameter is undefined
    * @internal
    */
-  public static fromTokenResponseJson(jsonObj: any): UserInfo | undefined {
+  public static fromTokenResponseJson(jsonObj: any): UserInfo {
     if (!jsonObj)
-      return undefined;
+      throw new BentleyError(AuthStatus.Error, "Expected valid json to be passed to UserInfo.fromTokenResponseJson", Logger.logError, loggerCategory, () => jsonObj);
     const id: string = jsonObj.sub;
     const email: any = jsonObj.email ? { id: jsonObj.email, isVerified: jsonObj.email_verified } : undefined;
     const profile: any = jsonObj.given_name ? { name: jsonObj.name, preferredUserName: jsonObj.preferred_username, firstName: jsonObj.given_name, lastName: jsonObj.family_name } : undefined;

@@ -6,16 +6,16 @@
  * @module Tree
  */
 
-import * as React from "react";
-import { isEqual } from "lodash";
-import { TreeProps, ActiveMatchInfo, HighlightableTreeProps } from "@bentley/ui-components";
-import { getDisplayName } from "../common/Utils";
-import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
-import { FilteredPresentationTreeDataProvider } from "./FilteredDataProvider";
 import "./WithFilteringSupport.scss";
-import { AsyncTasksTracker } from "@bentley/presentation-common";
+import { isEqual } from "lodash";
+import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { AsyncTasksTracker } from "@bentley/presentation-common";
+import { ActiveMatchInfo, HighlightableTreeProps, TreeProps } from "@bentley/ui-components";
+import { getDisplayName } from "../common/Utils";
+import { FilteredPresentationTreeDataProvider } from "./FilteredDataProvider";
+import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 
 // tslint:disable:deprecation
 

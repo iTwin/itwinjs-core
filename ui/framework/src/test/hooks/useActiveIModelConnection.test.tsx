@@ -2,19 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { render, cleanup } from "@testing-library/react";
-import * as React from "react";
-import * as moq from "typemoq";
-import { Provider } from "react-redux";
 import { expect } from "chai";
-
-import {
-  useActiveIModelConnection, SyncUiEventDispatcher,
-} from "../../ui-framework";
-
-import TestUtils from "../TestUtils";
+import * as React from "react";
+import { Provider } from "react-redux";
+import * as moq from "typemoq";
 import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
+import { cleanup, render } from "@testing-library/react";
+import { SyncUiEventDispatcher, useActiveIModelConnection } from "../../ui-framework";
 import { UiFramework } from "../../ui-framework/UiFramework";
+import TestUtils from "../TestUtils";
 
 describe("useActiveIModelConnection", () => {
   before(async () => {

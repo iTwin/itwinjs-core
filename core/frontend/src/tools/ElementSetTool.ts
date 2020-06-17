@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../IModelConnection";
 
 /** The requested source for the elements to modify.

@@ -6,11 +6,13 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { createRandomECInstancesNode, createRandomLabelDefinition, createRandomDescriptor, createRandomLabelCompositeValue } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { Item, Content, LabelDefinition } from "@bentley/presentation-common";
-import { Presentation } from "../presentation-frontend/Presentation";
+import { Content, Item, LabelDefinition } from "@bentley/presentation-common";
+import {
+  createRandomDescriptor, createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition,
+} from "@bentley/presentation-common/lib/test/_helpers/random";
 import { LocalizationHelper } from "../presentation-frontend/LocalizationHelper";
+import { Presentation } from "../presentation-frontend/Presentation";
 
 describe("LocalizationHelper", () => {
   const i18nMock = moq.Mock.ofType<I18N>();
@@ -97,7 +99,7 @@ describe("LocalizationHelper", () => {
       const labelDefinition: LabelDefinition = {
         displayValue: "Display",
         rawValue: compositeValue,
-        typeName: "composite",
+        typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME,
       };
       i18nMock.setup((x) => x.translate("namespace:NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
       localizationHelper.getLocalizedLabelDefinition(labelDefinition);

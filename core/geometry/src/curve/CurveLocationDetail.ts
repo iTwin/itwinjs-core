@@ -5,10 +5,11 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { Geometry } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { CurvePrimitive } from "./CurvePrimitive";
-import { Geometry } from "../Geometry";
+
 /**
  * An enumeration of special conditions being described by a CurveLocationDetail.
  * @public
@@ -302,6 +303,23 @@ export class CurveLocationDetail {
     result.a = 0.0;
     return result;
   }
+  /** create with CurvePrimitive pointer and fraction for evaluation.
+   */
+  public static createCurveEvaluatedFractionPointAndDerivative(
+    curve: CurvePrimitive,
+    fraction: number,
+    result?: CurveLocationDetail): CurveLocationDetail {
+    result = result ? result : new CurveLocationDetail();
+    result.curve = curve;
+    result.fraction = fraction;
+    const ray = curve.fractionToPointAndDerivative(fraction);
+    result.point = ray.origin;
+    result.vectorInCurveLocationDetail = ray.direction;
+    result.curveSearchStatus = undefined;
+    result.a = 0.0;
+    return result;
+  }
+
   /** create with CurvePrimitive pointer and 2 fractions for evaluation.
    */
   public static createCurveEvaluatedFractionFraction(
@@ -426,5 +444,10 @@ export class CurveLocationDetailPair {
     result.approachType = this.approachType;
     return result;
   }
-
+  /** Swap the details of A, B */
+  public swapDetails() {
+    const q = this.detailA;
+    this.detailA = this.detailB;
+    this.detailB = q;
+  }
 }

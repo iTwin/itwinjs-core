@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { LineString3d } from "../../curve/LineString3d";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Sample } from "../../serialization/GeometrySamples";
 import { Angle } from "../../geometry3d/Angle";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+
 /* tslint:disable:no-console */
 // ---------------------------------------------------------------------------------------------------
 

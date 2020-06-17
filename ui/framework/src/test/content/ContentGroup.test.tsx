@@ -2,20 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { expect } from "chai";
-
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  ConfigurableCreateInfo,
-  ContentControl,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupManager, ContentGroupProps, ContentProps,
   NavigationAidControl,
-  ContentGroupProps,
-  ContentGroupManager,
-  ContentGroup,
-  ContentProps,
-  ConfigurableUiManager,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 

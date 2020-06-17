@@ -7,35 +7,20 @@
  */
 
 import * as React from "react";
-import { ClassNameProps } from "@bentley/ui-core";
+import { ClassNameProps, MessageRenderer } from "@bentley/ui-core";
+import { NotifyMessageType } from "./ReactNotifyMessageDetails";
 
 /** @internal */
 export interface MessageSpanProps extends ClassNameProps {
-  message: HTMLElement | string;
+  message: NotifyMessageType;
 }
 
 /** @internal */
-// tslint:disable-next-line: variable-name
-export const MessageSpan = (props: MessageSpanProps): JSX.Element => {
-  let messageNode: JSX.Element;
-
-  if (typeof props.message === "string")
-    messageNode = <span className={props.className}>{props.message}</span>;
-  else
-    messageNode = <span className={props.className} dangerouslySetInnerHTML={{ __html: props.message.outerHTML }} />;
-
-  return messageNode;
-};
+export function MessageSpan(props: MessageSpanProps) {
+  return <MessageRenderer {...props} useSpan />;
+}
 
 /** @internal */
-// tslint:disable-next-line: variable-name
-export const MessageDiv = (props: MessageSpanProps): JSX.Element => {
-  let messageNode: JSX.Element;
-
-  if (typeof props.message === "string")
-    messageNode = <div className={props.className}>{props.message}</div>;
-  else
-    messageNode = <div className={props.className} dangerouslySetInnerHTML={{ __html: props.message.outerHTML }} />;
-
-  return messageNode;
-};
+export function MessageDiv(props: MessageSpanProps) {
+  return <MessageRenderer {...props} />;
+}

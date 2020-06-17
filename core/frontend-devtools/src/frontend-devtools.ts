@@ -10,6 +10,7 @@ export * from "./tools/AnimationIntervalTool";
 export * from "./tools/ChangeUnitsTool";
 export * from "./tools/DisplayStyleTools";
 export * from "./tools/EmphasizeElementsTool";
+export * from "./tools/ExtensionServiceTool";
 export * from "./tools/FrustumDecoration";
 export * from "./tools/InspectElementTool";
 export * from "./tools/MeasureTileLoadTime";
@@ -27,6 +28,7 @@ export * from "./tools/SourceAspectIdTools";
 export * from "./tools/TileRequestDecoration";
 export * from "./tools/TileTreeBoundsDecoration";
 export * from "./tools/ViewportTools";
+export * from "./tools/RealityModelTools";
 
 export * from "./ui/Button";
 export * from "./ui/CheckBox";

@@ -6,14 +6,14 @@
  * @module Widget
  */
 
+import "./ToolSettings.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, PointProps, RectangleProps, Rectangle, Point } from "@bentley/ui-core";
-import { TitleBar } from "../footer/dialog/TitleBar";
+import { CommonProps, Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { DragHandle } from "../base/DragHandle";
+import { TitleBar } from "../footer/dialog/TitleBar";
+import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
 import { ResizeHandle } from "./Stacked";
-import { ResizeGrip, ResizeDirection, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
-import "./ToolSettings.scss";
 
 /** Properties of [[ToolSettings]] component.
  * @beta

@@ -6,7 +6,7 @@
  * @module Zone
  */
 
-import { WidgetZoneId, ZonesManagerProps, ZonesManager, getZoneCell } from "./Zones";
+import { getZoneCell, WidgetZoneId, ZonesManager, ZonesManagerProps } from "./Zones";
 
 /** @internal */
 export abstract class AdjacentZonesStrategy {

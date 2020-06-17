@@ -11,7 +11,9 @@ import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, request, Re
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
-import { BaseEventSAS, EventBaseHandler, EventListener, GetEventOperationToRequestType, IModelHubBaseEvent, ListenerSubscription } from "./EventsBase";
+import {
+  BaseEventSAS, EventBaseHandler, EventListener, GetEventOperationToRequestType, IModelHubBaseEvent, ListenerSubscription,
+} from "./EventsBase";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
@@ -364,7 +366,7 @@ export class GlobalEventHandler extends EventBaseHandler {
 
     const event = ParseGlobalEvent(result, this._handler, sasToken);
     Logger.logTrace(loggerCategory, "Got Global Event from subscription", () => ({ subscriptionId }));
-    return Promise.resolve(event);
+    return event;
   }
 
   /** Create a listener for long polling events from a [[GlobalEventSubscription]]. When event is received from the subscription, every registered listener callback is called. This continuously waits for events until all created listeners for that subscriptionInstanceId are deleted. [[GlobalEventSAS]] token expirations are handled automatically, [[AccessToken]] expiration is handled by calling authenticationCallback to get a new token.

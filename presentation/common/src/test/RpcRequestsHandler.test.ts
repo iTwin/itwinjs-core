@@ -4,23 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import * as moq from "typemoq";
 import * as sinon from "sinon";
-import {
-  createRandomECInstancesNodeKeyJSON, createRandomECInstanceKeyJSON,
-  createRandomECInstancesNodeJSON, createRandomNodePathElementJSON,
-  createRandomContentJSON, createRandomDescriptorJSON,
-  createRandomSelectionScope, createRandomLabelDefinitionJSON,
-} from "./_helpers/random";
+import * as moq from "typemoq";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, RpcManager, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@bentley/imodeljs-common";
 import {
-  RpcRequestsHandler, PresentationRpcInterface,
-  KeySet, Paged, SelectionInfo, PresentationStatus,
-  HierarchyRequestOptions, ContentRequestOptions, SelectionScopeRequestOptions, PresentationError, LabelRequestOptions,
-  PresentationRpcRequestOptions, PresentationRpcResponse, PartialHierarchyModificationJSON,
+  ContentRequestOptions, DescriptorJSON, DistinctValuesRpcRequestOptions, HierarchyRequestOptions, KeySet, KeySetJSON, LabelRequestOptions, Paged,
+  PartialHierarchyModificationJSON, PresentationError, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
+  PresentationStatus, RpcRequestsHandler, SelectionInfo, SelectionScopeRequestOptions,
 } from "../presentation-common";
-import { PresentationDataCompareOptions } from "../presentation-common/PresentationManagerOptions";
+import { FieldDescriptorType } from "../presentation-common/content/Fields";
+import { DistinctValuesRequestOptions, PresentationDataCompareOptions } from "../presentation-common/PresentationManagerOptions";
+import {
+  createRandomContentJSON, createRandomDescriptorJSON, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
+  createRandomECInstancesNodeKeyJSON, createRandomLabelDefinitionJSON, createRandomNodePathElementJSON, createRandomSelectionScope,
+} from "./_helpers/random";
 
 describe("RpcRequestsHandler", () => {
 
@@ -90,7 +88,7 @@ describe("RpcRequestsHandler", () => {
     describe("when request returns an unexpected status", () => {
 
       it("throws an exception", async () => {
-        const func = async () => Promise.resolve(errorResponse(PresentationStatus.Error));
+        const func = async () => errorResponse(PresentationStatus.Error);
         await expect(handler.request(undefined, func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError);
       });
 
@@ -99,7 +97,7 @@ describe("RpcRequestsHandler", () => {
     describe("when request returns a status of BackendTimeout", () => {
 
       it("returns PresentationError", async () => {
-        const func = async () => Promise.resolve(errorResponse(PresentationStatus.BackendTimeout));
+        const func = async () => errorResponse(PresentationStatus.BackendTimeout);
         await expect(handler.request(undefined, func, defaultRpcHandlerOptions)).to.eventually.be.rejectedWith(PresentationError).and.has.property("errorNumber", 65543);
       });
 
@@ -360,6 +358,42 @@ describe("RpcRequestsHandler", () => {
       const result = [faker.random.word()];
       rpcInterfaceMock.setup(async (x) => x.getDistinctValues(token, rpcOptions, descriptor, keys, fieldName, maxItems)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getDistinctValues(handlerOptions, descriptor, keys, fieldName, maxItems)).to.eq(result);
+      rpcInterfaceMock.verifyAll();
+    });
+
+    it("forwards getPagedDistinctValues call", async () => {
+      const handlerOptions: DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON> = {
+        imodel: token,
+        rulesetOrId: faker.random.word(),
+        descriptor: createRandomDescriptorJSON(),
+        keys: new KeySet().toJSON(),
+        fieldDescriptor: {
+          type: FieldDescriptorType.Name,
+          fieldName: "test",
+        },
+      };
+      const rpcOptions: DistinctValuesRpcRequestOptions = {
+        clientId,
+        rulesetOrId: handlerOptions.rulesetOrId,
+        descriptor: handlerOptions.descriptor,
+        keys: new KeySet().toJSON(),
+        fieldDescriptor: {
+          type: FieldDescriptorType.Name,
+          fieldName: "test",
+        },
+      };
+      const result = {
+        total: 2,
+        items: [{
+          displayValue: "1",
+          groupedRawValues: [1.1, 1.2],
+        }, {
+          displayValue: "2",
+          groupedRawValues: [2],
+        }],
+      };
+      rpcInterfaceMock.setup(async (x) => x.getPagedDistinctValues(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.getPagedDistinctValues(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

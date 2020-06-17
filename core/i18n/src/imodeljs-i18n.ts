@@ -9,6 +9,6 @@ export * from "./Localization";
  * The imodeljs-i18n package contains classes related to internationalization and localization.
  */
 
-/** @docs-group-description AppAdministration
+/** @docs-group-description Localization
  * Classes for internationalization and localization of your app.
  */

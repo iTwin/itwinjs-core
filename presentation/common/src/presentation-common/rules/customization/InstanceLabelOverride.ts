@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { RuleTypes, RuleBase } from "../Rule";
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
  * Rule to override labels for instances of specific ECClasses.

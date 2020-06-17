@@ -10,15 +10,15 @@ import { assert, dispose, Id64 } from "@bentley/bentleyjs-core";
 import { PackedFeature, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { DisplayParams } from "../primitives/DisplayParams";
-import { Hilites, Target } from "./Target";
-import { GL } from "./GL";
-import { System } from "./System";
 import { WebGLDisposable } from "./Disposable";
-import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
-import { OvrFlags, TextureUnit } from "./RenderFlags";
-import { LineCode } from "./EdgeOverrides";
+import { LineCode } from "./LineCode";
+import { GL } from "./GL";
 import { UniformHandle } from "./Handle";
-import { SyncObserver, sync } from "./Sync";
+import { OvrFlags, TextureUnit } from "./RenderFlags";
+import { sync, SyncObserver } from "./Sync";
+import { System } from "./System";
+import { Hilites, Target } from "./Target";
+import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
 
 function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1): { width: number, height: number } {
   const maxSize = System.instance.capabilities.maxTextureSize;

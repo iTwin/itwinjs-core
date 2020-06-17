@@ -8,12 +8,12 @@
 
 import * as React from "react";
 import { getDisplayName } from "@bentley/ui-core";
-import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../dragdrop/DragDropDef";
+import { DragSourceArguments, DragSourceProps, DropTargetArguments, DropTargetProps } from "../../dragdrop/DragDropDef";
 import { withDropTarget } from "../../dragdrop/withDropTarget";
-import { TableProps, TableRowProps, TableRow } from "../component/Table";
+import { TableProps, TableRow, TableRowProps } from "../component/Table";
 import { RowItem, TableDataProvider } from "../TableDataProvider";
-import { TableWrapper, TableWrapperProps } from "./TableWrapper";
 import { DragDropRow } from "./DragDropRow";
+import { TableWrapper, TableWrapperProps } from "./TableWrapper";
 
 /** Properties for the Table's DropTarget.
  * @beta

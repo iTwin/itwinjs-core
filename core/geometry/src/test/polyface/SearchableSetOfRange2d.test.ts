@@ -3,22 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GriddedRaggedRange2dSetWithOverflow } from "../../polyface/multiclip/GriddedRaggedRange2dSetWithOverflow";
-import { GriddedRaggedRange2dSet } from "../../polyface/multiclip/GriddedRaggedRange2dSet";
-import { LinearSearchRange2dArray } from "../../polyface/multiclip/LinearSearchRange2dArray";
-import { lisajouePoint3d } from "../geometry3d/PointHelper.test";
-import { Range2d, Range3d } from "../../geometry3d/Range";
-import { LineString3d } from "../../curve/LineString3d";
-import { Geometry } from "../../Geometry";
-import { LineSegment3d } from "../../curve/LineSegment3d";
 import { BagOfCurves } from "../../curve/CurveCollection";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { Geometry } from "../../Geometry";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range2d, Range3d } from "../../geometry3d/Range";
+import { GriddedRaggedRange2dSet } from "../../polyface/multiclip/GriddedRaggedRange2dSet";
+import { GriddedRaggedRange2dSetWithOverflow } from "../../polyface/multiclip/GriddedRaggedRange2dSetWithOverflow";
+import { LinearSearchRange2dArray } from "../../polyface/multiclip/LinearSearchRange2dArray";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { Checker } from "../Checker";
+import { lisajouePoint3d } from "../geometry3d/PointHelper.test";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function saveRange(allGeometry: GeometryQuery[], ticFraction: number | undefined, range: Range2d | Range3d, xOrigin: number, yOrigin: number, zOrigin: number = 0) {
   const x0 = range.low.x;

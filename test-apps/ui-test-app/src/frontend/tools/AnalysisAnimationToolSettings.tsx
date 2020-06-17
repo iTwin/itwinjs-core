@@ -8,13 +8,11 @@
 
 // cSpell:Ignore configurableui
 
-import * as React from "react";
-
-import { Icon } from "@bentley/ui-core";
-import { UiFramework, ContentViewManager, ToolUiProvider, ConfigurableCreateInfo } from "@bentley/ui-framework";
-import { Item, Direction, Toolbar } from "@bentley/ui-ninezone";
-
 import "./AnalysisAnimationToolSettings.scss";
+import * as React from "react";
+import { Icon } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, ContentViewManager, ToolUiProvider, UiFramework } from "@bentley/ui-framework";
+import { Direction, Item, Toolbar } from "@bentley/ui-ninezone";
 
 /** State for [[AnalysisAnimationToolSettings]] */
 interface AnimationState {

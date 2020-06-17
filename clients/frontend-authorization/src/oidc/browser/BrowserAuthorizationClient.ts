@@ -7,13 +7,13 @@
  * @module BrowserAuthorization
  */
 
-import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, ImsAuthorizationClient, UserInfo } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings } from "oidc-client";
+import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, IDisposable, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
+import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
 import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationClientRedirectState";
-import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 
 /**
  * @beta
@@ -42,7 +42,7 @@ export interface BrowserAuthorizationClientConfiguration {
 /**
  * @beta
  */
-export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient {
+export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 
   protected _accessToken?: AccessToken;
@@ -132,7 +132,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * If possible, a non-interactive signin will be attempted first.
    * If successful, the returned promise will be resolved.
    * Otherwise, an attempt to redirect the browser will proceed.
-   * If an error prvents the redirection from occurring, the returned promise will be rejected with the responsible error.
+   * If an error prevents the redirection from occurring, the returned promise will be rejected with the responsible error.
    * Otherwise, the browser's window will be redirected away from the current page, effectively ending execution here.
    */
   public async signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void> {
@@ -235,11 +235,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       this._accessToken = undefined;
       return;
     }
-
-    const startsAt: Date = new Date((user.expires_at - user.expires_in!) * 1000);
-    const expiresAt: Date = new Date(user.expires_at * 1000);
-    const userInfo = UserInfo.fromJson(user.profile);
-    this._accessToken = AccessToken.fromJsonWebTokenString(user.access_token, startsAt, expiresAt, userInfo);
+    this._accessToken = AccessToken.fromTokenResponseJson(user, user.profile);
   }
 
   /**
@@ -267,7 +263,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
   /**
    * Returns a promise that resolves to the AccessToken of the currently authorized user.
    * The token is refreshed as necessary.
-   * @throws [[BentleyError]] If signIn() was not called, or there was an authorization error.
+   * @throws [BentleyError]($bentley) If signIn() was not called, or there was an authorization error.
    */
   public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
     if (this._accessToken)

@@ -6,10 +6,10 @@
  * @module Toolbar
  */
 
+import "./Title.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Title.scss";
 
 /** Properties of [[Title]] component.
  * @alpha

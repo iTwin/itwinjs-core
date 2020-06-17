@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Button, ButtonType, ButtonSize } from "../../ui-core/button/Button";
+import { Button, ButtonSize, ButtonType } from "../../ui-core/button/Button";
 
 describe("<Button />", () => {
   it("should render", () => {

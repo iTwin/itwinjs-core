@@ -6,13 +6,17 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { WeightPickerButton } from "../lineweight/WeightPickerButton";
-import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import "./WeightEditor.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { PrimitiveValue, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { WeightPickerButton } from "../lineweight/WeightPickerButton";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
+import { StandardEditorNames } from "./StandardEditorNames";
+
+// cspell:ignore lineweight
 
 /** @internal */
 interface WeightEditorState {
@@ -84,7 +88,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
       if (propertyRecord && this.props.onCommit) {
         const propertyValue = await this.getPropertyValue();
         // istanbul ignore else
-        if (propertyValue) {
+        if (propertyValue !== undefined) {
           this.props.onCommit({ propertyRecord, newValue: propertyValue });
         }
       }
@@ -159,4 +163,4 @@ export class WeightPropertyEditor extends PropertyEditorBase {
   }
 }
 
-PropertyEditorManager.registerEditor("number", WeightPropertyEditor, "weight-picker");
+PropertyEditorManager.registerEditor(StandardTypeNames.Number, WeightPropertyEditor, StandardEditorNames.WeightPicker);

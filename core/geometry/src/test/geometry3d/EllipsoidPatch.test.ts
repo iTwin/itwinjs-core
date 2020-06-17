@@ -3,33 +3,34 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Ellipsoid, EllipsoidPatch, GeodesicPathSolver, GeodesicPathPoint } from "../../geometry3d/Ellipsoid";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Geometry } from "../../Geometry";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Transform } from "../../geometry3d/Transform";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Angle } from "../../geometry3d/Angle";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Sphere } from "../../solid/Sphere";
-import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { prettyPrint } from "../testFunctions";
-import { Loop } from "../../curve/Loop";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { Point4d } from "../../geometry4d/Point4d";
-import { AnnounceNumberNumberCurvePrimitive, AnnounceNumberNumber, CurvePrimitive } from "../../curve/CurvePrimitive";
-import { Segment1d } from "../../geometry3d/Segment1d";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveFactory } from "../../curve/CurveFactory";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Ellipsoid, EllipsoidPatch, GeodesicPathPoint, GeodesicPathSolver } from "../../geometry3d/Ellipsoid";
+import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
+import { Transform } from "../../geometry3d/Transform";
+import { Point4d } from "../../geometry4d/Point4d";
+import { IndexedPolyface } from "../../polyface/Polyface";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { Sphere } from "../../solid/Sphere";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { prettyPrint } from "../testFunctions";
+
 /* tslint:disable:no-console */
 
 describe("Ellipsoid", () => {

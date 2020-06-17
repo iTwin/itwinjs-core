@@ -2,12 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { ContentSpecificationTypes, InstanceKey, KeySet, PresentationError, PresentationStatus, Ruleset, RuleTypes } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
 import { expect } from "chai";
+import { Guid, Id64 } from "@bentley/bentleyjs-core";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import {
+  ContentSpecificationTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet, PresentationError, PresentationStatus,
+  RelationshipDirection, Ruleset, RuleTypes,
+} from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
+
 import sinon = require("sinon");
 
 describe("Content", () => {
@@ -29,7 +33,7 @@ describe("Content", () => {
 
   describe("DistinctValues", () => {
 
-    it("gets distinct content values", async () => {
+    it("[deprecated] gets distinct content values", async () => {
       const ruleset: Ruleset = {
         id: "getRelatedDistinctValues",
         rules: [{
@@ -60,6 +64,184 @@ describe("Content", () => {
         "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
         "DgnV8Bridge",
       ]);
+    });
+
+    async function validatePagedDistinctValuesResponse(ruleset: Ruleset, keys: KeySet, descriptor: Descriptor, fieldDescriptor: FieldDescriptor, expectedResult: DisplayValueGroup[]) {
+      // first request all pages and confirm the result is valid
+      const allDistinctValues = await Presentation.presentation.getPagedDistinctValues({ imodel, rulesetOrId: ruleset, keys, descriptor, fieldDescriptor });
+      expect(allDistinctValues).to.be.deep.equal({
+        total: expectedResult.length,
+        items: expectedResult,
+      });
+
+      // then request in pages and confirm it's still okay
+      const pageSize = 2;
+      const pagesCount = Math.ceil(expectedResult.length / pageSize);
+      for (let i = 0; i < pagesCount; ++i) {
+        const pagedDistinctValues = await Presentation.presentation.getPagedDistinctValues({ imodel, rulesetOrId: ruleset, keys, descriptor, fieldDescriptor, paging: { size: pageSize, start: i * pageSize } });
+        expect(pagedDistinctValues).to.be.deep.equal({
+          total: expectedResult.length,
+          items: expectedResult.slice(i * pageSize, (i + 1) * pageSize),
+        });
+      }
+    }
+
+    function findFieldByLabel(fields: Field[], label: string): Field | undefined {
+      for (const field of fields) {
+        if (field.label === label)
+          return field;
+
+        if (field.isNestedContentField()) {
+          const nestedMatchingField = findFieldByLabel(field.nestedFields, label);
+          if (nestedMatchingField)
+            return nestedMatchingField;
+        }
+      }
+      return undefined;
+    }
+
+    it("gets paged distinct primitive content values", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
+        }],
+      };
+      const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", keys, undefined))!;
+
+      let field = findFieldByLabel(descriptor.fields, "User Label")!;
+      await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
+        displayValue: "TestClass",
+        groupedRawValues: ["TestClass"],
+      }]);
+
+      field = findFieldByLabel(descriptor.fields, "True-False")!;
+      await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
+        displayValue: "False",
+        groupedRawValues: [false],
+      }, {
+        displayValue: "True",
+        groupedRawValues: [true],
+      }]);
+
+      field = findFieldByLabel(descriptor.fields, "<0")!;
+      await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
+        displayValue: "0.00",
+        groupedRawValues: [0.0007575, 1e-7],
+      }, {
+        displayValue: "0.12",
+        groupedRawValues: [0.123456789],
+      }]);
+
+      field = findFieldByLabel(descriptor.fields, "<100")!;
+      await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
+        displayValue: "100.01",
+        groupedRawValues: [100.01],
+      }, {
+        displayValue: "75.75",
+        groupedRawValues: [75.75],
+      }, {
+        displayValue: "99.01",
+        groupedRawValues: [99.01],
+      }]);
+    });
+
+    it("gets paged distinct related primitive content values", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.SelectedNodeInstances,
+            relatedProperties: [{
+              propertiesSource: [{
+                relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+                direction: RelationshipDirection.Backward,
+              }, {
+                relationship: { schemaName: "BisCore", className: "ModelModelsElement" },
+                direction: RelationshipDirection.Forward,
+                targetClass: { schemaName: "BisCore", className: "Element" },
+              }],
+              properties: [{
+                name: "CodeValue",
+                labelOverride: "Model Label",
+              }],
+            }],
+          }],
+        }],
+      };
+      const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", keys, undefined))!;
+      const field = findFieldByLabel(descriptor.fields, "Model Label")!;
+      await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
+        displayValue: "Properties_60InstancesWithUrl2",
+        groupedRawValues: ["Properties_60InstancesWithUrl2"],
+      }]);
+    });
+
+    // TODO: support related content
+    it.skip("gets paged distinct related content values", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
+        }],
+      };
+      const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", keys, undefined))!;
+      const field = findFieldByLabel(descriptor.fields, "$óúrçè Fílê Ñâmé")!;
+      await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
+        displayValue: "Properties_60InstancesWithUrl2.dgn",
+        groupedRawValues: ["Properties_60InstancesWithUrl2.dgn"],
+      }]);
+    });
+
+    it("gets distinct content values using consolidated descriptor", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{ specType: ContentSpecificationTypes.SelectedNodeInstances }],
+        }],
+      };
+      const consolidatedKeys = new KeySet([{
+        className: "PCJ_TestSchema:TestClass",
+        id: Id64.invalid,
+      }, {
+        className: "Generic:PhysicalObject",
+        id: Id64.invalid,
+      }]);
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", consolidatedKeys, undefined))!;
+      const field = findFieldByLabel(descriptor.fields, "User Label")!;
+
+      await validatePagedDistinctValuesResponse(ruleset, consolidatedKeys, descriptor, field.getFieldDescriptor(), [{
+        displayValue: "",
+        groupedRawValues: [undefined],
+      }, {
+        displayValue: "TestClass",
+        groupedRawValues: ["TestClass"],
+      }]);
+
+      const typeOneKey = new KeySet([{
+        className: "PCJ_TestSchema:TestClass",
+        id: Id64.invalid,
+      }]);
+      await validatePagedDistinctValuesResponse(ruleset, typeOneKey, descriptor, field.getFieldDescriptor(), [{
+        displayValue: "TestClass",
+        groupedRawValues: ["TestClass"],
+      }]);
+
+      const typeTwoKey = new KeySet([{
+        className: "Generic:PhysicalObject",
+        id: Id64.invalid,
+      }]);
+      await validatePagedDistinctValuesResponse(ruleset, typeTwoKey, descriptor, field.getFieldDescriptor(), [{
+        displayValue: "",
+        groupedRawValues: [undefined],
+      }]);
     });
 
   });

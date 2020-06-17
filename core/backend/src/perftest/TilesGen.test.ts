@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeDuration, BeTimePoint, ClientRequestContext, DbResult, StopWatch, using } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
-import { TileProps, TileTreeProps } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
+import { BeDuration, BeTimePoint, ClientRequestContext, DbResult, StopWatch, using } from "@bentley/bentleyjs-core";
+import { Range3d } from "@bentley/geometry-core";
+import { TileProps, TileTreeProps } from "@bentley/imodeljs-common";
 import { ECDb, ECDbOpenMode } from "../ECDb";
 import { IModelHost } from "../IModelHost";
 import { IModelDb, SnapshotDb } from "../imodeljs-backend";

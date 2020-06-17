@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { mount, shallow } from "enzyme";
-
+import { render } from "@testing-library/react";
 import { ConfigurableUiContent } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import { render } from "@testing-library/react";
 
 describe("ConfigurableUiContent", () => {
   before(async () => {

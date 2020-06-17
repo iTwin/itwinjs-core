@@ -7,9 +7,9 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { BackstageItem } from "./BackstageItem";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
+import { BackstageItem } from "./BackstageItem";
 
 /** Arguments of [[BackstageItemsManager.onChanged]] event.
  * @internal

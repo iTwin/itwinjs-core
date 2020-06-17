@@ -4,10 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { render, act, fireEvent, queryByText } from "@testing-library/react";
-import { DockedToolSettings, getOverflown, DockedToolSetting, onOverflowLabelAndEditorResize, eqlOverflown } from "../../ui-ninezone";
 import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill"; // tslint:disable-line: no-direct-imports
+import { act, fireEvent, queryByText, render } from "@testing-library/react";
+import {
+  DockedToolSetting, DockedToolSettings, DragManager, DragManagerContext, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize,
+} from "../../ui-ninezone";
 import { createDOMRect, ResizeObserverMock } from "../Utils";
+
+function DragManagerProvider(props: { children?: React.ReactNode }) {
+  const dragManager = React.useRef(new DragManager());
+  return (
+    <DragManagerContext.Provider value={dragManager.current}>
+      {props.children}
+    </DragManagerContext.Provider>
+  );
+}
 
 describe("DockedToolSettings", () => {
   const sandbox = sinon.createSandbox();
@@ -17,7 +28,11 @@ describe("DockedToolSettings", () => {
   });
 
   it("should render w/o entries", () => {
-    const { container } = render(<DockedToolSettings />);
+    const { container } = render(<DockedToolSettings />,
+      {
+        wrapper: DragManagerProvider,
+      },
+    );
     container.firstChild!.should.matchSnapshot();
   });
 
@@ -29,6 +44,9 @@ describe("DockedToolSettings", () => {
         Entry 3
         <span>Entry 4</span>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -49,6 +67,9 @@ describe("DockedToolSettings", () => {
         <>Entry 2</>
         <>Entry 3</>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -69,6 +90,9 @@ describe("DockedToolSettings", () => {
         <>Entry 2</>
         <>Entry 3</>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
 
     act(() => {
@@ -95,6 +119,9 @@ describe("DockedToolSettings", () => {
         <DockedToolSetting>Entry 2</DockedToolSetting>
         <DockedToolSetting>Entry 3</DockedToolSetting>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
 
     act(() => {
@@ -119,6 +146,9 @@ describe("DockedToolSettings", () => {
         <DockedToolSetting>Entry 2</DockedToolSetting>
         <DockedToolSetting>Entry 3</DockedToolSetting>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
 
     act(() => {
@@ -163,6 +193,9 @@ describe("DockedToolSettings", () => {
         <DockedToolSetting>Entry 2</DockedToolSetting>
         <DockedToolSetting>Entry 3</DockedToolSetting>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
 
     queryAllByText(/Entry [0-9]$/).length.should.eq(2);
@@ -206,6 +239,9 @@ describe("DockedToolSettings", () => {
         <DockedToolSetting>Entry 2</DockedToolSetting>
         <DockedToolSetting>Entry 3</DockedToolSetting>
       </DockedToolSettings>,
+      {
+        wrapper: DragManagerProvider,
+      },
     );
 
     queryAllByText(/Entry [0-9]$/).length.should.eq(2);

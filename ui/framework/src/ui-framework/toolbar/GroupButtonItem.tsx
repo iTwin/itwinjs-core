@@ -7,23 +7,24 @@
  */
 
 import * as React from "react";
-import classnames = require("classnames");
-
 import { Logger } from "@bentley/bentleyjs-core";
-import { ActionButton, GroupButton, ToolbarItemUtilities, ConditionalBooleanValue, OnItemExecutedFunc, ConditionalStringValue } from "@bentley/ui-abstract";
-import { withOnOutsideClick, CommonProps, BadgeUtilities } from "@bentley/ui-core";
 import {
-  Item, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Group as ToolGroupComponent,
-  NestedGroup as NestedToolGroupComponent, withDragInteraction, ToolbarDirectionContext,
+  ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, OnItemExecutedFunc, ToolbarItemUtilities,
+} from "@bentley/ui-abstract";
+import { BadgeUtilities, CommonProps, withOnOutsideClick } from "@bentley/ui-core";
+import {
+  ExpandableItem, Group as ToolGroupComponent, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent,
+  ToolbarDirectionContext, withDragInteraction,
 } from "@bentley/ui-ninezone";
-
-import { PropsHelper } from "../utils/PropsHelper";
+import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
+import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../UiFramework";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
-import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
+import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { ToolbarHelper } from "./ToolbarHelper";
+
+import classnames = require("classnames");
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -399,7 +400,10 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
                     isActive={isActive}
                     key={itemKey}
                     label={ConditionalStringValue.getValue(item.label)}
-                    onClick={() => this.handleToolGroupItemClicked(this.state.trayId, itemKey)}
+                    onClick={
+                      // istanbul ignore next
+                      () => this.handleToolGroupItemClicked(this.state.trayId, itemKey)
+                    }
                     onPointerUp={activateOnPointerUp ? () => this.handleToolGroupItemClicked(this.state.trayId, itemKey) : undefined}
                     icon={icon}
                     badge={badge}
@@ -415,7 +419,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
                 columns={columns}
                 onBack={this._handleBack}
                 onBackPointerUp={activateOnPointerUp ? this._handleBack : undefined}
-                onOutsideClick={dragInteraction ? this._handleDragInteractionOutsideClick : this._handleOutsideClick}
+                onOutsideClick={dragInteraction ? this._handleDragInteractionOutsideClick : /* istanbul ignore next */ this._handleOutsideClick}
                 title={tray.title}
               />
             );
@@ -438,12 +442,13 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
       if (item)
         return item;
     }
+    // istanbul ignore next
     return undefined;
   }
 
   private _handleBack = () => {
     this.setState((prevState) => {
-      const trayId = prevState.backTrays.length > 0 ? prevState.backTrays[prevState.backTrays.length - 1] : prevState.trayId;
+      const trayId = prevState.backTrays.length > 0 ? prevState.backTrays[prevState.backTrays.length - 1] : /* istanbul ignore next */ prevState.trayId;
       const backTrays = prevState.backTrays.slice(0, -1);
       return {
         trayId,
@@ -473,6 +478,7 @@ const getFirstItem = (groupItem: GroupButton): ActionButton | GroupButton | unde
       // istanbul ignore else
       if (firstItem)
         return firstItem;
+      // istanbul ignore next
       continue;
     }
     if (!isHidden && !isDisabled)

@@ -6,13 +6,12 @@
  * @module PropertyEditors
  */
 
+import "./EditorContainer.scss";
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
 import { PropertyRecord, PropertyValue } from "@bentley/ui-abstract";
-import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-
-import "./EditorContainer.scss";
 import { CommonProps } from "@bentley/ui-core";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** Arguments for the Property Updated event callback
  * @beta
@@ -105,15 +104,17 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     this._propertyEditor = PropertyEditorManager.createEditor(propDescription.typename, editorName, propDescription.dataController);
     editorNode = this._propertyEditor.reactNode;
 
+    let clonedNode: React.ReactNode = null;
     // istanbul ignore else
     if (React.isValidElement(editorNode)) {
-      return React.cloneElement(editorNode, editorProps);
+      clonedNode = React.cloneElement(editorNode, editorProps);
     }
 
-    return null;
+    return clonedNode;
   }
 
   private _handleEditorBlur = (_e: React.FocusEvent) => {
+    // istanbul ignore else
     if (!this.props.ignoreEditorBlur)
       this._commit();   // tslint:disable-line: no-floating-promises
   }
@@ -149,12 +150,14 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
   }
 
   private onPressEscape(e: React.KeyboardEvent): void {
+    // istanbul ignore next
     if (this._editorRef && this._editorRef === document.activeElement)
       e.stopPropagation();
     this._commitCancel();
   }
 
   private onPressEnter(e: React.KeyboardEvent): void {
+    // istanbul ignore next
     if (this._editorRef && this._editorRef === document.activeElement)
       e.stopPropagation();
     this._commit();   // tslint:disable-line: no-floating-promises

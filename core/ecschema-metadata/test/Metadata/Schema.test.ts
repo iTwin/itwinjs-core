@@ -4,21 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-
-import { SchemaContext } from "./../../src/Context";
-import { SchemaMatchType } from "./../../src/ECObjects";
-import { ECObjectsError } from "./../../src/Exception";
-import { ECClass, StructClass } from "./../../src/Metadata/Class";
-import { EntityClass } from "./../../src/Metadata/EntityClass";
-import { Mixin } from "./../../src/Metadata/Mixin";
-import { MutableSchema, Schema } from "./../../src/Metadata/Schema";
-import { SchemaKey } from "./../../src/SchemaKey";
+import { SchemaContext } from "../../src/Context";
+import { SchemaMatchType } from "../../src/ECObjects";
+import { ECObjectsError } from "../../src/Exception";
 import { AnySchemaItem } from "../../src/Interfaces";
-import { Enumeration } from "./../../src/Metadata/Enumeration";
-import { Format } from "./../../src/Metadata/Format";
-import { KindOfQuantity } from "./../../src/Metadata/KindOfQuantity";
-import { PropertyCategory } from "./../../src/Metadata/PropertyCategory";
-import { Unit } from "./../../src/Metadata/Unit";
+import { ECClass, StructClass } from "../../src/Metadata/Class";
+import { EntityClass } from "../../src/Metadata/EntityClass";
+import { Enumeration } from "../../src/Metadata/Enumeration";
+import { Format } from "../../src/Metadata/Format";
+import { KindOfQuantity } from "../../src/Metadata/KindOfQuantity";
+import { Mixin } from "../../src/Metadata/Mixin";
+import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
+import { MutableSchema, Schema } from "../../src/Metadata/Schema";
+import { Unit } from "../../src/Metadata/Unit";
+import { SchemaKey } from "../../src/SchemaKey";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
 describe("Schema", () => {
@@ -35,7 +34,7 @@ describe("Schema", () => {
       const context = new SchemaContext();
       expect(() => { new Schema(context, "NewSchemaWithInvalidReadVersion", "new", 123, 4, 5); }).to.throw(ECObjectsError);
       expect(() => { new Schema(context, "NewSchemaWithInvalidWriteVersion", "new", 12, 345, 6); }).to.throw(ECObjectsError);
-      expect(() => { new Schema(context, "NewSchemaWithInvalidMinorVersion", "new", 12, 34, 567); }).to.throw(ECObjectsError);
+      expect(() => { new Schema(context, "NewSchemaWithInvalidMinorVersion", "new", 12, 34, 56700000); }).to.throw(ECObjectsError);
     });
   });
 
@@ -1294,85 +1293,6 @@ describe("Schema", () => {
   }); // Schema tests
 
   describe("SchemaKey ", () => {
-    describe("matches", () => {
-      it("should correctly handle SchemaMatchType.Identical", () => {
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0))).true;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0))).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 2, 0, 0))).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 1))).false;
-
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.Identical)).true;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0), SchemaMatchType.Identical)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 2, 0, 0), SchemaMatchType.Identical)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 1), SchemaMatchType.Identical)).false;
-      });
-
-      it("should correctly handle SchemaMatchType.Exact", () => {
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.Exact)).true;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0), SchemaMatchType.Exact)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 2, 0, 0), SchemaMatchType.Exact)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 1), SchemaMatchType.Exact)).false;
-      });
-
-      it("should correctly handle SchemaMatchType.Latest", () => {
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.Latest)).true;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0), SchemaMatchType.Latest)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 2, 0, 0), SchemaMatchType.Latest)).true;
-        expect(new SchemaKey("SchemaTest", 1, 0, 1).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.Latest)).true;
-      });
-
-      it("should correctly handle SchemaMatchType.LatestWriteCompatible", () => {
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.LatestWriteCompatible)).true;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0), SchemaMatchType.LatestWriteCompatible)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 2, 0, 0), SchemaMatchType.LatestWriteCompatible)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 1).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.LatestWriteCompatible)).true;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 1), SchemaMatchType.LatestWriteCompatible)).false;
-      });
-
-      it("should correctly handle SchemaMatchType.LatestReadCompatible", () => {
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.LatestReadCompatible)).true;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaNotTest", 1, 0, 0), SchemaMatchType.LatestReadCompatible)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 2, 0, 0), SchemaMatchType.LatestReadCompatible)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 1, 0), SchemaMatchType.LatestReadCompatible)).false;
-        expect(new SchemaKey("SchemaTest", 1, 0, 1).matches(new SchemaKey("SchemaTest", 1, 0, 0), SchemaMatchType.LatestReadCompatible)).true;
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 1, 1), SchemaMatchType.LatestReadCompatible)).false;
-      });
-
-      it("should correctly handle invalid SchemaMatchType", () => {
-        expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), -1)).false;
-      });
-    });
-
-    describe("parseString", () => {
-      it("should throw for invalid string", () => {
-        expect(() => SchemaKey.parseString("invalid")).to.throw(ECObjectsError);
-      });
-
-      it("should correctly parse a valid schema full name", () => {
-        const key = SchemaKey.parseString("SchemaName.1.2.3");
-        expect(key.name).to.equal("SchemaName");
-        expect(key.readVersion).to.equal(1);
-        expect(key.writeVersion).to.equal(2);
-        expect(key.minorVersion).to.equal(3);
-      });
-    });
-
-    describe("compareByName", () => {
-      it("should compare against a string", () => {
-        const key = new SchemaKey("SchemaName", 1, 2, 3);
-        expect(key.compareByName("SchemaName")).to.be.true;
-        expect(key.compareByName("WrongSchemaName")).to.be.false;
-      });
-
-      it("should compare against another SchemaKey", () => {
-        const key = new SchemaKey("SchemaName", 1, 2, 3);
-        const matchingKey = new SchemaKey("SchemaName", 1, 2, 3);
-        const incompatibleKey = new SchemaKey("WrongSchemaName", 1, 2, 3);
-        expect(key.compareByName(matchingKey)).to.be.true;
-        expect(key.compareByName(incompatibleKey)).to.be.false;
-      });
-    });
-
     // Tests to ensure the schemaKey compareByVersion exists
     // and calls into ECVersion.compare.  See ECVersion.test.ts
     // for more comprehensive cases.

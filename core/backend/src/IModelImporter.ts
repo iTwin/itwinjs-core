@@ -6,7 +6,9 @@
  * @module iModels
  */
 import { Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { AxisAlignedBox3d, ElementAspectProps, ElementProps, GeometricElement3dProps, IModelError, ModelProps, Placement3d } from "@bentley/imodeljs-common";
+import {
+  AxisAlignedBox3d, ElementAspectProps, ElementProps, GeometricElement3dProps, IModelError, ModelProps, Placement3d,
+} from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { Element, GeometricElement3d } from "./Element";
 import { ElementAspect, ElementMultiAspect } from "./ElementAspect";
@@ -84,7 +86,7 @@ export class IModelImporter {
           changed = model.asAny[propertyName] !== (modelProps as any)[propertyName];
         }
       }
-    }, true);
+    });
     return changed;
   }
 
@@ -251,7 +253,7 @@ export class IModelImporter {
       if (!changed && (propertyName !== "element") && (aspect.asAny[propertyName] !== (aspectProps as any)[propertyName])) {
         changed = true;
       }
-    }, true);
+    });
     return changed;
   }
 
@@ -321,7 +323,7 @@ export class IModelImporter {
       if (!changed && (relationship.asAny[propertyName] !== (relationshipProps as any)[propertyName])) {
         changed = true;
       }
-    }, true);
+    });
     return changed;
   }
 

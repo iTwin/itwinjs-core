@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { using, IDisposable, DisposableList } from "../bentleyjs-core";
+import { DisposableList, IDisposable, using } from "../bentleyjs-core";
 import { isIDisposable } from "../Disposable";
 
 class CallbackDisposable implements IDisposable {

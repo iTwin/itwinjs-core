@@ -6,17 +6,10 @@
  * @module Tile
  */
 
-import {
-  assert,
-  ByteStream,
-} from "@bentley/bentleyjs-core";
+import { assert, ByteStream } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { ElementAlignedBox3d } from "../geometry/Placement";
-import {
-  nextPoint3d64FromByteStream,
-  TileFormat,
-  TileHeader,
-} from "./TileIO";
+import { nextPoint3d64FromByteStream, TileFormat, TileHeader } from "./TileIO";
 
 /** Flags describing the geometry contained within a tile in iMdl format.
  * @internal
@@ -38,7 +31,7 @@ export enum CurrentImdlVersion {
    * front-end is not capable of reading the tile content. Otherwise, this front-end can read the tile content even if the header specifies a
    * greater minor version than CurrentVersion.Minor, although some data may be skipped.
    */
-  Major = 9,
+  Major = 10,
   /** The unsigned 16-bit minor version number. If the major version in the tile header is equal to CurrentVersion.Major, then this package can
    * read the tile content even if the minor version in the tile header is greater than this value, although some data may be skipped.
    */

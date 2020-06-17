@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as os from "os";
 import * as process from "process";
-import { IModelHost } from "./IModelHost";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { IModelHost } from "./IModelHost";
 
 const loggerCategory: string = BackendLoggerCategory.DevTools;
 
@@ -129,7 +129,7 @@ export class DevTools {
     const cpus = new Array<os.CpuInfo>(srcCpus.length);
     let ii = 0;
     for (const srcCpu of srcCpus)
-      cpus[ii++] = Object.assign({}, srcCpu);
+      cpus[ii++] = { ...srcCpu };
 
     // Evaluate cpu usage as percentages
     for (const cpu of Object.values(cpus)) {
@@ -145,7 +145,7 @@ export class DevTools {
 
   private static evaluateMemoryUsage() {
     // Create a clone
-    const memUsage = Object.assign({}, process.memoryUsage()) as NodeJS.MemoryUsage;
+    const memUsage = { ...process.memoryUsage() } as NodeJS.MemoryUsage;
     const memUsageObj = (memUsage as any) as StringIndexedObject<number>;
     // Evaluate memory usage as mega bytes
     for (const type of Object.keys(memUsageObj)) {

@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { mount } from "enzyme";
-import sinon from "sinon";
 import * as React from "react";
-import { Orientation, ElementSeparator } from "@bentley/ui-core";
-import TestUtils from "../../TestUtils";
+import sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { ElementSeparator, Orientation } from "@bentley/ui-core";
 import { PropertyView } from "../../../ui-components";
+import TestUtils from "../../TestUtils";
 
 describe("PropertyView", () => {
   let propertyRecord: PropertyRecord;
@@ -18,6 +18,166 @@ describe("PropertyView", () => {
     propertyRecord = TestUtils.createPrimitiveStringProperty("Label", "Model");
 
     await TestUtils.initializeUiComponents();
+  });
+
+  describe("Minimum column size disabled grid-template-columns", () => {
+    it("renders label and value with custom ratio when it's provided", () => {
+      const propertyRenderer = mount(
+        <PropertyView
+          orientation={Orientation.Horizontal}
+          propertyRecord={propertyRecord}
+          labelElement={"City"}
+          columnRatio={0.6}
+          columnInfo={{ isMinimumColumnSizeEnabled: false, minLabelWidth: 30, minValueWidth: 45, actionButtonWidth: 60 }}
+        />);
+
+      expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "60% auto");
+    });
+
+    it("renders two columns when onColumnRatioChanged callback is not provided", () => {
+      const propertyRenderer = mount(
+        <PropertyView
+          orientation={Orientation.Horizontal}
+          propertyRecord={propertyRecord}
+          labelElement={"label"}
+          columnInfo={{ isMinimumColumnSizeEnabled: false, minLabelWidth: 30, minValueWidth: 45, actionButtonWidth: 60 }}
+        />);
+
+      expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% auto");
+    });
+
+    it("renders three columns when orientation is horizontal and onColumnRatioChanged is provided", () => {
+      const propertyRenderer = mount(
+        <PropertyView
+          orientation={Orientation.Horizontal}
+          propertyRecord={propertyRecord}
+          labelElement={"label"}
+          onColumnRatioChanged={() => ({ ratio: 0.5 })}
+          columnInfo={{ isMinimumColumnSizeEnabled: false, minLabelWidth: 30, minValueWidth: 45, actionButtonWidth: 60 }}
+        />);
+
+      expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% 1px auto");
+    });
+
+    it("renders four columns if orientation is horizontal and action button renderers are passed", async () => {
+      const propertyRenderer = mount(
+        <PropertyView
+          orientation={Orientation.Horizontal}
+          propertyRecord={propertyRecord}
+          labelElement={"label"}
+          onColumnRatioChanged={() => ({ ratio: 0.5 })}
+          actionButtonRenderers={[(_) => undefined]}
+          columnInfo={{ isMinimumColumnSizeEnabled: false, minLabelWidth: 30, minValueWidth: 45, actionButtonWidth: 60 }}
+        />);
+
+      expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% 1px auto auto");
+    });
+
+    it("renders four columns if orientation is horizontal, action button renderers are passed and columnInfo is not passed", async () => {
+      const propertyRenderer = mount(
+        <PropertyView
+          orientation={Orientation.Horizontal}
+          propertyRecord={propertyRecord}
+          labelElement={"label"}
+          onColumnRatioChanged={() => ({ ratio: 0.5 })}
+          actionButtonRenderers={[(_) => undefined]}
+        />);
+
+      expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% 1px auto auto");
+    });
+  });
+
+  describe("Minimum column size enabled grid-template-columns", () => {
+    it("renders label and value with custom ratio when it's provided", () => {
+      const propertyRenderer = mount(
+        <PropertyView
+          orientation={Orientation.Horizontal}
+          propertyRecord={propertyRecord}
+          labelElement={"City"}
+          columnRatio={0.6}
+          columnInfo={{ isMinimumColumnSizeEnabled: true, minLabelWidth: 20, minValueWidth: 40, actionButtonWidth: 50 }}
+        />);
+
+      expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "minmax(20px, 60%) minmax(40px, 1fr)");
+    });
+
+    it("renders two min width columns when onColumnRatioChanged callback is not provided", () => {
+      const propertyRenderer = mount(
+        <PropertyView
+          orientation={Orientation.Horizontal}
+          propertyRecord={propertyRecord}
+          labelElement={"label"}
+          columnInfo={{ isMinimumColumnSizeEnabled: true, minLabelWidth: 10, minValueWidth: 10, actionButtonWidth: 20 }}
+        />);
+
+      expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "minmax(10px, 25%) minmax(10px, 1fr)");
+    });
+
+    it("renders three min width columns when orientation is horizontal and onColumnRatioChanged is provided", () => {
+      const propertyRenderer = mount(
+        <PropertyView
+          orientation={Orientation.Horizontal}
+          propertyRecord={propertyRecord}
+          labelElement={"label"}
+          onColumnRatioChanged={() => ({ ratio: 0.5 })}
+          columnInfo={{ isMinimumColumnSizeEnabled: true, minLabelWidth: 30, minValueWidth: 45, actionButtonWidth: 60 }}
+        />);
+
+      expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "minmax(30px, 25%) 1px minmax(45px, 1fr)");
+    });
+
+    it("renders four min width columns if orientation is horizontal and action button renderers are passed", async () => {
+      const propertyRenderer = mount(
+        <PropertyView
+          orientation={Orientation.Horizontal}
+          propertyRecord={propertyRecord}
+          labelElement={"label"}
+          onColumnRatioChanged={() => ({ ratio: 0.5 })}
+          actionButtonRenderers={[(_) => undefined]}
+          columnInfo={{ isMinimumColumnSizeEnabled: true, minLabelWidth: 30, minValueWidth: 45, actionButtonWidth: 60 }}
+        />);
+
+      expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "minmax(30px, 25%) 1px minmax(45px, 1fr) 60px");
+    });
+  });
+
+  it("renders single column if orientation is vertical and action button renderers are not provided", () => {
+    const propertyRenderer = mount(
+      <PropertyView
+        orientation={Orientation.Vertical}
+        propertyRecord={propertyRecord}
+        labelElement={"label"}
+        onColumnRatioChanged={() => ({ ratio: 0.5 })}
+      />);
+
+    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "auto");
+  });
+
+  it("renders two columns if orientation is vertical and action button renderers are provided", () => {
+    const propertyRenderer = mount(
+      <PropertyView
+        orientation={Orientation.Vertical}
+        propertyRecord={propertyRecord}
+        labelElement={"label"}
+        onColumnRatioChanged={() => ({ ratio: 0.5 })}
+        actionButtonRenderers={[(_) => undefined]}
+      />);
+
+    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "auto auto");
+  });
+
+  it("renders two auto columns if orientation is vertical, action button renderers are provided and columnInfo is provided", () => {
+    const propertyRenderer = mount(
+      <PropertyView
+        orientation={Orientation.Vertical}
+        propertyRecord={propertyRecord}
+        labelElement={"label"}
+        onColumnRatioChanged={() => ({ ratio: 0.5 })}
+        actionButtonRenderers={[(_) => undefined]}
+        columnInfo={{ isMinimumColumnSizeEnabled: true, minLabelWidth: 30, minValueWidth: 45, actionButtonWidth: 60 }}
+      />);
+
+    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "auto auto");
   });
 
   it("renders label and value", () => {
@@ -33,33 +193,20 @@ describe("PropertyView", () => {
     expect(propertyRenderer.find(".components-property-record-value").first().text()).to.be.eq("Vilnius");
   });
 
-  it("renders label and value with custom ratio when it's provided", () => {
-    const propertyRenderer = mount(
-      <PropertyView
-        orientation={Orientation.Horizontal}
-        propertyRecord={propertyRecord}
-        labelElement={"City"}
-        columnRatio={0.6}
-      />);
-
-    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "60% auto");
-  });
-
-  it("renders ElementSeparator when orientation is horizontal", () => {
+  it("renders ElementSeparator when orientation is horizontal and onColumnRatioChanged is provided", () => {
     const propertyRenderer = mount(
       <PropertyView
         orientation={Orientation.Horizontal}
         propertyRecord={propertyRecord}
         labelElement={"label"}
-        onColumnRatioChanged={() => { }}
+        onColumnRatioChanged={() => ({ ratio: 0.5 })}
       />);
 
     expect(propertyRenderer.childAt(0).hasClass("components-property-record--horizontal"), "class not found").to.be.true;
     expect(propertyRenderer.find(ElementSeparator).first().exists(), "ElementSeparator not found").to.be.true;
-    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% 1px auto");
   });
 
-  it("does not render ElementSeparator when onColumnRatioChanged callback is not provided", () => {
+  it("does not render ElementSeparator when onColumnRatioChanged is not provided", () => {
     const propertyRenderer = mount(
       <PropertyView
         orientation={Orientation.Horizontal}
@@ -68,7 +215,6 @@ describe("PropertyView", () => {
       />);
 
     expect(propertyRenderer.find(ElementSeparator).first().exists(), "ElementSeparator found").to.be.false;
-    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% auto");
   });
 
   it("does not render ElementSeparator when orientation is vertical", () => {
@@ -81,7 +227,6 @@ describe("PropertyView", () => {
 
     expect(propertyRenderer.childAt(0).hasClass("components-property-record--vertical"), "class not found").to.be.true;
     expect(propertyRenderer.find(ElementSeparator).first().exists(), "ElementSeparator found").to.be.false;
-    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "auto");
   });
 
   it("triggers selection if property gets clicked once", () => {
@@ -203,11 +348,10 @@ describe("PropertyView", () => {
         orientation={Orientation.Horizontal}
         propertyRecord={propertyRecord}
         labelElement={"label"}
-        onColumnRatioChanged={() => { }}
+        onColumnRatioChanged={() => ({ ratio: 0.5 })}
         actionButtonRenderers={[(_) => undefined]}
       />);
     expect(propertyRenderer.find(".components-property-action-button-list--horizontal").first().exists()).to.be.true;
-    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% 1px auto auto");
   });
 
   it("renders action button list if orientation is vertical and action button renderers are passed", () => {
@@ -216,11 +360,10 @@ describe("PropertyView", () => {
         orientation={Orientation.Vertical}
         propertyRecord={propertyRecord}
         labelElement={"label"}
-        onColumnRatioChanged={() => { }}
+        onColumnRatioChanged={() => ({ ratio: 0.5 })}
         actionButtonRenderers={[(_) => undefined]}
       />);
     expect(propertyRenderer.find(".components-property-action-button-list--vertical").first().exists()).to.be.true;
-    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "auto auto");
   });
 
   it("renders only label when property record is non primitive", () => {

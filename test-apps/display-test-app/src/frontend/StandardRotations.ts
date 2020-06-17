@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
-import { ToolBarDropDown, createToolButton } from "./ToolBar";
+import { createToolButton, ToolBarDropDown } from "./ToolBar";
 
 const entries = [
   "\ue916", // top

@@ -3,17 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as moq from "typemoq";
-import * as sinon from "sinon";
 import * as inspire from "inspire-tree";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { using } from "@bentley/bentleyjs-core";
-import { CheckBoxState, CheckBoxInfo } from "@bentley/ui-core";
+import { CheckBoxInfo, CheckBoxState } from "@bentley/ui-core";
 import { PageOptions } from "../../../../ui-components/common/PageOptions";
 import {
-  BeInspireTree, BeInspireTreeNodes, BeInspireTreeNode,
-  BeInspireTreeDataProviderMethod, BeInspireTreeNodeConfig,
-  MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeDataProviderInterface,
-  BeInspireTreeDataProvider, toNode, BeInspireTreeDataProviderPromise,
+  BeInspireTree, BeInspireTreeDataProvider, BeInspireTreeDataProviderInterface, BeInspireTreeDataProviderMethod, BeInspireTreeDataProviderPromise,
+  BeInspireTreeEvent, BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback, toNode,
 } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
 
 // tslint:disable:deprecation
@@ -177,7 +175,7 @@ describe("BeInspireTree", () => {
   // run tests for every type of supported provider
   const providers = [
     { name: "with raw data provider", createProvider: (h: Node[]) => h, isDelayLoaded: false, supportsPagination: false },
-    { name: "with promise data provider", createProvider: async (h: Node[]) => Promise.resolve(h), isDelayLoaded: false, supportsPagination: false },
+    { name: "with promise data provider", createProvider: async (h: Node[]) => h, isDelayLoaded: false, supportsPagination: false },
     { name: "with method data provider", createProvider: (h: Node[]) => createDataProviderMethod(h), isDelayLoaded: true, supportsPagination: false },
     { name: "with interface data provider", createProvider: (h: Node[]) => createDataProviderInterface(h), isDelayLoaded: true, supportsPagination: true },
   ];

@@ -3,11 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  createRandomECInstanceKey, createRandomECInstancesNodeKey,
-  createRandomGroupingNodeKey, createRandomBaseNodeKey,
-} from "./_helpers/random";
-import { KeySet, getInstancesCount } from "../presentation-common";
+import { getInstancesCount, KeySet } from "../presentation-common";
+import { createRandomBaseNodeKey, createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomGroupingNodeKey } from "./_helpers/random";
 
 describe("getInstancesCount", () => {
 

@@ -7,9 +7,9 @@
  */
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { request, Response, RequestOptions } from "@bentley/itwin-client";
-import { Cartographic } from "@bentley/imodeljs-common";
 import { Angle } from "@bentley/geometry-core";
+import { Cartographic } from "@bentley/imodeljs-common";
+import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { GlobalLocation } from "./ViewGlobalLocation";
 
 /** @internal */

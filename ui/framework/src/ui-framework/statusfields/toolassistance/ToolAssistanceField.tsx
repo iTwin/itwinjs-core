@@ -6,52 +6,47 @@
  * @module Notification
  */
 
-import * as React from "react";
+import "./ToolAssistanceField.scss";
 import classnames from "classnames";
-
+import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  IModelApp,
-  ToolAssistanceInstructions, ToolAssistanceInstruction, ToolAssistanceSection, ToolAssistanceImage,
-  ToolAssistanceKeyboardInfo, ToolAssistanceInputMethod,
+  IModelApp, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceInstructions, ToolAssistanceKeyboardInfo,
+  ToolAssistanceSection,
 } from "@bentley/imodeljs-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
-  SvgSprite, FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings,
-  HorizontalTabs, UiCore, LabeledToggle, Icon, UiSettingsResult,
+  FillCentered, HorizontalTabs, Icon, LabeledToggle, LocalUiSettings, SvgSprite, UiCore, UiSetting, UiSettings, UiSettingsResult, UiSettingsStatus,
 } from "@bentley/ui-core";
 import {
-  ToolAssistance, ToolAssistanceDialog, FooterPopup,
-  ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, ToolAssistanceSeparator, ToolAssistanceItem, TitleBarButton,
+  FooterPopup, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, ToolAssistanceItem,
+  ToolAssistanceSeparator,
 } from "@bentley/ui-ninezone";
-
-import { StatusFieldProps } from "../StatusFieldProps";
 import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt";
-import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
 import { FrontstageManager, ToolIconChangedEventArgs } from "../../frontstage/FrontstageManager";
+import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
 import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";
-
-import "./ToolAssistanceField.scss";
+import { StatusFieldProps } from "../StatusFieldProps";
 import acceptPointIcon from "./accept-point.svg?sprite";
 import cursorClickIcon from "./cursor-click.svg?sprite";
-import clickLeftIcon from "./mouse-click-left.svg?sprite";
-import clickRightIcon from "./mouse-click-right.svg?sprite";
-import mouseWheelClickIcon from "./mouse-click-wheel.svg?sprite";
-import clickLeftDragIcon from "./mouse-click-left-drag.svg?sprite";
-import clickRightDragIcon from "./mouse-click-right-drag.svg?sprite";
-import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg?sprite";
-import oneTouchTapIcon from "./gesture-one-finger-tap.svg?sprite";
-import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg?sprite";
 import oneTouchDragIcon from "./gesture-one-finger-drag.svg?sprite";
-import twoTouchTapIcon from "./gesture-two-finger-tap.svg?sprite";
-import twoTouchDragIcon from "./gesture-two-finger-drag.svg?sprite";
+import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg?sprite";
+import oneTouchTapIcon from "./gesture-one-finger-tap.svg?sprite";
 import twoTouchPinchIcon from "./gesture-pinch.svg?sprite";
-import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
+import twoTouchDragIcon from "./gesture-two-finger-drag.svg?sprite";
+import twoTouchTapIcon from "./gesture-two-finger-tap.svg?sprite";
+import clickLeftDragIcon from "./mouse-click-left-drag.svg?sprite";
+import clickLeftIcon from "./mouse-click-left.svg?sprite";
+import clickRightDragIcon from "./mouse-click-right-drag.svg?sprite";
+import clickRightIcon from "./mouse-click-right.svg?sprite";
+import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg?sprite";
+import mouseWheelClickIcon from "./mouse-click-wheel.svg?sprite";
 import touchCursorDragIcon from "./touch-cursor-pan.svg?sprite";
+import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
 
 /** Properties of [[ToolAssistanceField]] component.
- * @beta
+ * @public
  */
 export interface ToolAssistanceFieldProps extends StatusFieldProps {
   /** Indicates whether to include promptAtCursor Checkbox. Defaults to true. */
@@ -87,12 +82,14 @@ interface ToolAssistanceFieldState {
 }
 
 /** Tool Assistance Field React component.
- * @beta
+ * @public
  */
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
   private static _toolAssistanceKey = "ToolAssistance";
   private static _showPromptAtCursorKey = "showPromptAtCursor";
   private static _mouseTouchTabIndexKey = "mouseTouchTabIndex";
+  private _showPromptAtCursorSetting: UiSetting<boolean>;
+  private _mouseTouchTabIndexSetting: UiSetting<number>;
   private _target: HTMLElement | null = null;
   private _className: string;
   private _indicator = React.createRef<HTMLDivElement>();
@@ -130,6 +127,10 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     };
 
     this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
+    this._showPromptAtCursorSetting = new UiSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey,
+      () => this.state.showPromptAtCursor);
+    this._mouseTouchTabIndexSetting = new UiSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey,
+      () => this.state.mouseTouchTabIndex);
   }
 
   /** @internal */
@@ -152,9 +153,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     let getShowPromptAtCursor: Promise<UiSettingsResult> | undefined;
     // istanbul ignore else
     if (this.props.includePromptAtCursor) {
-      getShowPromptAtCursor = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey);
+      getShowPromptAtCursor = this._showPromptAtCursorSetting.getSetting(this.props.uiSettings);
     }
-    const getMouseTouchTabIndex = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey);
+    const getMouseTouchTabIndex = this._mouseTouchTabIndexSetting.getSetting(this.props.uiSettings);
     const [showPromptAtCursorResult, mouseTouchTabIndexResult] = await Promise.all([
       getShowPromptAtCursor,
       getMouseTouchTabIndex,
@@ -266,15 +267,15 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
         mouseTouchTabIndex: index,
         showMouseInstructions,
         showTouchInstructions,
+      }, async () => {
+        await this._mouseTouchTabIndexSetting.saveSetting(this.props.uiSettings);
       });
-    await this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey, index);
   }
 
   /** @internal */
   public render(): React.ReactNode {
     const { instructions } = this.state;
-
-    const dialogTitle = (IModelApp.toolAdmin.activeTool) ? IModelApp.toolAdmin.activeTool.flyover : UiFramework.translate("toolAssistance.title");
+    const dialogTitle = (IModelApp.toolAdmin.activeTool) ? /* istanbul ignore next */ IModelApp.toolAdmin.activeTool.flyover : UiFramework.translate("toolAssistance.title");
     const mouseLabel = UiFramework.translate("toolAssistance.mouse");
     const touchLabel = UiFramework.translate("toolAssistance.touch");
     let prompt = "";
@@ -406,9 +407,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private _onPromptAtCursorChange = async (checked: boolean) => {
     // istanbul ignore else
     if (this._isMounted)
-      this.setState({ showPromptAtCursor: checked });
-
-    await this.props.uiSettings.saveSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey, checked);
+      this.setState({
+        showPromptAtCursor: checked,
+      }, async () => {
+        await this._showPromptAtCursorSetting.saveSetting(this.props.uiSettings);
+      });
   }
 
   private _handleClose = () => {
@@ -419,6 +422,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     if (this.state.isPinned)
       return;
 
+    // istanbul ignore if
     if (!this._indicator.current ||
       !(e.target instanceof Node) ||
       this._indicator.current.contains(e.target))
@@ -556,13 +560,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           break;
         case ToolAssistanceImage.TouchCursorDrag:
           svgImage = touchCursorDragIcon;
-          className = mediumSize ? "uifw-toolassistance-svg-medium-wide" : "uifw-toolassistance-svg-wide";
+          className = mediumSize ? /* istanbul ignore next */ "uifw-toolassistance-svg-medium-wide" : "uifw-toolassistance-svg-wide";
           break;
       }
 
       image = (
         <div className={className}>
           {svgImage &&
+            // istanbul ignore next
             <SvgSprite src={svgImage} />
           }
         </div>

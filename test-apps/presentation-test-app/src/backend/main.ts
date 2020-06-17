@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { app as electron } from "electron";
-import { Logger, Config } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { RpcInterfaceDefinition, RpcConfiguration } from "@bentley/imodeljs-common";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import rpcs from "../common/Rpcs";
 import "./SampleRpcImpl"; // just to get the RPC implementation registered
-
+import { app as electron } from "electron";
+import * as path from "path";
+import { Config, Logger } from "@bentley/bentleyjs-core";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { IModelHost } from "@bentley/imodeljs-backend";
+import { RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
 import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
+import rpcs from "../common/Rpcs";
+
 // __PUBLISH_EXTRACT_END__
 
 (async () => { // tslint:disable-line:no-floating-promises

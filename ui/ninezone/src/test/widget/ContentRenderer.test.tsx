@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, renderHook } from "@testing-library/react-hooks";
-import { useTransientState, WidgetContentManagerContext, WidgetContentManagerContextArgs, TabState, TabIdContext } from "../../ui-ninezone";
+import { TabIdContext, TabState, useTransientState, WidgetContentManagerContext, WidgetContentManagerContextArgs } from "../../ui-ninezone";
 import { EventEmitter } from "../../ui-ninezone/base/Event";
 
 describe("useTransientState", () => {

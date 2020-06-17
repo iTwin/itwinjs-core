@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import { AxisOrder } from "../../Geometry";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Checker } from "../Checker";
 import { Sample } from "../../serialization/GeometrySamples";
-import { expect } from "chai";
-import { AxisOrder } from "../../Geometry";
+import { Checker } from "../Checker";
+
 /* tslint:disable:no-console */
 
 describe("Transform", () => {

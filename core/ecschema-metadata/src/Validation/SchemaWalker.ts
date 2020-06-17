@@ -6,9 +6,9 @@
 import { SchemaItemType } from "../ECObjects";
 import { ECClass } from "../Metadata/Class";
 import { RelationshipClass } from "../Metadata/RelationshipClass";
+import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate";
-import { Schema } from "./../Metadata/Schema";
 
 /**
  * The purpose of this class is to traverse a given schema, allowing clients to hook into

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { Point3d, XYZProps } from "@bentley/geometry-core";
 import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@bentley/imodeljs-common";
 import { GeoConverter, IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { expect } from "chai";
 
 // spell-checker: disable
 

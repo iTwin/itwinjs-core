@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { renderHook, act } from "@testing-library/react-hooks";
+import { act, renderHook } from "@testing-library/react-hooks";
 import { PointerCaptor, usePointerCaptor } from "../../ui-ninezone";
 
 describe("<PointerCaptor />", () => {

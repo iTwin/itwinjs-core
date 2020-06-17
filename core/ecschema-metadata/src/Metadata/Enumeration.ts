@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { EnumerationProps, EnumeratorProps } from "../Deserialization/JsonProps";
+import { PrimitiveType, primitiveTypeToString, SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECName } from "../SchemaKey";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { EnumerationProps, EnumeratorProps } from "./../Deserialization/JsonProps";
-import { PrimitiveType, SchemaItemType, primitiveTypeToString } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { ECName } from "./../SchemaKey";
 
 /** @beta */
 export interface Enumerator<T> {
@@ -176,9 +176,18 @@ export class Enumeration extends SchemaItem {
   public async fromJSON(enumerationProps: EnumerationProps) {
     this.fromJSONSync(enumerationProps);
   }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setIsStrict(isStrict: boolean) {
+    this._isStrict = isStrict;
+  }
+
 }
 
 /** @internal */
 export abstract class MutableEnumeration extends Enumeration {
   public abstract addEnumerator(enumerator: AnyEnumerator): void;
+  public abstract setIsStrict(isStrict: boolean): void;
 }

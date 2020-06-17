@@ -14,15 +14,14 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { TileReadBuffer } from "./TileReadBuffer";
-
+import { ALong } from "../../../system/runtime/ALong";
+import { ContentLoader } from "../../../system/storage/ContentLoader";
 import { AttributeValue } from "../../model/AttributeValue";
 import { CloudPoint } from "../../model/CloudPoint";
 import { PointAttribute } from "../../model/PointAttribute";
 import { ReadRequest } from "../../model/ReadRequest";
 import { TileIndex } from "../../model/TileIndex";
-import { ALong } from "../../../system/runtime/ALong";
-import { ContentLoader } from "../../../system/storage/ContentLoader";
+import { TileReadBuffer } from "./TileReadBuffer";
 
 /**
  * Class AttributeReader reads attribute data.

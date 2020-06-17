@@ -6,24 +6,24 @@
 import { DelayedPromise } from "./DelayedPromise";
 import { ECClass, StructClass } from "./Metadata/Class";
 import { Constant } from "./Metadata/Constant";
+import { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
 import { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
 import { EntityClass } from "./Metadata/EntityClass";
-import { Enumeration, AnyEnumerator } from "./Metadata/Enumeration";
+import { AnyEnumerator, Enumeration } from "./Metadata/Enumeration";
+import { Format } from "./Metadata/Format";
 import { InvertedUnit } from "./Metadata/InvertedUnit";
 import { KindOfQuantity } from "./Metadata/KindOfQuantity";
 import { Mixin } from "./Metadata/Mixin";
+import { OverrideFormat } from "./Metadata/OverrideFormat";
 import { Phenomenon } from "./Metadata/Phenomenon";
+import { AnyProperty } from "./Metadata/Property";
 import { PropertyCategory } from "./Metadata/PropertyCategory";
 import { RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass";
 import { Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { Unit } from "./Metadata/Unit";
 import { UnitSystem } from "./Metadata/UnitSystem";
-import { Format } from "./Metadata/Format";
-import { SchemaKey, SchemaItemKey } from "./SchemaKey";
-import { AnyProperty } from "./Metadata/Property";
-import { CustomAttributeContainerProps, CustomAttribute } from "./Metadata/CustomAttribute";
-import { OverrideFormat } from "./Metadata/OverrideFormat";
+import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
 /** @beta */
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema> & Promise<Schema>;

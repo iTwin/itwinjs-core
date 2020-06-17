@@ -33,7 +33,11 @@
     ],
     "max-classes-per-file": false,
     "ordered-imports": [
-      false
+      true,
+      {
+        "import-sources-order": "any",
+        "named-imports-order": "case-insensitive"
+      }
     ],
     "interface-name": [
       false

@@ -2,18 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-
-import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-
-import { LoadingSpinner, FillCentered } from "@bentley/ui-core";
-import { ViewportComponent } from "@bentley/ui-components";
-import { ModelessDialog, ModelessDialogManager, ViewSelector, ViewSelectorChangedEventArgs } from "@bentley/ui-framework";
-
-import { ExternalIModel } from "../ExternalIModel";
-
 import "./ViewportDialog.scss";
+import * as React from "react";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ViewportComponent } from "@bentley/ui-components";
+import { FillCentered, LoadingSpinner } from "@bentley/ui-core";
+import { ModelessDialog, ModelessDialogManager, ViewSelector, ViewSelectorChangedEventArgs } from "@bentley/ui-framework";
+import { ExternalIModel } from "../ExternalIModel";
 
 export interface ViewportDialogProps {
   opened: boolean;

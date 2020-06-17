@@ -5,15 +5,15 @@
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
 import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
 
 export class NavigationTreeWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
     if (options && options.iModelConnection && options.rulesetId)
-      this.reactNode = <NavigationTreeWidget iModelConnection={options.iModelConnection} rulesetId={options.rulesetId} />;
+      this.reactNode = <NavigationTreeWidget iModelConnection={options.iModelConnection} />;
     else
       this.reactNode = <NavigationTreeWidget />;
   }
@@ -25,10 +25,6 @@ interface NavigationTreeWidgetProps {
 }
 
 class NavigationTreeWidget extends React.Component<NavigationTreeWidgetProps> {
-  constructor(props?: any, context?: any) {
-    super(props, context);
-  }
-
   private renderVariousControls() {
     return (
       <div>

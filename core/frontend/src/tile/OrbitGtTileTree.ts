@@ -6,83 +6,34 @@
  * @module TileTreeSupplier
  */
 
-import { IModelConnection } from "../IModelConnection";
+import { BeTimePoint, compareStrings, Id64String } from "@bentley/bentleyjs-core";
+import { Point3d, Range3d, Transform, TransformProps, Vector3d } from "@bentley/geometry-core";
 import {
-  compareStrings,
-  Id64String,
-  BeTimePoint,
-} from "@bentley/bentleyjs-core";
-import {
-  Range3d,
-  Transform,
-  TransformProps,
-  Point3d,
-  Vector3d,
-} from "@bentley/geometry-core";
-import {
-  createClassifierTileTreeReference,
-  SpatialClassifierTileTreeReference,
-  Tile,
-  TileLoadPriority,
-  TileRequest,
-  TileTree,
-  TileTreeOwner,
-  TileTreeReference,
-  TileTreeSet,
-  TileTreeSupplier,
-  TileParams,
-  TileContent,
-  TileTreeParams,
-  TileDrawArgs,
-} from "./internal";
-import { SpatialClassifiers } from "../SpatialClassifiers";
-import { SceneContext } from "../ViewContext";
-import { RenderMemory } from "../render/RenderMemory";
-import { RenderSystem } from "../render/RenderSystem";
-import {
-  BatchType,
-  ColorDef,
-  Feature,
-  FeatureTable,
-  Frustum,
-  FrustumPlanes,
-  OrbitGtBlobProps,
-  PackedFeatureTable,
-  QParams3d,
-  Quantization,
+  BatchType, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, OrbitGtBlobProps, PackedFeatureTable, QParams3d, Quantization,
   ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import {
-  ALong,
-  Downloader,
-  DownloaderXhr,
-  PageCachedFile,
-  UrlFS,
-  OrbitGtAList,
-  OPCReader,
-  CRSManager,
-  OnlineEngine,
-  OrbitGtCoordinate,
-  OrbitGtTransform,
-  OrbitGtBounds,
-  OrbitGtIViewRequest,
-  OrbitGtDataManager,
-  OrbitGtLevel,
-  OrbitGtBlockIndex,
-  OrbitGtTileIndex,
-  OrbitGtFrameData,
-  OrbitGtTileLoadSorter,
-  OrbitGtIProjectToViewForSort,
-  PointDataRaw,
+  ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtAList, OrbitGtBlockIndex, OrbitGtBounds, OrbitGtCoordinate,
+  OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
+  OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@bentley/orbitgt-core";
-import { PointCloudArgs, Mesh } from "../render-primitives";
-import { IModelApp } from "../IModelApp";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { ViewingSpace } from "../ViewingSpace";
 import { DisplayStyleState } from "../DisplayStyleState";
-import { Viewport } from "../Viewport";
-import { TileUsageMarker } from "./TileUsageMarker";
 import { HitDetail } from "../HitDetail";
+import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { Mesh, PointCloudArgs } from "../render-primitives";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { RenderMemory } from "../render/RenderMemory";
+import { RenderSystem } from "../render/RenderSystem";
+import { SpatialClassifiers } from "../SpatialClassifiers";
+import { SceneContext } from "../ViewContext";
+import { ViewingSpace } from "../ViewingSpace";
+import { Viewport } from "../Viewport";
+import {
+  createClassifierTileTreeReference, SpatialClassifierTileTreeReference, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
+  TileTree, TileTreeOwner, TileTreeParams, TileTreeReference, TileTreeSet, TileTreeSupplier,
+} from "./internal";
+import { TileUsageMarker } from "./TileUsageMarker";
 
 const scratchRange = Range3d.create();
 const scratchWorldFrustum = new Frustum();
@@ -369,7 +320,7 @@ export class OrbitGtTileTree extends TileTree {
 
     args.drawGraphics();
     if (frameData.hasMissingData()) {
-      this._dataManager.loadData(frameData).then(() => IModelApp.viewManager.onNewTilesReady()).catch((_err: any) => undefined);
+      this._dataManager.loadData(frameData).then(() => IModelApp.tileAdmin.onTileLoad.raiseEvent(this.rootTile)).catch((_err: any) => undefined);
     }
   }
 }

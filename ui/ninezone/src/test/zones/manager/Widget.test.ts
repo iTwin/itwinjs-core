@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DraggedWidgetManager, DraggedWidgetManagerProps } from "../../../ui-ninezone/zones/manager/Widget";
 import { PointProps } from "@bentley/ui-core";
+import { DraggedWidgetManager, DraggedWidgetManagerProps } from "../../../ui-ninezone/zones/manager/Widget";
 
 const props: DraggedWidgetManagerProps = {
   id: 6,

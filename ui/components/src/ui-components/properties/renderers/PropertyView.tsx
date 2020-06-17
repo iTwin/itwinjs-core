@@ -6,12 +6,13 @@
  * @module Properties
  */
 
-import * as React from "react";
-import { Orientation, ElementSeparator } from "@bentley/ui-core";
-import { SharedRendererProps } from "./PropertyRenderer";
-import { PropertyValueFormat } from "@bentley/ui-abstract";
-import { ActionButtonList } from "./ActionButtonList";
 import "./PropertyView.scss";
+import * as React from "react";
+import { PropertyValueFormat } from "@bentley/ui-abstract";
+import { ElementSeparator, Orientation } from "@bentley/ui-core";
+import { ActionButtonList } from "./ActionButtonList";
+import { SharedRendererProps } from "./PropertyRenderer";
+import { PropertyGridColumnStyleProvider } from "./PropertyGridColumns";
 
 /** Properties of [[PropertyView]] React component
  * @public
@@ -78,26 +79,17 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
     return propertyRecordClassName;
   }
 
-  private getStyle(props: PropertyViewProps, ratio: number): React.CSSProperties {
-    let gridTemplateColumns;
-    if (props.orientation === Orientation.Horizontal)
-      gridTemplateColumns = `${ratio * 100}%` + (props.onColumnRatioChanged ? " 1px" : "") + " auto";
-    else // Orientation.Vertical
-      gridTemplateColumns = "auto";
-
-    if (props.actionButtonRenderers)
-      gridTemplateColumns += " auto"; // add another column for action buttons
-
-    return { gridTemplateColumns };
-  }
-
   /** @internal */
   public render() {
     const ratio = this.props.columnRatio ? this.props.columnRatio : 0.25;
+    // tslint:disable-next-line: deprecation
+    const needElementSeparator = this.props.orientation === Orientation.Horizontal && !!this.props.onColumnRatioChanged;
+    const needActionButtons = !!this.props.actionButtonRenderers;
+    const columnsStyleProvider = new PropertyGridColumnStyleProvider(this.props.columnInfo);
 
     return (
       <div
-        style={this.getStyle(this.props, ratio)}
+        style={columnsStyleProvider.getStyle(this.props.orientation, needActionButtons, ratio, needElementSeparator)}
         className={this.getClassName(this.props)}
         onClick={this._onClick}
         onContextMenu={this._onContextMenu}
@@ -105,13 +97,17 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
         onMouseLeave={this._onMouseLeave}
       >
         <div className="components-property-record-label">{this.props.labelElement}</div>
-        {this.props.orientation === Orientation.Horizontal && this.props.onColumnRatioChanged
-          ?
-          <ElementSeparator
+        {needElementSeparator
+          ? <ElementSeparator
             movableArea={this.props.width}
+            // tslint:disable-next-line: deprecation
             onRatioChanged={this.props.onColumnRatioChanged}
             ratio={ratio}
             orientation={this.props.orientation}
+            isResizeHandleHovered={this.props.isResizeHandleHovered}
+            onResizeHandleHoverChanged={this.props.onResizeHandleHoverChanged}
+            isResizeHandleBeingDragged={this.props.isResizeHandleBeingDragged}
+            onResizeHandleDragChanged={this.props.onResizeHandleDragChanged}
           />
           : undefined}
         {this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive

@@ -11,6 +11,7 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
+
 /* TODO: define File Mode Constants: S_IWUSR, et al. */
 /** Information about a file. See [[IModelJsFs.lstatSync]]
  * @public

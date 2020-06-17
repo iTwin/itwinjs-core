@@ -7,18 +7,17 @@
  */
 
 import * as path from "path";
+import * as categoryMod from "./Category";
 import { ClassRegistry } from "./ClassRegistry";
-import { KnownLocations } from "./IModelHost";
-import { Schema, Schemas } from "./Schema";
-
 import * as elementMod from "./Element";
 import * as aspectMod from "./ElementAspect";
-import * as modelMod from "./Model";
-import * as categoryMod from "./Category";
-import * as viewMod from "./ViewDefinition";
-import * as linkMod from "./Relationship";
-import * as textureMod from "./Texture";
+import { KnownLocations } from "./IModelHost";
 import * as materialMod from "./Material";
+import * as modelMod from "./Model";
+import * as linkMod from "./Relationship";
+import { Schema, Schemas } from "./Schema";
+import * as textureMod from "./Texture";
+import * as viewMod from "./ViewDefinition";
 
 /**
  * The [BisCore]($docs/bis/intro/schemas-domains.md) schema is the lowest level Schema in an iModel.

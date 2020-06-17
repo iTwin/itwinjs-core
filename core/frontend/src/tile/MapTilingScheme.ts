@@ -6,21 +6,10 @@
  * @module Tiles
  */
 
-import {
-  Cartographic,
-} from "@bentley/imodeljs-common";
-import {
-  Angle,
-  Matrix3d,
-  Point2d,
-  Point3d,
-  Transform,
-  Vector3d,
-} from "@bentley/geometry-core";
+import { Angle, Matrix3d, Point2d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Cartographic } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import {
-  MapCartoRectangle,
-} from "./internal";
+import { MapCartoRectangle } from "./internal";
 
 /** @internal */
 export abstract class MapTilingScheme {

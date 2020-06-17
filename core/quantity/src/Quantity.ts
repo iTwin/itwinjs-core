@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { QuantityProps, UnitProps, UnitConversion } from "./Interfaces";
+import { QuantityProps, UnitConversion, UnitProps } from "./Interfaces";
 
 /** The Quantity class is convenient container to specify both the magnitude and unit of a quantity. This class is commonly
  * returned as the result of parsing a string that represents a quantity.

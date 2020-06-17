@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Checker } from "../Checker";
 import { expect } from "chai";
-import { ClipPrimitive, ClipMaskXYZRangePlanes, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipPlane } from "../../clipping/ClipPlane";
+import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipShape } from "../../clipping/ClipPrimitive";
+import { ClipUtilities } from "../../clipping/ClipUtils";
+import { ClipVector } from "../../clipping/ClipVector";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
+import { Angle } from "../../geometry3d/Angle";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { ClipUtilities } from "../../clipping/ClipUtils";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { Triangulator } from "../../topology/Triangulation";
-import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../../topology/Graph";
-import { ClipVector } from "../../clipping/ClipVector";
-import { Angle } from "../../geometry3d/Angle";
+import { Checker } from "../Checker";
 import { prettyPrint } from "../testFunctions";
 
 // tslint:disable:no-console
@@ -404,16 +404,25 @@ describe("ClipPrimitive", () => {
 
   it("Transformations", () => {
     const ck = new Checker();
-    const originalPoint = Point3d.create(5.7865, 1.24123, 0.000009);
-    const testPoint = originalPoint.clone();
+    let originalPoint = Point3d.create(5.7865, 1.24123, 0.000009);
+    let testPoint = originalPoint.clone();
+
     // Created with identity transform - should create no changes
-    const clipShape = ClipShape.createEmpty(false, false, Transform.createIdentity());
+    let clipShape = ClipShape.createEmpty(false, false, Transform.createIdentity());
     clipShape.performTransformFromClip(testPoint);
     ck.testPoint3d(originalPoint, testPoint, "Point should be unchanged when transformed with ClipShape containing identity transform");
     clipShape.performTransformToClip(testPoint);
     ck.testPoint3d(originalPoint, testPoint, "Point should be unchanged when transformed with ClipShape containing identity transform");
 
-    // TODO: Provide checks for correct application of an actual transform into a new coordinate system
+    // Created with translation - should translate
+    originalPoint = Point3d.create(2, 5, -7);
+    testPoint = originalPoint.clone();
+    const translation = new Point3d(0, -1, 1);
+    clipShape = ClipShape.createEmpty(false, false, Transform.createTranslation(translation));
+    clipShape.performTransformFromClip(testPoint);
+    ck.testPoint3d(testPoint, originalPoint.plus(translation), "Point should be translated when transformed with ClipShape containing translation transform");
+    clipShape.performTransformToClip(testPoint);
+    ck.testPoint3d(testPoint, originalPoint, "Point should be translated when transformed with ClipShape containing translation transform");
 
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);

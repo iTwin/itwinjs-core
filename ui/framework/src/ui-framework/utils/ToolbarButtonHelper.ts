@@ -41,7 +41,7 @@ export class ToolbarButtonHelper {
   /** Get toolbar button by title. */
   public static getToolbarButtonByTitle(title: string): HTMLButtonElement | null {
     let button = ToolbarButtonHelper.searchHorizontalToolbarsByTitle(title);
-    // istanbul ignore else
+    // istanbul ignore if
     if (button)
       return button;
 
@@ -50,6 +50,7 @@ export class ToolbarButtonHelper {
     if (button)
       return button;
 
+    // istanbul ignore next
     return null;
   }
 
@@ -59,6 +60,7 @@ export class ToolbarButtonHelper {
     // istanbul ignore else
     if (node)
       return node as HTMLButtonElement;
+    // istanbul ignore next
     return null;
   }
 }

@@ -2,6 +2,51 @@
   "name": "@bentley/imodeljs-markup",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/imodeljs-markup_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added flyover names for drawing tools such as polygon, line, rectangle, cloud, sketch etc to reduce redundant name 'Markup' from flyover label"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/imodeljs-markup_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "#310568 Fix issues with loading previously created markup svg into a view with a different aspect ratio."
+          },
+          {
+            "comment": "#282930 Fix markup prompts."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/imodeljs-markup_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/imodeljs-markup_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/imodeljs-markup_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",
@@ -68,10 +113,10 @@
       "comments": {
         "none": [
           {
-            "comment": "#168481 Tool assistance for markup tools"
+            "comment": "Tool assistance for markup tools"
           },
           {
-            "comment": "#165461 #183765 #184303 Fixes for getting image from readMarkup"
+            "comment": "Fixes for getting image from readMarkup"
           }
         ]
       }
@@ -83,13 +128,13 @@
       "comments": {
         "none": [
           {
-            "comment": "#168481 Added missing iconSpec to measure and clipping tools."
+            "comment": "Added missing iconSpec to measure and clipping tools."
           },
           {
             "comment": "Correct ViewClipByPlaneTool icon."
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           }
         ]
       }
@@ -140,16 +185,13 @@
       "comments": {
         "none": [
           {
-            "comment": "(imodeljs-markup merge)"
-          },
-          {
-            "comment": "fix for broken build from svg.js"
+            "comment": "Fix for broken build from svg.js"
           },
           {
             "comment": "Clear flashed element (if it's selected) before deleting or adding to group."
           },
           {
-            "comment": "lock to version 3.0.13 of svg.js package"
+            "comment": "Lock to version 3.0.13 of svg.js package"
           },
           {
             "comment": "Support drag box selection for markup. Support multiselect of markup using touch input."
@@ -173,10 +215,10 @@
             "comment": "point/vector coverage."
           },
           {
-            "comment": "make MarkupApp.initialize public"
+            "comment": "Make MarkupApp.initialize public"
           },
           {
-            "comment": "added tests"
+            "comment": "Added tests"
           },
           {
             "comment": "Improve touch interaction with markup handles."
@@ -200,13 +242,13 @@
             "comment": "Preserve relative z order when grouping markup. Change default arrow direction."
           },
           {
-            "comment": "documentation cleanup"
+            "comment": "Documentation cleanup"
           },
           {
-            "comment": "allow editing of existing markups"
+            "comment": "Allow editing of existing markups"
           },
           {
-            "comment": "allow editing of boxed text"
+            "comment": "Allow editing of boxed text"
           },
           {
             "comment": "Added markup distance measure tool. Fixed groupAll."

@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import { SchemaCache, SchemaContext } from "../../src/Context";
+import { ECObjectsError } from "../../src/Exception";
+import { Schema } from "../../src/Metadata/Schema";
+import { SchemaKey } from "../../src/SchemaKey";
+
 const assert = chai.assert;
 const expect = chai.expect;
 
-import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
-
-import { SchemaCache, SchemaContext } from "./../../src/Context";
-import { Schema } from "./../../src/Metadata/Schema";
-import { ECObjectsError } from "./../../src/Exception";
-import { SchemaKey } from "./../../src/SchemaKey";
 
 describe("Schema Cache", () => {
   it("adding should succeed", async () => {

@@ -6,13 +6,15 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/ui-abstract";
-import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
-import { Toggle } from "@bentley/ui-core";
 import "./ToggleEditor.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { PrimitiveValue, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { Toggle } from "@bentley/ui-core";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
+import { StandardEditorNames } from "./StandardEditorNames";
 
 /** @internal */
 interface ToggleEditorState {
@@ -56,7 +58,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
         if (this.props.propertyRecord && this.props.onCommit) {
           const propertyValue = await this.getPropertyValue();
           // istanbul ignore else
-          if (propertyValue) {
+          if (propertyValue !== undefined) {
             this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
           }
         }
@@ -126,5 +128,5 @@ export class TogglePropertyEditor extends PropertyEditorBase {
   }
 }
 
-PropertyEditorManager.registerEditor("bool", TogglePropertyEditor, "toggle");
-PropertyEditorManager.registerEditor("boolean", TogglePropertyEditor, "toggle");
+PropertyEditorManager.registerEditor(StandardTypeNames.Bool, TogglePropertyEditor, StandardEditorNames.Toggle);
+PropertyEditorManager.registerEditor(StandardTypeNames.Boolean, TogglePropertyEditor, StandardEditorNames.Toggle);

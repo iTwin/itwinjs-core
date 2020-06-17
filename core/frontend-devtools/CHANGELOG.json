@@ -2,6 +2,75 @@
   "name": "@bentley/frontend-devtools",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/frontend-devtools_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Make toggle-type keyins more consistent, accepting ON|OFF|TOGGLE; no argument defaults to TOGGLE."
+          },
+          {
+            "comment": "Tools for debugging view attachments."
+          },
+          {
+            "comment": "Track memory for thematic textures in memory panel."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/frontend-devtools_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added key-in to toggle the 'allow 3d manipulations' flag for a 3d view."
+          },
+          {
+            "comment": "Add keyin 'fdt clip color' to control colorizing of pixels inside or outside clip regions."
+          },
+          {
+            "comment": "Add tools to save/attach reality models."
+          },
+          {
+            "comment": "Moved keyin parsing logic to ToolRegistry."
+          },
+          {
+            "comment": "KeyinField auto-completion supports localized and/or non-localized key-in strings."
+          },
+          {
+            "comment": "Support display of OrbitGt Point Clouds."
+          },
+          {
+            "comment": "Add tools for debugging reality tiles."
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Add parseArgs() to facilitate keyin argument parsing; add keyins for converting between element Ids and source aspect Ids."
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/frontend-devtools_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/frontend-devtools_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/frontend-devtools_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",
@@ -158,7 +227,7 @@
       "comments": {
         "none": [
           {
-            "comment": "added support for blank IModelConnections"
+            "comment": "Added support for blank IModelConnections"
           },
           {
             "comment": "Improved configurability of KeyinField."
@@ -179,10 +248,10 @@
             "comment": "Added key-in to toggle debugging tooltips."
           },
           {
-            "comment": "#168481 Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
+            "comment": "Tool assistance: Measure tools, view clip tools, and touch cursor inputs."
           },
           {
-            "comment": "upgrade to TypeScript 3.6.2"
+            "comment": "Upgrade to TypeScript 3.6.2"
           },
           {
             "comment": "Fix WindowAreaTool full screen cursor. Added selected view frustum debug tool."

@@ -3,25 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Schema } from "../Metadata/Schema";
-import { AnyDiagnostic } from "./Diagnostic";
-import { SchemaItem } from "../Metadata/SchemaItem";
-import { RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { SchemaItemType, schemaItemTypeToString } from "../ECObjects";
-import { EntityClass } from "../Metadata/EntityClass";
-import { KindOfQuantity } from "../Metadata/KindOfQuantity";
-import { InvertedUnit } from "../Metadata/InvertedUnit";
-import { AnyEnumerator, Enumeration } from "../Metadata/Enumeration";
-import { CustomAttribute } from "../Metadata/CustomAttribute";
-import { SchemaCompareCodes } from "./SchemaCompareDiagnostics";
-import { Property } from "../Metadata/Property";
-import { Mixin } from "../Metadata/Mixin";
-import { Format } from "../Metadata/Format";
-import { OverrideFormat } from "../Metadata/OverrideFormat";
-import { Unit } from "../Metadata/Unit";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass } from "../Interfaces";
 import { ECClass } from "../Metadata/Class";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { CustomAttribute } from "../Metadata/CustomAttribute";
+import { EntityClass } from "../Metadata/EntityClass";
+import { AnyEnumerator, Enumeration } from "../Metadata/Enumeration";
+import { Format } from "../Metadata/Format";
+import { InvertedUnit } from "../Metadata/InvertedUnit";
+import { KindOfQuantity } from "../Metadata/KindOfQuantity";
+import { Mixin } from "../Metadata/Mixin";
+import { OverrideFormat } from "../Metadata/OverrideFormat";
+import { Property } from "../Metadata/Property";
+import { RelationshipConstraint } from "../Metadata/RelationshipClass";
+import { Schema } from "../Metadata/Schema";
+import { SchemaItem } from "../Metadata/SchemaItem";
+import { Unit } from "../Metadata/Unit";
+import { AnyDiagnostic } from "./Diagnostic";
+import { SchemaCompareCodes } from "./SchemaCompareDiagnostics";
 
 /**
  * Possible change types used to categorize ISchemaChange objects.

@@ -8,9 +8,9 @@
  */
 
 // import { Point2d } from "./Geometry2d";
+import { Point2d, Vector2d } from "./Point2dVector2d";
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { XAndY } from "./XYZProps";
-import { Point2d, Vector2d } from "./Point2dVector2d";
 
 /**
  * abstract base class for access to XYZ data with indexed reference.

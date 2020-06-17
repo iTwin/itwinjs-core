@@ -3,24 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import {
+  ArrayPropertyProps, EnumerationPropertyProps, NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,
+  PrimitivePropertyProps, PropertyProps, StructPropertyProps,
+} from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "../Interfaces";
+import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "../PropertyTypes";
+import { ECName, SchemaItemKey } from "../SchemaKey";
 import { ECClass, StructClass } from "./Class";
-import { CustomAttributeSet, serializeCustomAttributes, CustomAttribute, CustomAttributeContainerProps } from "./CustomAttribute";
+import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { Enumeration } from "./Enumeration";
 import { KindOfQuantity } from "./KindOfQuantity";
 import { PropertyCategory } from "./PropertyCategory";
 import { RelationshipClass } from "./RelationshipClass";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import {
-  EnumerationPropertyProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,
-  PrimitivePropertyProps, PropertyProps, StructPropertyProps, NavigationPropertyProps, ArrayPropertyProps,
-} from "./../Deserialization/JsonProps";
-import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "./../Interfaces";
-import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "./../PropertyTypes";
-import { ECName, SchemaItemKey } from "./../SchemaKey";
 import { Schema } from "./Schema";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * A common abstract class for all ECProperty types.
@@ -400,7 +400,9 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   /** @internal */
   public async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
-    itemElement.setAttribute("typeName", this.enumeration!.fullName);
+    const enumeration = await this.enumeration;
+    const enumerationName = XmlSerializationUtils.createXmlTypedName(this.schema, enumeration!.schema, enumeration!.name);
+    itemElement.setAttribute("typeName", enumerationName);
     return itemElement;
   }
 
@@ -575,6 +577,7 @@ export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty
   public toJSON(): PrimitiveArrayPropertyProps {
     return super.toJSON();
   }
+
 }
 
 /** @beta */

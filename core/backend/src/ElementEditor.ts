@@ -6,11 +6,11 @@
  * @module iModels
  */
 
+import * as deepAssign from "deep-assign";
 import { BentleyError, DbOpcode, Id64, Id64Array, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { GeometryQuery, IModelJson, Point3d, Transform, TransformProps, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { GeometricElement3dProps, GeometryStreamBuilder, Placement3d } from "@bentley/imodeljs-common";
-import * as deepAssign from "deep-assign";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { GeometricElement3d } from "./Element";
 import { IModelDb } from "./IModelDb";

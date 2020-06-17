@@ -8,10 +8,10 @@
 
 import * as React from "react";
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { Backstage } from "./Backstage";
-import { UiFramework } from "../UiFramework";
-import { CommandItemDef } from "../../ui-framework";
 import { IconSpec } from "@bentley/ui-core";
+import { CommandItemDef } from "../../ui-framework";
+import { UiFramework } from "../UiFramework";
+import { Backstage } from "./Backstage";
 
 /** Arguments of [[BackstageManager.onToggled]].
  * @beta

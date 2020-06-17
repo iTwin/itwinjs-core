@@ -6,18 +6,18 @@
  * @module SyncUi
  */
 
+import { Logger } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelConnection, SelectedViewportChangedArgs, SelectionSetEvent } from "@bentley/imodeljs-frontend";
+import { getInstancesCount, SelectionScope } from "@bentley/presentation-common";
+import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 // cSpell:ignore configurableui
 import { UiEvent } from "@bentley/ui-core";
-import { Logger } from "@bentley/bentleyjs-core";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { Backstage } from "../backstage/Backstage";
-import { WorkflowManager } from "../workflow/Workflow";
 import { ContentViewManager } from "../content/ContentViewManager";
-import { SessionStateActionId, PresentationSelectionScope } from "../redux/SessionState";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { PresentationSelectionScope, SessionStateActionId } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
-import { IModelConnection, IModelApp, SelectedViewportChangedArgs, SelectionSetEvent } from "@bentley/imodeljs-frontend";
-import { Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
-import { SelectionScope, getInstancesCount } from "@bentley/presentation-common";
+import { WorkflowManager } from "../workflow/Workflow";
 
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, backstageevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
@@ -148,13 +148,14 @@ export class SyncUiEventDispatcher {
 
   /** Save multiple eventIds in Set for processing. */
   public static dispatchSyncUiEvents(eventIds: string[]): void {
-    // istanbul ignore else
+    // istanbul ignore if
     if (0 === SyncUiEventDispatcher._timeoutPeriod) {
       Logger.logInfo(UiFramework.loggerCategory(this), `[dispatchSyncUiEvents] not processed because _timeoutPeriod=0`);
       return;
     }
 
     eventIds.forEach((id) => SyncUiEventDispatcher.syncEventIds.add(id.toLowerCase()));
+    // istanbul ignore else
     if (!SyncUiEventDispatcher._syncEventTimerId) {  // if there is not a timer active, create one
       SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod);
     } else {
@@ -166,6 +167,7 @@ export class SyncUiEventDispatcher {
   private static checkForAdditionalIds() {
     /* istanbul ignore else */
     if (!SyncUiEventDispatcher._eventIdAdded) {
+      // istanbul ignore else
       if (SyncUiEventDispatcher._syncEventTimerId) {
         window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
         SyncUiEventDispatcher._syncEventTimerId = undefined;
@@ -201,6 +203,7 @@ export class SyncUiEventDispatcher {
     return false;
   }
 
+  // istanbul ignore next
   private static _dispatchViewChange() {
     SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ViewStateChanged);
   }
@@ -295,12 +298,13 @@ export class SyncUiEventDispatcher {
   public static initializeConnectionEvents(iModelConnection: IModelConnection) {
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
     iModelConnection.selectionSet.onChanged.addListener(SyncUiEventDispatcher.selectionChangedHandler);
-    (iModelConnection.iModelId) ? UiFramework.setActiveIModelId(iModelConnection.iModelId) : "";
+    (iModelConnection.iModelId) ? UiFramework.setActiveIModelId(iModelConnection.iModelId) : /* istanbul ignore next */ "";
     if (SyncUiEventDispatcher._unregisterListenerFunc)
       SyncUiEventDispatcher._unregisterListenerFunc();
 
     // listen for changes from presentation rules selection manager (this is done once an iModelConnection is available to ensure Presentation.selection is valid)
     SyncUiEventDispatcher._unregisterListenerFunc = Presentation.selection.selectionChange.addListener((args: SelectionChangeEventArgs, provider: ISelectionProvider) => {
+      // istanbul ignore if
       if (args.level !== 0) {
         // don't need to handle sub-selections
         return;

@@ -7,12 +7,10 @@
  */
 
 import * as React from "react";
-
+import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { SizeProps } from "@bentley/ui-core";
-
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 import { CustomItemProps } from "./CustomItemProps";
-import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 
 /** @internal */
 interface CloneProps {

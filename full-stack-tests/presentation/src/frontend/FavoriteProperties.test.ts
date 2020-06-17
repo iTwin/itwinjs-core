@@ -2,16 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 // tslint:disable: no-direct-imports
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Field, KeySet } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
 import { FavoritePropertiesScope, Presentation, PropertyFullName } from "@bentley/presentation-frontend";
-import { IModelAppFavoritePropertiesStorage } from "@bentley/presentation-frontend/lib/presentation-frontend/favorite-properties/FavoritePropertiesStorage";
+import {
+  IModelAppFavoritePropertiesStorage,
+} from "@bentley/presentation-frontend/lib/presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyData } from "@bentley/ui-components";
-import { expect } from "chai";
 import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
 
 const favoritesCategoryName = "Favorite";

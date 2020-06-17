@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { render, cleanup } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { expect } from "chai";
-import { ContextMenu, GlobalContextMenu, ContextMenuItem, ContextSubMenu, ContextMenuDivider } from "../../ui-core";
+import { BadgeType } from "@bentley/ui-abstract";
+import { cleanup, render } from "@testing-library/react";
+import { ContextMenu, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core";
 import { ContextMenuDirection, TildeFinder } from "../../ui-core/contextmenu/ContextMenu";
 import TestUtils from "../TestUtils";
-import { BadgeType } from "@bentley/ui-abstract";
 
 describe("ContextMenu", () => {
 
@@ -64,6 +64,20 @@ describe("ContextMenu", () => {
       window.dispatchEvent(mouseUp);
 
       spyMethod.should.have.been.called;
+    });
+    it("should not call onOutsideClick on window mouseup if closed", () => {
+      const spyMethod = sinon.fake();
+      render(
+        <ContextMenu onOutsideClick={spyMethod}>
+          <ContextMenuItem> Test </ContextMenuItem>
+        </ContextMenu>);
+
+      const mouseUp = document.createEvent("HTMLEvents");
+      mouseUp.initEvent("mouseup");
+      sinon.stub(mouseUp, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(mouseUp);
+
+      spyMethod.should.not.have.been.called;
     });
 
     describe("Keyboard navigation", () => {

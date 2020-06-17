@@ -8,45 +8,8 @@
 
 // cSpell:ignore valuetypes shortdate
 
-import {
-  OutputMessagePriority,
-  OutputMessageType,
-  OutputMessageAlert,
-} from "@bentley/imodeljs-frontend";
-import {
-  PropertyDescription,
-  PropertyRecord,
-  Primitives,
-  PropertyValue,
-  PropertyValueFormat,
-  PrimitiveValue,
-} from "@bentley/ui-abstract";
-
+import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
 import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
-
-/**
- * StandardTypeConverterTypeNames.
- * @beta
- */
-export enum StandardTypeConverterTypeNames {
-  Text = "text",
-  String = "string",
-  ShortDate = "shortdate",
-  DateTime = "dateTime",
-  Boolean = "boolean",
-  Bool = "bool",
-  Float = "float",
-  Double = "double",
-  Int = "int",
-  Integer = "integer",
-  Hexadecimal = "hexadecimal",
-  Hex = "hex",
-  Enum = "enum",
-  Point2d = "point2d",
-  Point3d = "point3d",
-  Navigation = "navigation",
-  Composite = "composite",
-}
 
 /** Sort compare method for types that support sorting
  * @public
@@ -88,27 +51,6 @@ export interface NullableOperatorProcessor {
   isNull(value: Primitives.Value): boolean;
   /** Determines if a primitive value is not null or not undefined */
   isNotNull(value: Primitives.Value): boolean;
-}
-
-/** Asynchronous Error Message returned as part of [[AsyncValueProcessingResult]]
- * @beta
- */
-export interface AsyncErrorMessage {
-  priority: OutputMessagePriority;
-  briefMessage: string;
-  detailedMessage?: string;
-  msgType?: OutputMessageType;
-  alertType?: OutputMessageAlert;
-  displayTime?: number;
-}
-
-/** Asynchronous Value Process Result
- * @beta
- */
-export interface AsyncValueProcessingResult {
-  encounteredError: boolean;
-  returnValue?: PropertyValue;
-  errorMessage?: AsyncErrorMessage;
 }
 
 /**

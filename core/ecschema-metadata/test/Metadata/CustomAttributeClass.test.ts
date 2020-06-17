@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-
 import { SchemaContext } from "../../src/Context";
 import { CustomAttributeContainerType, ECClassModifier } from "../../src/ECObjects";
 import { ECObjectsError } from "../../src/Exception";
 import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
 import { Schema } from "../../src/Metadata/Schema";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
 describe("CustomAttributeClass", () => {

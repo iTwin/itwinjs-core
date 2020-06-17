@@ -15,11 +15,11 @@ type float32 = number;
 type float64 = number;
 
 
-import { CRSEngine } from "./CRSEngine";
+import { Strings } from "../../system/runtime/Strings";
 import { Bounds } from "../geom/Bounds";
 import { Coordinate } from "../geom/Coordinate";
 import { Transform } from "../geom/Transform";
-import { Strings } from "../../system/runtime/Strings";
+import { CRSEngine } from "./CRSEngine";
 
 /**
  * Class CRSManager defines the main access point to the CRS transformation engine.

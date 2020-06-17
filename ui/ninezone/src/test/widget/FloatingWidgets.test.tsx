@@ -3,10 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { createNineZoneState, NineZoneProvider, FloatingWidgets } from "../../ui-ninezone";
-import { addFloatingWidget } from "../base/NineZoneState.test";
+import { addFloatingWidget, createNineZoneState, FloatingWidgets } from "../../ui-ninezone";
+import { NineZoneProvider } from "../Providers";
 
 describe("FloatingWidgets", () => {
   it("should render", () => {
@@ -15,7 +14,6 @@ describe("FloatingWidgets", () => {
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
-        dispatch={sinon.spy()}
       >
         <FloatingWidgets />
       </NineZoneProvider>,

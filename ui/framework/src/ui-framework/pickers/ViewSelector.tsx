@@ -7,17 +7,15 @@
  */
 
 import * as React from "react";
-
-import { IModelConnection, ViewState, IModelApp } from "@bentley/imodeljs-frontend";
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
-
+import { SupportsViewSelectorChange } from "../content/ContentControl";
+import { ContentViewManager } from "../content/ContentViewManager";
+import { connectIModelConnection } from "../redux/connectIModel";
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
-import { ListPicker, ListItem, ListItemType } from "./ListPicker";
-import { ContentViewManager } from "../content/ContentViewManager";
-import { SupportsViewSelectorChange } from "../content/ContentControl";
-import { connectIModelConnection } from "../redux/connectIModel";
+import { ListItem, ListItemType, ListPicker } from "./ListPicker";
 
 // cSpell:ignore Spatials
 
@@ -169,6 +167,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     const containers = [views3dContainer, views2dContainer, sheetContainer];
 
+    // istanbul ignore if
     if (unknown && unknown.length > 0) {
       // This should never show, but just in case we missed a type of view state
       const unknownContainer: ListItem = {
@@ -203,6 +202,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     const sheets: ListItem[] = [];
     const unknown: ListItem[] = [];
 
+    // istanbul ignore if
     if (this.props.imodel && this.props.imodel.views.getViewList) {
       const query = { wantPrivate: false };
       const specs = await this.props.imodel.views.getViewList(query);
@@ -235,6 +235,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
    * Update state of the entries in the widget.
    * @param viewId Identifier for the relevant view
    */
+  // istanbul ignore next
   public async updateState(viewId?: any): Promise<void> {
     // Wait for initialization finished
     if (!this.state.initialized)
@@ -257,6 +258,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
   }
 
   // enable/disable the models
+  // istanbul ignore next
   private _setEnabled = async (item: ListItem, _enabled: boolean) => {
     const activeContentControl = ContentViewManager.getActiveContentControl() as unknown as SupportsViewSelectorChange;
     if (!activeContentControl || !activeContentControl.supportsViewSelectorChange) {
@@ -311,6 +313,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
   }
 
   // Hook on the category selector being expanded so that we may initialize if needed
+  // istanbul ignore next
   private _onExpanded = (expand: boolean) => {
     if (expand)
       this.updateState(IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.view.id : undefined); // tslint:disable-line:no-floating-promises

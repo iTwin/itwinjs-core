@@ -3,54 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import { ClipVector, Point2d, Point3d } from "@bentley/geometry-core";
 import {
-  Color,
-  TestViewport,
-  comparePixelData,
-  createOnScreenTestViewport,
-  testOffScreenViewport,
-  testOnScreenViewport,
-  testViewports,
-} from "../TestViewport";
-import {
-  BeDuration,
-  BeTimePoint,
-} from "@bentley/bentleyjs-core";
-import {
-  ColorDef,
-  Hilite,
-  RenderMode,
-  RgbColor,
-  ViewFlags,
-  ThematicDisplayProps,
-  ThematicGradientColorScheme,
-  ThematicDisplay,
+  ColorDef, Hilite, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
-  GraphicType,
-  IModelApp,
-  IModelConnection,
-  IModelTileTree,
-  FeatureOverrideProvider,
-  FeatureSymbology,
-  OffScreenViewport,
-  Pixel,
-  RenderMemory,
-  RenderSystem,
-  SpatialViewState,
-  TileAdmin,
-  TileLoadStatus,
-  TileTree,
-  TileTreeSet,
-  Viewport,
-  ViewRect,
-  Decorator,
-  DecorateContext,
-  SnapshotConnection,
+  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicType, IModelApp, IModelConnection, IModelTileTree, OffScreenViewport,
+  Pixel, RenderMemory, RenderSystem, SnapshotConnection, SpatialViewState, TileAdmin, TileLoadStatus, TileTree, TileTreeSet, Viewport, ViewRect,
   ViewState3d,
 } from "@bentley/imodeljs-frontend";
-import { Point2d, Point3d, ClipVector } from "@bentley/geometry-core";
 import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
+import {
+  Color, comparePixelData, createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports,
+} from "../TestViewport";
 
 describe("Test VAO creation", () => {
   before(async () => {
@@ -70,7 +36,7 @@ describe("Test VAO creation", () => {
 
 describe("Test VBO creation", () => {
   before(async () => {
-    const renderSysOpts: RenderSystem.Options = {};
+    const renderSysOpts: RenderSystem.Options = { useWebGL2: false };
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
     await IModelApp.startup({ renderSys: renderSysOpts });
   });
@@ -95,7 +61,7 @@ describe("Render mirukuru with VAOs disabled", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    const renderSysOpts: RenderSystem.Options = {};
+    const renderSysOpts: RenderSystem.Options = { useWebGL2: false };
     renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
 
     await IModelApp.startup({ renderSys: renderSysOpts });
@@ -262,7 +228,33 @@ describe("Render mirukuru with thematic display applied", () => {
     await IModelApp.shutdown();
   });
 
-  it("should render the model with proper thematic colors applied", async () => {
+  function isReddish(c: Color): boolean {
+    return c.r > c.g && c.g < 0xa && c.b < 0xa && c.a === 0xff;
+  }
+
+  function isBluish(c: Color): boolean {
+    return c.r < 0xa && c.g < 0xa && c.b > c.g && c.a === 0xff;
+  }
+
+  function isPurplish(c: Color): boolean {
+    return c.r > c.g && c.g < 0xa && c.b > c.g && c.a === 0xff;
+  }
+
+  function expectCorrectColors(vp: TestViewport) {
+    // White rectangle is centered in view with black background surrounding. Thematic display sets a blue/red gradient on the rectangle. Lighting is off.
+    const colors = vp.readUniqueColors();
+    const bgColor = Color.fromRgba(0, 0, 0, 0xff);
+    expect(colors.length).least(3); // red, blue, and black - (actually way more colors!)
+    expect(colors.contains(bgColor)).to.be.true; // black background
+
+    for (const c of colors.array) {
+      if (0 !== c.compare(bgColor)) {
+        expect(isReddish(c) || isBluish(c) || isPurplish(c)).to.be.true;
+      }
+    }
+  }
+
+  it("should render the model with proper thematic colors applied for height mode", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
@@ -291,29 +283,45 @@ describe("Render mirukuru with thematic display applied", () => {
       expect(vp.numRequestedTiles).to.equal(0);
       expect(vp.numSelectedTiles).to.equal(1);
 
-      // White rectangle is centered in view with black background surrounding. Thematic display sets a blue/red gradient on the rectangle. Lighting is off.
-      const colors = vp.readUniqueColors();
-      const bgColor = Color.fromRgba(0, 0, 0, 0xff);
-      expect(colors.length).least(3); // red, blue, and black - (actually way more colors!)
-      expect(colors.contains(bgColor)).to.be.true; // black background
+      expectCorrectColors(vp);
+    });
+  });
 
-      const isReddish = (c: Color): boolean => {
-        return c.r > c.g && c.g < 0xa && c.b < 0xa && c.a === 0xff;
+  it("should render the model with proper thematic colors applied for sensor mode", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
+      expect(vp.view.is3d());
+
+      const vf = vp.view.viewFlags;
+      vf.visibleEdges = false;
+      vf.lighting = false;
+      vf.renderMode = RenderMode.SmoothShade;
+      vf.thematicDisplay = true;
+
+      // Create a ThematicDisplay object with the desired thematic settings
+      const thematicProps: ThematicDisplayProps = {
+        displayMode: ThematicDisplayMode.InverseDistanceWeightedSensors,
+        gradientSettings: {
+          colorScheme: ThematicGradientColorScheme.Custom,
+          customKeys: [{ value: 0.0, color: ColorDef.computeTbgrFromComponents(0, 0, 255) }, { value: 1.0, color: ColorDef.computeTbgrFromComponents(255, 0, 0) }],
+        },
+        sensorSettings: {
+          sensors: [
+            { position: imodel.projectExtents.low.toJSON(), value: 0.01 },
+            { position: imodel.projectExtents.high.toJSON(), value: 0.99 },
+          ],
+        },
       };
+      const thematicDisplay = ThematicDisplay.fromJSON(thematicProps);
 
-      const isBluish = (c: Color) => {
-        return c.r < 0xa && c.g < 0xa && c.b > c.g && c.a === 0xff;
-      };
+      const displaySettings = (vp.view as ViewState3d).getDisplayStyle3d().settings;
+      displaySettings.thematic = thematicDisplay;
 
-      const isPurplish = (c: Color) => {
-        return c.r > c.g && c.g < 0xa && c.b > c.g && c.a === 0xff;
-      };
+      await vp.waitForAllTilesToRender();
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
 
-      for (const c of colors.array) {
-        if (0 !== c.compare(bgColor)) {
-          expect(isReddish(c) || isBluish(c) || isPurplish(c)).to.be.true;
-        }
-      }
+      expectCorrectColors(vp);
     });
   });
 });

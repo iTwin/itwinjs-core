@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import TestUtils from "../TestUtils";
-import { ZoneDef, ZoneState, WidgetDef, ZoneLocation } from "../../ui-framework";
 import { expect } from "chai";
+import { WidgetDef, ZoneDef, ZoneLocation, ZoneState } from "../../ui-framework";
+import TestUtils from "../TestUtils";
 
 describe("ZoneDef", () => {
 

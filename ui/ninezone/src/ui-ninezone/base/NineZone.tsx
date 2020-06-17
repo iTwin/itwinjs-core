@@ -8,48 +8,88 @@
 
 import * as React from "react";
 import { v4 } from "uuid";
-import { NineZoneState, TabsState, WidgetsState, PanelsState, FloatingWidgetsState, NineZoneActionTypes, DraggedTabState } from "./NineZoneState";
+import { Rectangle, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { CursorType } from "../widget-panels/CursorOverlay";
-import { DragProvider, DraggedWidgetContext, DraggedResizeHandleContext, DraggedPanelSideContext } from "./DragManager";
 import { PanelSide } from "../widget-panels/Panel";
 import { WidgetContentManager } from "../widget/ContentManager";
+import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetContext, DragProvider } from "./DragManager";
+import {
+  DraggedTabState, FloatingWidgetsState, NineZoneActionTypes, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
+} from "./NineZoneState";
+import { assert } from "./assert";
 
 /** @internal future */
 export type NineZoneDispatch = (action: NineZoneActionTypes) => void;
 
 /** @internal future */
+export interface NineZoneProps {
+  children?: React.ReactNode;
+  dispatch: NineZoneDispatch;
+  state: NineZoneState;
+  widgetContent?: React.ReactNode;
+  toolSettingsContent?: React.ReactNode;
+}
+
+/** @internal future */
+export function NineZone(props: NineZoneProps) {
+  const { children, ...providerProps } = props;
+  const measurerRef = React.useRef<HTMLDivElement>(null);
+  const measure = React.useCallback<() => Rectangle>(() => {
+    assert(measurerRef.current);
+    return Rectangle.create(measurerRef.current.getBoundingClientRect());
+  }, []);
+  return (
+    <NineZoneProvider
+      measure={measure}
+      {...providerProps}
+    >
+      <Measurer ref={measurerRef} />
+      {props.children}
+    </NineZoneProvider>
+  );
+}
+
+/** @internal */
 export interface NineZoneProviderProps {
   children?: React.ReactNode;
   dispatch: NineZoneDispatch;
   state: NineZoneState;
   widgetContent?: React.ReactNode;
+  toolSettingsContent?: React.ReactNode;
+  measure: () => Rectangle;
 }
 
-/** @internal future */
+/** @internal */
 export function NineZoneProvider(props: NineZoneProviderProps) {
   return (
     <NineZoneContext.Provider value={props.state}>
       <NineZoneDispatchContext.Provider value={props.dispatch}>
         <WidgetContentNodeContext.Provider value={props.widgetContent}>
-          <DraggedTabStateContext.Provider value={props.state.draggedTab}>
-            <DraggedTabContext.Provider value={!!props.state.draggedTab}>
-              <TabsStateContext.Provider value={props.state.tabs}>
-                <WidgetsStateContext.Provider value={props.state.widgets}>
-                  <PanelsStateContext.Provider value={props.state.panels}>
-                    <FloatingWidgetsStateContext.Provider value={props.state.floatingWidgets}>
-                      <DragProvider>
-                        <CursorTypeProvider>
-                          <WidgetContentManager>
-                            {props.children}
-                          </WidgetContentManager>
-                        </CursorTypeProvider>
-                      </DragProvider>
-                    </FloatingWidgetsStateContext.Provider>
-                  </PanelsStateContext.Provider>
-                </WidgetsStateContext.Provider>
-              </TabsStateContext.Provider>
-            </DraggedTabContext.Provider>
-          </DraggedTabStateContext.Provider>
+          <ToolSettingsNodeContext.Provider value={props.toolSettingsContent}>
+            <DraggedTabStateContext.Provider value={props.state.draggedTab}>
+              <DraggedTabContext.Provider value={!!props.state.draggedTab}>
+                <TabsStateContext.Provider value={props.state.tabs}>
+                  <WidgetsStateContext.Provider value={props.state.widgets}>
+                    <PanelsStateContext.Provider value={props.state.panels}>
+                      <FloatingWidgetsStateContext.Provider value={props.state.floatingWidgets}>
+                        <ToolSettingsStateContext.Provider value={props.state.toolSettings}>
+                          <DragProvider>
+                            <CursorTypeProvider>
+                              <WidgetContentManager>
+                                <MeasureContext.Provider value={props.measure}>
+                                  {props.children}
+                                </MeasureContext.Provider>
+                              </WidgetContentManager>
+                            </CursorTypeProvider>
+                          </DragProvider>
+                        </ToolSettingsStateContext.Provider>
+                      </FloatingWidgetsStateContext.Provider>
+                    </PanelsStateContext.Provider>
+                  </WidgetsStateContext.Provider>
+                </TabsStateContext.Provider>
+              </DraggedTabContext.Provider>
+            </DraggedTabStateContext.Provider>
+          </ToolSettingsNodeContext.Provider>
         </WidgetContentNodeContext.Provider>
       </NineZoneDispatchContext.Provider>
     </NineZoneContext.Provider>
@@ -96,6 +136,18 @@ CursorTypeContext.displayName = "nz:CursorTypeContext";
 export const WidgetContentNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
 WidgetContentNodeContext.displayName = "nz:WidgetContentNodeContext";
 
+/** @internal */
+export const ToolSettingsNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
+ToolSettingsNodeContext.displayName = "nz:ToolSettingsNodeContext";
+
+/** @internal */
+export const ToolSettingsStateContext = React.createContext<ToolSettingsState>(null!); // tslint:disable-line: variable-name
+ToolSettingsStateContext.displayName = "nz:ToolSettingsStateContext";
+
+/** @internal */
+export const MeasureContext = React.createContext<() => Rectangle>(null!); // tslint:disable-line: variable-name
+MeasureContext.displayName = "nz:MeasureContext";
+
 function CursorTypeProvider(props: { children?: React.ReactNode }) {
   const draggedTab = React.useContext(DraggedTabContext);
   const draggedWidget = React.useContext(DraggedWidgetContext);
@@ -114,6 +166,34 @@ function CursorTypeProvider(props: { children?: React.ReactNode }) {
     </CursorTypeContext.Provider>
   );
 }
+
+const Measurer = React.forwardRef<HTMLDivElement>(function Measurer(_, ref) { // tslint:disable-line: variable-name no-shadowed-variable
+  const dispatch = React.useContext(NineZoneDispatchContext);
+  const handleResize = React.useCallback((width, height) => {
+    dispatch({
+      type: "RESIZE",
+      size: {
+        height,
+        width,
+      },
+    });
+  }, [dispatch]);
+  const roRef = useResizeObserver(handleResize);
+  const refs = useRefs(ref, roRef);
+  return (
+    <div
+      ref={refs}
+      style={{
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+        top: "0",
+        left: "0",
+        visibility: "hidden",
+      }}
+    />
+  );
+});
 
 /** @internal */
 export function sideToCursorType(side: PanelSide): CursorType {

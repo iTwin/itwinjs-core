@@ -6,12 +6,12 @@
  * @module OIDC
  */
 
-import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel, assert } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ImsAuthorizationClient } from "@bentley/itwin-client";
-import { User, UserManager, UserManagerSettings, WebStorageStateStore, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
-import { FrontendRequestContext } from "../FrontendRequestContext";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { Log as OidcClientLog, Logger as IOidcClientLogger, User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
+import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { FrontendRequestContext } from "../FrontendRequestContext";
 import { OidcFrontendClientConfiguration } from "./OidcFrontendClient";
 
 const loggerCategory: string = FrontendLoggerCategory.Authorization;
@@ -346,10 +346,7 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
       return;
     }
 
-    const startsAt: Date = new Date((user.expires_at - user.expires_in!) * 1000);
-    const expiresAt: Date = new Date(user.expires_at * 1000);
-    const userInfo = UserInfo.fromJson(user.profile);
-    this._accessToken = AccessToken.fromJsonWebTokenString(user.access_token, startsAt, expiresAt, userInfo);
+    this._accessToken = AccessToken.fromTokenResponseJson(user, user.profile);
   }
 
   private _onUserStateChanged = (user: User | undefined) => {

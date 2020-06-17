@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
+import "./ViewsList.scss";
 import classnames from "classnames";
-import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
+import * as React from "react";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
+import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
 import ViewItem, { ViewItemProps } from "./ViewItem";
-import "./ViewsList.scss";
 
 /** Properties for [[ViewsList]] component
  * @internal
@@ -259,7 +259,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
     });
 
     if (isFiltering && views.length === 0) {
-      const message = "No views matching " + "'" + this.state.filter + "'.";
+      const message = "No views matching '" + this.state.filter + "'.";
       return (
         <div className="view-list-nosearchresults" style={{ fontStyle: "italic" }}>{message}</div>
       );

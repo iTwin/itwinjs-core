@@ -6,12 +6,12 @@
  * @module ToolSettings
  */
 
+import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps, useResizeObserver } from "@bentley/ui-core";
-import { useToolItemEntryContext } from "./Toolbar";
-
-import "./Overflow.scss";
+import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
+import { useToolItemEntryContext } from "./ToolbarWithOverflow";
+import { useResizeObserverSingleDimension } from "./ItemWrapper";
 
 /** Properties of [[ToolbarOverflowButton]] component.
  * @internal
@@ -31,7 +31,7 @@ export interface ToolbarOverflowButtonProps extends CommonProps, NoChildrenProps
  */
 export function ToolbarOverflowButton(props: ToolbarOverflowButtonProps) {
   const { onResize, useHeight } = useToolItemEntryContext();
-  const ref = useResizeObserver<HTMLButtonElement>(onResize, useHeight);
+  const ref = useResizeObserverSingleDimension<HTMLButtonElement>(onResize, useHeight);
   const className = classnames(
     "components-toolbar-item-container",
     "components-toolbar-overflow-button",

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Schema } from "../../src/Metadata/Schema";
-import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
 import { SchemaContext } from "../../src/Context";
+import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
+import { Schema } from "../../src/Metadata/Schema";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 describe("PropertyCategory", () => {

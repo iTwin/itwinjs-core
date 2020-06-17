@@ -10,6 +10,7 @@
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
 import { Geometry } from "../Geometry";
 import { NumberArray } from "../geometry3d/PointHelpers";
+
 /**
  * Enumeration of the possible ways of converting a "periodic" knot vector to an open knot vector.
  * None (0) ==> no wrap possible

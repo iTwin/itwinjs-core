@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { TextureUnit } from "../RenderFlags";
-import { VariableType, VariablePrecision, FragmentShaderComponent } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
 import { CombineTexturesGeometry } from "../CachedGeometry";
+import { TextureUnit } from "../RenderFlags";
+import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
+import { ShaderProgram } from "../ShaderProgram";
 import { Texture2DHandle } from "../Texture";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 
@@ -42,6 +42,9 @@ export function createCombineTexturesProgram(context: WebGLRenderingContext | We
   }, VariablePrecision.High);
 
   frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
+
+  builder.vert.headerComment = "//!V! CombineTextures";
+  builder.frag.headerComment = "//!F! CombineTextures";
 
   return builder.buildProgram(context);
 }

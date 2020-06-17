@@ -5,11 +5,9 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { ToolSettings, ResizeHandle } from "../../ui-ninezone";
-import { createBoundingClientRect } from "../Utils";
-import { ToolSettingsProps } from "../../ui-ninezone/widget/ToolSettings";
-import { ResizeGrip } from "../../ui-ninezone/widget/rectangular/ResizeGrip";
 import { Point, Rectangle } from "@bentley/ui-core";
+import { ResizeGrip, ResizeHandle, ToolSettings, ToolSettingsProps } from "../../ui-ninezone";
+import { createBoundingClientRect } from "../Utils";
 
 describe("<ToolSettings />", () => {
   const sandbox = sinon.createSandbox();

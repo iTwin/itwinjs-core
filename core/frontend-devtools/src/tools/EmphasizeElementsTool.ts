@@ -7,15 +7,8 @@
  * @module Tools
  */
 
-import {
-  ColorDef,
-} from "@bentley/imodeljs-common";
-import {
-  EmphasizeElements,
-  IModelApp,
-  ScreenViewport,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { ColorDef } from "@bentley/imodeljs-common";
+import { EmphasizeElements, IModelApp, ScreenViewport, Tool } from "@bentley/imodeljs-frontend";
 
 /** Applies the `EmphasizeElements` API in some way to the selected Viewport.
  * @beta

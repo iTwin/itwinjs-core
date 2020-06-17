@@ -4,30 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ColorDef,
-  RenderMode,
-  SkyBoxProps,
-} from "@bentley/imodeljs-common";
-import {
-  Environment,
-  SkyBox,
-  SkyGradient,
-  Viewport,
-  ViewState,
-  ViewState3d,
-} from "@bentley/imodeljs-frontend";
-import {
-  CheckBox,
-  createCheckBox,
-  Slider,
-  createSlider,
-  RadioBox,
-  createRadioBox,
-  ColorInput,
-  createColorInput,
-  createNestedMenu,
-  createButton,
+  CheckBox, ColorInput, createButton, createCheckBox, createColorInput, createNestedMenu, createRadioBox, createSlider, RadioBox, Slider,
 } from "@bentley/frontend-devtools";
+import { ColorDef, RenderMode, SkyBoxProps } from "@bentley/imodeljs-common";
+import { Environment, SkyBox, SkyGradient, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
 import { LightingEditor } from "./LightingEditor";
 
 type EnvironmentAspect = "ground" | "sky";

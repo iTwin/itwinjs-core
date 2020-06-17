@@ -6,10 +6,10 @@
  * @module Toggle
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import { CommonProps } from "../utils/Props";
 import "./Toggle.scss";
+import classnames from "classnames";
+import * as React from "react";
+import { CommonProps } from "../utils/Props";
 
 /** Toggle display types
  * @public
@@ -45,98 +45,108 @@ export interface ToggleProps extends CommonProps {
   setFocus?: boolean;
 }
 
-/** @internal */
-interface ToggleState {
-  height: number;
-  width: number;
-  checked: boolean;
-}
-
 /**
  * Toggle React component to show an "on" or "off" state
  * @public
  */
-export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
-  private _padding: number = 2;
-  private _inputElement = React.createRef<HTMLInputElement>();
+export function Toggle(props: ToggleProps) {
+  const inputElement = React.useRef<HTMLInputElement>(null);
+  const padding = 2;
+  const [height, setHeight] = React.useState(0);
+  const [width, setWidth] = React.useState(0);
+  const [checked, setChecked] = React.useState(props.isOn ? true : false);
+  const [toggling, setToggling] = React.useState(false);
 
-  constructor(props: ToggleProps) {
-    super(props);
+  React.useEffect(() => {
+    if (props.setFocus && inputElement.current)
+      inputElement.current.focus();
+  }, [props]);
 
-    this.state = { height: 0, width: 0, checked: this.props.isOn! };
-  }
+  React.useEffect(() => {
+    setChecked(props.isOn ? true : false);
+  }, [props.isOn]);
 
-  public static defaultProps: Partial<ToggleProps> = {
-    rounded: true,
-    isOn: false,
-    showCheckmark: false,
-    buttonType: ToggleButtonType.Blue,
+  const handleChange = React.useCallback(() => {
+    const newChecked = !checked;
+
+    setToggling(true);
+    setChecked(newChecked);
+
+    // istanbul ignore else
+    if (props.onChange)
+      props.onChange(newChecked);
+
+    setTimeout(() => {
+      // istanbul ignore else
+      if (inputElement.current)
+        setToggling(false);
+    }, 250);
+  }, [props, checked]);
+
+  const handleBlur = React.useCallback((event: React.FocusEvent) => {
+    // istanbul ignore else
+    if (props.onBlur)
+      props.onBlur(event);
+  }, [props]);
+
+  const handleCheckboxBlur = React.useCallback((event: React.FocusEvent) => {
+    event.stopPropagation();
+  }, []);
+
+  const setHeightFromRef = React.useCallback((el: HTMLLabelElement | null) => {
+    if (el !== null) {
+      // istanbul ignore next
+      if (el.clientHeight > 0 && el.clientWidth > 0) {
+        setHeight(el.clientHeight);
+        setWidth(el.clientWidth);
+      }
+    }
+  }, []);
+
+  const _getOffset = (): number => {
+    return (checked) ? width - height : 0;
   };
 
-  public componentDidMount() {
-    if (this.props.setFocus && this._inputElement.current) {
-      this._inputElement.current.focus();
-    }
-  }
+  /** Default props */
+  const rounded = props.rounded !== undefined ? props.rounded : true;
+  const showCheckmark = props.showCheckmark !== undefined ? props.showCheckmark : false;
+  const buttonType = props.buttonType !== undefined ? props.buttonType : ToggleButtonType.Blue;
 
-  public componentDidUpdate(prevProps: ToggleProps) {
-    if (this.props.isOn !== prevProps.isOn) {
-      this.setState((_, props) => ({ checked: props.isOn ? true : false }));
-      return;
-    }
-    if (this.props.disabled !== prevProps.disabled)
-      this.forceUpdate();
-  }
+  const halfHeight = height / 2;
+  const checkmarkClassName = classnames(
+    "core-toggle-checkmark",
+    "icon", "icon-checkmark",
+    showCheckmark && "visible",
+    toggling && "core-toggling",
+  );
+  const toggleStyle: React.CSSProperties = { borderRadius: rounded ? halfHeight : 3, fontSize: halfHeight, ...props.style };
+  const toggleClassName = classnames(
+    "core-toggle",
+    buttonType === ToggleButtonType.Primary && "core-toggle-primary",
+    props.large && "core-toggle-large",
+    rounded && "rounded",
+    props.disabled && "uicore-disabled",
+    props.className);
+  const toggleHandleStyle: React.CSSProperties = {
+    width: height - (padding * 2),
+    transform: "translateX(" + _getOffset() + "px)",
+    top: padding,
+    bottom: padding,
+    left: padding,
+  };
+  const handleClassName = classnames(
+    "core-toggle-handle",
+    toggling && "core-toggling",
+  );
 
-  private _handleChange = () => {
-    this.setState(
-      (prevState) => ({ checked: !prevState.checked }),
-      () => { this.props.onChange && this.props.onChange(this.state.checked); });
-  }
-
-  private _handleBlur = (event: React.FocusEvent) => {
-    // istanbul ignore else
-    if (this.props.onBlur)
-      this.props.onBlur(event);
-  }
-
-  private _setHeight = (newHeight: number, newWidth: number) => {
-    if (this.state.height !== newHeight || this.state.width !== newWidth) {
-      this.setState({ height: newHeight, width: newWidth });
-    }
-  }
-
-  private _getOffset(): number {
-    return (this.state.checked) ? this.state.width - this.state.height : 0;
-  }
-
-  public render(): JSX.Element {
-    const halfHeight = this.state.height / 2;
-    const checkmarkClassName = classnames("core-toggle-checkmark", "icon", "icon-checkmark", this.props.showCheckmark && "visible");
-    const toggleStyle: React.CSSProperties = { borderRadius: this.props.rounded ? halfHeight : 3, fontSize: halfHeight, ...this.props.style };
-    const toggleClassName = classnames(
-      "core-toggle",
-      this.props.buttonType === ToggleButtonType.Primary && "core-toggle-primary",
-      this.props.large && "core-toggle-large",
-      this.props.rounded && "rounded",
-      this.props.disabled && "uicore-disabled",
-      this.props.className);
-    const toggleHandleStyle: React.CSSProperties = {
-      width: this.state.height - (this._padding * 2),
-      transform: "translateX(" + this._getOffset() + "px)",
-      top: this._padding,
-      bottom: this._padding,
-      left: this._padding,
-    };
-    return (
-      <label ref={(el) => { if (el) this._setHeight(el.clientHeight, el.clientWidth); }} style={toggleStyle} className={toggleClassName}>
-        <input type="checkbox" ref={this._inputElement} className="core-toggle-input"
-          checked={this.state.checked} disabled={this.props.disabled}
-          onChange={this._handleChange} onBlur={this._handleBlur} />
-        <span className="core-toggle-background" />
-        <span className={checkmarkClassName} />
-        <span className="core-toggle-handle" style={toggleHandleStyle} />
-      </label>
-    );
-  }
+  return (
+    <label ref={setHeightFromRef} style={toggleStyle} className={toggleClassName} onBlur={handleBlur}>
+      <input type="checkbox" ref={inputElement} className="core-toggle-input"
+        checked={checked} disabled={props.disabled}
+        onChange={handleChange} onBlur={handleCheckboxBlur} />
+      <span className="core-toggle-background" />
+      <span className={checkmarkClassName} />
+      <span className={handleClassName} style={toggleHandleStyle} />
+    </label>
+  );
 }

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { RemoteBriefcaseConnection, IModelApp, IModelAppOptions, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { assert } from "chai";
+import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelAppOptions, IModelConnection, MockRender, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 
@@ -29,10 +29,10 @@ describe("ChangeSummary (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    const authorizationClient = await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
 
     const options: IModelAppOptions = {
-      authorizationClient: TestUtility.imodelCloudEnv.authorization,
+      authorizationClient,
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     };

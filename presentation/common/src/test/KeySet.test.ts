@@ -4,14 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import {
-  createRandomECInstancesNodeKey,
-  createRandomECInstanceKey, createRandomECInstanceId,
-  createRandomEntityProps,
-  createRandomId,
-} from "./_helpers/random";
 import { Guid } from "@bentley/bentleyjs-core";
-import { KeySet, Key, InstanceKey, PresentationError } from "../presentation-common";
+import { InstanceKey, Key, KeySet, PresentationError } from "../presentation-common";
+import {
+  createRandomECInstanceId, createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomEntityProps, createRandomId,
+} from "./_helpers/random";
 
 describe("KeySet", () => {
 
@@ -73,6 +70,7 @@ describe("KeySet", () => {
     it("returns a valid GUID", () => {
       const keyset = new KeySet();
       expect(Guid.isGuid(keyset.guid)).to.be.true;
+      expect(keyset.guid).to.eq(Guid.empty);
     });
 
   });

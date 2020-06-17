@@ -10,11 +10,11 @@ import * as React from "react";
 import { UserInfo } from "@bentley/itwin-client";
 import { CommonProps, getUserColor } from "@bentley/ui-core";
 import { UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
-import { SignOutModalFrontstage } from "../oidc/SignOut";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { SignOutModalFrontstage } from "../oidc/SignOut";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { Backstage } from "./Backstage";
 import { UiFramework } from "../UiFramework";
+import { Backstage } from "./Backstage";
 
 // cSpell:ignore safearea
 

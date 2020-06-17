@@ -6,24 +6,24 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { StrokeOptions } from "./StrokeOptions";
-import { GeometryQuery } from "./GeometryQuery";
+import { Geometry } from "../Geometry";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { AnyCurve } from "./CurveChain";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { LineString3d } from "./LineString3d";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { Geometry } from "../Geometry";
 import { CurveLocationDetail } from "./CurveLocationDetail";
-import { GapSearchContext } from "./internalContexts/GapSearchContext";
-import { CountLinearPartsSearchContext } from "./internalContexts/CountLinearPartsSearchContext";
-import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceContext";
-import { SumLengthsContext } from "./internalContexts/SumLengthsContext";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { RecursiveCurveProcessor } from "./CurveProcessor";
+import { GeometryQuery } from "./GeometryQuery";
 import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
+import { CountLinearPartsSearchContext } from "./internalContexts/CountLinearPartsSearchContext";
+import { GapSearchContext } from "./internalContexts/GapSearchContext";
+import { SumLengthsContext } from "./internalContexts/SumLengthsContext";
+import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceContext";
+import { LineString3d } from "./LineString3d";
+import { StrokeOptions } from "./StrokeOptions";
 
 /** Describes the concrete type of a [[CurveCollection]]. Each type name maps to a specific subclass and can be used in conditional statements for type-switching.
  *    - "loop" => [[Loop]]
@@ -80,13 +80,13 @@ export abstract class CurveCollection extends GeometryQuery {
     return CloneWithExpandedLineStrings.clone(this);
   }
   /** Recurse through children to collect CurvePrimitive's in flat array. */
-  private collectCurvePrimitivesGo(results: CurvePrimitive[], smallestPossiblePrimitives: boolean) {
+  private collectCurvePrimitivesGo(results: CurvePrimitive[], smallestPossiblePrimitives: boolean, explodeLinestrings: boolean = false) {
     if (this.children) {
       for (const child of this.children) {
         if (child instanceof CurvePrimitive)
-          child.collectCurvePrimitivesGo(results, smallestPossiblePrimitives);
+          child.collectCurvePrimitivesGo(results, smallestPossiblePrimitives, explodeLinestrings);
         else if (child instanceof CurveCollection)
-          child.collectCurvePrimitivesGo(results, smallestPossiblePrimitives);
+          child.collectCurvePrimitivesGo(results, smallestPossiblePrimitives, explodeLinestrings);
       }
     }
   }
@@ -96,9 +96,9 @@ export abstract class CurveCollection extends GeometryQuery {
    * @param collectorArray optional array to receive primitives.   If present, new primitives are ADDED (without clearing the array.)
    * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
    */
-  public collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false): CurvePrimitive[] {
+  public collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false, explodeLineStrings: boolean = false): CurvePrimitive[] {
     const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
-    this.collectCurvePrimitivesGo(results, smallestPossiblePrimitives);
+    this.collectCurvePrimitivesGo(results, smallestPossiblePrimitives, explodeLineStrings);
     return results;
   }
 
@@ -189,21 +189,22 @@ export abstract class CurveChain extends CurveCollection {
     return this._curves;
   }
   /**
-   * Return curve primitive by index, interpreted cyclically for both Loop and Path
-   * @param index index to array
-   */
-  /**
-   * Return the `[index]` curve primitive, using `modulo` to map`index` to the cyclic indexing.
+   * Return the `[index]` curve primitive, optionally using `modulo` to map`index` to the cyclic indexing.
    * * In particular, `-1` is the final curve.
    * @param index cyclic index
    */
-  public cyclicCurvePrimitive(index: number): CurvePrimitive | undefined {
+  public cyclicCurvePrimitive(index: number, cyclic: boolean = true): CurvePrimitive | undefined {
     const n = this.children.length;
     if (n === 0)
       return undefined;
-
-    const index2 = Geometry.modulo(index, n);
-    return this.children[index2];
+    /** Try simplest non-cyclic access first . . */
+    if (index >= 0 && index < n)
+      return this.children[index];
+    if (cyclic) {
+      const index2 = Geometry.modulo(index, n);
+      return this.children[index2];
+    }
+    return undefined;
   }
   /** Stroke the chain into a simple xyz array.
    * @param options tolerance parameters controlling the stroking.
@@ -260,6 +261,16 @@ export abstract class CurveChain extends CurveCollection {
     for (const curve of this._curves)
       curve.reverseInPlace();
     this._curves.reverse();
+  }
+  /** Evaluate an indexed curve at a fraction.  Return as a CurveLocationDetail that indicates the primitive.
+   */
+
+  public primitiveIndexAndFractionToCurveLocationDetailPointAndDerivative(index: number, fraction: number, cyclic: boolean = false, result?: CurveLocationDetail): CurveLocationDetail | undefined {
+    const primitive = this.cyclicCurvePrimitive(index, cyclic);
+    if (primitive) {
+      return  CurveLocationDetail.createCurveEvaluatedFractionPointAndDerivative(primitive, fraction, result);
+    }
+    return undefined;
   }
 }
 

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { remote, ipcRenderer } from "electron";
+import { ipcRenderer, remote } from "electron";
 import Mocha = require("mocha");
 
 // Initialize mocha
@@ -45,7 +45,7 @@ async function startCertaTests(entryPoint: string) {
   }
 }
 
-const _CertaSendToBackend = async (name: string, args: any[]) => Promise.resolve(ipcRenderer.sendSync("certa-callback", { name, args }));
+const _CertaSendToBackend = async (name: string, args: any[]) => ipcRenderer.sendSync("certa-callback", { name, args });
 
 // Expose some globals
 window.startCertaTests = startCertaTests;

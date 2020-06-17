@@ -2,13 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as os from "os";
 import * as path from "path";
-import { BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, BriefcaseIdValue, StandaloneDb, IModelHost } from "../../imodeljs-backend";
-import { Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { assert, ChangeSetApplyOption, ChangeSetStatus, DbResult, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
+import {
+  Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery,
+} from "@bentley/imodelhub-client";
+import { IModelError } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { BriefcaseManager, ChangeSetToken, IModelDb, IModelHost, IModelJsFs, StandaloneDb } from "../../imodeljs-backend";
 
 /** Utility to work with iModelHub */
 export class HubUtility {
@@ -54,7 +57,7 @@ export class HubUtility {
     if (iModels.length === 0)
       return undefined;
     if (iModels.length > 1)
-      return Promise.reject(`Too many iModels with name ${iModelName} found`);
+      throw new Error(`Too many iModels with name ${iModelName} found`);
     return iModels[0];
   }
 
@@ -74,7 +77,7 @@ export class HubUtility {
   public static async queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
     const project: Project | undefined = await HubUtility.queryProjectByName(requestContext, projectName);
     if (!project)
-      return Promise.reject(`Project ${projectName} not found`);
+      throw new Error(`Project ${projectName} not found`);
     return project.wsgId;
   }
 
@@ -88,7 +91,7 @@ export class HubUtility {
   public static async queryIModelIdByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString> {
     const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModel || !iModel.id)
-      return Promise.reject(`IModel ${iModelName} not found`);
+      throw new Error(`IModel ${iModelName} not found`);
     return iModel.id!;
   }
 
@@ -101,16 +104,9 @@ export class HubUtility {
   /** Download all change sets of the specified iModel */
   private static async downloadChangeSets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _projectId: string, iModelId: GuidString): Promise<ChangeSet[]> {
     const query = new ChangeSetQuery();
-    query.selectDownloadUrl();
 
-    let perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Get ChangeSet Infos");
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelId, query);
-    perfLogger.dispose();
-    if (changeSets.length === 0)
-      return new Array<ChangeSet>();
-
-    perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Download ChangeSets");
-    await BriefcaseManager.imodelClient.changeSets.download(requestContext, changeSets, changeSetsPath);
+    const perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Download ChangeSets");
+    const changeSets = await BriefcaseManager.imodelClient.changeSets.download(requestContext, iModelId, query, changeSetsPath);
     perfLogger.dispose();
     return changeSets;
   }
@@ -139,7 +135,7 @@ export class HubUtility {
 
     const iModel: HubIModel | undefined = await HubUtility.queryIModelById(requestContext, projectId, iModelId);
     if (!iModel)
-      return Promise.reject(`IModel with id ${iModelId} not found`);
+      throw new Error(`IModel with id ${iModelId} not found`);
 
     // Write the JSON representing the iModel
     const iModelJsonStr = JSON.stringify(iModel, undefined, 4);
@@ -175,7 +171,7 @@ export class HubUtility {
 
     const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModel)
-      return Promise.reject(`IModel ${iModelName} not found`);
+      throw new Error(`IModel ${iModelName} not found`);
     const iModelId = iModel.id!;
 
     await HubUtility.downloadIModelById(requestContext, projectId, iModelId, downloadDir);
@@ -214,16 +210,67 @@ export class HubUtility {
     return path.join(iModelDir, path.basename(seedPathname));
   }
 
+  /** Apply change set with Merge operation on an iModel on disk - the supplied directory contains a sub folder
+   * with the seed files, change sets, etc. in a standard format.
+   * Returns time taken for each changeset. Returns on first apply changeset error.
+   */
+  public static getApplyChangeSetTime(iModelDir: string, startCS: number = 0, endCS: number = 0): any[] {
+    const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
+
+    Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
+    HubUtility.createStandaloneIModelFromSeed(briefcasePathname, iModelDir);
+    const iModel: StandaloneDb = StandaloneDb.openFile(briefcasePathname, OpenMode.ReadWrite);
+
+    const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
+    const endNum: number = endCS ? endCS : changeSets.length;
+    const filteredCS = changeSets.filter((obj) => obj.index >= startCS && obj.index <= endNum);
+
+    Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
+    const applyOption = ChangeSetApplyOption.Merge;
+    const perfLogger = new PerfLogger(`Applying change sets for operation ${ChangeSetApplyOption[applyOption]}`);
+
+    const results = [];
+    // Apply change sets one by one to debug any issues
+    for (const changeSet of filteredCS) {
+      const tempChangeSets = [changeSet];
+
+      const startTime = new Date().getTime();
+      const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(iModel.nativeDb, JSON.stringify(tempChangeSets), applyOption);
+      const endTime = new Date().getTime();
+      const elapsedTime = (endTime - startTime) / 1000.0;
+
+      if (status === ChangeSetStatus.Success) {
+        Logger.logInfo(HubUtility.logCategory, "Successfully applied ChangeSet", () => ({ ...changeSet, status, applyOption }));
+      } else {
+        Logger.logError(HubUtility.logCategory, "Error applying ChangeSet", () => ({ ...changeSet, status, applyOption }));
+      }
+      results.push({
+        csNum: changeSet.index,
+        csId: changeSet.id,
+        csApplyOption: ChangeSetApplyOption[applyOption],
+        csResult: ChangeSetStatus[status],
+        time: elapsedTime,
+      });
+      if (status !== ChangeSetStatus.Success)
+        return results;
+    }
+
+    perfLogger.dispose();
+    iModel.close();
+
+    return results;
+  }
+
   /** Validate all change set operations on an iModel on disk - the supplied directory contains a sub folder
    * with the seed files, change sets, etc. in a standard format. This tests merging the change sets, reversing them,
    * and finally reinstating them. The method also logs the necessary performance
-   * metrics with these operations.
+   * metrics with these operations
    */
   public static validateAllChangeSetOperationsOnDisk(iModelDir: string) {
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
     Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
-    HubUtility.createStandaloneIModel(briefcasePathname, iModelDir);
+    HubUtility.createStandaloneIModelFromSeed(briefcasePathname, iModelDir);
     const iModel = StandaloneDb.openFile(briefcasePathname, OpenMode.ReadWrite);
 
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
@@ -263,7 +310,7 @@ export class HubUtility {
     this.validateAllChangeSetOperationsOnDisk(iModelDir);
   }
 
-  public static getSeedPathname(iModelDir: string) {
+  private static getSeedPathname(iModelDir: string) {
     const seedFileDir = path.join(iModelDir, "seed");
     const seedFileNames = IModelJsFs.readdirSync(seedFileDir);
     if (seedFileNames.length !== 1) {
@@ -298,7 +345,7 @@ export class HubUtility {
 
     const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.briefcases.create(requestContext, iModelId);
     if (!briefcase) {
-      return Promise.reject(`Could not acquire a briefcase for the iModel ${iModelId}`);
+      throw new Error(`Could not acquire a briefcase for the iModel ${iModelId}`);
     }
     briefcase.iModelId = iModelId;
 
@@ -350,13 +397,10 @@ export class HubUtility {
   /**
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
-  public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
-    const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const iModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-
+  public static async purgeAcquiredBriefcasesById(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, onReachThreshold: () => void, acquireThreshold: number = 16): Promise<void> {
     const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
     if (briefcases.length > acquireThreshold) {
-      Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
+      onReachThreshold();
 
       const promises = new Array<Promise<void>>();
       briefcases.forEach((briefcase: HubBriefcase) => {
@@ -364,6 +408,18 @@ export class HubUtility {
       });
       await Promise.all(promises);
     }
+  }
+
+  /**
+   * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
+   */
+  public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
+    const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const iModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+
+    return this.purgeAcquiredBriefcasesById(requestContext, iModelId, () => {
+      Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
+    }, acquireThreshold);
   }
 
   /** Reads change sets from disk and expects a standard structure of how the folder is organized */
@@ -389,16 +445,20 @@ export class HubUtility {
   }
 
   /** Creates a standalone iModel from the seed file (version 0) */
-  public static createStandaloneIModel(iModelPathname: string, iModelDir: string) {
+  private static createStandaloneIModelFromSeed(iModelPathname: string, iModelDir: string) {
     const seedPathname = HubUtility.getSeedPathname(iModelDir);
 
     if (IModelJsFs.existsSync(iModelPathname))
       IModelJsFs.unlinkSync(iModelPathname);
     IModelJsFs.copySync(seedPathname, iModelPathname);
 
-    const iModel = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
-    iModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-    iModel.close();
+    const nativeDb = new IModelHost.platform.DgnDb();
+    const status = nativeDb.openIModel(iModelPathname, OpenMode.ReadWrite);
+    if (DbResult.BE_SQLITE_OK !== status)
+      throw new IModelError(status, "Could not open iModel as Standalone");
+    nativeDb.saveLocalValue("StandaloneEdit", "");
+    nativeDb.saveChanges();
+    nativeDb.closeIModel();
 
     return iModelPathname;
   }

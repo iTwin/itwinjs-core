@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@bentley/ui-framework";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ToolUiProvider } from "@bentley/ui-framework";
 import { PlaceBlockTool } from "../../tools/PlaceBlockTool";
 
 class PlaceBlockToolSettingsUiProvider extends ToolUiProvider {

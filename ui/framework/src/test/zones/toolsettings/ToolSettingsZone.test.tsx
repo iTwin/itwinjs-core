@@ -6,28 +6,15 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-
 import { WidgetState } from "@bentley/ui-abstract";
 import { Rectangle } from "@bentley/ui-core";
-import { getDefaultZoneManagerProps, ToolSettings, ResizeHandle } from "@bentley/ui-ninezone";
-
+import { getDefaultZoneManagerProps, ResizeHandle, ToolSettings } from "@bentley/ui-ninezone";
 import {
-  ConfigurableUiManager,
-  ToolUiProvider,
-  ConfigurableCreateInfo,
-  FrontstageProvider,
-  FrontstageProps,
-  Frontstage,
-  Zone,
-  Widget,
-  FrontstageManager,
-  FrontstageComposer,
-  CoreTools,
-  ToolSettingsZone,
-  ToolSettingsZoneProps,
+  ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider,
+  ToolSettingsZone, ToolSettingsZoneProps, ToolUiProvider, Widget, Zone,
 } from "../../../ui-framework";
-import { Tool1 } from "../../tools/Tool1";
 import TestUtils, { ReactWrapper } from "../../TestUtils";
+import { Tool1 } from "../../tools/Tool1";
 
 describe("ToolSettingsZone", () => {
   const sandbox = sinon.createSandbox();

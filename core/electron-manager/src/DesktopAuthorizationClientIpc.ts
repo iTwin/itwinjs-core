@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { IModelHost, DesktopAuthorizationClient } from "@bentley/imodeljs-backend";
-import { AccessToken } from "@bentley/itwin-client";
-import { DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
 import * as electron from "electron";
+import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { DesktopAuthorizationClient, IModelHost } from "@bentley/imodeljs-backend";
+import { DesktopAuthorizationClientConfiguration } from "@bentley/imodeljs-common";
+import { AccessToken } from "@bentley/itwin-client";
 import { ElectronManagerLoggerCategory } from "./ElectronManagerLoggerCategory";
+
 const { ipcMain: ipc } = electron;
 
 const loggerCategory: string = ElectronManagerLoggerCategory.Authorization;
@@ -18,7 +19,6 @@ const loggerCategory: string = ElectronManagerLoggerCategory.Authorization;
  */
 export class DesktopAuthorizationClientIpc {
   private static _desktopAuthorizationClient?: DesktopAuthorizationClient;
-  private static _removeUserStateListener: () => void;
 
   /** Wrapper around event.sender.send to add log traces */
   private static ipcReply(event: electron.IpcMainEvent, message: string, err: Error | null, ...args: any[]) {
@@ -58,7 +58,7 @@ export class DesktopAuthorizationClientIpc {
       requestContext.enter();
       try {
         this._desktopAuthorizationClient = new DesktopAuthorizationClient(configuration);
-        this._removeUserStateListener = this._desktopAuthorizationClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
+        this._desktopAuthorizationClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
           this.ipcSend(mainWindow, "DesktopAuthorizationClient.onUserStateChanged", token);
         });
         await this._desktopAuthorizationClient.initialize(requestContext);
@@ -105,21 +105,6 @@ export class DesktopAuthorizationClientIpc {
         this.ipcReply(event, "DesktopAuthorizationClient.signOut:complete", null);
       } catch (err) {
         this.ipcReply(event, "DesktopAuthorizationClient.signOut:complete", err);
-      }
-    });
-
-    this.ipcOn("DesktopAuthorizationClient.dispose", (event: electron.IpcMainEvent) => {
-      if (!this._desktopAuthorizationClient) {
-        this.ipcReply(event, "DesktopAuthorizationClient.dispose:complete", new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory));
-        return;
-      }
-
-      try {
-        this._removeUserStateListener();
-        this._desktopAuthorizationClient.dispose();
-        this.ipcReply(event, "DesktopAuthorizationClient.dispose:complete", null);
-      } catch (err) {
-        this.ipcReply(event, "DesktopAuthorizationClient.dispose:complete", err);
       }
     });
 

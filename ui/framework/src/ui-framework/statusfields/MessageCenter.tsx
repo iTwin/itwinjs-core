@@ -7,18 +7,14 @@
  */
 
 import * as React from "react";
-
-import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import {
-  MessageCenter, MessageCenterTab, MessageCenterMessage, MessageCenterDialog, FooterPopup,
-} from "@bentley/ui-ninezone";
-
-import { UiFramework } from "../UiFramework";
-
-import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
+import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { FooterPopup, MessageCenter, MessageCenterDialog, MessageCenterMessage, MessageCenterTab } from "@bentley/ui-ninezone";
 import { MessageManager } from "../messages/MessageManager";
-import { StatusFieldProps } from "./StatusFieldProps";
 import { MessageSpan } from "../messages/MessageSpan";
+import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";
+import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
+import { UiFramework } from "../UiFramework";
+import { StatusFieldProps } from "./StatusFieldProps";
 
 /** Enum for the [[MessageCenterField]] active tab
  * @internal
@@ -52,6 +48,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
   private _className: string;
   private _indicator = React.createRef<HTMLDivElement>();
   private _title = UiFramework.translate("messageCenter.messages");
+  private _unloadMessagesUpdatedHandler?: () => void;
 
   public readonly state: Readonly<MessageCenterState> = {
     activeTab: MessageCenterActiveTab.AllMessages,
@@ -68,16 +65,22 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
 
   /** @internal */
   public componentDidMount() {
-    MessageManager.onMessagesUpdatedEvent.addListener(this._handleMessagesUpdatedEvent);
+    this._unloadMessagesUpdatedHandler = MessageManager.onMessagesUpdatedEvent.addListener(this._handleMessagesUpdatedEvent, this);
   }
 
   /** @internal */
   public componentWillUnmount() {
-    MessageManager.onMessagesUpdatedEvent.removeListener(this._handleMessagesUpdatedEvent);
+    // istanbul ignore else
+    if (this._unloadMessagesUpdatedHandler) {
+      this._unloadMessagesUpdatedHandler();
+      this._unloadMessagesUpdatedHandler = undefined;
+    }
   }
 
   private _handleMessagesUpdatedEvent = () => {
-    this.setState({ messageCount: MessageManager.messages.length });
+    // istanbul ignore else
+    if (this._unloadMessagesUpdatedHandler)
+      this.setState({ messageCount: MessageManager.messages.length });
   }
 
   public render(): React.ReactNode {
@@ -171,7 +174,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
     const messages = MessageManager.messages.slice(0).reverse();
     const tabRows: React.ReactChild[] = new Array<React.ReactChild>();
 
-    messages.forEach((details: NotifyMessageDetails, index: number) => {
+    messages.forEach((details: NotifyMessageDetailsType, index: number) => {
       /* istanbul ignore else */
       if (this.state.activeTab === MessageCenterActiveTab.AllMessages || this.isProblemStatus(details.priority)) {
 

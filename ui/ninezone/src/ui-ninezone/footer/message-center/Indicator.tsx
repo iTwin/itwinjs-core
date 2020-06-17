@@ -6,10 +6,10 @@
  * @module MessageCenter
  */
 
+import "./Indicator.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { FooterIndicator, FooterIndicatorProps } from "../Indicator";
-import "./Indicator.scss";
 
 /** Properties of [[MessageCenter]] component.
  * @beta

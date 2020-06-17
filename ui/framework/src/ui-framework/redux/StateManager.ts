@@ -8,11 +8,11 @@
 
 // cSpell:ignore DEVTOOLS
 
-import { createStore, combineReducers, ReducersMapObject, Store } from "redux";
+import { combineReducers, createStore, ReducersMapObject, Store } from "redux";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiError } from "@bentley/ui-abstract";
-import { ReducerRegistryInstance, NameToReducerMap } from "./ReducerRegistry";
-import { FrameworkState, FrameworkReducer } from "./FrameworkState";
+import { FrameworkReducer, FrameworkState } from "./FrameworkState";
+import { NameToReducerMap, ReducerRegistryInstance } from "./ReducerRegistry";
 
 /** Generic 'root' state for the ui-framework package. Since this state contains common values needed by many iModel.js applications
  * it is automatically added to the Redux store when using [[StateManager]].
@@ -24,8 +24,8 @@ export interface FrameworkRootState {
 
 /**
  * Centralized state management class using  Redux actions, reducers and store. This class monitors the ReducerRegistry and will
- * automatically update the store when a new reducer is registered.  This allows the store to be incrementally constructed and modules
- * and/or plugin are loaded.
+ * automatically update the store when a new reducer is registered.  This allows the store to be incrementally constructed as modules
+ * and/or extensions are loaded.
  * @beta
  */
 export class StateManager {

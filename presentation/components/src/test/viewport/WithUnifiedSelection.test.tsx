@@ -5,22 +5,21 @@
 /* tslint:disable:no-direct-imports */
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-import * as React from "react";
 import { expect } from "chai";
-import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { ElementProps, Code } from "@bentley/imodeljs-common";
-import { IModelConnection, ViewState3d, NoRenderApp, HiliteSet as IModelHiliteSet, IModelApp, SelectionSet } from "@bentley/imodeljs-frontend";
+import * as React from "react";
+import * as sinon from "sinon";
+import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+import { Code, ElementProps } from "@bentley/imodeljs-common";
+import { HiliteSet as IModelHiliteSet, IModelApp, IModelConnection, NoRenderApp, SelectionSet, ViewState3d } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import {
-  Presentation, SelectionManager, SelectionChangeEvent,
-  SelectionChangeEventArgs, SelectionChangeType, HiliteSet, SelectionScopesManager,
+  HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager,
 } from "@bentley/presentation-frontend";
 import { ViewportComponent } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent, viewWithUnifiedSelection } from "../../presentation-components";

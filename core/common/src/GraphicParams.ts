@@ -7,8 +7,8 @@
  */
 
 import { ColorDef } from "./ColorDef";
-import { LinePixels } from "./LinePixels";
 import { Gradient } from "./Gradient";
+import { LinePixels } from "./LinePixels";
 import { RenderMaterial } from "./RenderMaterial";
 
 /** Flags indicating whether and how the interiors of closed planar regions is displayed within a view.
@@ -33,23 +33,37 @@ export enum FillFlags {
 
 /** The "cooked" material and symbology for a [[RenderGraphic]]. This determines the appearance
  * (e.g. texture, color, width, linestyle, etc.) used to draw Geometry.
- * @beta
+ * @public
  */
 export class GraphicParams {
+  /** Describes how fill is applied to planar regions in wireframe mode. */
   public fillFlags = FillFlags.None;
+  /** The line pattern applied to curves and edges. */
   public linePixels = LinePixels.Solid;
+  /** The width, in pixels, of curves and edges. Values are clamped to [1..31] at display time. */
   public rasterWidth = 1;
+  /** The color of curves and edges. */
   public lineColor = ColorDef.black;
+  /** The color of surfaces. */
   public fillColor = ColorDef.black;
+  /** @alpha */
   public trueWidthStart = 0;
+  /** @alpha */
   public trueWidthEnd = 0;
+  /** Material applied to surfaces.
+   * @beta
+   */
   public material?: RenderMaterial;
+  /** Gradient fill applied to surfaces. */
   public gradient?: Gradient.Symb;
 
-  public setLineTransparency(transparency: number) { this.lineColor = this.lineColor.withAlpha(transparency); }
+  /** Set the transparency of the line color, where 0=fully opaque and 255=full transparent. */
+  public setLineTransparency(transparency: number) { this.lineColor = this.lineColor.withTransparency(transparency); }
 
-  public setFillTransparency(transparency: number) { this.fillColor = this.fillColor.withAlpha(transparency); }
+  /** Set the transparency of the fill color, where 0=fully opaque and 255=full transparent. */
+  public setFillTransparency(transparency: number) { this.fillColor = this.fillColor.withTransparency(transparency); }
 
+  /** Conveniently create a GraphicParams the most commonly-used properties. */
   public static fromSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels = LinePixels.Solid): GraphicParams {
     const graphicParams = new GraphicParams();
     graphicParams.lineColor = lineColor;
@@ -59,6 +73,9 @@ export class GraphicParams {
     return graphicParams;
   }
 
+  /** Create a GraphicParams with blanking fill of the specified color.
+   * @see [[FillFlags.Blanking]].
+   */
   public static fromBlankingFill(fillColor: ColorDef): GraphicParams {
     const graphicParams = new GraphicParams();
     graphicParams.fillColor = fillColor;

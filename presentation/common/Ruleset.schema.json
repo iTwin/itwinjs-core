@@ -87,7 +87,13 @@
           "items": {
             "anyOf": [
               {
+                "$ref": "#/definitions/NodeArtifactsRule"
+              },
+              {
                 "$ref": "#/definitions/CheckBoxRule"
+              },
+              {
+                "$ref": "#/definitions/ExtendedDataRule"
               },
               {
                 "$ref": "#/definitions/GroupingRule"
@@ -109,12 +115,6 @@
               },
               {
                 "$ref": "#/definitions/StyleOverride"
-              },
-              {
-                "$ref": "#/definitions/ExtendedDataRule"
-              },
-              {
-                "$ref": "#/definitions/NodeArtifactsRule"
               }
             ]
           },
@@ -149,6 +149,9 @@
                 "$ref": "#/definitions/CustomNodeSpecification"
               },
               {
+                "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
+              },
+              {
                 "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
               },
               {
@@ -156,9 +159,6 @@
               },
               {
                 "$ref": "#/definitions/RelatedInstanceNodesSpecificationNew"
-              },
-              {
-                "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
               }
             ]
           },
@@ -2634,7 +2634,13 @@
           "items": {
             "anyOf": [
               {
+                "$ref": "#/definitions/NodeArtifactsRule"
+              },
+              {
                 "$ref": "#/definitions/CheckBoxRule"
+              },
+              {
+                "$ref": "#/definitions/ExtendedDataRule"
               },
               {
                 "$ref": "#/definitions/GroupingRule"
@@ -2656,12 +2662,6 @@
               },
               {
                 "$ref": "#/definitions/StyleOverride"
-              },
-              {
-                "$ref": "#/definitions/ExtendedDataRule"
-              },
-              {
-                "$ref": "#/definitions/NodeArtifactsRule"
               }
             ]
           },
@@ -2696,6 +2696,9 @@
                 "$ref": "#/definitions/CustomNodeSpecification"
               },
               {
+                "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
+              },
+              {
                 "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
               },
               {
@@ -2703,9 +2706,6 @@
               },
               {
                 "$ref": "#/definitions/RelatedInstanceNodesSpecificationNew"
-              },
-              {
-                "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
               }
             ]
           },
@@ -2993,6 +2993,9 @@
                 "$ref": "#/definitions/CustomNodeSpecification"
               },
               {
+                "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
+              },
+              {
                 "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
               },
               {
@@ -3000,9 +3003,6 @@
               },
               {
                 "$ref": "#/definitions/RelatedInstanceNodesSpecificationNew"
-              },
-              {
-                "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
               }
             ]
           },
@@ -3107,7 +3107,16 @@
       "items": {
         "anyOf": [
           {
+            "$ref": "#/definitions/ContentRule"
+          },
+          {
+            "$ref": "#/definitions/NodeArtifactsRule"
+          },
+          {
             "$ref": "#/definitions/CheckBoxRule"
+          },
+          {
+            "$ref": "#/definitions/ExtendedDataRule"
           },
           {
             "$ref": "#/definitions/GroupingRule"
@@ -3131,19 +3140,10 @@
             "$ref": "#/definitions/StyleOverride"
           },
           {
-            "$ref": "#/definitions/ExtendedDataRule"
-          },
-          {
-            "$ref": "#/definitions/NodeArtifactsRule"
-          },
-          {
             "$ref": "#/definitions/ChildNodeRule"
           },
           {
             "$ref": "#/definitions/RootNodeRule"
-          },
-          {
-            "$ref": "#/definitions/ContentRule"
           },
           {
             "$ref": "#/definitions/ContentModifier"

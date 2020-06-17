@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as bsiChecker from "../Checker";
-import { IndexedCollectionInterval, IndexedXYZCollectionInterval } from "../../geometry3d/IndexedCollectionInterval";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { IndexedCollectionInterval, IndexedXYZCollectionInterval } from "../../geometry3d/IndexedCollectionInterval";
+import * as bsiChecker from "../Checker";
+
 /* tslint:disable:no-console */
 
 describe("IndexedXYZCollectionInterval", () => {

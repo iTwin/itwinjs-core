@@ -6,11 +6,11 @@
  * @module iModelBankClient
  */
 import { IModelHubStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import { Asset, Project } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext, request, RequestOptions, Response, WsgError, WsgInstance } from "@bentley/itwin-client";
 import { ContextManagerClient } from "../IModelCloudEnvironment";
 import { IModelHubClientError } from "../imodelhub/Errors";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
-import { Asset, Project } from "@bentley/context-registry-client";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelBank;
 
@@ -49,15 +49,15 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     const res: Response = await request(requestContext, url, options);
     requestContext.enter();
     if (!res.body || !res.body.instances) {
-      return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return anything.`));
+      throw new Error(`Query to URL ${url} executed successfully, but did NOT return anything.`);
     }
 
     const props = res.body.instances as WsgInstance[];
     if (props.length === 0)
-      return Promise.reject(new WsgError(WSStatus.InstanceNotFound));
+      throw new WsgError(WSStatus.InstanceNotFound);
 
     if (props.length !== 1)
-      return Promise.reject(new IModelHubClientError(IModelHubStatus.InvalidArgumentError));
+      throw new IModelHubClientError(IModelHubStatus.InvalidArgumentError);
 
     Logger.logTrace(loggerCategory, `Successful GET request to ${url}`);
 
@@ -71,7 +71,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     const asset = new Asset();
     asset.wsgId = asset.ecId = props[0].id;
     asset.name = props[0].name;
-    return Promise.resolve(asset);
+    return asset;
   }
 
   public async queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
@@ -81,7 +81,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     const project = new Project();
     project.wsgId = project.ecId = props[0].id;
     project.name = props[0].name;
-    return Promise.resolve(project);
+    return project;
   }
 
   public async createContext(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
@@ -98,7 +98,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
       body,
     };
 
-    return request(requestContext, url, options).then(async () => Promise.resolve());
+    await request(requestContext, url, options);
   }
 
   public async deleteContext(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
@@ -112,6 +112,6 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
       headers: { authorization: requestContext.accessToken.toTokenString() },
     };
 
-    return request(requestContext, url, options).then(async () => Promise.resolve());
+    await request(requestContext, url, options);
   }
 }

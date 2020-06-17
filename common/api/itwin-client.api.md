@@ -15,17 +15,10 @@ import { LogFunction } from '@bentley/bentleyjs-core';
 
 // @beta
 export class AccessToken {
-    // (undocumented)
-    protected _expiresAt?: Date;
-    // @internal (undocumented)
-    static foreignProjectAccessTokenJsonProperty: string;
+    constructor(jwt: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo);
+    static fromJson(jsonObj: any): AccessToken;
     // @internal
-    static fromForeignProjectAccessTokenJson(foreignJsonStr: string): AccessToken | undefined;
-    // @internal
-    static fromJson(jsonObj: any): AccessToken | undefined;
-    // @internal
-    static fromJsonWebTokenString(jwt: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo): AccessToken;
-    // @internal
+    static fromTokenResponseJson(tokenResponse: any, userProfileResponse?: any): AccessToken;
     static fromTokenString(tokenStr: string): AccessToken;
     // @internal (undocumented)
     getExpiresAt(): Date | undefined;
@@ -33,17 +26,10 @@ export class AccessToken {
     getStartsAt(): Date | undefined;
     // @internal (undocumented)
     getUserInfo(): UserInfo | undefined;
-    // (undocumented)
-    protected _jwt?: string;
     // @internal (undocumented)
     setUserInfo(userInfo: UserInfo): void;
-    // (undocumented)
-    protected _startsAt?: Date;
-    // @internal
     toTokenString(includePrefix?: IncludePrefix): string;
-    // (undocumented)
-    protected _userInfo?: UserInfo;
-}
+    }
 
 // @beta
 export class AuthenticationError extends ResponseError {
@@ -52,8 +38,6 @@ export class AuthenticationError extends ResponseError {
 // @beta
 export interface AuthorizationClient {
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    hasExpired: boolean;
-    hasSignedIn: boolean;
     isAuthorized: boolean;
 }
 
@@ -81,6 +65,16 @@ export interface CancelRequest {
 // @beta (undocumented)
 export type ChangeState = "new" | "modified" | "deleted";
 
+// @beta
+export class ChunkedQueryContext {
+    static create(queryOptions: RequestQueryOptions): ChunkedQueryContext | undefined;
+    handleIteration(queryOptions: RequestQueryOptions): void;
+    get instancesLeft(): number | undefined;
+    get isQueryFinished(): boolean;
+    get skipToken(): string;
+    set skipToken(value: string);
+    }
+
 // @internal (undocumented)
 export interface ClassKeyMapInfo {
     classKeyPropertyName?: string;
@@ -99,14 +93,6 @@ export abstract class Client {
     protected _url?: string;
 }
 
-// @beta
-export enum ClientsLoggerCategory {
-    Clients = "itwin-client.Clients",
-    ECJson = "itwin-client.ECJson",
-    // (undocumented)
-    Request = "itwin-client.Request"
-}
-
 // @internal (undocumented)
 export type ConstructorType = new () => any;
 
@@ -121,6 +107,11 @@ export class DefaultRequestOptionsProvider {
 // @internal
 export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvider {
     constructor();
+}
+
+// @internal
+export class DownloadFailed extends BentleyError {
+    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @beta
@@ -149,6 +140,7 @@ export interface FileHandler {
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
+    unlink(filePath: string): void;
     uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 }
 
@@ -166,7 +158,7 @@ export class ImsAuthorizationClient extends Client {
     static readonly searchKey: string;
 }
 
-// @internal (undocumented)
+// @beta
 export enum IncludePrefix {
     // (undocumented)
     No = 1,
@@ -176,6 +168,16 @@ export enum IncludePrefix {
 
 // @beta
 export const isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext;
+
+// @beta
+export enum ITwinClientLoggerCategory {
+    // (undocumented)
+    Authorization = "itwin-client.Authorization",
+    Clients = "itwin-client.Clients",
+    ECJson = "itwin-client.ECJson",
+    // (undocumented)
+    Request = "itwin-client.Request"
+}
 
 // @beta (undocumented)
 export type ProgressCallback = (progress: ProgressInfo) => void;
@@ -361,6 +363,11 @@ export abstract class SamlToken {
     protected _x509Certificate?: string;
 }
 
+// @beta
+export class SasUrlExpired extends BentleyError {
+    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+}
+
 // @internal
 export class UrlDiscoveryClient extends Client {
     constructor();
@@ -408,10 +415,9 @@ export class UserInfo {
         ultimateSite: string;
         usageCountryIso: string;
     } | undefined;
+    static fromJson(jsonObj: any): UserInfo;
     // @internal
-    static fromJson(jsonObj: any): UserInfo | undefined;
-    // @internal
-    static fromTokenResponseJson(jsonObj: any): UserInfo | undefined;
+    static fromTokenResponseJson(jsonObj: any): UserInfo;
     id: string;
     organization?: {
         id: string;
@@ -436,6 +442,7 @@ export abstract class WsgClient extends Client {
     static readonly configUseHostRelyingPartyUriAsFallback = "imjs_use_default_relying_party_uri_as_fallback";
     protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
     protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]>;
+    protected getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions): Promise<T[]>;
     protected abstract getRelyingPartyUrl(): string;
     getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
     protected postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T>;

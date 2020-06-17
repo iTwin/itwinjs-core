@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { compareStrings, Dictionary, SortedArray } from "../bentleyjs-core";
-import { compareWithTolerance, compareStringsOrUndefined, compareNumbersOrUndefined, compareBooleans, compareNumbers } from "../Compare";
+import { compareBooleans, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, compareWithTolerance } from "../Compare";
 
 class Thing {
   public constructor(public readonly first: number, public readonly second: number) { }

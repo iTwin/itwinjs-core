@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { EntityClassProps } from "../Deserialization/JsonProps";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { ECClassModifier, parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedMixin } from "../Interfaces";
+import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
 import { Mixin } from "./Mixin";
 import { AnyProperty, NavigationProperty, Property } from "./Property";
-import { Schema } from "./Schema";
 import { RelationshipClass } from "./RelationshipClass";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { EntityClassProps } from "./../Deserialization/JsonProps";
-import { ECClassModifier, parseStrengthDirection, SchemaItemType, StrengthDirection } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedMixin } from "./../Interfaces";
-import { SchemaItemKey } from "./../SchemaKey";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { Schema } from "./Schema";
 
 /**
  * A Typescript class representation of an ECEntityClass.

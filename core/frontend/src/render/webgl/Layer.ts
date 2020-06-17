@@ -8,9 +8,9 @@
 
 import { Id64 } from "@bentley/bentleyjs-core";
 import { RenderMemory } from "../RenderMemory";
-import { RenderPass } from "./RenderFlags";
 import { Graphic } from "./Graphic";
 import { RenderCommands } from "./RenderCommands";
+import { RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
 
 abstract class GraphicWrapper extends Graphic {

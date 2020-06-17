@@ -6,10 +6,10 @@
  * @module PresentationRules
  */
 
-import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
-import { RelationshipDirection } from "../RelationshipDirection";
 import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
+import { RelationshipDirection } from "../RelationshipDirection";
 import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
+import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
 
 /**
  * Creates content for ECInstance(s) related to current selection.

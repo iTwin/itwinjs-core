@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
 import { SchemaContext } from "../../../src/Context";
 import { PrimitiveType } from "../../../src/ECObjects";
 import { Enumeration } from "../../../src/Metadata/Enumeration";

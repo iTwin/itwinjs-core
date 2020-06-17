@@ -5,13 +5,14 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { CurvePrimitive } from "./CurvePrimitive";
 import { AnyCurve } from "./CurveChain";
-import { UnionRegion } from "./UnionRegion";
 import { BagOfCurves, CurveCollection } from "./CurveCollection";
-import { ParityRegion } from "./ParityRegion";
+import { CurvePrimitive } from "./CurvePrimitive";
 import { Loop } from "./Loop";
+import { ParityRegion } from "./ParityRegion";
 import { Path } from "./Path";
+import { UnionRegion } from "./UnionRegion";
+
 /* tslint:disable:variable-name no-empty*/
 
 /** base class for detailed traversal of curve artifacts.

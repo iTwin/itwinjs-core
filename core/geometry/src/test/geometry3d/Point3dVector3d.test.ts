@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Angle } from "../../geometry3d/Angle";
-
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import * as bsiChecker from "../Checker";
-import { Sample } from "../../serialization/GeometrySamples";
 import { expect } from "chai";
 import { AxisOrder } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { Transform } from "../../geometry3d/Transform";
+import { Sample } from "../../serialization/GeometrySamples";
+import * as bsiChecker from "../Checker";
+
 /* tslint:disable:no-console */
 export class MatrixTests {
 

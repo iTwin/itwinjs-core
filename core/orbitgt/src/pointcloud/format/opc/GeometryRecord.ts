@@ -14,14 +14,14 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
-import { ABuffer } from "../../../system/buffer/ABuffer";
-import { LittleEndian } from "../../../system/buffer/LittleEndian";
 import { Bounds } from "../../../spatial/geom/Bounds";
 import { Coordinate } from "../../../spatial/geom/Coordinate";
+import { ABuffer } from "../../../system/buffer/ABuffer";
+import { LittleEndian } from "../../../system/buffer/LittleEndian";
 import { OutStream } from "../../../system/io/OutStream";
-import { Grid } from "../../model/Grid";
 import { ALong } from "../../../system/runtime/ALong";
 import { ContentLoader } from "../../../system/storage/ContentLoader";
+import { Grid } from "../../model/Grid";
 
 /**
  * Class GeometryRecord defines a geometry record.

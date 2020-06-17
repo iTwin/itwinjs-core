@@ -3,34 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Code, ColorDef, GeometryStreamBuilder, IModel, PhysicalElementProps } from "@bentley/imodeljs-common";
 import {
-  Guid,
-  Id64,
-  Id64String,
-} from "@bentley/bentleyjs-core";
-import {
-  Box,
-  Point3d,
-  Range3d,
-  Vector3d,
-  YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import {
-  Code,
-  ColorDef,
-  GeometricElement3dProps,
-  GeometryStreamBuilder,
-  IModel,
-} from "@bentley/imodeljs-common";
-import {
-  BackendRequestContext,
-  GenericSchema,
-  IModelDb,
-  PhysicalModel,
-  PhysicalObject,
-  PhysicalPartition,
-  SnapshotDb,
-  SpatialCategory,
+  BackendRequestContext, GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -115,7 +92,7 @@ describe("tile tree", () => {
     const geomBuilder = new GeometryStreamBuilder();
     geomBuilder.appendGeometry(Box.createDgnBox(Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, 2), 2, 2, 2, 2, true)!);
     const category = SpatialCategory.insert(db, IModel.dictionaryId, "kittycat", { color: ColorDef.white.toJSON(), transp: 0, invisible: false });
-    const elemProps: GeometricElement3dProps = {
+    const elemProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: modelId,
       category,

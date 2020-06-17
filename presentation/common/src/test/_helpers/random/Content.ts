@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import {
-  CategoryDescription, TypeDescription, EditorDescription, Field,
-  PrimitiveTypeDescription, Descriptor, Content, PropertyValueFormat, StructTypeDescription,
-  NestedContentField, PropertiesField,
+  CategoryDescription, Content, Descriptor, EditorDescription, Field, NestedContentField, PrimitiveTypeDescription, PropertiesField,
+  PropertyValueFormat, StructTypeDescription, TypeDescription,
 } from "../../../presentation-common";
-import { PropertyJSON } from "../../../presentation-common/content/Property";
-import { NestedContentFieldJSON, BaseFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
 import { SelectClassInfoJSON } from "../../../presentation-common/content/Descriptor";
-import { createRandomRelationshipPathJSON, createRandomECClassInfoJSON, createRandomRelatedClassInfoJSON, createRandomPropertyInfoJSON } from "./EC";
+import { BaseFieldJSON, NestedContentFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
+import { PropertyJSON } from "../../../presentation-common/content/Property";
+import { createRandomECClassInfoJSON, createRandomPropertyInfoJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON } from "./EC";
 import { nullable } from "./Misc";
 
 const createRandomSelectClassInfoJSON = (): SelectClassInfoJSON => {

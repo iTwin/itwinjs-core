@@ -2,11 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@bentley/imodeljs-common";
-import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import {
+  HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+} from "@bentley/imodeljs-frontend";
 import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
-import { assert, expect } from "chai";
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();

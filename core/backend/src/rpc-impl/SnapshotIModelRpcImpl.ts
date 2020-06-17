@@ -7,7 +7,9 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import {
+  IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
+} from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";

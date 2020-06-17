@@ -6,28 +6,21 @@
  * @module Frontstage
  */
 
-import * as React from "react";
+import "./FrameworkStagePanel.scss";
 import classnames from "classnames";
+import * as React from "react";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import {
-  StagePanel as NZ_StagePanel,
-  StagePanelTypeHelpers,
-  NineZoneStagePanelManagerProps,
-  StagePanelTarget,
-  Splitter,
-  WidgetZoneId,
-  SplitterTarget,
-  SplitterPaneTarget as NZ_SplitterPaneTarget,
-  ZonesManagerWidgetsProps,
-  SafeAreaInsets,
+  NineZoneStagePanelManagerProps, SafeAreaInsets, Splitter, SplitterPaneTarget as NZ_SplitterPaneTarget, SplitterTarget, StagePanel as NZ_StagePanel,
+  StagePanelTarget, StagePanelTypeHelpers, WidgetZoneId, ZonesManagerWidgetsProps,
 } from "@bentley/ui-ninezone";
-import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
 import { StagePanelChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
-import { ZoneLocation } from "../zones/Zone";
-import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { getStagePanelType, getNestedStagePanelKey } from "./StagePanel";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import "./FrameworkStagePanel.scss";
+import { SafeAreaContext } from "../safearea/SafeAreaContext";
+import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
+import { ZoneLocation } from "../zones/Zone";
+import { getNestedStagePanelKey, getStagePanelType } from "./StagePanel";
+import { StagePanelState } from "./StagePanelDef";
 
 /** Properties of a [[FrameworkStagePanel]] component
  * @internal
@@ -45,6 +38,7 @@ export interface FrameworkStagePanelProps {
   minSize?: number;
   location: StagePanelLocation;
   panel: NineZoneStagePanelManagerProps;
+  panelState: StagePanelState;
   renderPane: (index: number) => React.ReactNode;
   resizable: boolean;
   widgetChangeHandler: WidgetChangeHandler;
@@ -70,10 +64,10 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
   }
 
   public render(): React.ReactNode {
-    const className = classnames("uifw-stagepanel");
+    const panelStateClassName = classnames(this.props.panelState === StagePanelState.Off && /* istanbul ignore next */ "uifw-stagepanel-off");
+    const className = classnames("uifw-stagepanel", panelStateClassName);
     const paneCount = this.props.widgetCount + this.props.panel.panes.length;
     const type = getStagePanelType(this.props.location);
-
     const isTargetVisible = !!this.props.draggedWidgetId && this.props.allowedZones && this.props.allowedZones.some((z) => this.props.draggedWidgetId === z);
     if (paneCount === 0) {
       if (!isTargetVisible)
@@ -82,6 +76,7 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
         <SafeAreaContext.Consumer>
           {(safeAreaInsets) => (
             <StagePanelTarget
+              className={panelStateClassName}
               onTargetChanged={this._handleTargetChanged}
               safeAreaInsets={safeAreaInsets}
               type={type}
@@ -174,8 +169,8 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
   private setMinMaxSize() {
     const panel = getNestedStagePanelKey(this.props.location);
     const nestedPanelsManager = FrontstageManager.NineZoneManager.getNestedPanelsManager();
-    this.props.minSize && (nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).minSize = this.props.minSize);
-    this.props.maxSize && (nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).maxSize = this.props.maxSize);
+    this.props.minSize && /* istanbul ignore next */ (nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).minSize = this.props.minSize);
+    this.props.maxSize && /* istanbul ignore next */ (nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).maxSize = this.props.maxSize);
   }
 
   private _handleResize = (resizeBy: number) => {

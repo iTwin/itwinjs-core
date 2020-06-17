@@ -5,14 +5,13 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-
-import { TestUtils, TestFilterableTable } from "../../TestUtils";
-import { ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider";
-import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { TableColumn, ReactDataGridColumn } from "../../../ui-components/table/component/TableColumn";
-import { StandardTypeConverterTypeNames } from "../../../ui-components/converters/TypeConverter";
-import { FilterOperator, FilterCompositionLogicalOperator } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
 import { SortDirection } from "@bentley/ui-core";
+import { StandardTypeNames } from "../../../ui-components/common/StandardTypeNames";
+import { FilterCompositionLogicalOperator, FilterOperator } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
+import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn";
+import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
+import { ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider";
+import { TestFilterableTable, TestUtils } from "../../TestUtils";
 
 const columns: ColumnDescription[] = [
   {
@@ -50,11 +49,11 @@ const createRow = (i: number) => {
   const loremIndex = i % 10;
   row.cells.push({
     key: columns[0].key,
-    record: TestUtils.createPropertyRecord(loremIpsum[loremIndex], columns[0], StandardTypeConverterTypeNames.Text),
+    record: TestUtils.createPropertyRecord(loremIpsum[loremIndex], columns[0], StandardTypeNames.Text),
   });
   row.cells.push({
     key: columns[1].key,
-    record: TestUtils.createPropertyRecord(i, columns[1], StandardTypeConverterTypeNames.Integer),
+    record: TestUtils.createPropertyRecord(i, columns[1], StandardTypeNames.Integer),
   });
   return row;
 };

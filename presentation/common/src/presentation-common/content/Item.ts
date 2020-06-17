@@ -6,17 +6,10 @@
  * @module Content
  */
 
-import {
-  ClassInfo, ClassInfoJSON,
-  InstanceKey, InstanceKeyJSON,
-} from "../EC";
-import { ValuesDictionary } from "../Utils";
-import {
-  Value, DisplayValue,
-  DisplayValueJSON, ValueJSON,
-  ValuesMapJSON, DisplayValuesMapJSON,
-} from "./Value";
+import { ClassInfo, ClassInfoJSON, InstanceKey, InstanceKeyJSON } from "../EC";
 import { LabelDefinition, LabelDefinitionJSON } from "../LabelDefinition";
+import { ValuesDictionary } from "../Utils";
+import { DisplayValue, DisplayValueJSON, DisplayValuesMapJSON, Value, ValueJSON, ValuesMapJSON } from "./Value";
 
 /**
  * Serialized [[Item]] JSON representation.
@@ -88,12 +81,13 @@ export class Item {
   /** Serialize this object to JSON */
   public toJSON(): ItemJSON {
     const { label, ...baseItem } = this;
-    return Object.assign({}, baseItem, {
+    return {
+      ...baseItem,
       classInfo: this.classInfo ? ClassInfo.toJSON(this.classInfo) : undefined,
       values: Value.toJSON(this.values) as ValuesMapJSON,
       displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
       labelDefinition: LabelDefinition.toJSON(label),
-    });
+    };
   }
 
   /** Deserialize [[Item]] from JSON */

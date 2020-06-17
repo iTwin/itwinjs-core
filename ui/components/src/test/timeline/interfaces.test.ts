@@ -3,11 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-
 import { BaseTimelineDataProvider } from "../../ui-components/timeline/BaseTimelineDataProvider";
-import {
-  Milestone, PlaybackSettings,
-} from "../../ui-components/timeline/interfaces";
+import { Milestone, PlaybackSettings } from "../../ui-components/timeline/interfaces";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {
   public pointerCallbackCalled = false;
@@ -38,7 +35,7 @@ describe("Timeline", () => {
           loop,
         });
 
-        return Promise.resolve(true);
+        return true;
       }
     }
 
@@ -74,7 +71,7 @@ describe("Timeline", () => {
         this.start = startDate;
         this.end = endDate;
 
-        return Promise.resolve(true);
+        return true;
       }
     }
 
@@ -130,7 +127,7 @@ describe("Timeline", () => {
         this.end = endDate;
         this._milestones = milestones;
 
-        return Promise.resolve(true);
+        return true;
       }
     }
 
@@ -203,7 +200,7 @@ describe("Timeline", () => {
         this.end = endDate;
         this._milestones = nestedMilestones;
 
-        return Promise.resolve(true);
+        return true;
       }
     }
 

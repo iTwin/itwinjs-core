@@ -3,32 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
-
+/* tslint:disable:deprecation */
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
+import { BeDuration, BeEvent, using } from "@bentley/bentleyjs-core";
+import { IModelRpcProps } from "@bentley/imodeljs-common";
+import { EventSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
+import {
+  Content, ContentRequestOptions, ContentUpdateInfo, Descriptor, DistinctValuesRequestOptions, FieldDescriptor, FieldDescriptorType,
+  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, KeySet, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged,
+  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions, PresentationError, PresentationRpcEvents,
+  PresentationRpcInterface, PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset,
+  RulesetVariable, UpdateInfo, VariableValueTypes,
+} from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
-  createRandomDescriptor, createRandomECInstancesNodeJSON,
-  createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement,
-  createRandomECInstanceKey, createRandomRuleset, createRandomLabelDefinition,
+  createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey,
+  createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { using, BeDuration, BeEvent } from "@bentley/bentleyjs-core";
-import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { IModelConnection, EventSource, IModelApp } from "@bentley/imodeljs-frontend";
-import {
-  KeySet, Content, HierarchyRequestOptions, Node, Ruleset, VariableValueTypes, RulesetVariable,
-  Paged, ContentRequestOptions, RpcRequestsHandler, LabelRequestOptions, NodeKey, NodePathElement,
-  InstanceKey, Descriptor, RequestPriority, PresentationRpcInterface, PresentationRpcEvents,
-  PresentationUnitSystem, UpdateInfo, HierarchyUpdateInfo, ContentUpdateInfo, RegisteredRuleset,
-  PresentationDataCompareOptions, PartialHierarchyModification, PartialHierarchyModificationJSON,
-  PresentationError, PresentationStatus,
-} from "@bentley/presentation-common";
-import { PresentationManager } from "../presentation-frontend/PresentationManager";
-import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
-import { RulesetManagerImpl, RulesetManagerImplProps } from "../presentation-frontend/RulesetManager";
 import { Presentation } from "../presentation-frontend/Presentation";
+import { PresentationManager } from "../presentation-frontend/PresentationManager";
+import { RulesetManagerImpl, RulesetManagerImplProps } from "../presentation-frontend/RulesetManager";
+import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 
 describe("PresentationManager", () => {
 
@@ -73,9 +71,10 @@ describe("PresentationManager", () => {
   };
 
   const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: PresentationUnitSystem }>(requestOptions: TOptions) => {
-    return Object.assign({}, requestOptions, {
+    return {
+      ...requestOptions,
       imodel: requestOptions.imodel.getRpcProps(),
-    });
+    };
   };
 
   const addRulesetAndVariablesToOptions = <TOptions extends { rulesetId?: string, rulesetOrId?: Ruleset | string }>(options: TOptions) => {
@@ -565,7 +564,7 @@ describe("PresentationManager", () => {
         rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock.setup((x) => x.loadHierarchy({ ...prepareOptions(options), priority: RequestPriority.Preload }))
-        .returns(() => Promise.resolve())
+        .returns(async () => { })
         .verifiable();
       await manager.loadHierarchy(options);
       rpcRequestsHandlerMock.verifyAll();
@@ -578,7 +577,7 @@ describe("PresentationManager", () => {
         priority: 999,
       };
       rpcRequestsHandlerMock.setup((x) => x.loadHierarchy({ ...prepareOptions(options), priority: 999 }))
-        .returns(() => Promise.resolve())
+        .returns(async () => { })
         .verifiable();
       await manager.loadHierarchy(options);
       rpcRequestsHandlerMock.verifyAll();
@@ -823,6 +822,46 @@ describe("PresentationManager", () => {
       await manager.getDistinctValues(options, createRandomDescriptor(), new KeySet(), "");
       rpcRequestsHandlerMock.verifyAll();
     });
+
+  });
+
+  describe("getPagedDistinctValues", () => {
+
+    it("requests distinct values", async () => {
+      const keys = new KeySet();
+      const descriptor = createRandomDescriptor();
+      const fieldDescriptor: FieldDescriptor = {
+        type: FieldDescriptorType.Name,
+        fieldName: faker.random.word(),
+      };
+      const result = {
+        total: 1,
+        items: [{
+          displayValue: faker.random.word(),
+          groupedRawValues: [faker.random.word(), faker.random.word()],
+        }],
+      };
+      const managerOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        descriptor,
+        keys,
+        fieldDescriptor,
+      };
+      const rpcHandlerOptions = {
+        ...prepareOptions(managerOptions),
+        descriptor: descriptor.createStrippedDescriptor().toJSON(),
+        keys: keys.toJSON(),
+      };
+      rpcRequestsHandlerMock
+        .setup((x) => x.getPagedDistinctValues(rpcHandlerOptions))
+        .returns(async () => result)
+        .verifiable();
+      const actualResult = await manager.getPagedDistinctValues(managerOptions);
+      rpcRequestsHandlerMock.verifyAll();
+      expect(actualResult).to.deep.eq(result);
+    });
+
   });
 
   describe("getDisplayLabelDefinition", () => {

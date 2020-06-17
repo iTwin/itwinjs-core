@@ -6,19 +6,16 @@
  * @module StatusBar
  */
 
+import "./ViewAttributes.scss";
 import * as React from "react";
-
 import { ViewFlagProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Checkbox } from "@bentley/ui-core";
-import { TitleBar, FooterPopup, Dialog } from "@bentley/ui-ninezone";
-
-import { Indicator } from "./Indicator";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
 import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
-
-import "./ViewAttributes.scss";
+import { Indicator } from "./Indicator";
+import { StatusFieldProps } from "./StatusFieldProps";
 
 interface ViewAttributesStatusFieldState {
   viewFlags: ViewFlagProps;
@@ -97,11 +94,11 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
   }
 
   private getViewFlagItem(flagName: string, value: boolean, labelKey?: string) {
-    return <Checkbox key={flagName} label={labelKey ? IModelApp.i18n.translate(labelKey) : this.stylizeName(flagName)} onClick={() => this._handleViewFlagClick(flagName)} defaultChecked={value} />;
+    return <Checkbox key={flagName} label={labelKey ? IModelApp.i18n.translate(labelKey) : /* istanbul ignore next */ this.stylizeName(flagName)} onClick={() => this._handleViewFlagClick(flagName)} defaultChecked={value} />;
   }
 
   private getFlagState(flagName: string) {
-    return this.state.viewFlags!.hasOwnProperty(flagName) ? (this.state.viewFlags as any)[flagName] : false;
+    return this.state.viewFlags!.hasOwnProperty(flagName) ? /* istanbul ignore next */ (this.state.viewFlags as any)[flagName] : false;
   }
 
   private getToggleCameraItem() {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { TabGroup, HorizontalAnchor, HandleMode, HandleModeHelpers } from "../../../../ui-ninezone";
+import { HandleMode, HandleModeHelpers, HorizontalAnchor, TabGroup } from "../../../../ui-ninezone";
 import { VerticalAnchor } from "../../../../ui-ninezone/widget/Stacked";
 
 describe("<TabGroup />", () => {

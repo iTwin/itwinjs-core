@@ -6,9 +6,9 @@
  * @module Filtering
  */
 
-import * as React from "react";
-import classnames from "classnames";
 import "./ResultSelector.scss";
+import classnames from "classnames";
+import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 
 /** [[ResultSelector]] React Component state

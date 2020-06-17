@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as React from "react";
 import * as sinon from "sinon";
+import { MessageBoxIconType, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { MessageSeverity, UnderlinedButton } from "@bentley/ui-core";
+import { MessageManager, ReactNotifyMessageDetails } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import { MessageManager } from "../../ui-framework";
-import { NotifyMessageDetails, OutputMessagePriority, MessageBoxIconType } from "@bentley/imodeljs-frontend";
-import { MessageSeverity } from "@bentley/ui-core";
 
 describe("MessageManager", () => {
 
@@ -100,6 +101,16 @@ describe("MessageManager", () => {
 
     const details2 = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.");
     MessageManager.addMessage(details2);
+    expect(MessageManager.messages.length).to.eq(1);
+  });
+
+  it("React based message should be supported", () => {
+    MessageManager.clearMessages();
+    expect(MessageManager.messages.length).to.eq(0);
+
+    const reactNode = (<span>For more details, <UnderlinedButton>click here</UnderlinedButton>.</span>);
+    const details1 = new ReactNotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.", { reactNode });
+    MessageManager.outputMessage(details1);
     expect(MessageManager.messages.length).to.eq(1);
   });
 

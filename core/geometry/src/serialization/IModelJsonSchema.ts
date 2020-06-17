@@ -7,47 +7,47 @@
  * @module Serialization
  */
 
-// import { Geometry, Angle, AxisOrder, BSIJSONValues } from "../Geometry";
-import { Geometry, AngleProps, AngleSweepProps, AxisOrder } from "../Geometry";
-import { AngleSweep } from "../geometry3d/AngleSweep";
-import { Angle } from "../geometry3d/Angle";
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { XYProps, XYZProps } from "../geometry3d/XYZProps";
-import { Point3d, XYZ, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { YawPitchRollAngles, YawPitchRollProps } from "../geometry3d/YawPitchRollAngles";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { AnyGeometryQuery, GeometryQuery } from "../curve/GeometryQuery";
-import { CoordinateXYZ } from "../curve/CoordinateXYZ";
-import { TransitionSpiral3d } from "../curve/TransitionSpiral";
-import { Transform } from "../geometry3d/Transform";
-import { UnionRegion } from "../curve/UnionRegion";
-import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
-import { ParityRegion } from "../curve/ParityRegion";
-import { Loop } from "../curve/Loop";
-import { Path } from "../curve/Path";
-import { IndexedPolyface } from "../polyface/Polyface";
-import { PolyfaceAuxData, AuxChannel, AuxChannelData, AuxChannelDataType } from "../polyface/AuxData";
+import { BezierCurve3d } from "../bspline/BezierCurve3d";
+import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
-import { Sphere } from "../solid/Sphere";
-import { Cone } from "../solid/Cone";
+import { BSplineWrapMode } from "../bspline/KnotVector";
+import { Arc3d } from "../curve/Arc3d";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
+import { AnyGeometryQuery, GeometryQuery } from "../curve/GeometryQuery";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { ParityRegion } from "../curve/ParityRegion";
+import { Path } from "../curve/Path";
+import { PointString3d } from "../curve/PointString3d";
+import { TransitionSpiral3d } from "../curve/TransitionSpiral";
+import { UnionRegion } from "../curve/UnionRegion";
+// import { Geometry, Angle, AxisOrder, BSIJSONValues } from "../Geometry";
+import { AngleProps, AngleSweepProps, AxisOrder, Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Point2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { Transform } from "../geometry3d/Transform";
+import { XYProps, XYZProps } from "../geometry3d/XYZProps";
+import { YawPitchRollAngles, YawPitchRollProps } from "../geometry3d/YawPitchRollAngles";
+import { Point4d } from "../geometry4d/Point4d";
+import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
+import { IndexedPolyface } from "../polyface/Polyface";
 import { Box } from "../solid/Box";
-import { TorusPipe } from "../solid/TorusPipe";
+import { Cone } from "../solid/Cone";
 import { LinearSweep } from "../solid/LinearSweep";
 import { RotationalSweep } from "../solid/RotationalSweep";
 import { RuledSweep } from "../solid/RuledSweep";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { LineString3d } from "../curve/LineString3d";
-import { PointString3d } from "../curve/PointString3d";
-import { Arc3d } from "../curve/Arc3d";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { Point4d } from "../geometry4d/Point4d";
-import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
-import { BezierCurve3d } from "../bspline/BezierCurve3d";
-import { BSplineWrapMode } from "../bspline/KnotVector";
+import { Sphere } from "../solid/Sphere";
+import { TorusPipe } from "../solid/TorusPipe";
 
 /* tslint:disable: object-literal-key-quotes no-console*/
 /**
@@ -862,15 +862,18 @@ export namespace IModelJson {
         && data.hasOwnProperty("pointIndex") && Array.isArray(data.pointIndex)) {
         const polyface = IndexedPolyface.create();
         if (data.hasOwnProperty("normal") && Array.isArray(data.normal)) {
+          // for normals, addNormal() is overeager to detect the (common) case of duplicate normals in sequence.
+          // use addNormalXYZ which always creates a new one.
+          // likewise for params
           for (const uvw of data.normal) {
             if (Geometry.isNumberArray(uvw, 3))
-              polyface.addNormal(Vector3d.create(uvw[0], uvw[1], uvw[2]));
+              polyface.addNormalXYZ(uvw[0], uvw[1], uvw[2]);
           }
         }
         if (data.hasOwnProperty("param") && Array.isArray(data.param)) {
           for (const uv of data.param) {
             if (Geometry.isNumberArray(uv, 2))
-              polyface.addParam(Point2d.create(uv[0], uv[1]));
+              polyface.addParamUV(uv[0], uv[1]);
           }
         }
         if (data.hasOwnProperty("color") && Array.isArray(data.color)) {
@@ -879,7 +882,7 @@ export namespace IModelJson {
           }
         }
 
-        for (const p of data.point) polyface.addPoint(Point3d.fromJSON(p));
+        for (const p of data.point) polyface.addPointXYZ(p[0], p[1], p[2]);
 
         for (const p of data.pointIndex) {
           if (p === 0)

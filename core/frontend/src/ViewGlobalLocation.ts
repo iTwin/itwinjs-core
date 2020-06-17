@@ -2,13 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
+import { Range3d } from "@bentley/geometry-core";
 import { Cartographic, GlobeMode } from "@bentley/imodeljs-common";
+import { BingElevationProvider } from "./tile/internal";
 import { ScreenViewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
-import { Range3d } from "@bentley/geometry-core";
-import { BingElevationProvider } from "./tile/internal";
 
 /** Describes a rectangular area of the earth using cartographic data structures.
  * @alpha

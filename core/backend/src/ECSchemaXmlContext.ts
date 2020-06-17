@@ -7,8 +7,8 @@
  */
 
 import { IModelError } from "@bentley/imodeljs-common";
-import { IModelHost } from "./IModelHost";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelHost } from "./IModelHost";
 
 /** @internal */
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;

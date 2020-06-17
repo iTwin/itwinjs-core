@@ -5,9 +5,9 @@
 
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
-import { Schema, MutableSchema } from "./Metadata/Schema";
+import { MutableSchema, Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
-import { SchemaKey, SchemaItemKey } from "./SchemaKey";
+import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
 /**
  * @beta
@@ -64,10 +64,9 @@ export class SchemaCache implements ISchemaLocater {
    */
   public async addSchema<T extends Schema>(schema: T) {
     if (await this.getSchema<T>(schema.schemaKey))
-      return Promise.reject(new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`));
+      throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
     this._schema.push(schema);
-    return Promise.resolve();
   }
 
   /**

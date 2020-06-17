@@ -6,10 +6,10 @@
  * @module StagePanels
  */
 
+import "./Splitter.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import "./Splitter.scss";
 
 /** Properties of [[Splitter]] component.
  * @beta

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Specify the props that can passed to ThemedSelect instead of just allowing all the react-select props.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "Nancy.McCall@Bentley.com"
+}

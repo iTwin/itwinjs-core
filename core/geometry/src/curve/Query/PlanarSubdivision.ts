@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CurvePrimitive } from "../CurvePrimitive";
-import { CurveLocationDetailPair, CurveLocationDetail } from "../CurveLocationDetail";
-import { HalfEdgeGraph, HalfEdge } from "../../topology/Graph";
-import { Loop, SignedLoops } from "../Loop";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { RegionOps } from "../RegionOps";
+import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
+import { HalfEdgeGraphMerge } from "../../topology/Merging";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
+import { CurvePrimitive } from "../CurvePrimitive";
+import { Loop, SignedLoops } from "../Loop";
+import { RegionOps } from "../RegionOps";
 
 /** @packageDocumentation
  * @module Curve
@@ -120,28 +120,31 @@ export class PlanarSubdivision {
       signedAreas.slivers.push(loop);
 
   }
-
+  public static createLoopInFace(faceSeed: HalfEdge): Loop {
+    let he = faceSeed;
+    const loop = Loop.create();
+    do {
+      const detail = he.edgeTag as CurveLocationDetail;
+      if (detail) {
+        let curve;
+        if (he.sortData! > 0)
+          curve = detail.curve!.clonePartialCurve(detail.fraction, detail.fraction1!);
+        else
+          curve = detail.curve!.clonePartialCurve(detail.fraction1!, detail.fraction);
+        if (curve)
+          loop.tryAddChild(curve);
+      }
+      he = he.faceSuccessor;
+    } while (he !== faceSeed);
+    return loop;
+  }
   public static collectSignedLoopSetsInHalfEdgeGraph(graph: HalfEdgeGraph, _zeroAreaTolerance: number = 1.0e-10): SignedLoops[] {
     const q = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph, undefined);
     const result: SignedLoops[] = [];
     for (const faceSeeds of q) {
       const componentAreas = { positiveAreaLoops: [], negativeAreaLoops: [], slivers: [] };
       for (const faceSeed of faceSeeds) {
-        let he = faceSeed;
-        const loop = Loop.create();
-        do {
-          const detail = he.edgeTag as CurveLocationDetail;
-          if (detail) {
-            let curve;
-            if (he.sortData! > 0)
-              curve = detail.curve!.clonePartialCurve(detail.fraction, detail.fraction1!);
-            else
-              curve = detail.curve!.clonePartialCurve(detail.fraction1!, detail.fraction);
-            if (curve)
-              loop.tryAddChild(curve);
-          }
-          he = he.faceSuccessor;
-        } while (he !== faceSeed);
+        const loop = this.createLoopInFace (faceSeed);
         this.collectSignedLoop(loop, componentAreas);
       }
       result.push(componentAreas);

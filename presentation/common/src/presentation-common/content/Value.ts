@@ -205,6 +205,45 @@ export interface NestedContentValueJSON {
   mergedFieldNames: string[];
 }
 
+/**
+ * A group of raw values and their common display value.
+ * @alpha
+ */
+export interface DisplayValueGroup {
+  /** Common display value for all grouped raw values */
+  displayValue: DisplayValue;
+  /** A list of grouped raw values */
+  groupedRawValues: Value[];
+}
+
+/**
+ * JSON representation of [[DisplayValueGroup]].
+ * @alpha
+ */
+export interface DisplayValueGroupJSON {
+  displayValue: DisplayValueJSON;
+  groupedRawValues: ValueJSON[];
+}
+
+/** @alpha */
+export namespace DisplayValueGroup {
+  /** Serialize [[DisplayValueGroup]] to JSON */
+  export function toJSON(group: DisplayValueGroup): DisplayValueGroupJSON {
+    return {
+      displayValue: DisplayValue.toJSON(group.displayValue),
+      groupedRawValues: group.groupedRawValues.map(Value.toJSON),
+    };
+  }
+
+  /** Deserialize [[DisplayValueGroup]] from JSON */
+  export function fromJSON(json: DisplayValueGroupJSON): DisplayValueGroup {
+    return {
+      displayValue: DisplayValue.fromJSON(json.displayValue),
+      groupedRawValues: json.groupedRawValues.map(Value.fromJSON),
+    };
+  }
+}
+
 function isNestedContentValue(v: Value | ValueJSON): v is NestedContentValue[] | NestedContentValueJSON[] {
   return (v !== undefined) && Array.isArray(v)
     && ((v.length === 0)

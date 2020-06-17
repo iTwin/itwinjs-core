@@ -10,10 +10,12 @@ import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcRegistry, OPERATION, POLICY } from "./RpcRegistry";
-import { RpcInvocationCallback_T } from "./RpcInvocation";
-import { RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T } from "./RpcRequest";
 import { RpcResponseCacheControl } from "./RpcConstants";
+import { RpcInvocationCallback_T } from "./RpcInvocation";
+import { OPERATION, POLICY, RpcRegistry } from "./RpcRegistry";
+import {
+  RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T,
+} from "./RpcRequest";
 
 /** The policy for an RPC operation.
  * @public

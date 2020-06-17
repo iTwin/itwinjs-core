@@ -6,14 +6,14 @@
  * @module PresentationRules
  */
 
-import { ChildNodeRule } from "./ChildNodeRule";
+import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
 import { DEPRECATED_AllInstanceNodesSpecification } from "./AllInstanceNodesSpecification";
 import { DEPRECATED_AllRelatedInstanceNodesSpecification } from "./AllRelatedInstanceNodesSpecification";
+import { ChildNodeRule } from "./ChildNodeRule";
 import { CustomNodeSpecification } from "./CustomNodeSpecification";
+import { CustomQueryInstanceNodesSpecification } from "./CustomQueryInstanceNodesSpecification";
 import { InstanceNodesOfSpecificClassesSpecification } from "./InstanceNodesOfSpecificClassesSpecification";
 import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecification";
-import { CustomQueryInstanceNodesSpecification } from "./CustomQueryInstanceNodesSpecification";
-import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
 
 /**
  * Used for serializing array of [[ChildNodeSpecification]]

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export * from "./oidc";
-export * from "./ClientsBackendLoggerCategory";
+export * from "./BackendITwinClientLoggerCategory";
 export * from "./RequestHost";
+export * from "./imodelhub/LocalhostFileHandler";
 export * from "./imodelhub/AzureFileHandler";
-export * from "./imodelhub/IOSAzureFileHandler";
 export * from "./UrlFileHandler";
 export * from "./StorageServiceFileHandler";
 

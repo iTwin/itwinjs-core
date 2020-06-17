@@ -7,13 +7,7 @@
  */
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
-import {
-  Angle,
-  AngleProps,
-  Point3d,
-  XYAndZ,
-  XYZProps,
-} from "@bentley/geometry-core";
+import { Angle, AngleProps, Point3d, XYAndZ, XYZProps } from "@bentley/geometry-core";
 
 /** JSON representation of a [[Camera]].
  * @public
@@ -25,6 +19,7 @@ export interface CameraProps {
 }
 
 /** The current position (eyepoint), lens angle, and focus distance of a camera.
+ * @see [Views]($docs/learning/frontend/Views.md)
  * @public
  */
 export class Camera implements CameraProps {

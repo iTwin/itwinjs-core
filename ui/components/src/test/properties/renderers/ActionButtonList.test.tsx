@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { render } from "@testing-library/react";
-import sinon from "sinon";
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core";
-import TestUtils from "../../TestUtils";
+import sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { Orientation } from "@bentley/ui-core";
+import { render } from "@testing-library/react";
 import { ActionButtonList, ActionButtonRendererProps } from "../../../ui-components";
+import TestUtils from "../../TestUtils";
 
 describe("ActionButtonList", () => {
   let propertyRecord: PropertyRecord;

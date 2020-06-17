@@ -2,19 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module Tiles
  */
-import { Range3d, Range1d, Point3d, Point2d, Range2d, BilinearPatch } from "@bentley/geometry-core";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { QParams3d, QPoint3d, TextureMapping, RenderTexture, ColorDef, LinePixels, FillFlags, Cartographic } from "@bentley/imodeljs-common";
-import { Mesh, MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
+import { BilinearPatch, Point2d, Point3d, Range1d, Range2d, Range3d } from "@bentley/geometry-core";
+import { Cartographic, ColorDef, FillFlags, LinePixels, QParams3d, QPoint3d, RenderTexture, TextureMapping } from "@bentley/imodeljs-common";
+import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { IModelConnection } from "../IModelConnection";
 import { DisplayParams } from "../render/primitives/DisplayParams";
+import { Mesh, MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
 import { VertexKey } from "../render/primitives/VertexKey";
 import { MeshParams } from "../render/primitives/VertexTable";
-import { request, Response, RequestOptions } from "@bentley/itwin-client";
-import { IModelConnection } from "../IModelConnection";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 

@@ -7,15 +7,13 @@
  */
 
 import * as React from "react";
-
-import { UiError } from "@bentley/ui-abstract";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
-
-import { ContentControl } from "./ContentControl";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { UiError } from "@bentley/ui-abstract";
+import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
-import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { UiFramework } from "../UiFramework";
+import { ContentControl } from "./ContentControl";
 
 /** Properties for content displayed in a content view
  * @public
@@ -40,7 +38,7 @@ export interface ContentGroupProps {
 }
 
 /** Callback to process content properties during toJSON method
- * @beta
+ * @public
  */
 export type ContentCallback = (content: ContentProps) => void;
 
@@ -169,7 +167,7 @@ export class ContentGroup {
   }
 
   /** Creates [[ContentGroupProps]] for JSON purposes
-   * @beta
+   * @public
    */
   public toJSON(contentCallback?: ContentCallback): ContentGroupProps {
     const contentGroupProps: ContentGroupProps = {

@@ -6,10 +6,10 @@
  * @module Logging
  */
 
-import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError";
-import { IDisposable } from "./Disposable";
-import { ClientRequestContext } from "./ClientRequestContext";
+import { BentleyError, GetMetaDataFunction, IModelStatus } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
+import { ClientRequestContext } from "./ClientRequestContext";
+import { IDisposable } from "./Disposable";
 
 /** Defines the *signature* for a log function.
  * @public
@@ -144,7 +144,7 @@ export class Logger {
 
   /** Compose the metadata for a log message.  */
   public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
-    const metaData: any = getMetaData ? Object.assign({}, getMetaData()) : {}; // Copy object to avoid mutating the original
+    const metaData: any = getMetaData ? { ...getMetaData() } : {}; // Copy object to avoid mutating the original
     Logger.addClientRequestContext(metaData);
     return metaData;
   }

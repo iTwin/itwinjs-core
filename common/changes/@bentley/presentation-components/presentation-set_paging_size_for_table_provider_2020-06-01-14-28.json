@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Set paging size for ContentDataProvider to avoid requesting whole content on first request",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "Saulius.Skliutas@bentley.com"
+}

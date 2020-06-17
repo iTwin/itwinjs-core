@@ -9,10 +9,10 @@
 import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 
 const loggerCategory = BackendLoggerCategory.Relationship;
 
@@ -144,6 +144,25 @@ export class ElementGroupsMembers extends ElementRefersToElements {
     const props: ElementGroupsMembersProps = { sourceId, targetId, memberPriority, classFullName: this.classFullName };
     return iModel.relationships.createInstance(props) as T;
   }
+}
+
+/** Relates a [[DefinitionGroup]] to its [[DefinitionElement]] members.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.10
+ * @public
+ */
+export class DefinitionGroupGroupsDefinitions extends ElementGroupsMembers {
+  /** @internal */
+  public static get className(): string { return "DefinitionGroupGroupsDefinitions"; }
+}
+
+/** Represents group membership where the group Element (and its properties) impart information about the member Elements above mere membership.
+ * Implies that properties of the group should be considered as properties of its members.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.11
+ * @public
+ */
+export class GroupImpartsToMembers extends ElementGroupsMembers {
+  /** @internal */
+  public static get className(): string { return "GroupImpartsToMembers"; }
 }
 
 /** Properties that are common to all types of ElementDrivesElements

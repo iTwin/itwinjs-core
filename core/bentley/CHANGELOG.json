@@ -2,6 +2,84 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@bentley/bentleyjs-core_v2.1.0",
+      "date": "Thu, 28 May 2020 22:48:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added FailedToGetProductSettings error"
+          },
+          {
+            "comment": "Setup Guid.normalize() for internal use. "
+          },
+          {
+            "comment": "channel rules"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@bentley/bentleyjs-core_v2.0.0",
+      "date": "Wed, 06 May 2020 13:17:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Monitor progress of downloading briefcases, ability to cancel download of briefcases. "
+          },
+          {
+            "comment": "Update Config.App documentation to reflect the removal of the config.json file"
+          },
+          {
+            "comment": "Added ContextDoesNotExist error"
+          },
+          {
+            "comment": "BUG273249"
+          },
+          {
+            "comment": "Updated docs. "
+          },
+          {
+            "comment": "Updated error text. "
+          },
+          {
+            "comment": "added raw log method that bypass catogory check"
+          },
+          {
+            "comment": "order imports."
+          },
+          {
+            "comment": "Add a type guard for `IDisposable`"
+          },
+          {
+            "comment": "Add Config class previously hosted in imodeljs-clients"
+          },
+          {
+            "comment": "Upgrade to Rush 5.23.2"
+          },
+          {
+            "comment": "Added ReadonlySortedArray."
+          },
+          {
+            "comment": "Remove support for the iModel.js module system by no longer delivering modules."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.14.1",
+      "tag": "@bentley/bentleyjs-core_v1.14.1",
+      "date": "Wed, 22 Apr 2020 19:04:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.14.0",
+      "tag": "@bentley/bentleyjs-core_v1.14.0",
+      "date": "Tue, 31 Mar 2020 15:44:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "1.13.0",
       "tag": "@bentley/bentleyjs-core_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",
@@ -53,7 +131,7 @@
             "comment": "Added non-static wait and executeAfter to BeDuration"
           },
           {
-            "comment": "fix warnings from static analysis"
+            "comment": "Fix warnings from static analysis"
           },
           {
             "comment": "Added `BeDuration.race` for common timeout operations."
@@ -131,7 +209,7 @@
       "comments": {
         "none": [
           {
-            "comment": "added OneAtATimeActivity class"
+            "comment": "Added OneAtATimeActivity class"
           },
           {
             "comment": "Introduced AsyncMutex - a utility to run async blocks of code in sequence. "
@@ -152,7 +230,7 @@
             "comment": "RPC system now accepts only basic values (primitives, \"interface\" objects, and binary)."
           },
           {
-            "comment": "added Id64.getFirst to get the first value of an Id64Arg"
+            "comment": "Added Id64.getFirst to get the first value of an Id64Arg"
           },
           {
             "comment": "Added an error for seed file initialization timeout"
@@ -164,7 +242,7 @@
             "comment": "Refactored and simplified implementation of IModelDb.open"
           },
           {
-            "comment": "add property accessor for empty Guid"
+            "comment": "Add property accessor for empty Guid"
           }
         ]
       }
@@ -191,7 +269,7 @@
             "comment": "Logged the fields in ClientRequestContext"
           },
           {
-            "comment": "Logging fixes. "
+            "comment": "Logging fixes."
           },
           {
             "comment": "Put sourcemap in npm package."
@@ -245,7 +323,7 @@
             "comment": "Save BUILD_SEMVER to globally accessible map"
           },
           {
-            "comment": "upgrade to TypeScript 3.2.2"
+            "comment": "Upgrade to TypeScript 3.2.2"
           }
         ]
       }
@@ -419,7 +497,7 @@
       "comments": {
         "none": [
           {
-            "comment": "changes to debug utilities. "
+            "comment": "Changes to debug utilities. "
           },
           {
             "comment": "Fluentd Bunnyan Logger added"

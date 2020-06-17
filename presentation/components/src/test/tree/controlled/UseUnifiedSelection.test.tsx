@@ -2,32 +2,33 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
-import * as moq from "typemoq";
-import sinon from "sinon";
 import { expect } from "chai";
-import { renderHook } from "@testing-library/react-hooks";
-import { ObservableInput } from "rxjs/internal/types";
 import { from } from "rxjs/internal/observable/from";
 import { finalize } from "rxjs/internal/operators/finalize";
-import { createRandomGroupingNodeKey, createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { createRandomTreeNodeItem } from "../../_helpers/UiComponents";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { ObservableInput } from "rxjs/internal/types";
+import sinon from "sinon";
+/* tslint:disable:no-direct-imports */
+import * as moq from "typemoq";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { CheckBoxState } from "@bentley/ui-core";
-import {
-  TreeModelSource, TreeModel, TreeSelectionModificationEventArgs, MutableTreeModelNode, TreeNodeItem,
-  TreeSelectionReplacementEventArgs, TreeModelChanges, AbstractTreeNodeLoaderWithProvider,
-} from "@bentley/ui-components";
-import { KeySet, NodeKey, Keys } from "@bentley/presentation-common";
-import {
-  SelectionHandler, SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider,
-  SelectionHelper, SelectionManager, Presentation,
-} from "@bentley/presentation-frontend";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler } from "../../../presentation-components";
-import { PRESENTATION_TREE_NODE_KEY } from "../../../presentation-components/tree/Utils";
+import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import {
+  ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager,
+} from "@bentley/presentation-frontend";
+import {
+  AbstractTreeNodeLoaderWithProvider, MutableTreeModelNode, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem,
+  TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
+} from "@bentley/ui-components";
+import { CheckBoxState } from "@bentley/ui-core";
+import { renderHook } from "@testing-library/react-hooks";
+import {
+  IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler,
+} from "../../../presentation-components";
 import { UnifiedSelectionTreeEventHandlerParams } from "../../../presentation-components/tree/controlled/UseUnifiedSelection";
+import { PRESENTATION_TREE_NODE_KEY } from "../../../presentation-components/tree/Utils";
+import { createRandomTreeNodeItem } from "../../_helpers/UiComponents";
 
 const awaitableObservable = <T extends unknown>(input: ObservableInput<T>) => {
   const promise = new ResolvablePromise<void>();

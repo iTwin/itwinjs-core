@@ -16,15 +16,15 @@ type float64 = number;
 
 import { ABuffer } from "../../../system/buffer/ABuffer";
 import { LittleEndian } from "../../../system/buffer/LittleEndian";
+import { AList } from "../../../system/collection/AList";
 import { InStream } from "../../../system/io/InStream";
 import { OutStream } from "../../../system/io/OutStream";
-import { Grid } from "../../model/Grid";
-import { GridIndex } from "../../model/GridIndex";
-import { TileIndex } from "../../model/TileIndex";
-import { AList } from "../../../system/collection/AList";
 import { ALong } from "../../../system/runtime/ALong";
 import { Numbers } from "../../../system/runtime/Numbers";
 import { ContentLoader } from "../../../system/storage/ContentLoader";
+import { Grid } from "../../model/Grid";
+import { GridIndex } from "../../model/GridIndex";
+import { TileIndex } from "../../model/TileIndex";
 
 /**
  * Class TileRecord defines a tile index record.

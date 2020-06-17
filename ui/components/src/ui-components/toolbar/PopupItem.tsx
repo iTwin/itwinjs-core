@@ -6,15 +6,14 @@
  * @module Toolbar
  */
 
+import "./PopupItem.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { useOnOutsideClick } from "@bentley/ui-core";
-import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext, ToolbarPanelAlignmentHelpers } from "./Toolbar";
-import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
-import { ToolbarButtonItemProps } from "./Item";
-
-import "./PopupItem.scss";
 import { ActionButton } from "@bentley/ui-abstract";
+import { useOnOutsideClick } from "@bentley/ui-core";
+import { ToolbarButtonItemProps } from "./Item";
+import { ToolbarPanelAlignmentHelpers, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
+import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
 
 /** @internal */
 export interface ToolbarPopupContextProps {
@@ -55,6 +54,7 @@ export function PopupItem(props: PopupItemProps) {
   const { expandsTo, direction, overflowExpandsTo, overflowDirection, panelAlignment, onPopupPanelOpenClose } = useToolbarWithOverflowDirectionContext();
   const processPanelOpenClose = React.useCallback((isOpening: boolean) => {
     setPanelShown((prev) => {
+      // istanbul ignore else
       if (prev !== isOpening)
         onPopupPanelOpenClose(isOpening);
       return isOpening;
@@ -94,6 +94,7 @@ export function PopupItem(props: PopupItemProps) {
     ToolbarPanelAlignmentHelpers.getCssClassName(panelAlignment),
   );
 
+  const { hideIndicator, panel } = props;
   return (
     <ToolbarPopupContext.Provider value={{
       closePanel: () => processPanelOpenClose(false),
@@ -115,9 +116,9 @@ export function PopupItem(props: PopupItemProps) {
             {props.badge}
           </div>
         }
-        {props.hideIndicator ? undefined : <div className="components-triangle" />}
+        {hideIndicator ? undefined : <div className="components-triangle" />}
       </button>
-      {isPanelShown && <div ref={panelRef} className={panelClassName}>{props.panel}</div>}
+      {isPanelShown && <div ref={panelRef} className={panelClassName}>{panel}</div>}
     </ToolbarPopupContext.Provider>
   );
 }

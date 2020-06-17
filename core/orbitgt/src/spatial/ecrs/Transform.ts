@@ -14,13 +14,12 @@ type int32 = number;
 type float32 = number;
 type float64 = number;
 
+import { Message } from "../../system/runtime/Message";
+import { Strings } from "../../system/runtime/Strings";
+import { Coordinate } from "../geom/Coordinate";
 import { CRS } from "./CRS";
 import { Registry } from "./Registry";
 import { VerticalModel } from "./VerticalModel";
-
-import { Coordinate } from "../geom/Coordinate";
-import { Strings } from "../../system/runtime/Strings";
-import { Message } from "../../system/runtime/Message";
 
 /**
  * Class Transform transforms coordinates between coordinate reference systems.

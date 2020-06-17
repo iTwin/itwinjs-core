@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IndexMap, compareNumbers } from "../bentleyjs-core";
+import { compareNumbers, IndexMap } from "../bentleyjs-core";
 
 describe("IndexMap", () => {
   it("Should remember insertion order", () => {

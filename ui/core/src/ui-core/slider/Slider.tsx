@@ -6,23 +6,20 @@
  * @module Slider
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import {
-  Slider as CompoundSlider,
-  Handles, Rail, SliderItem, Tracks, Ticks,
-  GetRailProps, GetTrackProps, SliderModeFunction,
-} from "react-compound-slider";
-
-import { CommonProps } from "../utils/Props";
-import { BodyText } from "../text/BodyText";
-
 import "./Slider.scss";
+import classnames from "classnames";
+import * as React from "react";
+import {
+  GetRailProps, GetTrackProps, Handles, Rail, Slider as CompoundSlider, SliderItem, SliderModeFunction, Ticks, Tracks,
+} from "react-compound-slider";
+import { BodyText } from "../text/BodyText";
+import { CommonProps } from "../utils/Props";
+import { Tooltip } from "../notification/Tooltip";
 
 // cspell:ignore pushable
 
 /** Properties for [[Slider]] component
- * @beta
+ * @public
  */
 export interface SliderProps extends CommonProps {
   /** Minimum value */
@@ -99,7 +96,7 @@ export interface SliderProps extends CommonProps {
  * The Slider component uses various components from the
  * [react-compound-slider](https://www.npmjs.com/package/react-compound-slider)
  * package internally.
- * @beta
+ * @public
  */
 export function Slider(props: SliderProps) {
   const { className, style, min, max, values, step, mode,
@@ -114,7 +111,7 @@ export function Slider(props: SliderProps) {
   const containerClassNames = classnames(
     "core-slider-container",
     className,
-    disabled && "disabled",
+    disabled && "core-disabled",
     showTickLabels && "core-slider-tickLabels",
     includeTicksInWidth && "core-slider-includeTicksInWidth",
   );
@@ -158,7 +155,7 @@ export function Slider(props: SliderProps) {
                   activeHandleID={activeHandleID}
                   getEventData={getEventData}
                   getTrackProps={getTrackProps}
-                  showTooltip={showTooltip}
+                  showTooltip={showTooltip ?? true}
                   tooltipBelow={tooltipBelow}
                   formatTooltip={formatTooltip}
                   multipleValues={multipleValues}
@@ -296,20 +293,11 @@ function TooltipTrack(props: TooltipTrackProps) {
     tooltipText = `${sourceValue} : ${targetValue}`;
   }
 
-  const tooltipClassName = classnames(
-    "core-slider-tooltip",
-    tooltipBelow && "tooltip-below",
-  );
-
   // istanbul ignore next - WIP
   return (
     <>
       {!activeHandleID && percent && showTooltip && multipleValues ? (
-        <div className="core-slider-tooltip-container" style={{ left: `${percent}%` }}>
-          <div className={tooltipClassName} data-testid="core-slider-tooltip">
-            <span className="core-slider-tooltip-text">{tooltipText}</span>
-          </div>
-        </div>
+        <Tooltip percent={percent} below={tooltipBelow} value={tooltipText} />
       ) : null}
       <div className="core-slider-track" data-testid="core-slider-track"
         style={{ left: `${source.percent}%`, width: `${target.percent - source.percent}%` }}
@@ -384,20 +372,11 @@ function Handle(props: HandleProps) {
     setMouseOver(false);
   };
 
-  const tooltipClassName = classnames(
-    "core-slider-tooltip",
-    tooltipBelow && "tooltip-below",
-  );
-
   // istanbul ignore next - WIP
   return (
     <>
       {(mouseOver || isActive) && !disabled && showTooltip ? (
-        <div className="core-slider-tooltip-container" style={{ left: `${percent}%` }}>
-          <div className={tooltipClassName} data-testid="core-slider-tooltip">
-            <span className="core-slider-tooltip-text">{formatTooltip ? formatTooltip(value) : value}</span>
-          </div>
-        </div>
+        <Tooltip percent={percent} below={tooltipBelow} value={formatTooltip ? formatTooltip(value) : value.toString()} />
       ) : null}
       <div
         role="slider"

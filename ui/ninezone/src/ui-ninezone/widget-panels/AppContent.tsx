@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { WidgetPanelsContent } from "./Content";
 import { PanelsStateContext } from "../base/NineZone";
+import { WidgetPanelsContent } from "./Content";
 import { ContentNodeContext } from "./Panels";
 
 /** Main app content (i.e. viewport) that will change bounds based on panel pinned settings.

@@ -6,32 +6,36 @@
  * @module PropertyEditors
  */
 
-import * as React from "react";
-import classnames from "classnames";
-import {
-  PropertyValueFormat, PrimitiveValue, PropertyValue, EnumerationChoice,
-  PropertyEditorParamTypes, IconDefinition, PropertyEditorParams, ButtonGroupEditorParams, PropertyRecord,
-} from "@bentley/ui-abstract";
-import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
-import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./EnumButtonGroupEditor.scss";
+import classnames from "classnames";
+import * as React from "react";
+import {
+  ButtonGroupEditorParams, EnumerationChoice, IconDefinition, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord,
+  PropertyValue, PropertyValueFormat,
+} from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
+import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
+import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
+import { StandardEditorNames } from "./StandardEditorNames";
+
+// cspell:ignore buttongroup enumbuttongroup
 
 /** @internal */
-interface EnumEditorState {
+interface EnumButtonGroupEditorState {
   selectValue: string | number;
 }
 
 /** EnumButtonGroupEditor React component that is a property editor with select input
  * @beta
  */
-export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, EnumEditorState> implements TypeEditor {
+export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, EnumButtonGroupEditorState> implements TypeEditor {
   private _isMounted = false;
   private _enumIcons?: IconDefinition[];
   private _btnRefs = new Map<string | number, HTMLButtonElement>();
 
   /** @internal */
-  public readonly state: Readonly<EnumEditorState> = {
+  public readonly state: Readonly<EnumButtonGroupEditorState> = {
     selectValue: "",
   };
 
@@ -105,7 +109,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps, _prevState: EnumEditorState) {
+  public componentDidUpdate(prevProps: PropertyEditorProps, _prevState: EnumButtonGroupEditorState) {
     // if the props have changed then we need to update the state
     const prevRecord = prevProps.propertyRecord;
     const currentRecord = this.props.propertyRecord;
@@ -120,7 +124,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     }
   }
 
-  private static getStateFromProps(props: PropertyEditorProps): EnumEditorState | null {
+  private static getStateFromProps(props: PropertyEditorProps): EnumButtonGroupEditorState | null {
     const propertyRecord = props.propertyRecord;
     let selectValue: string | number;
 
@@ -159,7 +163,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
         if (propertyRecord && this.props.onCommit) {
           const propertyValue = await this.getPropertyValue();
           // istanbul ignore else
-          if (propertyValue) {
+          if (propertyValue !== undefined) {
             this.props.onCommit({ propertyRecord, newValue: propertyValue });
           }
         }
@@ -227,4 +231,4 @@ export class EnumPropertyButtonGroupEditor extends PropertyEditorBase {
   }
 }
 
-PropertyEditorManager.registerEditor("enum", EnumPropertyButtonGroupEditor, "enum-buttongroup");
+PropertyEditorManager.registerEditor(StandardTypeNames.Enum, EnumPropertyButtonGroupEditor, StandardEditorNames.EnumButtonGroup);

@@ -3,19 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Config, ExtensionStatus, Guid, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import * as chai from "chai";
-import { ExtensionProps } from "../ExtensionProps";
+import { ExtensionStatus, Guid, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { AuthorizedClientRequestContext, request, RequestOptions } from "@bentley/itwin-client";
+import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { ExtensionClient } from "../ExtensionClient";
+import { ExtensionProps } from "../ExtensionProps";
 
 const assert = chai.assert;
 
 describe("ExtensionClient (#integration)", () => {
-  let projectId: string;
-  let projectName: string;
+  let teamId: string;
   let extensionClient: ExtensionClient;
   let requestContext: AuthorizedClientRequestContext;
 
@@ -28,33 +27,32 @@ describe("ExtensionClient (#integration)", () => {
     const oidcConfig = {
       clientId: "imodeljs-extension-publisher",
       redirectUri: "http://localhost:5001/signin-oidc",
-      scope: "openid imodel-extension-service-api context-registry-service:read-only offline_access",
+      scope: "openid imodel-extension-service-api context-registry-service:read-only",
     };
 
     const token = await getAccessTokenFromBackend(TestUsers.regular, oidcConfig);
     requestContext = new AuthorizedClientRequestContext(token);
 
-    projectName = Config.App.getString("imjs_test_project_name");
-
     const contextRegistry = new ContextRegistryClient();
-    const project = await contextRegistry.getProject(requestContext, {
-      $select: "*",
-      $filter: `Name+eq+'${projectName}'`,
-    });
-    if (!project || !project.wsgId) {
-      const userInfo = requestContext.accessToken.getUserInfo();
-      throw new Error(`Project ${projectName} not found for user ${!userInfo ? "n/a" : userInfo.email}.`);
-    }
-    projectId = project.wsgId;
+
+    const options: RequestOptions = { method: "GET" };
+    options.headers = { authorization: requestContext.accessToken.toTokenString() };
+
+    teamId =
+      (await request(
+        requestContext,
+        new URL("v2.5/Repositories/BentleyCONNECT--Main/CONNECTEDContext/Team?isDefault=true", await contextRegistry.getUrl(requestContext, true)).toString(),
+        options,
+      )).body.instances[0].properties.TeamId;
   });
 
   after(async () => {
-    const availableExtensions = await extensionClient.getExtensions(requestContext, projectId);
+    const availableExtensions = await extensionClient.getExtensions(requestContext, teamId);
 
     for (const extension of availableExtensions) {
       if (extension.extensionName.length === 48 && extension.extensionName.startsWith("tempTestExt-"))
         try {
-          await extensionClient.deleteExtension(requestContext, projectId, extension.extensionName, extension.version);
+          await extensionClient.deleteExtension(requestContext, teamId, extension.extensionName, extension.version);
         } catch (e) { }
     }
   });
@@ -63,7 +61,7 @@ describe("ExtensionClient (#integration)", () => {
     const expectedExtensions = [
       {
         extensionName: "testExt1",
-        version: "v1",
+        version: "1.0.0",
         files: [
           "testFile1.txt",
           "testFile2",
@@ -73,7 +71,7 @@ describe("ExtensionClient (#integration)", () => {
       },
       {
         extensionName: "testExt1",
-        version: "v2",
+        version: "2.0.0",
         files: [
           "testFile1_1.txt",
           "testFile2",
@@ -81,18 +79,18 @@ describe("ExtensionClient (#integration)", () => {
         ].sort(),
         uploadedBy: TestUsers.regular.email,
       },
-      // {
-      //   extensionName: "testExt 2",
-      //   version: "v1",
-      //   files: [
-      //     "testFile",
-      //     "testDir1/testFile.txt",
-      //   ].sort(),
-      //   uploadedBy: TestUsers.regular.email,
-      // },
+      {
+        extensionName: "testExt 2",
+        version: "1.0.0",
+        files: [
+          "testFile",
+          "testDir1/testFile.txt",
+        ].sort(),
+        uploadedBy: TestUsers.regular.email,
+      },
     ];
 
-    const foundExtensions = await extensionClient.getExtensions(requestContext, projectId);
+    const foundExtensions = await extensionClient.getExtensions(requestContext, teamId);
     assert.exists(foundExtensions);
     assert.isAbove(foundExtensions.length, 2);
 
@@ -102,7 +100,7 @@ describe("ExtensionClient (#integration)", () => {
 
       // comment out until we come up with a better way to handle the difference between who uploaded and the test user used.
       // assert.strictEqual(found!.uploadedBy, expected.uploadedBy, "UploadedBy does not match");
-      assert.strictEqual(found!.contextId, projectId, "ContextId does not match");
+      assert.strictEqual(found!.contextId, teamId, "ContextId does not match");
       assert.strictEqual(found!.files.length, expected.files.length, "Returned file count does not match");
 
       const sortedUris = found!.files.sort((a, b) => a.url.localeCompare(b.url));
@@ -122,7 +120,7 @@ describe("ExtensionClient (#integration)", () => {
     const expectedExtensions = [
       {
         extensionName: "testExt1",
-        version: "v1",
+        version: "1.0.0",
         files: [
           "testFile1.txt",
           "testFile2",
@@ -132,7 +130,7 @@ describe("ExtensionClient (#integration)", () => {
       },
       {
         extensionName: "testExt1",
-        version: "v2",
+        version: "2.0.0",
         files: [
           "testFile1_1.txt",
           "testFile2",
@@ -142,7 +140,7 @@ describe("ExtensionClient (#integration)", () => {
       },
     ];
 
-    const foundExtensions = await extensionClient.getExtensions(requestContext, projectId, "testExt1");
+    const foundExtensions = await extensionClient.getExtensions(requestContext, teamId, "testExt1");
     assert.exists(foundExtensions);
     assert.strictEqual(foundExtensions.length, 2);
 
@@ -150,7 +148,7 @@ describe("ExtensionClient (#integration)", () => {
       const found = foundExtensions.find((props: ExtensionProps) => props.extensionName === expected.extensionName && props.version === expected.version);
       assert.isDefined(found, "Could not find extension with name " + expected.extensionName + " and version " + expected.version);
 
-      assert.strictEqual(found!.contextId, projectId, "ContextId does not match");
+      assert.strictEqual(found!.contextId, teamId, "ContextId does not match");
       assert.strictEqual(found!.files.length, expected.files.length, "Returned file count does not match");
 
       const sortedUris = found!.files.sort((a, b) => a.url.localeCompare(b.url));
@@ -168,7 +166,7 @@ describe("ExtensionClient (#integration)", () => {
 
   [{
     name: "testExt1",
-    version: "v1",
+    version: "1.0.0",
     files: [
       { name: "testFile1.txt", content: "test file content 1" },
       { name: "testFile2", content: "test file content 2" },
@@ -177,7 +175,7 @@ describe("ExtensionClient (#integration)", () => {
   },
   {
     name: "testExt1",
-    version: "v2",
+    version: "2.0.0",
     files: [
       { name: "testFile1_1.txt", content: "test file content 1 ++" },
       { name: "testFile2", content: "test file content 2 ++" },
@@ -186,14 +184,14 @@ describe("ExtensionClient (#integration)", () => {
   },
   {
     name: "testExt 2",
-    version: "v1",
+    version: "1.0.0",
     files: [
       { name: "testFile", content: "test file content 1" },
       { name: "testDir1/testFile.txt", content: "test file content 2" },
     ],
   }].forEach((testCase) => {
     it("downloads extension " + testCase.name + ", version " + testCase.version, async () => {
-      const files = await extensionClient.downloadExtension(requestContext, projectId, testCase.name, testCase.version);
+      const files = await extensionClient.downloadExtension(requestContext, teamId, testCase.name, testCase.version);
 
       assert.strictEqual(files.length, testCase.files.length, "Returned file count does not match");
 
@@ -207,12 +205,12 @@ describe("ExtensionClient (#integration)", () => {
     });
   });
 
-  [{ name: "testExt1", version: "v3" },
-  { name: "testExt that doesn't exist", version: "v1" }].forEach((testCase) => {
+  [{ name: "testExt1", version: "3.0.0" },
+  { name: "testExt that doesn't exist", version: "1.0.0" }].forEach((testCase) => {
     it("fails to download extension `" + testCase.name + "`, version `" + testCase.version + "` that doesn't exist", async () => {
       let thrown = false;
       try {
-        await extensionClient.downloadExtension(requestContext, projectId, testCase.name, testCase.version);
+        await extensionClient.downloadExtension(requestContext, teamId, testCase.name, testCase.version);
       } catch (error) {
         thrown = true;
         assert.isDefined(error.errorNumber);
@@ -227,43 +225,43 @@ describe("ExtensionClient (#integration)", () => {
   it("uploads and deletes extension with specific version", async () => {
     const extensionName = "tempTestExt-" + Guid.createValue();
     const currentTime = new Date().getTime();
-    await extensionClient.createExtension(requestContext, projectId, extensionName, "v1", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
-    await extensionClient.createExtension(requestContext, projectId, extensionName, "v2", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
+    await extensionClient.createExtension(requestContext, teamId, extensionName, "1.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
+    await extensionClient.createExtension(requestContext, teamId, extensionName, "2.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
 
-    let extensions = await extensionClient.getExtensions(requestContext, projectId);
-    let created = extensions.find((props) => props.extensionName === extensionName && props.version === "v1");
+    let extensions = await extensionClient.getExtensions(requestContext, teamId);
+    let created = extensions.find((props) => props.extensionName === extensionName && props.version === "1.0.0");
     assert.isDefined(created);
-    assert.strictEqual(created!.contextId, projectId, "Incorrect contextId");
+    assert.strictEqual(created!.contextId, teamId, "Incorrect contextId");
     assert.approximately(created!.timestamp.getTime(), currentTime, 60 * 1000, "Incorrect timestamp");
 
-    created = extensions.find((props) => props.extensionName === extensionName && props.version === "v2");
+    created = extensions.find((props) => props.extensionName === extensionName && props.version === "2.0.0");
     assert.isDefined(created);
-    assert.strictEqual(created!.contextId, projectId, "Incorrect contextId");
+    assert.strictEqual(created!.contextId, teamId, "Incorrect contextId");
     assert.approximately(created!.timestamp.getTime(), currentTime, 60 * 1000, "Incorrect timestamp");
 
-    await extensionClient.deleteExtension(requestContext, projectId, extensionName, "v1");
-    extensions = await extensionClient.getExtensions(requestContext, projectId);
-    const deleted = extensions.find((props) => props.extensionName === extensionName && props.version === "v1");
+    await extensionClient.deleteExtension(requestContext, teamId, extensionName, "1.0.0");
+    extensions = await extensionClient.getExtensions(requestContext, teamId);
+    const deleted = extensions.find((props) => props.extensionName === extensionName && props.version === "1.0.0");
     assert.isUndefined(deleted);
-    const notDeleted = extensions.find((props) => props.extensionName === extensionName && props.version === "v2");
+    const notDeleted = extensions.find((props) => props.extensionName === extensionName && props.version === "2.0.0");
     assert.isDefined(notDeleted);
 
-    await extensionClient.deleteExtension(requestContext, projectId, extensionName, "v2");
+    await extensionClient.deleteExtension(requestContext, teamId, extensionName, "2.0.0");
   });
 
   it("uploads and deletes all versions of extension", async () => {
     const extensionName = "tempTestExt-" + Guid.createValue();
-    await extensionClient.createExtension(requestContext, projectId, extensionName, "v1", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
-    await extensionClient.createExtension(requestContext, projectId, extensionName, "v2", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
+    await extensionClient.createExtension(requestContext, teamId, extensionName, "1.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
+    await extensionClient.createExtension(requestContext, teamId, extensionName, "2.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
 
-    let extensions = await extensionClient.getExtensions(requestContext, projectId);
-    let created = extensions.find((props) => props.extensionName === extensionName && props.version === "v1");
+    let extensions = await extensionClient.getExtensions(requestContext, teamId);
+    let created = extensions.find((props) => props.extensionName === extensionName && props.version === "1.0.0");
     assert.isDefined(created);
-    created = extensions.find((props) => props.extensionName === extensionName && props.version === "v2");
+    created = extensions.find((props) => props.extensionName === extensionName && props.version === "2.0.0");
     assert.isDefined(created);
 
-    await extensionClient.deleteExtension(requestContext, projectId, extensionName);
-    extensions = await extensionClient.getExtensions(requestContext, projectId);
+    await extensionClient.deleteExtension(requestContext, teamId, extensionName);
+    extensions = await extensionClient.getExtensions(requestContext, teamId);
     const deleted = extensions.find((props) => props.extensionName === extensionName);
     assert.isUndefined(deleted);
   });
@@ -271,7 +269,7 @@ describe("ExtensionClient (#integration)", () => {
   it("fails to upload already existing extension", async () => {
     let thrown = false;
     try {
-      await extensionClient.createExtension(requestContext, projectId, "testExt1", "v1", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
+      await extensionClient.createExtension(requestContext, teamId, "testExt1", "1.0.0", "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b", Buffer.alloc(64));
     } catch (error) {
       thrown = true;
       assert.isDefined(error.errorNumber);

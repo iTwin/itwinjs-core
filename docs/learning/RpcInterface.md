@@ -71,6 +71,7 @@ To define an interface, write a TypeScript class that extends [RpcInterface]($co
 The interface definition class must define a method for each operation that is to be exposed by the server. Each method signature must include the names and types of the input parameters. Each method must return a `Promise` of the appropriate type. These methods and their signatures define the interface.
 
 The definition class must also define two static properties as interface metadata:
+
 ```ts
 public static readonly interfaceName = "theNameOfThisInterface"; // The immutable name of the interface
 public static interfaceVersion = "1.2.3"; // The API version of the interface
@@ -95,9 +96,11 @@ In a real interface definition class, each method and parameter should be commen
 ## Client Stub
 
 The client stub is an implementation of the interface that forwards method calls to the RPC mechanism. Each method in the client stub is exactly the same single line of code:
+
 ```ts
 return this.forward(arguments);
 ```
+
 The forward property is implemented by the base class, and its forward method sends the call and its arguments through the configured RPC mechanism to the server. As shown in the previous example, the client stub code is incorporated into the interface definition class.
 
 ## Server Implementation
@@ -157,6 +160,7 @@ The server must call [RpcManager.registerImpl]($common) to register the impl cla
 ```
 
 ### Choose Interfaces
+
 The server must decide which interfaces it wants to expose. A server can expose multiple interfaces. A server can expose both its own implementations, if any, and imported implementations. The server can decide at run time which interfaces to expose, perhaps based on deployment parameters.
 
 *Example:*

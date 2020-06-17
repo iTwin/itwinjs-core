@@ -7,18 +7,19 @@
  * @module Numerics
  */
 
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
 // import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";
-import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { Point4d } from "../geometry4d/Point4d";
-import { XAndY } from "../geometry3d/XYZProps";
-import { Range3d, Range1d } from "../geometry3d/Range";
-import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
-import { Ray3d } from "../geometry3d/Ray3d";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { GrowableFloat64Array, OptionalGrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { LongitudeLatitudeNumber } from "../geometry3d/LongitudeLatitudeAltitude";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
+import { Range1d, Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { XAndY } from "../geometry3d/XYZProps";
+import { Point4d } from "../geometry4d/Point4d";
+
 // import { Arc3d } from "../curve/Arc3d";
 // cspell:word Cardano
 // cspell:word CCminusSS
@@ -922,7 +923,7 @@ export class AnalyticRoots {
       // Don't know if improveRoots is needed.
       // Breaks in AnalyticRoots.test.ts checkQuartic suggest it indeed converts many e-16 errors to zero.
       //  e-13 cases are unaffected
-      this.improveRoots (c, 3, results, false);
+      this.improveRoots(c, 3, results, false);
     } else {
       this.appendQuadraticRoots(c, results);
     }
@@ -1839,5 +1840,12 @@ export class SineCosinePolynomial {
   public rangeInSweep(sweep: AngleSweep, result?: Range1d): Range1d {
     return this.rangeInStartEndRadians(sweep.startRadians, sweep.endRadians, result);
   }
-
+  /**
+   * Return a representative angle (in radians) for min and max values.
+   * * The radians value is atan2(sineCoff, cosineCoff)
+   * * Hence the candidates for min and max of the function are at this value and this value plus PI
+   */
+  public referenceMinMaxRadians(): number {
+    return Math.atan2(this.sineCoff, this.cosineCoff);
+  }
 }

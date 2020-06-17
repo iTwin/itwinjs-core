@@ -4,31 +4,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import { IconSpecUtilities } from "@bentley/ui-abstract";
-import {
-  Input, Radio, Checkbox, Slider, Icon, Select,
-  LabeledInput, Textarea, LabeledTextarea, LabeledSelect, IconInput, NumericInput,
-  BodyText, BlockText, DisabledText, Headline, LeadingText, MutedText, SmallText, Subheading, Title,
-  Button, ButtonType, ButtonSize, UnderlinedButton,
-  SplitButton, ContextMenuItem,
-  NewBadge, BetaBadge,
-  CheckListBox, CheckListBoxItem, CheckListBoxSeparator,
-  ExpandableList, ExpandableBlock,
-  Spinner, SpinnerSize, LoadingSpinner, LoadingStatus, LoadingPrompt,
-  Toggle, ToggleButtonType, LabeledToggle,
-  SearchBox,
-  Tile, FeaturedTile, MinimalTile, MinimalFeaturedTile,
-  HorizontalTabs, VerticalTabs,
-} from "@bentley/ui-core";
-
-import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
-import { SampleImageCheckBox } from "./SampleImageCheckBox";
-import { SampleExpandableBlock } from "./SampleExpandableBlock";
-
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
+import { IconSpecUtilities } from "@bentley/ui-abstract";
+import {
+  BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
+  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, LabeledInput, LabeledSelect,
+  LabeledTextarea, LabeledToggle, LeadingText, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText, NewBadge,
+  NumericInput, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
+  Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
+} from "@bentley/ui-core";
+import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
+import { SampleExpandableBlock } from "./SampleExpandableBlock";
+import { SampleImageCheckBox } from "./SampleImageCheckBox";
 
 /** Creates a Component Example */
 export const createComponentExample = (title: string, description: string | undefined, content: React.ReactNode): ComponentExampleProps => {
@@ -130,10 +119,6 @@ export class ComponentExamplesProvider {
         createComponentExample("Radio Button", "Basic Radio Button", <Radio label="Basic Radio Button" name="demo1" />),
         createComponentExample("Disabled Radio Button", "Radio Button with disabled prop", <Radio label="Disabled Radio Button" name="demo1" disabled />),
 
-        createComponentExample("Basic Select", "Basic Select component", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
-        createComponentExample("Disabled Select", "Select with disabled prop", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} disabled />),
-        createComponentExample("Placeholder Select", "Select with placeholder prop", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} placeholder="Pick an option" />),
-
         createComponentExample("Basic Textarea", "Textarea with placeholder", <Textarea placeholder="Basic Textarea" />),
         createComponentExample("Disabled Textarea", "Textarea with disabled prop", <Textarea placeholder="Disabled Textarea" disabled />),
 
@@ -141,7 +126,6 @@ export class ComponentExamplesProvider {
         createComponentExample("Icon Input", "Icon Input component", <IconInput placeholder="Icon Input" icon={<Icon iconSpec="icon-placeholder" />} containerClassName="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input component", <LabeledInput label="Labeled Input" placeholder="Labeled Input" className="uicore-full-width" />),
         createComponentExample("Labeled Textarea", "Labeled Textarea component", <LabeledTextarea label="Labeled Textarea" placeholder="Labeled Textarea" className="uicore-full-width" />),
-        createComponentExample("Labeled Select", "Labeled Select component", <LabeledSelect label="Labeled Select" options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
 
         createComponentExample("Image Checkbox", "ImageCheckbox with WebFonts", <SampleImageCheckBox imageOn="icon-more-circular" imageOff="icon-more-vertical-circular" />),
         createComponentExample("Image Checkbox", "ImageCheckbox with SVG fonts", <SampleImageCheckBox imageOn={IconSpecUtilities.createSvgIconSpec(moreSvg)} imageOff={IconSpecUtilities.createSvgIconSpec(moreVerticalSvg)} />),
@@ -182,6 +166,54 @@ export class ComponentExamplesProvider {
         createComponentExample("SearchBox", undefined,
           // tslint:disable-next-line: no-console
           <SearchBox placeholder="Search" onValueChanged={(value: string) => console.log(`Search text: ${value}`)} />),
+      ],
+    };
+  }
+
+  private static get selectSamples(): ComponentExampleCategory {
+    enum ColorOptions {
+      Red,
+      White,
+      Blue,
+      Yellow,
+    }
+
+    const colorChoices = [
+      { label: "Red", value: ColorOptions.Red },
+      { label: "White", value: ColorOptions.White },
+      { label: "Blue", value: ColorOptions.Blue },
+      { label: "Yellow", value: ColorOptions.Yellow },
+    ];
+
+    const cityChoices = [
+      { label: "London", value: "London" },
+      { label: "Paris", value: "Paris" },
+      { label: "Stockholm", value: "Stockholm" },
+      { label: "Berlin", value: "Berlin" },
+      { label: "Mumbai", value: "Mumbai" },
+      { label: "Christchurch", value: "Christchurch" },
+      { label: "Johannesburg", value: "Johannesburg" },
+      { label: "Beijing", value: "Beijing" },
+      { label: "New York", value: "New York" },
+    ];
+
+    return {
+      title: "Select",
+      examples: [
+        createComponentExample("Basic Select", "Basic Select component", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
+        createComponentExample("Disabled Select", "Select with disabled prop", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} disabled />),
+        createComponentExample("Placeholder Select", "Select with placeholder prop", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} placeholder="Pick an option" />),
+
+        createComponentExample("Labeled Select", "Labeled Select component", <LabeledSelect label="Labeled Select" options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
+
+        createComponentExample("ThemedSelect", "ThemedSelect component for colors",
+          <div className="uicore-full-width">
+            <ThemedSelect options={colorChoices} />
+          </div>),
+        createComponentExample("Multi ThemedSelect", "ThemedSelect component with isMulti",
+          <div className="uicore-full-width">
+            <ThemedSelect isMulti={true} isSearchable={true} options={cityChoices} />
+          </div>),
       ],
     };
   }
@@ -274,13 +306,13 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Normal Tile", undefined,
           <Tile title="Normal Tile" icon="icon-placeholder">
-            <a>Link 1</a>
-            <a>Link 2</a>
+            <a>Link 1</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
+            <a>Link 2</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
           </Tile>),
         createComponentExample("Featured Tile", undefined,
           <FeaturedTile title="Featured Tile" icon="icon-placeholder">
-            <a>Link 1</a>
-            <a>Link 2</a>
+            <a>Link 1</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
+            <a>Link 2</a> {/* eslint-disable-line jsx-a11y/anchor-is-valid */}
           </FeaturedTile>),
         createComponentExample("Minimal Tile", undefined, <MinimalTile title="Minimal Tile" icon="icon-placeholder" />),
         createComponentExample("Featured Minimal Tile", undefined, <MinimalFeaturedTile title="Minimal Featured Tile" icon="icon-placeholder" />),
@@ -316,6 +348,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.inputsSamples,
       ComponentExamplesProvider.loadingSamples,
       ComponentExamplesProvider.searchBoxSample,
+      ComponentExamplesProvider.selectSamples,
       ComponentExamplesProvider.sliderSamples,
       ComponentExamplesProvider.splitButtonSamples,
       ComponentExamplesProvider.tabsSamples,

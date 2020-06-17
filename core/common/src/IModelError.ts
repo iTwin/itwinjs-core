@@ -6,7 +6,11 @@
  * @module iModels
  */
 
-import { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, AuthStatus, RepositoryStatus, ChangeSetStatus, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
+import {
+  AuthStatus, BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, GetMetaDataFunction, IModelStatus, LogFunction,
+  RepositoryStatus, RpcInterfaceStatus,
+} from "@bentley/bentleyjs-core";
+
 export { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, AuthStatus, RepositoryStatus, ChangeSetStatus, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 
 /** The error type thrown by this module. See [[IModelStatus]] for `errorNumber` values.
@@ -39,5 +43,15 @@ export class BackendError extends IModelError {
   public constructor(errorNumber: number, name: string, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, log, category, getMetaData);
     this.name = name;
+  }
+}
+
+/**
+ * Channel constraint error
+ * @alpha
+ */
+export class ChannelConstraintError extends IModelError {
+  public constructor(message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+    super(RepositoryStatus.ChannelConstraintViolation, message, log, category, getMetaData);
   }
 }

@@ -7,6 +7,7 @@
  */
 import { BeJSONFunctions, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
+
 /**
  * OPerations on a "complex number" class with real part `x` and complex part `y`
  * @internal

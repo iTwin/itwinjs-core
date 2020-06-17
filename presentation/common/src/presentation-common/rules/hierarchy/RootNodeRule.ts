@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { NavigationRuleBase } from "./NavigationRule";
 import { RuleTypes } from "../Rule";
+import { NavigationRuleBase } from "./NavigationRule";
 
 /**
  * Root node rules define the nodes that are displayed

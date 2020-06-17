@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import { BentleyError, GetMetaDataFunction, LogFunction } from "@bentley/bentleyjs-core";
 import * as https from "https";
+import { BentleyError, GetMetaDataFunction, LogFunction } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { ProgressCallback } from "./Request";
 
@@ -25,6 +25,26 @@ export class UserCancelledError extends BentleyError {
   public constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, log, category, getMetaData);
     this.name = "User cancelled operation";
+  }
+}
+
+/** Error thrown when sas-url provided for download has expired
+ * @beta
+ */
+export class SasUrlExpired extends BentleyError {
+  public constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, log, category, getMetaData);
+    this.name = "SaS url has expired";
+  }
+}
+
+/** Error thrown fail to download file. ErrorNumber will correspond to HTTP error code.
+ * @internal
+ */
+export class DownloadFailed extends BentleyError {
+  public constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, log, category, getMetaData);
+    this.name = "Fail to download file";
   }
 }
 
@@ -72,6 +92,12 @@ export interface FileHandler {
    * @returns True if path exists.
    */
   exists(filePath: string): boolean;
+
+  /**
+   * Deletes file.
+   * @param filePath Path of the file.
+   */
+  unlink(filePath: string): void;
 
   /**
    * Get file name from the path.

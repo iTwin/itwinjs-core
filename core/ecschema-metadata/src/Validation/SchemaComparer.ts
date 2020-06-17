@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  classModifierToString, containerTypeToString, primitiveTypeToString, schemaItemTypeToString,
-  strengthDirectionToString, strengthToString,
+  classModifierToString, containerTypeToString, primitiveTypeToString, schemaItemTypeToString, strengthDirectionToString, strengthToString,
 } from "../ECObjects";
 import { AnyClass } from "../Interfaces";
 import { Constant } from "../Metadata/Constant";
@@ -26,10 +25,10 @@ import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { propertyTypeToString } from "../PropertyTypes";
 import { formatTraitsToArray, formatTypeToString, scientificTypeToString, showSignOptionToString } from "../utils/FormatEnums";
+import { ISchemaCompareReporter } from "./SchemaCompareReporter";
 import { SchemaCompareResultDelegate } from "./SchemaCompareResultDelegate";
 import { SchemaCompareVisitor } from "./SchemaCompareVisitor";
 import { SchemaWalker } from "./SchemaWalker";
-import { ISchemaCompareReporter } from "./SchemaCompareReporter";
 
 /**
  * Enum that identifies if Schema A is being iterated (Forward) or

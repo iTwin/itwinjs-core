@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools-core",
-  "version": "2.0.0-dev.77",
+  "version": "2.2.0-dev.12",
   "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
   "license": "MIT",
   "repository": {
@@ -14,7 +14,7 @@
   "main": "lib/plugins/index.js",
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "test": "",
@@ -24,14 +24,15 @@
     "chalk": "^3.0.0",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.2",
-    "source-map-loader": "^0.2.3",
-    "webpack-sources": "^1.4.3"
+    "source-map-loader": "^1.0.0",
+    "webpack-sources": "^1.4.3",
+    "webpack-filter-warnings-plugin": "^1.2.1"
   },
   "peerDependencies": {
     "webpack": "4.42.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.77",
+    "@bentley/build-tools": "2.2.0-dev.12",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/node": "10.14.1",

@@ -7,9 +7,9 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { CommonStatusBarItem, StatusBarItemId } from "./StatusBarItem";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
+import { CommonStatusBarItem, StatusBarItemId } from "./StatusBarItem";
 
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 

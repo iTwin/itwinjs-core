@@ -7,17 +7,16 @@
  * @module Solid
  */
 
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-
-import { CurveCollection, CurveChain } from "../curve/CurveCollection";
-import { GeometryQuery } from "../curve/GeometryQuery";
+import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
+import { CurveChain, CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { Range3d } from "../geometry3d/Range";
+import { Transform } from "../geometry3d/Transform";
 import { SolidPrimitive } from "./SolidPrimitive";
 import { SweepContour } from "./SweepContour";
-import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
 
 /**
  * * type for a function argument taking 2 curves and returning another curve or failing with undefined.

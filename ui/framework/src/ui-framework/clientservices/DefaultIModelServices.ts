@@ -7,10 +7,12 @@
  */
 
 import { GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { ChangeSet, ChangeSetQuery, HubIModel, HubUserInfo, IModelHubClient, IModelQuery, UserInfoQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import {
+  ChangeSet, ChangeSetQuery, HubIModel, HubUserInfo, IModelHubClient, IModelQuery, UserInfoQuery, Version, VersionQuery,
+} from "@bentley/imodelhub-client";
 // import GatewayProxyApi from "./gatewayProxy";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, RemoteBriefcaseConnection, IModelConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo } from "./IModelServices";
 import { ProjectInfo } from "./ProjectServices";
@@ -73,7 +75,7 @@ export class DefaultIModelServices implements IModelServices {
       }
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
     return iModelInfos;
   }
@@ -86,7 +88,7 @@ export class DefaultIModelServices implements IModelServices {
       return iModelConnection;
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
   }
 
@@ -113,7 +115,7 @@ export class DefaultIModelServices implements IModelServices {
       }
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
     return versionInfos;
   }
@@ -129,7 +131,7 @@ export class DefaultIModelServices implements IModelServices {
       }
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
     return changeSetInfos;
   }
@@ -145,7 +147,7 @@ export class DefaultIModelServices implements IModelServices {
       }
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
     return userInfos;
   }
@@ -160,7 +162,7 @@ export class DefaultIModelServices implements IModelServices {
       }
     } catch (e) {
       alert(JSON.stringify(e));
-      return Promise.reject(e);
+      throw e;
     }
     return userInfos;
   }

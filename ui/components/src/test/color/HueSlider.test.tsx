@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import React from "react";
-import { render, cleanup, fireEvent } from "@testing-library/react"; // , waitForElement
 import { expect } from "chai";
+import React from "react";
 import sinon from "sinon";
-import { HueSlider } from "../../ui-components/color/HueSlider";
 import { HSVColor } from "@bentley/imodeljs-common";
+import { cleanup, fireEvent, render } from "@testing-library/react"; // , waitForElement
+import { HueSlider } from "../../ui-components/color/HueSlider";
 
 describe("<HueSlider />", () => {
   const hsv = new HSVColor(60, 100, 50);

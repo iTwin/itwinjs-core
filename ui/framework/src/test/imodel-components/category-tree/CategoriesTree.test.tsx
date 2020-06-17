@@ -2,25 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// tslint:disable: no-direct-imports
-import * as React from "react";
 import { expect } from "chai";
+import * as moq from "typemoq";
+import * as React from "react";
 import * as sinon from "sinon";
-import { render, waitForElement, cleanup, fireEvent } from "@testing-library/react";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { IModelConnection, Viewport, SpatialViewState, ViewManager, ScreenViewport, SubCategoriesCache } from "@bentley/imodeljs-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { TreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
+import { IModelConnection, ScreenViewport, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
+import { ECInstancesNodeKey, KeySet, LabelDefinition, Node, NodePathElement, StandardNodeTypes } from "@bentley/presentation-common";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import {
-  SelectionManager, SelectionChangeEvent, Presentation, PresentationManager,
-  RulesetManager, RulesetVariablesManager,
+  Presentation, PresentationManager, RulesetManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager,
 } from "@bentley/presentation-frontend";
-import { KeySet, ECInstancesNodeKey, StandardNodeTypes, NodePathElement, LabelDefinition, Node } from "@bentley/presentation-common";
-import TestUtils from "../../TestUtils";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
+import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import { CategoryTree, toggleAllCategories } from "../../../ui-framework/imodel-components/category-tree/CategoriesTree";
 import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
+import TestUtils from "../../TestUtils";
 
 describe("CategoryTree", () => {
 
@@ -190,7 +188,7 @@ describe("CategoryTree", () => {
         setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
         visibilityHandler.reset();
         visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ isDisplayed: true, isDisabled: false }));
-        visibilityHandler.setup((x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), false)).returns(async () => Promise.resolve());
+        visibilityHandler.setup((x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), false)).returns(async () => { });
         const result = render(
           <CategoryTree
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
@@ -206,7 +204,7 @@ describe("CategoryTree", () => {
         setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
         visibilityHandler.reset();
         visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ isDisplayed: false, isDisabled: false }));
-        visibilityHandler.setup((x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), true)).returns(async () => Promise.resolve());
+        visibilityHandler.setup((x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), true)).returns(async () => { });
         const result = render(
           <CategoryTree
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
@@ -259,7 +257,7 @@ describe("CategoryTree", () => {
       it("disables subCategory when enabled subCategory checkbox is unchecked", async () => {
         visibilityHandler.reset();
         visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ isDisplayed: true, isDisabled: false }));
-        visibilityHandler.setup((x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), false)).returns(async () => Promise.resolve());
+        visibilityHandler.setup((x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), false)).returns(async () => { });
         const result = render(
           <CategoryTree
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
@@ -274,7 +272,7 @@ describe("CategoryTree", () => {
       it("enabled subCategory when disabled subCategory checkbox is checked", async () => {
         visibilityHandler.reset();
         visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ isDisplayed: false, isDisabled: false }));
-        visibilityHandler.setup((x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), true)).returns(async () => Promise.resolve());
+        visibilityHandler.setup((x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), true)).returns(async () => { });
         const result = render(
           <CategoryTree
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
@@ -323,6 +321,19 @@ describe("CategoryTree", () => {
         expect(spy).to.be.calledOnce;
       });
 
+      it("renders VisibilityTreeNoFilteredData", async () => {
+        dataProvider.getFilteredNodePaths = async () => [];
+
+        const result = render(<CategoryTree
+          viewManager={viewManagerMock.object}
+          iModel={imodelMock.object}
+          dataProvider={dataProvider}
+          categoryVisibilityHandler={visibilityHandler.object}
+          filterInfo={{ filter: "filtered-node1", activeMatchIndex: 0 }}
+        />);
+
+        await waitForElement(() => result.getByText("categoriesTree.noCategoryFound"));
+      });
     });
 
   });

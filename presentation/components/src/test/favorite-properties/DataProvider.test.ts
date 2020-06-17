@@ -6,16 +6,18 @@
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
-import * as path from "path";
 import * as faker from "faker";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as path from "path";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
+import { KeySet, Ruleset } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import {
+  FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager,
+} from "@bentley/presentation-frontend";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { PropertyData } from "@bentley/ui-components";
-import { KeySet, Ruleset } from "@bentley/presentation-common";
-import { FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager } from "@bentley/presentation-frontend";
 import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../presentation-components/favorite-properties/DataProvider";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 
@@ -73,7 +75,7 @@ describe("FavoritePropertiesDataProvider", () => {
 
     beforeEach(() => {
       const selectionScopesManager = moq.Mock.ofType<SelectionScopesManager>();
-      selectionScopesManager.setup((x) => x.computeSelection(moq.It.isAny(), [elementId], moq.It.isAny())).returns(async () => new KeySet());
+      selectionScopesManager.setup((x) => x.computeSelection(moq.It.isAny(), elementId, moq.It.isAny())).returns(async () => new KeySet());
       selectionManagerMock.setup((x) => x.scopes).returns(() => selectionScopesManager.object);
     });
 

@@ -146,6 +146,8 @@ You can use these environment variables to alter the default behavior of various
   * The number of levels of iModel tile trees to skip before loading graphics.
 * SVT_DISABLE_IDLE_WORK
   * If defined, do not try to perform idle work (precompiling shader) when there are no viewports.
+* SVT_DEBUG_SHADERS
+  * If defined, and the WEBGL_debug_shaders extension is supported, collect debug info during shader compilation. See the `dta output shaders` key-in.
 * SVT_WINDOW_SIZE
   * If defined, a comma-separated startup size for the electron application window as `width,height`.
 
@@ -165,7 +167,23 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * **dta zoom selected** - zoom the selected viewport to the elements in the selection set.
 * **dta incident markers** - toggle incident marker demo in the selected viewport.
 * **dta markup** - toggle markup on the selected viewport.
+* **dta output shaders** - output debug information for compiled shaders. Requires SVT_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
+  * `d=output\directory\` - directory into which to put the output files.
+  * filter string: a combination of the following characters to filter the output (e.g., `gu` outputs all used glsl shaders, both fragment and vertex):
+    * `f` or `v`: output only fragment or vertex shaders, respectively.
+    * `g` or `h`: output only glsl or hlsl code, respectively.
+    * `u` or `n`: output only used or not-used shaders, respectively.
 * **dta drawing aid points** - start tool for testing AccuSnap.
 * **dta refresh tiles** *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
 * **dta shutdown** - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.
 * **dta shadow tiles** - Display in all but the selected viewport the tiles that are selected for generating the shadow map for the selected viewport. Updates each time the shadow map is regenerated. Argument: "toggle", "on", or "off"; defaults to "toggle" if not supplied.
+* **dta detach views** - If the selected viewport is displaying a sheet view, remove all view attachments from it.
+* **dta attach view** - If the selected viewport is displaying a sheet view, add the specified view as a view attachment. Arguments:
+  * `view=` (required): The Id of the persistent view, in hexadecimal format (e.g. `0x1ac`).
+  * `category=`: The Id of the category onto which to place the attachment. Defaults to the first category found in the view's category selector.
+  * `x=`, `y=`: The origin of the attachment on the sheet. Default to zero.
+  * `rotation=`: Rotation of the attachment on the sheet in degrees. Defaults to zero.
+  * `size=`: Ratio of the sheet's area that the attachment should occupy. Defaults to 1, making the attachment fill the entire sheet.
+  * `priority=`: Display priority of the attachment in [-500,500]. Defaults to zero.
+  * `image=`: Display as a raster image, even if view is orthographic. Perspective views always draw as raster images.
+  * `background=`: Preserve background color when drawing as a raster image.
