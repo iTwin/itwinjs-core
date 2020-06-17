@@ -40,7 +40,7 @@ export class SeqLoggerConfig {
    * ```
    * See [[BunyanLoggerConfig.logToBunyan]]
    */
-  public static createBunyanSeqLogger(seqConfig: SeqConfig, loggerName: string): any {
+  public static createBunyanSeqLogger(seqConfig: SeqConfig, loggerName: string, logToStdout = true): any {
     if (seqConfig === undefined)
       seqConfig = {};
 
@@ -59,7 +59,7 @@ export class SeqLoggerConfig {
     if (seqConfig.reemitErrorEvents !== undefined)
       seqStreamParams.reemitErrorEvents = seqConfig.reemitErrorEvents;
 
-    // NB: Define only one bunyan stream! Otherwise, we will get logging messages coming out multiple times, once for each stream. (https://github.com/trentm/node-bunyan/issues/334)
+    // NB: Define only one seq bunyan stream! Otherwise, we will get logging messages coming out multiple times, once for each stream. (https://github.com/trentm/node-bunyan/issues/334)
     // This one stream must accept messages at all levels. That is why we set it to "trace". That is just its lower limit.
     seqStreamParams.level = "trace";
 
@@ -69,6 +69,14 @@ export class SeqLoggerConfig {
         seq.createStream(seqStreamParams),
       ],
     });
+
+    // Write to stdout
+    if (logToStdout)
+      bunyanLogger.addStream({
+        stream: process.stdout,
+        level: "trace",
+      });
+
     return bunyanLogger;
   }
 
