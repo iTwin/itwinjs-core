@@ -7,9 +7,10 @@ import * as faker from "faker";
 import { Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@bentley/imodeljs-common";
 import {
-  ContentRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, LabelRpcRequestOptions, Paged, PresentationDataCompareRpcOptions,
-  PresentationRpcInterface, SelectionScopeRpcRequestOptions,
+  ContentRpcRequestOptions, DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, LabelRpcRequestOptions, Paged,
+  PresentationDataCompareRpcOptions, PresentationRpcInterface, SelectionScopeRpcRequestOptions,
 } from "../presentation-common";
+import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import * as moq from "./_helpers/Mocks";
 import { createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNodeKey } from "./_helpers/random";
 
@@ -177,6 +178,20 @@ describe("PresentationRpcInterface", () => {
       const keys = new KeySet().toJSON();
       await rpcInterface.getDistinctValues(token, options, descriptor, keys, fieldName, maximumValueCount);
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys, fieldName, maximumValueCount)), moq.Times.once());
+    });
+
+    it("forwards getPagedDistinctValues call", async () => {
+      const options: DistinctValuesRpcRequestOptions = {
+        rulesetOrId: faker.random.word(),
+        descriptor: createRandomDescriptor(),
+        fieldDescriptor: {
+          type: FieldDescriptorType.Name,
+          fieldName: "test",
+        },
+        keys: new KeySet().toJSON(),
+      };
+      await rpcInterface.getPagedDistinctValues(token, options);
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
     it("forwards getDisplayLabelDefinition call", async () => {

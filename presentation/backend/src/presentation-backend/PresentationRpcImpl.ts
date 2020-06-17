@@ -10,10 +10,11 @@ import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-cor
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import {
-  ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON,
-  KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement,
-  NodePathElementJSON, Paged, PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareRpcOptions, PresentationError,
-  PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
+  ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, DisplayValueGroup, DisplayValueGroupJSON,
+  DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
+  LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse,
+  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareRpcOptions, PresentationError, PresentationRpcInterface,
+  PresentationRpcResponse, PresentationStatus, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
 } from "@bentley/presentation-common";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
@@ -194,6 +195,22 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return this.makeRequest(token, requestOptions, async (requestContext, options) =>
       this.getManager(requestOptions.clientId).getDistinctValues(requestContext, options, Descriptor.fromJSON(descriptor)!, KeySet.fromJSON(keys), fieldName, maximumValueCount),
     );
+  }
+
+  public async getPagedDistinctValues(token: IModelRpcProps, requestOptions: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> {
+    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+      options = {
+        ...options,
+        descriptor: Descriptor.fromJSON(options.descriptor),
+        keys: KeySet.fromJSON(options.keys),
+      };
+      const response = await this.getManager(requestOptions.clientId).getPagedDistinctValues(requestContext, options);
+      requestContext.enter();
+      return {
+        total: response.total,
+        items: response.items.map(DisplayValueGroup.toJSON),
+      };
+    });
   }
 
   public async getDisplayLabelDefinition(token: IModelRpcProps, requestOptions: LabelRpcRequestOptions, key: InstanceKeyJSON): PresentationRpcResponse<LabelDefinitionJSON> {

@@ -10,6 +10,7 @@ import { Guid, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
 import { ContentJSON } from "./content/Content";
 import { DescriptorJSON, DescriptorOverrides, SelectionInfo } from "./content/Descriptor";
+import { DisplayValueGroupJSON } from "./content/Value";
 import { InstanceKeyJSON } from "./EC";
 import { PresentationError, PresentationStatus } from "./Error";
 import { NodeKeyJSON } from "./hierarchy/Key";
@@ -18,12 +19,13 @@ import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
-  ContentRequestOptions, HierarchyRequestOptions, LabelRequestOptions, Paged, PresentationDataCompareOptions, SelectionScopeRequestOptions,
+  ContentRequestOptions, DistinctValuesRequestOptions, HierarchyRequestOptions, LabelRequestOptions, Paged, PresentationDataCompareOptions,
+  SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
 import { SelectionScope } from "./selection/SelectionScope";
 import { PartialHierarchyModificationJSON } from "./Update";
-import { Omit } from "./Utils";
+import { Omit, PagedResponse } from "./Utils";
 
 /**
  * Configuration parameters for [[RpcRequestsHandler]].
@@ -146,6 +148,10 @@ export class RpcRequestsHandler implements IDisposable {
   public async getDistinctValues(options: ContentRequestOptions<IModelRpcProps>, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]> {
     return this.request<string[], ContentRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getDistinctValues, options, descriptor, keys, fieldName, maximumValueCount);
+  }
+  public async getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>): Promise<PagedResponse<DisplayValueGroupJSON>> {
+    return this.request<PagedResponse<DisplayValueGroupJSON>, DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>(
+      this.rpcClient, this.rpcClient.getPagedDistinctValues, options);
   }
 
   public async getDisplayLabelDefinition(options: LabelRequestOptions<IModelRpcProps>, key: InstanceKeyJSON): Promise<LabelDefinitionJSON> {

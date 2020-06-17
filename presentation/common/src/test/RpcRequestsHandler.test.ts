@@ -9,11 +9,12 @@ import * as moq from "typemoq";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@bentley/imodeljs-common";
 import {
-  ContentRequestOptions, HierarchyRequestOptions, KeySet, LabelRequestOptions, Paged, PartialHierarchyModificationJSON, PresentationError,
-  PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse, PresentationStatus, RpcRequestsHandler, SelectionInfo,
-  SelectionScopeRequestOptions,
+  ContentRequestOptions, DescriptorJSON, DistinctValuesRpcRequestOptions, HierarchyRequestOptions, KeySet, KeySetJSON, LabelRequestOptions, Paged,
+  PartialHierarchyModificationJSON, PresentationError, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
+  PresentationStatus, RpcRequestsHandler, SelectionInfo, SelectionScopeRequestOptions,
 } from "../presentation-common";
-import { PresentationDataCompareOptions } from "../presentation-common/PresentationManagerOptions";
+import { FieldDescriptorType } from "../presentation-common/content/Fields";
+import { DistinctValuesRequestOptions, PresentationDataCompareOptions } from "../presentation-common/PresentationManagerOptions";
 import {
   createRandomContentJSON, createRandomDescriptorJSON, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
   createRandomECInstancesNodeKeyJSON, createRandomLabelDefinitionJSON, createRandomNodePathElementJSON, createRandomSelectionScope,
@@ -357,6 +358,42 @@ describe("RpcRequestsHandler", () => {
       const result = [faker.random.word()];
       rpcInterfaceMock.setup(async (x) => x.getDistinctValues(token, rpcOptions, descriptor, keys, fieldName, maxItems)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getDistinctValues(handlerOptions, descriptor, keys, fieldName, maxItems)).to.eq(result);
+      rpcInterfaceMock.verifyAll();
+    });
+
+    it("forwards getPagedDistinctValues call", async () => {
+      const handlerOptions: DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON> = {
+        imodel: token,
+        rulesetOrId: faker.random.word(),
+        descriptor: createRandomDescriptorJSON(),
+        keys: new KeySet().toJSON(),
+        fieldDescriptor: {
+          type: FieldDescriptorType.Name,
+          fieldName: "test",
+        },
+      };
+      const rpcOptions: DistinctValuesRpcRequestOptions = {
+        clientId,
+        rulesetOrId: handlerOptions.rulesetOrId,
+        descriptor: handlerOptions.descriptor,
+        keys: new KeySet().toJSON(),
+        fieldDescriptor: {
+          type: FieldDescriptorType.Name,
+          fieldName: "test",
+        },
+      };
+      const result = {
+        total: 2,
+        items: [{
+          displayValue: "1",
+          groupedRawValues: [1.1, 1.2],
+        }, {
+          displayValue: "2",
+          groupedRawValues: [2],
+        }],
+      };
+      rpcInterfaceMock.setup(async (x) => x.getPagedDistinctValues(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.getPagedDistinctValues(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 
