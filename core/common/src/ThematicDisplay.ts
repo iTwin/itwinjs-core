@@ -12,9 +12,13 @@ import { Gradient } from "./Gradient";
 
 /** @beta */
 export enum ThematicGradientMode {
+  /** Apply a smooth color gradient to the scene. */
   Smooth = 0,
+  /** Apply a stepped color gradient to the scene. */
   Stepped = 1,
+  /** Apply a stepped color gradient to the scene with delimiters (lines between the color steps). Cannot be used with [[ThematicDisplayMode.InverseDistanceWeightedSensors]]. */
   SteppedWithDelimiter = 2,
+  /** Apply isolines to the scene to achieve an effect similar to a contour map. Cannot be used with [[ThematicDisplayMode.InverseDistanceWeightedSensors]]. */
   IsoLines = 3,
 }
 
@@ -30,9 +34,9 @@ export enum ThematicGradientColorScheme {
 
 /** @beta */
 export interface ThematicGradientSettingsProps {
-  /** The thematic image mode used to generate the gradient. Defaults to [[ThematicGradientMode.Smooth]]. */
+  /** The thematic image mode used to generate and apply the thematic gradient. Defaults to [[ThematicGradientMode.Smooth]]. */
   mode?: ThematicGradientMode;
-  /** The step count value used for [[ThematicGradientMode.Stepped]]. Defaults to 10. */
+  /** The step count value used for [[ThematicGradientMode.Stepped]], [[ThematicGradientMode.SteppedWithDelimiter]], and [[ThematicGradientMode.IsoLines]]. Defaults to 10. Cannot be less than 2. */
   stepCount?: number;
   /** The margin color used at the extremes of the gradient, when outside the applied range. Defaults to a black color using [[ColorDef.fromJSON]] with no arguments. */
   marginColor?: ColorDefProps;
@@ -51,7 +55,7 @@ export interface ThematicGradientSettingsProps {
 export class ThematicGradientSettings {
   /** The thematic image mode used to generate the gradient. Defaults to [[ThematicGradientMode.Smooth]]. */
   public readonly mode: ThematicGradientMode;
-  /** The step count value used for [[ThematicGradientMode.Stepped]]. Defaults to 10. */
+  /** The step count value used for [[ThematicGradientMode.Stepped]], [[ThematicGradientMode.SteppedWithDelimiter]], and [[ThematicGradientMode.IsoLines]]. Defaults to 10. Cannot be less than 2. */
   public readonly stepCount: number;
   /** The margin color used at the extremes of the gradient, when outside the applied range. Defaults to a black color using [[ColorDef.fromJSON]] with no arguments. */
   public readonly marginColor: ColorDef;
@@ -104,6 +108,9 @@ export class ThematicGradientSettings {
         this.mode = ThematicGradientMode.Smooth;
 
       this.stepCount = (typeof json.stepCount === "number") ? json.stepCount : 10;
+      if (this.stepCount < 2)
+        this.stepCount = 2;
+
       this.marginColor = ColorDef.fromJSON(json.marginColor);
 
       this.colorScheme = (json.colorScheme !== undefined && json.colorScheme !== null) ? json.colorScheme : ThematicGradientColorScheme.BlueRed;
@@ -300,7 +307,7 @@ export enum ThematicDisplayMode {
 export interface ThematicDisplayProps {
   /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry. Defaults to [[ThematicDisplayMode.Height]]. */
   displayMode?: ThematicDisplayMode;
-  /** The settings used to create a color gradient applied to the geometry. The mode currently must be [[Gradient.ThematicMode.Smooth]]. Defaults to an instantiation using [[ThematicGradientSettings.fromJSON]] with no arguments. */
+  /** The settings used to create a color gradient applied to the geometry. Defaults to an instantiation using [[ThematicGradientSettings.fromJSON]] with no arguments. */
   gradientSettings?: ThematicGradientSettingsProps;
   /** The range in which to apply the thematic gradient. For [[ThematicDisplayMode.Height]], this is world space in meters. Defaults to a null range. */
   range?: Range1dProps;
@@ -318,7 +325,7 @@ export interface ThematicDisplayProps {
 export class ThematicDisplay {
   /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry. Defaults to [[ThematicDisplayMode.Height]]. */
   public readonly displayMode: ThematicDisplayMode;
-  /** The settings used to create a color gradient applied to the geometry. The mode currently must be [[Gradient.ThematicMode.Smooth]]. Defaults to an instantiation using [[ThematicGradientSettings.fromJSON]] with no arguments. */
+  /** The settings used to create a color gradient applied to the geometry. Defaults to an instantiation using [[ThematicGradientSettings.fromJSON]] with no arguments. */
   public readonly gradientSettings: ThematicGradientSettings;
   /** The range in which to apply the thematic gradient. For [[ThematicDisplayMode.Height]], this is world space in meters. Defaults to a null range. */
   public readonly range: Range1d;
@@ -359,6 +366,16 @@ export class ThematicDisplay {
       this.axis = Vector3d.fromJSON(json.axis);
       this.range = Range1d.fromJSON(json.range);
       this.sensorSettings = ThematicDisplaySensorSettings.fromJSON(json.sensorSettings);
+    }
+    if (ThematicDisplayMode.InverseDistanceWeightedSensors === this.displayMode) {
+      // Disallow isoline and stepped-with-delimiter gradient modes during sensor display.
+      // At some point, stepped-with-delimiter could potentially be allowed if some
+      // shader precision limitations are worked around.
+      if (ThematicGradientMode.IsoLines === this.gradientSettings.mode || ThematicGradientMode.SteppedWithDelimiter === this.gradientSettings.mode) {
+        const gradientSettingsJSON = this.gradientSettings.toJSON();
+        gradientSettingsJSON.mode = ThematicGradientMode.Smooth;
+        this.gradientSettings = ThematicGradientSettings.fromJSON(gradientSettingsJSON);
+      }
     }
   }
 

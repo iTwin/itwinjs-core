@@ -74,8 +74,9 @@ describe("Render Compatibility", () => {
     const compatibility = queryRenderCompatibility(false, createContext);
     expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
     expect(compatibility.missingRequiredFeatures.length).to.equal(0);
-    expect(compatibility.missingOptionalFeatures.length).to.equal(1);
+    expect(compatibility.missingOptionalFeatures.length).to.equal(2);
     expect(compatibility.missingOptionalFeatures[0]).to.equal("fragment depth");
+    expect(compatibility.missingOptionalFeatures[1]).to.equal("standard derivatives");
     expect(compatibility.contextErrorMessage).to.be.undefined;
     overriddenFunctions.restore();
   });
@@ -157,5 +158,17 @@ describe("Render Compatibility", () => {
     const compatibility = caps.init(context!, ["ANGLE_instanced_arrays"]);
     expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
     expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.Instancing)).to.not.equal(-1);
+  });
+
+  it("should query proper render compatibility info assuming lack of standard derivatives support", () => {
+    const canvas = _createCanvas();
+    expect(canvas).to.not.be.undefined;
+    const context = createContext(canvas!, false);
+    expect(context).to.not.be.undefined;
+
+    const caps = new Capabilities();
+    const compatibility = caps.init(context!, ["OES_standard_derivatives"]);
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
+    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.StandardDerivatives)).to.not.equal(-1);
   });
 });

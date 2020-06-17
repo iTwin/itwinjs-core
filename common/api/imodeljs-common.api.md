@@ -2649,6 +2649,8 @@ export namespace Gradient {
         static fromJSON(json?: SymbProps): Symb;
         // @beta
         getImage(width: number, height: number): ImageBuffer;
+        // @internal
+        getThematicImageForRenderer(maxDimension: number): ImageBuffer;
         // (undocumented)
         get hasTranslucency(): boolean;
         get isOutlined(): boolean;
@@ -6115,13 +6117,9 @@ export enum ThematicGradientColorScheme {
 
 // @beta (undocumented)
 export enum ThematicGradientMode {
-    // (undocumented)
     IsoLines = 3,
-    // (undocumented)
     Smooth = 0,
-    // (undocumented)
     Stepped = 1,
-    // (undocumented)
     SteppedWithDelimiter = 2
 }
 

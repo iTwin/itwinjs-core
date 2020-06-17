@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webgl-compatibility",
+      "comment": "New optional feature added: WebGLFeature.StandardDerivatives",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webgl-compatibility",
+  "email": "Mark.Schlosser@bentley.com"
+}

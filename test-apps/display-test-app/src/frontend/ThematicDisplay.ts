@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ComboBox, createButton, createCheckBox, createComboBox, createLabeledNumericInput, LabeledNumericInput } from "@bentley/frontend-devtools";
+import { ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, LabeledNumericInput } from "@bentley/frontend-devtools";
 import { Point3d, Range1d } from "@bentley/geometry-core";
 import {
   ColorByName, ColorDef, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicDisplaySensorProps, ThematicGradientColorScheme,
@@ -16,7 +16,6 @@ export class ThematicDisplayEditor {
     displayMode: ThematicDisplayMode.Height,
     gradientSettings: {
       mode: ThematicGradientMode.Smooth,
-      stepCount: 0,
       marginColor: ColorByName.blanchedAlmond,
       colorScheme: ThematicGradientColorScheme.BlueRed,
     },
@@ -95,6 +94,8 @@ export class ThematicDisplayEditor {
   private readonly _scratchViewFlags = new ViewFlags();
   private readonly _update: (view: ViewState) => void;
   private readonly _thematicDisplayMode: ComboBox;
+  private readonly _thematicGradientMode: ComboBox;
+  private readonly _thematicStepCount: LabeledNumericInput;
   private readonly _thematicColorScheme: ComboBox;
   private readonly _thematicRangeLow: LabeledNumericInput;
   private readonly _thematicRangeHigh: LabeledNumericInput;
@@ -107,6 +108,40 @@ export class ThematicDisplayEditor {
   private readonly _thematicSensorY: LabeledNumericInput;
   private readonly _thematicSensorZ: LabeledNumericInput;
   private readonly _thematicSensorValue: LabeledNumericInput;
+
+  private static _gradientModeEntries = [
+    { name: "Smooth", value: ThematicGradientMode.Smooth },
+    { name: "Stepped", value: ThematicGradientMode.Stepped },
+    { name: "SteppedWithDelimiter", value: ThematicGradientMode.SteppedWithDelimiter },
+    { name: "IsoLines", value: ThematicGradientMode.IsoLines },
+  ];
+  private static _gradientModeEntriesForSensors = [
+    { name: "Smooth", value: ThematicGradientMode.Smooth },
+    { name: "Stepped", value: ThematicGradientMode.Stepped },
+  ];
+
+  private static _appendComboBoxEntry(select: HTMLSelectElement, entry: ComboBoxEntry) {
+    const option = document.createElement("option") as HTMLOptionElement;
+    option.innerText = entry.name;
+    if (undefined !== entry.value)
+      option.value = entry.value.toString();
+    select.appendChild(option);
+  }
+
+  private static _setComboBoxEntries(cb: ComboBox, entries: ComboBoxEntry[]) {
+    // remove all existing entries
+    let i;
+    const ln = cb.select.options.length - 1;
+    for (i = ln; i >= 0; i--) {
+      cb.select.remove(i);
+    }
+
+    // add new entries
+    for (const entry of entries) {
+      ThematicDisplayEditor._appendComboBoxEntry(cb.select, entry);
+    }
+  }
+
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._vp = vp;
 
@@ -174,12 +209,40 @@ export class ThematicDisplayEditor {
       name: "Display Mode: ",
       entries: displayModeEntries,
       id: "thematic_displayMode",
-      value: this._vp.viewFlags.renderMode,
+      value: 0,
       handler: (thing) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
         props.displayMode = Number.parseInt(thing.value, 10);
         return props;
       }),
+    });
+
+    this._thematicGradientMode = createComboBox({
+      parent: thematicControlsDiv,
+      name: "Gradient Mode: ",
+      entries: ThematicDisplayEditor._gradientModeEntries,
+      id: "thematic_gradientMode",
+      value: 0,
+      handler: (thing) => this.updateThematicDisplay((view): ThematicDisplayProps => {
+        const props = this.getThematicSettingsProps(view);
+        props.gradientSettings!.mode = Number.parseInt(thing.value, 10);
+        return props;
+      }),
+    });
+
+    this._thematicStepCount = createLabeledNumericInput({
+      id: "thematic_stepCount",
+      parent: thematicControlsDiv,
+      value: 1,
+      handler: (value, _) => this.updateThematicDisplay((view): ThematicDisplayProps => {
+        const props = this.getThematicSettingsProps(view);
+        props.gradientSettings!.stepCount = value;
+        return props;
+      }),
+      min: 2,
+      max: 100,
+      step: 1,
+      name: "Step Count: ",
     });
 
     const colorSchemeEntries = [
@@ -196,7 +259,7 @@ export class ThematicDisplayEditor {
       name: "Color Scheme: ",
       entries: colorSchemeEntries,
       id: "thematic_colorScheme",
-      value: this._vp.viewFlags.renderMode,
+      value: 0,
       handler: (thing) => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
         props.gradientSettings!.colorScheme = Number.parseInt(thing.value, 10);
@@ -495,6 +558,13 @@ export class ThematicDisplayEditor {
     this._thematicRangeLow.input.value = range.low.toString();
     this._thematicRangeHigh.input.value = range.high.toString();
     this._thematicDisplayMode.select.value = (props.displayMode === undefined || props.displayMode === null) ? ThematicDisplayEditor._defaultSettings.displayMode!.toString() : props.displayMode!.toString();
+    if (ThematicDisplayMode.InverseDistanceWeightedSensors === Number.parseInt(this._thematicDisplayMode.select.value, 10)) {
+      ThematicDisplayEditor._setComboBoxEntries(this._thematicGradientMode, ThematicDisplayEditor._gradientModeEntriesForSensors);
+    } else {
+      ThematicDisplayEditor._setComboBoxEntries(this._thematicGradientMode, ThematicDisplayEditor._gradientModeEntries);
+    }
+    this._thematicGradientMode.select.value = (props.gradientSettings === undefined || props.gradientSettings === null) ? ThematicDisplayEditor._defaultSettings.gradientSettings!.mode!.toString() : props.gradientSettings!.mode!.toString();
+    this._thematicStepCount.input.value = (props.gradientSettings === undefined || props.gradientSettings === null) ? ThematicDisplayEditor._defaultSettings.gradientSettings!.stepCount!.toString() : props.gradientSettings!.stepCount!.toString();
     this._thematicColorScheme.select.value = (props.gradientSettings === undefined || props.gradientSettings === null) ? ThematicDisplayEditor._defaultSettings.gradientSettings!.colorScheme!.toString() : props.gradientSettings!.colorScheme!.toString();
     const axis = (props.axis === undefined || props.axis === null) ? Point3d.fromJSON(ThematicDisplayEditor._defaultSettings.axis!) : Point3d.fromJSON(props.axis);
     this._thematicAxisX.input.value = axis.x.toString();

@@ -478,5 +478,27 @@ describe("ThematicDisplay", () => {
     expect(td.gradientSettings.customKeys[1].color).to.deep.equal(ColorDef.from(0, 0, 0, 0)); // second should be black
     expect(td.gradientSettings.customKeys[1].value).to.equal(1.0); // value for white should be 1.0
     verifyBackAndForth(td);
+
+    // check if incorrectly configuring gradient mode / thematic display mode combination is resolved as expected - IsoLines / Sensors
+    badThematicProps = {
+      gradientSettings: {
+        mode: ThematicGradientMode.IsoLines,
+      },
+      displayMode: ThematicDisplayMode.InverseDistanceWeightedSensors,
+    };
+    td = ThematicDisplay.fromJSON(badThematicProps);
+    expect(td.gradientSettings.mode).to.equal(ThematicGradientMode.Smooth); // should default to smooth because of incorrect combo
+    verifyBackAndForth(td);
+
+    // check if incorrectly configuring gradient mode / thematic display mode combination is resolved as expected - SteppedWithDelimiter / Sensors
+    badThematicProps = {
+      gradientSettings: {
+        mode: ThematicGradientMode.SteppedWithDelimiter,
+      },
+      displayMode: ThematicDisplayMode.InverseDistanceWeightedSensors,
+    };
+    td = ThematicDisplay.fromJSON(badThematicProps);
+    expect(td.gradientSettings.mode).to.equal(ThematicGradientMode.Smooth); // should default to smooth because of incorrect combo
+    verifyBackAndForth(td);
   });
 });

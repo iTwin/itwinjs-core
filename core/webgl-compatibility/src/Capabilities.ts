@@ -12,7 +12,7 @@ import { WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilitySta
 export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" |
   "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" |
   "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" |
-  "EXT_frag_depth" | "EXT_disjoint_timer_query" | "EXT_disjoint_timer_query_webgl2";
+  "EXT_frag_depth" | "EXT_disjoint_timer_query" | "EXT_disjoint_timer_query_webgl2" | "OES_standard_derivatives";
 
 const knownExtensions: WebGLExtensionName[] = [
   "WEBGL_draw_buffers",
@@ -31,6 +31,7 @@ const knownExtensions: WebGLExtensionName[] = [
   "WEBGL_lose_context",
   "EXT_disjoint_timer_query",
   "EXT_disjoint_timer_query_webgl2",
+  "OES_standard_derivatives",
 ];
 
 /** Describes the type of a render target. Used by Capabilities to represent maximum precision render target available on host system.
@@ -107,6 +108,7 @@ export class Capabilities {
   public get supportsVertexArrayObjects(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object") !== undefined; }
   public get supportsFragDepth(): boolean { return this._isWebGL2 || this.queryExtensionObject<EXT_frag_depth>("EXT_frag_depth") !== undefined; }
   public get supportsDisjointTimerQuery(): boolean { return (this._isWebGL2 && this.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2") !== undefined) || this.queryExtensionObject<any>("EXT_disjoint_timer_query") !== undefined; }
+  public get supportsStandardDerivatives(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_standard_derivatives>("OES_standard_derivatives") !== undefined; }
 
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 3; }
@@ -135,6 +137,7 @@ export class Capabilities {
     WebGLFeature.Instancing,
     WebGLFeature.ShadowMaps,
     WebGLFeature.FragDepth,
+    WebGLFeature.StandardDerivatives,
   ];
   public static readonly requiredFeatures: WebGLFeature[] = [
     WebGLFeature.UintElementIndex,

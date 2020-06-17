@@ -33,6 +33,10 @@ export enum WebGLFeature {
    * to occur.
    */
   FragDepth = "fragment depth",
+  /**
+   * This feature allows the renderer to achieve accurate contour lines for isoline and stepped delimiter modes of thematic display.
+   */
+  StandardDerivatives = "standard derivatives",
 }
 
 /** A general "compatibility rating" based on the contents of a [[WebGLRenderCompatibilityInfo]].
