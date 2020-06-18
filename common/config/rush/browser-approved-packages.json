@@ -827,6 +827,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
+      "name": "symlink-dir",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "tar",
       "allowedCategories": [ "tools" ]
     },

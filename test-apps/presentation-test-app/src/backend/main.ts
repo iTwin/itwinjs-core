@@ -44,4 +44,6 @@ import rpcs from "../common/Rpcs";
   }
   // do initialize
   init(rpcs);
+
+  console.log(`Process ID: ${process.pid}`);
 })();

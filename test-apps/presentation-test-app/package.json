@@ -15,7 +15,7 @@
     "build": "npm run build:backend && npm run build:frontend",
     "build:backend": "npm run copy:assets && tsc -p tsconfig.backend.json",
     "build:frontend": "cross-env GENERATE_SOURCEMAP=false USE_FAST_SASS=true react-scripts build",
-    "copy:assets": "cpx \"./assets/**/*\" ./lib/assets",
+    "copy:assets": "symlink-dir \"./assets\" ./lib/assets",
     "clean": "rimraf build lib .rush/temp/package-deps*.json",
     "docs": "npm run extract",
     "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
@@ -68,6 +68,7 @@
     "postcss-flexbugs-fixes": "^3.3.1",
     "postcss-loader": "^2.1.6",
     "rimraf": "^3.0.2",
+    "symlink-dir": "~4.0.3",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
