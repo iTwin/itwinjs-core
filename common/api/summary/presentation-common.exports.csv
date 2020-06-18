@@ -54,11 +54,16 @@ public;DescriptorSource
 public;DisabledSortingRule 
 public;DisplayValue = string | undefined | DisplayValuesMap | DisplayValuesArray
 public;DisplayValue
+alpha;DisplayValueGroup
+alpha;DisplayValueGroup
+alpha;DisplayValueGroupJSON
 public;DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON
 public;DisplayValuesArray 
 public;DisplayValuesArrayJSON 
 public;DisplayValuesMap 
 public;DisplayValuesMapJSON 
+alpha;DistinctValuesRequestOptions
+alpha;DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions
 public;ECClassGroupingNodeKey 
 public;ECInstancesNodeKey 
 public;ECInstancesNodeKeyJSON 
@@ -69,6 +74,10 @@ public;EnumerationChoice
 public;EnumerationInfo
 public;ExtendedDataRule 
 public;Field
+alpha;FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor | RelatedContentFieldDescriptor
+alpha;FieldDescriptor
+alpha;FieldDescriptorBase
+alpha;FieldDescriptorType
 public;FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON
 internal;getFieldByName: (fields: Field[], name: string, recurse?: boolean | undefined) => Field | undefined
 public;getInstancesCount: (keys: Readonly
@@ -125,6 +134,7 @@ public;LabelRequestOptions
 public;LabelRpcRequestOptions = PresentationRpcRequestOptions
 public;LoggingNamespaces
 public;MultiSchemaClassesSpecification
+alpha;NamedFieldDescriptor 
 public;NavigationRule = RootNodeRule | ChildNodeRule
 public;NavigationRuleBase 
 public;NestedContentField 
@@ -160,6 +170,7 @@ alpha;NodeUpdateInfo
 alpha;NodeUpdateInfoJSON
 public;Omit
 public;Paged
+alpha;PagedResponse
 public;PageOptions
 alpha;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo
 alpha;PartialHierarchyModification
@@ -175,6 +186,7 @@ public;PresentationStatus
 alpha;PresentationUnitSystem
 public;PrimitiveTypeDescription 
 public;PropertiesField 
+alpha;PropertiesFieldDescriptor 
 public;PropertiesFieldJSON 
 public;Property
 public;Property
@@ -207,6 +219,7 @@ public;RegisteredRuleset
 public;RelatedClassInfo
 public;RelatedClassInfo
 public;RelatedClassInfoJSON
+alpha;RelatedContentFieldDescriptor 
 public;RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew
 public;RelatedInstanceNodesSpecificationNew 
 public;RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew
@@ -252,6 +265,8 @@ public;SortingRule = PropertySortingRule | DisabledSortingRule
 public;SortingRuleBase 
 public;StandardNodeTypes
 public;StringQuerySpecification 
+public;StrippedRelatedClassInfo
+public;StrippedRelationshipPath = StrippedRelatedClassInfo[]
 public;StructFieldMemberDescription
 public;StructTypeDescription 
 public;StyleOverride 

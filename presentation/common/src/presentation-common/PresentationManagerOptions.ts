@@ -6,6 +6,7 @@
  * @module Core
  */
 
+import { FieldDescriptor } from "./content/Fields";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
 
@@ -82,6 +83,19 @@ export interface ContentRequestOptions<TIModel> extends RequestOptionsWithRulese
    * @alpha
    */
   unitSystem?: PresentationUnitSystem;
+}
+
+/**
+ * Request type for distinct values' requests
+ * @alpha
+ */
+export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet> extends Paged<ContentRequestOptions<TIModel>> {
+  /** Content descriptor for content we're requesting distinct values for */
+  descriptor: TDescriptor;
+  /** Input keys for getting the content */
+  keys: TKeySet;
+  /** Descriptor for a field distinct values are requested for */
+  fieldDescriptor: FieldDescriptor;
 }
 
 /**

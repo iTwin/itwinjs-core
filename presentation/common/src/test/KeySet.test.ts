@@ -70,6 +70,7 @@ describe("KeySet", () => {
     it("returns a valid GUID", () => {
       const keyset = new KeySet();
       expect(Guid.isGuid(keyset.guid)).to.be.true;
+      expect(keyset.guid).to.eq(Guid.empty);
     });
 
   });

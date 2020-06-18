@@ -57,6 +57,7 @@ module.exports = {
   },
   node: {
     process: false,
+    net: 'empty'
   },
   plugins: [
     // Makes some environment variables available to the JS code, for example:
