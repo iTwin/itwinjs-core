@@ -26,7 +26,7 @@ export enum BatteryState {
 export enum DeviceEvents {
   MemoryWarning = "memoryWarning",
   OrientationChanged = "orientationChanged",
-  EnterForground = "enterForground",
+  EnterForeground = "enterForeground",
   EnterBackground = "enterBackground",
   WillTerminate = "willTerminate",
 }
@@ -44,7 +44,7 @@ export class Device implements DeviceRpc {
   private constructor() { }
   public readonly onMemoryWarning = new BeEvent();
   public readonly onOrientationChanged = new BeEvent();
-  public readonly onEnterForground = new BeEvent();
+  public readonly onEnterForeground = new BeEvent();
   public readonly onEnterBackground = new BeEvent();
   public readonly onWillTerminate = new BeEvent();
   public emit(eventName: DeviceEvents, ...args: any[]) {
@@ -53,8 +53,8 @@ export class Device implements DeviceRpc {
         this.onMemoryWarning.raiseEvent(...args); break;
       case DeviceEvents.OrientationChanged:
         this.onOrientationChanged.raiseEvent(...args); break;
-      case DeviceEvents.EnterForground:
-        this.onEnterForground.raiseEvent(...args); break;
+      case DeviceEvents.EnterForeground:
+        this.onEnterForeground.raiseEvent(...args); break;
       case DeviceEvents.EnterBackground:
         this.onEnterBackground.raiseEvent(...args); break;
       case DeviceEvents.WillTerminate:

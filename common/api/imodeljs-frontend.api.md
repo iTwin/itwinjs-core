@@ -7784,6 +7784,7 @@ export class Storage {
     readonly id: string;
     get isOpen(): boolean;
     removeAll(): Promise<void>;
+    removeData(key: string): Promise<void>;
     setData(key: string, value: StorageValue): Promise<void>;
 }
 
