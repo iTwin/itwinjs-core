@@ -20,27 +20,21 @@ describe("ModelSelector", () => {
   let imodel: IModelConnection;
   let hierarchyBuilder: HierarchyBuilder;
 
-  before(async () => {
+  beforeEach(async () => {
     await TestUtils.initializeUiFramework();
     await initialize({
       backendProps: {
         cacheDirectory: path.join("lib", "test", "cache"),
       },
     });
-  });
-
-  after(async () => {
-    await terminate();
-    TestUtils.terminateUiFramework();
-  });
-
-  beforeEach(async () => {
     imodel = await SnapshotConnection.openFile(testIModelPath);
     hierarchyBuilder = new HierarchyBuilder({ imodel });
   });
 
   afterEach(async () => {
     await imodel.close();
+    await terminate();
+    TestUtils.terminateUiFramework();
   });
 
   describe("Model", () => {
