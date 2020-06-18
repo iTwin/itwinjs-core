@@ -11,10 +11,10 @@ import * as path from "path";
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, EventSink, EventSinkManager, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import {
-  Content, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, getLocalesDirectory,
-  HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged,
-  PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority,
-  Ruleset, RulesetVariable, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
+  Content, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayValueGroup,
+  DistinctValuesRequestOptions, getLocalesDirectory, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node,
+  NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationStatus,
+  PresentationUnitSystem, RequestPriority, Ruleset, RulesetVariable, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
@@ -341,11 +341,11 @@ export class PresentationManager {
     return rulesetOrId;
   }
 
-  /** Registers given ruleset */
-  private handleOptions<TOptions extends { rulesetOrId: Ruleset | string }>(options: TOptions) {
+  /** Registers given ruleset and replaces the ruleset with its ID in the resulting object */
+  private registerRuleset<TOptions extends { rulesetOrId: Ruleset | string }>(options: TOptions) {
     const { rulesetOrId, ...strippedOptions } = options;
     const registeredRulesetId = this.ensureRulesetRegistered(rulesetOrId);
-    return { rulesetId: registeredRulesetId, ...strippedOptions };
+    return { rulesetId: registeredRulesetId, strippedOptions };
   }
 
   /**
@@ -356,14 +356,11 @@ export class PresentationManager {
    * @return A promise object that returns either a node response containing nodes and node count on success or an error string on error
    */
   public async getNodesAndCount(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey) {
-    requestContext.enter();
-    const nodesCount = await this.getNodesCount(requestContext, requestOptions, parentKey);
-
-    requestContext.enter();
-    const nodesList = await this.getNodes(requestContext, requestOptions, parentKey);
-
-    requestContext.enter();
-    return { nodes: nodesList, count: nodesCount };
+    const [count, nodes] = await Promise.all([
+      this.getNodesCount(requestContext, requestOptions, parentKey),
+      this.getNodes(requestContext, requestOptions, parentKey),
+    ]);
+    return { nodes, count };
   }
 
   /**
@@ -374,15 +371,15 @@ export class PresentationManager {
    * @return A promise object that returns either an array of nodes on success or an error string on error.
    */
   public async getNodes(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey): Promise<Node[]> {
-    requestContext.enter();
-    const options = this.handleOptions(requestOptions);
-
-    let params;
-    if (parentKey)
-      params = this.createRequestParams(NativePlatformRequestTypes.GetChildren, options, { nodeKey: parentKey });
-    else
-      params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodes, options);
-    return this.request<Node[]>(requestContext, requestOptions.imodel, params, Node.listReviver);
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+    const params = {
+      requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
+      requestContext,
+      rulesetId,
+      ...strippedOptions,
+      nodeKey: parentKey,
+    };
+    return this.request(params, Node.listReviver);
   }
 
   /**
@@ -393,15 +390,15 @@ export class PresentationManager {
    * @return A promise object that returns the number of nodes.
    */
   public async getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number> {
-    requestContext.enter();
-    const options = this.handleOptions(requestOptions);
-
-    let params;
-    if (parentKey)
-      params = this.createRequestParams(NativePlatformRequestTypes.GetChildrenCount, options, { nodeKey: parentKey });
-    else
-      params = this.createRequestParams(NativePlatformRequestTypes.GetRootNodesCount, options);
-    return this.request<number>(requestContext, requestOptions.imodel, params);
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+    const params = {
+      requestId: parentKey ? NativePlatformRequestTypes.GetChildrenCount : NativePlatformRequestTypes.GetRootNodesCount,
+      requestContext,
+      rulesetId,
+      ...strippedOptions,
+      nodeKey: parentKey,
+    };
+    return this.request(params);
   }
 
   /**
@@ -413,14 +410,16 @@ export class PresentationManager {
    * @return A promise object that returns either an array of paths on success or an error string on error.
    */
   public async getNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
-    requestContext.enter();
-    const options = this.handleOptions(requestOptions);
-
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetNodePaths, options, {
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+    const params = {
+      requestId: NativePlatformRequestTypes.GetNodePaths,
+      requestContext,
+      rulesetId,
+      ...strippedOptions,
       paths,
       markedIndex,
-    });
-    return this.request<NodePathElement[]>(requestContext, requestOptions.imodel, params, NodePathElement.listReviver);
+    };
+    return this.request(params, NodePathElement.listReviver);
   }
 
   /**
@@ -431,13 +430,15 @@ export class PresentationManager {
    * @return A promise object that returns either an array of paths on success or an error string on error.
    */
   public async getFilteredNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]> {
-    requestContext.enter();
-    const options = this.handleOptions(requestOptions);
-
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetFilteredNodePaths, options, {
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+    const params = {
+      requestId: NativePlatformRequestTypes.GetFilteredNodePaths,
+      requestContext,
+      rulesetId,
+      ...strippedOptions,
       filterText,
-    });
-    return this.request<NodePathElement[]>(requestContext, requestOptions.imodel, params, NodePathElement.listReviver);
+    };
+    return this.request(params, NodePathElement.listReviver);
   }
 
   /**
@@ -448,13 +449,17 @@ export class PresentationManager {
    * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
    */
   public async loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void> {
-    requestContext.enter();
-    const options = this.handleOptions(requestOptions);
-    const params = this.createRequestParams(NativePlatformRequestTypes.LoadHierarchy, options);
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+    const params = {
+      requestId: NativePlatformRequestTypes.LoadHierarchy,
+      requestContext,
+      rulesetId,
+      ...strippedOptions,
+    };
     const start = new Date();
-    await this.request<void>(requestContext, requestOptions.imodel, params);
+    await this.request(params);
     Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Loading full hierarchy for `
-      + `iModel "${requestOptions.imodel.iModelId}" and ruleset "${options.rulesetId}" `
+      + `iModel "${requestOptions.imodel.iModelId}" and ruleset "${rulesetId}" `
       + `completed in ${((new Date()).getTime() - start.getTime()) / 1000} s.`);
   }
 
@@ -468,15 +473,17 @@ export class PresentationManager {
    * @return A promise object that returns either a descriptor on success or an error string on error.
    */
   public async getContentDescriptor(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined> {
-    requestContext.enter();
-    const options = this.handleOptions(requestOptions);
-
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetContentDescriptor, options, {
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+    const params = {
+      requestId: NativePlatformRequestTypes.GetContentDescriptor,
+      requestContext,
+      rulesetId,
+      ...strippedOptions,
       displayType,
-      keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
+      keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       selection,
-    });
-    return this.request<Descriptor | undefined>(requestContext, requestOptions.imodel, params, Descriptor.reviver);
+    };
+    return this.request(params, Descriptor.reviver);
   }
 
   /**
@@ -490,14 +497,16 @@ export class PresentationManager {
    * number of records in the content set.
    */
   public async getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number> {
-    requestContext.enter();
-    const options = this.handleOptions(requestOptions);
-
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetContentSetSize, options, {
-      keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
-      descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
-    });
-    return this.request<number>(requestContext, requestOptions.imodel, params);
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+    const params = {
+      requestId: NativePlatformRequestTypes.GetContentSetSize,
+      requestContext,
+      rulesetId,
+      ...strippedOptions,
+      keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
+      descriptorOverrides: createContentDescriptorOverrides(descriptorOrOverrides),
+    };
+    return this.request(params);
   }
 
   /**
@@ -509,14 +518,16 @@ export class PresentationManager {
    * @return A promise object that returns either content on success or an error string on error.
    */
   public async getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined> {
-    requestContext.enter();
-    const options = this.handleOptions(requestOptions);
-
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetContent, options, {
-      keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
-      descriptorOverrides: this.createContentDescriptorOverrides(descriptorOrOverrides),
-    });
-    return this.request<Content | undefined>(requestContext, requestOptions.imodel, params, Content.reviver);
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+    const params = {
+      requestId: NativePlatformRequestTypes.GetContent,
+      requestContext,
+      rulesetId,
+      ...strippedOptions,
+      keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
+      descriptorOverrides: createContentDescriptorOverrides(descriptorOrOverrides),
+    };
+    return this.request(params, Content.reviver);
   }
 
   /**
@@ -528,18 +539,11 @@ export class PresentationManager {
    * @return A promise object that returns either content and content set size on success or an error string on error.
    */
   public async getContentAndSize(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet) {
-    requestContext.enter();
-    const size = await this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys);
-    requestContext.enter();
-    const content = await this.getContent(requestContext, requestOptions, descriptorOrOverrides, keys);
-    requestContext.enter();
+    const [size, content] = await Promise.all<number, Content | undefined>([
+      this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys),
+      this.getContent(requestContext, requestOptions, descriptorOrOverrides, keys),
+    ]);
     return { content, size };
-  }
-
-  private createContentDescriptorOverrides(descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides {
-    if (descriptorOrOverrides instanceof Descriptor)
-      return descriptorOrOverrides.createDescriptorOverrides();
-    return descriptorOrOverrides as DescriptorOverrides;
   }
 
   /**
@@ -553,16 +557,52 @@ export class PresentationManager {
    * @return A promise object that returns either distinct values on success or an error string on error.
    */
   public async getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
-    requestContext.enter();
-    const options = this.handleOptions(requestOptions);
-
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetDistinctValues, options, {
-      keys: this.getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+    const params = {
+      requestId: NativePlatformRequestTypes.GetDistinctValues,
+      requestContext,
+      rulesetId,
+      ...strippedOptions,
+      keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
       descriptorOverrides: descriptor.createDescriptorOverrides(),
       fieldName,
       maximumValueCount,
-    });
-    return this.request<string[]>(requestContext, requestOptions.imodel, params);
+    };
+    return this.request(params);
+  }
+
+  /**
+   * Retrieves distinct values of specific field from the content based on the supplied content descriptor override.
+   * @param requestContext      The client request context
+   * @param requestOptions      Options for the request
+   * @return A promise object that returns either distinct values on success or an error string on error.
+   * @alpha
+   */
+  public async getPagedDistinctValues(requestContext: ClientRequestContext, requestOptions: DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet>): Promise<PagedResponse<DisplayValueGroup>> {
+    if (requestOptions.fieldDescriptor.parent) {
+      // not supported yet
+      return {
+        total: 0,
+        items: [],
+      };
+    }
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+    const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
+    const params = {
+      requestId: NativePlatformRequestTypes.GetPagedDistinctValues,
+      requestContext,
+      rulesetId,
+      ...strippedOptionsNoDescriptorAndKeys,
+      keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
+      descriptorOverrides: descriptor.createDescriptorOverrides(),
+    };
+    const reviver = (key: string, value: any) => {
+      return key === "" ? {
+        total: value.total,
+        items: value.items.map(DisplayValueGroup.fromJSON),
+      } : value;
+    };
+    return this.request(params, reviver);
   }
 
   /**
@@ -572,9 +612,13 @@ export class PresentationManager {
    * @param key Key of an instance to get label for
    */
   public async getDisplayLabelDefinition(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<LabelDefinition> {
-    requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetDisplayLabel, requestOptions, { key });
-    return this.request<LabelDefinition>(requestContext, requestOptions.imodel, params, LabelDefinition.reviver);
+    const params = {
+      requestId: NativePlatformRequestTypes.GetDisplayLabel,
+      requestContext,
+      ...requestOptions,
+      key,
+    };
+    return this.request(params, LabelDefinition.reviver);
   }
 
   /**
@@ -611,7 +655,7 @@ export class PresentationManager {
    * @param requestOptions options for the request
    */
   public async getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]> {
-    requestContext.enter();
+    (requestContext as any);
     (requestOptions as any);
     return SelectionScopesHelper.getSelectionScopes();
   }
@@ -624,75 +668,70 @@ export class PresentationManager {
    * @param scopeId ID of selection scope to use for computing selection
    */
   public async computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet> {
-    requestContext.enter();
+    (requestContext as any);
     return SelectionScopesHelper.computeSelection(requestOptions, ids, scopeId);
   }
 
-  private async request<T>(requestContext: ClientRequestContext, imodel: IModelDb, params: string, reviver?: (key: string, value: any) => any): Promise<T> {
-    requestContext.enter();
+  private async request<TParams extends { requestContext: ClientRequestContext, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: PresentationUnitSystem }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
+    const { requestContext, requestId, imodel, locale, unitSystem, ...strippedParams } = params;
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    const serializedResponse = await this.getNativePlatform().handleRequest(requestContext, imodelAddon, params);
+    const nativeRequestParams = {
+      requestId,
+      params: {
+        locale: normalizeLocale(locale ?? this.activeLocale),
+        unitSystem: unitSystem ?? this.activeUnitSystem,
+        ...strippedParams,
+      },
+    };
+    const serializedResponse = await this.getNativePlatform().handleRequest(requestContext, imodelAddon, JSON.stringify(nativeRequestParams));
     requestContext.enter();
     if (!serializedResponse)
       throw new PresentationError(PresentationStatus.InvalidResponse, `Received invalid response from the addon: ${serializedResponse}`);
     return JSON.parse(serializedResponse, reviver);
   }
 
-  private createRequestParams(requestId: string, genericOptions: { imodel: IModelDb, locale?: string, unitSystem?: PresentationUnitSystem }, additionalOptions?: object): string {
-    const { imodel, locale, unitSystem, ...genericOptionsStripped } = genericOptions;
-    const request = {
-      requestId,
-      params: {
-        locale: normalizeLocale(locale ?? this.activeLocale),
-        unitSystem: unitSystem ?? this.activeUnitSystem,
-        ...genericOptionsStripped,
-        ...additionalOptions,
-      },
-    };
-    return JSON.stringify(request);
-  }
-
-  private getKeysForContentRequest(imodel: IModelDb, keys: KeySet): KeySet {
-    const elementClassName = "BisCore:Element";
-    const instanceKeys = keys.instanceKeys;
-    if (!instanceKeys.has(elementClassName))
-      return keys;
-
-    const elementIds = instanceKeys.get(elementClassName)!;
-    const keyset = new KeySet();
-    keyset.add(keys);
-    elementIds.forEach((elementId) => {
-      const concreteKey = getElementKey(imodel, elementId);
-      if (concreteKey) {
-        keyset.delete({ className: elementClassName, id: elementId });
-        keyset.add(concreteKey);
-      }
-    });
-    return keyset;
-  }
-
   public async compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb>): Promise<PartialHierarchyModification[]> {
-    requestContext.enter();
-
     const prev = getPrevValues(requestOptions);
     const currRulesetId = this.getRulesetIdObject(requestOptions.rulesetOrId);
     const prevRulesetId = this.getRulesetIdObject(prev.rulesetOrId);
     if (prevRulesetId.parts.id !== currRulesetId.parts.id)
       throw new PresentationError(PresentationStatus.InvalidArgument, "Can't compare rulesets with different IDs");
 
-    // note: we're only using imodel property from `handleOptions` result, but it also
-    // registers the changed ruleset and updates ruleset variable values (if necessary)
-    const options = this.handleOptions(requestOptions);
-
-    const imodelAddon = this.getNativePlatform().getImodelAddon(options.imodel);
+    this.registerRuleset(requestOptions);
+    const imodelAddon = this.getNativePlatform().getImodelAddon(requestOptions.imodel);
     const modificationJsons = await this.getNativePlatform().compareHierarchies(requestContext, imodelAddon, {
       prevRulesetId: prevRulesetId.uniqueId,
       currRulesetId: currRulesetId.uniqueId,
-      locale: normalizeLocale(options.locale ?? this.activeLocale) ?? "",
+      locale: normalizeLocale(requestOptions.locale ?? this.activeLocale) ?? "",
     });
     return modificationJsons.map(PartialHierarchyModification.fromJSON);
   }
 }
+
+const getKeysForContentRequest = (imodel: IModelDb, keys: KeySet): KeySet => {
+  const elementClassName = "BisCore:Element";
+  const instanceKeys = keys.instanceKeys;
+  if (!instanceKeys.has(elementClassName))
+    return keys;
+
+  const elementIds = instanceKeys.get(elementClassName)!;
+  const keyset = new KeySet();
+  keyset.add(keys);
+  elementIds.forEach((elementId) => {
+    const concreteKey = getElementKey(imodel, elementId);
+    if (concreteKey) {
+      keyset.delete({ className: elementClassName, id: elementId });
+      keyset.add(concreteKey);
+    }
+  });
+  return keyset;
+};
+
+const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
+  if (descriptorOrOverrides instanceof Descriptor)
+    return descriptorOrOverrides.createDescriptorOverrides();
+  return descriptorOrOverrides as DescriptorOverrides;
+};
 
 const hasPrevRuleset = (prev: ({ rulesetOrId: string | Ruleset } | { rulesetVariables: RulesetVariable[] })): prev is ({ rulesetOrId: string | Ruleset }) => {
   return !!(prev as { rulesetOrId: string | Ruleset }).rulesetOrId;

@@ -10,9 +10,10 @@ import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelNotFoundResponse, IModelRpcProps } from "@bentley/imodeljs-common";
 import {
-  Content, ContentRequestOptions, Descriptor, DescriptorOverrides, HierarchyRequestOptions, HierarchyRpcRequestOptions, HierarchyUpdateInfo,
-  InstanceKey, KeySet, Node, NodeKey, NodePathElement, Omit, Paged, PageOptions, PartialHierarchyModification, PresentationDataCompareOptions,
-  PresentationError, PresentationRpcRequestOptions, PresentationStatus, SelectionScope, SelectionScopeRequestOptions,
+  Content, ContentRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, DistinctValuesRequestOptions, FieldDescriptor, FieldDescriptorType,
+  HierarchyRequestOptions, HierarchyRpcRequestOptions, HierarchyUpdateInfo, InstanceKey, KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Omit,
+  Paged, PageOptions, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationRpcRequestOptions,
+  PresentationStatus, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -866,6 +867,46 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.result).to.be.undefined;
         expect(actualResult.statusCode).to.eq(PresentationStatus.BackendTimeout);
         await result.resolve([]);
+      });
+
+    });
+
+    describe("getPagedDistinctValues", () => {
+
+      it("calls manager", async () => {
+        const distinctValues = {
+          total: 1,
+          items: [{
+            displayValue: "test",
+            groupedRawValues: ["test"],
+          }],
+        };
+        const keys = new KeySet();
+        const descriptor = createRandomDescriptor();
+        const fieldDescriptor: FieldDescriptor = {
+          type: FieldDescriptorType.Name,
+          fieldName: "test",
+        };
+        const managerOptions: DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet> = {
+          rulesetOrId: testData.rulesetOrId,
+          imodel: testData.imodelMock.object,
+          descriptor,
+          fieldDescriptor,
+          keys,
+        };
+        presentationManagerMock.setup((x) => x.getPagedDistinctValues(ClientRequestContext.current, managerOptions))
+          .returns(async () => distinctValues)
+          .verifiable();
+        const rpcImplOptions: Omit<DistinctValuesRequestOptions<any, DescriptorJSON, KeySetJSON>, "imodel"> = {
+          ...defaultRpcParams,
+          rulesetOrId: managerOptions.rulesetOrId,
+          descriptor: descriptor.toJSON(),
+          keys: keys.toJSON(),
+          fieldDescriptor: managerOptions.fieldDescriptor,
+        };
+        const actualResult = await impl.getPagedDistinctValues(testData.imodelToken, rpcImplOptions);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(distinctValues);
       });
 
     });
