@@ -9,9 +9,8 @@
 import * as React from "react";
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
-import { LinksRenderer } from "../../LinkHandler";
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { withContextStyle } from "./WithContextStyle";
+import { PrimitivePropertyValueRendererImpl } from "./PrimitivePropertyValueRenderer";
 
 /** Default Navigation Property Renderer
  * @public
@@ -26,23 +25,17 @@ export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
 
   /** Method that returns a JSX representation of PropertyRecord */
   public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
-    const primitive = record.value as PrimitiveValue;
-
-    let stringValue: string | Promise<string>;
-
-    if (primitive.displayValue) {
-      stringValue = primitive.displayValue;
-    } else {
-      stringValue = TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitive.value);
-    }
-
-    return withContextStyle(
-      <LinksRenderer
-        value={stringValue}
-        record={record}
-        highlighter={context?.textHighlighter}
-        defaultValue={context?.defaultValue} />,
-      context,
-    );
+    return <PrimitivePropertyValueRendererImpl
+      record={record}
+      context={context}
+      stringValueCalculator={convertRecordToString}
+    />;
   }
+}
+
+function convertRecordToString(record: PropertyRecord) {
+  const primitive = record.value as PrimitiveValue;
+  if (primitive.displayValue)
+    return primitive.displayValue;
+  return TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitive.value);
 }

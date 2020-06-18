@@ -53,7 +53,9 @@ exports[`CategoryTreeWithSearchBox <CategoryTreeWithSearchBox /> should match sn
                       <div
                         class="components-controlledTree-node-content"
                       >
-                        <span>
+                        <span
+                          title="test-node"
+                        >
                           test-node
                         </span>
                       </div>

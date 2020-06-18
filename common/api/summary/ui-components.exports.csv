@@ -255,6 +255,7 @@ public;PrimitivePropertyLabelRenderer
 public;PrimitivePropertyLabelRendererProps 
 public;PrimitivePropertyRenderer 
 public;PrimitivePropertyValueRenderer 
+internal;PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps): JSX.Element
 public;PrimitiveRendererProps 
 public;PropertyCategory
 public;PropertyCategoryBlock 

@@ -1222,7 +1222,7 @@ export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
 // @public
 export class DoublePropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
 }
 
 // @internal (undocumented)
@@ -2242,7 +2242,7 @@ export class NavigationPropertyTypeConverter extends TypeConverter {
 // @public
 export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
 }
 
 // @public
@@ -2513,6 +2513,9 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
     render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
 }
+
+// @internal (undocumented)
+export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps): JSX.Element;
 
 // @public
 export interface PrimitiveRendererProps extends SharedRendererProps {

@@ -49,7 +49,9 @@ exports[`ModelsTree #integration renders component with real data and no active 
                   <div
                     class="components-controlledTree-node-content"
                   >
-                    <span>
+                    <span
+                      title="Joe's house.bim"
+                    >
                       Joe's house.bim
                     </span>
                   </div>
@@ -87,7 +89,9 @@ exports[`ModelsTree #integration renders component with real data and no active 
                   <div
                     class="components-controlledTree-node-content"
                   >
-                    <span>
+                    <span
+                      title="Joe's house"
+                    >
                       Joe's house
                     </span>
                   </div>
@@ -3223,7 +3227,9 @@ exports[`ModelsTree #unit <ModelsTree /> should match snapshot 1`] = `
                     <div
                       class="components-controlledTree-node-content"
                     >
-                      <span>
+                      <span
+                        title="test-node"
+                      >
                         test-node
                       </span>
                     </div>
