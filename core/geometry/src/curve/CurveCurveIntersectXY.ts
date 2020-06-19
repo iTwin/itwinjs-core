@@ -41,9 +41,9 @@ import { LineString3d } from "./LineString3d";
 /**
  * * Private class for refining bezier-bezier intersections.
  * * The inputs are assumed pre-transformed so that the target condition is to match x and y coordinates.
- * @public
+ * @internal
  */
-class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
+export class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
   private _curveA: BezierCurveBase;
   private _curveB: BezierCurveBase;
   constructor(curveA: BezierCurveBase, curveB: BezierCurveBase) {

@@ -169,10 +169,17 @@
     }
   }
 
-  > div >.nz-content {
-    display: flex;
-  }
+  > div {
+    pointer-events: none;
 
+    > * {
+      pointer-events: auto;
+    }
+
+    > .nz-content {
+      display: flex;
+    }
+  }
 
   &.nz-horizontal {
     > div >.nz-content {

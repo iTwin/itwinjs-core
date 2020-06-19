@@ -270,3 +270,10 @@ export class KindOfQuantity extends SchemaItem {
       await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
   }
 }
+/**
+ * @internal
+ * An abstract class used for schema editing.
+ */
+export abstract class MutableKindOfQuantity {
+  public abstract addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean): void;
+}

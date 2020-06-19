@@ -14,14 +14,14 @@ import { IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, usePre
 import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../redux/connectIModel";
+import { ClassGroupingOption } from "../Common";
 
 const PAGING_SIZE = 20;
 
-/**
- * Presentation rules used by ControlledSpatialContainmentTree
- * @internal
- */
+/** @internal */
 export const RULESET_SPATIAL_BREAKDOWN: Ruleset = require("./SpatialBreakdown.json"); // tslint:disable-line: no-var-requires
+/** @internal */
+export const RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset = require("./SpatialBreakdown.GroupedByClass.json"); // tslint:disable-line: no-var-requires
 
 /**
  * Properties for the [[SpatialContainmentTree]] component
@@ -34,7 +34,13 @@ export interface SpatialContainmentTreeProps {
    */
   enablePreloading?: boolean;
   /**
+   * Should the tree group displayed element nodes by class.
+   * @beta
+   */
+  enableElementsClassGrouping?: ClassGroupingOption;
+  /**
    * Used for testing
+   * @internal
    */
   dataProvider?: IPresentationTreeDataProvider;
 }
@@ -47,8 +53,9 @@ export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
   const nodeLoader = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     dataProvider: props.dataProvider,
-    ruleset: RULESET_SPATIAL_BREAKDOWN,
-    pageSize: PAGING_SIZE,
+    ruleset: (!props.enableElementsClassGrouping) ? RULESET_SPATIAL_BREAKDOWN : RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS,
+    appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
+    pagingSize: PAGING_SIZE,
     preloadingEnabled: props.enablePreloading,
   });
 

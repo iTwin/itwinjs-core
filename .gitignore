@@ -35,3 +35,6 @@ package-deps.json
 /**/xcuserdata
 
 .env
+
+# Mac specfic
+.DS_Store

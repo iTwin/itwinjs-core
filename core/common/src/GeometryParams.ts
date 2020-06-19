@@ -111,7 +111,6 @@ export class GeometryParams {
   public styleInfo?: LineStyle.Info;
   /** Optional gradient fill settings for region interiors.
    * Valid when [[fillDisplay]] is not [[FillDisplay.Never]].
-   * @beta
    */
   public gradient?: Gradient.Symb;
   /** Optional area pattern settings for region interiors.

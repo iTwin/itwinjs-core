@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { BooleanTypeConverter } from "../../../ui-components/converters/BooleanTypeConverter";
-import { StandardTypeConverterTypeNames } from "../../../ui-components/converters/TypeConverter";
+import { StandardTypeNames } from "../../../ui-components/common/StandardTypeNames";
 import { FilterOperator, OperatorValueFilterDescriptorCollection } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
 import { ColumnFilteringUtilities } from "../../../ui-components/table/columnfiltering/ColumnFilteringUtilities";
 import { NumericFilterType, NumericRangeData } from "../../../ui-components/table/columnfiltering/DataGridFilterParser";
@@ -47,13 +47,13 @@ const columns: ColumnDescription[] = [
 ];
 
 const columnTypes: string[] = [
-  StandardTypeConverterTypeNames.Text,
-  StandardTypeConverterTypeNames.Integer,
-  StandardTypeConverterTypeNames.Float,
-  StandardTypeConverterTypeNames.DateTime,
-  StandardTypeConverterTypeNames.Boolean,
-  StandardTypeConverterTypeNames.Point2d,
-  StandardTypeConverterTypeNames.Point3d,
+  StandardTypeNames.Text,
+  StandardTypeNames.Integer,
+  StandardTypeNames.Float,
+  StandardTypeNames.DateTime,
+  StandardTypeNames.Boolean,
+  StandardTypeNames.Point2d,
+  StandardTypeNames.Point3d,
 ];
 
 const rowItem: RowItem = {
@@ -576,7 +576,7 @@ describe("TableFilterDescriptor", () => {
     });
 
     it("IsEqualTo - bool", () => {
-      const filterDescriptor = new TableFilterDescriptor(testTable, columns[4].key, StandardTypeConverterTypeNames.Bool, FilterOperator.IsEqualTo, true);
+      const filterDescriptor = new TableFilterDescriptor(testTable, columns[4].key, StandardTypeNames.Bool, FilterOperator.IsEqualTo, true);
       const expression = filterDescriptor.getFilterExpression();
       expect(expression).to.eq(`col4 = true`);
     });
@@ -717,7 +717,7 @@ describe("TableFilterDescriptor", () => {
     });
 
     it("IsEqualTo - double", () => {
-      const filterDescriptor = new TableFilterDescriptor(testTable, columns[2].key, StandardTypeConverterTypeNames.Double, FilterOperator.IsEqualTo, 100.50);
+      const filterDescriptor = new TableFilterDescriptor(testTable, columns[2].key, StandardTypeNames.Double, FilterOperator.IsEqualTo, 100.50);
       const expression = filterDescriptor.getFilterExpression();
       expect(expression).to.eq(` (AreDoublesEqualByValue(col2, 100.5) = 1)`);
     });

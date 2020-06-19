@@ -10,6 +10,8 @@ import {
 } from "@bentley/ui-abstract";
 import { ColumnDescription, CompositeFilterDescriptorCollection, FilterableTable, UiComponents } from "../ui-components";
 import { TableFilterDescriptorCollection } from "../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
+import { StandardEditorNames } from "../ui-components/editors/StandardEditorNames";
+import { StandardTypeNames } from "../ui-components/common/StandardTypeNames";
 
 // cSpell:ignore buttongroup
 
@@ -73,7 +75,7 @@ export class TestUtils {
     const description: PropertyDescription = {
       displayLabel: name,
       name,
-      typename: "string",
+      typename: StandardTypeNames.String,
     };
 
     if (editorInfo)
@@ -97,7 +99,7 @@ export class TestUtils {
     const description: PropertyDescription = {
       displayLabel: name,
       name,
-      typename: "array",
+      typename: StandardTypeNames.Array,
     };
     const property = new PropertyRecord(value, description);
     property.isReadonly = false;
@@ -116,7 +118,7 @@ export class TestUtils {
     const description: PropertyDescription = {
       displayLabel: name,
       name,
-      typename: "struct",
+      typename: StandardTypeNames.Struct,
     };
     const property = new PropertyRecord(value, description);
     property.isReadonly = false;
@@ -133,7 +135,7 @@ export class TestUtils {
     const description: PropertyDescription = {
       displayLabel: name,
       name,
-      typename: "enum",
+      typename: StandardTypeNames.Enum,
     };
 
     const propertyRecord = new PropertyRecord(value, description);
@@ -183,7 +185,7 @@ export class TestUtils {
     const description: PropertyDescription = {
       displayLabel: name,
       name,
-      typename: "boolean",
+      typename: StandardTypeNames.Boolean,
       editor: editor ? { name: editor } : undefined,
     };
 
@@ -204,7 +206,7 @@ export class TestUtils {
     const description: PropertyDescription = {
       name: propertyName,
       displayLabel: propertyName,
-      typename: "number",
+      typename: StandardTypeNames.Number,
       editor: {
         name: "color-picker",
         params: [
@@ -242,9 +244,9 @@ export class TestUtils {
     const description: PropertyDescription = {
       name: propertyName,
       displayLabel: propertyName,
-      typename: "number",
+      typename: StandardTypeNames.Number,
       editor: {
-        name: "weight-picker",
+        name: StandardEditorNames.WeightPicker,
       },
     };
 
@@ -266,9 +268,9 @@ export class TestUtils {
     const description: PropertyDescription = {
       name: propertyName,
       displayLabel: propertyName,
-      typename: "number",
+      typename: StandardTypeNames.Number,
       editor: {
-        name: "number-custom",
+        name: StandardEditorNames.NumberCustom,
         params: [
           {
             type: PropertyEditorParamTypes.CustomFormattedNumber,
@@ -291,6 +293,29 @@ export class TestUtils {
         description.editor!.params!.push(params);
       });
     }
+
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.isReadonly = false;
+    return propertyRecord;
+  }
+
+  public static createNumericProperty(propertyName: string, numericValue: number, editorName: string, editorParams?: BasePropertyEditorParams[]) {
+
+    const value: PrimitiveValue = {
+      displayValue: "",
+      value: numericValue,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      name: propertyName,
+      displayLabel: propertyName,
+      typename: StandardTypeNames.Number,
+      editor: {
+        name: editorName,
+        params: editorParams,
+      },
+    };
 
     const propertyRecord = new PropertyRecord(value, description);
     propertyRecord.isReadonly = false;

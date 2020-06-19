@@ -19,8 +19,12 @@ const DATA_CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol/data";
 /** @internal */
 export const interop = (() => {
   let electron = null;
-  if (typeof (global) !== "undefined" && global && global.process && (global.process as any).type)
-    electron = require("electron");
+  if (typeof (global) !== "undefined" && global && global.process && (global.process as any).type) {
+    // Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
+    try {
+      electron = require("electron");
+    } catch (_err) { }
+  }
 
   return electron;
 })();

@@ -9,7 +9,7 @@ import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import { RelationshipEnd, StrengthDirection, StrengthType } from "../../src/ECObjects";
 import { ECObjectsError } from "../../src/Exception";
 import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
-import { EntityClass } from "../../src/Metadata/EntityClass";
+import { EntityClass, MutableEntityClass } from "../../src/Metadata/EntityClass";
 import { Mixin } from "../../src/Metadata/Mixin";
 import {
   MutableRelationshipConstraint, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity,
@@ -957,11 +957,13 @@ describe("RelationshipClass", () => {
       let childVehicleOwner: RelationshipClass;
       let grandChildVehicleOwner: RelationshipClass;
       let americanVehicleOwner: RelationshipClass;
+      let iAmericanVehicleOwner: RelationshipClass;
       let vehicle: EntityClass;
       let chevy: EntityClass;
       let ford: EntityClass;
       let f150: EntityClass;
       let honda: EntityClass;
+      let iFord: Mixin;
 
       function createSchemaJson() {
         return createSchemaJsonWithItems({
@@ -975,6 +977,28 @@ describe("RelationshipClass", () => {
               roleLabel: "Vehicle belongs to owner",
               constraintClasses: [
                 "TestSchema.Vehicle",
+                "TestSchema.IVehicle",
+              ],
+            },
+            target: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Owner owns vehicle",
+              constraintClasses: [
+                "TestSchema.Owner",
+              ],
+            },
+          },
+          IVehicleOwner: {
+            schemaItemType: "RelationshipClass",
+            strength: "referencing",
+            strengthDirection: "forward",
+            source: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Vehicle belongs to owner",
+              constraintClasses: [
+                "TestSchema.IVehicle",
               ],
             },
             target: {
@@ -998,6 +1022,28 @@ describe("RelationshipClass", () => {
               constraintClasses: [
                 "TestSchema.Ford",
                 "TestSchema.Chevy",
+              ],
+            },
+            target: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Owner owns vehicle",
+              constraintClasses: [
+                "TestSchema.Owner",
+              ],
+            },
+          },
+          IAmericanVehicleOwner: {
+            baseClass: "TestSchema.IVehicleOwner",
+            schemaItemType: "RelationshipClass",
+            strength: "referencing",
+            strengthDirection: "forward",
+            source: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Vehicle belongs to owner",
+              constraintClasses: [
+                "TestSchema.IFord",
               ],
             },
             target: {
@@ -1048,6 +1094,14 @@ describe("RelationshipClass", () => {
           Vehicle: {
             schemaItemType: "EntityClass",
           },
+          IVehicle: {
+            schemaItemType: "Mixin",
+            appliesTo: "TestSchema.Vehicle",
+          },
+          IChildVehicle: {
+            schemaItemType: "Mixin",
+            appliesTo: "TestSchema.Vehicle",
+          },
           Honda: {
             schemaItemType: "EntityClass",
             baseClass: "TestSchema.Vehicle",
@@ -1055,6 +1109,11 @@ describe("RelationshipClass", () => {
           Ford: {
             schemaItemType: "EntityClass",
             baseClass: "TestSchema.Vehicle",
+          },
+          IFord: {
+            schemaItemType: "Mixin",
+            appliesTo: "TestSchema.Vehicle",
+            baseClass: "TestSchema.IVehicle",
           },
           Chevy: {
             schemaItemType: "EntityClass",
@@ -1067,6 +1126,10 @@ describe("RelationshipClass", () => {
           Owner: {
             schemaItemType: "EntityClass",
           },
+          IOwner: {
+            schemaItemType: "Mixin",
+            appliesTo: "TestSchema.Owner",
+          },
         });
       }
 
@@ -1074,6 +1137,7 @@ describe("RelationshipClass", () => {
         schema = await Schema.fromJson(createSchemaJson(), new SchemaContext());
         assert.isDefined(schema);
         vehicleOwner = schema.getItemSync("VehicleOwner") as RelationshipClass;
+        iAmericanVehicleOwner = schema.getItemSync("IVehicleOwner") as RelationshipClass;
         childVehicleOwner = schema.getItemSync("ChildVehicleOwner") as RelationshipClass;
         grandChildVehicleOwner = schema.getItemSync("GrandChildVehicleOwner") as RelationshipClass;
         americanVehicleOwner = schema.getItemSync("AmericanVehicleOwner") as RelationshipClass;
@@ -1082,6 +1146,7 @@ describe("RelationshipClass", () => {
         ford = schema.getItemSync("Ford") as EntityClass;
         f150 = schema.getItemSync("F150") as EntityClass;
         honda = schema.getItemSync("Honda") as EntityClass;
+        iFord = schema.getItemSync("IFord") as Mixin;
       });
 
       afterEach(() => {
@@ -1163,6 +1228,24 @@ describe("RelationshipClass", () => {
         const constraint = new RelationshipConstraint(relationship, RelationshipEnd.Source);
         expect(await constraint.supportsClass(new EntityClass(schema, "TestEntity"))).to.be.false;
         expect(classCompatibleWithConstraint.called).to.be.false;
+      });
+
+      it("mixin class derives from mixin constraint, returns true", async () => {
+        expect(await iAmericanVehicleOwner!.source.supportsClass(iFord)).to.be.true;
+      });
+
+      it("mixin class does not derive from mixin constraint, returns false", async () => {
+        const iOwner = schema.getItemSync("IOwner") as Mixin;
+        expect(await iAmericanVehicleOwner!.source.supportsClass(iOwner)).to.be.false;
+      });
+
+      it("mixin class applies to constraint class, returns true", async () => {
+        expect(await vehicleOwner!.source.supportsClass(iFord)).to.be.true;
+      });
+
+      it("mixin class does not apply to constraint class, returns false", async () => {
+        const iOwner = schema.getItemSync("IOwner") as Mixin;
+        expect(await vehicleOwner!.source.supportsClass(iOwner)).to.be.false;
       });
     });
   });

@@ -96,12 +96,12 @@ export function Toggle(props: ToggleProps) {
   const setHeightFromRef = React.useCallback((el: HTMLLabelElement | null) => {
     if (el !== null) {
       // istanbul ignore next
-      if ((Math.abs(height - el.clientHeight) > 1) || (Math.abs(width - el.clientWidth) > 1)) {
+      if (el.clientHeight > 0 && el.clientWidth > 0) {
         setHeight(el.clientHeight);
         setWidth(el.clientWidth);
       }
     }
-  }, [height, width]);
+  }, []);
 
   const _getOffset = (): number => {
     return (checked) ? width - height : 0;

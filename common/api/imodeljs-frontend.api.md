@@ -1017,7 +1017,7 @@ export interface Animator {
     interrupt(): void;
 }
 
-// @beta (undocumented)
+// @public
 export interface AppearanceOverrideProps {
     // (undocumented)
     color?: ColorDefProps;
@@ -1155,7 +1155,7 @@ export class BackgroundMapGeometry {
     // (undocumented)
     getEarthEllipsoid(radiusOffset?: number): Ellipsoid;
     // (undocumented)
-    getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d, doGlobalScope?: boolean): Range1d;
+    getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, doGlobalScope?: boolean): Range1d;
     // (undocumented)
     getPlane(offset?: number): Plane3dByOriginAndUnitNormal;
     // (undocumented)
@@ -1989,19 +1989,16 @@ export class DisplayStyle3dState extends DisplayStyleState {
     clone(iModel: IModelConnection): this;
     get environment(): Environment;
     set environment(env: Environment);
-    // @alpha (undocumented)
+    // (undocumented)
     get lights(): LightSettings;
     set lights(lights: LightSettings);
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
-    // @beta
     setSunTime(time: number): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
-    // @beta
     get solarShadows(): SolarShadowSettings;
     set solarShadows(settings: SolarShadowSettings);
-    // @beta (undocumented)
     get sunDirection(): Readonly<Vector3d>;
 }
 
@@ -2016,10 +2013,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get backgroundDrapeMap(): BackgroundMapTileTreeReference;
     // @internal (undocumented)
     get backgroundMap(): BackgroundMapOrTerrainTileTreeReference;
-    // @beta
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
-    // @beta
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     // @internal (undocumented)
     static get className(): string;
@@ -2385,7 +2380,7 @@ export enum ElemSource {
     SelectionSet = 2
 }
 
-// @beta
+// @public
 export class EmphasizeElements implements FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, vp: Viewport): void;
     static clear(vp: Viewport, inactiveOnly?: boolean): void;
@@ -2404,7 +2399,6 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     set defaultAppearance(appearance: FeatureSymbology.Appearance | undefined);
     emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureSymbology.Appearance, replace?: boolean): boolean;
     emphasizeSelectedElements(vp: Viewport, defaultAppearance?: FeatureSymbology.Appearance, replace?: boolean, clearSelection?: boolean): boolean;
-    // (undocumented)
     fromJSON(props: EmphasizeElementsProps, vp: Viewport): boolean;
     static get(vp: Viewport): EmphasizeElements | undefined;
     getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined;
@@ -2431,14 +2425,13 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     setAlwaysDrawnElements(ids: Id64Arg, vp: Viewport, exclusive?: boolean, replace?: boolean): boolean;
     // @internal
     setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
-    // (undocumented)
     toJSON(vp: Viewport): EmphasizeElementsProps;
     // @internal (undocumented)
     protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
     wantEmphasis: boolean;
 }
 
-// @beta (undocumented)
+// @public
 export interface EmphasizeElementsProps {
     // (undocumented)
     alwaysDrawn?: Id64Array;
@@ -2671,13 +2664,10 @@ export interface FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
 }
 
-// @beta
+// @public
 export enum FeatureOverrideType {
-    // (undocumented)
     AlphaOnly = 1,
-    // (undocumented)
     ColorAndAlpha = 2,
-    // (undocumented)
     ColorOnly = 0
 }
 
@@ -2685,7 +2675,6 @@ export enum FeatureOverrideType {
 export namespace FeatureSymbology {
     export class Appearance implements AppearanceProps {
         static readonly defaults: Appearance;
-        // @beta
         readonly emphasized?: true | undefined;
         // (undocumented)
         equals(other: Appearance): boolean;
@@ -2718,7 +2707,6 @@ export namespace FeatureSymbology {
         readonly weight?: number;
     }
     export interface AppearanceProps {
-        // @beta
         emphasized?: true | undefined;
         ignoresMaterial?: true | undefined;
         linePixels?: LinePixels;
@@ -2762,6 +2750,8 @@ export namespace FeatureSymbology {
         getSubCategoryOverridesById(id: Id64String): Appearance | undefined;
         // @internal
         getSubCategoryPriority(idLo: number, idHi: number): number;
+        // @internal
+        ignoreSubCategory: boolean;
         // @internal
         initFromView(view: ViewState): void;
         // @internal
@@ -2820,8 +2810,17 @@ export class FeatureTrackingManager {
     protected _client: FeatureLogBatchClient;
     protected _hostFallbackName: string;
     protected _hostName: string;
-    track(_featureId: string, _featureName?: string, _iModelConnection?: IModelConnection): void;
+    track(props: FeatureTrackingProps): void;
+    protected trackFeature(_props: FeatureTrackingProps): FeatureLogEntry | undefined;
     protected _usageType: UsageType;
+}
+
+// @alpha
+export interface FeatureTrackingProps {
+    applicationData?: Map<string, any>;
+    featureName: string;
+    iModelConnection?: IModelConnection;
+    ulasFeatureId?: string;
 }
 
 // @alpha
@@ -2982,6 +2981,8 @@ export enum FrontendLoggerCategory {
     EditorConnection = "imodeljs-frontend.EditorConnection",
     EventSource = "imodeljs-frontend.EventSource",
     FeatureToggle = "imodeljs-frontend.FeatureToggles",
+    // @alpha
+    FeatureTracking = "imodeljs-frontend.FeatureTracking",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
     IOSAuthorizationClient = "imodeljs-frontend.IOSAuthorizationClient",
@@ -2994,7 +2995,7 @@ export class FrontendRequestContext extends ClientRequestContext {
     constructor(activityId?: string);
 }
 
-// @alpha
+// @public
 export namespace Frustum2d {
     const minimumZDistance = 1;
     const minimumZExtents: Readonly<Range1d>;
@@ -3364,7 +3365,6 @@ export abstract class GraphicBuilder {
     pickId?: string;
     get placement(): Transform;
     set placement(tf: Transform);
-    // @beta
     setBlankingFill(fillColor: ColorDef): void;
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
     readonly type: GraphicType;
@@ -3749,6 +3749,8 @@ export class IModelApp {
     static get features(): FeatureTrackingManager;
     // @internal
     static get featureToggles(): FeatureToggleClient;
+    // @alpha
+    static formatElementToolTip(msg: string[]): HTMLElement;
     // @internal (undocumented)
     static get hasRenderSystem(): boolean;
     static get i18n(): I18N;
@@ -3902,7 +3904,6 @@ export abstract class IModelConnection extends IModel {
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
-    // @beta
     query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
@@ -3943,7 +3944,6 @@ export namespace IModelConnection {
     export class Models {
         // @internal
         constructor(_iModel: IModelConnection);
-        // @beta
         filterLoaded(modelIds: Id64Arg): Id64Set | undefined;
         // @internal (undocumented)
         getDictionaryModel(): Promise<Id64String>;
@@ -6711,7 +6711,6 @@ export abstract class RenderSystem implements IDisposable {
     enableDiagnostics(_enable: RenderDiagnostics): void;
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
     findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
-    // @beta
     getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
     // @internal (undocumented)
     abstract get isValid(): boolean;
@@ -8840,12 +8839,9 @@ export class Tool {
     get iconSpec(): string;
     static get keyin(): string;
     get keyin(): string;
-    // @beta
     static get maxArgs(): number | undefined;
-    // @beta
     static get minArgs(): number;
     static namespace: I18NNamespace;
-    // @beta
     parseAndRun(..._args: string[]): boolean;
     static register(namespace?: I18NNamespace, i18n?: I18N): void;
     run(..._args: any[]): boolean;
@@ -9984,7 +9980,7 @@ export class ViewManager {
     readonly decorators: Decorator[];
     // @internal (undocumented)
     get doesHostHaveFocus(): boolean;
-    dropDecorator(decorator: Decorator): void;
+    dropDecorator(decorator: Decorator): boolean;
     // @internal
     dropToolTipProvider(provider: ToolTipProvider): void;
     dropViewport(vp: ScreenViewport, disposeOfViewport?: boolean): BentleyStatus;
@@ -10313,7 +10309,7 @@ export abstract class Viewport implements IDisposable {
     isSubCategoryVisible(id: Id64String): boolean;
     // @internal
     lastFlashedElem?: string;
-    // @alpha (undocumented)
+    // (undocumented)
     get lightSettings(): LightSettings | undefined;
     // @internal (undocumented)
     markSelectionSetDirty(): void;
@@ -10328,6 +10324,8 @@ export abstract class Viewport implements IDisposable {
     readonly onAlwaysDrawnChanged: BeEvent<(vp: Viewport) => void>;
     readonly onChangeView: BeEvent<(vp: Viewport, previousViewState: ViewState) => void>;
     readonly onDisplayStyleChanged: BeEvent<(vp: Viewport) => void>;
+    // @beta
+    readonly onDisposed: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverrideProviderChanged: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
@@ -10375,7 +10373,7 @@ export abstract class Viewport implements IDisposable {
     setFeatureOverrideProviderChanged(): void;
     // @internal
     setFlashed(id: string | undefined, duration: number): void;
-    // @alpha (undocumented)
+    // (undocumented)
     setLightSettings(settings: LightSettings): void;
     setNeverDrawn(ids: Id64Set): void;
     // @internal (undocumented)
@@ -10393,7 +10391,6 @@ export abstract class Viewport implements IDisposable {
     setValidScene(): void;
     // @internal (undocumented)
     setViewedCategoriesPerModelChanged(): void;
-    // @beta
     get solarShadowSettings(): SolarShadowSettings | undefined;
     // @internal (undocumented)
     readonly subcategories: SubCategoriesCache.Queue;
@@ -10571,6 +10568,7 @@ export class ViewRedoTool extends ViewTool {
 export abstract class ViewState extends ElementState {
     // @internal
     protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState);
+    adjustAspectRatio(aspect: number): void;
     // @internal (undocumented)
     adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: ViewChangeOptions): ViewStatus;
     abstract allow3dManipulations(): boolean;
@@ -10807,6 +10805,8 @@ export abstract class ViewState3d extends ViewState {
     getGroundElevation(): number;
     getGroundExtents(vp?: Viewport): AxisAlignedBox3d;
     getLensAngle(): Angle;
+    // @internal (undocumented)
+    getModelClip(modelId: Id64String): RenderClipVolume | undefined;
     // (undocumented)
     getOrigin(): Point3d;
     // (undocumented)

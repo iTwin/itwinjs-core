@@ -1,6 +1,28 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Jun 2020 14:10:03 GMT and should not be manually modified.
+
+## 2.2.0
+Fri, 19 Jun 2020 14:10:03 GMT
+
+### Updates
+
+- Update to imodeljs-native 2.2.4
+- Move analytical domain classes out to new package.
+- close file on error in StandaloneDb.openFile
+- Add DefinitionContainer, DefinitionSet
+- Add missing properties to UrlLink and RepositoryLink
+- Bump tile version
+- Add IModelExporter.wantGeometry to optimize cases where geometry is not required
+- Move linear referencing domain types out to new @bentley/linear-referencing-backend package.
+- Added test for null string access via ECSqlStatement
+- Add PhysicalElement.physicalMaterial
+- Add PhysicalMaterial
+- Add PhysicalMaterial.createCode, PhysicalMaterial.create
+- Remove IOS Azure downloader
+- reactivate native ULAS tests
+- Update to BisCore.01.00.11: Add new SectionDrawing properties, deprecate SectionLocation in favor of SectionDrawingLocation.
+- Switching from JSC to V8
 
 ## 2.1.0
 Thu, 28 May 2020 22:48:59 GMT

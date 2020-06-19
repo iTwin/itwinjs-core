@@ -8,6 +8,7 @@ import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
   MessageCenterField, StatusBarWidgetControl, StatusBarWidgetControlArgs, Widget, WidgetControl, Zone, ZoneLocation, ZoneState,
 } from "../../ui-framework";
+import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
 
 // tslint:disable: completed-docs
 
@@ -144,6 +145,7 @@ export class TestFrontstage extends FrontstageProvider {
     );
   }
 }
+
 export class TestFrontstage2 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
@@ -231,6 +233,40 @@ export class TestFrontstage2 extends FrontstageProvider {
             ]}
           />
         }
+      />
+    );
+  }
+}
+
+export class TestFrontstage3 extends FrontstageProvider {
+
+  public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
+      {
+        id: "SingleContent",
+        descriptionKey: "App:ContentLayoutDef.SingleContent",
+        priority: 100,
+      },
+    );
+
+    const myContentGroup: ContentGroup = new ContentGroup(
+      {
+        contents: [
+          {
+            classId: TestContentControl,
+          },
+        ],
+      },
+    );
+
+    return (
+      <Frontstage
+        id="TestFrontstage3"
+        defaultTool={new ToolItemDef({ toolId: "test" })}
+        defaultLayout={contentLayoutDef}
+        contentGroup={myContentGroup}
+        defaultContentId="defaultContentId"
+        isInFooterMode={false}
       />
     );
   }

@@ -1,8 +1,8 @@
+import * as React from "react";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
@@ -10,17 +10,18 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import {
-  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, StagePanelLocation, ToolbarItemUtilities,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, StagePanelLocation, StageUsage, ToolbarItemUtilities, WidgetState,
 } from "@bentley/ui-abstract";
 import { SelectionMode } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
 import {
-  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager,
-  ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
-  CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef, HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler,
-  HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager, ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType,
-  SavedViewLayout, SavedViewLayoutProps, StagePanel, StagePanelHeader, StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework,
-  VisibilityComponentHierarchy, VisibilityWidget, Widget, WIDGET_OPACITY_DEFAULT, WidgetState, Zone, ZoneLocation, ZoneState,
+  BasicNavigationWidget, BasicToolWidget, ClassGroupingOption, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef,
+  ContentLayoutManager, ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager,
+  CursorUpdatedEventArgs, CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef,
+  HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
+  ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel,
+  StagePanelHeader, StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework, VisibilityComponentHierarchy, VisibilityWidget, Widget,
+  WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
 // SVG Support - SvgPath or SvgSprite
@@ -28,7 +29,7 @@ import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { AppUi } from "../AppUi";
-// cSpell:Ignore contentviews statusbars
+// cSpell:Ignore contentviews statusbars uitestapp
 import { IModelViewportControl } from "../contentviews/IModelViewport";
 import { CalculatorDialog } from "../dialogs/CalculatorDialog";
 import { SpinnerTestDialog } from "../dialogs/SpinnerTestDialog";
@@ -128,9 +129,51 @@ export class ViewsFrontstage extends FrontstageProvider {
     });
   }
 
+  /** Commands that opens switches the content layout */
+  private get _switchLayout1() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      label: "Horizontal Layout",
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef) {
+          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesHorizontal");
+          if (contentLayout && activeFrontstageDef.contentGroup) {
+            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+          }
+        }
+      },
+    });
+  }
+
+  private get _switchLayout2() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      label: "Vertical Layout",
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef) {
+          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesVertical");
+          if (contentLayout && activeFrontstageDef.contentGroup) {
+            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+          }
+        }
+      },
+    });
+  }
+
   private get _additionalNavigationVerticalToolbarItems() {
     return [
-      ToolbarHelper.createToolbarItemFromItemDef(200, this._viewSelectorItemDef)];
+      ToolbarHelper.createToolbarItemFromItemDef(200, this._viewSelectorItemDef),
+      ToolbarHelper.createToolbarItemFromItemDef(200,
+        new GroupItemDef({
+          label: "Layout Demos",
+          panelLabel: "Layout Demos",
+          iconSpec: "icon-placeholder",
+          items: [this._switchLayout1, this._switchLayout2],
+        }),
+      ),
+    ];
   }
 
   public get frontstage() {
@@ -157,8 +200,8 @@ export class ViewsFrontstage extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
-        usage="MyUsage"
-        version={3} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
+        usage={StageUsage.General}
+        version={3.1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
         contentManipulationTools={
           < Zone
             widgets={
@@ -215,14 +258,30 @@ export class ViewsFrontstage extends FrontstageProvider {
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
                 applicationData={{
-                  iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
-                  config: { modelsTree: { selectionMode: SelectionMode.Extended, selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element } },
+                  iModelConnection: this.iModelConnection,
+                  enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
+                  config: {
+                    modelsTree: {
+                      selectionMode: SelectionMode.Extended,
+                      selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element,
+                    },
+                  },
                 }}
                 fillZone={true} />,
               <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
                 applicationData={{
-                  iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
-                  config: { modelsTree: { selectionMode: SelectionMode.Extended, selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element } },
+                  iModelConnection: this.iModelConnection,
+                  enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
+                  config: {
+                    modelsTree: {
+                      selectionMode: SelectionMode.Extended,
+                      selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Element || type === ModelsTreeNodeType.Grouping),
+                      enableElementsClassGrouping: ClassGroupingOption.YesWithCounts,
+                    },
+                    spatialContainmentTree: {
+                      enableElementsClassGrouping: ClassGroupingOption.YesWithCounts,
+                    },
+                  },
                 }}
                 fillZone={true} />,
             ]}
@@ -238,7 +297,7 @@ export class ViewsFrontstage extends FrontstageProvider {
                 <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
                   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
                 /* <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
-                   applicationData={{ projectName: "iModelHubTest", imodelName: "Demo" }} />, */
+                   applicationData={{ projectName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
               ]}
           />
         }
@@ -423,13 +482,13 @@ class AdditionalTools {
     document.removeEventListener("mousemove", this._handleTool4Dismiss);
   }
 
-  private get _tool3Item() {
+  private get _activityMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.activityMessage", execute: async () => { await this._tool3(); },
     });
   }
 
-  private get _tool4Item() {
+  private get _pointerMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.pointerMessage", execute: () => { this._tool4(); },
     });
@@ -477,8 +536,10 @@ class AdditionalTools {
   }
 
   private get _spinnerTestDialogItem() {
+    const id = "spinners";
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog", execute: () => { ModalDialogManager.openDialog(<SpinnerTestDialog opened={true} />); },
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog",
+      execute: () => { ModelessDialogManager.openDialog(<SpinnerTestDialog opened={true} />, id); },
     });
   }
 
@@ -488,7 +549,7 @@ class AdditionalTools {
     this._viewportDialogCnt++;
     const id = "ViewportDialog_" + this._viewportDialogCnt.toString();
 
-    const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="Demo" dialogId={id} />;
+    const dialog = <ViewportDialog opened={true} projectName="iModelHubTest" imodelName="GrandCanyonTerrain" dialogId={id} />;
 
     ModelessDialogManager.openDialog(dialog, id);
   }
@@ -640,7 +701,7 @@ class AdditionalTools {
               dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
               proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </div>
-            {false && <ViewportWidget projectName="iModelHubTest" imodelName="Demo" />}
+            {false && <ViewportWidget projectName="iModelHubTest" imodelName="GrandCanyonTerrain" />}
             <div>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
               Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
@@ -675,8 +736,13 @@ class AdditionalTools {
       iconSpec: "icon-placeholder",
       label: "Show widget",
       execute: () => {
-        UiFramework.layoutManager.showWidget("uitestapp-test-wd3");
-        UiFramework.layoutManager.expandWidget("uitestapp-test-wd3");
+        const frontstageDef = FrontstageManager.activeFrontstageDef;
+        if (!frontstageDef)
+          return;
+        const widgetDef = frontstageDef.findWidgetDef("uitestapp-test-wd3");
+        if (!widgetDef)
+          return;
+        widgetDef.show();
       },
     }), { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(140, new CommandItemDef({
@@ -684,7 +750,8 @@ class AdditionalTools {
       iconSpec: "icon-placeholder",
       label: "Restore layout",
       execute: () => {
-        UiFramework.layoutManager.restoreLayout("ViewsFrontstage");
+        const frontstageDef = FrontstageManager.findFrontstageDef("ViewsFrontstage");
+        frontstageDef && frontstageDef.restoreLayout();
       },
     }), { groupPriority: 30 }),
     this.formatGroupItemsItem(),
@@ -724,7 +791,7 @@ class AdditionalTools {
       labelKey: "SampleApp:buttons.messageDemos",
       panelLabel: "Message Demos",
       iconSpec: "icon-placeholder",
-      items: [this._tool3Item, this._tool4Item, this._outputMessageItem, this._clearMessages],
+      items: [this._activityMessageItem, this._pointerMessageItem, this._outputMessageItem, this._clearMessages],
     }),
     new GroupItemDef({
       labelKey: "SampleApp:buttons.dialogDemos",

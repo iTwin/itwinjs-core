@@ -1,0 +1,62 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<TextareaEditor /> renders correctly 1`] = `
+<div
+  className="components-cell-editor components-textarea-editor"
+>
+  <PopupButton
+    label=""
+  >
+    <PopupContent>
+      <Textarea
+        className="components-textarea-editor-textarea"
+        data-testid="components-textarea-editor"
+        defaultValue=""
+        onChange={[Function]}
+        readOnly={false}
+        rows={3}
+        style={
+          Object {
+            "minWidth": "6em",
+          }
+        }
+      />
+      <PopupOkCancelButtons
+        onCancel={[Function]}
+        onOk={[Function]}
+      />
+    </PopupContent>
+  </PopupButton>
+</div>
+`;
+
+exports[`<TextareaEditor /> renders correctly with style 1`] = `
+<div
+  className="components-cell-editor components-textarea-editor"
+>
+  <PopupButton
+    label=""
+  >
+    <PopupContent>
+      <Textarea
+        className="components-textarea-editor-textarea"
+        data-testid="components-textarea-editor"
+        defaultValue=""
+        onChange={[Function]}
+        readOnly={false}
+        rows={3}
+        style={
+          Object {
+            "color": "red",
+            "minWidth": "6em",
+          }
+        }
+      />
+      <PopupOkCancelButtons
+        onCancel={[Function]}
+        onOk={[Function]}
+      />
+    </PopupContent>
+  </PopupButton>
+</div>
+`;

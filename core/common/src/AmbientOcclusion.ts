@@ -9,7 +9,7 @@
 import { JsonUtils } from "@bentley/bentleyjs-core";
 
 /** Namespace containing types controlling how ambient occlusion should be drawn.
- * @beta
+ * @public
  */
 export namespace AmbientOcclusion {
   /** Describes the properties with which ambient occlusion should be drawn. These properties correspond to a horizon-based ambient occlusion approach. */

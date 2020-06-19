@@ -634,6 +634,16 @@ export function createPanelsState(): PanelsState {
   };
 }
 
+/** @internal */
+export function createTabsState(args?: Partial<TabsState>): TabsState {
+  return {
+    [toolSettingsTabId]: createTabState(toolSettingsTabId, {
+      label: "Tool Settings",
+    }),
+    ...args,
+  };
+}
+
 /** @internal future */
 export function createNineZoneState(args?: Partial<NineZoneState>): NineZoneState {
   return {
@@ -644,12 +654,7 @@ export function createNineZoneState(args?: Partial<NineZoneState>): NineZoneStat
     },
     panels: createPanelsState(),
     widgets: {},
-    tabs: {
-      [toolSettingsTabId]: {
-        id: toolSettingsTabId,
-        label: "Tool Settings",
-      },
-    },
+    tabs: createTabsState(),
     toolSettings: {
       type: "docked",
     },
@@ -673,10 +678,11 @@ export function createWidgetState(id: WidgetState["id"], args?: Partial<WidgetSt
 }
 
 /** @internal */
-export function createTabState(id: TabState["id"]): TabState {
+export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState {
   return {
     id,
     label: "",
+    ...args,
   };
 }
 
@@ -686,6 +692,26 @@ export function addPanelWidget(state: NineZoneState, side: PanelSide, id: Widget
   return produce(state, (stateDraft) => {
     stateDraft.widgets[widget.id] = castDraft(widget);
     stateDraft.panels[side].widgets.push(widget.id);
+  });
+}
+
+/** @internal */
+export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial<FloatingWidgetState>,
+  widgetArgs?: Partial<WidgetState>,
+): NineZoneState {
+  const floatingWidget: FloatingWidgetState = {
+    bounds: new Rectangle(0, 100, 200, 400).toProps(),
+    id,
+    ...floatingWidgetArgs,
+  };
+  const widget = {
+    ...createWidgetState(id),
+    ...widgetArgs,
+  };
+  return produce(state, (stateDraft) => {
+    stateDraft.floatingWidgets.byId[id] = floatingWidget;
+    stateDraft.floatingWidgets.allIds.push(id);
+    stateDraft.widgets[id] = castDraft(widget);
   });
 }
 
@@ -727,6 +753,7 @@ export function createVerticalPanelState(side: VerticalPanelSide): VerticalPanel
 export function createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelState {
   return {
     ...createPanelState(side),
+    minSize: 100,
     side,
     span: true,
   };

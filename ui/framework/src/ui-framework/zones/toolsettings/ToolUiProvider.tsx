@@ -38,6 +38,7 @@ export class ToolUiProvider extends ConfigurableUiControl {
 
   /** Tool Settings Data Provider */
   public get dataProvider(): UiDataProvider | undefined { return this._dataProvider; }
+  // istanbul ignore next
   public set dataProvider(d: UiDataProvider | undefined) { this._dataProvider = d; }
 
   /** Gets the type of ConfigurableUiControl, which is 'ToolUiProvider' in this case */

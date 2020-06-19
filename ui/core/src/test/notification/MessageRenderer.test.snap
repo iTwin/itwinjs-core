@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MessageRenderer Div with React node 1`] = `
+<div>
+  <span>
+    For more details, 
+    <UnderlinedButton>
+      click here
+    </UnderlinedButton>
+    .
+  </span>
+</div>
+`;
+
+exports[`MessageRenderer Div with message HTMLElement 1`] = `
+<div
+  dangerouslySetInnerHTML={
+    Object {
+      "__html": "<span>Test</span>",
+    }
+  }
+/>
+`;
+
+exports[`MessageRenderer Div with message text 1`] = `
+<div>
+  Test
+</div>
+`;
+
+exports[`MessageRenderer Span with React node 1`] = `
+<span>
+  <span>
+    For more details, 
+    <UnderlinedButton>
+      click here
+    </UnderlinedButton>
+    .
+  </span>
+</span>
+`;
+
+exports[`MessageRenderer Span with message HTMLElement 1`] = `
+<span
+  dangerouslySetInnerHTML={
+    Object {
+      "__html": "<span>Test</span>",
+    }
+  }
+/>
+`;
+
+exports[`MessageRenderer Span with message text 1`] = `
+<span>
+  Test
+</span>
+`;

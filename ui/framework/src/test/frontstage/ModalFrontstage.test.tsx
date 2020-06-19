@@ -63,7 +63,9 @@ describe("ModalFrontstage", () => {
     const modalFrontstage = new TestModalFrontstage();
 
     const changedEventSpy = sinon.spy();
+    const closedEventSpy = sinon.spy();
     const removeListener = FrontstageManager.onModalFrontstageChangedEvent.addListener(changedEventSpy);
+    const removeListener2 = FrontstageManager.onModalFrontstageClosedEvent.addListener(closedEventSpy);
 
     FrontstageManager.openModalFrontstage(modalFrontstage);
     expect(changedEventSpy.calledOnce).to.be.true;
@@ -85,8 +87,10 @@ describe("ModalFrontstage", () => {
 
     FrontstageManager.closeModalFrontstage();
     expect(changedEventSpy.calledThrice).to.be.true;
+    expect(closedEventSpy.calledOnce).to.be.true;
 
     removeListener();
+    removeListener2();
   });
 
 });

@@ -80,6 +80,12 @@ describe("ContentDataProvider", () => {
       expect(p.displayType).to.eq(type);
     });
 
+    it("sets paging size", () => {
+      const pagingSize = faker.random.number();
+      const p = new Provider({ imodel: imodelMock.object, ruleset: rulesetId, displayType, pagingSize });
+      expect(p.pagingSize).to.be.eq(pagingSize);
+    });
+
     it("registers ruleset", async () => {
       const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
       rulesetsManagerMock.setup(async (x) => x.add(moq.It.isAny())).returns(async (r) => new RegisteredRuleset(r, "test", () => { }));

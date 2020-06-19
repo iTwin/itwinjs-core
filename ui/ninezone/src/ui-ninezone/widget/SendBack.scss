@@ -17,14 +17,22 @@
     height: 1em;
     border-width: 0.15em;
     border-style: solid;
-    border-color: $buic-background-5;
+    border-color: $buic-foreground-muted;
     display: block;
 
     &:after {
       content: '';
-      background: $buic-background-5;
+      background: $buic-foreground-muted;
       height: 33%;
       display: block;
+    }
+
+    &:hover {
+      border-color: $buic-foreground-activehover;
+
+      &:after {
+        background: $buic-foreground-activehover;
+      }
     }
   }
 }

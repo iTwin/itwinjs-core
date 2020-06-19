@@ -94,11 +94,11 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
   }
 
   private getViewFlagItem(flagName: string, value: boolean, labelKey?: string) {
-    return <Checkbox key={flagName} label={labelKey ? IModelApp.i18n.translate(labelKey) : this.stylizeName(flagName)} onClick={() => this._handleViewFlagClick(flagName)} defaultChecked={value} />;
+    return <Checkbox key={flagName} label={labelKey ? IModelApp.i18n.translate(labelKey) : /* istanbul ignore next */ this.stylizeName(flagName)} onClick={() => this._handleViewFlagClick(flagName)} defaultChecked={value} />;
   }
 
   private getFlagState(flagName: string) {
-    return this.state.viewFlags!.hasOwnProperty(flagName) ? (this.state.viewFlags as any)[flagName] : false;
+    return this.state.viewFlags!.hasOwnProperty(flagName) ? /* istanbul ignore next */ (this.state.viewFlags as any)[flagName] : false;
   }
 
   private getToggleCameraItem() {

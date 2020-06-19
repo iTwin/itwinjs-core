@@ -7,9 +7,10 @@
  */
 
 import { Primitives } from "@bentley/ui-abstract";
-import { StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
+import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
+import { StandardTypeNames } from "../common/StandardTypeNames";
 
 // cSpell:ignore valuetypes
 
@@ -86,7 +87,7 @@ export class Point2dTypeConverter extends BasePointTypeConverter {
   }
 }
 
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Point2d, Point2dTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Point2d, Point2dTypeConverter);
 
 /**
  * Point3d type converter.
@@ -113,4 +114,4 @@ export class Point3dTypeConverter extends BasePointTypeConverter {
   }
 }
 
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Point3d, Point3dTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Point3d, Point3dTypeConverter);

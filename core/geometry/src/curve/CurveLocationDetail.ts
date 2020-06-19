@@ -444,5 +444,10 @@ export class CurveLocationDetailPair {
     result.approachType = this.approachType;
     return result;
   }
-
+  /** Swap the details of A, B */
+  public swapDetails() {
+    const q = this.detailA;
+    this.detailA = this.detailB;
+    this.detailB = q;
+  }
 }

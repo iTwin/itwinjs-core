@@ -4,11 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
+import * as sinon from "sinon";
 import { MockRender } from "@bentley/imodeljs-frontend";
 import { ContentLayoutDef, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider } from "../../ui-framework";
 import TestUtils from "../TestUtils";
+import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
 
 describe("FrontstageDef", () => {
+  const sandbox = sinon.createSandbox();
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -18,6 +21,10 @@ describe("FrontstageDef", () => {
   after(async () => {
     await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   class BadLayoutFrontstage extends FrontstageProvider {
@@ -67,5 +74,16 @@ describe("FrontstageDef", () => {
     const frontstageProvider = new BadGroupFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     expect(FrontstageManager.setActiveFrontstage("BadGroup")).to.be.rejectedWith(Error);
+  });
+
+  describe("restoreLayout", () => {
+    it("should emit onFrontstageRestoreLayoutEvent", () => {
+      const spy = sandbox.spy(FrontstageManager.onFrontstageRestoreLayoutEvent, "emit");
+      const frontstageDef = new FrontstageDef();
+      frontstageDef.restoreLayout();
+      spy.calledOnceWithExactly(sinon.match({
+        frontstageDef,
+      })).should.true;
+    });
   });
 });

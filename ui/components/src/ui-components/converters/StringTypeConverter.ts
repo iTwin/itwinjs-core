@@ -7,8 +7,9 @@
  */
 
 import { Primitives } from "@bentley/ui-abstract";
-import { StandardTypeConverterTypeNames, TypeConverter } from "./TypeConverter";
+import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /** Operators for string types
  * @public
@@ -127,5 +128,5 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
   }
 }
 
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.Text, StringTypeConverter);
-TypeConverterManager.registerConverter(StandardTypeConverterTypeNames.String, StringTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.Text, StringTypeConverter);
+TypeConverterManager.registerConverter(StandardTypeNames.String, StringTypeConverter);

@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-// tslint:disable: no-direct-imports
+import * as moq from "typemoq";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, ScreenViewport, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, KeySet, LabelDefinition, Node, NodePathElement, StandardNodeTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import {
   Presentation, PresentationManager, RulesetManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager,
@@ -322,6 +321,19 @@ describe("CategoryTree", () => {
         expect(spy).to.be.calledOnce;
       });
 
+      it("renders VisibilityTreeNoFilteredData", async () => {
+        dataProvider.getFilteredNodePaths = async () => [];
+
+        const result = render(<CategoryTree
+          viewManager={viewManagerMock.object}
+          iModel={imodelMock.object}
+          dataProvider={dataProvider}
+          categoryVisibilityHandler={visibilityHandler.object}
+          filterInfo={{ filter: "filtered-node1", activeMatchIndex: 0 }}
+        />);
+
+        await waitForElement(() => result.getByText("categoriesTree.noCategoryFound"));
+      });
     });
 
   });

@@ -570,7 +570,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     await HideIsolateEmphasizeManager.isolateSelectedElementsModel(vp);
 
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.IsolateSelectedModels });
-    IModelApp.features.track(HideIsolateEmphasizeAction.IsolateSelectedModels);
+    IModelApp.features.track({ featureName: HideIsolateEmphasizeAction.IsolateSelectedModels });
     SyncUiEventDispatcher.dispatchSyncUiEvent(HideIsolateEmphasizeActionHandler.hideIsolateEmphasizeUiSyncId);
   }
 
@@ -585,7 +585,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     await HideIsolateEmphasizeManager.isolateSelectedElementsCategory(vp);
 
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.IsolateSelectedCategories });
-    IModelApp.features.track(HideIsolateEmphasizeAction.IsolateSelectedCategories);
+    IModelApp.features.track({ featureName: HideIsolateEmphasizeAction.IsolateSelectedCategories });
     SyncUiEventDispatcher.dispatchSyncUiEvent(HideIsolateEmphasizeActionHandler.hideIsolateEmphasizeUiSyncId);
   }
 
@@ -599,7 +599,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     HideIsolateEmphasizeManager.isolateSelected(vp);
 
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.IsolateSelectedElements });
-    IModelApp.features.track(HideIsolateEmphasizeAction.IsolateSelectedElements);
+    IModelApp.features.track({ featureName: HideIsolateEmphasizeAction.IsolateSelectedElements });
     SyncUiEventDispatcher.dispatchSyncUiEvent(HideIsolateEmphasizeActionHandler.hideIsolateEmphasizeUiSyncId);
 
     // clear out selection now that any callbacks have processed
@@ -619,7 +619,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     await HideIsolateEmphasizeManager.hideSelectedElementsModel(vp);
 
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.HideSelectedModels });
-    IModelApp.features.track(HideIsolateEmphasizeAction.HideSelectedModels);
+    IModelApp.features.track({ featureName: HideIsolateEmphasizeAction.HideSelectedModels });
     SyncUiEventDispatcher.dispatchSyncUiEvent(HideIsolateEmphasizeActionHandler.hideIsolateEmphasizeUiSyncId);
   }
 
@@ -634,7 +634,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     await HideIsolateEmphasizeManager.hideSelectedElementsCategory(vp);
 
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.HideSelectedCategories });
-    IModelApp.features.track(HideIsolateEmphasizeAction.HideSelectedCategories);
+    IModelApp.features.track({ featureName: HideIsolateEmphasizeAction.HideSelectedCategories });
     SyncUiEventDispatcher.dispatchSyncUiEvent(HideIsolateEmphasizeActionHandler.hideIsolateEmphasizeUiSyncId);
   }
 
@@ -649,7 +649,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     HideIsolateEmphasizeManager.hideSelected(vp);
 
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.HideSelectedElements });
-    IModelApp.features.track(HideIsolateEmphasizeAction.HideSelectedElements);
+    IModelApp.features.track({ featureName: HideIsolateEmphasizeAction.HideSelectedElements });
     SyncUiEventDispatcher.dispatchSyncUiEvent(HideIsolateEmphasizeActionHandler.hideIsolateEmphasizeUiSyncId);
 
     // clear out selection now that any callbacks have processed
@@ -668,7 +668,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
 
     await HideIsolateEmphasizeManager.emphasizeSelected(vp);
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.EmphasizeSelectedElements });
-    IModelApp.features.track(HideIsolateEmphasizeAction.EmphasizeSelectedElements);
+    IModelApp.features.track({ featureName: HideIsolateEmphasizeAction.EmphasizeSelectedElements });
     SyncUiEventDispatcher.dispatchSyncUiEvent(HideIsolateEmphasizeActionHandler.hideIsolateEmphasizeUiSyncId);
 
     // clear out selection now that any callbacks have processed
@@ -687,7 +687,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     HideIsolateEmphasizeManager.clearEmphasize(vp);
 
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.raiseEvent({ viewport: vp, action: HideIsolateEmphasizeAction.ClearHiddenIsolatedEmphasized });
-    IModelApp.features.track(HideIsolateEmphasizeAction.ClearHiddenIsolatedEmphasized);
+    IModelApp.features.track({ featureName: HideIsolateEmphasizeAction.ClearHiddenIsolatedEmphasized });
     SyncUiEventDispatcher.dispatchSyncUiEvent(HideIsolateEmphasizeActionHandler.hideIsolateEmphasizeUiSyncId);
   }
 }

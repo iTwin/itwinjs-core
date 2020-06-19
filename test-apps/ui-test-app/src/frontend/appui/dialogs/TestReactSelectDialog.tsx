@@ -74,7 +74,7 @@ export class TestReactSelectDialog extends React.Component<TestReactSelectDialog
       maxWidth={600}
     >
       <div className="modal-react-select-dialog">
-        <div><label className="label-data">Color: </label><ThemedSelect className="select-item" options={colorChoices} /></div>
+        <div><label className="label-data">Color: </label><ThemedSelect options={colorChoices} /></div>
         <div><label className="label-data">Choose Cities: </label><ThemedSelect isMulti={true} isSearchable={true} options={cityChoices} /></div>
       </div>
     </Dialog>

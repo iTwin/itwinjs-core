@@ -12,7 +12,8 @@
 
 // cspell:ignore themecolors unbordered
 
-$uicore-menu-bordered-padding:  $uicore-bordered-padding;
+$uicore-menu-padding:             $uicore-bordered-padding;
+$uicore-menu-top-bottom-padding:  $uicore-menu-padding * 2/3;
 
 .core-context-menu-global {
   position: fixed;
@@ -100,8 +101,8 @@ $uicore-menu-bordered-padding:  $uicore-bordered-padding;
     .core-context-menu-item {
       display: flex;
       cursor: default;
-      padding: $uicore-menu-bordered-padding $uicore-menu-bordered-padding;
-      width: calc(100% - 2 * #{$uicore-menu-bordered-padding});
+      padding: $uicore-menu-top-bottom-padding $uicore-menu-padding;
+      width: calc(100% - 2 * #{$uicore-menu-padding});
       align-items: center;
       position: relative;
 

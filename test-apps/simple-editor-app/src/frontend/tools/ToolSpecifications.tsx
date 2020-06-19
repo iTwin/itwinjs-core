@@ -7,7 +7,7 @@ import {
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
   SnapMode,
 } from "@bentley/imodeljs-frontend";
-import { CommonStatusBarItem, StageUsage, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
+import { CommonStatusBarItem, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
 import { MessageSeverity } from "@bentley/ui-core";
 import { Backstage, CommandItemDef, ModalDialogManager, SyncUiEventDispatcher, ToolItemDef } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../";
@@ -26,7 +26,7 @@ class AppItemsProvider implements UiItemsProvider {
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(AppItemsProvider.syncEventId);
   }
 
-  public provideStatusBarItems(_stageId: string, _stageUsage: StageUsage): CommonStatusBarItem[] {
+  public provideStatusBarItems(_stageId: string, _stageUsage: string): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
     return statusBarItems;
   }

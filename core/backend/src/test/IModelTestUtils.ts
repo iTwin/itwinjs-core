@@ -11,16 +11,17 @@ import {
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
-  BriefcaseProps, Code, CodeProps, ElementProps, GeometricElement3dProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, RelatedElement,
+  BriefcaseProps, Code, CodeProps, ElementProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, PhysicalElementProps, RelatedElement,
   RpcConfiguration, RpcManager, SyncMode,
 } from "@bentley/imodeljs-common";
+import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ClassRegistry } from "../ClassRegistry";
 import { PhysicalElement, Subject } from "../Element";
 import {
-  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, InformationPartitionElement,
-  Model, NativeLoggerCategory, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
+  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, InformationPartitionElement, Model,
+  PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { Schema, Schemas } from "../Schema";
@@ -122,7 +123,7 @@ export class TestElementDrivesElement extends ElementDrivesElement implements Te
   public static onValidateOutput(props: RelationshipProps, imodel: IModelDb): void { this.validateOutput.raiseEvent(props, imodel); }
   public static onDeletedDependency(props: RelationshipProps, imodel: IModelDb): void { this.deletedDependency.raiseEvent(props, imodel); }
 }
-export interface TestPhysicalObjectProps extends GeometricElement3dProps {
+export interface TestPhysicalObjectProps extends PhysicalElementProps {
   intProperty: number;
 }
 export class TestPhysicalObject extends PhysicalElement implements TestPhysicalObjectProps {
@@ -302,7 +303,7 @@ export class IModelTestUtils {
 
   // Create a PhysicalObject. (Does not insert it.)
   public static createPhysicalObject(testImodel: IModelDb, modelId: Id64String, categoryId: Id64String, elemCode?: Code): Element {
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: "Generic:PhysicalObject",
       model: modelId,
       category: categoryId,

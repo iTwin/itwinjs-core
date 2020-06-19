@@ -9,7 +9,7 @@
 import { XAndY } from "@bentley/geometry-core";
 import {
   AbstractMenuItemProps, AbstractToolbarProps, OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc, Primitives,
-  PropertyDescription, PropertyRecord, RelativePosition, UiAdmin,
+  PropertyDescription, PropertyRecord, RelativePosition, UiAdmin, UiDataProvider,
 } from "@bentley/ui-abstract";
 import { AccuDrawPopupManager } from "../accudraw/AccuDrawPopupManager";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
@@ -207,6 +207,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean {
     const { position, el } = this.resolveHtmlElement(location, anchorElement);
 
+    // istanbul ignore if
     if (relativePosition === undefined)
       relativePosition = RelativePosition.TopRight;
 
@@ -236,6 +237,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     relativePosition?: RelativePosition, anchorElement?: HTMLElement): boolean {
     const { position, el } = this.resolveHtmlElement(location, anchorElement);
 
+    // istanbul ignore if
     if (relativePosition === undefined)
       relativePosition = RelativePosition.TopRight;
 
@@ -247,4 +249,28 @@ export class FrameworkUiAdmin extends UiAdmin {
     return PopupManager.hideCard();
   }
 
+  /** Opens a Tool Settings Ui popup at a particular location.
+   * @param dataProvider The UiDataProvider for the tool settings
+   * @param location Location of the tool settings, relative to the origin of anchorElement or the window
+   * @param offset Offset of the tool settings from the location
+   * @param onCancel Function invoked when the Escape key is pressed or a click occurs outside the tool settings
+   * @param relativePosition Position relative to the given location. Defaults to TopRight.
+   * @param anchorElement The HTMLElement that anchors the tool settings. If undefined, the location is relative to the overall window.
+   * @return true if the tool settings were displayed, false if the tool settings could not be displayed.
+   */
+  public openToolSettingsPopup(
+    dataProvider: UiDataProvider, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, anchorElement?: HTMLElement,
+  ): boolean {
+    const { position, el } = this.resolveHtmlElement(location, anchorElement);
+
+    if (relativePosition === undefined)
+      relativePosition = RelativePosition.TopRight;
+
+    return PopupManager.openToolSettings(dataProvider, el, position, offset, onCancel, relativePosition);
+  }
+
+  /** Closes the Tool Settings Ui popup. */
+  public closeToolSettingsPopup(): boolean {
+    return PopupManager.closeToolSettings();
+  }
 }

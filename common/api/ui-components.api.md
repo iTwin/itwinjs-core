@@ -1446,13 +1446,13 @@ export interface EditorContainerProps extends CommonProps {
 }
 
 // @beta
-export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, EnumEditorState_2> implements TypeEditor {
+export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, EnumButtonGroupEditorState> implements TypeEditor {
     // @internal
     constructor(props: PropertyEditorProps);
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
-    componentDidUpdate(prevProps: PropertyEditorProps, _prevState: EnumEditorState_2): void;
+    componentDidUpdate(prevProps: PropertyEditorProps, _prevState: EnumButtonGroupEditorState): void;
     // @internal (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -1460,7 +1460,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     // @internal (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
-    readonly state: Readonly<EnumEditorState_2>;
+    readonly state: Readonly<EnumButtonGroupEditorState>;
 }
 
 // @beta
@@ -2308,6 +2308,28 @@ export interface NullableOperatorProcessor {
     isNull(value: Primitives.Value): boolean;
 }
 
+// @beta
+export class NumericInputEditor extends React.PureComponent<PropertyEditorProps, NumericInputEditorState> implements TypeEditor {
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // @internal (undocumented)
+    render(): React.ReactNode;
+    // @internal (undocumented)
+    readonly state: Readonly<NumericInputEditorState>;
+    }
+
+// @beta
+export class NumericInputPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get reactNode(): React.ReactNode;
+}
+
 // @public
 export abstract class NumericTypeConverterBase extends TypeConverter implements LessGreaterOperatorProcessor {
     // (undocumented)
@@ -3091,6 +3113,28 @@ export interface SingleSelectionHandler<TItem> {
     select: () => void;
 }
 
+// @beta
+export class SliderEditor extends React.PureComponent<PropertyEditorProps, SliderEditorState> implements TypeEditor {
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // @internal (undocumented)
+    render(): React.ReactNode;
+    // @internal (undocumented)
+    readonly state: Readonly<SliderEditorState>;
+}
+
+// @beta
+export class SliderPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get reactNode(): React.ReactNode;
+}
+
 // @alpha
 export interface SolarDataProvider {
     day: Date;
@@ -3125,6 +3169,28 @@ export interface SortComparer {
     sortCompare(valueA: Primitives.Value, valueB: Primitives.Value, ignoreCase?: boolean): number;
 }
 
+// @beta
+export enum StandardEditorNames {
+    // (undocumented)
+    ColorPicker = "color-picker",
+    // (undocumented)
+    EnumButtonGroup = "enum-buttongroup",
+    // (undocumented)
+    IconPicker = "icon-picker",
+    // (undocumented)
+    MultiLine = "multi-line",
+    // (undocumented)
+    NumberCustom = "number-custom",
+    // (undocumented)
+    NumericInput = "numeric-input",
+    // (undocumented)
+    Slider = "slider",
+    // (undocumented)
+    Toggle = "toggle",
+    // (undocumented)
+    WeightPicker = "weight-picker"
+}
+
 // @public
 export class StandardRotationChangeEvent extends UiEvent<StandardRotationChangeEventArgs> {
 }
@@ -3135,7 +3201,7 @@ export interface StandardRotationChangeEventArgs {
     standardRotation: StandardViewId;
 }
 
-// @beta
+// @beta @deprecated
 export enum StandardTypeConverterTypeNames {
     // (undocumented)
     Bool = "bool",
@@ -3169,6 +3235,50 @@ export enum StandardTypeConverterTypeNames {
     ShortDate = "shortdate",
     // (undocumented)
     String = "string",
+    // (undocumented)
+    Text = "text"
+}
+
+// @beta
+export enum StandardTypeNames {
+    // (undocumented)
+    Array = "array",
+    // (undocumented)
+    Bool = "bool",
+    // (undocumented)
+    Boolean = "boolean",
+    // (undocumented)
+    Composite = "composite",
+    // (undocumented)
+    DateTime = "dateTime",
+    // (undocumented)
+    Double = "double",
+    // (undocumented)
+    Enum = "enum",
+    // (undocumented)
+    Float = "float",
+    // (undocumented)
+    Hex = "hex",
+    // (undocumented)
+    Hexadecimal = "hexadecimal",
+    // (undocumented)
+    Int = "int",
+    // (undocumented)
+    Integer = "integer",
+    // (undocumented)
+    Navigation = "navigation",
+    // (undocumented)
+    Number = "number",
+    // (undocumented)
+    Point2d = "point2d",
+    // (undocumented)
+    Point3d = "point3d",
+    // (undocumented)
+    ShortDate = "shortdate",
+    // (undocumented)
+    String = "string",
+    // (undocumented)
+    Struct = "struct",
     // (undocumented)
     Text = "text"
 }
@@ -3458,6 +3568,28 @@ export interface TableSpecificValueRendererProps extends SharedTableNonPrimitive
 export class TableStructValueRenderer extends React.PureComponent<TableSpecificValueRendererProps> {
     // @internal (undocumented)
     render(): JSX.Element;
+}
+
+// @beta
+export class TextareaEditor extends React.PureComponent<PropertyEditorProps, TextareaEditorState> implements TypeEditor {
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // @internal (undocumented)
+    render(): React.ReactNode;
+    // @internal (undocumented)
+    readonly state: Readonly<TextareaEditorState>;
+    }
+
+// @beta
+export class TextareaPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get reactNode(): React.ReactNode;
 }
 
 // @beta
@@ -4350,7 +4482,7 @@ export interface ViewportProps extends CommonProps {
     // @internal
     viewManagerOverride?: ViewManager;
     viewportRef?: (v: ScreenViewport) => void;
-    viewState?: ViewState;
+    viewState?: ViewStateProp;
 }
 
 // @public
@@ -4364,6 +4496,9 @@ export interface ViewRotationChangeEventArgs {
     // (undocumented)
     viewport: Viewport;
 }
+
+// @public
+export type ViewStateProp = ViewState | (() => ViewState);
 
 // @beta
 export interface VisibleTreeNodes extends Iterable<TreeModelNode | TreeModelNodePlaceholder> {

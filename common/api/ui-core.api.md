@@ -4,16 +4,24 @@
 
 ```ts
 
+import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
+import { FocusEventHandler } from 'react-select/src/types';
+import { formatGroupLabel } from 'react-select/src/builtins';
+import { getOptionLabel } from 'react-select/src/builtins';
+import { getOptionValue } from 'react-select/src/builtins';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { InputActionMeta } from 'react-select/src/types';
+import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
-import { Props as Props_2 } from 'react-select/base/index';
 import * as React from 'react';
 import { RelativePosition } from '@bentley/ui-abstract';
+import { SelectComponentsConfig } from 'react-select/src/components/index';
 import { SliderModeFunction } from 'react-compound-slider';
+import { ValueType } from 'react-select/src/types';
 
 // @internal
 export class AnnularSector {
@@ -793,6 +801,12 @@ export interface FormProps {
 }
 
 // @internal
+export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string;
+
+// @internal
+export function getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number;
+
+// @internal
 export const getDisplayName: (component: React.ComponentType<any>) => string;
 
 // @internal
@@ -945,7 +959,13 @@ export enum InputStatus {
 }
 
 // @internal
+export const isHTMLElement: (message: MessageType) => message is HTMLElement;
+
+// @internal
 export function isPromiseLike(obj: unknown): obj is PromiseLike<unknown>;
+
+// @internal
+export const isReactMessage: (message: MessageType) => message is ReactMessage;
 
 // @public
 export interface LabeledComponentProps {
@@ -1146,6 +1166,17 @@ export interface MessagedComponentProps {
     messageStyle?: React.CSSProperties;
 }
 
+// @beta
+export function MessageRenderer(props: MessageRendererProps): JSX.Element | null;
+
+// @beta
+export interface MessageRendererProps extends ClassNameProps {
+    // (undocumented)
+    message: MessageType;
+    // (undocumented)
+    useSpan?: boolean;
+}
+
 // @public
 export enum MessageSeverity {
     // (undocumented)
@@ -1161,6 +1192,9 @@ export enum MessageSeverity {
     // (undocumented)
     Warning = 3
 }
+
+// @public
+export type MessageType = string | HTMLElement | ReactMessage;
 
 // @beta
 export function MinimalFeaturedTile(props: TileProps): JSX.Element;
@@ -1223,11 +1257,14 @@ export type OmitChildrenProp<T extends {
 }> = Omit<T, "children">;
 
 // @beta
+export type OptionsType = Array<OptionType>;
+
+// @beta
 export interface OptionType {
     // (undocumented)
     label: string;
     // (undocumented)
-    value: string;
+    value: any;
 }
 
 // @public
@@ -1300,6 +1337,7 @@ export interface PopupProps extends CommonProps {
     moveFocus?: boolean;
     offset: number;
     onClose?: () => void;
+    onEnter?: () => void;
     onOpen?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
     position: RelativePosition;
@@ -1378,6 +1416,12 @@ export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>,
 export interface RatioChangeResult {
     // (undocumented)
     ratio: number;
+}
+
+// @public
+export interface ReactMessage {
+    // (undocumented)
+    reactNode: React.ReactNode;
 }
 
 // @internal (undocumented)
@@ -1765,14 +1809,17 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
 // @public
 export class Textarea extends React.PureComponent<TextareaProps> {
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
     static defaultProps: Partial<TextareaProps>;
     // (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @public
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
     rows?: number;
+    setFocus?: boolean;
 }
 
 // @public
@@ -1780,7 +1827,66 @@ export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement>, Com
 }
 
 // @beta
-export function ThemedSelect<OptionType>(props: Props_2<OptionType>): JSX.Element;
+export function ThemedSelect(props: ThemedSelectProps): JSX.Element;
+
+// @beta
+export type ThemedSelectProps = {
+    autoFocus?: boolean;
+    backspaceRemovesValue?: boolean;
+    blurInputOnSelect?: boolean;
+    captureMenuScroll?: boolean;
+    closeMenuOnSelect?: boolean;
+    closeMenuOnScroll?: boolean | EventListener;
+    components?: SelectComponentsConfig<OptionType>;
+    controlShouldRenderValue?: boolean;
+    defaultMenuIsOpen?: boolean;
+    defaultValue?: ValueType<OptionType>;
+    escapeClearsValue?: boolean;
+    filterOption?: ((option: OptionType, rawInput: string) => boolean) | null;
+    formatGroupLabel?: typeof formatGroupLabel;
+    formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => Node;
+    getOptionLabel?: typeof getOptionLabel;
+    getOptionValue?: typeof getOptionValue;
+    hideSelectedOptions?: boolean;
+    id?: string;
+    inputValue?: string;
+    inputId?: string;
+    instanceId?: number | string;
+    isClearable?: boolean;
+    isDisabled?: boolean;
+    isLoading?: boolean;
+    isOptionDisabled?: (option: OptionType, options: OptionsType) => boolean | false;
+    isMulti?: boolean;
+    isMenuFixed?: boolean;
+    isRtl?: boolean;
+    isSearchable?: boolean;
+    minMenuHeight?: number;
+    maxMenuHeight?: number;
+    menuIsOpen?: boolean;
+    menuShouldBlockScroll?: boolean;
+    menuShouldScrollIntoView?: boolean;
+    name?: string;
+    noOptionsMessage?: (obj: {
+        inputValue: string;
+    }) => string | null;
+    onBlur?: FocusEventHandler;
+    onChange?: (value: ValueType<OptionType>, action: ActionMeta<OptionType>) => void;
+    onFocus?: FocusEventHandler;
+    onInputChange?: (newValue: string, actionMeta?: InputActionMeta) => void;
+    onKeyDown?: KeyboardEventHandler;
+    onMenuOpen?: () => void;
+    onMenuClose?: () => void;
+    onMenuScrollToTop?: (e: React.SyntheticEvent<HTMLElement>) => void;
+    onMenuScrollToBottom?: (e: React.SyntheticEvent<HTMLElement>) => void;
+    openMenuOnFocus?: boolean;
+    openMenuOnClick?: boolean;
+    options: OptionsType;
+    pageSize?: number;
+    placeholder?: string;
+    tabIndex?: string;
+    tabSelectsValue?: boolean;
+    value?: ValueType<OptionType>;
+};
 
 // @internal
 export class TildeFinder {
@@ -1878,6 +1984,19 @@ export const TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35;
 
 // @internal
 export const TOOLBAR_OPACITY_DEFAULT = 0.5;
+
+// @beta
+export function Tooltip(props: TooltipProps): JSX.Element;
+
+// @beta
+export interface TooltipProps extends CommonProps {
+    // (undocumented)
+    below?: boolean;
+    // (undocumented)
+    percent?: number;
+    // (undocumented)
+    value: MessageType;
+}
 
 // @public
 export class Tree extends React.PureComponent<TreeProps> {
@@ -2083,7 +2202,7 @@ export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T |
 export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
 
 // @internal
-export const useTargeted: (elementRef: React.RefObject<Element>) => boolean;
+export const useTargeted: (ref: React.RefObject<Element>) => boolean;
 
 // @public
 export enum VerticalAlignment {

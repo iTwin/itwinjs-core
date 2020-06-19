@@ -7,9 +7,12 @@ import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
-import { AngleDescription, LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
-import { AbstractToolbarProps, BadgeType, PropertyDescription, RelativePosition } from "@bentley/ui-abstract";
-import { EditorContainer, Toolbar, ToolbarWithOverflow } from "@bentley/ui-components";
+import { LengthDescription, MockRender } from "@bentley/imodeljs-frontend";
+import {
+  AbstractToolbarProps, BadgeType, DialogItem, DialogItemValue, DialogPropertyItem, PropertyChangeResult,
+  PropertyChangeStatus, PropertyDescription, RelativePosition, UiDataProvider,
+} from "@bentley/ui-abstract";
+import { EditorContainer, StandardTypeNames, Toolbar, ToolbarWithOverflow } from "@bentley/ui-components";
 import { LeadingText, Point } from "@bentley/ui-core";
 import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
 import { Calculator } from "../../ui-framework/accudraw/Calculator";
@@ -18,6 +21,7 @@ import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManag
 import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
 import { TestUtils } from "../TestUtils";
 import { Card } from "../../ui-framework/popup/CardPopup";
+import { DialogGridContainer } from "../../ui-framework/uiprovider/DefaultDialogGridContainer";
 
 describe("PopupManager", () => {
 
@@ -149,7 +153,7 @@ describe("PopupManager", () => {
       expect(popup.pt.x).to.eq(200);
       expect(popup.pt.y).to.eq(300);
 
-      const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: "number" };
+      const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: StandardTypeNames.Number };
 
       PopupManager.showInputEditor(doc.documentElement, new Point(300, 400), 256, propertyDescription, spyCommit, spyCancel);
 
@@ -228,17 +232,33 @@ describe("PopupManager", () => {
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
       const spyCommit = sinon.spy();
       const spyCancel = sinon.spy();
+      const description: PropertyDescription = {
+        name: "test",
+        displayLabel: "Test",
+        typename: StandardTypeNames.Text,
+      };
 
-      PopupManager.showInputEditor(doc.documentElement, new Point(150, 250), 123, new AngleDescription(undefined, undefined, "icon-placeholder"), spyCommit, spyCancel);
+      PopupManager.showInputEditor(doc.documentElement, new Point(150, 250), 123, description, spyCommit, spyCancel);
       wrapper.update();
       expect(wrapper.find(EditorContainer).length).to.eq(1);
 
-      const inputNode = wrapper.find("input");
+      let inputNode = wrapper.find("input");
       expect(inputNode.length).to.eq(1);
 
       inputNode.simulate("keyDown", { key: "Enter" });
       await TestUtils.flushAsyncOperations();
       expect(spyCommit.calledOnce).to.be.true;
+
+      PopupManager.showInputEditor(doc.documentElement, new Point(150, 250), 123, description, spyCommit, spyCancel);
+      wrapper.update();
+      expect(wrapper.find(EditorContainer).length).to.eq(1);
+
+      inputNode = wrapper.find("input");
+      expect(inputNode.length).to.eq(1);
+
+      inputNode.simulate("keyDown", { key: "Escape" });
+      await TestUtils.flushAsyncOperations();
+      expect(spyCancel.called).to.be.true;
 
       wrapper.unmount();
     });
@@ -325,9 +345,90 @@ describe("PopupManager", () => {
       expect(wrapper.find(LeadingText).length).to.eq(1);
       PopupManager.hideCard();
 
+      PopupManager.showCard(content.documentElement, undefined, undefined, doc.documentElement, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
+      wrapper.update();
+      expect(wrapper.find(Card).length).to.eq(1);
+      expect(wrapper.find(LeadingText).length).to.eq(0);
+      PopupManager.hideCard();
+
       wrapper.unmount();
     });
 
+    it("PopupRenderer should render Tool Settings", async () => {
+      const wrapper = mount(<PopupRenderer />);
+      const spyChange = sinon.spy();
+
+      class TestUiDataProvider extends UiDataProvider {
+        private static _sourcePropertyName = "source";
+        private static _getSourceDescription = (): PropertyDescription => {
+          return {
+            name: TestUiDataProvider._sourcePropertyName,
+            displayLabel: "Source",
+            typename: StandardTypeNames.String,
+          };
+        }
+
+        private _sourceValue: DialogItemValue = { value: "unknown" };
+
+        public get source(): string {
+          return this._sourceValue.value as string;
+        }
+
+        public set source(option: string) {
+          this._sourceValue.value = option;
+        }
+
+        /** Called by UI to inform data provider of changes.  */
+        public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+          if (properties.length > 0) {
+            for (const prop of properties) {
+              if (prop.propertyName === TestUiDataProvider._sourcePropertyName) {
+                this.source = prop.value.value ? prop.value.value as string : "";
+                spyChange(this.source);
+                continue;
+              }
+            }
+          }
+          return { status: PropertyChangeStatus.Success };
+        }
+
+        /** Used Called by UI to request available properties when UI is manually created. */
+        public supplyDialogItems(): DialogItem[] | undefined {
+          return [
+            { value: this._sourceValue, property: TestUiDataProvider._getSourceDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } },
+          ];
+        }
+
+      }
+      const uiDataProvider = new TestUiDataProvider();
+
+      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+      const spyCancel = sinon.spy();
+
+      PopupManager.openToolSettings(uiDataProvider, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
+      wrapper.update();
+      expect(wrapper.find(DialogGridContainer).length).to.eq(1);
+
+      let inputNode = wrapper.find("input");
+      expect(inputNode.length).to.eq(1);
+
+      inputNode.at(0).simulate("keyDown", { key: "Enter" });
+      await TestUtils.flushAsyncOperations();
+      expect(spyChange.calledOnce).to.be.true;
+
+      PopupManager.openToolSettings(uiDataProvider, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
+      wrapper.update();
+      expect(wrapper.find(DialogGridContainer).length).to.eq(1);
+
+      inputNode = wrapper.find("input");
+      expect(inputNode.length).to.eq(1);
+
+      inputNode.at(0).simulate("keyDown", { key: "Escape" });
+      await TestUtils.flushAsyncOperations();
+      expect(spyCancel.calledOnce).to.be.true;
+
+      wrapper.unmount();
+    });
   });
 
 });

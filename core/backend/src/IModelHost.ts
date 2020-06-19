@@ -12,7 +12,7 @@ import * as semver from "semver";
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -322,7 +322,7 @@ export class IModelHost {
   }
 
   /** @internal */
-  public static loadNative(region: number, dir?: string): void { this.registerPlatform(Platform.load(dir), region); }
+  public static loadNative(region: number): void { this.registerPlatform(Platform.load(), region); }
 
   /**
    * @beta
@@ -461,30 +461,8 @@ export class IModelHost {
     Logger.logTrace(loggerCategory, "IModelHost.startup", () => startupInfo);
   }
 
-  // Get a platform specific default cache dir
-  private static getDefaultCacheDir(): string {
-    let baseDir: string;
-    const homedir = os.homedir();
-    const platform = os.platform() as string;
-    switch (platform) {
-      case "win32":
-        baseDir = path.join(homedir, "AppData", "Local");
-        break;
-      case "darwin":
-      case "ios":
-        baseDir = path.join(homedir, "Library", "Caches");
-        break;
-      case "linux":
-        baseDir = path.join(homedir, ".cache");
-        break;
-      default:
-        throw new BentleyError(BentleyStatus.ERROR, "Unknown platform that does not support iModel.js backends", () => ({ platform }));
-    }
-    return path.join(baseDir, "iModelJs");
-  }
-
   private static setupCacheDirs(configuration: IModelHostConfiguration) {
-    this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : this.getDefaultCacheDir();
+    this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
 
     // Setup the briefcaseCacheDir, defaulting to the the legacy/deprecated value
     if (configuration.briefcaseCacheDir) // tslint:disable-line:deprecation
@@ -567,33 +545,34 @@ export class Platform {
 
   /** Get the name of the platform. Possible return values are: "win32", "linux", "darwin", "ios", "android", or "uwp". */
   public static get platformName(): string {
-
-    if (Platform.isMobile) {
-      // TBD: Platform.imodeljsMobile.platform should indicate which mobile platform this is.
-      return "iOS";
-    }
-    // This is node or electron. See what underlying OS we are on:
     return process.platform;
   }
 
   /** The Electron info object, if this is running in Electron.
    * @beta
    */
-  public static get electron(): any { return ((typeof (process) !== "undefined") && ("electron" in process.versions)) ? require("electron") : undefined; }
+  public static get electron(): any {
+    if ((typeof (process) !== "undefined") && ("electron" in process.versions)) {
+      // Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
+      try {
+        return require("electron"); // tslint:disable-line:no-var-requires
+      } catch (error) { }
+    }
+    return undefined;
+  }
 
   /** Query if this is a desktop configuration */
   public static get isDesktop(): boolean { return Platform.electron !== undefined; }
 
   /** Query if this is a mobile configuration */
-  public static get isMobile(): boolean { return Platform.imodeljsMobile !== undefined; }
+  public static get isMobile(): boolean { return typeof (process) !== "undefined" && (process.platform as any) === "ios"; }
 
   /** Query if this is running in Node.js  */
   public static get isNodeJs(): boolean { return !Platform.isMobile; } // currently we use nodejs for all non-mobile backend apps
 
   /** @internal */
-  public static load(dir?: string): typeof IModelJsNative {
-    return this.isMobile ? this.imodeljsMobile.imodeljsNative : // we are running on a mobile platform
-      require("@bentley/imodeljs-native/loadNativePlatform.js").loadNativePlatform(dir); // We are running in node or electron.
+  public static load(): typeof IModelJsNative {
+    return this.isMobile ? (process as any)._linkedBinding("iModelJsNative") : NativeLibrary.load();
   }
 }
 

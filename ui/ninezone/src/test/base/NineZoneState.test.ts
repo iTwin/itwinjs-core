@@ -2,32 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { castDraft, produce } from "immer";
+import { produce } from "immer";
 import { Point, Rectangle } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createVerticalPanelState, createWidgetState,
-  FloatingWidgetState, isHorizontalPanelState, NineZoneState, NineZoneStateReducer, WidgetState,
+  addFloatingWidget, addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createVerticalPanelState,
+  isHorizontalPanelState, NineZoneStateReducer,
 } from "../../ui-ninezone";
-
-/** @internal */
-export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial<FloatingWidgetState>,
-  widgetArgs?: Partial<WidgetState>,
-): NineZoneState {
-  const floatingWidget: FloatingWidgetState = {
-    bounds: new Rectangle(0, 100, 200, 400).toProps(),
-    id,
-    ...floatingWidgetArgs,
-  };
-  const widget = {
-    ...createWidgetState(id),
-    ...widgetArgs,
-  };
-  return produce(state, (stateDraft) => {
-    stateDraft.floatingWidgets.byId[id] = floatingWidget;
-    stateDraft.floatingWidgets.allIds.push(id);
-    stateDraft.widgets[id] = castDraft(widget);
-  });
-}
 
 describe("isHorizontalPanelState", () => {
   it("returns true based on side property", () => {

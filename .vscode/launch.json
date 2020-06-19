@@ -179,17 +179,14 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Backend iTwin Client (Offline)",
+      "name": "Backend iTwin Client Tests (Integration)",
       "program": "${workspaceFolder}/core/backend-itwin-client/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend-itwin-client",
       "args": [
         "--testDir=${workspaceFolder}/core/backend-itwin-client/lib/test",
         "--inspect",
-        "--offline",
-        "mock",
         "--grep",
-        "#integration",
-        "--invert"
+        "#integration"
       ],
       "port": 9229,
       "protocol": "inspector",
@@ -215,11 +212,11 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Clients-Backend Tests (Offline)",
-      "program": "${workspaceFolder}/core/backend-itwin-client/node_modules/@bentley/build-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/backend-itwin-client",
+      "name": "iModelHub Client Tests (Offline)",
+      "program": "${workspaceFolder}/full-stack-tests/imodelhub-client/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/full-stack-tests/imodelhub-client",
       "args": [
-        "--testDir=${workspaceFolder}/core/backend-itwin-client/lib/test",
+        "--testDir=${workspaceFolder}/full-stack-tests/imodelhub-client/lib",
         "--inspect",
         "--offline",
         "mock",
@@ -234,11 +231,11 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Clients-Backend Tests (Integration)",
-      "program": "${workspaceFolder}/core/backend-itwin-client/node_modules/@bentley/build-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/backend-itwin-client",
+      "name": "iModelHub Client Tests (Integration)",
+      "program": "${workspaceFolder}/full-stack-tests/imodelhub-client/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/full-stack-tests/imodelhub-client",
       "args": [
-        "--testDir=${workspaceFolder}/core/backend-itwin-client/lib/test",
+        "--testDir=${workspaceFolder}/full-stack-tests/imodelhub-client/lib",
         "--inspect",
         "--grep",
         "#unit|iModelHub URL Whitelist Validator",
@@ -251,11 +248,11 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Clients-Backend Tests (iModelBank)",
-      "program": "${workspaceFolder}/core/backend-itwin-client/node_modules/@bentley/build-tools/scripts/test",
-      "cwd": "${workspaceFolder}/core/backend-itwin-client",
+      "name": "iModelHub Client Tests (iModelBank)",
+      "program": "${workspaceFolder}/full-stack-tests/imodelhub-client/node_modules/@bentley/build-tools/scripts/test",
+      "cwd": "${workspaceFolder}/full-stack-tests/imodelhub-client",
       "args": [
-        "--testDir=${workspaceFolder}/core/backend-itwin-client/lib/test",
+        "--testDir=${workspaceFolder}/full-stack-tests/imodelhub-client/lib",
         "--inspect",
         "--grep",
         "#iModelBank"

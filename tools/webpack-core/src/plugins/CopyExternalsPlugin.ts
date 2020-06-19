@@ -2,18 +2,34 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as chalk from "chalk";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Compiler } from "webpack";
-import { paths } from "../utils/paths";
+import { getAppRelativePath, getSourcePosition, paths } from "../utils/paths";
 
-// tslint:disable-next-line:no-var-requires
+// tslint:disable:no-var-requires variable-name
 const { builtinModules } = require("module");
+const WebpackError = require("webpack/lib/WebpackError");
+const ModuleDependencyWarning = require("webpack/lib/ModuleDependencyWarning");
+// tslint:enable:no-var-requires variable-name
+
+class MissingExternalWarning extends WebpackError {
+  constructor(pkgName: string) {
+    super();
+
+    this.name = "MissingExternalWarning";
+    this.message = `Can't copy external package "${pkgName}" because it is not a direct dependency.\n`;
+    this.message += `To fix this, run ${chalk.cyan("npm install -P " + pkgName)}`;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
 
 export class CopyExternalsPlugin {
   private _promises: Array<Promise<any>> = [];
   private _copiedPackages: Set<string> = new Set();
   private _appDependencies: Set<string>;
+  private _logger: any;
 
   constructor() {
     const appPackageJson = require(paths.appPackageJson);
@@ -24,9 +40,10 @@ export class CopyExternalsPlugin {
 
   public apply(compiler: Compiler) {
     compiler.hooks.compilation.tap("CopyExternalsPlugin", (compilation: any) => {
+      this._logger = compilation.getLogger("CopyExternalsPlugin");
       compilation.hooks.buildModule.tap("CopyExternalsPlugin", (currentModule: any) => {
         if ((currentModule as any).external) {
-          this._promises.push(this.handleModule(currentModule, compiler.outputPath));
+          this._promises.push(this.handleModule(currentModule, compiler.outputPath, compilation));
         }
       });
     });
@@ -36,13 +53,25 @@ export class CopyExternalsPlugin {
     });
   }
 
-  public async handleModule(currentModule: any, outputDir: string) {
+  public async handleModule(currentModule: any, outputDir: string, compilation: any) {
     const pkgName = this.pathToPackageName(currentModule.request);
-    if (builtinModules.includes(pkgName))
+    if (builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName))
       return;
 
-    if (this._copiedPackages.has(pkgName) || !this._appDependencies.has(pkgName))
+    if (!this._appDependencies.has(pkgName)) {
+      this._logger.warn(`Can't copy package "${pkgName}" - it is not a direct dependency.`);
+      for (const reason of currentModule.reasons) {
+        if (!reason.module || !reason.dependency)
+          continue;
+
+        this._logger.log(`"${pkgName}" included at ${getSourcePosition(reason.module, reason.dependency.loc)}`);
+
+        if (!reason.dependency.optional) {
+          compilation.warnings.push(new ModuleDependencyWarning(reason.module, new MissingExternalWarning(pkgName), reason.dependency.loc));
+        }
+      }
       return;
+    }
 
     const packageJsonPath = await this.copyPackage(pkgName, outputDir);
     if (!packageJsonPath)
@@ -69,7 +98,7 @@ export class CopyExternalsPlugin {
       return;
 
     if (!parentPath || !packageJsonPath.startsWith(parentPath)) {
-      // console.log(chalk.gray(`Copying ${path.dirname(packageJsonPath)} to lib/node_modules`));
+      this._logger.log(`Copying ${getAppRelativePath(path.dirname(packageJsonPath))} to ${getAppRelativePath(path.resolve(outDir, "node_modules"))}`);
       await fs.copy(path.dirname(packageJsonPath), path.resolve(outDir, "node_modules", pkgName), { dereference: true });
     }
     return packageJsonPath;

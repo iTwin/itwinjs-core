@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { createNineZoneState, FloatingWidgets } from "../../ui-ninezone";
-import { addFloatingWidget } from "../base/NineZoneState.test";
+import { addFloatingWidget, createNineZoneState, FloatingWidgets } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
 
 describe("FloatingWidgets", () => {

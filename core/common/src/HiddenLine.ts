@@ -11,7 +11,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 import { LinePixels } from "./LinePixels";
 
 /** Namespace containing types controlling how edges and surfaces should be drawn in "hidden line" and "solid fill" [[RenderMode]]s.
- * @beta
+ * @public
  */
 export namespace HiddenLine {
   /** Describes the symbology with which edges should be drawn. */

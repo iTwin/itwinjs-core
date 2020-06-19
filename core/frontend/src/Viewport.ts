@@ -785,6 +785,11 @@ export abstract class Viewport implements IDisposable {
   /** Event invoked immediately when [[changeView]] is called to replace the current [[ViewState]] with a different one.
    */
   public readonly onChangeView = new BeEvent<(vp: Viewport, previousViewState: ViewState) => void>();
+  /** Event invoked immediately when the viewport is disposed.
+   * @see [[Viewport.dispose]].
+   * @beta
+   */
+  public readonly onDisposed = new BeEvent<(vp: Viewport) => void>();
 
   private _view!: ViewState;
   private readonly _viewportId: number;
@@ -928,12 +933,10 @@ export abstract class Viewport implements IDisposable {
   private _outsideClipColor?: ColorDef;
   private _insideClipColor?: ColorDef;
 
-  /** @alpha */
   public get lightSettings(): LightSettings | undefined {
     return this.displayStyle.is3d() ? this.displayStyle.settings.lights : undefined;
   }
 
-  /** @alpha */
   public setLightSettings(settings: LightSettings) {
     if (this.displayStyle.is3d()) {
       this.displayStyle.settings.lights = settings;
@@ -942,9 +945,7 @@ export abstract class Viewport implements IDisposable {
     }
   }
 
-  /** Settings controlling shadow display for this viewport. Only applicable to 3d views.
-   * @beta
-   */
+  /** Settings controlling shadow display for this viewport. Only applicable to 3d views. */
   public get solarShadowSettings(): SolarShadowSettings | undefined {
     return this.view.displayStyle.is3d() ? this.view.displayStyle.settings.solarShadows : undefined;
   }
@@ -1445,6 +1446,7 @@ export abstract class Viewport implements IDisposable {
     this._target = dispose(this._target);
     this.subcategories.dispose();
     IModelApp.tileAdmin.forgetViewport(this);
+    this.onDisposed.raiseEvent(this);
   }
 
   /** Enables or disables continuous rendering. Ideally, during each render frame a Viewport will do as little work as possible.

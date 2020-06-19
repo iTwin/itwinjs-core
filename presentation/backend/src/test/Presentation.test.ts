@@ -34,6 +34,12 @@ describe("Presentation", () => {
       expect(addListenerSpy).to.be.calledOnce;
     });
 
+    it("can be safely shutdown via IModelHost shutdown listener", async () => {
+      Presentation.initialize();
+      await IModelHost.shutdown();
+      expect(() => Presentation.getManager()).to.throw(PresentationError);
+    });
+
     it("creates a manager instance", () => {
       expect(() => Presentation.getManager()).to.throw(PresentationError);
       Presentation.initialize();

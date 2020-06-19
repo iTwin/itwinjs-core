@@ -50,8 +50,12 @@ export class ThematicUniforms implements WebGLDisposable {
   public update(target: Target): void {
     const plan = target.plan;
 
-    if (this.thematicDisplay && plan.thematic && this.thematicDisplay.equals(plan.thematic) && this._texture)
+    if (this.thematicDisplay && plan.thematic && this.thematicDisplay.equals(plan.thematic) && this._texture) {
+      if (undefined !== this._sensors)
+        this._sensors.update(target.uniforms.frustum.viewMatrix);
+
       return;
+    }
 
     desync(this);
 

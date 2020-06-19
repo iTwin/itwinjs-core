@@ -121,6 +121,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
       item.isActive = !!itemState.isActive;
       return true;
     }
+    // istanbul ignore next
     return false;
   }
 
@@ -191,7 +192,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
       actionItems.forEach((item: ActionButtonItemDef) => {
         const itemSize = item.getDimension(this.props.orientation) + 1;
         itemDimensions += itemSize;
-        Logger.logTrace(UiFramework.loggerCategory(this), `  Item [${item.id ? item.id : item.label}] has a size of ${itemSize} cumulative size=${itemDimensions}.`);
+        Logger.logTrace(UiFramework.loggerCategory(this), `  Item [${item.id ? item.id : /* istanbul ignore next */ item.label}] has a size of ${itemSize} cumulative size=${itemDimensions}.`);
       });
 
       Logger.logInfo(UiFramework.loggerCategory(this), `  Needed toolbar size [${this._toolbarId}] = ${itemDimensions}`);
@@ -214,7 +215,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
           if (deletedItems.length === 1) {
             const item = deletedItems[0];
             overflowItems.unshift(item);
-            Logger.logTrace(UiFramework.loggerCategory(this), `  * Item [${item.id ? item.id : item.label}] put into overflow items.`);
+            Logger.logTrace(UiFramework.loggerCategory(this), `  * Item [${item.id ? item.id : /* istanbul ignore next */ item.label}] put into overflow items.`);
 
             let currentWidth = 0;
             actionItems.forEach((itemDef) => currentWidth += (itemDef.getDimension(this.props.orientation) + 1));
@@ -272,6 +273,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
       if (item && item.isVisible) // tslint:disable-line:deprecation
         return true;
     }
+    // istanbul ignore next
     return false;
   }
 

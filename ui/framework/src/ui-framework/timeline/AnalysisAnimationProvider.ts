@@ -43,6 +43,7 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
       return true;
     }
 
+    // istanbul ignore next
     return false;
   }
 

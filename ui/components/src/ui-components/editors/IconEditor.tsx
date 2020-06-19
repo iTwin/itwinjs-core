@@ -15,6 +15,10 @@ import {
 import { IconPickerButton } from "../iconpicker/IconPickerButton";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
+import { StandardEditorNames } from "./StandardEditorNames";
+
+// cspell:ignore iconpicker
 
 /** @internal */
 interface IconEditorState {
@@ -170,5 +174,5 @@ export class IconPropertyEditor extends PropertyEditorBase {
   }
 }
 
-PropertyEditorManager.registerEditor("text", IconPropertyEditor, "icon-picker");
-PropertyEditorManager.registerEditor("string", IconPropertyEditor, "icon-picker");
+PropertyEditorManager.registerEditor(StandardTypeNames.Text, IconPropertyEditor, StandardEditorNames.IconPicker);
+PropertyEditorManager.registerEditor(StandardTypeNames.String, IconPropertyEditor, StandardEditorNames.IconPicker);

@@ -156,7 +156,7 @@ export class ToolbarHelper {
     }
 
     if (ToolbarHelper.isCustomToolbarButton(item)) {
-      return item.buttonNode ? item.buttonNode : null;
+      return item.buttonNode ? /* istanbul ignore next */ item.buttonNode : null;
     }
 
     return null;

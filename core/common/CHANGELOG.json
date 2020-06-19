@@ -2,6 +2,48 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.2.0",
+      "tag": "@bentley/imodeljs-common_v2.2.0",
+      "date": "Fri, 19 Jun 2020 14:10:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Promote Gradient and GraphicParams to public API."
+          },
+          {
+            "comment": "Add support for cel-shaded views; promote many APIs, particularly display-related ones."
+          },
+          {
+            "comment": "Map GeoCoordStatus to GeoServiceStatus so that it can be returned as error code in a RPC without colliding with existing codes."
+          },
+          {
+            "comment": "Add Props interface"
+          },
+          {
+            "comment": "Move linear referencing domain types out to new @bentley/linear-referencing-common package."
+          },
+          {
+            "comment": "Add support for applying different clip volumes to groups of models in a spatial view."
+          },
+          {
+            "comment": "Add PhysicalElementProps"
+          },
+          {
+            "comment": "Add PhysicalTypeProps"
+          },
+          {
+            "comment": "Fixes for unhandled promise rejections in RPC layer"
+          },
+          {
+            "comment": "Update to BisCore.01.00.11: Add SectionDrawingProps; deprecate SectionLocationProps in favor of SectionDrawingLocationProps."
+          },
+          {
+            "comment": "Switching from JSC to V8"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.1.0",
       "tag": "@bentley/imodeljs-common_v2.1.0",
       "date": "Thu, 28 May 2020 22:48:59 GMT",

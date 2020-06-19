@@ -1,8 +1,8 @@
 sep=;
 Release Tag;API Item
-beta;AmbientLight
-beta;AmbientLightProps
-beta;AmbientOcclusion
+public;AmbientLight
+public;AmbientLightProps
+public;AmbientOcclusion
 alpha;AnalysisStyle
 alpha;AnalysisStyleProps
 internal;AntiAliasPref
@@ -17,8 +17,8 @@ internal;B3dmHeader
 public;BackendError 
 public;BackgroundFill
 public;BackgroundMapProps
-beta;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
-beta;BackgroundMapSettings
+public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
+public;BackgroundMapSettings
 public;BackgroundMapType
 beta;BatchType
 public;class BentleyCloudRpcConfiguration 
@@ -49,7 +49,6 @@ internal;ChangedElements
 internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode
-internal;CHANNEL = "@bentley/imodeljs-mobilegateway"
 alpha;ChannelConstraintError 
 public;ChannelRootAspectProps 
 internal;ClassifierTileTreeId
@@ -70,7 +69,6 @@ public;ColorDefProps = number
 internal;ColorIndex
 public;CommonLoggerCategory
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
-beta;ComparisonOption
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
 internal;class ContentIdProvider
@@ -78,9 +76,6 @@ public;ContextRealityModelProps
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
 internal;CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps
 public;CreateIModelProps 
-internal;CreatePolyfaceRequestProps
-internal;CreatePolyfaceResponseProps
-internal;CreatePolyfaceResponseResult
 public;CreateSnapshotIModelProps 
 internal;CreateStandaloneIModelProps 
 internal;CURRENT_INVOCATION: unique symbol
@@ -94,13 +89,12 @@ alpha;DesktopAuthorizationClientConfiguration
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
-beta;DisplayStyle3dSettings 
+public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
 public;DisplayStyleProps 
-beta;DisplayStyleSettings
+public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
-beta;DistanceExpressionProps
 beta;DownloadBriefcaseOptions
 internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
@@ -172,9 +166,9 @@ public;GeometryStreamIterator
 public;GeometryStreamIteratorEntry
 public;GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive
 public;GeometryStreamProps = GeometryStreamEntryProps[]
-alpha;GeometrySummaryOptions
-alpha;GeometrySummaryRequestProps
-alpha;GeometrySummaryVerbosity
+beta;GeometrySummaryOptions
+beta;GeometrySummaryRequestProps
+beta;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
 public;GlobeMode
 internal;GltfBufferData
@@ -186,14 +180,14 @@ internal;GltfHeader
 internal;GltfMeshMode
 internal;GltfV2ChunkTypes
 internal;GltfVersions
-beta;Gradient
-beta;GraphicParams
+public;Gradient
+public;GraphicParams
 public;GridOrientationType
 public;GroundPlane
 public;GroundPlaneProps
-beta;HemisphereLights
-beta;HemisphereLightsProps
-beta;HiddenLine
+public;HemisphereLights
+public;HemisphereLightsProps
+public;HiddenLine
 public;Hilite
 public;HSLColor
 public;HSVColor
@@ -202,8 +196,6 @@ public;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "
 public;HttpServerRequest 
 public;HttpServerResponse 
 internal;I3dmHeader 
-beta;ILinearElementProps 
-beta;ILinearlyLocatedAttributionProps
 public;ImageBuffer
 public;ImageBufferFormat
 beta;ImageGraphic
@@ -234,29 +226,21 @@ public;InformationPartitionElementProps
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
 internal;InternetConnectivityStatus
-internal;interop: any
 beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
-beta;IReferentProps
 internal;isKnownTileFormat(format: number): boolean
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
 public;LatAndLong
 public;LatLongAndHeight 
 internal;LightLocationProps 
-beta;LightSettings
-beta;LightSettingsProps
-beta;LinearLocationReference
-beta;LinearlyLocatedAttributionProps 
-beta;LinearlyReferencedAtLocationAspectProps 
-beta;LinearlyReferencedAtLocationProps
-beta;LinearlyReferencedFromToLocationAspectProps 
-beta;LinearlyReferencedFromToLocationProps
-beta;LinearlyReferencedLocationType
+public;LightSettings
+public;LightSettingsProps
 public;LinePixels
 public;LineStyle
 beta;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
+public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
 beta;MassPropertiesOperation
@@ -269,9 +253,13 @@ internal;MeshPolyline
 internal;MeshPolylineList 
 beta;MobileRpcChunks = Array
 beta;class MobileRpcConfiguration 
+beta;MobileRpcGateway
 beta;MobileRpcManager
 beta;MobileRpcProtocol 
 beta;MobileRpcRequest 
+alpha;ModelClipGroup
+internal;ModelClipGroupProps
+alpha;ModelClipGroups
 public;ModelProps 
 public;ModelQueryParams 
 public;ModelSelectorProps 
@@ -307,6 +295,8 @@ internal;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PartReference
+public;PhysicalElementProps 
+public;PhysicalTypeProps 
 public;Placement2d 
 public;Placement2dProps
 public;Placement3d 
@@ -334,7 +324,6 @@ internal;QPoint3d
 internal;QPoint3dList
 internal;Quantization
 public;QueryLimit
-beta;QueryParams
 public;QueryPriority
 public;QueryQuota
 public;QueryResponse
@@ -343,7 +332,6 @@ internal;QueuedEvent
 public;Rank
 internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
-beta;ReferentElementProps 
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
@@ -354,6 +342,7 @@ public;RenderMode
 beta;RenderSchedule
 beta;class RenderTexture 
 beta;RenderTexture
+public;RepositoryLinkProps 
 internal;RequestBriefcaseProps
 public;ResponseLike 
 public;RgbColor
@@ -407,6 +396,8 @@ public;RpcResponseCacheControl
 public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 public;RpcSerializedValue
 public;RpcSerializedValue
+beta;SectionDrawingLocationProps 
+beta;SectionDrawingProps 
 alpha;SectionLocationProps 
 public;SectionType
 public;SerializedRpcOperation
@@ -424,10 +415,10 @@ public;SkyCubeProps
 beta;SnapRequestProps
 beta;SnapResponseProps
 internal;class SnapshotIModelRpcInterface 
-beta;SolarLight
-beta;SolarLightProps
-beta;SolarShadowSettings
-beta;SolarShadowSettingsProps
+public;SolarLight
+public;SolarLightProps
+public;SolarShadowSettings
+public;SolarShadowSettingsProps
 beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
 internal;StorageValue = string | number | boolean | null | Uint8Array
@@ -437,10 +428,10 @@ public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
 public;SyncMode
-beta;TerrainHeightOriginMode
-beta;TerrainProps
-beta;TerrainProviderName = "CesiumWorldTerrain"
-beta;TerrainSettings
+public;TerrainHeightOriginMode
+public;TerrainProps
+public;TerrainProviderName = "CesiumWorldTerrain"
+public;TerrainSettings
 internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive
@@ -485,6 +476,7 @@ beta;Tweens
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
 beta;UpdateCallback = (obj: any, t: number) => void
+public;UrlLinkProps 
 public;ViewAttachmentLabelProps 
 public;ViewAttachmentProps 
 public;ViewDefinition2dProps 
@@ -495,6 +487,7 @@ beta;ViewDetails3d
 internal;ViewDetails3dProps 
 internal;ViewDetailsProps
 public;ViewFlagOverrides
+public;ViewFlagOverridesProps
 public;ViewFlagPresence
 public;ViewFlagProps
 public;ViewFlags

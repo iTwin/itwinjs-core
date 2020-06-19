@@ -40,6 +40,7 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
   }
 
   private _updateSelectValue = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    // istanbul ignore else
     if (e.target.value) {
       UiFramework.setActiveSelectionScope(e.target.value);
     }

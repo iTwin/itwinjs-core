@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve, AnyRegion } from "../../curve/CurveChain";
 import { CurveFactory } from "../../curve/CurveFactory";
@@ -478,16 +479,96 @@ describe("GeneralSweepBooleans", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("MBDisjointCover", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const outer = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
+      "./src/test/testInputs/intersections/MBContainmentBoolean/outer.imjs", "utf8"))) as AnyRegion[];
+    const inner = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
+      "./src/test/testInputs/intersections/MBContainmentBoolean/inner.imjs", "utf8"))) as AnyRegion[];
+    let x0 = 0;
+    const dy = 50;
+    // for (const entry of outer) {
+    //   RegionOps.consolidateAdjacentPrimitives(entry);
+    // }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, outer, x0, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, inner, x0, 50);
+    const dx = 100.0;
+    exerciseAreaBooleans(outer, inner, ck, allGeometry, (x0 += dx), -dy);
+    for (const a of outer) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, a, x0 += 2 * dx, 0);
+      for (const b of inner) {
+        exerciseAreaBooleans([a], [b], ck, allGeometry, x0 += dx, 0);
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "MBDisjointCover");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("HoleInA", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const rectangle1A = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 10, 8, 0, true)));
+    const rectangle1B = Loop.create(LineString3d.create(Sample.createRectangle(1, 1, 9, 7, 0, true)));
+    const region = ParityRegion.create(rectangle1A, rectangle1B);
+    const dx = 20.0;
+    let x0 = 0;
+    for (const yB of [-0.5, 0.5, 6.5, 7.5, 3.0]) {
+      const rectangle2 = Loop.create(LineString3d.create(Sample.createRectangle(5, yB, 6, yB + 1, 0, true)));
+      exerciseAreaBooleans([region], [rectangle2], ck, allGeometry, x0 += dx, 0);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "HoleInA");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("DocDemo", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const filletedRectangle = CurveFactory.createRectangleXY(0, 0, 5, 4, 0, 1);
+    const splitter = CurveFactory.createRectangleXY(1, -1, 6, 2);
+    const union = RegionOps.regionBooleanXY(filletedRectangle, splitter, RegionBinaryOpType.Union);
+    const intersection = RegionOps.regionBooleanXY(filletedRectangle, splitter, RegionBinaryOpType.Intersection);
+    const diff = RegionOps.regionBooleanXY(filletedRectangle, splitter, RegionBinaryOpType.AMinusB);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, filletedRectangle, 0, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, splitter, 0, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, union, 0, 10);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, intersection, 0, 20);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, diff, 0, 30);
+
+    const manyRoundedRectangles = [];
+    for (let a = 0; a < 5; a += 1) {
+      manyRoundedRectangles.push(CurveFactory.createRectangleXY(a, a, a + 4, a + 1.75, 0, 0.5));
+    }
+    const splitterB0 = CurveFactory.createRectangleXY(0.5, 0.4, 6, 2.1, 0, 0);
+    const splitterB1 = splitterB0.cloneTransformed(Transform.createFixedPointAndMatrix({ x: 1, y: 2, z: 0 }, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(40)))) as Loop;
+    const splitterB = [splitterB0, splitterB1];
+    const unionB = RegionOps.regionBooleanXY(manyRoundedRectangles, splitterB, RegionBinaryOpType.Union);
+    const intersectionB = RegionOps.regionBooleanXY(manyRoundedRectangles, splitterB, RegionBinaryOpType.Intersection);
+    const diffB = RegionOps.regionBooleanXY(manyRoundedRectangles, splitterB, RegionBinaryOpType.AMinusB);
+    const xB = 10;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, manyRoundedRectangles, xB, -20);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, splitterB, xB, -10);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, manyRoundedRectangles, xB, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, splitterB, xB, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, unionB, xB, 10);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, intersectionB, xB, 20);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, diffB, xB, 30);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "DocDemo");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
   ck: Checker, allGeometry: GeometryQuery[], x0: number, y0Start: number) {
   const areas = [];
+  const range = RegionOps.curveArrayRange(dataA.concat(dataB));
+  const yStep = Math.max(15.0, 2.0 * range.yLength());
   let y0 = y0Start;
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, dataA, x0, y0);
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, dataB, x0, y0);
   for (const opType of [RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA]) {
-    y0 += 15.0;
+    y0 += yStep;
     const result = RegionOps.regionBooleanXY(dataA, dataB, opType);
     areas.push(RegionOps.computeXYArea(result!)!);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, y0);

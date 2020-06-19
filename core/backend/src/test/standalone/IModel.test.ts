@@ -13,18 +13,18 @@ import {
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, ElementProps,
-  EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams,
-  GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, ModelProps, PrimitiveTypeCode, RelatedElement, RenderMode,
-  SpatialViewDefinitionProps, SubCategoryAppearance, TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
+  EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
+  IModel, IModelError, IModelStatus, ModelProps, PhysicalElementProps, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps,
+  SubCategoryAppearance, TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import {
   AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
-  ClassRegistry, DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DocumentPartition, DrawingGraphic, ECSqlStatement, Element,
-  ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel,
-  GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, LightLocation, LinkPartition, Model, PhysicalModel,
-  PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb,
-  SubCategory, Subject, Texture, ViewDefinition,
+  ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
+  DisplayStyle3d, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements,
+  Entity, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs,
+  InformationPartitionElement, LightLocation, LinkPartition, Model, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement,
+  SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -517,12 +517,11 @@ describe("iModel", () => {
     const geometry = gsBuilder.geometryStream;
     // geometry[0].material = { materialId: matId };
 
-    /** The [[GeometricElement3dProps]]  */
-    const props: GeometricElement3dProps = {
+    const props: PhysicalElementProps = {
+      classFullName: "Generic:PhysicalObject",
       placement: { origin: imodel5.projectExtents.center, angles: new YawPitchRollAngles() },
       model: modelId,
       code: Code.createEmpty(),
-      classFullName: "Generic:PhysicalObject",
       category: categoryId,
       geom: geometry,
     };
@@ -1431,6 +1430,27 @@ describe("iModel", () => {
     ede1.delete();
     testImodel.saveChanges("step 4");
     testImodel.close();
+  });
+
+  it("should insert DefinitionSets", () => {
+    const iModelFileName: string = IModelTestUtils.prepareOutputFile("IModel", "DefinitionSets.bim");
+    const iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "DefinitionSets" }, createClassViews: true });
+    const definitionContainerId = DefinitionContainer.insert(iModelDb, IModel.dictionaryId, Code.createEmpty());
+    assert.exists(iModelDb.elements.getElement<DefinitionContainer>(definitionContainerId));
+    assert.exists(iModelDb.models.getModel<DefinitionModel>(definitionContainerId));
+    const categoryId1 = SpatialCategory.insert(iModelDb, definitionContainerId, "Category1", new SubCategoryAppearance());
+    const categoryId2 = SpatialCategory.insert(iModelDb, definitionContainerId, "Category2", new SubCategoryAppearance());
+    const categoryId3 = SpatialCategory.insert(iModelDb, definitionContainerId, "Category3", new SubCategoryAppearance());
+    const definitionGroupId = DefinitionGroup.create(iModelDb, definitionContainerId, Code.createEmpty()).insert();
+    DefinitionGroupGroupsDefinitions.insert(iModelDb, definitionGroupId, categoryId1);
+    DefinitionGroupGroupsDefinitions.insert(iModelDb, definitionGroupId, categoryId2);
+    DefinitionGroupGroupsDefinitions.insert(iModelDb, definitionGroupId, categoryId3);
+    const numMembers = iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${DefinitionGroupGroupsDefinitions.classFullName}`, (statement: ECSqlStatement): number => {
+      return statement.step() === DbResult.BE_SQLITE_ROW ? statement.getValue(0).getInteger() : 0;
+    });
+    assert.equal(numMembers, 3);
+    iModelDb.saveChanges();
+    iModelDb.close();
   });
 
   it("should set EC properties of various types", async () => {

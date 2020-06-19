@@ -9,7 +9,7 @@
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
-import { NineZoneManagerProps } from "@bentley/ui-ninezone";
+import { NineZoneManagerProps, NineZoneState } from "@bentley/ui-ninezone";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";
@@ -25,6 +25,17 @@ import { ZoneDef } from "../zones/ZoneDef";
 import { Frontstage, FrontstageProps } from "./Frontstage";
 import { FrontstageManager } from "./FrontstageManager";
 import { FrontstageProvider } from "./FrontstageProvider";
+import { TimeTracker } from "../configurableui/TimeTracker";
+
+/** @internal */
+export interface FrontstageEventArgs {
+  frontstageDef: FrontstageDef;
+}
+
+/** @internal */
+export interface FrontstageNineZoneStateChangedEventArgs extends FrontstageEventArgs {
+  state: NineZoneState | undefined;
+}
 
 /** FrontstageDef class provides an API for a Frontstage.
  * @public
@@ -58,6 +69,8 @@ export class FrontstageDef {
   private _contentGroup?: ContentGroup;
   private _frontstageProvider?: FrontstageProvider;
   private _nineZone?: NineZoneManagerProps;
+  private _timeTracker: TimeTracker = new TimeTracker();
+  private _nineZoneState?: NineZoneState;
 
   public get id(): string { return this._id; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
@@ -78,26 +91,42 @@ export class FrontstageDef {
   public get bottomCenter(): ZoneDef | undefined { return this._bottomCenter; }
   public get bottomRight(): ZoneDef | undefined { return this._bottomRight; }
 
-  /** @alpha */
+  /** @beta */
   public get topPanel(): StagePanelDef | undefined { return this._topPanel; }
-  /** @alpha */
+  /** @beta @deprecated Only topPanel is supported in UI 2.0 */
   public get topMostPanel(): StagePanelDef | undefined { return this._topMostPanel; }
-  /** @alpha */
+  /** @beta */
   public get leftPanel(): StagePanelDef | undefined { return this._leftPanel; }
-  /** @alpha */
+  /** @beta */
   public get rightPanel(): StagePanelDef | undefined { return this._rightPanel; }
-  /** @alpha */
+  /** @beta */
   public get bottomPanel(): StagePanelDef | undefined { return this._bottomPanel; }
-  /** @alpha */
+  /** @beta @deprecated Only bottomPanel is supported in UI 2.0  */
   public get bottomMostPanel(): StagePanelDef | undefined { return this._bottomMostPanel; }
 
   public get defaultLayout(): ContentLayoutDef | undefined { return this._defaultLayout; }
   public get contentLayoutDef(): ContentLayoutDef | undefined { return this._contentLayoutDef; }
   public get contentGroup(): ContentGroup | undefined { return this._contentGroup; }
   public get frontstageProvider(): FrontstageProvider | undefined { return this._frontstageProvider; }
+
   /** @internal */
   public get nineZone(): NineZoneManagerProps | undefined { return this._nineZone; }
   public set nineZone(props: NineZoneManagerProps | undefined) { this._nineZone = props; }
+
+  /** @internal */
+  public get nineZoneState(): NineZoneState | undefined { return this._nineZoneState; }
+  public set nineZoneState(state: NineZoneState | undefined) {
+    if (this._nineZoneState === state)
+      return;
+    this._nineZoneState = state;
+    FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
+      frontstageDef: this,
+      state,
+    });
+  }
+
+  /** @internal */
+  public get timeTracker(): TimeTracker { return this._timeTracker; }
 
   /** Constructs the [[FrontstageDef]]  */
   constructor(props?: FrontstageProps) {
@@ -128,6 +157,8 @@ export class FrontstageDef {
 
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._contentLayoutDef, contentGroup: this._contentGroup });
 
+    this._timeTracker.startTiming();
+
     this._onActivated();
   }
 
@@ -146,6 +177,8 @@ export class FrontstageDef {
 
     if (this.contentGroup)
       this.contentGroup.onFrontstageDeactivated();
+
+    this._timeTracker.stopTiming();
 
     this._onDeactivated();
   }
@@ -195,6 +228,7 @@ export class FrontstageDef {
   /** Starts the default tool for the Frontstage */
   public startDefaultTool(): void {
     // Start the default tool
+    // istanbul ignore next
     if (this.defaultTool && IModelApp.toolAdmin && IModelApp.viewManager) {
       IModelApp.toolAdmin.defaultToolId = this.defaultTool.toolId;
       this.defaultTool.execute();
@@ -242,11 +276,13 @@ export class FrontstageDef {
   /** Sets the active view content control based on the selected viewport. */
   public setActiveViewFromViewport(viewport: ScreenViewport): boolean {
     const contentControl = this.contentControls.find((control: ContentControl) => control.viewport === viewport);
+    // istanbul ignore else
     if (contentControl) {
       ContentViewManager.setActiveContent(contentControl.reactNode, true);
       return true;
     }
 
+    // istanbul ignore next
     return false;
   }
 
@@ -304,7 +340,7 @@ export class FrontstageDef {
   }
 
   /** Gets a [[StagePanelDef]] based on a given panel location
-   * @alpha
+   * @beta
    */
   public getStagePanelDef(location: StagePanelLocation): StagePanelDef | undefined {
     let panelDef: StagePanelDef | undefined;
@@ -314,7 +350,7 @@ export class FrontstageDef {
         panelDef = this.topPanel;
         break;
       case StagePanelLocation.TopMost:
-        panelDef = this.topMostPanel;
+        panelDef = this.topMostPanel; // tslint:disable-line: deprecation
         break;
       case StagePanelLocation.Left:
         panelDef = this.leftPanel;
@@ -326,7 +362,7 @@ export class FrontstageDef {
         panelDef = this.bottomPanel;
         break;
       case StagePanelLocation.BottomMost:
-        panelDef = this.bottomMostPanel;
+        panelDef = this.bottomMostPanel; // tslint:disable-line: deprecation
         break;
       // istanbul ignore next
       default:
@@ -339,7 +375,7 @@ export class FrontstageDef {
   }
 
   /** Gets a list of [[StagePanelDef]]s
-   * @alpha
+   * @beta
    */
   public get panelDefs(): StagePanelDef[] {
     const panels = [
@@ -372,6 +408,7 @@ export class FrontstageDef {
         return widgetDef;
     }
 
+    // istanbul ignore next
     return undefined;
   }
 
@@ -390,6 +427,7 @@ export class FrontstageDef {
     this.panelDefs.forEach((panelDef: StagePanelDef) => {
       panelDef.widgetDefs.forEach((widgetDef: WidgetDef) => {
         const widgetControl = widgetDef.widgetControl;
+        // istanbul ignore if
         if (widgetControl)
           widgetControls.push(widgetControl);
       });
@@ -449,7 +487,7 @@ export class FrontstageDef {
 
     this._topLeft = Frontstage.createZoneDef(props.contentManipulationTools ? props.contentManipulationTools : props.topLeft, ZoneLocation.TopLeft, props);
     this._topCenter = Frontstage.createZoneDef(props.toolSettings ? props.toolSettings : props.topCenter, ZoneLocation.TopCenter, props);
-    this._topRight = Frontstage.createZoneDef(props.viewNavigationTools ? props.viewNavigationTools : props.topRight, ZoneLocation.TopRight, props);
+    this._topRight = Frontstage.createZoneDef(props.viewNavigationTools ? /* istanbul ignore next */ props.viewNavigationTools : props.topRight, ZoneLocation.TopRight, props);
     this._centerLeft = Frontstage.createZoneDef(props.centerLeft, ZoneLocation.CenterLeft, props);
     this._centerRight = Frontstage.createZoneDef(props.centerRight, ZoneLocation.CenterRight, props);
     this._bottomLeft = Frontstage.createZoneDef(props.bottomLeft, ZoneLocation.BottomLeft, props);
@@ -475,4 +513,8 @@ export class FrontstageDef {
     });
   }
 
+  /** @beta */
+  public restoreLayout() {
+    FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
+  }
 }

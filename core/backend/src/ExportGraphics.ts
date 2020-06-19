@@ -135,7 +135,7 @@ export interface ExportGraphicsOptions {
   partInstanceArray?: ExportPartInstanceInfo[];
   /** Max distance from a face to the original geometry, see [StrokeOptions]($geometry-core) */
   chordTol?: number;
-  /** Max angle difference in approximated face, see [StrokeOptions]($geometry-core) */
+  /** Max angle difference in radians for approximated face, see [StrokeOptions]($geometry-core) */
   angleTol?: number;
   /** Max length of any edge in generated faces, see [StrokeOptions]($geometry-core) */
   maxEdgeLength?: number;
@@ -200,7 +200,7 @@ export interface ExportPartGraphicsOptions {
   onPartLineGraphics?: ExportPartLinesFunction;
   /** Max distance from a face to the original geometry, see [StrokeOptions]($geometry-core) */
   chordTol?: number;
-  /** Max angle difference in approximated face, see [StrokeOptions]($geometry-core) */
+  /** Max angle difference in radians for approximated face, see [StrokeOptions]($geometry-core) */
   angleTol?: number;
   /** Max length of any edge in generated faces, see [StrokeOptions]($geometry-core) */
   maxEdgeLength?: number;

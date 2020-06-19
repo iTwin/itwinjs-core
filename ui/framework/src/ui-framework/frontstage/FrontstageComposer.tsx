@@ -15,7 +15,7 @@ import {
   WidgetZoneId, widgetZoneIds, ZoneTargetType,
 } from "@bentley/ui-ninezone";
 import { getNestedStagePanelKey } from "../stagepanels/StagePanel";
-import { PanelStateChangedEventArgs, StagePanelState, StagePanelTrySetCurrentSizeEventArgs } from "../stagepanels/StagePanelDef";
+import { PanelSizeChangedEventArgs, PanelStateChangedEventArgs, StagePanelState } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { WidgetTab, WidgetTabs } from "../widgets/WidgetStack";
@@ -149,6 +149,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   private determineNineZoneProps(frontstageDef?: FrontstageDef): NineZoneManagerProps {
     let nineZone: NineZoneManagerProps;
+    // istanbul ignore if
     if (frontstageDef && frontstageDef.nineZone)
       nineZone = { ...frontstageDef.nineZone };
     else {
@@ -235,7 +236,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
     // Get the id and nineZoneProps for the current FrontstageDef
     const nineZone = this.determineNineZoneProps(this._frontstageDef);
-    const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZone) ? false : true;
+    const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZone) ? /* istanbul ignore next */ false : true;
     const widgetTabs = this.determineWidgetTabs();
 
     // istanbul ignore else
@@ -362,7 +363,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   public componentDidMount(): void {
     this._isMounted = true;
-    const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZone) ? false : true;
+    const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZone) ? /* istanbul ignore next */ false : true;
     if (this._frontstageDef && needInitialLayout)
       this.initializeFrontstageLayout(this.state.nineZone);
 
@@ -373,7 +374,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onModalFrontstageChangedEvent.addListener(this._handleModalFrontstageChangedEvent);
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
-    FrontstageManager.onStagePanelTrySetCurrentSizeEvent.addListener(this._handleStagePanelTrySetCurrentSizeEvent);
+    FrontstageManager.onPanelSizeChangedEvent.addListener(this._handlePanelSizeChangedEvent);
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
     FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
@@ -384,17 +385,18 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onFrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
     FrontstageManager.onModalFrontstageChangedEvent.removeListener(this._handleModalFrontstageChangedEvent);
     FrontstageManager.onPanelStateChangedEvent.removeListener(this._handlePanelStateChangedEvent);
-    FrontstageManager.onStagePanelTrySetCurrentSizeEvent.removeListener(this._handleStagePanelTrySetCurrentSizeEvent);
+    FrontstageManager.onPanelSizeChangedEvent.removeListener(this._handlePanelSizeChangedEvent);
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
     FrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
   }
 
+  // istanbul ignore next
   private _handleWindowResize = () => {
     this.layout();
   }
 
+  // istanbul ignore next
   public handleResize = (zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => {
-    // istanbul ignore next
     if (this._isMounted)
       this.setState((prevState) => {
         const zones = FrontstageManager.NineZoneManager.getZonesManager().handleWidgetResize({ zoneId, resizeBy, handle, filledHeightDiff }, prevState.nineZone.zones);
@@ -426,7 +428,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
           const manager = FrontstageManager.NineZoneManager.getZonesManager();
           const props = this.state.nineZone.zones;
           const zone = manager.findZoneWithWidget(widgetId, props);
-          const widgets = zone ? zone.widgets : [widgetId];
+          const widgets = zone ? zone.widgets : /* istanbul ignore next */[widgetId];
           widgets.forEach((wId) => {
             const zoneDef = this.getZoneDef(wId);
             if (!zoneDef)
@@ -448,8 +450,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       );
   }
 
+  // istanbul ignore next
   public handleTabDragStart = (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, widgetBounds: RectangleProps) => {
-    // istanbul ignore else
     if (this._isMounted)
       this.setState((prevState) => {
         const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabDragStart({ widgetId, tabIndex, initialPosition, widgetBounds }, prevState.nineZone);
@@ -461,8 +463,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       });
   }
 
+  // istanbul ignore next
   public handleTabDragEnd = () => {
-    // istanbul ignore else
     if (this._isMounted)
       this.setState((prevState) => {
         const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabDragEnd(prevState.nineZone);
@@ -474,8 +476,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       });
   }
 
+  // istanbul ignore next
   public handleTabDrag = (dragged: PointProps) => {
-    // istanbul ignore else
     if (this._isMounted)
       this.setState((prevState) => {
         const zones = FrontstageManager.NineZoneManager.getZonesManager().handleWidgetTabDrag(dragged, prevState.nineZone.zones);
@@ -490,8 +492,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       });
   }
 
+  // istanbul ignore next
   public handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void {
-    // istanbul ignore else
     if (this._isMounted)
       this.setState((prevState) => {
         const zones = isTargeted ? FrontstageManager.NineZoneManager.getZonesManager().handleTargetChanged({ zoneId, type }, prevState.nineZone.zones) :
@@ -514,6 +516,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     if (this._isMounted)
       this.setState((prevState) => {
         const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().setSize(panel, size, prevState.nineZone.nested);
+        // istanbul ignore if
         if (nested === prevState.nineZone.nested)
           return null;
         return {
@@ -526,9 +529,9 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   /** @alpha */
+  // istanbul ignore next
   public handlePanelResize(panelLocation: StagePanelLocation, resizeBy: number): void {
     const nestedPanelKey = getNestedStagePanelKey(panelLocation);
-    // istanbul ignore next
     if (this._isMounted)
       this.setState((prevState) => {
         const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().resize(nestedPanelKey, resizeBy, prevState.nineZone.nested);
@@ -553,6 +556,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   /** @alpha */
+  // istanbul ignore next
   public handlePanelPaneTargetChange(panelLocation: StagePanelLocation, paneIndex: number | undefined): void {
     const panelKey = getNestedStagePanelKey(panelLocation);
     FrontstageManager.NineZoneManager.setPaneTarget(paneIndex === undefined ? undefined : {
@@ -563,6 +567,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   /** @alpha */
+  // istanbul ignore next
   public handlePanelTargetChange(panelLocation: StagePanelLocation | undefined): void {
     const panelKey = panelLocation === undefined ? undefined : getNestedStagePanelKey(panelLocation);
     FrontstageManager.NineZoneManager.setPanelTarget(panelKey ? {
@@ -574,13 +579,15 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   /** @alpha */
   public handleTogglePanelCollapse(panelLocation: StagePanelLocation): void {
     const frontstage = FrontstageManager.activeFrontstageDef;
+    // istanbul ignore if
     if (!frontstage)
       return;
     const stagePanel = frontstage.getStagePanelDef(panelLocation);
+    // istanbul ignore if
     if (!stagePanel)
       return;
     const isCollapsed = panelStateToIsCollapsed(stagePanel.panelState);
-    const panelState = isCollapsed ? StagePanelState.Open : StagePanelState.Minimized;
+    const panelState = isCollapsed ? /* istanbul ignore next */ StagePanelState.Open : StagePanelState.Minimized;
     stagePanel.panelState = panelState;
   }
 
@@ -589,8 +596,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     if (this._isMounted)
       this.setState((prevState) => {
         const zones = FrontstageManager.NineZoneManager.getZonesManager().setZonesBounds(bounds, prevState.nineZone.zones);
+        // istanbul ignore else
         if (zones === prevState.nineZone.zones)
           return null;
+        // istanbul ignore next
         return {
           nineZone: {
             ...prevState.nineZone,
@@ -610,6 +619,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         if (!isOpening && widget.tabIndex !== tabIndex)
           return null;
         const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabClick(widgetId, tabIndex, prevState.nineZone);
+        // istanbul ignore if
         if (nineZone === prevState.nineZone)
           return null;
         return {
@@ -631,6 +641,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     return zoneDef;
   }
 
+  // istanbul ignore next
   public getGhostOutlineBounds(zoneId: WidgetZoneId): RectangleProps | undefined {
     const manager = FrontstageManager.NineZoneManager.getZonesManager();
     return manager.getGhostOutlineBounds(zoneId, this.state.nineZone.zones);
@@ -657,8 +668,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     if (this._isMounted)
       this.setState((prevState) => {
         const zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(toMergeId, targetId, prevState.nineZone.zones);
+        // istanbul ignore else
         if (zones === prevState.nineZone.zones)
           return null;
+        // istanbul ignore next
         return {
           nineZone: {
             ...prevState.nineZone,
@@ -689,8 +702,9 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     this.setPanelState(panelDef.location, panelState);
   }
 
-  private _handleStagePanelTrySetCurrentSizeEvent = ({ panelDef, size }: StagePanelTrySetCurrentSizeEventArgs) => {
-    this.handlePanelInitialize(panelDef.location, size);
+  // istanbul ignore next
+  private _handlePanelSizeChangedEvent = ({ panelDef, size }: PanelSizeChangedEventArgs) => {
+    (size !== undefined) && this.handlePanelInitialize(panelDef.location, size);
   }
 
   private _handleToolActivatedEvent = () => {
@@ -710,6 +724,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     });
   }
 
+  // istanbul ignore next
   private _handleToolPanelOpenedEvent = () => {
     this.setAllowPointerUpSelection(true);
   }
@@ -723,10 +738,12 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private setAllowPointerUpSelection(allowPointerUpSelection: boolean) {
+    // istanbul ignore if
     if (!this._isMounted)
       return;
 
     this.setState((prevState) => {
+      // istanbul ignore if
       if (prevState.allowPointerUpSelection === allowPointerUpSelection)
         return null;
       return {
@@ -742,6 +759,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     if (this._isMounted)
       this.setState((prevState) => {
         const nested = FrontstageManager.NineZoneManager.getNestedPanelsManager().setIsCollapsed(panelKey, isCollapsed, prevState.nineZone.nested);
+        // istanbul ignore if
         if (nested === prevState.nineZone.nested)
           return null;
         return {

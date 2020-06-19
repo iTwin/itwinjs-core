@@ -347,6 +347,23 @@ export enum ExtensionStatus {
   DownloadError = EXTENSIONSTATUS_BASE + 7,
 }
 
+/** GeoServiceStatus errors
+ * @public
+ */
+export enum GeoServiceStatus {
+  Success = 0,
+  GEOSERVICESTATUS_BASE = 0x24000,
+  // Error mapped from 'IModelStatus'
+  NoGeoLocation = IModelStatus.NoGeoLocation,
+  // Following errors are mapped from 'GeoCoordStatus'
+  OutOfUsefulRange = GEOSERVICESTATUS_BASE + 1,
+  OutOfMathematicalDomain = GEOSERVICESTATUS_BASE + 2,
+  NoDatumConverter = GEOSERVICESTATUS_BASE + 3,
+  VerticalDatumConvertError = GEOSERVICESTATUS_BASE + 4,
+  CSMapError = GEOSERVICESTATUS_BASE + 5,
+  Pending = GEOSERVICESTATUS_BASE + 6,
+}
+
 /** When you want to associate an explanatory message with an error status value.
  * @beta Internal?
  */
@@ -699,6 +716,15 @@ export class BentleyError extends Error {
       case ExtensionStatus.ExtensionAlreadyExists: return "Extension with the given name and version already exists";
       case ExtensionStatus.ExtensionNotFound: return "Extension not found";
       case ExtensionStatus.UploadError: return "Failed to upload file";
+
+      // GeoServiceStatus
+      case GeoServiceStatus.NoGeoLocation: return "No GeoLocation";
+      case GeoServiceStatus.OutOfUsefulRange: return "Out of useful range";
+      case GeoServiceStatus.OutOfMathematicalDomain: return "Out of mathematical domain";
+      case GeoServiceStatus.NoDatumConverter: return "No datum converter";
+      case GeoServiceStatus.VerticalDatumConvertError: return "Vertical datum convert error";
+      case GeoServiceStatus.CSMapError: return "CSMap error";
+      case GeoServiceStatus.Pending: return "Pending";
 
       // Unexpected cases
       case IModelStatus.Success:

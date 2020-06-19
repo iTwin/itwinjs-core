@@ -70,58 +70,13 @@ describe("ToolSettingsDockedContent", () => {
   });
 });
 
-describe("useHorizontalToolSettingNodes", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  it("should add tool activated event listener", () => {
-    const addListenerSpy = sandbox.spy(FrontstageManager.onToolActivatedEvent, "addListener");
-    const removeListenerSpy = sandbox.spy(FrontstageManager.onToolActivatedEvent, "removeListener");
-    const sut = renderHook(() => useHorizontalToolSettingNodes());
-    sut.unmount();
-    addListenerSpy.calledOnce.should.true;
-    removeListenerSpy.calledOnce.should.true;
-  });
-
-  it("should update tool settings", () => {
-    const node = <></>;
-    const entries: ToolSettingsEntry[] = [{ labelNode: "Date", editorNode: <input type="date" /> }];
-
-    class Tool1UiProvider extends ToolUiProvider {
-      constructor(info: ConfigurableCreateInfo, options: any) {
-        super(info, options);
-        this.toolSettingsNode = node;
-        this.horizontalToolSettingNodes = this.getHorizontalToolSettings();
-      }
-
-      private getHorizontalToolSettings(): ToolSettingsEntry[] | undefined {
-        return entries;
-      }
-    }
-
-    sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
-    const sut = renderHook(() => useHorizontalToolSettingNodes());
-
-    act(() => {
-      sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
-      FrontstageManager.onToolActivatedEvent.emit({
-        toolId: "",
-      });
-    });
-
-    sut.result.current!.should.eq(entries);
-  });
-
-  it("ToolSettingsGrid should render", () => {
+describe("ToolSettingsGrid", () => {
+  it("should render", () => {
     const entries: ToolSettingsEntry[] = [{ labelNode: "Date", editorNode: <input type="date" /> }];
 
     const sut = shallow(<ToolSettingsGrid settings={entries} />);
     sut.should.matchSnapshot();
   });
-
 });
 
 describe("ToolSettingsContent", () => {
@@ -156,6 +111,60 @@ describe("ToolSettingsContent", () => {
       </ToolSettingsStateContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
+  });
+});
+
+describe("useHorizontalToolSettingNodes", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should add tool activated event listener", () => {
+    const addListenerSpy = sandbox.spy(FrontstageManager.onToolActivatedEvent, "addListener");
+    const removeListenerSpy = sandbox.spy(FrontstageManager.onToolActivatedEvent, "removeListener");
+    const sut = renderHook(() => useHorizontalToolSettingNodes());
+    sut.unmount();
+    addListenerSpy.calledOnce.should.true;
+    removeListenerSpy.calledOnce.should.true;
+  });
+
+  it("should return undefined if activeToolSettingsProvider is unset", () => {
+    const { result } = renderHook(() => useHorizontalToolSettingNodes());
+    act(() => {
+      FrontstageManager.onToolActivatedEvent.emit({ toolId: "t1" });
+    });
+    (result.current === undefined).should.true;
+  });
+
+  it("should update tool settings", () => {
+    const node = <></>;
+    const entries: ToolSettingsEntry[] = [{ labelNode: "Date", editorNode: <input type="date" /> }];
+
+    class Tool1UiProvider extends ToolUiProvider {
+      constructor(info: ConfigurableCreateInfo, options: any) {
+        super(info, options);
+        this.toolSettingsNode = node;
+        this.horizontalToolSettingNodes = this.getHorizontalToolSettings();
+      }
+
+      private getHorizontalToolSettings(): ToolSettingsEntry[] | undefined {
+        return entries;
+      }
+    }
+
+    sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
+    const sut = renderHook(() => useHorizontalToolSettingNodes());
+
+    act(() => {
+      sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
+      FrontstageManager.onToolActivatedEvent.emit({
+        toolId: "",
+      });
+    });
+
+    sut.result.current!.should.eq(entries);
   });
 });
 
@@ -199,8 +208,16 @@ describe("useToolSettingsNode", () => {
 
   it("should initialize to undefined w/o active activeToolSettingsProvider", () => {
     sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
-    const sut = renderHook(() => useToolSettingsNode());
+    const { result } = renderHook(() => useToolSettingsNode());
 
-    (sut.result.current === undefined).should.true;
+    (result.current === undefined).should.true;
+  });
+
+  it("should return undefined if activeToolSettingsProvider is unset", () => {
+    const { result } = renderHook(() => useToolSettingsNode());
+    act(() => {
+      FrontstageManager.onToolActivatedEvent.emit({ toolId: "t1" });
+    });
+    (result.current === undefined).should.true;
   });
 });

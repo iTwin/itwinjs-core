@@ -50,11 +50,13 @@ export class DefaultNavigationWidget extends React.Component<DefaultNavigationPr
   public render() {
     const horizontalToolbarItems = new ItemList();
     if (this.props.prefixHorizontalItems) horizontalToolbarItems.addItems(this.props.prefixHorizontalItems);
+    // istanbul ignore else
     if (this._horizontalToolbarItems) horizontalToolbarItems.addItems(this._horizontalToolbarItems);
     if (this.props.suffixHorizontalItems) horizontalToolbarItems.addItems(this.props.suffixHorizontalItems);
 
     const verticalToolbarItems = new ItemList();
     if (this.props.prefixVerticalItems) verticalToolbarItems.addItems(this.props.prefixVerticalItems);
+    // istanbul ignore else
     if (this._verticalToolbarItems) verticalToolbarItems.addItems(this._verticalToolbarItems);
     if (this.props.suffixVerticalItems) verticalToolbarItems.addItems(this.props.suffixVerticalItems);
 

@@ -9,8 +9,6 @@ import { ActionButton, GroupButton } from "@bentley/ui-abstract";
 import { ToolbarItem, ToolbarWithOverflow } from "@bentley/ui-components";
 import { Point } from "@bentley/ui-core";
 import {
-  assert,
-  NineZoneDispatchContext,
   NineZone,
   addPanelWidget,
   addTab,
@@ -19,10 +17,6 @@ import {
   Footer,
   ToolbarPanelAlignment,
   Direction,
-  isHorizontalPanelSide,
-  PanelPinnedContext,
-  PanelSideContext,
-  PanelSpanContext,
   WidgetPanels,
   TabIdContext,
   useTransientState,
@@ -30,6 +24,7 @@ import {
   NavigationArea,
   AppButton,
   ToolsArea,
+  ScrollableWidgetContent,
 } from "@bentley/ui-ninezone";
 import { ToolSettingProps } from "./ToolSetting";
 import ToolSettings from "./ToolSettings";
@@ -360,29 +355,37 @@ export default function Zones() {
 }
 
 export function WidgetContent() {
-  const side = React.useContext(PanelSideContext);
   const tabId = React.useContext(TabIdContext);
-  const pinned = React.useContext(PanelPinnedContext);
-  const span = React.useContext(PanelSpanContext);
-  const dispatch = React.useContext(NineZoneDispatchContext);
   const scrollViewRef = React.useRef<HTMLDivElement>(null);
   const scrollPosition = React.useRef(new Point());
   const [state, setState] = React.useState(false);
   const onSave = React.useCallback(() => {
-    assert(scrollViewRef.current);
+    if (!scrollViewRef.current)
+      return;
     scrollPosition.current = new Point(scrollViewRef.current.scrollLeft, scrollViewRef.current.scrollTop);
   }, []);
   const onRestore = React.useCallback(() => {
-    assert(scrollViewRef.current);
+    if (!scrollViewRef.current)
+      return;
     scrollViewRef.current.scrollLeft = scrollPosition.current.x;
     scrollViewRef.current.scrollTop = scrollPosition.current.y;
   }, []);
   useTransientState(onSave, onRestore);
+  if (tabId === "centerLeft_1") {
+    return (
+      <div className="nzdemo-centerLeft_1">
+        <h2>Tab={tabId}</h2>
+        <div className="nzdemo-block">Block 1</div>
+        <div className="nzdemo-block">Block 2</div>
+        <div className="nzdemo-block">Block 3</div>
+      </div>
+    );
+  }
   return (
-    <>
-      Active tab={tabId}
-      <br />
+    <ScrollableWidgetContent>
+      <h2>Tab={tabId}</h2>
       <button onClick={() => setState((prev) => !prev)}>state={String(state)}</button>
+      <br />
       <br />
       <div
         className="nzdemo-scroll-view"
@@ -398,32 +401,6 @@ export function WidgetContent() {
         <div>Entry 8</div>
         <div>Entry 9</div>
       </div>
-      {side && <>
-        <button
-          onClick={() => dispatch({
-            type: "PANEL_TOGGLE_PINNED",
-            side,
-          })}
-        >
-          pinned={String(pinned)}
-        </button>
-        <button
-          onClick={() => dispatch({
-            type: "PANEL_TOGGLE_COLLAPSED",
-            side,
-          })}
-        >
-          collapse
-        </button>
-        {isHorizontalPanelSide(side) && <button
-          onClick={() => dispatch({
-            type: "PANEL_TOGGLE_SPAN",
-            side,
-          })}
-        >
-          span={String(!!span)}
-        </button>}
-      </>}
-    </>
+    </ScrollableWidgetContent>
   );
 }

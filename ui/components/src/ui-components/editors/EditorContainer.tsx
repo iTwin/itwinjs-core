@@ -104,15 +104,17 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     this._propertyEditor = PropertyEditorManager.createEditor(propDescription.typename, editorName, propDescription.dataController);
     editorNode = this._propertyEditor.reactNode;
 
+    let clonedNode: React.ReactNode = null;
     // istanbul ignore else
     if (React.isValidElement(editorNode)) {
-      return React.cloneElement(editorNode, editorProps);
+      clonedNode = React.cloneElement(editorNode, editorProps);
     }
 
-    return null;
+    return clonedNode;
   }
 
   private _handleEditorBlur = (_e: React.FocusEvent) => {
+    // istanbul ignore else
     if (!this.props.ignoreEditorBlur)
       this._commit();   // tslint:disable-line: no-floating-promises
   }
@@ -148,12 +150,14 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
   }
 
   private onPressEscape(e: React.KeyboardEvent): void {
+    // istanbul ignore next
     if (this._editorRef && this._editorRef === document.activeElement)
       e.stopPropagation();
     this._commitCancel();
   }
 
   private onPressEnter(e: React.KeyboardEvent): void {
+    // istanbul ignore next
     if (this._editorRef && this._editorRef === document.activeElement)
       e.stopPropagation();
     this._commit();   // tslint:disable-line: no-floating-promises

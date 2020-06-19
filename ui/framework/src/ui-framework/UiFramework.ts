@@ -30,7 +30,6 @@ import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
-import { LayoutManager } from "./widget-panels/LayoutManager";
 import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
 import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "./selection/HideIsolateEmphasizeManager";
 
@@ -76,7 +75,6 @@ export class UiFramework {
   private static _backstageManager?: BackstageManager;
   private static _widgetManager?: WidgetManager;
   private static _version1WidgetOpacity: number = WIDGET_OPACITY_DEFAULT;
-  private static _layoutManager = new LayoutManager();
   private static _uiVersion = "";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
 
@@ -126,8 +124,8 @@ export class UiFramework {
     const frameworkNamespace = UiFramework._i18n.registerNamespace(UiFramework.i18nNamespace);
     const readFinishedPromise = frameworkNamespace.readFinished;
 
-    UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
-    UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
+    UiFramework._projectServices = projectServices ? /* istanbul ignore next */ projectServices : new DefaultProjectServices();
+    UiFramework._iModelServices = iModelServices ? /* istanbul ignore next */ iModelServices : new DefaultIModelServices();
     UiFramework._backstageManager = new BackstageManager();
     UiFramework._hideIsolateEmphasizeActionHandler = new HideIsolateEmphasizeManager();  // this allows user to override the default HideIsolateEmphasizeManager implementation.
     UiFramework._widgetManager = new WidgetManager();
@@ -194,9 +192,11 @@ export class UiFramework {
     if (UiFramework._store)
       return UiFramework._store;
 
+    // istanbul ignore else
     if (!StateManager.isInitialized(true))
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
 
+    // istanbul ignore next
     return StateManager.store;
   }
 
@@ -230,6 +230,7 @@ export class UiFramework {
 
   /** @alpha */
   public static setHideIsolateEmphasizeActionHandler(handler: HideIsolateEmphasizeActionHandler | undefined) {
+    // istanbul ignore else
     if (handler)
       UiFramework._hideIsolateEmphasizeActionHandler = handler;
     else
@@ -417,9 +418,10 @@ export class UiFramework {
   /** @public */
   public static isMobile() {  // tslint:disable-line: prefer-get
     let mobile = false;
+    // istanbul ignore if
     if ((/Mobi|Android/i.test(navigator.userAgent))) {
       mobile = true;
-    } else if (/Mobi|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
+    } else /* istanbul ignore next */ if (/Mobi|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
       mobile = true;
     } else {
       mobile = MobileRpcConfiguration.isMobileFrontend;
@@ -427,16 +429,10 @@ export class UiFramework {
     return mobile;
   }
 
-  /** Returns layout manager.
-   * @beta
-   */
-  public static get layoutManager(): LayoutManager {
-    return UiFramework._layoutManager;
-  }
-
   /** Returns the Ui Version.
    * @beta
    */
+  // istanbul ignore next
   public static get uiVersion(): string {
     return UiFramework._uiVersion;
   }
@@ -447,6 +443,7 @@ export class UiFramework {
     UiFramework._uiVersion = args.version;
 
     // If Ui Version 1, save widget opacity
+    // istanbul ignore if
     if (args.oldVersion === "1")
       UiFramework._version1WidgetOpacity = UiFramework.getWidgetOpacity();
 

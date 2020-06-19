@@ -37,7 +37,7 @@ export function Icon(props: IconProps) {
 
   if (iconString) {
     const svgSource = IconSpecUtilities.getSvgSource(iconString);
-    // if string begins with "svg:" then we assume it was imported (into plugin source file) using webpack loader svg-sprite-loader
+    // if string begins with "svg:" then we assume it was imported (into extension source file) using webpack loader svg-sprite-loader
     if (svgSource !== undefined)
       return (
         <i className={classnames("icon", "core-svg-icon", props.className)}>

@@ -22,6 +22,9 @@ import { SizeProps } from '@bentley/ui-core';
 export const ActiveTabIdContext: React.Context<string | undefined>;
 
 // @internal (undocumented)
+export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial<FloatingWidgetState>, widgetArgs?: Partial<WidgetState>): NineZoneState;
+
+// @internal (undocumented)
 export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], widgetArgs?: Partial<WidgetState>): NineZoneState;
 
 // @internal (undocumented)
@@ -209,7 +212,10 @@ export function createPanelsState(): PanelsState;
 export function createPanelState(side: PanelSide): PanelState;
 
 // @internal (undocumented)
-export function createTabState(id: TabState["id"]): TabState;
+export function createTabsState(args?: Partial<TabsState>): TabsState;
+
+// @internal (undocumented)
+export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState;
 
 // @internal (undocumented)
 export function createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState;
@@ -2381,6 +2387,12 @@ export interface TooltipProps extends CommonProps {
 
 // @internal (undocumented)
 export type TopPanelSide = "top";
+
+// @internal (undocumented)
+export function useDoubleClick(onDoubleClick?: () => void): [() => void];
+
+// @internal
+export function useDrag<T extends HTMLElement>(onDragStart: (initialPointerPosition: Point) => void): (instance: T | null) => void;
 
 // @internal (undocumented)
 export function useDraggedItemId<T extends DragItem>(type: T["type"]): T["id"] | undefined;

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyStatus, DbResult, Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, Box, Geometry, IModelJson, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, CreatePolyfaceRequestProps, CreatePolyfaceResponseProps, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, TextString, TextStringProps } from "@bentley/imodeljs-common";
+
+import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Angle, Arc3d, Box, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, TextString, TextStringProps } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions } from "../../ExportGraphics";
-import { BackendRequestContext, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
+import { BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function assertTrue(expr: boolean): asserts expr {
@@ -68,7 +68,7 @@ describe("GeometryStream", () => {
       pointS.y += 0.5; pointE.y += 0.5;
     });
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -158,7 +158,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.create(1.5, 0, 0), Point3d.create(1.5, 5, 0)));
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -236,7 +236,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(-1, -1, 0)));
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -307,7 +307,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 5, 0)));
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -391,7 +391,7 @@ describe("GeometryStream", () => {
     shape.tryTransformInPlace(xOffset);
     builder.appendGeometry(shape);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -534,7 +534,7 @@ describe("GeometryStream", () => {
     shape.tryTransformInPlace(xOffset);
     builder.appendGeometry(shape);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -620,7 +620,7 @@ describe("GeometryStream", () => {
     const status = builder.appendTextString(textString);
     assert.isTrue(status);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -734,7 +734,7 @@ describe("GeometryStream", () => {
       builder.appendGeometry(geom);
     }
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -796,7 +796,7 @@ describe("GeometryStream", () => {
     builder.appendGeometry(Loop.create(LineString3d.create(shapePts)));
     shapePts.forEach((pt) => { builder.appendGeometryPart3d(partId, pt, undefined, 0.25); }); // Postion part (arc center) at each vertex...
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -851,7 +851,7 @@ describe("GeometryStream", () => {
     builder.appendGeometryParamsChange(params);
     builder.appendGeometry(shape);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -925,7 +925,7 @@ describe("GeometryStream", () => {
 
     builder.appendBRepData(brepProps);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -1029,7 +1029,7 @@ describe("exportGraphics", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(box!);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -1063,60 +1063,7 @@ describe("exportGraphics", () => {
     assert.strictEqual(polyface.data.normalCount, 24);
     assert.strictEqual(polyface.data.paramCount, 24);
   });
-});
 
-describe("createPolyfaceFromElement", () => {
-  let imodel: SnapshotDb;
-
-  before(() => {
-    const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
-    const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
-    imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-  });
-
-  after(() => {
-    imodel.close();
-  });
-
-  it("verify basic functionality", async () => {
-    // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
-    assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-
-    const box = Box.createRange(Range3d.create(Point3d.createZero(), Point3d.create(1.0, 1.0, 1.0)), true);
-    assert.isFalse(undefined === box);
-
-    const builder = new GeometryStreamBuilder();
-    builder.appendGeometry(box!);
-
-    const elementProps: GeometricElement3dProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      userLabel: "UserLabel-" + 1,
-      geom: builder.geometryStream,
-    };
-
-    const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
-    imodel.saveChanges();
-
-    const requestProps: CreatePolyfaceRequestProps = {
-      elementId: newId,
-    };
-
-    const requestContext = new BackendRequestContext();
-    const response: CreatePolyfaceResponseProps = await imodel.createPolyfaceFromElement(requestContext, requestProps);
-    assert.isTrue(IModelStatus.Success === response.status);
-    assert.isTrue(response.results && response.results.length === 1);
-    assert.isTrue(ColorDef.white.tbgr === response.results![0].fillColor);
-    assert.isTrue(ColorDef.white.tbgr === response.results![0].lineColor);
-    const polyface = IModelJson.Reader.parseIndexedMesh(response.results![0].indexedMesh);
-    assert.isTrue(polyface !== undefined);
-    assert.isTrue(polyface!.facetCount === 12);
-  });
   //
   //
   //    2---3      6
@@ -1170,7 +1117,6 @@ describe("createPolyfaceFromElement", () => {
       assert.isTrue(smallMesh.indices[indexCursor] === visitor.paramIndex![0]);
       assert.isTrue(smallMesh.indices[indexCursor + 1] === visitor.paramIndex![1]);
       assert.isTrue(smallMesh.indices[indexCursor + 2] === visitor.paramIndex![2]);
-
       assert.isTrue(smallMesh.indices[indexCursor] === visitor.normalIndex![0]);
       assert.isTrue(smallMesh.indices[indexCursor + 1] === visitor.normalIndex![1]);
       assert.isTrue(smallMesh.indices[indexCursor + 2] === visitor.normalIndex![2]);
@@ -1217,7 +1163,7 @@ describe("Mass Properties", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(box!);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,
@@ -1253,7 +1199,7 @@ describe("Mass Properties", () => {
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(shape);
 
-    const elementProps: GeometricElement3dProps = {
+    const elementProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
       model: seedElement.model,
       category: seedElement.category,

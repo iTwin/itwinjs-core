@@ -1,6 +1,7 @@
 sep=;
 Release Tag;API Item
 internal;ActiveTabIdContext: React.Context
+internal;addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial
 internal;addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], widgetArgs?: Partial
 internal;addTab(state: NineZoneState, widgetId: WidgetState["id"], id: TabState["id"], tabArgs?: Partial
 alpha;AppButton 
@@ -35,7 +36,8 @@ internal;createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelS
 internal;createNineZoneState(args?: Partial
 internal;createPanelsState(): PanelsState
 internal;createPanelState(side: PanelSide): PanelState
-internal;createTabState(id: TabState["id"]): TabState
+internal;createTabsState(args?: Partial
+internal;createTabState(id: TabState["id"], args?: Partial
 internal;createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState
 internal;createWidgetState(id: WidgetState["id"], args?: Partial
 internal;Css
@@ -357,6 +359,8 @@ beta;Tooltip
 beta;TooltipDefaultProps = Pick
 beta;TooltipProps 
 internal;TopPanelSide = "top"
+internal;useDoubleClick(onDoubleClick?: () => void): [() => void]
+internal;useDrag
 internal;useDraggedItemId
 internal;useDragItem
 internal;UseDragItemArgs

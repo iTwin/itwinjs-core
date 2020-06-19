@@ -68,11 +68,11 @@ describe("PanelWidget", () => {
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     act(() => {
-      fireEvent.pointerDown(handle);
-      const pointerMove = new MouseEvent("pointermove", {
+      const pointerDown = new MouseEvent("pointerdown", {
         clientX: 230,
       });
-      document.dispatchEvent(pointerMove);
+      handle.dispatchEvent(pointerDown);
+      fireEvent.pointerMove(handle);
     });
 
     dispatch.calledOnce.should.true;

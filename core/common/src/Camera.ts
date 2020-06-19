@@ -19,6 +19,7 @@ export interface CameraProps {
 }
 
 /** The current position (eyepoint), lens angle, and focus distance of a camera.
+ * @see [Views]($docs/learning/frontend/Views.md)
  * @public
  */
 export class Camera implements CameraProps {

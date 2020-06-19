@@ -45,7 +45,7 @@ describe("Convert schema xml string to typescript string", () => {
       }\n\n`;
 
     const schema = utils.deserializeXml(context, schemaXml);
-    const {schemaTsString, elemTsString, propsTsString} = ecschema2ts.convertSchemaToTs(schema);
+    const { schemaTsString, elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
     assert.equal(schemaTsString, expectedSchemaTsString);
     assert.equal(elemTsString, `\n`);
     assert.equal(propsTsString, `\n`);
@@ -92,7 +92,7 @@ describe("Convert schema xml string to typescript string", () => {
         }
       }\n\n`;
 
-    const expectedElementTsString  = utils.dedent
+    const expectedElementTsString = utils.dedent
       `import { Entity, IModelDb } from "@bentley/imodeljs-backend";
       import { TestEntityProps } from "./TestSchemaElementProps";
 
@@ -123,7 +123,7 @@ describe("Convert schema xml string to typescript string", () => {
       }\n\n`;
 
     const schema = utils.deserializeXml(context, schemaXml);
-    const {schemaTsString, elemTsString, propsTsString} = ecschema2ts.convertSchemaToTs(schema);
+    const { schemaTsString, elemTsString, propsTsString } = ecschema2ts.convertSchemaToTs(schema);
     assert.equal(schemaTsString, expectedSchemaTsString);
     assert.equal(elemTsString, expectedElementTsString);
     assert.equal(propsTsString, expectedPropTsString);
@@ -508,7 +508,7 @@ describe("ecxml to typescript string", () => {
       // Test Case: Basic struct with description
       {
         testName: `Basic struct with description`,
-        referenceXmls:  [],
+        referenceXmls: [],
         schemaXml: `<?xml version="1.0" encoding="utf-8"?>
           <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
             <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA"/>
@@ -585,7 +585,7 @@ describe("ecxml to typescript string", () => {
       // Test Case: Struct has base class in reference schema
       {
         testName: `Struct has base class`,
-        referenceXmls:  [
+        referenceXmls: [
           `<?xml version="1.0" encoding="utf-8"?>
           <ECSchema schemaName="ReferenceSchema" alias="ref" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
             <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA"/>
@@ -795,7 +795,7 @@ describe("ecxml to typescript string", () => {
       // Test Case: property in reference
       {
         testName: `Property in reference schema`,
-        referenceXmls:  [
+        referenceXmls: [
           `<?xml version="1.0" encoding="utf-8"?>
           <ECSchema schemaName="RefSchema" alias="ref" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
             <ECStructClass typeName="StructClass">

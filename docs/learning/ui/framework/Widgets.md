@@ -98,7 +98,7 @@ The Tool Widget is shown in the top left of the content area and typically holds
 The following example show the standard way to define a Tool Widget with some standard tools.
 
 ```tsx
-const SampleToolWidget: React.FC<{}> = () => {
+function SampleToolWidget () {
   const horizontalItems: CommonToolbarItem[] = ToolbarHelper.createToolbarItemsFromItemDefs([
     CoreTools.clearSelectionItemDef,
     SelectionContextToolDefinitions.hideElementsItemDef,
@@ -129,7 +129,7 @@ The Navigation widget is shown in the top right of the content area and typicall
 The following example show the standard way to define a Navigation Widget.
 
 ```tsx
-const SampleNavigationWidget: React.FC<{}> = () => {
+function SampleNavigationWidget () {
   const horizontalItems: CommonToolbarItem[] = ToolbarHelper.createToolbarItemsFromItemDefs([
     CoreTools.rotateViewCommand,
     CoreTools.panViewCommand,

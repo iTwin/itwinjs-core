@@ -14,10 +14,10 @@ import { CommonProps } from "../utils/Props";
  * @public
  */
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
-  /** textarea rows
-   * Default: 3
-   */
+  /** Number of textarea rows. Default is 3. */
   rows?: number;
+  /** Indicates whether to set focus to the textarea element */
+  setFocus?: boolean;
 }
 
 /** Basic textarea component
@@ -27,11 +27,22 @@ export class Textarea extends React.PureComponent<TextareaProps> {
   public static defaultProps: Partial<TextareaProps> = {
     rows: 3,
   };
+
+  private _textareaElement = React.createRef<HTMLTextAreaElement>();
+
+  public componentDidMount() {
+    if (this.props.setFocus && this._textareaElement.current) {
+      this._textareaElement.current.focus();
+      this._textareaElement.current.select();
+    }
+  }
+
   public render(): JSX.Element {
-    const { className, style, ...props } = this.props;
+    const { className, style, rows, setFocus, ...props } = this.props;
 
     return (
       <textarea {...props}
+        ref={this._textareaElement}
         rows={this.props.rows}
         className={classnames("uicore-inputs-textarea", className)} style={style} />
     );

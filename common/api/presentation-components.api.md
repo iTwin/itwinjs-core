@@ -324,14 +324,12 @@ export interface PresentationTreeDataProviderProps {
 }
 
 // @beta
-export interface PresentationTreeNodeLoaderProps {
+export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataProviderProps {
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
-    imodel: IModelConnection;
-    pageSize: number;
+    pagingSize: number;
     // @alpha
     preloadingEnabled?: boolean;
-    ruleset: Ruleset | string;
 }
 
 // @public

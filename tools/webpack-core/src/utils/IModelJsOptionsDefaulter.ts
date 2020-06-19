@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { Configuration } from "webpack";
-import { paths } from "./paths";
 
 // tslint:disable-next-line:no-var-requires variable-name
 const OptionsDefaulter: any = require("webpack/lib/OptionsDefaulter");
@@ -23,7 +22,7 @@ export class IModelJsOptionsDefaulter extends OptionsDefaulter {
           return value;
 
         if (isProductionLikeMode(options))
-          return (info: any) => path.relative(path.dirname(paths.appPackageJson), info.absoluteResourcePath).replace(/\\/g, "/");
+          return (info: any) => path.relative(options.output?.path || process.cwd(), info.absoluteResourcePath).replace(/\\/g, "/");
 
         return (info: any) => info.absoluteResourcePath.replace(/\\/g, "/");
       });
@@ -33,13 +32,6 @@ export class IModelJsOptionsDefaulter extends OptionsDefaulter {
     this.set("module.rules", "call", (value: any[], options: Configuration) => {
       const rulesToAdd = [];
 
-      if (isProductionLikeMode(options))
-        rulesToAdd.push({
-          test: /\.js$/,
-          loader: path.join(__dirname, "../loaders/strip-assert-loader.js"),
-          enforce: "pre",
-        });
-
       if (enableSourceMaps)
         rulesToAdd.push({
           test: /\.js$/,
@@ -47,19 +39,16 @@ export class IModelJsOptionsDefaulter extends OptionsDefaulter {
           enforce: "pre",
         });
 
+      if (isProductionLikeMode(options))
+        rulesToAdd.push({
+          test: /\.js$/,
+          loader: path.join(__dirname, "../loaders/strip-assert-loader.js"),
+          enforce: "pre",
+        });
+
       return [
-        ...(value || []), ...rulesToAdd,
+        ...rulesToAdd, ...(value || []),
       ];
     });
-
-    this.set("module.noParse", "append", [
-      // Don't parse dtrace-provider for `require` calls.
-      // It attempts to include (optional) DTrace bindings on MacOS only.
-      // According to the bunyan README (https://github.com/trentm/node-bunyan#webpack), we can safely ignore this.
-      /dtrace-provider.js$/,
-      // Don't parse this file in express - it's causing another "the request of a dependency is an expression" error.
-      // As far as I can tell, this attempts to dynamically include an optional templating engine, which we shouldn't need anyway...
-      /express[\\\/]lib[\\\/]view.js$/,
-    ]);
   }
 }

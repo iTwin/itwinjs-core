@@ -42,7 +42,7 @@ const unpackSensor = `
 const applyThematicHeight = `
 float ndx;
 if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
-  ndx = clamp(v_thematicIndex.x, 0.0, 1.0);
+  ndx = clamp(v_thematicIndex, 0.0, 1.0);
 } else { // kThematicDisplayMode_InverseDistanceWeightedSensors
   float sensorSum = 0.0;
   float contributionSum = 0.0;
@@ -59,7 +59,7 @@ if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
 
     vec4 sensor = getSensor(i);
 
-    float dist = distance(v_thematicIndex, sensor.xyz);
+    float dist = distance(v_eyeSpace, sensor.xyz);
 
     bool skipThisSensor = (u_distanceCutoff > 0.0 && dist > u_distanceCutoff);
     if (!skipThisSensor) {
@@ -81,17 +81,14 @@ return vec4(TEXTURE(s_texture, vec2(0.0, ndx)).rgb, baseColor.a);
 export function getComputeThematicIndex(instanced: boolean): string {
   const modelPos = instanced ? "(g_instancedRtcMatrix * rawPosition).xyz" : "rawPosition.xyz";
   return `
-  vec3 u = u_modelToWorld + ` + modelPos + `;
-
   if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
+    vec3 u = u_modelToWorld + ` + modelPos + `;
     vec3 v = u_thematicAxis;
     vec3 proju = (dot(v, u) / dot(v, v)) * v;
     vec3 a = v * u_thematicRange.s;
     vec3 b = v * u_thematicRange.t;
     vec3 c = proju;
-    v_thematicIndex = vec3(findFractionalPositionOnLine(a, b, c), 0.0, 0.0);
-  } else { // kThematicDisplayMode_InverseDistanceWeightedSensors
-    v_thematicIndex = u;
+    v_thematicIndex = findFractionalPositionOnLine(a, b, c);
   }
   `;
 }

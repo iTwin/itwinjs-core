@@ -17,6 +17,7 @@ import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
 import { Path } from "../Path";
+import { ParityRegion } from "../ParityRegion";
 
 /**
  * * Implementation class for ConsolidateAdjacentCurvePrimitives.
@@ -99,4 +100,8 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
 
   public handlePath(g: Path): any { return this.handleCurveChain(g); }
   public handleLoop(g: Loop): any { return this.handleCurveChain(g); }
+  public handleParityRegion(g: ParityRegion): any {
+    for (const child of g.children)
+      child.dispatchToGeometryHandler(this);
+  }
 }

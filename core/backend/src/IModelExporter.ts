@@ -119,6 +119,11 @@ export abstract class IModelExportHandler {
 export class IModelExporter {
   /** The read-only source iModel. */
   public readonly sourceDb: IModelDb;
+  /** A flag that indicates whether element GeometryStreams are loaded or not.
+   * @note As an optimization, exporters that don't need geometry can set this flag to `false`. The default is `true`.
+   * @see [ElementLoadProps.wantGeometry]($common)
+   */
+  public wantGeometry: boolean = true;
   /** Optionally cached entity change information */
   private _sourceDbChanges?: ChangedInstanceIds;
   /** The handler called by this IModelExporter. */
@@ -200,6 +205,7 @@ export class IModelExporter {
    * @param requestContext The request context
    * @param startChangeSetId Include changes from this changeset up through and including the current changeset.
    * If this parameter is not provided, then just the current changeset will be exported.
+   * @note To form a range of versions to export, set `startChangeSetId` for the start of the desired range and open the source iModel as of the end of the desired range.
    */
   public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
     requestContext.enter();
@@ -334,7 +340,7 @@ export class IModelExporter {
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
   public exportModel(modeledElementId: Id64String): void {
-    const modeledElement: Element = this.sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: true });
+    const modeledElement: Element = this.sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportModel()`);
     if (this.shouldExportElement(modeledElement)) {
       this.exportModelContainer(modeledElementId);
@@ -441,7 +447,7 @@ export class IModelExporter {
         return;
       }
     }
-    const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: true });
+    const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportElement("${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     if (this.shouldExportElement(element)) {
       this.handler.callProtected.onExportElement(element, isUpdate);

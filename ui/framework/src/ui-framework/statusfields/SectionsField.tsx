@@ -49,9 +49,9 @@ export function SectionsStatusField(props: SectionsStatusFieldProps) {
       setShowIndicator(isClipActive || !props.hideWhenUnused);
     };
 
-    const clipActive = !!activeViewport && !!activeViewport.view.getViewClip();
+    const clipActive = !!activeViewport && /* istanbul ignore next */ !!activeViewport.view.getViewClip();
     setShowIndicator(clipActive || !props.hideWhenUnused);
-    setHasManipulatorsShown(clipActive && !!activeViewport && !!ViewClipDecoration.get(activeViewport));
+    setHasManipulatorsShown(clipActive && /* istanbul ignore next */ !!activeViewport && /* istanbul ignore next */ !!ViewClipDecoration.get(activeViewport));
 
     ViewClipDecorationProvider.create().onActiveClipChanged.addListener(onClipChanged);
     return () => {

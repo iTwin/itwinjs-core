@@ -13,9 +13,19 @@ function isElectronRendererFn() {
  */
 export const isElectronRenderer = isElectronRendererFn();
 
+function electronRendererFn() {
+  if (isElectronRenderer) {
+    // Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
+    try {
+      return require("electron"); // tslint:disable-line:no-var-requires
+    } catch (error) { }
+  }
+  return undefined;
+}
+
 /**
  * Utility to wrap import of the electron module
  * @note The value is set to undefined if not running in Electron.
  * @internal
  */
-export const electronRenderer = (isElectronRenderer) ? require("electron") : undefined; // tslint:disable-line:no-var-requires
+export const electronRenderer = electronRendererFn();

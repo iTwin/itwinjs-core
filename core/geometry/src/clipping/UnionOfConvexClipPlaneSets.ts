@@ -18,8 +18,9 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import { Clipper, ClipPlaneContainment, ClipUtilities } from "./ClipUtils";
+import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 
 /**
  * A collection of ConvexClipPlaneSets.
@@ -27,7 +28,7 @@ import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
  * * Hence the boolean logic is that the ClipPlaneSet is a UNION of its constituents.
  * @public
  */
-export class UnionOfConvexClipPlaneSets implements Clipper {
+export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   private _convexSets: ConvexClipPlaneSet[];
   /** (property accessor)  Return the (reference to the) array of `ConvexClipPlaneSet` */
   public get convexSets(): ConvexClipPlaneSet[] { return this._convexSets; }
@@ -290,20 +291,58 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
       this._convexSets.push(convexSet);
     }
   }
-
-  /* FUNCTIONS SKIPPED DUE TO BSPLINES, VU, OR NON-USAGE IN NATIVE CODE----------------------------------------------------------------
-
-  Involves vu: skipping for now...
-    public fromSweptPolygon(points: Point3d[], directions: Vector3d[]): ClipPlaneSet;
-    public parseConcavePolygonPlanes(...)
-
-  Uses bsplines... skipping for now:
-    public appendIntervalsClipPlaneSetFromCurve();
-
-  Uses bsplines... skipping for now:
-    public isAnyPointInOrOnFrom();
-
-  Skipped fromSweptPolygon(...), which is overloaded function from first, due to presence of vu
-    public fromSweptPolygon(points: Point3d[], directions: Vector3d[], shapes: Point3d[])
-  */
+  /**
+   *
+   * @param xyz input polygon.  This is not changed.
+   * @param insideFragments Array to receive "inside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
+   * @param outsideFragments Array to receive "outside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
+   * @param arrayCache cache for reusable GrowableXYZArray.
+   */
+  public appendPolygonClip(
+    xyz: GrowableXYZArray,
+    insideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache): void {
+    const oldOutsideCount = outsideFragments.length;
+    const oldInsideCount = insideFragments.length;
+    let carryForwardA = [arrayCache.grabAndFill(xyz)];
+    let carryForwardB: GrowableXYZArray[] = [];
+    let tempAB;
+    let shard;
+    // At each convex set, carryForwardA is all the fragments that have been outside all previous convex sets.
+    // Clip each such fragment to the current set, sending the outside parts to carryForwardB, which will got to the next clipper
+    // The final surviving carryForward really is out.
+    for (const c of this._convexSets) {
+      while (undefined !== (shard = carryForwardA.pop())) {
+        c.appendPolygonClip(shard, insideFragments, carryForwardB, arrayCache);
+        arrayCache.dropToCache(shard);
+      }
+      tempAB = carryForwardB;
+      carryForwardB = carryForwardA;  // and that is empty
+      carryForwardA = tempAB;
+    }
+    while (undefined !== (shard = carryForwardA.pop())) {
+      outsideFragments.push(shard);
+    }
+    if (outsideFragments.length === oldOutsideCount)
+      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(insideFragments, oldInsideCount, xyz, arrayCache);
+    else if (insideFragments.length === oldInsideCount)
+      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(outsideFragments, oldOutsideCount, xyz, arrayCache);
+  }
 }
+
+/* FUNCTIONS SKIPPED DUE TO BSPLINES, VU, OR NON-USAGE IN NATIVE CODE----------------------------------------------------------------
+
+Involves vu: skipping for now...
+  public fromSweptPolygon(points: Point3d[], directions: Vector3d[]): ClipPlaneSet;
+  public parseConcavePolygonPlanes(...)
+
+Uses bsplines... skipping for now:
+  public appendIntervalsClipPlaneSetFromCurve();
+
+Uses bsplines... skipping for now:
+  public isAnyPointInOrOnFrom();
+
+Skipped fromSweptPolygon(...), which is overloaded function from first, due to presence of vu
+  public fromSweptPolygon(points: Point3d[], directions: Vector3d[], shapes: Point3d[])
+*/

@@ -12,7 +12,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 import { RgbColor } from "./RgbColor";
 
 /** JSON representation of [[SolarShadowSettings]].
- * @beta
+ * @public
  */
 export interface SolarShadowSettingsProps {
   /** Shadow color. Default: [[ColorByName.grey]]. */
@@ -25,7 +25,7 @@ const defaultColor = RgbColor.fromColorDef(ColorDef.fromTbgr(ColorByName.grey));
 
 /** Settings controlling display of solar shadows for a [[DisplayStyle3dSettings]].
  * Solar shadows are imposed as a color scaling on geometry occluded from solar lighting.
- * @beta
+ * @public
  */
 export class SolarShadowSettings {
   /** Shadow color. */

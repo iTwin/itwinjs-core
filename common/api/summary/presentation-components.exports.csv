@@ -31,7 +31,7 @@ public;PresentationTableDataProvider
 public;PresentationTableDataProviderProps
 public;PresentationTreeDataProvider 
 public;PresentationTreeDataProviderProps
-beta;PresentationTreeNodeLoaderProps
+beta;PresentationTreeNodeLoaderProps 
 public;propertyGridWithUnifiedSelection
 public;PropertyGridWithUnifiedSelectionProps
 public;tableWithUnifiedSelection

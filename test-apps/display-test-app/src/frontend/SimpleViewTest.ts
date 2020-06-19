@@ -32,6 +32,13 @@ const configuration = {} as SVTConfiguration;
 async function retrieveConfiguration(): Promise<void> {
   return new Promise<void>((resolve, _reject) => {
     if (MobileRpcConfiguration.isMobileFrontend) {
+      if (window) {
+        const urlParams = new URLSearchParams(window.location.hash);
+        urlParams.forEach((val, key) => {
+          (configuration as any)[key] = val;
+          Object.assign(configuration, { iModelName: urlParams.get("iModelName") });
+        });
+      }
       const newConfigurationInfo = JSON.parse(window.localStorage.getItem("imodeljs:env")!);
       Object.assign(configuration, newConfigurationInfo);
       resolve();

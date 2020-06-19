@@ -9,7 +9,7 @@ import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@ben
 import { AbstractToolbarProps, CommonToolbarItem, RelativePosition, WidgetState } from "@bentley/ui-abstract";
 import { FavoritePropertiesRenderer } from "@bentley/ui-components";
 import {
-  ActionButtonItemDef, CommandItemDef, CoreTools, ElementTooltip, FrontstageManager, SelectionContextToolDefinitions, ToolbarHelper, UiFramework,
+  ActionButtonItemDef, CommandItemDef, CoreTools, ElementTooltip, FrontstageManager, SelectionContextToolDefinitions, ToolbarHelper,
 } from "@bentley/ui-framework";
 import { ViewsFrontstage } from "../appui/frontstages/ViewsFrontstage";
 import { appendContent } from "./appendContent";
@@ -105,14 +105,9 @@ export class ElementSelectionListener {
       labelKey: "SampleApp:tools.OpenPropertyGrid.flyover",
       tooltipKey: "SampleApp:tools.OpenPropertyGrid.description",
       execute: () => {
-        const version = UiFramework.uiVersion;
-        if (version === "1") {
-          const widgetDef = FrontstageManager.findWidget(ViewsFrontstage.unifiedSelectionPropertyGridId);
-          if (widgetDef)
-            widgetDef.setWidgetState(WidgetState.Open);
-        } else {
-          UiFramework.layoutManager.showWidget(ViewsFrontstage.unifiedSelectionPropertyGridId);
-        }
+        const widgetDef = FrontstageManager.findWidget(ViewsFrontstage.unifiedSelectionPropertyGridId);
+        if (widgetDef)
+          widgetDef.setWidgetState(WidgetState.Open);
       },
     });
   }

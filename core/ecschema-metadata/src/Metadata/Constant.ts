@@ -105,4 +105,40 @@ export class Constant extends SchemaItem {
   public async fromJSON(constantProps: ConstantProps) {
     this.fromJSONSync(constantProps);
   }
+
+  /**
+   * @alpha Used in schema editing.
+   * @param phenomenon A LazyLoadedPhenomenon.
+   */
+  protected setPhenomenon(phenomenon: LazyLoadedPhenomenon) {
+    this._phenomenon = phenomenon;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setDefinition(definition: string) {
+    this._definition = definition;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setNumerator(numerator: number) {
+    this._numerator = numerator;
+  }
+
+  /**
+   * @alpha Used in schema editing.
+   */
+  protected setDenominator(denominator: number) {
+    this._denominator = denominator;
+  }
+}
+
+export abstract class MutableConstant extends Constant {
+  public abstract setPhenomenon(phenomenon: LazyLoadedPhenomenon): void;
+  public abstract setDefinition(definition: string): void;
+  public abstract setNumerator(numerator: number): void;
+  public abstract setDenominator(denominator: number): void;
 }

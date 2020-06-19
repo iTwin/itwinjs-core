@@ -39,9 +39,7 @@ export namespace FeatureSymbology {
     ignoresMaterial?: true | undefined;
     /** If true, the associated [Feature]($common)s will not be drawn when using [[Viewport.readPixels]]. */
     nonLocatable?: true | undefined;
-    /** If true, the associated [Feature]($common) will be emphasized. Emphasized features are rendered using the [Hilite.Settings]($common) defined by [Viewport.emphasisSettings].
-     * @beta
-     */
+    /** If true, the associated [Feature]($common) will be emphasized. Emphasized features are rendered using the [Hilite.Settings]($common) defined by [Viewport.emphasisSettings]. */
     emphasized?: true | undefined;
   }
 
@@ -62,9 +60,7 @@ export namespace FeatureSymbology {
     public readonly ignoresMaterial?: true | undefined;
     /** If true, ignore the [Feature]($common) when using [[Viewport.readPixels]]. */
     public readonly nonLocatable?: true | undefined;
-    /** If true, the associated [Feature]($common) will be emphasized. Emphasized features are rendered using the [Hilite.Settings]($common) defined by [Viewport.emphasisSettings].
-     * @beta
-     */
+    /** If true, the associated [Feature]($common) will be emphasized. Emphasized features are rendered using the [Hilite.Settings]($common) defined by [Viewport.emphasisSettings]. */
     public readonly emphasized?: true | undefined;
 
     /** An Appearance which overrides nothing. */
@@ -213,6 +209,10 @@ export namespace FeatureSymbology {
      * @beta
      */
     public alwaysDrawnIgnoresSubCategory = true;
+    /** If true, all subcategories are considered visible. This is used for drawing sheets via section callouts in the absence of an actual sheet view.
+     * @internal
+     */
+    public ignoreSubCategory = false;
 
     /** Overrides applied to any feature not explicitly overridden. @internal */
     protected _defaultOverrides = Appearance.defaults;
@@ -274,6 +274,9 @@ export namespace FeatureSymbology {
     public isSubCategoryVisible(idLo: number, idHi: number): boolean { return this._visibleSubCategories.has(idLo, idHi); }
     /** @internal */
     public isSubCategoryVisibleInModel(subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): boolean {
+      if (this.ignoreSubCategory)
+        return true;
+
       let vis = this.isSubCategoryVisible(subcatLo, subcatHi);
       const modelOvr = this._modelSubCategoryOverrides.get(modelLo, modelHi);
       if (undefined !== modelOvr && modelOvr.has(subcatLo, subcatHi))
@@ -357,7 +360,7 @@ export namespace FeatureSymbology {
       }
 
       let subCatApp;
-      if (Id64.isValidUint32Pair(subcatLo, subcatHi)) {
+      if (!this.ignoreSubCategory && Id64.isValidUint32Pair(subcatLo, subcatHi)) {
         if ((!alwaysDrawn || !this.alwaysDrawnIgnoresSubCategory) && !this.isSubCategoryVisibleInModel(subcatLo, subcatHi, modelLo, modelHi))
           return undefined;
 
@@ -390,7 +393,7 @@ export namespace FeatureSymbology {
       if (undefined !== elemApp)
         app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
 
-      if (Id64.isValidUint32Pair(subcatLo, subcatHi)) {
+      if (!this.ignoreSubCategory && Id64.isValidUint32Pair(subcatLo, subcatHi)) {
         const subCat = this.getSubCategoryOverrides(subcatLo, subcatHi);
         if (undefined !== subCat)
           app = subCat.extendAppearance(app);

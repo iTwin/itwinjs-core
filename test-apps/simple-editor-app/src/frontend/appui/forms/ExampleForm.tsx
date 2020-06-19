@@ -9,9 +9,9 @@ import { Dialog, FieldDefinitions, FieldValues, Form } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 
 export class ExampleForm extends React.Component {
-  private _title = "Example Form"; // IModelApp.i18n.translate("RiskManagementPlugin:config.title");
-  private _siteUrlLabel = "Enter Site"; // IModelApp.i18n.translate("RiskManagementPlugin:config.siteUrl");
-  private _nameLabel = "Specify List Name"; // IModelApp.i18n.translate("RiskManagementPlugin:config.Name");
+  private _title = "Example Form";
+  private _siteUrlLabel = "Enter Site";
+  private _nameLabel = "Specify List Name";
   private _notesLabel = "Notes";
   private _lockLabel = "Lock";
   private _pickListLabel = "Picker";

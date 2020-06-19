@@ -75,26 +75,26 @@ export interface FrontstageProps extends CommonProps {
   /** The Zone in the bottom-right corner.  @deprecated Place widgets in appropriate stage panel zone. */
   bottomRight?: React.ReactElement<ZoneProps>;
 
-  /** The Zone in the top-left corner that shows tools typically used to query and modify content. To be used in place of deprecated topLeft zone definition.  @alpha */
+  /** The Zone in the top-left corner that shows tools typically used to query and modify content. To be used in place of deprecated topLeft zone definition.  @beta */
   contentManipulationTools?: React.ReactElement<ZoneProps>;
-  /** The Zone the that shows settings for the active tool. To be used in place of deprecated topCenter zone definition. @alpha */
+  /** The Zone the that shows settings for the active tool. To be used in place of deprecated topCenter zone definition. @beta */
   toolSettings?: React.ReactElement<ZoneProps>;
-  /** The Zone in the top-right corner that shows view navigation tools. To be used in place of deprecated topRight zone definition.  @alpha */
+  /** The Zone in the top-right corner that shows view navigation tools. To be used in place of deprecated topRight zone definition.  @beta */
   viewNavigationTools?: React.ReactElement<ZoneProps>;
-  /** The status bar Zone shown as the application footer. To be used in place of deprecated bottomCenter zone definition.  @alpha */
+  /** The status bar Zone shown as the application footer. To be used in place of deprecated bottomCenter zone definition.  @beta */
   statusBar?: React.ReactElement<ZoneProps>;
 
-  /** The StagePanel on the top of the 9-zone area. @alpha */
+  /** The StagePanel on the top of the 9-zone area. @beta */
   topPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the very top across the full width. @alpha  */
+  /** The StagePanel on the very top across the full width. @beta @deprecated Only topPanel is supported in UI 2.0 */
   topMostPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the left. @alpha  */
+  /** The StagePanel on the left. @beta  */
   leftPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the right. @alpha  */
+  /** The StagePanel on the right. @beta  */
   rightPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the bottom of the 9-zone area. @alpha  */
+  /** The StagePanel on the bottom of the 9-zone area. @beta  */
   bottomPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the very bottom across the full width. @alpha  */
+  /** The StagePanel on the very bottom across the full width. @beta @deprecated Only bottomPanel is supported in UI 2.0  */
   bottomMostPanel?: React.ReactElement<StagePanelProps>;
 
   /** @internal */
@@ -209,7 +209,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       case ZoneLocation.TopCenter:
         return props.toolSettings ? props.toolSettings : props.topCenter;
       case ZoneLocation.TopRight:
-        return props.viewNavigationTools ? props.viewNavigationTools : props.topRight;
+        return props.viewNavigationTools ? /* istanbul ignore next */ props.viewNavigationTools : props.topRight;
       case ZoneLocation.CenterLeft:
         return props.centerLeft;
       case ZoneLocation.CenterRight:
@@ -223,6 +223,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     }
 
     // Zones can be undefined in a Frontstage
+    // istanbul ignore next
     return undefined;
   }
 
@@ -330,7 +331,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         const draggedWidget = runtimeProps.nineZone.zones.draggedWidget;
 
         const panelRuntimeProps: StagePanelRuntimeProps = {
-          draggedWidgetId: draggedWidget ? draggedWidget.id : undefined,
+          draggedWidgetId: draggedWidget ? /* istanbul ignore next */ draggedWidget.id : undefined,
           getWidgetContentRef: this._getContentRef,
           isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
           isTargeted: !!runtimeProps.nineZone.zones.target,
@@ -382,11 +383,12 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const zoneRuntimeProps: ZoneRuntimeProps = {
         activeTabIndex,
         disabledResizeHandles,
-        draggedWidget: draggedWidget && draggedWidget.id === zoneId ? draggedWidget : undefined,
+        draggedWidget: draggedWidget && /* istanbul ignore next */ draggedWidget.id === zoneId ? /* istanbul ignore next */ draggedWidget : undefined,
         dropTarget,
         getWidgetContentRef: this._getContentRef,
         ghostOutline,
-        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ? false : !this.state.isUiVisible,
+        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && /* istanbul ignore next */ (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ?
+          /* istanbul ignore next */ false : !this.state.isUiVisible,
         isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
         openWidgetId,
         targetChangeHandler: runtimeProps.targetChangeHandler,
@@ -621,7 +623,7 @@ export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, 
  */
 export const useActiveFrontstageId = () => {
   const def = useActiveFrontstageDef();
-  const id = React.useMemo(() => def ? def.id : "", [def]);
+  const id = React.useMemo(() => def ? /* istanbul ignore next */ def.id : "", [def]);
   return id;
 };
 
@@ -629,6 +631,7 @@ export const useActiveFrontstageId = () => {
 export function useActiveFrontstageDef() {
   const [def, setDef] = React.useState(FrontstageManager.activeFrontstageDef);
   React.useEffect(() => {
+    // istanbul ignore next
     const handleActivated = (args: FrontstageActivatedEventArgs) => {
       setDef(args.activatedFrontstageDef);
     };

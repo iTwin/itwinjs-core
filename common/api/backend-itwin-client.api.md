@@ -93,18 +93,17 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
 export type DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
 
 // @internal
-export class IOSAzureFileHandler implements FileHandler {
-    constructor();
+export class LocalhostHandler implements FileHandler {
     // (undocumented)
-    agent: any;
+    agent: https.Agent;
     basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
     unlink(filePath: string): void;
-    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string): Promise<void>;
+    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 }
 
 // @beta @deprecated

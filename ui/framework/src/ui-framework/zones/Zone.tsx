@@ -145,7 +145,8 @@ export class Zone extends React.Component<ZoneProps> {
     if (runtimeProps.zone.widgets.length === 1) {
       if (zoneDef.isToolSettings && isToolSettingsWidgetManagerProps(runtimeProps.widget) && runtimeProps.widget.mode === ToolSettingsWidgetMode.TitleBar) {
         const widgetDef = zoneDef.getSingleWidgetDef();
-        const isClosed = widgetDef ? (widgetDef.state === WidgetState.Closed || widgetDef.state === WidgetState.Hidden) : false;
+        const isClosed = widgetDef ? (widgetDef.state === WidgetState.Closed || widgetDef.state === WidgetState.Hidden)
+          : /* istanbul ignore next */ false;
         return (
           <ToolSettingsZone
             className={this.props.className}
@@ -153,7 +154,7 @@ export class Zone extends React.Component<ZoneProps> {
             getWidgetContentRef={runtimeProps.getWidgetContentRef}
             isClosed={isClosed}
             isHidden={runtimeProps.isHidden}
-            lastPosition={runtimeProps.draggedWidget && runtimeProps.draggedWidget.lastPosition}
+            lastPosition={runtimeProps.draggedWidget && /* istanbul ignore next */ runtimeProps.draggedWidget.lastPosition}
             style={this.props.style}
             targetChangeHandler={runtimeProps.targetChangeHandler}
             targetedBounds={runtimeProps.ghostOutline}
@@ -196,7 +197,7 @@ export class Zone extends React.Component<ZoneProps> {
       } else if (zDef.widgetCount === 1 && zDef.widgetDefs[0].widgetType !== WidgetType.Rectangular) {
         /** Return free-form nzWidgetProps */
         const widgetDef = zDef.widgetDefs[0];
-        widgetElement = (widgetDef.isVisible) ? widgetDef.reactNode : null;
+        widgetElement = (widgetDef.isVisible) ? widgetDef.reactNode : /* istanbul ignore next */ null;
       }
     }
 
@@ -235,7 +236,7 @@ export class Zone extends React.Component<ZoneProps> {
       return;
 
     const zoneDef = runtimeProps.zoneDefProvider.getZoneDef(id);
-    // istanbul ignore else
+    // istanbul ignore if
     if (!zoneDef)
       return;
 
@@ -256,6 +257,7 @@ export class Zone extends React.Component<ZoneProps> {
   }
 
   private getWidgetIdForDef(widgetDef: WidgetDef): WidgetZoneId | undefined {
+    // istanbul ignore if
     if (!this.props.runtimeProps)
       return undefined;
 

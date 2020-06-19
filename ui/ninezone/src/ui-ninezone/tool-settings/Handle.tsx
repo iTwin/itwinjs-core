@@ -9,10 +9,10 @@
 import "./Handle.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Point, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { useDragToolSettings } from "../base/DragManager";
 import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
-import { usePointerCaptor } from "../base/PointerCaptor";
+import { useDrag } from "../widget/TabBar";
 
 /** Properties of [[DockedToolSettingsHandle]] component.
  * @internal
@@ -27,12 +27,9 @@ export interface DockedToolSettingsHandleProps extends CommonProps {
 export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps) { // tslint:disable-line: variable-name no-shadowed-variable
   const dispatch = React.useContext(NineZoneDispatchContext);
   const resizeObserverRef = useResizeObserver<HTMLDivElement>(props.onResize);
-  const pointerCaptorRef = usePointerCaptor<HTMLDivElement>();
   const newWidgetDragItemId = React.useMemo(() => getUniqueId(), []);
   const onDragStart = useDragToolSettings({ newWidgetDragItemId });
-  const handlePointerDown = React.useCallback((e: React.PointerEvent) => {
-    e.preventDefault();
-    const initialPointerPosition = new Point(e.clientX, e.clientY);
+  const handleDragStart = React.useCallback((initialPointerPosition) => {
     onDragStart({
       initialPointerPosition,
     });
@@ -41,7 +38,8 @@ export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHa
       newFloatingWidgetId: newWidgetDragItemId,
     });
   }, [dispatch, newWidgetDragItemId, onDragStart]);
-  const refs = useRefs(pointerCaptorRef, resizeObserverRef);
+  const dragRef = useDrag(handleDragStart);
+  const refs = useRefs(dragRef, resizeObserverRef);
   const className = classnames(
     "nz-toolSettings-handle",
     props.className,
@@ -50,7 +48,6 @@ export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHa
     <div
       className={className}
       ref={refs}
-      onPointerDown={handlePointerDown}
       style={props.style}
     >
       <div className="nz-row">

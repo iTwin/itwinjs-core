@@ -66,7 +66,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     const classNames = classnames(
       "core-split-button",
       this.props.className,
-      this.state.expanded && "expanded",
+      this.state.expanded && "core-expanded",
       this.props.drawBorder && "core-split-button-border");
 
     return (
@@ -77,8 +77,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
         <div data-testid="core-split-button-label" onClick={this.props.onClick} className={"core-split-button-label"}>{icon} {this.props.label}</div>
         <div className={classnames("core-split-button-divider", this.props.drawBorder && "core-split-button-border")} />
         <div className={"core-split-button-arrow"} ref={(el) => { this._arrowElement = el; }} onClick={this._handleClick} tabIndex={0} onKeyUp={this._handleKeyUp}>
-          <div className={classnames("core-split-button-arrow-icon", "icon", "icon-chevron-down")} >
-          </div>
+          <div className={classnames("core-split-button-arrow-icon", "icon", "icon-chevron-down")} />
           <ContextMenu
             ref={(el) => { this._menu = el; }}
             selectedIndex={0}
@@ -98,6 +97,8 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     if ((event.keyCode === 13 /*<Return>*/ || event.keyCode === 40 /*<Down>*/) && !this.state.expanded) {
       this._closing = false;
       this._open();
+    } else {
+      this._closing = false;
     }
   }
 
@@ -120,6 +121,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     if (this.state.expanded) {
       event.stopPropagation();
       this.setState({ expanded: false });
+      this._closing = false;
     } else {
       this._open();
     }

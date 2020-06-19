@@ -42,7 +42,7 @@
       "BIS": "bis",
       "Learning": "learning",
       "API Reference": "reference",
-      "v2.1.0": "changehistory"
+      "v2.2.0": "changehistory"
     },
     "archivedVersions": [
       {
@@ -71,6 +71,10 @@
       "ui-core": "ui-core",
       "ui-framework": "ui-framework",
       "ui-ninezone": "ui-ninezone",
+      "analytical-backend": "analytical-backend",
+      "linear-referencing-backend": "linear-referencing-backend",
+      "linear-referencing-common": "linear-referencing-common",
+      "physical-material-backend": "physical-material-backend",
       "presentation-backend": "presentation-backend",
       "presentation-common": "presentation-common",
       "presentation-components": "presentation-components",

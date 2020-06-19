@@ -2,12 +2,6 @@ sep=;
 Release Tag;API Item
 internal;AdditionalFeatureData
 beta;AliCloudStorageService 
-beta;class AnalyticalElement 
-beta;class AnalyticalModel 
-beta;AnalyticalPartition 
-beta;AnalyticalSchema 
-beta;AnalyticalSimulatesSpatialElement 
-beta;class AnalyticalType 
 public;AnnotationElement2d 
 beta;AppActivityMonitor
 alpha;ApplicationType
@@ -59,9 +53,13 @@ alpha;RepositoryChannelInfo
 internal;StateCache
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
+public;DefinitionContainer 
 public;class DefinitionElement 
+public;DefinitionGroup 
+public;DefinitionGroupGroupsDefinitions 
 public;DefinitionModel 
 public;DefinitionPartition 
+public;class DefinitionSet 
 alpha;DesktopAuthorizationClient 
 public;DetailCallout 
 public;class DetailingSymbol 
@@ -75,7 +73,6 @@ public;class DisplayStyle
 public;DisplayStyle2d 
 public;DisplayStyle3d 
 public;DisplayStyleCreationOptions
-beta;DistanceExpression 
 public;class Document 
 internal;class DocumentCarrier 
 public;DocumentListModel 
@@ -149,6 +146,11 @@ public;FunctionalModel
 public;FunctionalPartition 
 public;FunctionalSchema 
 public;class FunctionalType 
+public;GenericDocument 
+public;GenericGraphicalModel3d 
+public;GenericGraphicalType2d 
+public;GenericPhysicalMaterial 
+public;GenericPhysicalType 
 public;GenericSchema 
 public;class GeometricElement 
 public;class GeometricElement2d 
@@ -169,14 +171,11 @@ public;class GraphicalModel3d
 public;GraphicalPartition3d 
 public;class GraphicalType2d 
 public;Group 
+public;GroupImpartsToMembers 
 public;class GroupInformationElement 
 public;class GroupInformationModel 
 public;GroupInformationPartition 
 public;GroupModel 
-beta;ILinearElementProvidedBySource 
-beta;ILinearLocationLocatesElement 
-beta;ILinearlyLocatedAlongILinearElement 
-beta;ILinearlyLocatedAttributesElement 
 beta;IModelCloneContext
 public;class IModelDb 
 public;IModelDb
@@ -202,27 +201,8 @@ public;InformationRecordModel
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
 beta;InstanceChange
-beta;IReferentReferencesElement 
 public;KnownLocations
 internal;LightLocation 
-beta;LinearElement
-beta;LinearLocation 
-beta;class LinearLocationElement 
-beta;LinearlyLocated
-beta;class LinearlyLocatedAttribution 
-beta;LinearlyLocatedBase
-beta;LinearlyLocatedMultipleAt 
-beta;LinearlyLocatedMultipleFromTo 
-beta;LinearlyLocatedSingleAt 
-beta;LinearlyLocatedSingleFromTo 
-beta;LinearlyReferencedAtLocation 
-beta;LinearlyReferencedAtPositionRefersToReferent 
-beta;LinearlyReferencedFromPositionRefersToReferent 
-beta;LinearlyReferencedFromToLocation 
-beta;LinearlyReferencedLocation 
-beta;LinearlyReferencedToPositionRefersToReferent 
-beta;class LinearPhysicalElement 
-beta;LinearReferencingSchema 
 public;LineStyle 
 public;LineStyleDefinition
 public;class LinkElement 
@@ -237,16 +217,17 @@ public;OrthographicViewDefinition
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
 public;PhysicalElementFulfillsFunction 
+public;PhysicalElementIsOfPhysicalMaterial 
 public;PhysicalElementIsOfType 
+public;class PhysicalMaterial 
 public;PhysicalModel 
 public;PhysicalObject 
 public;PhysicalPartition 
 public;class PhysicalType 
+public;PhysicalTypeIsOfPhysicalMaterial 
 public;PlanCallout 
 public;Platform
 beta;class RecipeDefinitionElement 
-beta;Referent 
-beta;class ReferentElement 
 public;Relationship 
 public;RelationshipProps 
 public;Relationships
@@ -263,6 +244,7 @@ internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
 public;Schemas
 public;SectionCallout 
 public;SectionDrawing 
+beta;SectionDrawingLocation 
 public;SectionDrawingModel 
 alpha;SectionLocation 
 public;Sheet 

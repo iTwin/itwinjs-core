@@ -40,7 +40,7 @@ describe("UiItemsArbiter", () => {
 
     class TestUiProvider implements UiItemsProvider {
       public readonly id = "TestUiProvider";
-      public provideToolbarButtonItems(_stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+      public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
         if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
           const simpleActionSpec1 = ToolbarItemUtilities.createActionButton("test1", 100, "icon-developer", "addon-tool-1", (): void => { });
           const simpleActionSpec2 = ToolbarItemUtilities.createActionButton("test2", 200, "icon-developer", "addon-tool-2", (): void => { });
@@ -128,7 +128,7 @@ describe("UiItemsArbiter", () => {
 
         if (stageUsage === StageUsage.General) {
           statusBarItems.push(
-            AbstractStatusBarItemUtilities.createActionItem("test1", StatusBarSection.Center, 100, "icon-developer", "test status bar from plugin", () => { }));
+            AbstractStatusBarItemUtilities.createActionItem("test1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension", () => { }));
           statusBarItems.push(
             AbstractStatusBarItemUtilities.createLabelItem("test2", StatusBarSection.Center, 105, "icon-hand-2-condition", "Hello"));
         }

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/express-server",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "iModel.js express utilities",
   "main": "lib/ExpressServer.js",
   "typings": "lib/ExpressServer",
@@ -14,8 +14,8 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/express-server/file.json --tsIndexFile=./ExpressServer.ts --onlyJson",
     "extract-api": "betools extract-api --entry=ExpressServer",
     "lint": "tslint --project . 1>&2",
-    "test": "",
-    "cover": ""
+    "test": "betools test",
+    "cover": "nyc npm test"
   },
   "repository": {
     "type": "git",
@@ -32,17 +32,30 @@
   },
   "peerDependencies": {},
   "devDependencies": {
-    "@bentley/build-tools": "2.1.0",
-    "@bentley/imodeljs-common": "2.1.0",
+    "@bentley/build-tools": "2.2.0",
+    "@bentley/imodeljs-common": "2.2.0",
     "@types/body-parser": "^1.17.0",
+    "@types/chai": "^4.1.4",
     "@types/express": "^4.16.1",
+    "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
+    "@types/sinon": "^9.0.0",
+    "@types/supertest": "^2.0.4",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "nyc": "^14.0.0",
     "rimraf": "^3.0.2",
+    "sinon": "^9.0.2",
+    "source-map-support": "^0.5.6",
+    "supertest": "^3.0.0",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
   },
   "dependencies": {
     "express": "^4.16.3"
+  },
+  "nyc": {
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   }
 }

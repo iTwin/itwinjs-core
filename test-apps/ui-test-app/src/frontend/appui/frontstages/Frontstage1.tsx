@@ -6,12 +6,11 @@ import * as React from "react";
 import { TimelineComponent } from "@bentley/ui-components";
 import {
   ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
-  NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
+  NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetState, WidgetStateChangedEventArgs, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
-// import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
@@ -19,6 +18,21 @@ import { NestedFrontstage1 } from "./NestedFrontstage1";
 function RightPanel() {
   const [collapsed, setCollapsed] = React.useState(true);
   const direction = useWidgetDirection();
+  const [state, setState] = React.useState(() => {
+    const frontstageDef = FrontstageManager.activeFrontstageDef!;
+    const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
+    return WidgetState[widgetDef.state];
+  });
+  React.useEffect(() => {
+    const listener = (args: WidgetStateChangedEventArgs) => {
+      if (args.widgetDef.id === "VerticalPropertyGrid")
+        setState(WidgetState[args.widgetState]);
+    };
+    FrontstageManager.onWidgetStateChangedEvent.addListener(listener);
+    return () => {
+      FrontstageManager.onWidgetStateChangedEvent.removeListener(listener);
+    };
+  });
   return (
     <>
       <h2>Right panel</h2>
@@ -26,10 +40,36 @@ function RightPanel() {
         const frontstageDef = FrontstageManager.activeFrontstageDef!;
         const panel = frontstageDef.rightPanel!;
         const size = collapsed ? 500 : 200;
-        panel.trySetCurrentSize(size);
+        panel.size = size;
         setCollapsed((prev) => !prev);
       }}>{collapsed ? "<" : ">"}</button>
-      {direction}
+      <p>{direction}</p>
+      <button onClick={() => {
+        const frontstageDef = FrontstageManager.activeFrontstageDef!;
+        frontstageDef.restoreLayout();
+      }}>Restore layout</button>
+      <br />
+      <button onClick={() => {
+        const frontstageDef = FrontstageManager.activeFrontstageDef!;
+        const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
+        widgetDef.setWidgetState(WidgetState.Open);
+      }}>setWidgetState(Open)</button>
+      <button onClick={() => {
+        const frontstageDef = FrontstageManager.activeFrontstageDef!;
+        const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
+        widgetDef.setWidgetState(WidgetState.Closed);
+      }}>setWidgetState(Closed)</button>
+      <button onClick={() => {
+        const frontstageDef = FrontstageManager.activeFrontstageDef!;
+        const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
+        widgetDef.show();
+      }}>Show</button>
+      <button onClick={() => {
+        const frontstageDef = FrontstageManager.activeFrontstageDef!;
+        const widgetDef = frontstageDef.findWidgetDef("VerticalPropertyGrid")!;
+        widgetDef.expand();
+      }}>Expand</button>
+      <p>{state}</p>
     </>
   );
 }
@@ -94,6 +134,7 @@ export class Frontstage1 extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     return (
       <Frontstage id="Test1"
+        version={1}
         defaultTool={CoreTools.selectElementCommand}
         defaultLayout="TwoHalvesVertical"
         contentGroup="TestContentGroup1"
@@ -158,7 +199,7 @@ export class Frontstage1 extends FrontstageProvider {
           <Zone defaultState={ZoneState.Open} allowsMerging={true}
             widgets={[
               <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} fillZone={true} />,
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+              <Widget id="VerticalPropertyGrid1" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
             ]}
           />
         }
@@ -183,6 +224,7 @@ export class Frontstage1 extends FrontstageProvider {
           <StagePanel
             allowedZones={this._rightPanel.allowedZones}
             resizable={false}
+            size={200}
             widgets={this._rightPanel.widgets}
           />
         }

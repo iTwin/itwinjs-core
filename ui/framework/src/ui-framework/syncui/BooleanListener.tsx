@@ -81,6 +81,7 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
     }
   }
 
+  // istanbul ignore next
   private _hasNoChildren = (children: any) => React.Children.count(children) === 0;
 
   public render(): React.ReactNode {
@@ -93,7 +94,7 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
     return (
       typeof children === "function" ?
         children(boolValue, otherProps)
-        : !this._hasNoChildren(children)
+        : /* istanbul ignore next */ !this._hasNoChildren(children)
           ? React.Children.only(children)
           : null
     );

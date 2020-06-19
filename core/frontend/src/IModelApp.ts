@@ -648,4 +648,16 @@ export class IModelApp {
       notice: this.applicationVersion + "<br>" + copyrightNotice,
     });
   }
+
+  /** Format the tooltip strings returned by [[IModelConnection.getToolTipMessage]].
+   * @alpha
+   */
+  public static formatElementToolTip(msg: string[]): HTMLElement {
+    let out = "";
+    msg.forEach((line) => out += IModelApp.i18n.translateKeys(line) + "<br>");
+    const div = document.createElement("div");
+    div.innerHTML = out;
+    return div;
+  }
+
 }

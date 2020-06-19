@@ -18,7 +18,7 @@ import TestUtils from "../TestUtils";
 
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "ToolbarComposer-TestUiProvider";
-  public provideToolbarButtonItems(_stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+  public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
     if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
       const groupChildSpec = ToolbarItemUtilities.createActionButton("simple-test-action-tool-in-group", 200, "icon-developer", "addon-tool-added-to-test-group", (): void => { }, { parentToolGroupId: "test.group" });
       const nestedGroupChildSpec = ToolbarItemUtilities.createActionButton("simple-test-action-tool-nested", 200, "icon-developer", "addon-tool-added-to-test-group-nested", (): void => { }, { parentToolGroupId: "test.group.nested" });

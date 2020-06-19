@@ -6,8 +6,13 @@
  * @module Entities
  */
 
-import { GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { AngleProps, LowAndHighXY, LowAndHighXYZ, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
+import {
+  GuidString,
+  Id64,
+  Id64String,
+  Logger,
+} from "@bentley/bentleyjs-core";
+import { AngleProps, LowAndHighXY, LowAndHighXYZ, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { CodeProps } from "./Code";
 import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { EntityProps } from "./EntityProps";
@@ -49,10 +54,19 @@ export interface ElementProps extends EntityProps {
 export class RelatedElement implements RelatedElementProps {
   /** The Id of the element to which this element is related. */
   public readonly id: Id64String;
+
   /** The full className of the relationship class. */
   public readonly relClassName?: string;
-  constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
-  public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined { return json ? new RelatedElement(json) : undefined; }
+
+  constructor(props: RelatedElementProps) {
+    this.id = Id64.fromJSON(props.id);
+    this.relClassName = props.relClassName;
+  }
+
+  public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined {
+    return json ? new RelatedElement(json) : undefined;
+  }
+
   /** Used to *null out* an existing navigation relationship. */
   public static readonly none = new RelatedElement({ id: Id64.invalid });
 
@@ -65,6 +79,13 @@ export class RelatedElement implements RelatedElementProps {
       return r.id;
     }
     return Id64.fromJSON(json);
+  }
+
+  public toJSON(): RelatedElementProps {
+    return {
+      id: this.id,
+      relClassName: this.relClassName,
+    };
   }
 }
 
@@ -112,7 +133,14 @@ export interface GeometricElement3dProps extends GeometricElementProps {
   typeDefinition?: RelatedElementProps;
 }
 
-/** An enumeration of the different types of sections.
+/** Properties that define a [PhysicalElement]($backend)
+ * @public
+ */
+export interface PhysicalElementProps extends GeometricElement3dProps {
+  physicalMaterial?: RelatedElementProps;
+}
+
+/** An enumeration of the different types of [SectionDrawing]($backend)s.
  * @public
  */
 export enum SectionType {
@@ -124,27 +152,58 @@ export enum SectionType {
 
 /** Properties that define a [SectionLocation]($backend)
  * @alpha
+ * @deprecated Use [[SectionDrawingLocationProps]] instead.
  */
 export interface SectionLocationProps extends GeometricElement3dProps {
   /** Section type */
   sectionType?: SectionType;
   /** Optional Id of the associated [[ViewAttachmentProps]]. */
-  viewAttachment?: Id64String;
-  /** Details on how this section was clipped. A placement local ClipVector stored as a json string.
-   * @deprecated
-   * @internal
-   */
-  clipGeometry?: string;
-  /** The element Id of the [ModelSelector]($backend) for this SectionLocation
-   * @deprecated
-   * @internal
-   */
-  modelSelectorId?: Id64String;
-  /** The element Id of the [CategorySelector]($backend) for this SectionLocation
-   * @deprecated
-   * @internal
-   */
-  categorySelectorId?: Id64String;
+  viewAttachment?: RelatedElementProps;
+  jsonProperties?: {
+    /** The Id of the spatial view from which this section location was created. */
+    spatialViewId?: Id64String;
+    /** The Id of the drawing associated with this section location, if any. If both this and `viewAttachment` are defined, this is the same as the Id of the view attachment's view. */
+    drawingViewId?: Id64String;
+    /** Transform from drawing coordinates to spatial coordinates. */
+    drawingToSpatialTransform?: TransformProps;
+    /** Transform from sheet coordinates to spatial coordinates. */
+    sheetToSpatialTransform?: TransformProps;
+  };
+}
+
+/** Properties that define a [SectionDrawing]($backend).
+ * @beta
+ */
+export interface SectionDrawingProps extends ElementProps {
+  /** The type of section used to generate the drawing. Default: Section. */
+  sectionType?: SectionType;
+  /** The spatial view from which the section was generated. */
+  spatialView?: RelatedElementProps;
+  jsonProperties?: {
+    /** A transform from the section drawing model's coordinates to spatial coordinates.
+     * @alpha
+     */
+    drawingToSpatialTransform?: TransformProps;
+    /** If the section drawing is placed onto a [Sheet]($backend) via a [ViewAttachment]($backend), a transform from the sheet's coordinates to spatial coordinates.
+     * @alpha
+     */
+    sheetToSpatialTransform?: TransformProps;
+    /** If the section drawing is placed onto a [Sheet]($backend) via a [ViewAttachment]($backend), JSON representation of a [ClipVector]($geometry) to apply to
+     * the sheet graphics when drawn in the context of the spatial view.
+     * The ClipVector is in spatial coordinates.
+     * @alpha
+     */
+    drawingBoundaryClip?: any;
+    // ###TODO: Excluded spatial elements; flag to say "exclude all spatial elements" (i.e., don't draw the spatial view at all).
+  };
+}
+
+/** Properties that define a [SectionDrawingLocation]($backend)
+ * @beta
+ */
+export interface SectionDrawingLocationProps extends GeometricElement3dProps {
+  /** The [ViewDefinition]($backend) to which this location refers. */
+  sectionView?: RelatedElementProps;
 }
 
 /** Properties that define a [GeometricElement2d]($backend)
@@ -232,6 +291,14 @@ export interface DefinitionElementProps extends ElementProps {
  */
 export interface TypeDefinitionElementProps extends DefinitionElementProps {
   recipe?: RelatedElementProps;
+}
+
+/** Properties of a [PhysicalType]($backend)
+ * @public
+ */
+export interface PhysicalTypeProps extends TypeDefinitionElementProps {
+  /** The [PhysicalMaterial]($backend) that makes up this physical type. */
+  physicalMaterial?: RelatedElementProps;
 }
 
 /** Properties of a [InformationPartitionElement]($backend)
@@ -333,4 +400,19 @@ export interface CategoryProps extends DefinitionElementProps {
 export interface SubCategoryProps extends DefinitionElementProps {
   appearance?: SubCategoryAppearance.Props;
   description?: string;
+}
+
+/** Parameters of a [UrlLink]($backend)
+ * @public
+ */
+export interface UrlLinkProps extends ElementProps {
+  description?: string;
+  url?: string;
+}
+
+/** Parameters of a [RepositoryLink]($backend)
+ * @public
+ */
+export interface RepositoryLinkProps extends UrlLinkProps {
+  repositoryGuid?: GuidString;
 }

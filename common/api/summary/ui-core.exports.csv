@@ -82,6 +82,8 @@ beta;Form
 beta;FormContext: React.Context
 beta;FormContextState 
 beta;FormProps
+internal;getCssVariable(variableName: string, htmlElement?: HTMLElement): string
+internal;getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number
 internal;getDisplayName: (component: React.ComponentType
 internal;getToolbarBackdropFilter: (filterBlur: number) => string
 internal;getToolbarBackgroundColor: (opacity: number) => string
@@ -107,7 +109,9 @@ public;InputLabel
 public;InputLabelProps 
 public;InputProps 
 public;InputStatus
+internal;isHTMLElement: (message: MessageType) => message is HTMLElement
 internal;isPromiseLike(obj: unknown): obj is PromiseLike
+internal;isReactMessage: (message: MessageType) => message is ReactMessage
 public;LabeledComponentProps
 public;LabeledInput 
 public;LabeledInputProps 
@@ -135,7 +139,10 @@ public;MessageBoxProps
 public;MessageContainer 
 public;MessageContainerProps 
 public;MessagedComponentProps
+beta;MessageRenderer(props: MessageRendererProps): JSX.Element | null
+beta;MessageRendererProps 
 public;MessageSeverity
+public;MessageType = string | HTMLElement | ReactMessage
 beta;MinimalFeaturedTile(props: TileProps): JSX.Element
 beta;MinimalTile(props: TileProps): JSX.Element
 public;MutedText(props: TextProps): JSX.Element
@@ -149,6 +156,7 @@ internal;NumericInputDefaultProps = Pick
 beta;NumericInputProps 
 public;Omit
 public;OmitChildrenProp
+beta;OptionsType = Array
 beta;OptionType
 public;Orientation
 internal;Point 
@@ -163,6 +171,7 @@ beta;RadialMenuProps
 public;Radio 
 public;RadioProps 
 public;RatioChangeResult
+public;ReactMessage
 internal;ReactNumericInput 
 beta;ReactNumericInputProps 
 internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
@@ -204,7 +213,8 @@ public;TabsProps
 public;Textarea 
 public;TextareaProps 
 public;TextProps 
-beta;ThemedSelect
+beta;ThemedSelect(props: ThemedSelectProps): JSX.Element
+beta;ThemedSelectProps =
 internal;TildeFinder
 beta;Tile 
 internal;TileDefaultProps = Pick
@@ -219,6 +229,8 @@ public;ToggleProps
 internal;TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10
 internal;TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT = 0.35
 internal;TOOLBAR_OPACITY_DEFAULT = 0.5
+beta;Tooltip(props: TooltipProps): JSX.Element
+beta;TooltipProps 
 public;Tree 
 public;TreeBranch 
 public;TreeBranchProps 
@@ -242,7 +254,7 @@ internal;useProximityToMouse: (elementRef: React.RefObject
 internal;useRefEffect
 internal;useRefs
 internal;useResizeObserver
-internal;useTargeted: (elementRef: React.RefObject
+internal;useTargeted: (ref: React.RefObject
 public;VerticalAlignment
 public;VerticalTabs 
 public;WebFontIcon(props: WebFontIconProps): JSX.Element

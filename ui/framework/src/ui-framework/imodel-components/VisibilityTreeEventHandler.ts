@@ -22,15 +22,6 @@ import {
 import { CheckBoxState, isPromiseLike } from "@bentley/ui-core";
 
 /**
- * Data structure that describes info used to filter visibility tree.
- * @alpha
- */
-export interface VisibilityTreeFilterInfo {
-  filter: string;
-  activeMatchIndex?: number;
-}
-
-/**
  * Data structure that describes instance visibility status.
  * @alpha
  */
@@ -94,6 +85,7 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
   }
 
   private filterSelectionItems(items: TreeNodeItem[]) {
+    // istanbul ignore if
     if (!this._selectionPredicate)
       return items;
 

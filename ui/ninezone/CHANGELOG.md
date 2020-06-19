@@ -1,6 +1,19 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Jun 2020 14:10:03 GMT and should not be manually modified.
+
+## 2.2.0
+Fri, 19 Jun 2020 14:10:03 GMT
+
+### Updates
+
+- Updates to documentation
+- Added support for popup with multiple editors
+- Fix widget panel interactions on touch devices.
+- Prevent widget content renderer from overflowing widget tabs.
+- Fix touch drag of tool settings handle.
+- Fix widget drag interactions for touch devices.
+- Fix widget content flicker when expanding minimized widget.
 
 ## 2.1.0
 Thu, 28 May 2020 22:48:59 GMT

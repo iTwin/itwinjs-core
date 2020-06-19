@@ -40,6 +40,7 @@ export abstract class ThematicSensors implements WebGLDisposable {
   public get numSensors(): number { return this._sensors.length; }
 
   private _sensors: ThematicDisplaySensor[];
+  private readonly _viewMatrix = Transform.createIdentity();
 
   public matchesTarget(target: Target): boolean {
     return target === this.target && this.sensorSettings === target.plan.thematic?.sensorSettings;
@@ -57,7 +58,7 @@ export abstract class ThematicSensors implements WebGLDisposable {
     }
 
     const obj = System.instance.capabilities.supportsTextureFloat ? FloatSensors.createFloat(target, range, sensors) : PackedSensors.createPacked(target, range, sensors);
-    obj.update();
+    obj._update(obj.target.uniforms.frustum.viewMatrix);
     return obj;
   }
 
@@ -79,20 +80,23 @@ export abstract class ThematicSensors implements WebGLDisposable {
 
   public get texture(): Texture2DHandle { return this._texture.handle; }
 
-  private update() {
+  private _update(viewMatrix: Transform) {
+    this._viewMatrix.setFrom(viewMatrix);
+
     this.reset();
 
     for (const sensor of this._sensors) {
-      const position = sensor.position;
-      const value = sensor.value;
-
-      // ###TODO: transform position from world space to eye space
-
-      this.appendSensor(position, value);
+      const position = this._viewMatrix.multiplyPoint3d(sensor.position);
+      this.appendSensor(position, sensor.value);
     }
 
     this._texture.handle.replaceTextureData(this._texture.data);
-    return this._texture.handle;
+  }
+
+  public update(viewMatrix: Transform) {
+    if (!this._viewMatrix.isAlmostEqual(viewMatrix)) {
+      this._update(viewMatrix);
+    }
   }
 
   protected constructor(texture: ThematicSensorsTexture, target: Target, range: Range3d, sensors: ThematicDisplaySensor[]) {

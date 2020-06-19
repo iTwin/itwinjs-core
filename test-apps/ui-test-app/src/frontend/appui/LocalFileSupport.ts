@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { SampleAppIModelApp, testAppConfiguration } from "../index";
+import { SampleAppIModelApp } from "../index";
 
 // cSpell:ignore TESTAPP FILEPATH
 
 export class LocalFileSupport {
 
   public static localFilesSupported = (): boolean => {
-    if (!testAppConfiguration.snapshotPath) {
-      alert("TESTAPP_SNAPSHOT_FILEPATH must be set on the backend and point to a folder containing local snapshot files.");
+    if (!SampleAppIModelApp.testAppConfiguration?.snapshotPath) {
+      alert("imjs_TESTAPP_SNAPSHOT_FILEPATH must be set on the backend and point to a folder containing local snapshot files.");
       return false;
     }
     return true;
@@ -24,7 +24,7 @@ export class LocalFileSupport {
     let iModelConnection: IModelConnection | undefined;
 
     try {
-      const filePath = testAppConfiguration.snapshotPath + "/" + fileName;
+      const filePath = SampleAppIModelApp.testAppConfiguration?.snapshotPath + "/" + fileName;
       iModelConnection = await SnapshotConnection.openFile(filePath);
     } catch (e) {
       alert(e.message);

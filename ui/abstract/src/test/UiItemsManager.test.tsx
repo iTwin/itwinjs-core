@@ -16,7 +16,7 @@ const testStageUsage = StageUsage.General;
 class TestUiItemsProvider implements UiItemsProvider {
   public readonly id = "TestUiItemsProvider";
 
-  public provideToolbarButtonItems(_stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+  public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
     if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
       const simpleActionSpec = ToolbarItemUtilities.createActionButton("simple-test-action-tool", 200, "icon-developer", "simple-test-action-tool",
         (): void => {
@@ -29,12 +29,12 @@ class TestUiItemsProvider implements UiItemsProvider {
   }
 
   public static statusBarItemIsVisible = true;
-  public provideStatusBarItems(_stageId: string, stageUsage: StageUsage): CommonStatusBarItem[] {
+  public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
 
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
-        AbstractStatusBarItemUtilities.createActionItem("UiItemsProviderTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from plugin",
+        AbstractStatusBarItemUtilities.createActionItem("UiItemsProviderTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension",
           () => {
             // tslint:disable-next-line: no-console
             console.log("Got Here!");

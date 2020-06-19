@@ -6,9 +6,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Point, Rectangle } from "@bentley/ui-core";
-import { ResizeHandle, ToolSettings } from "../../ui-ninezone";
-import { ResizeGrip } from "../../ui-ninezone/widget/rectangular/ResizeGrip";
-import { ToolSettingsProps } from "../../ui-ninezone/widget/ToolSettings";
+import { ResizeGrip, ResizeHandle, ToolSettings, ToolSettingsProps } from "../../ui-ninezone";
 import { createBoundingClientRect } from "../Utils";
 
 describe("<ToolSettings />", () => {

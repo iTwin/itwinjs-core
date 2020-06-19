@@ -12,7 +12,7 @@ import {
   IModelConnection, PerModelCategoryVisibility, SnapshotConnection, SpatialViewState, Viewport, ViewState, ViewState3d,
 } from "@bentley/imodeljs-frontend";
 import {
-  BaseNodeKey, ECInstancesNodeKey, InstanceKey, KeySet, LabelDefinition, Node, NodeKey, NodePathElement, StandardNodeTypes,
+  ECClassGroupingNodeKey, ECInstancesNodeKey, InstanceKey, KeySet, LabelDefinition, Node, NodeKey, NodePathElement, StandardNodeTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
@@ -26,7 +26,7 @@ import { SelectionMode, TreeDataChangesListener, TreeNodeItem } from "@bentley/u
 import { isPromiseLike } from "@bentley/ui-core";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import {
-  ModelsTree, ModelsTreeNodeType, RULESET_MODELS, VisibilityHandler, VisibilityHandlerProps,
+  ModelsTree, ModelsTreeNodeType, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS, VisibilityHandler, VisibilityHandlerProps,
 } from "../../../ui-framework/imodel-components/models-tree/ModelsTree";
 import TestUtils from "../../TestUtils";
 
@@ -129,6 +129,12 @@ describe("ModelsTree", () => {
       },
     });
 
+    const createElementClassGroupingNode = (elementIds: Id64String[]) => ({
+      __key: createClassGroupingKey(elementIds),
+      id: "element_class_grouping",
+      label: PropertyRecord.fromString("grouping"),
+    });
+
     const createElementNode = (modelId?: Id64String, categoryId?: Id64String) => ({
       __key: createKey("element", "element_id"),
       id: "element",
@@ -152,6 +158,15 @@ describe("ModelsTree", () => {
       return {
         type: StandardNodeTypes.ECInstancesNode,
         instanceKeys,
+        pathFromRoot: [],
+      };
+    };
+
+    const createClassGroupingKey = (ids: Id64String[]): ECClassGroupingNodeKey => {
+      return {
+        type: StandardNodeTypes.ECClassGroupingNode,
+        className: "MyDomain:SomeElementType",
+        groupedInstancesCount: Array.isArray(ids) ? ids.length : 1,
         pathFromRoot: [],
       };
     };
@@ -182,17 +197,6 @@ describe("ModelsTree", () => {
         render(<ModelsTree iModel={imodelMock.object} dataProvider={dataProvider}
           modelsVisibilityHandler={visibilityHandlerMock.object} enablePreloading={true} />);
         expect(spy).to.be.calledOnce;
-      });
-
-      it("renders nodes without checkboxes when they're not instance-based", async () => {
-        setupDataProvider([createElementNode()]);
-        dataProvider.getNodeKey = (): BaseNodeKey => ({ type: "test", pathFromRoot: [] });
-
-        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ isDisplayed: false }));
-
-        const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
-        const renderedNode = await waitForElement(() => result.getByText("element"));
-        expect(renderedNode.querySelectorAll("input").length).to.eq(0);
       });
 
       it("renders nodes as unchecked when they're not displayed", async () => {
@@ -330,10 +334,10 @@ describe("ModelsTree", () => {
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
-          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals(element.__key.instanceKeys), 0, dataProvider.rulesetId), moq.Times.once());
         });
 
-        it("adds element node to unified selection according selectionPredicate", async () => {
+        it("adds element node to unified selection according to `selectionPredicate`", async () => {
           const element = createElementNode();
           setupDataProvider([element]);
           visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
@@ -345,10 +349,10 @@ describe("ModelsTree", () => {
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
-          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals(element.__key.instanceKeys), 0, dataProvider.rulesetId), moq.Times.once());
         });
 
-        it("adds multiple model nodes to unified selection according selectionPredicate", async () => {
+        it("adds multiple model nodes to unified selection according to `selectionPredicate`", async () => {
           const node1 = createModelNode();
           const node2 = createModelNode();
           node2.id = "model2";
@@ -365,11 +369,11 @@ describe("ModelsTree", () => {
           fireEvent.click(renderedNodes[0]);
           fireEvent.click(renderedNodes[1], { ctrlKey: true });
 
-          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
-          selectionManagerMock.verify((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals(node1.__key.instanceKeys), 0, dataProvider.rulesetId), moq.Times.once());
+          selectionManagerMock.verify((x) => x.addToSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals(node2.__key.instanceKeys), 0, dataProvider.rulesetId), moq.Times.once());
         });
 
-        it("adds subject node to unified selection according selectionPredicate", async () => {
+        it("adds subject node to unified selection according to `selectionPredicate`", async () => {
           const subject = createSubjectNode();
           setupDataProvider([subject]);
           visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
@@ -381,10 +385,10 @@ describe("ModelsTree", () => {
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
-          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals(subject.__key.instanceKeys), 0, dataProvider.rulesetId), moq.Times.once());
         });
 
-        it("adds node without extendedData to unified selection according selectionPredicate", async () => {
+        it("adds node without extendedData to unified selection according to `selectionPredicate`", async () => {
           const node = createElementNode();
           (node as any).extendedData = undefined;
           setupDataProvider([node]);
@@ -397,10 +401,25 @@ describe("ModelsTree", () => {
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
-          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals(node.__key.instanceKeys), 0, dataProvider.rulesetId), moq.Times.once());
         });
 
-        it("does not add category node to unified selection according selectionPredicate", async () => {
+        it("adds element class grouping node to unified selection according to `selectionPredicate`", async () => {
+          const node = createElementClassGroupingNode([createRandomId(), createRandomId()]);
+          setupDataProvider([node]);
+          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+
+          const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Grouping);
+
+          const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
+          await waitForElement(() => result.getByText("grouping"));
+
+          const renderedNode = result.getByTestId("tree-node");
+          fireEvent.click(renderedNode);
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), imodelMock.object, moq.deepEquals([node.__key]), 0, dataProvider.rulesetId), moq.Times.once());
+        });
+
+        it("does not add category node to unified selection according to `selectionPredicate`", async () => {
           const node = createCategoryNode();
           setupDataProvider([node]);
           visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
@@ -499,6 +518,7 @@ describe("ModelsTree", () => {
         if (!partialProps)
           partialProps = {};
         const props: VisibilityHandlerProps = {
+          rulesetId: "test",
           viewport: partialProps.viewport || mockViewport().object,
           onVisibilityChange: partialProps.onVisibilityChange || sinon.stub(),
         };
@@ -878,6 +898,145 @@ describe("ModelsTree", () => {
               const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false });
+            });
+          });
+
+        });
+
+        describe("element class grouping", () => {
+
+          it("returns disabled when model not displayed", async () => {
+            const groupedElementIds = ["0x11", "0x12", "0x13"];
+            const node = createElementClassGroupingNode(groupedElementIds);
+
+            const viewStateMock = moq.Mock.ofType<ViewState3d>();
+            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+            viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => false);
+            const vpMock = mockViewport({ viewState: viewStateMock.object });
+
+            await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+              // note: need to override to avoid running queries on the imodel
+              (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+
+              const result = handler.getVisibilityStatus(node, node.__key);
+              expect(isPromiseLike(result)).to.be.true;
+              expect(await result).to.include({ isDisplayed: false, isDisabled: true });
+            });
+          });
+
+          it("returns true when model displayed and at least one element is in always displayed list", async () => {
+            const groupedElementIds = ["0x11", "0x12", "0x13"];
+            const node = createElementClassGroupingNode(groupedElementIds);
+
+            const viewStateMock = moq.Mock.ofType<ViewState3d>();
+            viewStateMock.setup((x) => x.viewsCategory("0x1")).returns(() => false);
+            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+            viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => true);
+            const vpMock = mockViewport({ viewState: viewStateMock.object });
+            const alwaysDrawn = new Set([groupedElementIds[1]]);
+            vpMock.setup((x) => x.neverDrawn).returns(() => undefined);
+            vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDrawn);
+
+            await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+              // note: need to override to avoid running queries on the imodel
+              (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+
+              const result = handler.getVisibilityStatus(node, node.__key);
+              expect(isPromiseLike(result)).to.be.true;
+              expect(await result).to.include({ isDisplayed: true });
+            });
+          });
+
+          it("returns false when model displayed and there's at least one element in always exclusive displayed list that's not grouped under node", async () => {
+            const groupedElementIds = ["0x11", "0x12", "0x13"];
+            const node = createElementClassGroupingNode(groupedElementIds);
+
+            const viewStateMock = moq.Mock.ofType<ViewState3d>();
+            viewStateMock.setup((x) => x.viewsCategory("0x1")).returns(() => true);
+            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+            viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => true);
+            const vpMock = mockViewport({ viewState: viewStateMock.object });
+            const alwaysDrawn = new Set(["0x4"]);
+            vpMock.setup((x) => x.neverDrawn).returns(() => undefined);
+            vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDrawn);
+            vpMock.setup((x) => x.isAlwaysDrawnExclusive).returns(() => true);
+
+            await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+              // note: need to override to avoid running queries on the imodel
+              (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+
+              const result = handler.getVisibilityStatus(node, node.__key);
+              expect(isPromiseLike(result)).to.be.true;
+              expect(await result).to.include({ isDisplayed: false });
+            });
+          });
+
+          it("returns false when model displayed and all elements are in never displayed list", async () => {
+            const groupedElementIds = ["0x11", "0x12", "0x13"];
+            const node = createElementClassGroupingNode(groupedElementIds);
+
+            const viewStateMock = moq.Mock.ofType<ViewState3d>();
+            viewStateMock.setup((x) => x.viewsCategory("0x1")).returns(() => true);
+            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+            viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => true);
+            const vpMock = mockViewport({ viewState: viewStateMock.object });
+            const neverDrawn = new Set(groupedElementIds);
+            vpMock.setup((x) => x.neverDrawn).returns(() => neverDrawn);
+            vpMock.setup((x) => x.alwaysDrawn).returns(() => new Set());
+
+            await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+              // note: need to override to avoid running queries on the imodel
+              (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+
+              const result = handler.getVisibilityStatus(node, node.__key);
+              expect(isPromiseLike(result)).to.be.true;
+              expect(await result).to.include({ isDisplayed: false });
+            });
+          });
+
+          it("returns false when model displayed and category not displayed", async () => {
+            const groupedElementIds = ["0x11", "0x12", "0x13"];
+            const node = createElementClassGroupingNode(groupedElementIds);
+
+            const viewStateMock = moq.Mock.ofType<ViewState3d>();
+            viewStateMock.setup((x) => x.viewsCategory("0x1")).returns(() => false);
+            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+            viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => true);
+            const vpMock = mockViewport({ viewState: viewStateMock.object });
+            const neverDrawn = new Set(["0x11"]);
+            vpMock.setup((x) => x.neverDrawn).returns(() => neverDrawn);
+            vpMock.setup((x) => x.alwaysDrawn).returns(() => new Set());
+
+            await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+              // note: need to override to avoid running queries on the imodel
+              (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+
+              const result = handler.getVisibilityStatus(node, node.__key);
+              expect(isPromiseLike(result)).to.be.true;
+              expect(await result).to.include({ isDisplayed: false });
+            });
+          });
+
+          it("returns true when model displayed and category displayed", async () => {
+            const groupedElementIds = ["0x11", "0x12", "0x13"];
+            const node = createElementClassGroupingNode(groupedElementIds);
+
+            const viewStateMock = moq.Mock.ofType<ViewState3d>();
+            viewStateMock.setup((x) => x.viewsCategory("0x1")).returns(() => true);
+            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+            viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => true);
+            const vpMock = mockViewport({ viewState: viewStateMock.object });
+            const neverDrawn = new Set(["0x11"]);
+            vpMock.setup((x) => x.neverDrawn).returns(() => neverDrawn);
+            vpMock.setup((x) => x.alwaysDrawn).returns(() => new Set());
+
+            await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+              // note: need to override to avoid running queries on the imodel
+              (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+
+              const result = handler.getVisibilityStatus(node, node.__key);
+              expect(isPromiseLike(result)).to.be.true;
+              expect(await result).to.include({ isDisplayed: true });
             });
           });
 
@@ -1272,6 +1431,41 @@ describe("ModelsTree", () => {
 
         });
 
+        describe("element class grouping", () => {
+
+          it("makes elements visible by removing from never displayed list and adding to always displayed list when category is not displayed", async () => {
+            const groupedElementIds = ["0x11", "0x12", "0x13"];
+            const node = createElementClassGroupingNode(groupedElementIds);
+
+            const viewStateMock = moq.Mock.ofType<ViewState3d>();
+            viewStateMock.setup((x) => x.viewsCategory("0x1")).returns(() => false);
+            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+            viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => false);
+
+            const vpMock = mockViewport({ viewState: viewStateMock.object });
+
+            const alwaysDisplayed = new Set<string>();
+            const neverDisplayed = new Set([groupedElementIds[0]]);
+            vpMock.setup((x) => x.isAlwaysDrawnExclusive).returns(() => false);
+            vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
+            vpMock.setup((x) => x.neverDrawn).returns(() => neverDisplayed);
+            vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => {
+              return set.size === 3
+                && groupedElementIds.reduce<boolean>((result, id) => (result && set.has(id)), true);
+            }), false)).verifiable();
+            vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
+
+            await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+              // note: need to override to avoid running queries on the imodel
+              (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+
+              await handler.changeVisibility(node, node.__key, true);
+              vpMock.verifyAll();
+            });
+          });
+
+        });
+
         describe("element", () => {
 
           it("makes element visible by only removing from never displayed list when element's category is displayed", async () => {
@@ -1570,6 +1764,12 @@ describe("ModelsTree", () => {
     it("shows correct hierarchy", async () => {
       const hierarchyBuilder = new HierarchyBuilder({ imodel });
       const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_MODELS);
+      expect(hierarchy).to.matchSnapshot();
+    });
+
+    it("shows correct hierarchy with class grouping", async () => {
+      const hierarchyBuilder = new HierarchyBuilder({ imodel });
+      const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_MODELS_GROUPED_BY_CLASS);
       expect(hierarchy).to.matchSnapshot();
     });
 

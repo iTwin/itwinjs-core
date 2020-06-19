@@ -25,21 +25,14 @@ export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disab
   const id = React.useContext(WidgetIdContext);
   assert(id);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
-  const dragStartTimer = React.useRef<Timer>(new Timer(300));
-  const pointerPosition = React.useRef<Point>();
-  const dragging = React.useRef(false);
   const widgetId = floatingWidgetId === undefined ? id : floatingWidgetId;
   const handleWidgetDragStart = useDragWidget({
     widgetId,
   });
-  const handleDragStart = React.useCallback(() => {
-    dragging.current = true;
-    assert(pointerPosition.current);
-    dragStartTimer.current.stop();
+  const handleDragStart = React.useCallback((initialPointerPosition) => {
     handleWidgetDragStart({
-      initialPointerPosition: pointerPosition.current,
+      initialPointerPosition,
     });
-    pointerPosition.current = undefined;
   }, [handleWidgetDragStart]);
   const onDrag = React.useCallback<NonNullable<UseDragWidgetArgs["onDrag"]>>((dragBy) => {
     floatingWidgetId !== undefined && dispatch({
@@ -49,7 +42,6 @@ export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disab
     });
   }, [dispatch, floatingWidgetId]);
   const onDragEnd = React.useCallback<NonNullable<UseDragWidgetArgs["onDragEnd"]>>((dragTarget) => {
-    dragging.current = false;
     let target: WidgetTargetState = {
       type: "floatingWidget",
     };
@@ -72,26 +64,7 @@ export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disab
     onDrag,
     onDragEnd,
   });
-  const handlePointerDown = React.useCallback((e: PointerEvent) => {
-    pointerPosition.current = new Point(e.clientX, e.clientY);
-    dragStartTimer.current.start();
-  }, []);
-  const handlePointerMove = React.useCallback((e: PointerEvent) => {
-    pointerPosition.current = new Point(e.clientX, e.clientY);
-    !dragging.current && handleDragStart();
-  }, [handleDragStart]);
-  const handlePointerUp = React.useCallback(() => {
-    dragStartTimer.current.stop();
-    pointerPosition.current = undefined;
-  }, []);
-  React.useEffect(() => {
-    const timer = dragStartTimer.current;
-    timer.setOnExecute(handleDragStart);
-    return () => {
-      timer.setOnExecute(undefined);
-    };
-  }, [handleDragStart]);
-  const ref = usePointerCaptor(handlePointerDown, handlePointerMove, handlePointerUp);
+  const ref = useDrag(handleDragStart);
   return (
     <div
       className="nz-widget-tabBar"
@@ -105,3 +78,39 @@ export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disab
     </div>
   );
 });
+
+/** Hook to control drag interactions.
+ * Starts drag interaction after pointer moves or after timeout.
+ * @internal
+ */
+export function useDrag<T extends HTMLElement>(onDragStart: (initialPointerPosition: Point) => void) {
+  const dragStartTimer = React.useRef<Timer>(new Timer(300));
+  const initialPointerPosition = React.useRef<Point>();
+  const handlePointerDown = React.useCallback((e: PointerEvent) => {
+    initialPointerPosition.current = new Point(e.clientX, e.clientY);
+    dragStartTimer.current.start();
+  }, []);
+  const handlePointerMove = React.useCallback(() => {
+    initialPointerPosition.current && onDragStart(initialPointerPosition.current);
+    dragStartTimer.current.stop();
+    initialPointerPosition.current = undefined;
+  }, [onDragStart]);
+  const handlePointerUp = React.useCallback(() => {
+    dragStartTimer.current.stop();
+    initialPointerPosition.current = undefined;
+  }, []);
+  React.useEffect(() => {
+    const listener = () => {
+      assert(initialPointerPosition.current);
+      onDragStart(initialPointerPosition.current);
+      initialPointerPosition.current = undefined;
+    };
+    const timer = dragStartTimer.current;
+    timer.setOnExecute(listener);
+    return () => {
+      timer.setOnExecute(undefined);
+    };
+  }, [onDragStart]);
+  const ref = usePointerCaptor<T>(handlePointerDown, handlePointerMove, handlePointerUp);
+  return ref;
+}

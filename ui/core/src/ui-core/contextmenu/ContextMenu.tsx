@@ -12,11 +12,9 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { BadgeType } from "@bentley/ui-abstract";
 import { BadgeUtilities } from "../badge/BadgeUtilities";
-import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
 import { CommonProps } from "../utils/Props";
 import { Omit } from "../utils/typeUtils";
-
-const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />)); // tslint:disable-line:variable-name
+import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
 
 /** Enum to specify where a [[ContextMenu]] should anchor to its parent element
  * @public
@@ -161,6 +159,11 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     this._hotKeyMap.set(index, hotKey);
   }
 
+  private _handleOnOutsideClick = (event: MouseEvent) => {
+    if (this.props.opened && this.props.onOutsideClick)
+      this.props.onOutsideClick(event);
+  }
+
   public render(): JSX.Element {
     const {
       opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect,
@@ -184,7 +187,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
         data-testid="core-context-menu-root"
         {...props}
         ref={this._rootRef}>
-        <DivWithOutsideClick onOutsideClick={onOutsideClick}>
+        <DivWithOutsideClick onOutsideClick={this._handleOnOutsideClick}>
           <div
             ref={this._menuRef}
             tabIndex={0}

@@ -344,7 +344,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     mapToWorld.multiplyPoint3dArrayQuietNormalize(scratchFrustum.points);       // This frustum represents the shadwowing geometry.  Intersect it with background geometry and expand the range depth to include that intersection.
     const backgroundMapGeometry = context.viewport.view.displayStyle.getBackgroundMapGeometry();
     if (undefined !== backgroundMapGeometry) {
-      const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(this._shadowFrustum);
+      const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(this._shadowFrustum, iModel.projectExtents);
       if (!backgroundDepthRange.isNull)
         shadowRange.low.z = Math.min(shadowRange.low.z, backgroundDepthRange.low);
     }

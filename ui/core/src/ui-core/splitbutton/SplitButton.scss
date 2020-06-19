@@ -9,11 +9,15 @@
 @import "../style/themecolors";
 @import "../text/mixins";
 
+// cspell:ignore themecolors
+
 .core-split-button {
   flex-shrink: 1;
 
   @include uicore-font-family;
   @include uicore-buttons-button;
+
+  padding:  $uicore-button-padding;
 
   cursor: pointer;
   margin: 0;
@@ -61,7 +65,7 @@
       }
 
       text-align: center;
-      font-size: $uicore-icons-small;
+      font-size: $uicore-icons-x-small;
       line-height: $uicore-line-height;
     }
 
@@ -74,7 +78,7 @@
     }
   }
 
-  &.expanded {
+  &.core-expanded {
     > .core-split-button-arrow > .core-split-button-arrow-icon {
       transform: scaleY(-1);
     }

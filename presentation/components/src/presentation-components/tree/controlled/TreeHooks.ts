@@ -7,30 +7,27 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { PagedTreeNodeLoader, usePagedTreeNodeLoader, useTreeModelSource } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
-import { PresentationTreeDataProvider } from "../DataProvider";
+import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /**
  * Properties for [[usePresentationTreeNodeLoader]] hook.
  * @beta
  */
-export interface PresentationTreeNodeLoaderProps {
-  /** IModelConnection to use for creating the hierarchy */
-  imodel: IModelConnection;
-  /** Presentation ruleset or it's ID to use for creating the hierarchy */
-  ruleset: Ruleset | string;
+export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataProviderProps {
   /**
    * Number of nodes in a single page. The created loader always requests at least
    * a page nodes, so it should be optimized for usability vs performance (using
    * smaller pages gives better responsiveness, but makes overall performance
    * slightly worse).
+   *
+   * Note: The prop is already defined in `PresentationTreeDataProviderProps` but specified here again to make it required.
    */
-  pageSize: number;
+  pagingSize: number;
   /**
    * Should node loader initiate loading of the whole hierarchy as soon as it's created.
    * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
@@ -69,7 +66,7 @@ export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderP
   }, [resetDataProvider]);
 
   const modelSource = useTreeModelSource(dataProvider);
-  return usePagedTreeNodeLoader(dataProvider, props.pageSize, modelSource);
+  return usePagedTreeNodeLoader(dataProvider, props.pagingSize, modelSource);
 }
 
 function createDataProvider(props: PresentationTreeNodeLoaderProps): IPresentationTreeDataProvider {
@@ -77,7 +74,8 @@ function createDataProvider(props: PresentationTreeNodeLoaderProps): IPresentati
   if (props.dataProvider) {
     dataProvider = props.dataProvider;
   } else {
-    dataProvider = new PresentationTreeDataProvider({ imodel: props.imodel, ruleset: props.ruleset, pagingSize: props.pageSize });
+    const { preloadingEnabled, dataProvider: testDataProvider, ...providerProps } = props;
+    dataProvider = new PresentationTreeDataProvider(providerProps);
   }
   if (props.preloadingEnabled && dataProvider.loadHierarchy) {
     dataProvider.loadHierarchy(); // tslint:disable-line:no-floating-promises

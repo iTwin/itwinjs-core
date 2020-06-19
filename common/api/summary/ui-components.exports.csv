@@ -225,6 +225,8 @@ public;NonPrimitivePropertyLabelRendererProps
 public;NonPrimitivePropertyRenderer 
 public;NonPrimitivePropertyRendererProps 
 public;NullableOperatorProcessor
+beta;NumericInputEditor 
+beta;NumericInputPropertyEditor 
 public;class NumericTypeConverterBase 
 public;Observable
 public;Observer
@@ -312,13 +314,17 @@ beta;SimpleTableDataProvider
 public;SimpleTreeDataProvider 
 public;SimpleTreeDataProviderHierarchy = Map
 internal;SingleSelectionHandler
+beta;SliderEditor 
+beta;SliderPropertyEditor 
 alpha;SolarDataProvider
 alpha;SolarPlaybackProgressHandler = (time: Date) => void
 alpha;SolarTimeline 
 public;SortComparer
+beta;StandardEditorNames
 public;StandardRotationChangeEvent 
 public;StandardRotationChangeEventArgs
 beta;StandardTypeConverterTypeNames
+beta;StandardTypeNames
 public;StringOperatorProcessor
 public;StringTypeConverter 
 public;StructPropertyValueRenderer 
@@ -346,6 +352,8 @@ public;TableRowStyleProvider:
 public;TableSelectionTarget
 public;TableSpecificValueRendererProps 
 public;TableStructValueRenderer 
+beta;TextareaEditor 
+beta;TextareaPropertyEditor 
 beta;TextEditor 
 internal;Timeline 
 alpha;TimelineComponent 
@@ -441,6 +449,7 @@ public;ViewportComponentEvents
 public;ViewportProps 
 public;ViewRotationChangeEvent 
 public;ViewRotationChangeEventArgs
+public;ViewStateProp = ViewState | (() => ViewState)
 beta;VisibleTreeNodes 
 beta;WeightEditor 
 beta;WeightPickerButton 

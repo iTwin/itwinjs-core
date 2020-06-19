@@ -74,7 +74,7 @@ describe("NumericInput", () => {
 describe("<NumericInput - React Testing Library />", () => {
   afterEach(cleanup);
 
-  it("focus into select with setFocus prop", () => {
+  it("value should update with up/down buttons", () => {
     let updatedValue: number | null = 5;
     const handleChange = (v: number | null, _stringValue: string, _input: HTMLInputElement): void => {
       updatedValue = v;

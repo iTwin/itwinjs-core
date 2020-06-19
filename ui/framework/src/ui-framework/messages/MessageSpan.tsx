@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { ClassNameProps } from "@bentley/ui-core";
-import { isHTMLElement, isReactMessage, NotifyMessageType } from "./ReactNotifyMessageDetails";
+import { ClassNameProps, MessageRenderer } from "@bentley/ui-core";
+import { NotifyMessageType } from "./ReactNotifyMessageDetails";
 
 /** @internal */
 export interface MessageSpanProps extends ClassNameProps {
@@ -17,28 +17,10 @@ export interface MessageSpanProps extends ClassNameProps {
 
 /** @internal */
 export function MessageSpan(props: MessageSpanProps) {
-  let messageNode = null;
-
-  if (typeof props.message === "string")
-    messageNode = <span className={props.className}>{props.message}</span>;
-  else if (isHTMLElement(props.message))
-    messageNode = <span className={props.className} dangerouslySetInnerHTML={{ __html: props.message.outerHTML }} />;
-  else if (isReactMessage(props.message))
-    messageNode = <span className={props.className}>{props.message.reactNode}</span>;
-
-  return messageNode;
+  return <MessageRenderer {...props} useSpan />;
 }
 
 /** @internal */
 export function MessageDiv(props: MessageSpanProps) {
-  let messageNode = null;
-
-  if (typeof props.message === "string")
-    messageNode = <div className={props.className}>{props.message}</div>;
-  else if (isHTMLElement(props.message))
-    messageNode = <div className={props.className} dangerouslySetInnerHTML={{ __html: props.message.outerHTML }} />;
-  else if (isReactMessage(props.message))
-    messageNode = <div className={props.className}>{props.message.reactNode}</div>;
-
-  return messageNode;
+  return <MessageRenderer {...props} />;
 }

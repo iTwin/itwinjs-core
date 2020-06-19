@@ -16,7 +16,8 @@ import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-
 import { useDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../redux/connectIModel";
 import { UiFramework } from "../../UiFramework";
-import { VisibilityTreeEventHandler, VisibilityTreeFilterInfo } from "../VisibilityTreeEventHandler";
+import { VisibilityTreeFilterInfo } from "../Common";
+import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
 import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
 import { Category, CategoryVisibilityHandler, loadCategoriesFromViewport, useCategories } from "./CategoryVisibilityHandler";
 
@@ -80,11 +81,12 @@ export function CategoryTree(props: CategoryTreeProps) {
     imodel: props.iModel,
     dataProvider: props.dataProvider,
     ruleset: RULESET_CATEGORIES,
-    pageSize: PAGING_SIZE,
+    pagingSize: PAGING_SIZE,
     preloadingEnabled: props.enablePreloading,
   });
 
   const { filteredNodeLoader, isFiltering, nodeHighlightingProps } = useVisibilityTreeFiltering(nodeLoader, props.filterInfo, props.onFilterApplied);
+  // istanbul ignore next
   const viewManager = props.viewManager ?? IModelApp.viewManager;
   const { activeView, allViewports, categoryVisibilityHandler } = props;
   const currentActiveView = activeView ?? viewManager.getFirstOpenView();
@@ -140,7 +142,9 @@ export const IModelConnectedCategoryTree = connectIModelConnection(null, null)(C
 
 function useCategoryVisibilityHandler(viewManager: ViewManager, imodel: IModelConnection, categories: Category[], activeView?: Viewport, allViewports?: boolean, visibilityHandler?: CategoryVisibilityHandler) {
   return useDisposable(React.useCallback(
-    () => visibilityHandler ?? new CategoryVisibilityHandler({ viewManager, imodel, categories, activeView, allViewports }),
+    () =>
+      // istanbul ignore next
+      visibilityHandler ?? new CategoryVisibilityHandler({ viewManager, imodel, categories, activeView, allViewports }),
     [viewManager, imodel, categories, activeView, allViewports, visibilityHandler]),
   );
 }
@@ -159,6 +163,7 @@ async function setViewType(activeView?: Viewport) {
  * @alpha
  */
 export async function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider) {
+  // istanbul ignore next
   const activeView = viewport ?? viewManager.getFirstOpenView();
   const ids = await getCategories(imodel, activeView, filteredProvider);
 

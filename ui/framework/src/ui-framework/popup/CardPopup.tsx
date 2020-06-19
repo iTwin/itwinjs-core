@@ -96,6 +96,7 @@ export interface CardProps {
 /** @alpha */
 export function Card(props: CardProps) {
   let titleNode: React.ReactNode;
+  // istanbul ignore else
   if (props.title) {
     if (typeof props.title === "string")
       titleNode = <LeadingText>{props.title}</LeadingText>;

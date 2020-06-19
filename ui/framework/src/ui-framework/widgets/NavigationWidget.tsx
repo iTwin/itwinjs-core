@@ -40,7 +40,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     this.horizontalPanelAlignment = ToolbarPanelAlignment.End;
     this._navigationAidId = (props.navigationAidId !== undefined) ? props.navigationAidId : "";
 
-    const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : "";
+    const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : /* istanbul ignore next */ "";
     this.widgetBaseName = `[${activeStageName}]NavigationWidget`;
   }
 
@@ -66,7 +66,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     // istanbul ignore else
     if (!this._navigationAidControl && this._navigationAidId) {
       const activeContentControl = ContentViewManager.getActiveContentControl();
-      const viewport = activeContentControl ? activeContentControl.viewport : undefined;
+      const viewport = activeContentControl ? activeContentControl.viewport : /* istanbul ignore next */ undefined;
 
       this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel, viewport }) as NavigationAidControl;
       if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
@@ -90,6 +90,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
       );
     }
 
+    // istanbul ignore next
     return null;
   }
 
@@ -207,8 +208,8 @@ class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWit
   }
 
   private reloadToolbars() {
-    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar();
-    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar();
+    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : /* istanbul ignore next */ this.props.navigationWidgetDef.renderHorizontalToolbar();
+    const verticalToolbar = (this.props.verticalToolbar) ? /* istanbul ignore next */ this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar();
     this.setState({ horizontalToolbar, verticalToolbar });
   }
 

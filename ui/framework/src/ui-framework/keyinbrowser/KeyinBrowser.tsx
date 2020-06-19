@@ -114,7 +114,8 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     const argsKey = this.getArgsKey(toolId);
     if (argsKey && argsKey.length > 0) {
       const args = window.localStorage.getItem(argsKey);
-      if (args && args.length > 0 && args[0] === "[") {
+      // istanbul ignore if
+      if (args && /* istanbul ignore next */ args.length > 0 && /* istanbul ignore next */ args[0] === "[") {
         return (JSON.parse(args) as string[]).join("|");
       }
     }
@@ -162,7 +163,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
         let key = "keyinbrowser:keyin";
         window.localStorage.setItem(key, toolId);
 
-        // istanbul ignore else
+        // istanbul ignore if
         if (args && args.length > 0) {
           key = `keyinbrowser:${toolId}`;
           const objectAsString = JSON.stringify(args);
@@ -173,11 +174,10 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
         runStatus = false;
 
         try {
-          runStatus = args.length > 0 ? tool.parseAndRun(...args) : tool.run();
-
-          if (!runStatus)
-            this._outputMessage(UiFramework.translate("keyinbrowser.failedToRun"));
+          runStatus = args.length > 0 ? /* istanbul ignore next */ tool.parseAndRun(...args) : tool.run();
+          !runStatus && this._outputMessage(UiFramework.translate("keyinbrowser.failedToRun"));
         } catch (e) {
+          // istanbul ignore next
           this._outputMessage(UiFramework.translate("keyinbrowser.exceptionOccurred") + ": " + e);
         }
       }
@@ -193,6 +193,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     IModelApp.notifications.outputMessage(details);
   }
 
+  // istanbul ignore next
   private _onKeyinSelected = (selected: AutoSuggestData): void => {
     const currentToolId = selected.value;
     const currentArgs = this.getToolArgs(currentToolId);
@@ -292,7 +293,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     const inputValue = value.trim().toLowerCase();
     const inputLength = inputValue.length;
 
-    return inputLength === 0 ? [] : this.state.keyins.filter((data: KeyinBrowserData) => {
+    return inputLength === 0 ? /* istanbul ignore next */[] : this.state.keyins.filter((data: KeyinBrowserData) => {
       return data.label.toLowerCase().includes(inputValue) || data.englishKeyin.toLowerCase().includes(inputValue);
     });
   }

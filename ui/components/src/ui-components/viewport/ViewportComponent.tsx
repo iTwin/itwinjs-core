@@ -20,6 +20,11 @@ import {
   CubeRotationChangeEventArgs, DrawingViewportChangeEventArgs, StandardRotationChangeEventArgs, ViewportComponentEvents,
 } from "./ViewportComponentEvents";
 
+/** Type for a ViewState prop
+ * @public
+ */
+export type ViewStateProp = ViewState | (() => ViewState);
+
 /**
  * Properties for [[ViewportComponent]] component.
  * @public
@@ -30,7 +35,7 @@ export interface ViewportProps extends CommonProps {
   /** Id of a default view definition to load as a starting point */
   viewDefinitionId?: Id64String;
   /** ViewState to use as a starting point */
-  viewState?: ViewState;
+  viewState?: ViewStateProp;
   /** Function to get a reference to the ScreenViewport */
   viewportRef?: (v: ScreenViewport) => void;
 
@@ -139,7 +144,10 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     let viewState: ViewState;
 
     if (this.props.viewState) {
-      viewState = this.props.viewState;
+      if (typeof this.props.viewState === "function")
+        viewState = this.props.viewState();
+      else
+        viewState = this.props.viewState;
     } else if (this.props.viewDefinitionId) {
       viewState = await this.props.imodel.views.load(this.props.viewDefinitionId);
       // istanbul ignore next

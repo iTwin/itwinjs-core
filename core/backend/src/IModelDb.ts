@@ -16,7 +16,7 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
-  CreateEmptyStandaloneIModelProps, CreatePolyfaceRequestProps, CreatePolyfaceResponseProps, CreateSnapshotIModelProps, DisplayStyleProps,
+  CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, IModel, IModelCoordinatesResponseProps, IModelEncryptionProps,
   IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelVersion, MassPropertiesRequestProps,
@@ -895,14 +895,6 @@ export abstract class IModelDb extends IModel {
     requestContext.enter();
     const resultString: string = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
     return JSON.parse(resultString) as GeoCoordinatesResponseProps;
-  }
-
-  /**
-   * @internal
-   */
-  public async createPolyfaceFromElement(requestContext: ClientRequestContext, requestProps: CreatePolyfaceRequestProps): Promise<CreatePolyfaceResponseProps> {
-    requestContext.enter();
-    return this.nativeDb.createPolyfaceFromElement(requestProps);
   }
 
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
@@ -2128,6 +2120,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Push changes to iModelHub. Locks are released and codes are marked as used as part of a successful push.
+   * If there are no changes, then locks are released and reserved codes are released.
    * @param requestContext The client request context.
    * @param description The changeset description
    * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
@@ -2139,8 +2132,10 @@ export class BriefcaseDb extends IModelDb {
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes", Logger.logError, loggerCategory, () => this.getRpcProps());
     if (!this.isPushEnabled)
       throw new IModelError(BentleyStatus.ERROR, "IModel needs to be downloaded with SyncMode.PullAndPush and opened ReadWrite", Logger.logError, loggerCategory, () => this.getRpcProps());
-    if (!this.nativeDb.hasPendingTxns())
+    if (!this.nativeDb.hasPendingTxns()) {
+      await this.concurrencyControl.onPushEmpty(requestContext);
       return; // nothing to push
+    }
 
     await this.concurrencyControl.onPushChanges(requestContext);
 
@@ -2421,8 +2416,10 @@ export class StandaloneDb extends IModelDb {
     const filePath: string = nativeDb.getFilePath();
     const iModelRpcProps: IModelRpcProps = { key: filePath, iModelId: nativeDb.getDbGuid(), openMode };
     super(nativeDb, iModelRpcProps, openMode);
-    if (!BriefcaseManager.isStandaloneBriefcaseId(this.getBriefcaseId()))
+    if (!BriefcaseManager.isStandaloneBriefcaseId(this.getBriefcaseId())) {
+      nativeDb.closeIModel();
       throw new IModelError(IModelStatus.BadRequest, "Not a standalone iModel", Logger.logError, loggerCategory);
+    }
 
     StandaloneDb._openDbs.set(filePath, this);
   }

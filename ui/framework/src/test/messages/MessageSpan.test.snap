@@ -1,57 +1,68 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`MessageSpan & MessageDiv MessageDiv with React node 1`] = `
-<div>
-  <span>
-    For more details, 
-    <UnderlinedButton>
-      click here
-    </UnderlinedButton>
-    .
-  </span>
-</div>
+<MessageRenderer
+  message={
+    Object {
+      "reactNode": <span>
+        For more details, 
+        <UnderlinedButton>
+          click here
+        </UnderlinedButton>
+        .
+      </span>,
+    }
+  }
+/>
 `;
 
 exports[`MessageSpan & MessageDiv MessageDiv with message HTMLElement 1`] = `
-<div
-  dangerouslySetInnerHTML={
-    Object {
-      "__html": "<span>Test</span>",
-    }
+<MessageRenderer
+  message={
+    <span>
+      Test
+    </span>
   }
 />
 `;
 
 exports[`MessageSpan & MessageDiv MessageDiv with message text 1`] = `
-<div>
-  Test
-</div>
+<MessageRenderer
+  message="Test"
+/>
 `;
 
 exports[`MessageSpan & MessageDiv MessageSpan with React node 1`] = `
-<span>
-  <span>
-    For more details, 
-    <UnderlinedButton>
-      click here
-    </UnderlinedButton>
-    .
-  </span>
-</span>
+<MessageRenderer
+  message={
+    Object {
+      "reactNode": <span>
+        For more details, 
+        <UnderlinedButton>
+          click here
+        </UnderlinedButton>
+        .
+      </span>,
+    }
+  }
+  useSpan={true}
+/>
 `;
 
 exports[`MessageSpan & MessageDiv MessageSpan with message HTMLElement 1`] = `
-<span
-  dangerouslySetInnerHTML={
-    Object {
-      "__html": "<span>Test</span>",
-    }
+<MessageRenderer
+  message={
+    <span>
+      Test
+    </span>
   }
+  useSpan={true}
 />
 `;
 
 exports[`MessageSpan & MessageDiv MessageSpan with message text 1`] = `
-<span>
-  Test
-</span>
+<MessageRenderer
+  message="Test"
+  useSpan={true}
+/>
 `;

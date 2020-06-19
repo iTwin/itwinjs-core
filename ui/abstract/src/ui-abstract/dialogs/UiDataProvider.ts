@@ -7,7 +7,7 @@
  */
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
+import { DialogItem, DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
 
 /** Sync UI Control Properties Event class.
  * @beta
@@ -26,7 +26,12 @@ export abstract class UiDataProvider {
     return { status: PropertyChangeStatus.Success };
   }
 
-  /** Called by UI to request available properties. */
+  /** Called to get any defined DialogItems that can be use to dynamically layout properties in UI (See ToolWithSettings for example). */
+  public supplyDialogItems(): DialogItem[] | undefined {
+    return;
+  }
+
+  /** Called by UI to request available properties that can be bound to user supplied UI components (See Tool1UiProvider for example). */
   public supplyAvailableProperties(): DialogPropertyItem[] {
     return [];
   }

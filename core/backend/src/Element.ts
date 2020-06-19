@@ -12,14 +12,15 @@ import { LockLevel } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel,
-  InformationPartitionElementProps, LineStyleProps, Placement2d, Placement3d, RelatedElement, SectionLocationProps, SectionType,
-  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps,
+  InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement,
+  RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionLocationProps, SectionType, SheetBorderTemplateProps, SheetProps,
+  SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
-import { DrawingModel, PhysicalModel } from "./Model";
+import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 
 /** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
@@ -449,14 +450,25 @@ export abstract class SpatialElement extends GeometricElement3d {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** An Element that is spatially located, has mass, and can be 'touched'.
+/** An Element that is spatially located, has mass, and can be *touched*.
  * @public
  */
 export abstract class PhysicalElement extends SpatialElement {
   /** @internal */
   public static get className(): string { return "PhysicalElement"; }
+  /** If defined, the [[PhysicalMaterial]] that makes up this PhysicalElement. */
+  public physicalMaterial?: RelatedElement;
   /** @internal */
-  public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
+  public constructor(props: PhysicalElementProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.physicalMaterial = RelatedElement.fromJSON(props.physicalMaterial);
+  }
+  /** @internal */
+  public toJSON(): PhysicalElementProps {
+    const val = super.toJSON() as PhysicalElementProps;
+    val.physicalMaterial = this.physicalMaterial?.toJSON();
+    return val;
+  }
 }
 
 /** Identifies a *tracked* real world location but has no mass and cannot be *touched*.
@@ -482,6 +494,7 @@ export class VolumeElement extends SpatialLocationElement {
 /** A SectionLocation element defines how a section drawing should be generated in a 3d view.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.6
  * @alpha
+ * @deprecated use [[SectionDrawingLocation]].
  */
 export class SectionLocation extends SpatialLocationElement implements SectionLocationProps {
   /** Section type */
@@ -501,6 +514,31 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
     return {
       ...super.toJSON(),
       sectionType: this.sectionType,
+    };
+  }
+}
+
+/** A SectionDrawingLocation element identifies the location of a [[SectionDrawing]] in the context of a [[SpatialModel]].
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.11.
+ * @beta
+ */
+export class SectionDrawingLocation extends SpatialLocationElement {
+  /** The Id of the [[ViewDefinition]] to which this location refers. */
+  public sectionView: RelatedElement;
+
+  /** @internal */
+  public static get className(): string { return "SectionDrawingLocation"; }
+
+  public constructor(props: SectionDrawingLocationProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.sectionView = RelatedElement.fromJSON(props.sectionView) ?? RelatedElement.none;
+  }
+
+  /** @internal */
+  public toJSON(): SectionDrawingLocationProps {
+    return {
+      ...super.toJSON(),
+      sectionView: this.sectionView.toJSON(),
     };
   }
 }
@@ -603,7 +641,7 @@ export abstract class Document extends InformationContentElement {
   constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** A document that represents a drawing, that is, 2-D graphical representation of engineering data. A Drawing element is modelled by a [[DrawingModel]].
+/** A document that represents a drawing, that is, a two-dimensional graphical representation of engineering data. A Drawing element is usually modelled by a [[DrawingModel]].
  * @public
  */
 export class Drawing extends Document {
@@ -644,15 +682,34 @@ export class Drawing extends Document {
   }
 }
 
-/** A document that represents a section drawing, that is, 2-D graphical documentation derived from a planar
- * section of some other spatial model. A SectionDrawing element is modelled by a [[SectionDrawingModel]].
+/** A document that represents a section drawing, that is, a graphical documentation derived from a planar
+ * section of a spatial view. A SectionDrawing element is modelled by a [[SectionDrawingModel]] or a [[GraphicalModel3d]].
  * @public
  */
 export class SectionDrawing extends Drawing {
+  /** The type of section used to generate the drawing. */
+  public sectionType: SectionType;
+  /** The spatial view from which the section was generated. */
+  public spatialView: RelatedElement;
+
   /** @internal */
   public static get className(): string { return "SectionDrawing"; }
+
   /** @internal */
-  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+  constructor(props: SectionDrawingProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
+    this.spatialView = RelatedElement.fromJSON(props.spatialView) ?? RelatedElement.none;
+  }
+
+  /** @internal */
+  public toJSON(): SectionDrawingProps {
+    return {
+      ...super.toJSON(),
+      sectionType: this.sectionType,
+      spatialView: this.spatialView.toJSON(),
+    };
+  }
 }
 
 /** The template for a SheetBorder
@@ -773,6 +830,89 @@ export abstract class DefinitionElement extends InformationContentElement implem
   }
 }
 
+/** This abstract class unifies DefinitionGroup and DefinitionContainer for relationship endpoint purposes.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.10
+ * @public
+ */
+export abstract class DefinitionSet extends DefinitionElement {
+  /** @internal */
+  public static get className(): string { return "DefinitionSet"; }
+}
+
+/** A DefinitionContainer exclusively owns a set of DefinitionElements contained within its sub-model (of type DefinitionModel).
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.10
+ * @public
+ */
+export class DefinitionContainer extends DefinitionSet {
+  /** @internal */
+  public static get className(): string { return "DefinitionContainer"; }
+  /** Create a DefinitionContainer
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that will contain this DefinitionContainer element.
+   * @param code The Code for this DefinitionContainer.
+   * @param isPrivate The optional hint, that if `true` means it should not be displayed in the UI.
+   * @returns The newly constructed DefinitionContainer
+   * @note There is not a predefined CodeSpec for DefinitionContainer elements, so it is the responsibility of the domain or application to create one.
+   * @throws [[IModelError]] if there is a problem creating the DefinitionContainer
+   */
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): DefinitionContainer {
+    const elementProps: DefinitionElementProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code,
+      isPrivate,
+    };
+    return new DefinitionContainer(elementProps, iModelDb);
+  }
+  /** Insert a DefinitionContainer and its sub-model.
+   * @param iModelDb Insert into this IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that will contain this DefinitionContainer element.
+   * @param code The Code for this DefinitionContainer.
+   * @param isPrivate The optional hint, that if `true` means it should not be displayed in the UI.
+   * @returns The Id of the newly inserted DefinitionContainer and its newly inserted sub-model (of type DefinitionModel).
+   * @note There is not a predefined CodeSpec for DefinitionContainer elements, so it is the responsibility of the domain or application to create one.
+   * @throws [[IModelError]] if there is a problem inserting the DefinitionContainer
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
+    const containerElement = this.create(iModelDb, definitionModelId, code, isPrivate);
+    const containerElementId = iModelDb.elements.insertElement(containerElement);
+    const containerSubModelProps: ModelProps = {
+      classFullName: DefinitionModel.classFullName,
+      modeledElement: { id: containerElementId },
+      isPrivate,
+    };
+    iModelDb.models.insertModel(containerSubModelProps);
+    return containerElementId;
+  }
+}
+
+/** A non-exclusive set of DefinitionElements grouped using the DefinitionGroupGroupsDefinitions relationship.
+ * @note The associated ECClass was added to the BisCore schema in version 1.0.10
+ * @public
+ */
+export class DefinitionGroup extends DefinitionSet {
+  /** @internal */
+  public static get className(): string { return "DefinitionGroup"; }
+  /** Create a DefinitionGroup
+   * @param iModelDb The IModelDb
+   * @param definitionModelId The Id of the [DefinitionModel]($backend) that will contain this DefinitionGroup element.
+   * @param code The Code for this DefinitionGroup
+   * @param isPrivate The optional hint, that if `true` means it should not be displayed in the UI.
+   * @returns The newly constructed DefinitionGroup
+   * @note There is not a predefined CodeSpec for DefinitionGroup elements, so it is the responsibility of the domain or application to create one.
+   * @throws [[IModelError]] if there is a problem creating the DefinitionGroup
+   */
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): DefinitionGroup {
+    const elementProps: DefinitionElementProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code,
+      isPrivate,
+    };
+    return new DefinitionGroup(elementProps, iModelDb);
+  }
+}
+
 /** Defines a set of properties (the *type*) that may be associated with an element.
  * @public
  */
@@ -807,9 +947,19 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
 export abstract class PhysicalType extends TypeDefinitionElement {
   /** @internal */
   public static get className(): string { return "PhysicalType"; }
+  /** If defined, the [[PhysicalMaterial]] that makes up this PhysicalType. */
+  public physicalMaterial?: RelatedElement;
   /** @internal */
-  constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
-
+  constructor(props: PhysicalTypeProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.physicalMaterial = RelatedElement.fromJSON(props.physicalMaterial);
+  }
+  /** @internal */
+  public toJSON(): PhysicalTypeProps {
+    const val = super.toJSON() as PhysicalTypeProps;
+    val.physicalMaterial = this.physicalMaterial?.toJSON();
+    return val;
+  }
   /** Create a Code for a PhysicalType element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the PhysicalType element and provides the scope for its name.
@@ -900,7 +1050,7 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
   /** @internal */
   public static get className(): string { return "GraphicalType2d"; }
   /** @internal */
-  public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+  public constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
   /** Create a Code for a GraphicalType2d element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -1053,9 +1203,26 @@ export abstract class LinkElement extends InformationReferenceElement {
 /** An information element that specifies a URL link.
  * @public
  */
-export class UrlLink extends LinkElement {
+export class UrlLink extends LinkElement implements UrlLinkProps {
   /** @internal */
   public static get className(): string { return "UrlLink"; }
+  public description?: string;
+  public url?: string;
+
+  /** @internal */
+  public constructor(props: UrlLinkProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.description = props.description;
+    this.url = props.url;
+  }
+
+  /** @internal */
+  public toJSON(): UrlLinkProps {
+    const val = super.toJSON() as UrlLinkProps;
+    val.description = this.description;
+    val.url = this.url;
+    return val;
+  }
 }
 
 /** An information element that links to an embedded file.
@@ -1069,9 +1236,23 @@ export class EmbeddedFileLink extends LinkElement {
 /** An information element that links to a repository.
  * @public
  */
-export class RepositoryLink extends UrlLink {
+export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
   /** @internal */
   public static get className(): string { return "RepositoryLink"; }
+  public repositoryGuid?: GuidString;
+
+  /** @internal */
+  public constructor(props: RepositoryLinkProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.repositoryGuid = props.repositoryGuid;
+  }
+
+  /** @internal */
+  public toJSON(): RepositoryLinkProps {
+    const val = super.toJSON() as RepositoryLinkProps;
+    val.repositoryGuid = this.repositoryGuid;
+    return val;
+  }
 }
 
 /** A real world entity is modeled as a Role Element when a set of external circumstances define an important

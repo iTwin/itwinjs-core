@@ -43,9 +43,9 @@ public;Entry
 public;EntryContainer
 alpha;EnvMacroSubst
 beta;ExtensionStatus
+public;GeoServiceStatus
 public;GetMetaDataFunction = () => any
 public;Guid
-internal;normalize(value: GuidString): GuidString
 public;GuidString = string
 beta;HttpStatus
 public;Id64

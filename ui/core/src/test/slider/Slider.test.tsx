@@ -5,9 +5,10 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import { Icon } from "../../ui-core/icons/IconComponent";
 import { Slider } from "../../ui-core/slider/Slider";
+import TestUtils from "../TestUtils";
 
 describe("Slider", () => {
 
@@ -63,7 +64,7 @@ describe("Slider", () => {
 
   it("should render with disabled", () => {
     const component = render(<Slider min={0} max={100} values={[50]} showTicks={true} getTickCount={() => 10} showMinMax={true} disabled={true} />);
-    expect(component.container.querySelector(".disabled")).not.to.be.null;
+    expect(component.container.querySelector(".core-disabled")).not.to.be.null;
   });
 
   it("should render with multiple values", () => {
@@ -78,6 +79,18 @@ describe("Slider", () => {
 
   it("should render with showTooltip and tooltipBelow", () => {
     render(<Slider min={0} max={50} values={[0, 25]} showTooltip tooltipBelow />);
+  });
+
+  it("should call onChange", async () => {
+    const spyOnChange = sinon.spy();
+    const component = render(<Slider min={0} max={100} values={[50]} onChange={spyOnChange} />);
+
+    const handles = component.container.querySelectorAll(".core-slider-handle");
+    expect(handles.length).to.eq(1);
+    fireEvent.mouseDown(handles[0]);
+    fireEvent.mouseUp(handles[0]);
+    await TestUtils.flushAsyncOperations();
+    expect(spyOnChange.calledOnce).to.be.true;
   });
 
   // it.only("should render with showTooltip", () => {

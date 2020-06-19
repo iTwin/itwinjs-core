@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-itwin-client",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/backend-itwin-client.js",
   "browser": {
@@ -17,14 +17,13 @@
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
-    "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test-integration",
+    "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run test:integration",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/backend-itwin-client/file.json --tsIndexFile=backend-itwin-client.ts --onlyJson",
     "extract-api": "betools extract-api --entry=backend-itwin-client",
     "lint": "tslint --project . 1>&2",
     "pretest": "npm run copy:test-assets",
-    "test": "npm run pretest && betools test --offline=\"mock\" --grep=\"#integration\" --invert",
-    "test:integration": "npm run pretest && betools test --grep=\"#integration\"",
-    "test:imodel-bank": "npm run pretest && betools test --grep=\"#iModelBank\""
+    "test": "",
+    "test:integration": "npm run pretest && betools test --grep=\"#integration\""
   },
   "repository": {
     "type": "git",
@@ -38,28 +37,28 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.1.0",
-    "@bentley/geometry-core": "^2.1.0",
-    "@bentley/frontend-authorization-client": "^2.1.0",
-    "@bentley/imodelhub-client": "^2.1.0",
-    "@bentley/itwin-client": "^2.1.0",
-    "@bentley/imodeljs-common": "^2.1.0"
+    "@bentley/bentleyjs-core": "^2.2.0",
+    "@bentley/geometry-core": "^2.2.0",
+    "@bentley/frontend-authorization-client": "^2.2.0",
+    "@bentley/imodelhub-client": "^2.2.0",
+    "@bentley/itwin-client": "^2.2.0",
+    "@bentley/imodeljs-common": "^2.2.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.1.0",
-    "@bentley/build-tools": "2.1.0",
-    "@bentley/config-loader": "2.1.0",
-    "@bentley/context-registry-client": "2.1.0",
-    "@bentley/frontend-authorization-client": "2.1.0",
-    "@bentley/geometry-core": "2.1.0",
-    "@bentley/imodelhub-client": "2.1.0",
-    "@bentley/itwin-client": "2.1.0",
-    "@bentley/imodeljs-common": "2.1.0",
-    "@bentley/oidc-signin-tool": "2.1.0",
+    "@bentley/bentleyjs-core": "2.2.0",
+    "@bentley/build-tools": "2.2.0",
+    "@bentley/config-loader": "2.2.0",
+    "@bentley/context-registry-client": "2.2.0",
+    "@bentley/frontend-authorization-client": "2.2.0",
+    "@bentley/geometry-core": "2.2.0",
+    "@bentley/imodelhub-client": "2.2.0",
+    "@bentley/itwin-client": "2.2.0",
+    "@bentley/imodeljs-common": "2.2.0",
+    "@bentley/oidc-signin-tool": "2.2.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",

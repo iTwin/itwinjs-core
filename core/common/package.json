@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "iModel.js components common to frontend and backend",
   "main": "lib/imodeljs-common.js",
   "typings": "lib/imodeljs-common",
@@ -40,32 +40,32 @@
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
   ],
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.1.0",
-    "@bentley/geometry-core": "^2.1.0",
-    "@bentley/imodelhub-client": "^2.1.0",
-    "@bentley/itwin-client": "^2.1.0"
+    "@bentley/bentleyjs-core": "^2.2.0",
+    "@bentley/geometry-core": "^2.2.0",
+    "@bentley/imodelhub-client": "^2.2.0",
+    "@bentley/itwin-client": "^2.2.0"
   },
   "//devDependencies": [
     "NOTE: Must include modules mentioned in peerDependencies since those are not auto-installed",
     "NOTE: Must include modules used by the scripts section of package.json"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.1.0",
-    "@bentley/build-tools": "2.1.0",
-    "@bentley/geometry-core": "2.1.0",
-    "@bentley/imodelhub-client": "2.1.0",
-    "@bentley/itwin-client": "2.1.0",
-    "@types/semver": "^5.5.0",
-    "rimraf": "^3.0.2",
-    "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
-    "typescript": "~3.7.4",
+    "@bentley/bentleyjs-core": "2.2.0",
+    "@bentley/build-tools": "2.2.0",
+    "@bentley/geometry-core": "2.2.0",
+    "@bentley/imodelhub-client": "2.2.0",
+    "@bentley/itwin-client": "2.2.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
+    "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
-    "ts-node": "^7.0.1"
+    "rimraf": "^3.0.2",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.7.4"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

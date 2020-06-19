@@ -149,6 +149,7 @@ export class ContentDataProvider implements IContentDataProvider {
     this._imodel = props.imodel;
     this._keys = new KeySet();
     this._previousKeysGuid = this._keys.guid;
+    this._pagingSize = props.pagingSize;
     if (!props.doNotListenForPresentationUpdates)
       Presentation.presentation.onContentUpdate.addListener(this.onContentUpdate);
     this.invalidateCache(CacheInvalidationProps.full());

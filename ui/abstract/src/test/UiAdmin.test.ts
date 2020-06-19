@@ -9,6 +9,7 @@ import { AbstractToolbarProps } from "../ui-abstract/items/AbstractToolbarProps"
 import { RelativePosition } from "../ui-abstract/items/RelativePosition";
 import { PropertyDescription } from "../ui-abstract/properties/Description";
 import { UiAdmin } from "../ui-abstract/UiAdmin";
+import { UiDataProvider } from "../ui-abstract/dialogs/UiDataProvider";
 
 describe("UiAdmin", () => {
 
@@ -150,6 +151,16 @@ describe("UiAdmin", () => {
 
     expect(uiAdmin.showCard(content.documentElement, "Title", toolbarProps, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spySelect, spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.false;
     expect(uiAdmin.hideCard()).to.be.false;
+  });
+
+  it("openToolSettingsPopup should return false by default", () => {
+    class TestUiDataProvider extends UiDataProvider { }
+    const uiDataProvider = new TestUiDataProvider();
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    const spyCancel = sinon.fake();
+
+    expect(uiAdmin.openToolSettingsPopup(uiDataProvider, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.false;
+    expect(uiAdmin.closeToolSettingsPopup()).to.be.false;
   });
 
 });

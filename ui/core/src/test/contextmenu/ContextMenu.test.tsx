@@ -65,6 +65,20 @@ describe("ContextMenu", () => {
 
       spyMethod.should.have.been.called;
     });
+    it("should not call onOutsideClick on window mouseup if closed", () => {
+      const spyMethod = sinon.fake();
+      render(
+        <ContextMenu onOutsideClick={spyMethod}>
+          <ContextMenuItem> Test </ContextMenuItem>
+        </ContextMenu>);
+
+      const mouseUp = document.createEvent("HTMLEvents");
+      mouseUp.initEvent("mouseup");
+      sinon.stub(mouseUp, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(mouseUp);
+
+      spyMethod.should.not.have.been.called;
+    });
 
     describe("Keyboard navigation", () => {
       it("should handle Escape press", () => {

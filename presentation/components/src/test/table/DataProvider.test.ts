@@ -24,7 +24,7 @@ import { RowItem } from "@bentley/ui-components";
 import { SortDirection } from "@bentley/ui-core";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
-import { PresentationTableDataProvider } from "../../presentation-components/table/DataProvider";
+import { PresentationTableDataProvider, TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE } from "../../presentation-components/table/DataProvider";
 
 /**
  * This is just a helper class to provide public access to
@@ -89,6 +89,10 @@ describe("TableDataProvider", () => {
     it("sets default sorting properties", () => {
       expect(provider.sortColumnKey).to.be.undefined;
       expect(provider.sortDirection).to.eq(SortDirection.NoSort);
+    });
+
+    it("sets default page size", () => {
+      expect(provider.pagingSize).to.be.eq(TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE);
     });
 
   });

@@ -15,7 +15,7 @@ import { StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./St
 import { getStableWidgetProps } from "../zones/Zone";
 
 /** Enum for StagePanel state.
- * @alpha
+ * @beta
  */
 export enum StagePanelState {
   Off,
@@ -25,7 +25,7 @@ export enum StagePanelState {
 }
 
 /** Panel State Changed Event Args interface.
- * @alpha
+ * @beta
  */
 export interface PanelStateChangedEventArgs {
   panelDef: StagePanelDef;
@@ -33,19 +33,22 @@ export interface PanelStateChangedEventArgs {
 }
 
 /** Widget State Changed Event class.
- * @alpha
+ * @beta
  */
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> { }
 
 /** @internal */
-export interface StagePanelTrySetCurrentSizeEventArgs {
+export interface PanelSizeChangedEventArgs {
   panelDef: StagePanelDef;
-  size: number;
+  size: number | undefined;
 }
+
+/** @internal */
+export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> { }
 
 /**
  * A StagePanelDef represents each Stage Panel within a Frontstage.
- * @alpha
+ * @beta
  */
 export class StagePanelDef extends WidgetHost {
   private _panelState = StagePanelState.Open;
@@ -63,7 +66,19 @@ export class StagePanelDef extends WidgetHost {
 
   /** Default size of the panel */
   public get size(): number | undefined { return this._size; }
+
+  public set size(size: number | undefined) {
+    // istanbul ignore if
+    if (this._size === size)
+      return;
+    this._size = size;
+    FrontstageManager.onPanelSizeChangedEvent.emit({
+      panelDef: this,
+      size,
+    });
+  }
   /** Indicates whether the panel is resizable. */
+  // istanbul ignore next
   public get resizable(): boolean { return this._resizable; }
   /** Any application data to attach to this Panel. */
   public get applicationData(): any | undefined { return this._applicationData; }
@@ -82,17 +97,6 @@ export class StagePanelDef extends WidgetHost {
     FrontstageManager.onPanelStateChangedEvent.emit({
       panelDef: this,
       panelState,
-    });
-  }
-
-  /** Tries to set current size of the stage panel.
-   * Actual panel size might differ, since min/max size is respected.
-   * @alpha
-   */
-  public trySetCurrentSize(size: number) {
-    FrontstageManager.onStagePanelTrySetCurrentSizeEvent.emit({
-      panelDef: this,
-      size,
     });
   }
 
@@ -135,6 +139,7 @@ export class StagePanelDef extends WidgetHost {
 
   /** Finds a [[WidgetDef]] based on a given id */
   public findWidgetDef(id: string): WidgetDef | undefined {
+    // istanbul ignore if
     if (this.panelZones) {
       for (const [, panelZone] of this.panelZones) {
         const widgetDef = panelZone.findWidgetDef(id);

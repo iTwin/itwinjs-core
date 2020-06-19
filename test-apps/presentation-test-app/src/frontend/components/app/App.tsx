@@ -5,13 +5,13 @@
 import "./App.css";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
+import { Geometry } from "@bentley/geometry-core";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { DefaultContentDisplayTypes, PresentationUnitSystem } from "@bentley/presentation-common";
 import { DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider } from "@bentley/presentation-components";
 import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { ElementSeparator, Orientation, RatioChangeResult } from "@bentley/ui-core";
-import { Geometry } from "@bentley/geometry-core";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import GridWidget from "../grid-widget/GridWidget";
 import IModelSelector from "../imodel-selector/IModelSelector";
@@ -49,7 +49,6 @@ export default class App extends React.Component<{}, State> {
 
   // tslint:disable-next-line:naming-convention
   private onIModelSelected = async (imodel: IModelConnection | undefined) => {
-    this.tryPreloadHierarchy(imodel, this.state.currentRulesetId);
     this.setState({ imodel });
   }
 
@@ -58,18 +57,7 @@ export default class App extends React.Component<{}, State> {
     if (this.state.imodel)
       Presentation.selection.clearSelection("onRulesetChanged", this.state.imodel, 0);
 
-    this.tryPreloadHierarchy(this.state.imodel, rulesetId);
-
     this.setState({ currentRulesetId: rulesetId });
-  }
-
-  private tryPreloadHierarchy(imodel: IModelConnection | undefined, rulesetId: string | undefined) {
-    if (!imodel || !rulesetId)
-      return;
-
-    // no need to wait on this - we just want to queue a request and forget it
-    // tslint:disable-next-line:no-floating-promises
-    Presentation.presentation.loadHierarchy({ imodel, rulesetOrId: rulesetId });
   }
 
   // tslint:disable-next-line:naming-convention

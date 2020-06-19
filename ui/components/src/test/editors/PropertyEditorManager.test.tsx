@@ -8,11 +8,10 @@ import * as React from "react";
 import {
   IconEditorParams, PropertyDescription, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
 } from "@bentley/ui-abstract";
-import { AsyncValueProcessingResult } from "../../ui-components/converters/TypeConverter";
-import {
-  BasicPropertyEditor, DataControllerBase, PropertyEditorBase, PropertyEditorManager,
-} from "../../ui-components/editors/PropertyEditorManager";
+import { AsyncValueProcessingResult, BasicPropertyEditor, DataControllerBase, PropertyEditorBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 import { TextEditor } from "../../ui-components/editors/TextEditor";
+
+// cspell:ignore badeditor newvalue
 
 describe("PropertyEditorManager", () => {
   it("createEditor should create a BasicPropertyEditor for unknown type", () => {

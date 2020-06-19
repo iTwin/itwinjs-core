@@ -81,7 +81,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
    * @note If this display style is associated with a [[Viewport]], prefer to use [[Viewport.backgroundMapSettings]] to change the settings to ensure the Viewport's display updates immediately.
-   * @beta
    */
   public get backgroundMapSettings(): BackgroundMapSettings { return this._backgroundMap.settings; }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
@@ -98,7 +97,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * ``` ts
    *  style.changeBackgroundMapProps({ groundBias: 16.2 });
    * ```
-   * @beta
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.backgroundMapSettings = this.backgroundMapSettings.clone(props);
@@ -666,7 +664,6 @@ export class DisplayStyle3dState extends DisplayStyleState {
     }
   }
 
-  /** @alpha */
   public get lights(): LightSettings { return this.settings.lights; }
   public set lights(lights: LightSettings) { this.settings.lights = lights; }
 
@@ -693,14 +690,13 @@ export class DisplayStyle3dState extends DisplayStyleState {
 
     return this._skyBoxParams;
   }
-  /** @beta */
+  /** The direction of the solar light. */
   public get sunDirection(): Readonly<Vector3d> {
     return this.settings.lights.solar.direction;
   }
 
-  /** Set the solar direction based on time value
+  /** Set the solar light direction based on time value
    * @param time The time in unix time milliseconds.
-   * @beta
    */
   public setSunTime(time: number) {
     let cartoCenter;
@@ -715,9 +711,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     this.settings.lights = this.settings.lights.clone({ solar: { direction: calculateSolarDirection(new Date(time), cartoCenter) } });
   }
 
-  /** Settings controlling shadow display.
-   * @beta
-   */
+  /** Settings controlling shadow display. */
   public get solarShadows(): SolarShadowSettings {
     return this.settings.solarShadows;
   }

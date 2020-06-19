@@ -35,6 +35,7 @@ import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
+import { FrontstageUi2 } from "./frontstages/FrontstageUi2";
 import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
 import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
 import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFrontstage";
@@ -64,6 +65,7 @@ export class AppUi {
     ConfigurableUiManager.addFrontstageProvider(new Frontstage2());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage3());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage4());
+    ConfigurableUiManager.addFrontstageProvider(new FrontstageUi2());
     ConfigurableUiManager.addFrontstageProvider(new IModelIndexFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());
@@ -93,11 +95,12 @@ export class AppUi {
   /** Define Content Groups referenced by Frontstages.
    */
   private static defineContentGroups() {
-    const one2dIModelViewport: ContentGroupProps = {
-      id: "one2dIModelViewport",
+    const singleIModelViewport: ContentGroupProps = {
+      id: "singleIModelViewport",
       contents: [
         {
           classId: IModelViewportControl,
+          id: "singleIModelView",
         },
       ],
     };
@@ -221,7 +224,7 @@ export class AppUi {
     };
 
     const contentGroups: ContentGroupProps[] = [];
-    contentGroups.push(one2dIModelViewport, drawingAndSheetViewports, threeIModelViewportsWithItemsTable, testContentGroup1, testContentGroup2, testContentGroup3, testContentGroup4);
+    contentGroups.push(singleIModelViewport, drawingAndSheetViewports, threeIModelViewportsWithItemsTable, testContentGroup1, testContentGroup2, testContentGroup3, testContentGroup4);
     ConfigurableUiManager.loadContentGroups(contentGroups);
   }
 

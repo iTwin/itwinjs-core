@@ -50,7 +50,7 @@ export class IotUiProvider extends UiDataProvider implements UiItemsProvider {
   }
 
   /** Method called by applications that support extensions provided tool buttons */
-  public provideToolbarButtonItems(_stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+  public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
     if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
       const simpleActionSpec = ToolbarItemUtilities.createActionButton("iotExtension:openDialog", 1000, `svg:${iotButtonSvg}`, "Show IoT Dialog", this.showIotDialog);
       return [simpleActionSpec];

@@ -10,22 +10,24 @@ import "./ModelsTree.scss";
 import * as React from "react";
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection, PerModelCategoryVisibility, Viewport } from "@bentley/imodeljs-frontend";
-import { ContentFlags, DescriptorOverrides, InstanceKey, KeySet, NodeKey, Ruleset } from "@bentley/presentation-common";
+import {
+  ContentFlags, DescriptorOverrides, ECClassGroupingNodeKey, GroupingNodeKey, Keys, KeySet, NodeKey, Ruleset,
+} from "@bentley/presentation-common";
 import { ContentDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { ControlledTree, SelectionMode, TreeNodeItem, useVisibleTreeNodes } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
 import { UiFramework } from "../../../ui-framework/UiFramework";
-import { IVisibilityHandler, VisibilityStatus, VisibilityTreeEventHandler, VisibilityTreeFilterInfo } from "../VisibilityTreeEventHandler";
+import { ClassGroupingOption, VisibilityTreeFilterInfo } from "../Common";
+import { IVisibilityHandler, VisibilityStatus, VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
 import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
 
 const PAGING_SIZE = 20;
 
-/**
- * Presentation rules used by [[ModelsTree]] component.
- * @internal
- */
+/** @internal */
 export const RULESET_MODELS: Ruleset = require("./Hierarchy.json"); // tslint:disable-line: no-var-requires
+/** @internal */
+export const RULESET_MODELS_GROUPED_BY_CLASS: Ruleset = require("./Hierarchy.GroupedByClass.json"); // tslint:disable-line: no-var-requires
 
 const RULESET_MODELS_SEARCH: Ruleset = require("./ModelsTreeSearch.json"); // tslint:disable-line: no-var-requires
 
@@ -39,6 +41,7 @@ export enum ModelsTreeNodeType {
   Model,
   Category,
   Element,
+  Grouping,
 }
 
 /**
@@ -86,6 +89,11 @@ export interface ModelsTreeProps {
    */
   onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
   /**
+   * Should the tree group displayed element nodes by class.
+   * @beta
+   */
+  enableElementsClassGrouping?: ClassGroupingOption;
+  /**
    * Custom data provider to use for testing
    * @internal
    */
@@ -107,14 +115,15 @@ export function ModelsTree(props: ModelsTreeProps) {
   const nodeLoader = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     dataProvider: props.dataProvider,
-    ruleset: RULESET_MODELS,
-    pageSize: PAGING_SIZE,
+    ruleset: (!props.enableElementsClassGrouping) ? RULESET_MODELS : RULESET_MODELS_GROUPED_BY_CLASS,
+    appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
+    pagingSize: PAGING_SIZE,
   });
   const searchNodeLoader = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     dataProvider: props.dataProvider,
     ruleset: RULESET_MODELS_SEARCH,
-    pageSize: PAGING_SIZE,
+    pagingSize: PAGING_SIZE,
     preloadingEnabled: props.enablePreloading,
   });
 
@@ -123,10 +132,10 @@ export function ModelsTree(props: ModelsTreeProps) {
 
   const { activeView, modelsVisibilityHandler, selectionPredicate } = props;
   const nodeSelectionPredicate = React.useCallback((key: NodeKey, node: TreeNodeItem) => {
-    return !selectionPredicate ? true : selectionPredicate(key, getNodeType(node));
-  }, [selectionPredicate]);
+    return !selectionPredicate ? true : selectionPredicate(key, getNodeType(node, nodeLoader.dataProvider));
+  }, [selectionPredicate, nodeLoader.dataProvider]);
 
-  const visibilityHandler = useVisibilityHandler(activeView, modelsVisibilityHandler);
+  const visibilityHandler = useVisibilityHandler(nodeLoaderInUse.dataProvider.rulesetId, activeView, modelsVisibilityHandler);
   const eventHandler = useDisposable(React.useCallback(() => new VisibilityTreeEventHandler({
     nodeLoader: filteredNodeLoader,
     visibilityHandler,
@@ -141,6 +150,7 @@ export function ModelsTree(props: ModelsTreeProps) {
 
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : undefined;
 
+  // istanbul ignore next
   const noFilteredDataRenderer = React.useCallback(() => {
     return <VisibilityTreeNoFilteredData
       title={UiFramework.i18n.translate("UiFramework:modelTree.noModelFound")}
@@ -171,7 +181,7 @@ export function ModelsTree(props: ModelsTreeProps) {
  */
 export const IModelConnectedModelsTree = connectIModelConnection(null, null)(ModelsTree); // tslint:disable-line:variable-name
 
-const useVisibilityHandler = (activeView?: Viewport, visibilityHandler?: VisibilityHandler) => {
+const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibilityHandler?: VisibilityHandler) => {
   const previous = React.useRef<IDisposable>();
 
   React.useEffect(() => () => previous.current?.dispose(), []);
@@ -180,17 +190,21 @@ const useVisibilityHandler = (activeView?: Viewport, visibilityHandler?: Visibil
     if (previous.current)
       previous.current.dispose;
 
-    const handler = visibilityHandler ?? createVisibilityHandler(activeView);
+    const handler = visibilityHandler ?? createVisibilityHandler(rulesetId, activeView);
     previous.current = handler;
     return handler;
-  }, [activeView, visibilityHandler]);
+  }, [rulesetId, activeView, visibilityHandler]);
 };
 
-const createVisibilityHandler = (activeView?: Viewport): IVisibilityHandler | undefined => {
-  return activeView ? new VisibilityHandler({ viewport: activeView }) : undefined;
+const createVisibilityHandler = (rulesetId: string, activeView?: Viewport): IVisibilityHandler | undefined => {
+  // istanbul ignore next
+  return activeView ? new VisibilityHandler({ rulesetId, viewport: activeView }) : undefined;
 };
 
-const getNodeType = (item: TreeNodeItem) => {
+const getNodeType = (item: TreeNodeItem, dataProvider: IPresentationTreeDataProvider) => {
+  if (NodeKey.isClassGroupingNodeKey(dataProvider.getNodeKey(item)))
+    return ModelsTreeNodeType.Grouping;
+
   if (!item.extendedData)
     return ModelsTreeNodeType.Unknown;
 
@@ -220,6 +234,7 @@ const isCategoryNode = (node: TreeNodeItem) => (node.extendedData && node.extend
 
 /** @internal */
 export interface VisibilityHandlerProps {
+  rulesetId: string;
   viewport: Viewport;
   onVisibilityChange?: () => void;
 }
@@ -256,6 +271,9 @@ export class VisibilityHandler implements IVisibilityHandler {
   public set onVisibilityChange(callback: (() => void) | undefined) { this._onVisibilityChange = callback; }
 
   public getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus> {
+    if (NodeKey.isClassGroupingNodeKey(nodeKey))
+      return this.getElementGroupingNodeDisplayStatus(node.id, nodeKey);
+
     if (!NodeKey.isInstancesNodeKey(nodeKey))
       return { isDisplayed: false, isDisabled: true };
 
@@ -271,6 +289,11 @@ export class VisibilityHandler implements IVisibilityHandler {
   }
 
   public async changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, on: boolean) {
+    if (NodeKey.isClassGroupingNodeKey(nodeKey)) {
+      await this.changeElementGroupingNodeState(nodeKey, on);
+      return;
+    }
+
     if (!NodeKey.isInstancesNodeKey(nodeKey))
       return;
 
@@ -286,15 +309,15 @@ export class VisibilityHandler implements IVisibilityHandler {
   }
 
   private getCategoryParentModelId(categoryNode: TreeNodeItem): Id64String | undefined {
-    return categoryNode.extendedData ? categoryNode.extendedData.modelId : undefined;
+    return categoryNode.extendedData ? categoryNode.extendedData.modelId : /* istanbul ignore next */ undefined;
   }
 
   private getElementModelId(elementNode: TreeNodeItem): Id64String | undefined {
-    return elementNode.extendedData ? elementNode.extendedData.modelId : undefined;
+    return elementNode.extendedData ? elementNode.extendedData.modelId : /* istanbul ignore next */ undefined;
   }
 
   private getElementCategoryId(elementNode: TreeNodeItem): Id64String | undefined {
-    return elementNode.extendedData ? elementNode.extendedData.categoryId : undefined;
+    return elementNode.extendedData ? elementNode.extendedData.categoryId : /* istanbul ignore next */ undefined;
   }
 
   private async getSubjectDisplayStatus(ids: Id64String[]): Promise<VisibilityStatus> {
@@ -334,6 +357,31 @@ export class VisibilityHandler implements IVisibilityHandler {
         ? createTooltip("visible", "category.displayedThroughCategorySelector")
         : createTooltip("hidden", "category.hiddenThroughCategorySelector"),
     };
+  }
+
+  private async getElementGroupingNodeDisplayStatus(_id: string, key: ECClassGroupingNodeKey): Promise<VisibilityStatus> {
+    const { modelId, categoryId, elementIds } = await this.getGroupedElementIds(this._props.rulesetId, key);
+
+    if (!modelId || !this._props.viewport.view.viewsModel(modelId))
+      return { isDisabled: true, isDisplayed: false, tooltip: createTooltip("disabled", "element.modelNotDisplayed") };
+
+    const atLeastOneElementForceDisplayed = (this._props.viewport.alwaysDrawn !== undefined)
+      && elementIds.some((elementId) => this._props.viewport.alwaysDrawn!.has(elementId));
+    if (atLeastOneElementForceDisplayed)
+      return { isDisplayed: true, tooltip: createTooltip("visible", "element.displayedThroughAlwaysDrawnList") };
+
+    if (this._props.viewport.alwaysDrawn !== undefined && this._props.viewport.alwaysDrawn.size !== 0 && this._props.viewport.isAlwaysDrawnExclusive)
+      return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenDueToOtherElementsExclusivelyAlwaysDrawn") };
+
+    const allElementsForceHidden = (this._props.viewport.neverDrawn !== undefined)
+      && elementIds.every((elementId) => this._props.viewport.neverDrawn!.has(elementId));
+    if (allElementsForceHidden)
+      return { isDisplayed: false, tooltip: createTooltip("visible", "element.hiddenThroughNeverDrawnList") };
+
+    if (categoryId && this.getCategoryDisplayStatus(categoryId, modelId).isDisplayed)
+      return { isDisplayed: true, tooltip: createTooltip("visible", undefined) };
+
+    return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenThroughCategory") };
   }
 
   private getElementDisplayStatus(elementId: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined): VisibilityStatus {
@@ -390,13 +438,23 @@ export class VisibilityHandler implements IVisibilityHandler {
     this._props.viewport.changeCategoryDisplay([categoryId], on, on ? true : false);
   }
 
+  private async changeElementGroupingNodeState(key: ECClassGroupingNodeKey, on: boolean) {
+    const { modelId, categoryId, elementIds } = await this.getGroupedElementIds(this._props.rulesetId, key);
+    this.changeElementsState(modelId, categoryId, elementIds, on);
+  }
+
   private async changeElementState(id: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined, on: boolean) {
-    const elementIds = [id, ...await this.getAssemblyElementIds(id)];
+    this.changeElementsState(modelId, categoryId, [id, ...await this.getAssemblyElementIds(this._props.rulesetId, id)], on);
+  }
+
+  private changeElementsState(modelId: Id64String | undefined, categoryId: Id64String | undefined, elementIds: Id64String[], on: boolean) {
     const isDisplayedByDefault = modelId && this.getModelDisplayStatus(modelId).isDisplayed
       && categoryId && this.getCategoryDisplayStatus(categoryId, modelId).isDisplayed;
     const isHiddenDueToExclusiveAlwaysDrawnElements = this._props.viewport.isAlwaysDrawnExclusive && this._props.viewport.alwaysDrawn && 0 !== this._props.viewport.alwaysDrawn.size;
     const currNeverDrawn = new Set(this._props.viewport.neverDrawn ? this._props.viewport.neverDrawn : []);
-    const currAlwaysDrawn = new Set(this._props.viewport.alwaysDrawn ? this._props.viewport.alwaysDrawn : []);
+    const currAlwaysDrawn = new Set(this._props.viewport.alwaysDrawn ?
+      this._props.viewport.alwaysDrawn : /* istanbul ignore next */[],
+    );
     elementIds.forEach((elementId) => {
       if (on) {
         currNeverDrawn.delete(elementId);
@@ -437,13 +495,20 @@ export class VisibilityHandler implements IVisibilityHandler {
     this.onVisibilityChangeInternal();
   }
 
-  private async getSubjectModelIds(subjectIds: Id64String[]): Promise<Id64String[]> {
+  private async getSubjectModelIds(subjectIds: Id64String[]) {
     return (await Promise.all(subjectIds.map((id) => this._subjectModelIdsCache.getSubjectModelIds(id))))
       .reduce((allModelIds: Id64String[], curr: Id64String[]) => [...allModelIds, ...curr], []);
   }
 
-  private async getAssemblyElementIds(assemblyId: Id64String): Promise<Id64String[]> {
-    const provider = new AssemblyElementIdsProvider(this._props.viewport.iModel, assemblyId);
+  // istanbul ignore next
+  private async getAssemblyElementIds(rulesetId: string, assemblyId: Id64String) {
+    const provider = new AssemblyElementIdsProvider(this._props.viewport.iModel, rulesetId, assemblyId);
+    return provider.getElementIds();
+  }
+
+  // istanbul ignore next
+  private async getGroupedElementIds(rulesetId: string, groupingNodeKey: GroupingNodeKey) {
+    const provider = new GroupedElementIdsProvider(this._props.viewport.iModel, rulesetId, groupingNodeKey);
     return provider.getElementIds();
   }
 }
@@ -515,10 +580,11 @@ class SubjectModelIdsCache {
   }
 }
 
-class RulesetDrivenRecursiveIdsProvider extends ContentDataProvider {
-  constructor(imodel: IModelConnection, displayType: string, parentKey: InstanceKey) {
-    super({ imodel, ruleset: RULESET_MODELS.id, displayType });
-    this.keys = new KeySet([parentKey]);
+// istanbul ignore next
+class RulesetDrivenIdsProvider extends ContentDataProvider {
+  constructor(imodel: IModelConnection, rulesetId: string, displayType: string, inputKeys: Keys) {
+    super({ imodel, ruleset: rulesetId, displayType });
+    this.keys = new KeySet(inputKeys);
   }
   protected shouldConfigureContentDescriptor() { return false; }
   protected getDescriptorOverrides(): DescriptorOverrides {
@@ -528,17 +594,38 @@ class RulesetDrivenRecursiveIdsProvider extends ContentDataProvider {
       hiddenFieldNames: [],
     };
   }
-  protected async getChildrenIds() {
+  protected async getResultIds() {
     const content = await this.getContent();
-    return content ? content.contentSet.map((item) => item.primaryKeys[0].id) : [];
+    const result = new Array();
+    content!.contentSet.forEach((item) => {
+      result.push(...item.primaryKeys.map((k) => k.id));
+    });
+    return result;
   }
 }
 
-class AssemblyElementIdsProvider extends RulesetDrivenRecursiveIdsProvider {
-  constructor(imodel: IModelConnection, assemblyId: Id64String) {
-    super(imodel, "AssemblyElementsRequest", { className: "BisCore:Element", id: assemblyId });
+// istanbul ignore next
+class AssemblyElementIdsProvider extends RulesetDrivenIdsProvider {
+  constructor(imodel: IModelConnection, rulesetId: string, assemblyId: Id64String) {
+    super(imodel, rulesetId, "AssemblyElementsRequest", [{ className: "BisCore:Element", id: assemblyId }]);
   }
   public async getElementIds() {
-    return this.getChildrenIds();
+    return this.getResultIds();
+  }
+}
+
+class GroupedElementIdsProvider extends RulesetDrivenIdsProvider {
+  constructor(imodel: IModelConnection, rulesetId: string, groupingNodeKey: GroupingNodeKey) {
+    super(imodel, rulesetId, "AssemblyElementsRequest", [groupingNodeKey]);
+  }
+  public async getElementIds(): Promise<{ modelId?: Id64String, categoryId?: Id64String, elementIds: Id64String[] }> {
+    const elementIds = await this.getResultIds();
+    let modelId, categoryId;
+    const query = `SELECT Model.Id AS modelId, Category.Id AS categoryId FROM bis.GeometricElement3d WHERE ECInstanceId = ? LIMIT 1`;
+    for await (const modelAndCategoryIds of this.imodel.query(query, [elementIds[0]])) {
+      modelId = modelAndCategoryIds.modelId;
+      categoryId = modelAndCategoryIds.categoryId;
+    }
+    return { modelId, categoryId, elementIds };
   }
 }

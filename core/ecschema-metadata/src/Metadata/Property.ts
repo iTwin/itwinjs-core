@@ -577,6 +577,7 @@ export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty
   public toJSON(): PrimitiveArrayPropertyProps {
     return super.toJSON();
   }
+
 }
 
 /** @beta */

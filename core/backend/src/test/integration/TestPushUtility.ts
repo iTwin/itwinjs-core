@@ -6,7 +6,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, CodeScopeSpec, ColorDef, GeometricElement3dProps, IModel, IModelVersion, SyncMode } from "@bentley/imodeljs-common";
+import { Code, CodeScopeSpec, ColorDef, IModel, IModelVersion, PhysicalElementProps, SyncMode } from "@bentley/imodeljs-common";
 import { TestUserCredentials, TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DisplayStyle3d, GeometricElement, IModelDb,
@@ -101,7 +101,7 @@ export class TestPushUtility {
   }
 
   private insertElement(name: string, userLabel: string, location: Point3d, size: Point3d = new Point3d(5, 5, 5)) {
-    const testElementProps: GeometricElement3dProps = {
+    const testElementProps: PhysicalElementProps = {
       classFullName: "Generic:PhysicalObject",
       model: this._physicalModelId!,
       category: this._categoryId!,

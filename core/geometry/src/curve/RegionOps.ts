@@ -243,7 +243,7 @@ export class RegionOps {
     context.addMembers(loopsA, loopsB);
     context.createGraph();
     context.runClassificationSweep(operation, (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
-      if (face.countEdgesAroundFace () < 3 && Geometry.isSameCoordinate (area, 0)) // NEED BETTER TOLERANCE
+      if (face.countEdgesAroundFace() < 3 && Geometry.isSameCoordinate(area, 0)) // NEED BETTER TOLERANCE
         return;
       if (faceType === 1) {
         const loop = PlanarSubdivision.createLoopInFace(face);
@@ -302,11 +302,12 @@ export class RegionOps {
    * * If there are internal gaps, return a `BagOfCurves`
    * * If input array has zero length, return undefined.
    */
-  public static createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap: boolean = true): CurveCollection | undefined {
+  public static createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap: boolean = true, consolidateAdjacentPrimitives: boolean = false): CurveCollection | undefined {
     const n = curves.length;
     if (n === 0)
       return undefined;
     let maxGap = 0.0;
+    let isPath = false;
     if (wrap)
       maxGap = Geometry.maxXY(maxGap, curves[0].startPoint().distance(curves[n - 1].endPoint()));
     for (let i = 0; i + 1 < n; i++)
@@ -314,11 +315,14 @@ export class RegionOps {
     let collection: Loop | Path | BagOfCurves;
     if (Geometry.isSmallMetricDistance(maxGap)) {
       collection = wrap ? Loop.create() : Path.create();
+      isPath = true;
     } else {
       collection = BagOfCurves.create();
     }
     for (const c of curves)
       collection.tryAddChild(c);
+    if (isPath && consolidateAdjacentPrimitives)
+      RegionOps.consolidateAdjacentPrimitives(collection);
     return collection;
   }
 

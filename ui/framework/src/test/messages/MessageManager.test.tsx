@@ -44,6 +44,11 @@ describe("MessageManager", () => {
     expect(MessageManager.messages.length).to.be.lessThan(newMax);
   });
 
+  it("maxDisplayedStickyMessages handled correctly", () => {
+    MessageManager.maxDisplayedStickyMessages = 5;
+    expect(MessageManager.maxDisplayedStickyMessages).to.eq(5);
+  });
+
   it("getIconType should return proper icon type", () => {
     let details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.");
     expect(MessageManager.getIconType(details)).to.eq(MessageBoxIconType.Information);

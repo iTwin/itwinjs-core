@@ -108,7 +108,7 @@ export interface ToolTipOptions {
  * @public
  */
 export class NotifyMessageDetails {
-  public displayTime = BeDuration.fromSeconds(3.5);
+  public displayTime = BeDuration.fromSeconds(5);
   public viewport?: HTMLElement;
   public inputField?: HTMLElement;
   public displayPoint?: Point2d;

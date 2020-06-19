@@ -12,7 +12,7 @@ import * as ReactAutosuggest from "react-autosuggest";
 import { CommonProps } from "../utils/Props";
 
 /** Data for the [[AutoSuggest]] options
- *  @beta
+ * @beta
  */
 export interface AutoSuggestData {
   value: string;
@@ -196,6 +196,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
       onChange: this._onChange,
       onFocus: this._onFocus,
       placeholder: inputPlaceholder,
+      autoFocus: setFocus,
     };
 
     return (

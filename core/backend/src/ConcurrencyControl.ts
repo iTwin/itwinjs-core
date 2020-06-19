@@ -204,7 +204,7 @@ export class ConcurrencyControl {
   public onModelWritten(_modelClass: typeof Model, id: Id64String, opcode: DbOpcode): void {
     if (opcode !== DbOpcode.Insert || !this.needLocks)
       return;
-    this._cache.insertLocks([ConcurrencyControl.Request.getModelLock(id, LockLevel.Exclusive)]);
+    this._cache.insertLocks([ConcurrencyControl.Request.getModelLock(id, LockLevel.Exclusive)], this.iModel.txns.getCurrentTxnId());
   }
 
   /**
@@ -251,7 +251,7 @@ export class ConcurrencyControl {
   public onElementWritten(_elementClass: typeof Element, id: Id64String, opcode: DbOpcode): void {
     if (opcode !== DbOpcode.Insert || !this.needLocks)
       return;
-    this._cache.insertLocks([ConcurrencyControl.Request.getElementLock(id, LockLevel.Exclusive)]);
+    this._cache.insertLocks([ConcurrencyControl.Request.getElementLock(id, LockLevel.Exclusive)], this.iModel.txns.getCurrentTxnId());
   }
 
   /** @internal [[LinkTableRelationship.buildConcurrencyControlRequest]] */
@@ -410,6 +410,18 @@ export class ConcurrencyControl {
       req.removeCodes(this._cache.isCodeReserved, this._cache);
   }
 
+  public async onPushEmpty(requestContext: AuthorizedClientRequestContext): Promise<void> {
+    requestContext.enter();
+    this.abandonRequest();
+    this._cache.deleteFile();
+    await Promise.all([
+      BriefcaseManager.imodelClient.locks.deleteAll(requestContext, this.iModel.iModelId, this.iModel.briefcase.briefcaseId),
+      BriefcaseManager.imodelClient.codes.deleteAll(requestContext, this.iModel.iModelId, this.iModel.briefcase.briefcaseId),
+    ]);
+    requestContext.enter();
+    return this.openOrCreateCache(requestContext); // re-create after we know that locks and codes were deleted.
+  }
+
   public async onPushChanges(_requestContext: AuthorizedClientRequestContext): Promise<void> {
     // Must do this to guarantee that the cache does not become stale if the client crashes after pushing but
     // before performing the various post-push clean-up tasks, such as marking reserved codes as used and releasing
@@ -483,7 +495,7 @@ export class ConcurrencyControl {
    * @alpha Need to determine if we want this method
    */
   public get hasSchemaLock(): boolean {
-    return this._cache.isLockHeld(ConcurrencyControl.Request.schemaLock);
+    return this.holdsLock(ConcurrencyControl.Request.schemaLock);
   }
 
   /** Returns `true` if the CodeSpecs lock is held.
@@ -491,7 +503,24 @@ export class ConcurrencyControl {
    * @alpha Need to determine if we want this method
    */
   public get hasCodeSpecsLock(): boolean {
-    return this._cache.isLockHeld(ConcurrencyControl.Request.codeSpecsLock);
+    return this.holdsLock(ConcurrencyControl.Request.codeSpecsLock);
+  }
+
+  /** Returns `true` if the specified lock is held.
+   * @param lock The lock to check
+   * @alpha
+   */
+  public holdsLock(lock: ConcurrencyControl.LockProps): boolean {
+    return this._cache.isLockHeld(lock);
+  }
+
+  /** Returns `true` if the specified code has been reserved by this briefcase.
+   * @param code The code to check
+   * Also see [[ConcurrencyControl.areCodesAvailable]] and [[ConcurrencyControl.areCodesAvailable2]]
+   * @alpha
+   */
+  public hasReservedCode(code: CodeProps): boolean {
+    return this._cache.isCodeReserved(code);
   }
 
   /** Obtain the CodeSpec lock. This is always an immediate request, never deferred. See [LockHandler]($imodelhub-client) for details on what errors may be thrown. */
@@ -608,7 +637,10 @@ export class ConcurrencyControl {
   }
 
   /** Abandon any pending requests for locks or codes. */
-  public abandonRequest() { this._pendingRequest.clear(); }
+  public abandonRequest() {
+    this._pendingRequest.clear();
+    this._cache.deleteLocksForTxn(this.iModel.txns.getCurrentTxnId());
+  }
 
   /**
    * Check to see that this briefcase could reserve (or has already reserved) all of the specified Codes.
@@ -1337,7 +1369,7 @@ export namespace ConcurrencyControl {
     private initializeDb() {
       const initStmts = [
         `create table reservedCodes ( specid TEXT NOT NULL, scope TEXT NOT NULL, value TEXT NOT NULL, PRIMARY KEY (specid, scope, value) )`,
-        `create table heldLocks ( type INTEGER NOT NULL, objectId TEXT NOT NULL, level INTEGER NOT NULL, PRIMARY KEY (type, objectId, level) )`,
+        `create table heldLocks ( type INTEGER NOT NULL, objectId TEXT NOT NULL, level INTEGER NOT NULL, txnId TEXT, PRIMARY KEY (type, objectId, level) )`,
         `insert into be_local (name,val) values('cctl_version','0.1')`,
       ];
 
@@ -1438,19 +1470,28 @@ export namespace ConcurrencyControl {
       });
     }
 
-    public insertLocks(locks: LockProps[]) {
+    public insertLocks(locks: LockProps[], txnId?: string) {
       this.mustBeOpenAndWriteable();
-      this._db.withPreparedSqliteStatement("insert into heldLocks (type,objectId,level) VALUES(?,?,?)", (stmt) => {
+      this._db.withPreparedSqliteStatement("insert into heldLocks (type,objectId,level,txnId) VALUES(?,?,?,?)", (stmt) => {
         for (const lock of locks) {
           stmt.reset();
           stmt.clearBindings();
           stmt.bindValue(1, lock.type);
           stmt.bindValue(2, lock.objectId);
           stmt.bindValue(3, lock.level);
+          stmt.bindValue(4, txnId);
           const rc = stmt.step();
           if (rc !== DbResult.BE_SQLITE_DONE)
             throw new IModelError(IModelStatus.SQLiteError, "", Logger.logError, loggerCategory, () => ({ rc, lock }));
         }
+      });
+    }
+
+    public deleteLocksForTxn(txnId: string) {
+      this.mustBeOpenAndWriteable();
+      this._db.withPreparedSqliteStatement("delete from heldLocks where txnId=?", (stmt) => {
+        stmt.bindValue(1, txnId);
+        stmt.step();
       });
     }
 

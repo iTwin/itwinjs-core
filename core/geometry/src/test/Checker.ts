@@ -256,6 +256,12 @@ export class Checker {
 
     return false;
   }
+  public testType<T>(data: T | undefined, ...params: any[]): data is T {
+    if (data !== undefined)
+      return this.announceOK();
+    this.announceError("Expect defined with type", data, params);
+    return false;
+  }
 
   public testIsFinite(dataA: any, ...params: any[]): boolean {
     if (Number.isFinite(dataA))

@@ -5,6 +5,7 @@
 $header-height: 50px;
 
 .nzdemo-zones-zones {
+  touch-action: manipulation;
   height: calc(100% - #{$header-height});
   display: flex;
   flex-direction: column;
@@ -72,4 +73,17 @@ $header-height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.nzdemo-centerLeft_1 {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  background-color: yellow;
+
+  > .nzdemo-block {
+    height: 100px;
+    background: lawngreen;
+    position: relative;
+  }
 }

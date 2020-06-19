@@ -166,6 +166,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     PointerMessage._onPointerMessagePositionChangedEvent.removeListener(this._handlePointerMessagePositionChangedEvent);
   }
 
+  // istanbul ignore next
   private _handleSizeChanged = (size: SizeProps) => {
     this._size = size;
     this.updatePosition();
@@ -223,6 +224,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     this.setState((prevState) => {
       if (!this._viewport)
         return null;
+      // istanbul ignore if
       if (!this._position)
         return null;
 
@@ -233,9 +235,11 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
       const adjustedPosition = offsetAndContainInContainer(relativeBounds, containerBounds.getSize(), offset);
       const position = adjustedPosition.offset(viewportOffset);
 
+      // istanbul ignore else
       if (position.equals(prevState.position))
         return null;
 
+      // istanbul ignore next
       return {
         position,
       };

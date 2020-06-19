@@ -344,7 +344,7 @@ export abstract class Tile {
       return true;
 
     // Test against TileTree's own clip volume, if any.
-    if (undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points))
+    if (undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(worldBox.points))
       return true;
 
     // Test against view clip, if any (will be undefined if TileTree does not want view clip applied to it).

@@ -34,7 +34,7 @@ To start the application, simply install its dependencies and run it:
 
 You can now open snapshot files using ui-test-app. These are the relevant environment variables to set before using `npm run start:servers`:
 
-*	TESTAPP_SNAPSHOT_FILEPATH - set to folder containing .bim or .ibim files (required)
-*	TESTAPP_START_WITH_SNAPSHOTS - set to 1 to start with File Open dialog (optional)
+* imjs_TESTAPP_SNAPSHOT_FILEPATH - set to folder containing .bim or .ibim files (required)
+* imjs_TESTAPP_START_WITH_SNAPSHOTS - set to 1 to start with File Open dialog (optional)
 
 __Note:__ You must navigate to your snapshot folder the first time you use the File Open dialog. To open other files, click the "Home" button in the upper-left then click "Open Local File". You still need to sign-in.

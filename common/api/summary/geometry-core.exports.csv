@@ -28,6 +28,7 @@ public;BagOfCurves
 public;BarycentricTriangle
 public;BeJSONFunctions
 public;Bezier1dNd
+internal;BezierBezierIntersectionXYRRToRRD 
 internal;class BezierCoffs
 public;BezierCurve3d 
 public;BezierCurve3dH 
@@ -192,6 +193,7 @@ public;PolyfaceClip
 public;PolyfaceData
 public;PolyfaceQuery
 public;PolyfaceVisitor 
+public;PolygonClipper
 public;PolygonOps
 internal;PolygonWireOffsetContext
 public;PolylineOps

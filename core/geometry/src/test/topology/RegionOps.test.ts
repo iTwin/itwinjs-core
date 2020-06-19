@@ -913,18 +913,18 @@ describe("RectangleRecognizer", () => {
       "./src/test/testInputs/intersections/WilsonShapes/3pointTurnShape_fits.imjs", "utf8")));
 
     if (road instanceof Loop) {
-      const roadRange = road.range ();
+      const roadRange = road.range();
 
-      let  x0 = -roadRange.low.x;
-      const xStep = 2.0 * roadRange.xLength ();
-      const yStep = 1.2 * roadRange.yLength ();
+      let x0 = -roadRange.low.x;
+      const xStep = 2.0 * roadRange.xLength();
+      const yStep = 1.2 * roadRange.yLength();
 
       for (const shape of [badShape, goodShape]) {
         if (shape instanceof Loop) {
           let y0 = -roadRange.low.y;
           const splitParts = RegionOps.splitPathsByRegionInOnOutXY(shape, road);
-          GeometryCoreTestIO.captureCloneGeometry (allGeometry, road, x0, y0);
-          GeometryCoreTestIO.captureCloneGeometry (allGeometry, shape, x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, road, x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape, x0, y0);
           const dz = 0.1;
           for (const outputArray of [splitParts.insideParts, splitParts.outsideParts]) {
             y0 += yStep;

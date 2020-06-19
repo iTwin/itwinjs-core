@@ -13,6 +13,7 @@ import { EnumerationChoice, PrimitiveValue, PropertyValue, PropertyValueFormat }
 import { Select } from "@bentley/ui-core";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /** @internal */
 interface EnumEditorState {
@@ -160,4 +161,4 @@ export class EnumPropertyEditor extends PropertyEditorBase {
   }
 }
 
-PropertyEditorManager.registerEditor("enum", EnumPropertyEditor);
+PropertyEditorManager.registerEditor(StandardTypeNames.Enum, EnumPropertyEditor);
