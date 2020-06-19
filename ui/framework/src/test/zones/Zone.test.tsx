@@ -47,6 +47,7 @@ describe("Zone", () => {
           new WidgetDef({}),
         ],
       },
+      openWidgetId: 9,
       zoneDefProvider: {
         getZoneDef: () => runtimeProps.zoneDef,
       },
