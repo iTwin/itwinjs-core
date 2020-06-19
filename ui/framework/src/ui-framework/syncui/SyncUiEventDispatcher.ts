@@ -185,13 +185,15 @@ export class SyncUiEventDispatcher {
       return;
     }
 
-    /* istanbul ignore else */
+    // istanbul ignore next
     if (SyncUiEventDispatcher._syncEventTimerId) {
       window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
       SyncUiEventDispatcher._syncEventTimerId = undefined;
     }
+    // istanbul ignore next
     SyncUiEventDispatcher._eventIdAdded = false;
     // if events have been added before the initial timer expired wait half that time to see if events are still being added.
+    // istanbul ignore next
     SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._secondaryTimeoutPeriod);
   }
 
