@@ -544,12 +544,14 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
   if (isEdgeTestNeeded) {
     addWindowToTexCoords(frag);
 
+    if (!flags.isHilite)
+      addEyeSpace(builder);
+
     if (FeatureMode.None === feat) {
       addSamplers(frag, false);
       frag.addFunction(computeLinearDepth);
       frag.addFunction(decodeDepthRgb);
       frag.addFunction(readDepthAndOrder);
-      addEyeSpace(builder);
       frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscard);
     } else {
       frag.addUniform("u_checkInterElementDiscard", VariableType.Boolean, (prog) => {
@@ -570,7 +572,6 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
 
       frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscardWithFeatureID);
 
-      addEyeSpace(builder);
       builder.addInlineComputedVarying("v_lineWeight", VariableType.Float, "v_lineWeight = computeLineWeight();");
       addFeatureId(builder, computeIdInFrag);
     }
@@ -579,7 +580,6 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
     addRenderPass(frag);
   } else if (isClassified && FeatureMode.None !== feat) {
     addFeatureIndex(vert);
-    addEyeSpace(builder);
     addFeatureId(builder, computeIdInFrag);
 
     if (!flags.isTranslucent)
