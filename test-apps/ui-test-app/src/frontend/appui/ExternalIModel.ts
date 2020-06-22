@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64String, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { SampleAppIModelApp } from "..";
 
 /** Opens External IModel */
 export class ExternalIModel {
@@ -21,7 +22,11 @@ export class ExternalIModel {
     const info = await this.getIModelInfo();
 
     if (info.projectId && info.imodelId) {
-      this.iModelConnection = await RemoteBriefcaseConnection.open(info.projectId, info.imodelId, OpenMode.Readonly);
+      // open the imodel
+      Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
+        `openIModel (external): projectId=${info.projectId}&iModelId=${info.imodelId} mode=${SampleAppIModelApp.allowWrite ? "ReadWrite" : "Readonly"}`);
+
+      this.iModelConnection = await RemoteBriefcaseConnection.open(info.projectId, info.imodelId, SampleAppIModelApp.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
       this.viewId = await this.onIModelSelected(this.iModelConnection);
     }
   }

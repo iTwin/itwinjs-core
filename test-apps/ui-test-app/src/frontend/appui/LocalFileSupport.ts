@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "../index";
+import { Logger } from "@bentley/bentleyjs-core";
 
 // cSpell:ignore TESTAPP FILEPATH
 
@@ -25,6 +26,10 @@ export class LocalFileSupport {
 
     try {
       const filePath = SampleAppIModelApp.testAppConfiguration?.snapshotPath + "/" + fileName;
+
+      // open the imodel
+      Logger.logInfo("LocalFileSupport", `SnapshotConnection.openFile path=${filePath}`);
+
       iModelConnection = await SnapshotConnection.openFile(filePath);
     } catch (e) {
       alert(e.message);

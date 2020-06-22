@@ -2,12 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
-import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import {
+  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
+  isFrontendAuthorizationClient,
+} from "@bentley/frontend-authorization-client";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, IModelConnection, RenderSystem, SelectionTool, SnapMode, ViewClipByPlaneTool, ViewState } from "@bentley/imodeljs-frontend";
+import {
+  AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp,
+  IModelAppOptions, IModelConnection, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
+} from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
@@ -15,7 +21,12 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
-import { ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkReducer, FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager, IModelAppUiSettings, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider } from "@bentley/ui-framework";
+import {
+  ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkReducer,
+  FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
+  IModelAppUiSettings, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager,
+  ToolbarDragInteractionContext, UiFramework, UiSettingsProvider,
+} from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
@@ -25,6 +36,7 @@ import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import getSupportedRpcs from "../common/rpcs";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
+import { ActiveSettingsManager } from "./api/ActiveSettingsManager";
 import { AppUi } from "./appui/AppUi";
 import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
 import { IModelViewportControl } from "./appui/contentviews/IModelViewport";
@@ -40,14 +52,20 @@ import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { UiProviderTool } from "./tools/UiProviderTool";
+
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
+import { DeleteElementTool } from "./tools/editing/DeleteElementTool";
+import { MoveElementTool } from "./tools/editing/MoveElementTool";
+import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
+import { PlaceLineStringTool } from "./tools/editing/PlaceLineStringTool";
+import { ErrorHandling } from "./api/ErrorHandling";
+import { EditFrontstage } from "./appui/frontstages/editing/EditFrontstage";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
 
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise toggledraginteraction toggleframeworkversion
-// cSpell:ignore mobx setdraginteraction setframeworkversion urlps
+// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
  */
@@ -219,6 +237,14 @@ export class SampleAppIModelApp {
     UiProviderTool.register(this.sampleAppNamespace);
     LayoutManagerRestoreLayoutTool.register(this.sampleAppNamespace);
 
+    // Register editing tools
+    if (this.allowWrite) {
+      MoveElementTool.register(this.sampleAppNamespace);
+      DeleteElementTool.register(this.sampleAppNamespace);
+      PlaceLineStringTool.register(this.sampleAppNamespace);
+      PlaceBlockTool.register(this.sampleAppNamespace);
+    }
+
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
 
     // store name of this registered control in Redux store so it can be access by extensions
@@ -249,20 +275,24 @@ export class SampleAppIModelApp {
     await SampleAppIModelApp.closeCurrentIModel();
 
     // open the imodel
-    Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `openIModelAndViews: projectId=${projectId}&iModelId=${iModelId}`);
-    const iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId);
+    Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
+      `openIModelAndViews: projectId=${projectId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+
+    const iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
     SampleAppIModelApp.setIsIModelLocal(false, true);
 
     await this.openViews(iModelConnection, viewIdsSelected);
   }
 
   public static async closeCurrentIModel() {
-    const currentIModelConnection = UiFramework.getIModelConnection();
-    if (currentIModelConnection) {
-      SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
+    if (SampleAppIModelApp.isIModelLocal) {
+      const currentIModelConnection = UiFramework.getIModelConnection();
+      if (currentIModelConnection) {
+        SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
 
-      await currentIModelConnection.close();
-      UiFramework.setIModelConnection(undefined);
+        await currentIModelConnection.close();
+        UiFramework.setIModelConnection(undefined);
+      }
     }
   }
 
@@ -287,8 +317,10 @@ export class SampleAppIModelApp {
       for (const viewId of viewIdsSelected) {
         const viewState = await iModelConnection.views.load(viewId);
         if (viewState) {
-          if (!defaultViewState)
+          if (!defaultViewState) {
             defaultViewState = viewState;
+            ActiveSettingsManager.onViewOpened(viewState); // Review TODO
+          }
           viewStates.push(viewState);
         }
       }
@@ -298,18 +330,24 @@ export class SampleAppIModelApp {
 
     // we create a Frontstage that contains the views that we want.
     let stageId: string;
-    const viewsFrontstage = "ViewsFrontstage";
+    const defaultFrontstage = this.allowWrite ? EditFrontstage.stageId : ViewsFrontstage.stageId;
 
     if (this.iModelParams && this.iModelParams.stageId)
       stageId = this.iModelParams.stageId;
     else
-      stageId = viewsFrontstage;
+      stageId = defaultFrontstage;
 
     let frontstageDef: FrontstageDef | undefined;
-    if (stageId === viewsFrontstage) {
-      const frontstageProvider = new ViewsFrontstage(viewStates, iModelConnection);
-      FrontstageManager.addFrontstageProvider(frontstageProvider);
-      frontstageDef = frontstageProvider.frontstageDef;
+    if (stageId === defaultFrontstage) {
+      if (stageId === ViewsFrontstage.stageId) {
+        const frontstageProvider = new ViewsFrontstage(viewStates, iModelConnection);
+        FrontstageManager.addFrontstageProvider(frontstageProvider);
+        frontstageDef = frontstageProvider.frontstageDef;
+      } else {
+        const frontstageProvider = new EditFrontstage(viewStates, iModelConnection);
+        FrontstageManager.addFrontstageProvider(frontstageProvider);
+        frontstageDef = frontstageProvider.frontstageDef;
+      }
     } else {
       frontstageDef = FrontstageManager.findFrontstageDef(stageId);
     }
@@ -325,7 +363,7 @@ export class SampleAppIModelApp {
   }
 
   public static async handleWorkOffline() {
-    await SampleAppIModelApp.showFrontstage("Test4");
+    await LocalFileOpenFrontstage.open();
   }
 
   public static async showIModelIndex(contextId: string, iModelId: string) {
@@ -335,8 +373,10 @@ export class SampleAppIModelApp {
       await SampleAppIModelApp.closeCurrentIModel();
 
       // open the imodel
-      Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `showIModelIndex: projectId=${contextId}&iModelId=${iModelId}`);
-      const iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
+      Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
+        `showIModelIndex: projectId=${contextId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+
+      const iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
       SampleAppIModelApp.setIsIModelLocal(false, true);
 
       SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
@@ -413,6 +453,10 @@ export class SampleAppIModelApp {
     }
 
     return undefined;
+  }
+
+  public static get allowWrite() {
+    return (Config.App.has("imjs_TESTAPP_ALLOW_WRITE") && (Config.App.get("imjs_TESTAPP_ALLOW_WRITE") === "1"));
   }
 
   public static setTestProperty(value: string, immediateSync = false) {
@@ -617,6 +661,8 @@ async function main() {
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("ui-test-app", LogLevel.Info);
   Logger.setLevel("ui-framework.UiFramework", LogLevel.Info);
+
+  ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(ErrorHandling.onUnexpectedError(err));
 
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow
