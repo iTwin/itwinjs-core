@@ -988,6 +988,10 @@ export type ContentCallback = (content: ContentProps) => void;
 // @public
 export class ContentControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    protected getKeyedReactNode(): React.ReactNode;
+    // (undocumented)
+    protected getReactNode(): React.ReactNode;
     getType(): ConfigurableUiControlType;
     get isViewport(): boolean;
     get navigationAidControl(): string;
@@ -998,6 +1002,8 @@ export class ContentControl extends ConfigurableUiControl {
     set reactElement(r: React.ReactNode);
     get reactNode(): React.ReactNode;
     set reactNode(r: React.ReactNode);
+    // (undocumented)
+    protected _reactNode: React.ReactNode;
     get viewport(): ScreenViewport | undefined;
 }
 
@@ -2709,7 +2715,7 @@ export interface IModelUserInfo {
 
 // @beta
 export class IModelViewportControl extends ViewportContentControl {
-    constructor(info: ConfigurableCreateInfo, options: IModelViewportControlOptions);
+    constructor(info: ConfigurableCreateInfo, _options: IModelViewportControlOptions);
     // (undocumented)
     protected _alwaysUseSuppliedViewState: boolean;
     // (undocumented)
@@ -2718,12 +2724,18 @@ export class IModelViewportControl extends ViewportContentControl {
     protected getImodelViewportReactElement(iModelConnection: IModelConnection, viewState: ViewStateProp): React.ReactNode;
     protected getNoContentReactElement(_options: IModelViewportControlOptions): React.ReactNode;
     getReactElementForViewSelectorChange(iModelConnection: IModelConnection, _unusedViewDefinitionId: Id64String, viewState: ViewState, _name: string): React.ReactNode;
+    // (undocumented)
+    protected getReactNode(): React.ReactNode;
     protected _getViewOverlay: (viewport: ScreenViewport) => React.ReactNode;
     // (undocumented)
     static get id(): string;
     // (undocumented)
     protected _iModelConnection: IModelConnection | undefined;
+    // (undocumented)
+    protected initializeReactNode(): void;
     get navigationAidControl(): string;
+    // (undocumented)
+    protected _options: IModelViewportControlOptions;
     // (undocumented)
     protected _viewState: ViewStateProp | undefined;
 }
@@ -2732,8 +2744,10 @@ export class IModelViewportControl extends ViewportContentControl {
 export interface IModelViewportControlOptions {
     alwaysUseSuppliedViewState?: boolean;
     bgColor?: string;
+    deferNodeInitialization?: boolean;
     disableDefaultViewOverlay?: boolean;
     iModelConnection?: IModelConnection | (() => IModelConnection);
+    supplyViewOverlay?: (_viewport: ScreenViewport) => React.ReactNode;
     viewState?: ViewStateProp;
 }
 

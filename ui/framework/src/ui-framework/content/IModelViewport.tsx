@@ -46,6 +46,10 @@ export interface IModelViewportControlOptions {
   bgColor?: string;
   /** Optional property to always use the supplied `viewState` property instead of using viewport.view when set */
   alwaysUseSuppliedViewState?: boolean;
+  /** Optional property to supply custom view overlay. Uses when caller want to supply custom overlay component. */
+  supplyViewOverlay?: (_viewport: ScreenViewport) => React.ReactNode;
+  /** Optional property to defer reactNode initialization until first reactNode property in needed. Useful when subclassing the `IModelViewportControl`. */
+  deferNodeInitialization?: boolean;
 }
 
 /** iModel Viewport Control
@@ -60,29 +64,45 @@ export class IModelViewportControl extends ViewportContentControl {
   protected _viewState: ViewStateProp | undefined;
   protected _iModelConnection: IModelConnection | undefined;
   protected _alwaysUseSuppliedViewState: boolean;
+  private _userSuppliedViewOverlay?: (_viewport: ScreenViewport) => React.ReactNode;
 
-  constructor(info: ConfigurableCreateInfo, options: IModelViewportControlOptions) {
-    super(info, options);
+  constructor(info: ConfigurableCreateInfo, protected _options: IModelViewportControlOptions) {
+    super(info, _options);
+
+    this._disableDefaultViewOverlay = _options.disableDefaultViewOverlay ?? false;
+    this._alwaysUseSuppliedViewState = _options.alwaysUseSuppliedViewState ?? false;
+    this._userSuppliedViewOverlay = _options.supplyViewOverlay;
+
+    if (!_options.deferNodeInitialization)
+      this.initializeReactNode();
+  }
+
+  protected initializeReactNode() {
+    const options = this._options;
 
     if (options.viewState)
       this._viewState = options.viewState;
-
-    this._disableDefaultViewOverlay = options.disableDefaultViewOverlay ?? false;
-    this._alwaysUseSuppliedViewState = options.alwaysUseSuppliedViewState ?? false;
 
     const iModelConnection = (typeof options.iModelConnection === "function") ? options.iModelConnection() : options.iModelConnection;
 
     if (this._viewState && iModelConnection) {
       /** Passing _determineViewState as a function reference; it is not called here. */
-      this.reactNode = this.getImodelViewportReactElement(iModelConnection, this._determineViewState);
+      this._reactNode = this.getImodelViewportReactElement(iModelConnection, this._determineViewState);
     } else {
       if (UiFramework.getIModelConnection() && UiFramework.getDefaultViewState()) {
-        this.reactNode = this.getImodelConnectedViewportReactElement();
+        this._reactNode = this.getImodelConnectedViewportReactElement();
       } else {
-        this.reactNode = this.getNoContentReactElement(options);
+        this._reactNode = this.getNoContentReactElement(options);
         this.setIsReady();
       }
     }
+  }
+
+  protected getReactNode(): React.ReactNode {
+    if (!React.isValidElement(this._reactNode) && this._options.deferNodeInitialization)
+      this.initializeReactNode();
+
+    return this.getKeyedReactNode();
   }
 
   /**
@@ -150,6 +170,9 @@ export class IModelViewportControl extends ViewportContentControl {
 
   /** Get the default ViewOverlay unless parameter is set to not use it. May be override in an application specific sub-class  */
   protected _getViewOverlay = (viewport: ScreenViewport): React.ReactNode => {
+    if (this._userSuppliedViewOverlay)
+      return this._userSuppliedViewOverlay(viewport);
+
     if (this._disableDefaultViewOverlay)
       return null;
 
