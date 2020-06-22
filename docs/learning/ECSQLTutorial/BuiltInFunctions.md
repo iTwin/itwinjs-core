@@ -34,19 +34,19 @@ Note that this can also cause `ECSqlStatement::Step()` to return `BE_SQLITE_ERRO
 
 ```sql
 -- returns schema-name:classname
-SELECT ec_classname(ECClassId, 'sn:cn') FROM bis:Element
+SELECT ec_classname(ECClassId, 's:c') FROM bis:Element
 
 -- same as 'sa:cn' - returns schema-alias:classname
 SELECT ec_classname(ECClassId, 1) FROM bis:Element
 
 -- returns schema-name, after filtering on it
-SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 'sn') = 'BisCore'
+SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 's') = 'BisCore'
 
 -- returns schema-alias after filtering on it
 SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 3) = 'bis'
 
 -- only get classname and filter on classname
-SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 'cn') = 'PUMP'
+SELECT * FROM bis:Element WHERE ec_classname(ECClassId, 'c') = 'PUMP'
 ```
 
 # ec_classId('*schema-name-or-alias* : | . *classname*' )
