@@ -1,6 +1,24 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Jun 2020 14:10:03 GMT and should not be manually modified.
+
+## 2.2.0
+Fri, 19 Jun 2020 14:10:03 GMT
+
+### Updates
+
+- add ViewState.adjustAspectRatio
+- Promote EmphasizeElements and IModelConnection.query() to public API.
+- Add support for cel-shaded views; promote many APIs, particularly display-related ones.
+- Expand frustum when fitting background map to avoid clipping in plan views.
+- Refactor FeatureTrackingManager
+- Return the new GeoServiceStatus instead of IModelStatus.BadRequest
+- Gpu profiler fix for readPixel calls
+- Orient silhouette clip for background map correctly in parallel projections
+- Added MessageManager.MaxDisplayedStickyMessages & support for maximum displayed sticky messages
+- Add support for applying different clip volumes to groups of models in a spatial view.
+- A GeometricModel may override specific view flag at display time, e.g. to specify that the model should always be drawn in wireframe mode.
+- Optimize thematic sensor display by using eye space instead of world space in the shaders.
 
 ## 2.1.0
 Thu, 28 May 2020 22:48:59 GMT

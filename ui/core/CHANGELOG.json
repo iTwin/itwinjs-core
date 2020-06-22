@@ -2,6 +2,42 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.2.0",
+      "tag": "@bentley/ui-core_v2.2.0",
+      "date": "Fri, 19 Jun 2020 14:10:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Qualified the CSS class names for the face names in Cube Navigation Aid"
+          },
+          {
+            "comment": "Fixed size & padding for hollow button"
+          },
+          {
+            "comment": "Added property editors for multi-line text, slider and numeric input/spinner."
+          },
+          {
+            "comment": "No longer calling onOutsideClick from ContextMenu when closed"
+          },
+          {
+            "comment": "Replace 'Plugin' with 'Extension' in comments and examples."
+          },
+          {
+            "comment": "Fixed minimum size of Toggle component"
+          },
+          {
+            "comment": "Added support for popup with multiple editors"
+          },
+          {
+            "comment": "Unify size of hollow and blue buttons."
+          },
+          {
+            "comment": "Specify the props that can passed to ThemedSelect instead of just allowing all the react-select props."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.1.0",
       "tag": "@bentley/ui-core_v2.1.0",
       "date": "Thu, 28 May 2020 22:48:59 GMT",

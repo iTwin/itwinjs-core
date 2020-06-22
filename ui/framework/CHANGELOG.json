@@ -2,6 +2,60 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.2.0",
+      "tag": "@bentley/ui-framework_v2.2.0",
+      "date": "Fri, 19 Jun 2020 14:10:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update the IModelApp.features.track calls in HideIsolateEmphasizeManager"
+          },
+          {
+            "comment": "Update uses of StageUsage to use strings."
+          },
+          {
+            "comment": "Added MessageManager.MaxDisplayedStickyMessages & support for maximum displayed sticky messages"
+          },
+          {
+            "comment": "Added property editors for multi-line text, slider and numeric input/spinner."
+          },
+          {
+            "comment": "Replace 'Plugin' with 'Extension' in comments and examples."
+          },
+          {
+            "comment": "Exported ToastMessage & StickyMessage components"
+          },
+          {
+            "comment": "Added support for popup with multiple editors"
+          },
+          {
+            "comment": "Use the DialogGridContainer not the ToolSettingsGridContainer for popup toolsetting since these popup are not in widgets."
+          },
+          {
+            "comment": "Tracking time spent in frontstages for application telemetry"
+          },
+          {
+            "comment": "Do not save tab labels when saving frontstage layout."
+          },
+          {
+            "comment": "Set ui-framework test coverage thresholds to 100%"
+          },
+          {
+            "comment": "Move LayoutManager API to FrontstageDef and WidgetDef."
+          },
+          {
+            "comment": "Introduce an option to group elements by class in `ModelsTree` and `SpatialContainmentTree`. Also allow specifying the option for both trees when creating `VisibilityWidget`."
+          },
+          {
+            "comment": "Fix bottom/top stage panel tab duplication."
+          },
+          {
+            "comment": "Added ViewStateProp & support for obtaining ViewState from function in ViewportComponent and IModelViewportControl"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.1.0",
       "tag": "@bentley/ui-framework_v2.1.0",
       "date": "Thu, 28 May 2020 22:48:59 GMT",

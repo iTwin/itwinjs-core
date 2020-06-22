@@ -1,0 +1,23 @@
+{
+  "name": "@bentley/imodelhub-client-tests",
+  "entries": [
+    {
+      "version": "2.2.0",
+      "tag": "@bentley/imodelhub-client-tests_v2.2.0",
+      "date": "Fri, 19 Jun 2020 14:10:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial commit of tests for @bentley/imodelhub-client"
+          },
+          {
+            "comment": "Exposed API to run tests"
+          },
+          {
+            "comment": "Remove IOS Azure downloader"
+          }
+        ]
+      }
+    }
+  ]
+}

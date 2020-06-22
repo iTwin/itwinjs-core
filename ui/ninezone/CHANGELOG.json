@@ -2,6 +2,36 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "2.2.0",
+      "tag": "@bentley/ui-ninezone_v2.2.0",
+      "date": "Fri, 19 Jun 2020 14:10:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updates to documentation"
+          },
+          {
+            "comment": "Added support for popup with multiple editors"
+          },
+          {
+            "comment": "Fix widget panel interactions on touch devices."
+          },
+          {
+            "comment": "Prevent widget content renderer from overflowing widget tabs."
+          },
+          {
+            "comment": "Fix touch drag of tool settings handle."
+          },
+          {
+            "comment": "Fix widget drag interactions for touch devices."
+          },
+          {
+            "comment": "Fix widget content flicker when expanding minimized widget."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.1.0",
       "tag": "@bentley/ui-ninezone_v2.1.0",
       "date": "Thu, 28 May 2020 22:48:59 GMT",
