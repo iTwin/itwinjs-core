@@ -22,8 +22,7 @@
     "test": "",
     "cover": "",
     "docs": "",
-    "copyConfig": "internal-tools copy-config",
-    "linkExt": "internal-tools linkExtensions --extension hypermodeling"
+    "copyConfig": "internal-tools copy-config"
   },
   "repository": {},
   "keywords": [

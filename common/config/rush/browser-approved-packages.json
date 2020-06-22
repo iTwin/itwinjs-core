@@ -71,6 +71,14 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@bentley/hypermodeling",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/hypermodeling-frontend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/icons-generic",
       "allowedCategories": [ "frontend", "internal" ]
     },

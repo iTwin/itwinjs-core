@@ -69,10 +69,6 @@
   "Error": {
     "NotFoundModels": "No section locations found for displayed models",
     "NotFoundCategories": "No section locations found for displayed categories",
-    "NotFoundTypes": "No section locations found for displayed types",
-    "QuerySectionDrawingLocation": {
-      "BisCoreTooOld": "No section locations found - BisCore 1.0.11 or newer required",
-      "UnknownError": "Error querying section locations"
-    }
+    "NotFoundTypes": "No section locations found for displayed types"
   }
 }

@@ -35,7 +35,7 @@ dependencies:
   '@rush-temp/frontend-devtools': 'file:projects/frontend-devtools.tgz'
   '@rush-temp/geometry-core': 'file:projects/geometry-core.tgz'
   '@rush-temp/geonames-extension': 'file:projects/geonames-extension.tgz_webpack@4.42.0'
-  '@rush-temp/hypermodeling-extension': 'file:projects/hypermodeling-extension.tgz'
+  '@rush-temp/hypermodeling-frontend': 'file:projects/hypermodeling-frontend.tgz'
   '@rush-temp/imjs-importer': 'file:projects/imjs-importer.tgz'
   '@rush-temp/imodel-bridge': 'file:projects/imodel-bridge.tgz'
   '@rush-temp/imodel-from-geojson': 'file:projects/imodel-from-geojson.tgz_request@2.88.2'
@@ -18595,7 +18595,7 @@ packages:
     dev: false
     name: '@rush-temp/core-full-stack-tests'
     resolution:
-      integrity: sha512-iKj9YrV+SPjy8Ua+O14YP0mmSlsF2Ls6NUGerSRDpY5CnSzsDbjk9xawRBxwShswpnVzcYe3xjDkg97aVbO0SQ==
+      integrity: sha512-H/DLTe4K6KeSkpe9c+FI8vyOMMJhzgOfEJXo8mdm99wY3vz3NpCYBoZeC/wPAYWYDfiN6nyJUGjq5lCY7UQWbw==
       tarball: 'file:projects/core-full-stack-tests.tgz'
     version: 0.0.0
   'file:projects/display-performance-test-app.tgz_df38b68f3c2130670fcb89852c4be79f':
@@ -18664,7 +18664,7 @@ packages:
     peerDependencies:
       webpack-cli: '*'
     resolution:
-      integrity: sha512-20h6ukOL5fdghDDaMs0JEyoZPhmNjWVG07miHxhil0MUepTS9SwETIbPHFERZoY2xR4wkV2dXqQZn9+mwRotrQ==
+      integrity: sha512-QY1yDoc+VFCUh52nC+bOtsK3TYu1dSveRHuU9+1JvewJBqXrt1JMVoDs2BgxF1FeyhFXiAASM12uKZDXfDPDsQ==
       tarball: 'file:projects/display-test-app.tgz'
     version: 0.0.0
   'file:projects/ecschema-locaters.tgz':
@@ -19066,20 +19066,27 @@ packages:
       integrity: sha512-HdZe73QSHoILjsIq6GF3ijJ/sw0l2ktExzJoHFwOS2VHAY9Z8aqZuYD8jsORgGbxRBaajzSv8yfsqAaqYXuCBA==
       tarball: 'file:projects/geonames-extension.tgz'
     version: 0.0.0
-  'file:projects/hypermodeling-extension.tgz':
+  'file:projects/hypermodeling-frontend.tgz':
     dependencies:
+      '@types/chai': 4.2.11
+      '@types/mocha': 5.2.7
       '@types/node': 10.14.1
       chai: 4.2.0
       cpx: 1.5.0
+      glob: 7.1.6
+      mocha: 5.2.0
+      nyc: 14.1.1
       rimraf: 3.0.2
+      source-map-loader: 1.0.0_webpack@4.42.0
       tslint: 5.20.1_typescript@3.7.5
       tslint-etc: 1.11.0_tslint@5.20.1+typescript@3.7.5
       typescript: 3.7.5
+      webpack: 4.42.0_webpack@4.42.0
     dev: false
-    name: '@rush-temp/hypermodeling-extension'
+    name: '@rush-temp/hypermodeling-frontend'
     resolution:
-      integrity: sha512-wa41+E8UkfJuZN9I2xqwZnG93tBg9ATNbCfSK79kki4YI0YGuOAPickzdJmttt9xMlNIkGhqzCoGZtiWdsFxJA==
-      tarball: 'file:projects/hypermodeling-extension.tgz'
+      integrity: sha512-R88Hv+IAOUAuiY1fNfcgRIOpgGW7GeqLjAYT0+UkFeWW1KY40uR+lGRwlvhAKT0QTt4pIUHFCWyKkjLPYnx5SQ==
+      tarball: 'file:projects/hypermodeling-frontend.tgz'
     version: 0.0.0
   'file:projects/imjs-importer.tgz':
     dependencies:
@@ -20646,7 +20653,7 @@ specifiers:
   '@rush-temp/frontend-devtools': 'file:./projects/frontend-devtools.tgz'
   '@rush-temp/geometry-core': 'file:./projects/geometry-core.tgz'
   '@rush-temp/geonames-extension': 'file:./projects/geonames-extension.tgz'
-  '@rush-temp/hypermodeling-extension': 'file:./projects/hypermodeling-extension.tgz'
+  '@rush-temp/hypermodeling-frontend': 'file:./projects/hypermodeling-frontend.tgz'
   '@rush-temp/imjs-importer': 'file:./projects/imjs-importer.tgz'
   '@rush-temp/imodel-bridge': 'file:./projects/imodel-bridge.tgz'
   '@rush-temp/imodel-from-geojson': 'file:./projects/imodel-from-geojson.tgz'

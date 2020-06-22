@@ -2,234 +2,36 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module HyperModeling
+ */
 
-import {
-  DbResult,
-  Logger,
-} from "@bentley/bentleyjs-core";
-import {
-  Point3d,
-  Transform,
-  XAndY,
-} from "@bentley/geometry-core";
-import { I18N } from "@bentley/imodeljs-i18n";
-import {
-  IModelError,
-  IModelReadRpcInterface,
-  SectionType,
-} from "@bentley/imodeljs-common";
+import { Transform, XAndY } from "@bentley/geometry-core";
+import { SectionType } from "@bentley/imodeljs-common";
 import { AbstractToolbarProps } from "@bentley/ui-abstract";
 import {
-  DecorateContext,
-  Extension,
-  imageElementFromUrl,
-  IModelApp,
-  NotifyMessageDetails,
-  OutputMessagePriority,
-  OutputMessageType,
-  ScreenViewport,
-  TiledGraphicsProvider,
-  ViewClipTool,
+  DecorateContext, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, ScreenViewport, TiledGraphicsProvider, ViewClipTool,
 } from "@bentley/imodeljs-frontend";
-import {
-  SectionMarker,
-  SectionMarkerSet,
-} from "./SectionMarkers";
-import { SectionLocationState, SectionLocationStateProps } from "./SectionLocationState";
+import { SectionMarker, SectionMarkerSet } from "./SectionMarkers";
+import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { createSectionGraphicsProvider } from "./SectionGraphicsProvider";
-import {
-  PopupToolbarManager,
-  PopupToolbarProvider,
-} from "./PopupToolbar";
+import { PopupToolbarManager, PopupToolbarProvider } from "./PopupToolbar";
 
-async function loadImage(extension: Extension, name: string): Promise<HTMLImageElement | undefined> {
-  const src = extension.resolveResourceUrl(name);
-  try {
-    return await imageElementFromUrl(src);
-  } catch (err) {
-    Logger.logError("SectionMarkerSetDecorator", "Could not load image " + src);
-    return undefined;
-  }
-}
-
-interface MarkerImages {
-  readonly section: HTMLImageElement;
-  readonly detail?: HTMLImageElement;
-  readonly elevation?: HTMLImageElement;
-  readonly plan?: HTMLImageElement;
-}
-
-let markerImages: MarkerImages | undefined | "error";
-
-async function loadMarkerImages(extension: Extension): Promise<MarkerImages | undefined> {
-  if (undefined !== markerImages)
-    return markerImages !== "error" ? markerImages : undefined;
-
-  const promises = [
-    loadImage(extension, "section-marker.svg"),
-    loadImage(extension, "detail-marker.svg"),
-    loadImage(extension, "elevation-marker.svg"),
-    loadImage(extension, "plan-marker.svg"),
-  ];
-
-  const images = await Promise.all(promises);
-  if (undefined === images[0]) {
-    markerImages = "error";
-    return undefined;
-  }
-
-  markerImages = {
-    section: images[0],
-    detail: images[1],
-    elevation: images[2],
-    plan: images[3],
-  };
-
-  return markerImages;
-}
-
-interface MarkerTitleAndImage {
-  image: HTMLImageElement;
-  tooltip?: HTMLElement;
-  label: string;
-}
-
-async function getMarkerTitlesAndImages(states: SectionLocationState[], images: MarkerImages, i18n: I18N): Promise<MarkerTitleAndImage[]> {
-  const promises = [];
-  for (const state of states)
-    promises.push(getMarkerTitleAndImage(state, images, i18n));
-
-  return Promise.all(promises);
-}
-
-async function getMarkerTitleAndImage(state: SectionLocationState, images: MarkerImages, i18n: I18N): Promise<MarkerTitleAndImage> {
-  let image;
-  let titleKey;
-  switch (state.sectionType) {
-    case SectionType.Detail:
-      image = images.detail;
-      titleKey = "HyperModeling:Message.DetailCallout";
-      break;
-    case SectionType.Plan:
-      image = images.plan;
-      titleKey = "HyperModeling:Message.PlanCallout";
-      break;
-    case SectionType.Elevation:
-      image = images.elevation;
-      titleKey = "HyperModeling:Message.ElevationCallout";
-      break;
-  }
-
-  if (undefined === image)
-    image = images.section;
-
-  if (undefined === titleKey)
-    titleKey = "HyperModeling:Message.SectionCallout";
-
-  let label = i18n.translate(titleKey);
-  const viewLabel = state.userLabel;
-  if (viewLabel)
-    label = label + " - " + viewLabel;
-
-  let tooltip: HTMLElement | undefined;
-  try {
-    const tooltipMsg = await IModelReadRpcInterface.getClient().getToolTipMessage(state.iModel.getRpcProps(), state.id);
-    tooltip = IModelApp.formatElementToolTip(tooltipMsg);
-  } catch (_) {
-    //
-  }
-
-  return { label, tooltip, image };
-}
-
-async function createMarkers(vp: ScreenViewport, extension: Extension, useModelSelector: boolean): Promise<SectionMarkerSet | undefined> {
+async function createMarkers(vp: ScreenViewport): Promise<SectionMarkerSet | undefined> {
   if (!vp.view.isSpatialView())
     return undefined;
 
-  const images = await loadMarkerImages(extension);
-  if (undefined === images)
-    return undefined;
-
-  let where = "";
-  if (useModelSelector) {
-    const modelIds = new Set<string>();
-    vp.view.forEachModel((model) => modelIds.add(model.id));
-    if (0 === modelIds.size)
-      return undefined;
-
-    where = " WHERE bis.SectionDrawingLocation.Model.Id in (" + [...modelIds].join(",") + ")";
-  }
-
-  const ecsql = `
-    SELECT
-      bis.SectionDrawingLocation.ECInstanceId as sectionLocationId,
-      bis.SectionDrawingLocation.SectionView.Id as sectionViewId,
-      bis.SectionDrawingLocation.Category.Id as categoryId,
-      bis.SectionDrawingLocation.Origin as origin,
-      bis.SectionDrawingLocation.Yaw as yaw,
-      bis.SectionDrawingLocation.Pitch as pitch,
-      bis.SectionDrawingLocation.Roll as roll,
-      bis.SectionDrawingLocation.BBoxLow as bboxLow,
-      bis.SectionDrawingLocation.BBoxHigh as bboxHigh,
-      bis.SectionDrawingLocation.UserLabel as userLabel,
-
-      bis.SectionDrawing.SectionType as sectionType,
-      json_extract(bis.SectionDrawing.jsonProperties, '$.drawingToSpatialTransform') as drawingToSpatialTransform,
-      bis.SectionDrawing.SpatialView.Id as spatialViewId,
-      json_extract(bis.SectionDrawing.jsonProperties, '$.sheetToSpatialTransform') as sheetToSpatialTransform,
-      json_extract(bis.SectionDrawing.jsonProperties, '$.drawingBoundaryClip') as sheetClip,
-
-      json_extract(bis.SpatialViewDefinition.jsonProperties, '$.viewDetails.clip') as clipJSON,
-      bis.ViewAttachment.ECInstanceId as viewAttachmentId,
-      bis.SheetViewDefinition.ECInstanceId as sheetViewId
-    FROM bis.SectionDrawingLocation
-    INNER JOIN bis.ViewDefinition2d on bis.SectionDrawingLocation.SectionView.Id = bis.ViewDefinition2d.ECInstanceId
-    INNER JOIN bis.SectionDrawing on bis.ViewDefinition2d.BaseModel.Id = bis.SectionDrawing.ECInstanceId
-    LEFT JOIN  bis.ViewAttachment on bis.ViewDefinition2d.ECInstanceId = bis.ViewAttachment.View.Id
-    LEFT JOIN bis.SheetViewDefinition on bis.SheetViewDefinition.BaseModel.Id = bis.ViewAttachment.Model.Id
-    INNER JOIN bis.SpatialViewDefinition on bis.SpatialViewDefinition.ECInstanceId = bis.SectionDrawing.SpatialView.Id
-    ` + where;
-
-  const states: SectionLocationState[] = [];
-  try {
-    for await (const row of vp.view.iModel.query(ecsql)) {
-      try {
-        states.push(new SectionLocationState(row as SectionLocationStateProps, vp.view.iModel));
-      } catch (_ex) {
-        //
-      }
-    }
-  } catch (ex) {
-    let errorKey;
-    if (ex instanceof IModelError && DbResult.BE_SQLITE_ERROR === ex.errorNumber)
-      errorKey = "BisCoreTooOld";
-    else
-      errorKey = "UnknownError";
-
-    const msg = extension.i18n.translate("HyperModeling:Error.QuerySectionDrawingLocation." + errorKey);
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg, undefined, OutputMessageType.Toast));
-    return undefined;
-  }
-
-  const markers = new SectionMarkerSet(vp);
+  const states = await SectionDrawingLocationState.queryAll(vp.iModel);
   if (0 === states.length)
-    return markers;
+    return undefined;
 
-  const titlesAndImages = await getMarkerTitlesAndImages(states, images, extension.i18n);
-  const pos = new Point3d();
-  for (let i = 0; i < states.length; i++) {
-    const state = states[i];
-    const titleAndImage = titlesAndImages[i];
-
-    pos.setFromJSON(state.placement.origin);
-    const { tooltip, label, image } = titleAndImage;
-    markers.markers.add(new SectionMarker(state, pos, label, image, tooltip));
-  }
-
-  return markers;
+  const markers = states.map((state) => new SectionMarker(state));
+  return new SectionMarkerSet(vp, markers);
 }
 
-/** By setting members of this object, applications can control the display and behavior of the section markers. */
+/** By setting members of this object, applications can control the display and behavior of the section markers.
+ * @beta
+ */
 export interface SectionMarkerSetDecoratorProps {
   /** Determines what is returned by MarkupApp.stop */
   display: {
@@ -266,7 +68,7 @@ class MarkerToolbarProvider implements PopupToolbarProvider {
 
   public constructor(marker: SectionMarker, decorator: SectionMarkerSetDecorator) {
     this.marker = marker;
-    this.toolbarProps = marker.getToolbarProps(decorator.extension.i18n);
+    this.toolbarProps = marker.getToolbarProps();
     this.onToolbarItemExecuted = (id) => decorator.onToolbarItemExecuted(id);
   }
 
@@ -294,21 +96,25 @@ function propsKeyFromSectionType(sectionType: SectionType): "detail" | "plan" | 
   }
 }
 
+/** A decorator that displays a [Marker]($frontend) for each [SectionDrawingLocation]($backend) in the view.
+ * Clicking on a marker toggles the section and the display of associated 2d graphics.
+ * Hovering over a marker opens a mini toolbar with additional interactions.
+ * @beta
+ */
 export class SectionMarkerSetDecorator {
   private readonly _markers: SectionMarkerSet;
   private readonly _props: SectionMarkerSetDecoratorProps;
-  public readonly extension: Extension;
   private readonly _removeEventListeners = new Array<() => void>();
   private _syncRequest = SyncRequest.None;
   private _toolbarProvider?: MarkerToolbarProvider;
   private _tiledGraphicsProvider?: TiledGraphicsProvider;
 
-  public static async create(vp: ScreenViewport, extension: Extension, props?: SectionMarkerSetDecoratorProps): Promise<SectionMarkerSetDecorator | undefined> {
+  public static async create(vp: ScreenViewport, props?: SectionMarkerSetDecoratorProps): Promise<SectionMarkerSetDecorator | undefined> {
     if (!props)
       props = this.defaultProps;
 
-    const markers = await createMarkers(vp, extension, props.display.model);
-    return undefined !== markers ? new SectionMarkerSetDecorator(markers, props, extension) : undefined;
+    const markers = await createMarkers(vp /*, ###TODO, props.display.model */);
+    return undefined !== markers ? new SectionMarkerSetDecorator(markers, props) : undefined;
   }
 
   public static getForViewport(vp: ScreenViewport): SectionMarkerSetDecorator | undefined {
@@ -343,7 +149,7 @@ export class SectionMarkerSetDecorator {
   public get viewport(): ScreenViewport { return this._markers.viewport; }
 
   /** enable: true to show, false to hide, undefined  to toggle. */
-  public static async showOrHide(vp: ScreenViewport, extension: Extension, enable?: boolean): Promise<void> {
+  public static async showOrHide(vp: ScreenViewport, enable?: boolean): Promise<void> {
     const decorator = this.getForViewport(vp);
     if (undefined === enable)
       enable = undefined === decorator;
@@ -358,17 +164,16 @@ export class SectionMarkerSetDecorator {
     if (!vp.view.isSpatialView())
       return;
 
-    await this.create(vp, extension);
+    await this.create(vp);
   }
 
   public decorate(context: DecorateContext): void {
     this._markers.addDecoration(context);
   }
 
-  private constructor(markers: SectionMarkerSet, props: SectionMarkerSetDecoratorProps, extension: Extension) {
+  private constructor(markers: SectionMarkerSet, props: SectionMarkerSetDecoratorProps) {
     this._markers = markers;
     this._props = { ...props };
-    this.extension = extension;
 
     this.viewport.onChangeView.addOnce(() => {
       this.requestSync(SyncRequest.Markers);
@@ -520,7 +325,7 @@ export class SectionMarkerSetDecorator {
       case SyncRequest.Markers:
         this.dispose();
         this._props.display.selectedOnly = false;
-        await SectionMarkerSetDecorator.create(this.viewport, this.extension, this._props);
+        await SectionMarkerSetDecorator.create(this.viewport, this._props);
         break;
       case SyncRequest.Visibility:
         if (this.setMarkerVisibility()) {
@@ -556,10 +361,10 @@ export class SectionMarkerSetDecorator {
 
     if (!this._props.display.selectedOnly) {
       if (!haveVisibleCategory) {
-        const msg = this.extension.i18n.translate("HyperModeling:Error.NotFoundCategories");
+        const msg = IModelApp.i18n.translate("HyperModeling:Error.NotFoundCategories");
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg, undefined, OutputMessageType.Toast));
       } else if (!haveVisibleType) {
-        const msg = this.extension.i18n.translate("HyperModeling:Error.NotFoundTypes");
+        const msg = IModelApp.i18n.translate("HyperModeling:Error.NotFoundTypes");
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg, undefined, OutputMessageType.Toast));
       }
     }

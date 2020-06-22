@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module HyperModeling
+ */
 
 import { SectionType } from "@bentley/imodeljs-common";
 import {
@@ -13,7 +16,6 @@ import {
   ScreenViewport,
   Tool,
 } from "@bentley/imodeljs-frontend";
-import { hyperModelingExtension } from "./HyperModelingExtension";
 import { SectionMarkerSetDecorator } from "./SectionMarkerSetDecorator";
 import { getDefaultSectionGraphicsConfig, getSectionGraphicsConfig, SectionGraphicsConfig, setSectionGraphicsConfig } from "./SectionGraphicsProvider";
 
@@ -121,7 +123,7 @@ class SectionMarkerDisplayTool extends Tool {
   public run(enable?: boolean, vp?: ScreenViewport): boolean {
     vp = getViewport(vp);
     if (undefined !== vp)
-      SectionMarkerSetDecorator.showOrHide(vp, hyperModelingExtension, enable); // tslint:disable-line:no-floating-promises
+      SectionMarkerSetDecorator.showOrHide(vp, enable); // tslint:disable-line:no-floating-promises
 
     return true;
   }

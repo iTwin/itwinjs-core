@@ -21,6 +21,10 @@ Note: Gradient modes `ThematicGradientMode.SteppedWithDelimiter` and `ThematicGr
 ![isoline thematic gradient mode applied to height](./assets/thematic_isolines.png)
 <p align="center">Isoline thematic gradient mode applied to height</p>
 
+## Hyper-modeling
+
+The hyper-modeling [Extension]($frontend) has been replaced by the `hypermodeling-frontend` package to permit customization of its behavior. See [HyperModeling]($hypermodeling) and [SectionMarkerSetDecorator]($hypermodeling). Consult the package's README for further details.
+
 ## ECSql Enhancements
 
 Added these expressions and functions

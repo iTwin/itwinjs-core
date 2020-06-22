@@ -30,6 +30,7 @@
     "@bentley/itwin-client": "2.3.0-dev.5",
     "@bentley/imodeljs-common": "2.3.0-dev.5",
     "@bentley/imodeljs-frontend": "2.3.0-dev.5",
+    "@bentley/hypermodeling-frontend": "2.3.0-dev.5",
     "@bentley/imodeljs-i18n": "2.3.0-dev.5",
     "@bentley/imodeljs-markup": "2.3.0-dev.5",
     "chai": "^4.1.2",

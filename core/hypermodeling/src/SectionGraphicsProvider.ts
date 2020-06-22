@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module HyperModeling
+ */
 
 import { assert, compareBooleans, compareStrings, Id64 } from "@bentley/bentleyjs-core";
 import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
@@ -11,9 +14,11 @@ import {
   FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelApp, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
   TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier, Viewport, ViewState2d,
 } from "@bentley/imodeljs-frontend";
-import { SectionLocationState } from "./SectionLocationState";
+import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 
-/** Configures how section graphics are displayed in a viewport. */
+/** Configures how section graphics are displayed in a viewport.
+ * @alpha
+ */
 export interface SectionGraphicsConfig {
   /** Whether or not to clip the 2d view based on the view attachment's boundary. */
   applyClipVolumes: boolean;
@@ -25,7 +30,9 @@ export interface SectionGraphicsConfig {
   displaySheets: boolean;
 }
 
-/** Obtain a copy of the default configuration. */
+/** Obtain a copy of the default configuration.
+ * @alpha
+ */
 export function getDefaultSectionGraphicsConfig(): SectionGraphicsConfig {
   return {
     applyClipVolumes: true,
@@ -37,12 +44,16 @@ export function getDefaultSectionGraphicsConfig(): SectionGraphicsConfig {
 
 const globalConfig = getDefaultSectionGraphicsConfig();
 
-/** Obtain a copy of the current configuration. */
+/** Obtain a copy of the current configuration.
+ * @alpha
+ */
 export function getSectionGraphicsConfig(): SectionGraphicsConfig {
   return { ...globalConfig };
 }
 
-/** Change the current configuration. */
+/** Change the current configuration.
+ * @alpha
+ */
 export function setSectionGraphicsConfig(config: SectionGraphicsConfig): void {
   let changed = false;
   const props: Array<keyof SectionGraphicsConfig> = ["applyClipVolumes", "debugClipVolumes", "displayDrawings", "displaySheets"];
@@ -58,7 +69,7 @@ export function setSectionGraphicsConfig(config: SectionGraphicsConfig): void {
 }
 
 interface ProxyTreeId {
-  state: SectionLocationState;
+  state: SectionDrawingLocationState;
   isSheet: boolean;
   attachment?: ViewAttachmentProps;
 }
@@ -67,7 +78,7 @@ interface ProxyTreeParams {
   tree: TileTree;
   ref: TileTreeReference;
   view: ViewState2d;
-  state: SectionLocationState;
+  state: SectionDrawingLocationState;
   attachment?: ViewAttachmentProps;
 }
 
@@ -110,7 +121,7 @@ class ProxyTreeSupplier implements TileTreeSupplier {
     }
   }
 
-  private async createSheetViewState(state: SectionLocationState, attachment: ViewAttachmentProps): Promise<DrawingViewState | undefined> {
+  private async createSheetViewState(state: SectionDrawingLocationState, attachment: ViewAttachmentProps): Promise<DrawingViewState | undefined> {
     assert(undefined !== state.viewAttachment);
     try {
       // A persistent view of the sheet doesn't necessarily exist, and we don't want a SheetViewState anyway.
@@ -356,7 +367,7 @@ class SectionGraphicsProvider implements TiledGraphicsProvider {
   private readonly _drawingRef: TileTreeReference;
   private readonly _sheetRef?: TileTreeReference;
 
-  public constructor(state: SectionLocationState, attachment: ViewAttachmentProps | undefined) {
+  public constructor(state: SectionDrawingLocationState, attachment: ViewAttachmentProps | undefined) {
     this._drawingRef = new ProxyTreeReference({ state, attachment, isSheet: false });
     if (attachment)
       this._sheetRef = new ProxyTreeReference({ state, attachment, isSheet: true });
@@ -369,7 +380,13 @@ class SectionGraphicsProvider implements TiledGraphicsProvider {
   }
 }
 
-export async function createSectionGraphicsProvider(state: SectionLocationState): Promise<TiledGraphicsProvider> {
+/** Creates a TiledGraphicsProvider that can be associated with a [Viewport]($frontend) to display 2d section graphics and annotations in the context of a
+ * [SpatialViewState]($frontend). Typically used indirectly via [[SectionMarkerSetDecorator]].
+ * @param state The section drawing location specifying which section drawing to display.
+ * @returns A provider suitable for passing to [Viewport.addTiledGraphicsProvider]($frontend).
+ * @beta
+ */
+export async function createSectionGraphicsProvider(state: SectionDrawingLocationState): Promise<TiledGraphicsProvider> {
   let attachment;
   if (undefined !== state.viewAttachment) {
     const attachments = await state.iModel.elements.getProps(state.viewAttachment.id) as ViewAttachmentProps[];

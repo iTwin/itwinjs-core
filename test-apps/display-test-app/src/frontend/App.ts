@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { FrontendDevTools } from "@bentley/frontend-devtools";
+import { HyperModeling, SectionMarkerSetDecorator } from "@bentley/hypermodeling-frontend";
 import {
   AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, SelectionTool, SnapMode, TileAdmin, Tool,
 } from "@bentley/imodeljs-frontend";
@@ -102,7 +103,10 @@ class LoadHypermodelingTool extends Tool {
   public static toolId = "LoadHypermodeling";
 
   public run(_args: any[]): boolean {
-    IModelApp.tools.parseAndRun("load extension localhost:3000/hypermodeling on");
+    HyperModeling.initialize().then(() => {
+      if (undefined !== IModelApp.viewManager.selectedView)
+        SectionMarkerSetDecorator.showOrHide(IModelApp.viewManager.selectedView);
+    }).catch((_) => undefined);
     return true;
   }
 }

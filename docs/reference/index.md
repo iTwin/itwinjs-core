@@ -13,16 +13,19 @@ The iModel.js library is organized into the following separately downloadable [n
 
 ## iModel.js Core Packages
 
-- ($frontend)
+- Frontend
+  - ($frontend)
+  - ($frontend-devtools)
+  - ($webgl-compatibility)
+  - ($hypermodeling)
+  - ($markup)
+- Backend
+  - ($backend)
+  - ($backend-itwin-client)
 - ($common)
-- ($backend)
-- ($backend-itwin-client)
-- ($markup)
 - ($i18n)
 - ($bentley)
 - ($geometry)
-- ($frontend-devtools)
-- ($webgl-compatibility)
 - ($logger-config)
 
 ## iModel.js Client Packages

@@ -9261,6 +9261,9 @@ export class TraversalSelectionContext {
     selectOrQueue(tile: RealityTile, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
 }
 
+// @public
+export function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined>;
+
 // @beta
 export class TwoWayViewportSync {
     connect(view1: Viewport, view2: Viewport): void;

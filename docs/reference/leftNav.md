@@ -14,6 +14,7 @@ packageClassification:  [
          "geometry-core",
          "logger-config",
          "frontend-devtools",
+         "hypermodeling-frontend",
          "webgl-compatibility"
       ]
    },
