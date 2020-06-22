@@ -3152,6 +3152,8 @@ export abstract class GltfReader {
     // (undocumented)
     protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined;
     // (undocumented)
+    protected readonly _extensions: any;
+    // (undocumented)
     protected extractReturnToCenter(extensions: any): number[] | undefined;
     // (undocumented)
     protected findTextureMapping(textureId: string): TextureMapping | undefined;
