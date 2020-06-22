@@ -113,7 +113,9 @@ export interface WebGLRenderCompatibilityInfo {
 export type ContextCreator = (canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes) => WebGLRenderingContext | WebGL2RenderingContext | undefined;
 
 function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = true, attributes?: WebGLContextAttributes): WebGLRenderingContext | WebGL2RenderingContext | undefined {
-  const context = useWebGL2 ? canvas.getContext("webgl2", attributes) : canvas.getContext("webgl", attributes);
+  let context = useWebGL2 ? canvas.getContext("webgl2", attributes) : canvas.getContext("webgl", attributes);
+  if (context === null && useWebGL2)
+    context = canvas.getContext("webgl", attributes);
   return context ?? undefined;
 }
 
