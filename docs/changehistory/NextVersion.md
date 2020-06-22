@@ -20,3 +20,18 @@ Note: Gradient modes `ThematicGradientMode.SteppedWithDelimiter` and `ThematicGr
 
 ![isoline thematic gradient mode applied to height](./assets/thematic_isolines.png)
 <p align="center">Isoline thematic gradient mode applied to height</p>
+
+## ECSql Enhancements
+
+Added these expressions and functions
+
+1. `<type> IS [NOT] (type-list)` - Filter parent type by subtype
+    * [Lesson 9: Type Filter](../learning/ECSQLTutorial/TypeFilter.md)
+1. `CASE-WHEN-THEN-ELSE` - Conditional expression
+    * [Lesson 10: Conditional Expressions](../learning/ECSQLTutorial/ConditionalExpr.md)
+1. `IIF()`  - Conditional expression
+    * [Lesson 10: Conditional Expressions](../learning/ECSQLTutorial/ConditionalExpr.md)
+1. `ec_classname()` - Get formatted class names for a ECClassId
+    * [Lesson 11: Built-In functions](../learning/ECSQLTutorial/BuiltInFunctions.md)
+1. `ec_classid())` - Get ECClassId from a  qualified classname.
+    * [Lesson 11: Built-In functions](../learning/ECSQLTutorial/BuiltInFunctions.md)

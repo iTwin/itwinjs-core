@@ -75,6 +75,9 @@ Once you opened the iModel just type in the ECSQL (without a leading .) and hit 
 * [Lesson 6: Spatial Queries](./SpatialQueries.md)
 * [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries.md)
 * [Lesson 8: Querying Change Summaries](./ChangeSummaryQueries.md)
+* [Lesson 9: Type Filter](./TypeFilter.md)
+* [Lesson 10: Conditional Expressions](./ConditionalExpr.md)
+* [Lesson 11: Built-In functions](./BuiltInFunctions.md)
 
 ---
 
