@@ -115,6 +115,7 @@ export class ComponentExamplesProvider {
 
         createComponentExample("Check Box", "Basic Check Box", <Checkbox label="Basic Check Box" />),
         createComponentExample("Disabled Check Box", "Check Box with disabled prop", <Checkbox label="Disabled Check Box" disabled />),
+        createComponentExample("Indeterminate Check Box", "Check Box with indeterminate prop", <Checkbox label="Indeterminate Check Box" indeterminate />),
 
         createComponentExample("Radio Button", "Basic Radio Button", <Radio label="Basic Radio Button" name="demo1" />),
         createComponentExample("Disabled Radio Button", "Radio Button with disabled prop", <Radio label="Disabled Radio Button" name="demo1" disabled />),

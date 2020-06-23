@@ -82,6 +82,15 @@
     animation-fill-mode: forwards;
   }
 
+  input[type="checkbox"]:indeterminate + .core-checkbox-label:after {
+    content: '';
+    display: inline-block;
+    margin-left: .2em;
+    width: .6em;
+    height: .3em;
+    background-color: $buic-foreground-primary;
+  }
+
   input[type="checkbox"]:disabled + .core-checkbox-label,
   input[type="checkbox"]:disabled + .core-checkbox-label:before,
   input[type="checkbox"]:disabled + .core-checkbox-label:after {
