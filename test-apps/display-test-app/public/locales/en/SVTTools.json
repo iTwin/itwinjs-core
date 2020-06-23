@@ -88,6 +88,9 @@
     },
     "LoadHypermodeling": {
       "keyin": "dta hypermodeling"
+    },
+    "ToggleTimePointComparison": {
+      "keyin": "dta timepoint comparison"
     }
   }
 }
