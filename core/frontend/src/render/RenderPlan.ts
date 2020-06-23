@@ -39,6 +39,7 @@ export interface RenderPlan {
   readonly frustum: Frustum;
   readonly fraction: number;
   readonly terrainTransparency: number;
+  readonly locatableTerrain: boolean;
   readonly globalViewTransition: number;
   readonly isGlobeMode3D: boolean;
   readonly backgroundMapOn: boolean;
@@ -60,6 +61,7 @@ export function createEmptyRenderPlan(): RenderPlan {
     fraction: 0,
     isFadeOutActive: false,
     terrainTransparency: 1,
+    locatableTerrain: true,
     globalViewTransition: 0,
     isGlobeMode3D: false,
     backgroundMapOn: false,
@@ -73,7 +75,14 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const style = view.displayStyle;
 
   const is3d = view.is3d();
-  const terrainTransparency = view.is3d() ? view.getDisplayStyle3d().backgroundMapSettings.transparency || 0.0 : 0.0;
+  let terrainTransparency = 0;
+  let locatableTerrain = false;
+  const style3d = view.is3d() ? view.getDisplayStyle3d() : undefined;
+  if (style3d) {
+    terrainTransparency = style3d.backgroundMapSettings.transparency || 0;
+    locatableTerrain = style3d.backgroundMapSettings.terrainSettings.locatable;
+  }
+
   const globalViewTransition = view.is3d() ? view.globalViewTransition() : 0.0;
   const backgroundMapOn = view.displayStyle.viewFlags.backgroundMap;
   const frustum = vp.viewingSpace.getFrustum();
@@ -128,6 +137,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     frustum,
     fraction,
     terrainTransparency,
+    locatableTerrain,
     globalViewTransition,
     isGlobeMode3D,
     backgroundMapOn,

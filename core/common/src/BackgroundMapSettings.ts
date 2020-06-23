@@ -165,16 +165,16 @@ export class BackgroundMapSettings {
       return this;
 
     const props = {
-      providerName: undefined !== changedProps.providerName ? changedProps.providerName : this.providerName,
-      groundBias: undefined !== changedProps.groundBias ? changedProps.groundBias : this.groundBias,
-      transparency: undefined !== changedProps.transparency ? changedProps.transparency : this.transparency,
-      useDepthBuffer: undefined !== changedProps.useDepthBuffer ? changedProps.useDepthBuffer : this.useDepthBuffer,
-      applyTerrain: undefined !== changedProps.applyTerrain ? changedProps.applyTerrain : this.applyTerrain,
-      terrainSettings: undefined !== changedProps.terrainSettings ? this.terrainSettings.clone(changedProps.terrainSettings) : this.terrainSettings,
+      providerName: changedProps.providerName ?? this.providerName,
+      groundBias: changedProps.groundBias ?? this.groundBias,
+      transparency: changedProps.transparency ?? this.transparency,
+      useDepthBuffer: changedProps.useDepthBuffer ?? this.useDepthBuffer,
+      globeMode: changedProps.globeMode ?? this.globeMode,
+      applyTerrain: changedProps.applyTerrain ?? this.applyTerrain,
+      terrainSettings: changedProps.terrainSettings ? this.terrainSettings.clone(changedProps.terrainSettings).toJSON() : this.terrainSettings.toJSON(),
       providerData: {
-        mapType: undefined !== changedProps.providerData && undefined !== changedProps.providerData.mapType ? changedProps.providerData.mapType : this.mapType,
+        mapType: changedProps.providerData?.mapType ?? this.mapType,
       },
-      globeMode: undefined !== changedProps.globeMode ? changedProps.globeMode : this.globeMode,
     };
 
     return BackgroundMapSettings.fromJSON(props);

@@ -671,14 +671,18 @@ export class ViewAttributes {
     exaggerationLabel.htmlFor = "ts_viewToolPickRadiusInches";
     exaggerationLabel.innerText = "Exaggeration: ";
     exaggerationDiv.appendChild(exaggerationLabel);
+
     const exaggeration = createNumericInput({
       parent: exaggerationDiv,
       value: getTerrainSettings(this._vp.view).exaggeration,
       handler: (value) => updateTerrainSettings({ exaggeration: value }),
     }, true);
+
     exaggerationDiv.style.display = "block";
     exaggerationDiv.style.textAlign = "left";
     settingsDiv.appendChild(exaggerationDiv);
+
+    const locatable = this.addCheckbox("Locatable", (enabled) => updateTerrainSettings({ nonLocatable: !enabled }), exaggerationDiv);
 
     this._updates.push((view) => {
       const map = view.displayStyle.settings.backgroundMap;
@@ -686,6 +690,7 @@ export class ViewAttributes {
       heightOriginMode.value = terrainSettings.heightOriginMode.toString();
       heightOrigin.value = terrainSettings.heightOrigin.toString();
       exaggeration.value = terrainSettings.exaggeration.toString();
+      locatable.checkbox.checked = terrainSettings.locatable;
     });
 
     return settingsDiv;

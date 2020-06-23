@@ -213,6 +213,7 @@ describe("BackgroundMapSettings", () => {
         expect(outTerrain.applyLighting).to.equal(expTerrain.applyLighting);
         expect(outTerrain.heightOrigin).to.equal(expTerrain.heightOrigin);
         expect(outTerrain.heightOriginMode).to.equal(expTerrain.heightOriginMode);
+        expect(outTerrain.nonLocatable).to.equal(expTerrain.nonLocatable);
       }
 
       expect(settings.equalsJSON(expected)).to.be.true;
@@ -271,6 +272,9 @@ describe("BackgroundMapSettings", () => {
     roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: -99 } }, {});
 
+    roundTrip({ terrainSettings: { nonLocatable: false } }, { });
+    roundTrip({ terrainSettings: { nonLocatable: true } }, "input");
+
     roundTrip({
       providerName: "BingProvider",
       providerData: { mapType: BackgroundMapType.Hybrid },
@@ -284,6 +288,7 @@ describe("BackgroundMapSettings", () => {
         exaggeration: 1,
         heightOrigin: 0,
         heightOriginMode: TerrainHeightOriginMode.Geodetic,
+        nonLocatable: false,
       },
     }, {});
   });

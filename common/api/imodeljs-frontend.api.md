@@ -6469,6 +6469,8 @@ export interface RenderPlan {
     // (undocumented)
     readonly lights?: LightSettings;
     // (undocumented)
+    readonly locatableTerrain: boolean;
+    // (undocumented)
     readonly monochromeMode: MonochromeMode;
     // (undocumented)
     readonly monoColor: ColorDef;
@@ -8041,6 +8043,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     logRealityTiles: boolean;
     // (undocumented)
     modelToView(modelPt: XYZ, result?: Point3d): Point3d;
+    // (undocumented)
+    nonLocatableTerrain: boolean;
     // (undocumented)
     onBatchDisposed(batch: Batch): void;
     // (undocumented)
