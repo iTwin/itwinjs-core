@@ -6,8 +6,8 @@ exports[`<Toggle /> renders correctly 1`] = `
   onBlur={[Function]}
   style={
     Object {
-      "borderRadius": 0,
-      "fontSize": 0,
+      "borderRadius": 10.5,
+      "fontSize": 10.5,
     }
   }
 >
@@ -32,7 +32,7 @@ exports[`<Toggle /> renders correctly 1`] = `
         "left": 2,
         "top": 2,
         "transform": "translateX(0px)",
-        "width": -4,
+        "width": 17,
       }
     }
   />
@@ -45,8 +45,8 @@ exports[`<Toggle /> renders large correctly 1`] = `
   onBlur={[Function]}
   style={
     Object {
-      "borderRadius": 0,
-      "fontSize": 0,
+      "borderRadius": 16,
+      "fontSize": 16,
     }
   }
 >
@@ -71,7 +71,7 @@ exports[`<Toggle /> renders large correctly 1`] = `
         "left": 2,
         "top": 2,
         "transform": "translateX(0px)",
-        "width": -4,
+        "width": 28,
       }
     }
   />
