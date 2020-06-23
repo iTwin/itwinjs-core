@@ -115,6 +115,9 @@ describe("Dialog", () => {
     it("should render with resizable", () => {
       render(<Dialog opened={true} resizable={true} />);
     });
+    it("should render with string min/max sizes", () => {
+      render(<Dialog opened={true} minHeight={"25%"} minWidth={"25%"} maxWidth={"75%"} maxHeight={"75%"} />);
+    });
     it("should not resize from pointer events on bottom right when resizable={false}", () => {
       const component = render(<Dialog opened={true} resizable={false} height={400} width={400} minHeight={200} minWidth={200} />);
       const bottomRightDragHandle = component.getByTestId("core-dialog-drag-bottom-right");

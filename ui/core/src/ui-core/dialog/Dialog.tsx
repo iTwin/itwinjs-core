@@ -108,14 +108,14 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   width?: string | number;
   /** Initial height of dialog. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
   height?: string | number;
-  /** Minimum width that the dialog may be resized to. Default: 300 */
-  minWidth?: number;
-  /** Minimum height that the dialog may be resized to. Default: 100 */
-  minHeight?: number;
-  /** Maximum width that the dialog may be resized to. */
-  maxWidth?: number;
-  /** Maximum height that the dialog may be resized to. */
-  maxHeight?: number;
+  /** Minimum width that the dialog may be resized to. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. Default: 300px */
+  minWidth?: string | number;
+  /** Minimum height that the dialog may be resized to. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. Default: 100px */
+  minHeight?: string | number;
+  /** Maximum width that the dialog may be resized to. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
+  maxWidth?: string | number;
+  /** Maximum height that the dialog may be resized to. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
+  maxHeight?: string | number;
 
   /** Whether to show background overlay. Default: true.
    * @note Modeless dialogs require an id and an implementation of onModelessPointerDown.
@@ -222,12 +222,13 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         containerStyle.height = this.state.height;
     }
 
-    containerStyle.minWidth = minWidth + "px";
-    containerStyle.minHeight = minHeight + "px";
-    if (maxWidth)
-      containerStyle.maxWidth = maxWidth + "px";
-    if (maxHeight)
-      containerStyle.maxHeight = maxHeight + "px";
+    const minMaxStyle: React.CSSProperties = {};
+    minMaxStyle.minWidth = (typeof minWidth === "number") ? minWidth + "px" : minWidth;
+    minMaxStyle.minHeight = (typeof minHeight === "number") ? minHeight + "px" : minHeight;
+    if (maxWidth !== undefined)
+      minMaxStyle.maxWidth = (typeof maxWidth === "number") ? maxWidth + "px" : maxWidth;
+    if (maxHeight !== undefined)
+      minMaxStyle.maxHeight = (typeof maxHeight === "number") ? maxHeight + "px" : maxHeight;
 
     const buttons = this.getFooterButtons(this.props);
 
@@ -269,11 +270,11 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
           <DivWithOutsideClick onOutsideClick={onOutsideClick}>
             <div
               className={classnames("core-dialog-container", this.getCSSClassNameFromAlignment(alignment))}
-              style={containerStyle}
+              style={{ ...containerStyle, ...minMaxStyle }}
               data-testid="core-dialog-container"
               onPointerDown={this._handleContainerPointerDown}
             >
-              <div className={"core-dialog-area"} ref={this._containerRef}>
+              <div className={"core-dialog-area"} ref={this._containerRef} style={minMaxStyle}>
                 {!hideHeader &&
                   headerElement
                 }
@@ -480,16 +481,20 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       if (this.state.rightResizing) {
         const pointerX = event.clientX;
         width = pointerX - x;
-        width = Math.max(width, minWidth!);
-        if (maxWidth !== undefined)
+        // istanbul ignore else
+        if (typeof minWidth === "number")
+          width = Math.max(width, minWidth!);
+        if (maxWidth !== undefined && typeof maxWidth === "number")
           width = Math.min(width, maxWidth);
       }
 
       if (this.state.downResizing) {
         const pointerY = event.clientY;
         height = pointerY - y!;
-        height = Math.max(height, minHeight!);
-        if (maxHeight !== undefined)
+        // istanbul ignore else
+        if (typeof minHeight === "number")
+          height = Math.max(height, minHeight!);
+        if (maxHeight !== undefined && typeof maxHeight === "number")
           height = Math.min(height, maxHeight);
       }
 

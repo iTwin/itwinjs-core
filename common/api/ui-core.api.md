@@ -539,10 +539,10 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     height?: string | number;
     hideHeader?: boolean;
     inset?: boolean;
-    maxHeight?: number;
-    maxWidth?: number;
-    minHeight?: number;
-    minWidth?: number;
+    maxHeight?: string | number;
+    maxWidth?: string | number;
+    minHeight?: string | number;
+    minWidth?: string | number;
     modal?: boolean;
     modelessId?: string;
     movable?: boolean;
