@@ -154,6 +154,12 @@ export class Presentation {
     static terminate(): void;
 }
 
+// @beta
+export enum PresentationFrontendLoggerCategory {
+    // (undocumented)
+    Package = "presentation-frontend"
+}
+
 // @public
 export class PresentationManager implements IDisposable {
     activeLocale: string | undefined;

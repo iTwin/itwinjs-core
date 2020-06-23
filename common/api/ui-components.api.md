@@ -1222,7 +1222,7 @@ export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
 // @public
 export class DoublePropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
 }
 
 // @internal (undocumented)
@@ -2242,7 +2242,7 @@ export class NavigationPropertyTypeConverter extends TypeConverter {
 // @public
 export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
 }
 
 // @public
@@ -2513,6 +2513,9 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
     render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
 }
+
+// @internal (undocumented)
+export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps): JSX.Element;
 
 // @public
 export interface PrimitiveRendererProps extends SharedRendererProps {
@@ -4482,7 +4485,7 @@ export interface ViewportProps extends CommonProps {
     // @internal
     viewManagerOverride?: ViewManager;
     viewportRef?: (v: ScreenViewport) => void;
-    viewState?: ViewState;
+    viewState?: ViewStateProp;
 }
 
 // @public
@@ -4496,6 +4499,9 @@ export interface ViewRotationChangeEventArgs {
     // (undocumented)
     viewport: Viewport;
 }
+
+// @public
+export type ViewStateProp = ViewState | (() => ViewState);
 
 // @beta
 export interface VisibleTreeNodes extends Iterable<TreeModelNode | TreeModelNodePlaceholder> {

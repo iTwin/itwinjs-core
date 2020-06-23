@@ -89,6 +89,7 @@ describe("iModelHub VersionHandler", () => {
 
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
+    (requestContext as any).activityId = "iModelHub VersionHandler";
 
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, imodelName, contextId, false, true);

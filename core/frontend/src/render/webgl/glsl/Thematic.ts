@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { ThematicDisplayMode } from "@bentley/imodeljs-common";
+import { ThematicDisplayMode, ThematicGradientMode } from "@bentley/imodeljs-common";
 import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
 import { unpackFloat } from "./Clipping";
@@ -38,12 +38,50 @@ const unpackSensor = `
   }
 `;
 
+// Convert a thematic index to an index that takes into account a stepped gradient texture.
+// A stepped gradient texture is arranged like this: {single color pixel for each color step}..., {U=1; marginColor}
+// The dimension of a stepped gradient texture is stepCount + 1.
+const getSteppedIndex = `
+float getSteppedIndex(float ndxIn, float stepCount) {
+  if (ndxIn < 0.0 || ndxIn > 1.0)
+    return 1.0;
+
+  float ndxOut = clamp(ndxIn, 0.0, 1.0);
+  float max = 1.0 - 1.0 / (stepCount + 1.0);
+  return ndxOut * max;
+}
+`;
+
+// Convert a thematic index to an index that takes into account a stepped gradient texture specifically for isolines.
+// The texture format is exactly as described above for stepped mode.  We just access the gradient differently,
+// specifically to ensure that the texels sampled result in lines of overall singular colors - no stepping into the
+// neighboring bands.
+const getIsoLineIndex = `
+float getIsoLineIndex(float ndxIn, float stepCount) {
+  if (ndxIn < 0.01 || ndxIn > 0.99)
+    return 1.0;
+
+  return clamp(ndxIn, 1.0 / (stepCount + 1.0), 1.0);
+}
+`;
+
+// Convert a thematic index to an index that takes into account a smooth gradient texture.
+// A smooth gradient texture is arranged like this: {U=0; marginColor}, {smoothed color pixel along entire texture dimensions}..., {U=1; marginColor}
+// The dimension of a smoothed gradient texture is system maximum texture size.
+const getSmoothIndex = `
+float getSmoothIndex(float ndxIn) {
+  return clamp(ndxIn, 0.0, 1.0);
+}
+`;
+
+const fwidthWhenAvailable = `float _universal_fwidth(float coord) { return fwidth(coord); }`;
+const fwidthWhenNotAvailable = `float _universal_fwidth(float coord) { return coord; }`; // ###TODO: can we do something reasonable in this case?
+
 // Access the gradient texture for the calculated index.
 const applyThematicHeight = `
-float ndx;
-if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
-  ndx = clamp(v_thematicIndex, 0.0, 1.0);
-} else { // kThematicDisplayMode_InverseDistanceWeightedSensors
+float ndx = v_thematicIndex;
+
+if (kThematicDisplayMode_InverseDistanceWeightedSensors == u_thematicDisplayMode) {
   float sensorSum = 0.0;
   float contributionSum = 0.0;
 
@@ -51,7 +89,9 @@ if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
   float sensorValue;
   float sensorWeight;
 
-  ndx = 0.0;
+  ndx = -1.0; // default index = marginColor
+
+  float distanceCutoff = u_thematicSettings.y;
 
   for (int i = 0; i < 8192; i++) { // ###TODO: set maximum number of sensors during an incremental form of shader construction
     if (i >= u_numSensors)
@@ -61,7 +101,7 @@ if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
 
     float dist = distance(v_eyeSpace, sensor.xyz);
 
-    bool skipThisSensor = (u_distanceCutoff > 0.0 && dist > u_distanceCutoff);
+    bool skipThisSensor = (distanceCutoff > 0.0 && dist > distanceCutoff);
     if (!skipThisSensor) {
       float contribution = 1.0 / pow(dist, 2.0);
       sensorSum += sensor.w * contribution;
@@ -73,7 +113,30 @@ if (kThematicDisplayMode_Height == u_thematicDisplayMode) {
     ndx = sensorSum / contributionSum;
 }
 
-return vec4(TEXTURE(s_texture, vec2(0.0, ndx)).rgb, baseColor.a);
+float gradientMode = u_thematicSettings.x;
+float stepCount = u_thematicSettings.z;
+
+if (kThematicGradientMode_Smooth == gradientMode)
+  ndx = getSmoothIndex(ndx);
+else if (kThematicGradientMode_IsoLines == gradientMode)
+  ndx = getIsoLineIndex(ndx, stepCount);
+else // stepped / stepped delimiter
+  ndx = getSteppedIndex(ndx, stepCount);
+
+vec4 rgba = vec4(TEXTURE(s_texture, vec2(0.0, ndx)).rgb, baseColor.a);
+
+if (kThematicGradientMode_IsoLines == gradientMode) {
+  float coord = v_thematicIndex * stepCount;
+  float line = abs(fract(coord - 0.5) - 0.5) / _universal_fwidth(coord);
+  rgba.a = 1.0 - min(line, 1.0);
+} else if (kThematicGradientMode_SteppedWithDelimiter == gradientMode) {
+  float coord = v_thematicIndex * stepCount;
+  float line = abs(fract(coord - 0.5) - 0.5) / _universal_fwidth(coord);
+  float value = min(line, 1.0);
+  rgba.rgb *= value;
+}
+
+return rgba;
 `;
 
 // Compute the value for the varying to be interpolated to the fragment shader in order to access the color in the thematic gradient texture
@@ -102,6 +165,13 @@ return dot(b - a, c - a) / (abDist * abDist);
 function addThematicDisplayModeConstants(builder: ShaderBuilder) {
   builder.addDefine("kThematicDisplayMode_Height", ThematicDisplayMode.Height.toFixed(1));
   builder.addDefine("kThematicDisplayMode_InverseDistanceWeightedSensors", ThematicDisplayMode.InverseDistanceWeightedSensors.toFixed(1));
+}
+
+function addThematicGradientModeConstants(builder: ShaderBuilder) {
+  builder.addDefine("kThematicGradientMode_Smooth", ThematicGradientMode.Smooth.toFixed(1));
+  builder.addDefine("kThematicGradientMode_Stepped", ThematicGradientMode.Stepped.toFixed(1));
+  builder.addDefine("kThematicGradientMode_SteppedWithDelimiter", ThematicGradientMode.SteppedWithDelimiter.toFixed(1));
+  builder.addDefine("kThematicGradientMode_IsoLines", ThematicGradientMode.IsoLines.toFixed(1));
 }
 
 /** @internal */
@@ -135,6 +205,8 @@ export function addThematicDisplay(builder: ProgramBuilder) {
     });
   });
 
+  addThematicGradientModeConstants(builder.frag);
+
   addThematicDisplayModeConstants(builder.frag);
   addThematicDisplayModeConstants(builder.vert);
 
@@ -144,9 +216,10 @@ export function addThematicDisplay(builder: ProgramBuilder) {
     });
   });
 
-  frag.addUniform("u_distanceCutoff", VariableType.Float, (prog) => {
-    prog.addGraphicUniform("u_distanceCutoff", (uniform, params) => {
-      params.target.uniforms.thematic.bindDistanceCutoff(uniform);
+  // gradientMode, distanceCutoff, stepCount
+  frag.addUniform("u_thematicSettings", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_thematicSettings", (uniform, params) => {
+      params.target.uniforms.thematic.bindFragSettings(uniform);
     });
   });
 
@@ -177,12 +250,26 @@ export function addThematicDisplay(builder: ProgramBuilder) {
     });
   });
 
+  const isWebGL2 = System.instance.capabilities.isWebGL2;
+  if (isWebGL2) {
+    frag.addFunction(fwidthWhenAvailable);
+  } else if (System.instance.capabilities.supportsStandardDerivatives) {
+    frag.addExtension("GL_OES_standard_derivatives");
+    frag.addFunction(fwidthWhenAvailable);
+  } else {
+    frag.addFunction(fwidthWhenNotAvailable);
+  }
+
   if (System.instance.capabilities.supportsTextureFloat) {
     frag.addFunction(getSensorFloat);
   } else {
     frag.addFunction(unpackFloat);
     frag.addFunction(unpackSensor);
   }
+
+  frag.addFunction(getSmoothIndex);
+  frag.addFunction(getSteppedIndex);
+  frag.addFunction(getIsoLineIndex);
 
   frag.set(FragmentShaderComponent.ApplyThematicDisplay, applyThematicHeight);
 }

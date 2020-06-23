@@ -12,8 +12,10 @@
  * Use `@bentley/bentleyjs-core/Logger` to enable logging for these namespaces.
  *
  * @public
+ * @deprecated Use [[PresentationBackendLoggerCategory]], [[PresentationBackendNativeLoggerCategory]],
+ * [[PresentationFrontendLoggerCategory]] or [[PresentationComponentsLoggerCategory]]
  */
-export  enum LoggingNamespaces {
+export enum LoggingNamespaces {
   ECObjects = "ECObjects",
   ECObjects_ECExpressions = "ECObjects.ECExpressions",
   ECObjects_ECExpressions_Parse = "ECObjects.ECExpressions.Parse",

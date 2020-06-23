@@ -18,6 +18,8 @@ import { Omit } from "../utils/typeUtils";
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
   /** Text that will be shown next to the checkbox. */
   label?: string;
+  /** Indicates checkbox is in an Indeterminate or Partial state, regardless of the `checked` state */
+  indeterminate?: boolean;
   /** Input status like: "Success", "Warning" or "Error" */
   status?: InputStatus;
   /** Custom CSS class name for the checkbox input element */
@@ -54,20 +56,36 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
     e.stopPropagation();
   }
 
+  private _setIndeterminate(indeterminate: boolean) {
+    // istanbul ignore else
+    if (this._checkboxInput.current)
+      this._checkboxInput.current.indeterminate = indeterminate;
+  }
+
   public componentDidMount() {
+    if (this.props.indeterminate !== undefined)
+      this._setIndeterminate(this.props.indeterminate);
+
     if (this.props.setFocus && this._checkboxInput.current)
       this._checkboxInput.current.focus();
   }
 
+  /** @internal */
+  public componentDidUpdate(_prevProps: CheckboxProps) {
+    if (this.props.indeterminate !== undefined)
+      this._setIndeterminate(this.props.indeterminate);
+  }
+
   public render() {
-    const { status, className, inputClassName, inputStyle, labelClassName, labelStyle, onClick, onBlur, setFocus, ...inputProps } = this.props;
+    const { status, label, indeterminate, className, inputClassName, inputStyle, labelClassName, labelStyle,
+      onClick, onBlur, setFocus, ...inputProps } = this.props;
     const checkBoxClass = classnames("core-checkbox", status, className);
     return (
       <label className={checkBoxClass} onClick={onClick} onBlur={onBlur}>
         <input type="checkbox" ref={this._checkboxInput} {...inputProps} className={inputClassName} style={inputStyle}
           onClick={this._onCheckboxClick} onBlur={this._onCheckboxBlur} />
         <span className={classnames("core-checkbox-label", labelClassName)} style={labelStyle}>
-          {this.props.label && <span className="core-checkbox-label-text">{this.props.label}</span>}
+          {label && <span className="core-checkbox-label-text">{label}</span>}
         </span>
       </label>
     );

@@ -15,7 +15,7 @@ import { StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./St
 import { getStableWidgetProps } from "../zones/Zone";
 
 /** Enum for StagePanel state.
- * @alpha
+ * @beta
  */
 export enum StagePanelState {
   Off,
@@ -25,7 +25,7 @@ export enum StagePanelState {
 }
 
 /** Panel State Changed Event Args interface.
- * @alpha
+ * @beta
  */
 export interface PanelStateChangedEventArgs {
   panelDef: StagePanelDef;
@@ -33,7 +33,7 @@ export interface PanelStateChangedEventArgs {
 }
 
 /** Widget State Changed Event class.
- * @alpha
+ * @beta
  */
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> { }
 
@@ -48,7 +48,7 @@ export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> { 
 
 /**
  * A StagePanelDef represents each Stage Panel within a Frontstage.
- * @alpha
+ * @beta
  */
 export class StagePanelDef extends WidgetHost {
   private _panelState = StagePanelState.Open;

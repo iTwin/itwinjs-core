@@ -13,3 +13,11 @@ export { PresentationManager, PresentationManagerProps, PresentationManagerMode 
 export { RulesetManager } from "./presentation-backend/RulesetManager";
 export { RulesetVariablesManager } from "./presentation-backend/RulesetVariablesManager";
 export { RulesetEmbedder, RulesetEmbedderProps, DuplicateRulesetHandlingStrategy } from "./presentation-backend/RulesetEmbedder";
+
+/**
+ * @module Logging
+ *
+ * @docs-group-description Logging
+ * Types related to logging in this package.
+ */
+export * from "./presentation-backend/BackendLoggerCategory";

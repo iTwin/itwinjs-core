@@ -114,7 +114,7 @@ export class IModelJsFs {
   }
 
   /**
-   * Walks a directory in breath first fashion
+   * Walks a directory in breadth first fashion
    * @param rootDir  directory from where the traversal starts
    * @param cb callback that would be called with full path of file or directory
    */
@@ -126,7 +126,8 @@ export class IModelJsFs {
       if (!cb(fullPath, isDir!)) {
         return;
       }
-      if (isDir) {
+      // Need to check if the directory still exists in case the callback has deleted it.
+      if (isDir && IModelJsFs.existsSync(fullPath)) {
         subDir.push(fullPath);
       }
     }

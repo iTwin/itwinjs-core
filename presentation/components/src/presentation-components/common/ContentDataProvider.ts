@@ -14,6 +14,7 @@ import {
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
 import { RulesetRegistrationHelper } from "./RulesetRegistrationHelper";
 import { findField } from "./Utils";
@@ -298,7 +299,7 @@ export class ContentDataProvider implements IContentDataProvider {
     if (this.keys.size > DEFAULT_KEYS_BATCH_SIZE) {
       const msg = `ContentDataProvider.getContentDescriptor requesting descriptor with ${this.keys.size} keys which
         exceeds the suggested size of ${DEFAULT_KEYS_BATCH_SIZE}. Possible "HTTP 413 Payload Too Large" error.`;
-      Logger.logWarning("Presentation.Components", msg);
+      Logger.logWarning(PresentationComponentsLoggerCategory.Content, msg);
     }
     return Presentation.presentation.getContentDescriptor(this.createRequestOptions(),
       this._displayType, this.keys, this.selectionInfo);
@@ -335,7 +336,7 @@ export class ContentDataProvider implements IContentDataProvider {
     if (undefined !== pageOptions && pageOptions.size !== this.pagingSize) {
       const msg = `ContentDataProvider.pagingSize doesn't match pageOptions in ContentDataProvider.getContent call.
         Make sure you set provider's pagingSize to avoid excessive backend requests.`;
-      Logger.logWarning("Presentation.Components", msg);
+      Logger.logWarning(PresentationComponentsLoggerCategory.Content, msg);
     }
     const contentAndSize = await this._getContentAndSize(pageOptions);
     return contentAndSize?.content;
@@ -366,7 +367,7 @@ export class ContentDataProvider implements IContentDataProvider {
     if (this.keys.size > DEFAULT_KEYS_BATCH_SIZE) {
       const msg = `ContentDataProvider.getContent requesting with ${this.keys.size} keys which
         exceeds the suggested size of ${DEFAULT_KEYS_BATCH_SIZE}. Possible "HTTP 413 Payload Too Large" error.`;
-      Logger.logWarning("Presentation.Components", msg);
+      Logger.logWarning(PresentationComponentsLoggerCategory.Content, msg);
     }
 
     const requestSize = undefined !== pageOptions && 0 === pageOptions.start && undefined !== pageOptions.size;

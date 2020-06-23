@@ -31,6 +31,7 @@ $uicore-bordered-padding: $uicore-unbordered-padding - 1px;
     font-size:              $uicore-font-size;
     text-decoration:        none;
     cursor:                 pointer;
+    box-sizing:             border-box;
 
     &:hover {
 

@@ -85,6 +85,10 @@
       {
         "category": "DgnCore",
         "logLevel": "Error"
+      },
+      {
+        "category": "IModelDb.open",
+        "logLevel": "Trace"
       }
     ]
   },

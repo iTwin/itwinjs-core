@@ -20,22 +20,22 @@ export { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
 export { EntityClass } from "./Metadata/EntityClass";
 export { AnyEnumerator, Enumeration, Enumerator } from "./Metadata/Enumeration";
 export { Format } from "./Metadata/Format";
-export * from "./Metadata/InvertedUnit";
+export { InvertedUnit } from "./Metadata/InvertedUnit";
 export { KindOfQuantity } from "./Metadata/KindOfQuantity";
 export { Mixin } from "./Metadata/Mixin";
 export * from "./Metadata/OverrideFormat";
-export * from "./Metadata/Phenomenon";
+export { Phenomenon } from "./Metadata/Phenomenon";
 export {
   Property, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty,
   StructArrayProperty, EnumerationArrayProperty, NavigationProperty, AnyArrayProperty, AnyEnumerationProperty,
   AnyPrimitiveProperty, AnyProperty, AnyStructProperty, ArrayProperty, PrimitiveOrEnumPropertyBase,
 } from "./Metadata/Property";
-export * from "./Metadata/PropertyCategory";
+export { PropertyCategory } from "./Metadata/PropertyCategory";
 export { RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "./Metadata/RelationshipClass";
 export { Schema } from "./Metadata/Schema";
 export * from "./Metadata/SchemaItem";
-export * from "./Metadata/Unit";
-export * from "./Metadata/UnitSystem";
+export { Unit } from "./Metadata/Unit";
+export { UnitSystem } from "./Metadata/UnitSystem";
 export * from "./PropertyTypes";
 export * from "./SchemaKey";
 export * from "./utils/FormatEnums";

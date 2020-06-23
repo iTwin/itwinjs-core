@@ -163,6 +163,9 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
     if (target.isDrawingShadowMap)
       return RenderPass.None;
 
+    if (target.nonLocatableTerrain && !target.drawNonLocatable)
+      return RenderPass.None;
+
     if (target.terrainTransparency > 0.0)
       return RenderPass.Translucent;
 

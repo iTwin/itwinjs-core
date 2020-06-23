@@ -12,6 +12,7 @@ public;HiliteSetProviderProps
 beta;IFavoritePropertiesStorage
 public;ISelectionProvider
 public;Presentation
+beta;PresentationFrontendLoggerCategory
 public;PresentationManager 
 public;PresentationManagerProps
 beta;PropertyFullName = string

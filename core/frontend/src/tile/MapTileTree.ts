@@ -603,7 +603,7 @@ export class MapTileTree extends RealityTileTree {
     super(params);
 
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
-    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(ecefToDb, bimElevationBias, params.iModel);
+    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(ecefToDb, bimElevationBias, params.iModel, includeTerrain);
     const quadId = new QuadId(0, 0, 0);
     this.cartesianRange = BackgroundMapGeometry.getCartesianRange(this.iModel);
     this.globeOrigin = this.ecefToDb.getOrigin().clone();

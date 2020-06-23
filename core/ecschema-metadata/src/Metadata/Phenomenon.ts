@@ -51,4 +51,17 @@ export class Phenomenon extends SchemaItem {
   public async fromJSON(phenomenonProps: PhenomenonProps) {
     this.fromJSONSync(phenomenonProps);
   }
+
+  protected async setDefinition(definition: string) {
+    this._definition = definition;
+  }
+}
+
+/**
+ * @internal
+ * An abstract class used for schema editing.
+ */
+export abstract class MutablePhenomenon extends Phenomenon {
+  public abstract async setDefinition(definition: string): Promise<void>;
+  public abstract setDisplayLabel(displayLabel: string): void;
 }

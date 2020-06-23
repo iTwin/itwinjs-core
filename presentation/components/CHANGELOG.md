@@ -1,6 +1,14 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Jun 2020 14:10:03 GMT and should not be manually modified.
+
+## 2.2.0
+Fri, 19 Jun 2020 14:10:03 GMT
+
+### Updates
+
+- Set paging size for ContentDataProvider to avoid requesting whole content on first request
+- BREAKING CHANGE: Change `PresentationTreeNodeLoaderProps` to derive from `PresentationTreeDataProviderProps`. This changes paging attribute name from `pageSize` to `pagingSize`.
 
 ## 2.1.0
 Thu, 28 May 2020 22:48:59 GMT

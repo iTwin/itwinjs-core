@@ -45,26 +45,39 @@ describe("NativeApp Storage", () => {
     await test1.setData("key1", null);
     assert.isNull(await test1.getData("key1"));
 
+    await test1.removeData("key1");
+    assert.isUndefined(await test1.getData("key1"));
+
     await test1.setData("key1", 2222);
     assert.isNumber(await test1.getData("key1"));
     assert.equal(await test1.getData("key1"), 2222);
+    await test1.removeData("key1");
+    assert.isUndefined(await test1.getData("key1"));
 
     await test1.setData("key1", "Hello, World");
     assert.isString(await test1.getData("key1"));
     assert.equal(await test1.getData("key1"), "Hello, World");
+    await test1.removeData("key1");
+    assert.isUndefined(await test1.getData("key1"));
 
     await test1.setData("key1", true);
     assert.isBoolean(await test1.getData("key1"));
     assert.equal(await test1.getData("key1"), true);
+    await test1.removeData("key1");
+    assert.isUndefined(await test1.getData("key1"));
 
     await test1.setData("key1", false);
     assert.isBoolean(await test1.getData("key1"));
     assert.equal(await test1.getData("key1"), false);
+    await test1.removeData("key1");
+    assert.isUndefined(await test1.getData("key1"));
 
     const testArray = new Uint8Array([1, 2, 3, 4, 5]);
     await test1.setData("key1", testArray);
     assert.isTrue(await test1.getData("key1") instanceof Uint8Array);
     assert.equal((await test1.getData("key1") as Uint8Array).length, testArray.length);
+    await test1.removeData("key1");
+    assert.isUndefined(await test1.getData("key1"));
   });
 
 });

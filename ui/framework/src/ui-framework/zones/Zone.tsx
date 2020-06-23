@@ -246,7 +246,7 @@ export class Zone extends React.Component<ZoneProps> {
       if (wDef !== widgetDef)
         continue;
 
-      if (widgetDef.state === WidgetState.Hidden && index < runtimeProps.activeTabIndex) {
+      if (widgetDef.state === WidgetState.Hidden && index < runtimeProps.activeTabIndex && id === runtimeProps.openWidgetId) {
         // Need to decrease active tab index, since removed tab was rendered before active tab and we want to maintain active tab.
         runtimeProps.widgetChangeHandler.handleTabClick(id, runtimeProps.activeTabIndex - 1);
         break;

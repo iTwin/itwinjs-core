@@ -7,23 +7,9 @@ const webpack = require("webpack");
 const chalk = require("chalk");
 const { PrettyLoggingPlugin } = require("@bentley/webpack-tools-core");
 
-// FIXME: Really need to just fix these warnings instead of ignoring them...
-function filterWarnings(warnings) {
-  return warnings.filter((w) => {
-    if (/^.*keyv[\\\/]src[\\\/]index\.js.*\nCritical dependency: the request of a dependency is an expression/m.test(w))
-      return false
-    return true;
-  });
-}
-
-const formatter = ({ errors, warnings }) => {
-  return { errors, warnings: filterWarnings(warnings) };
-}
-
-
 function createCompiler(webpack, config, name, description, onSuccess = function () { }) {
   try {
-    config.plugins.push(new PrettyLoggingPlugin(name, description, onSuccess, formatter));
+    config.plugins.push(new PrettyLoggingPlugin(name, description, onSuccess));
     compiler = webpack(config);
   } catch (err) {
     console.log(`${chalk.red.inverse(name)} ${chalk.bold.red("Failed to configure webpack.\n")}`);

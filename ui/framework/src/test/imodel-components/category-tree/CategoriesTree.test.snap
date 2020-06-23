@@ -50,7 +50,9 @@ exports[`CategoryTree <CategoryTree /> should match snapshot 1`] = `
                     <div
                       class="components-controlledTree-node-content"
                     >
-                      <span>
+                      <span
+                        title="test-node"
+                      >
                         test-node
                       </span>
                     </div>

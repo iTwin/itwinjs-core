@@ -39,7 +39,7 @@ export interface SupportsViewSelectorChange {
  * @public
  */
 export class ContentControl extends ConfigurableUiControl {
-  private _reactNode: React.ReactNode;
+  protected _reactNode: React.ReactNode;
   private _keyAdded = false;
 
   /** Creates an instance of ContentControl.
@@ -66,8 +66,7 @@ export class ContentControl extends ConfigurableUiControl {
   /** Returns the ScreenViewport if isViewport is true */
   public get viewport(): ScreenViewport | undefined { return undefined; }
 
-  /** The React node associated with this control. */
-  public get reactNode(): React.ReactNode {
+  protected getKeyedReactNode(): React.ReactNode {
     if (!this._keyAdded && React.isValidElement(this._reactNode)) {
       // istanbul ignore else
       if (!(this._reactNode as React.ReactElement<any>).key)
@@ -77,6 +76,16 @@ export class ContentControl extends ConfigurableUiControl {
 
     return this._reactNode;
   }
+
+  protected getReactNode(): React.ReactNode {
+    return this.getKeyedReactNode();
+  }
+
+  /** The React node associated with this control. */
+  public get reactNode(): React.ReactNode {
+    return this.getReactNode();
+  }
+
   public set reactNode(r: React.ReactNode) { this._reactNode = r; }
 
   /** The React element associated with this control.

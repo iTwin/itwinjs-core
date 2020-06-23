@@ -255,6 +255,7 @@ public;PrimitivePropertyLabelRenderer
 public;PrimitivePropertyLabelRendererProps 
 public;PrimitivePropertyRenderer 
 public;PrimitivePropertyValueRenderer 
+internal;PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps): JSX.Element
 public;PrimitiveRendererProps 
 public;PropertyCategory
 public;PropertyCategoryBlock 
@@ -449,6 +450,7 @@ public;ViewportComponentEvents
 public;ViewportProps 
 public;ViewRotationChangeEvent 
 public;ViewRotationChangeEventArgs
+public;ViewStateProp = ViewState | (() => ViewState)
 beta;VisibleTreeNodes 
 beta;WeightEditor 
 beta;WeightPickerButton 

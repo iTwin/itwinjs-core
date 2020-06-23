@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { useAsyncValue } from "../../../common/UseAsyncValue";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { LinksRenderer } from "../../LinkHandler";
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
@@ -25,22 +26,44 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
 
   /** Method that returns a JSX representation of PropertyRecord */
   public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
-    if (context && context.decoratedTextElement)
+    if (context && context.decoratedTextElement) {
+      // This is a deprecated code branch that's only needed to support the BeInspireTree-driven
+      // tree - it's the only one using `decoratedTextElement` to pass an already rendered node.
+      // The right way to do this is to supply enough information (either through `record` or `context`)
+      // to render the node from here.
       return withContextStyle(context.decoratedTextElement, context);
+    }
 
-    const primitiveValue = (record.value as PrimitiveValue);
-    if (primitiveValue.value === undefined)
-      return withContextStyle(primitiveValue.displayValue || "", context);
-
-    const stringValue = TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitiveValue.value);
-
-    return withContextStyle(
-      <LinksRenderer
-        value={stringValue}
-        record={record}
-        highlighter={context?.textHighlighter}
-        defaultValue={context?.defaultValue} />,
-      context,
-    );
+    return <PrimitivePropertyValueRendererImpl
+      record={record}
+      context={context}
+      stringValueCalculator={convertRecordToString}
+    />;
   }
+}
+
+function convertRecordToString(record: PropertyRecord) {
+  const primitive = record.value as PrimitiveValue;
+  return TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitive.value);
+}
+
+/** @internal */
+interface PrimitivePropertyValueRendererImplProps {
+  record: PropertyRecord;
+  stringValueCalculator: (record: PropertyRecord) => string | Promise<string>;
+  context?: PropertyValueRendererContext;
+}
+
+/** @internal */
+export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps) {
+  const { record, context, stringValueCalculator } = props;
+  const stringValue = useAsyncValue(stringValueCalculator(record));
+  const el = (stringValue === undefined)
+    ? context?.defaultValue
+    : <LinksRenderer
+      value={stringValue}
+      record={props.record}
+      highlighter={context?.textHighlighter}
+    />;
+  return <span style={context?.style} title={stringValue}>{el}</span>;
 }

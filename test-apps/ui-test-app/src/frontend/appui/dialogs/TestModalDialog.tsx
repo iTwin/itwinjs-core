@@ -44,8 +44,10 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
         ]}
         onClose={this._handleCancel}
         onEscape={this._handleCancel}
-        minHeight={200}
-        maxHeight={500}
+        minHeight={"300px"}
+        minWidth={"500px"}
+        maxHeight={"600px"}
+        maxWidth={"1000px"}
         onOutsideClick={this._handleCancel}
       >
         <p>Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per. Vel scripta ornatus assentior cu. Duo nonumy equidem te, per ad malis deserunt consetetur. In per invidunt conceptam. Ea pri aeque corrumpit. Eum ea ipsum perfecto vulputate, an cum oblique ornatus.</p>

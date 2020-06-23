@@ -16,7 +16,8 @@ import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-
 import { useDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../redux/connectIModel";
 import { UiFramework } from "../../UiFramework";
-import { VisibilityTreeEventHandler, VisibilityTreeFilterInfo } from "../VisibilityTreeEventHandler";
+import { VisibilityTreeFilterInfo } from "../Common";
+import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
 import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
 import { Category, CategoryVisibilityHandler, loadCategoriesFromViewport, useCategories } from "./CategoryVisibilityHandler";
 
@@ -80,7 +81,7 @@ export function CategoryTree(props: CategoryTreeProps) {
     imodel: props.iModel,
     dataProvider: props.dataProvider,
     ruleset: RULESET_CATEGORIES,
-    pageSize: PAGING_SIZE,
+    pagingSize: PAGING_SIZE,
     preloadingEnabled: props.enablePreloading,
   });
 

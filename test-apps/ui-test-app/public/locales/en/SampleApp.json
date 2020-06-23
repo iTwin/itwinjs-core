@@ -48,10 +48,13 @@
     "testFrontstage2": "Tree & PropertyGrid Content",
     "testFrontstage3": "Table Content",
     "testFrontstage4": "Test Messages & Dialogs",
+    "testFrontstageUi20": "Ui-20 Stage",
     "testFrontstage5": "Test 5 Frontstage",
     "viewIModel": "View iModel",
+    "editIModel": "Edit iModel",
     "testFrontstage6": "Settings",
     "iModelStage": "Review iModel",
+    "editStage": "Edit and Modify iModel",
     "task1": "Test 1 Frontstage via Task",
     "task2": "View iModel via Task",
     "exit": "Exit",
@@ -269,6 +272,34 @@
         "pause": "Pause",
         "stop": "Stop"
       }
+    },
+    "PlaceBlock": {
+      "keyin": "place block",
+      "description": "Place block",
+      "flyover": "Place block",
+      "prompts": {
+        "firstPoint": "First point",
+        "nextPoint": "Next point (Ctrl for polygon)",
+        "additionalPoint": "Additional point"
+      },
+      "ToolSettings": {
+        "heigh": "Height"
+      }
+    },
+    "DeleteElement": {
+      "keyin": "Test DeleteElementTool",
+      "description": "Delete element tool",
+      "flyover": "Delete Element"
+    },
+    "MoveElement": {
+      "keyin": "Test MoveElementTool",
+      "description": "Move element tool",
+      "flyover": "Move Element"
+    },
+    "PlaceLineString": {
+      "keyin": "Test PlaceLineString Tool",
+      "description": "Place Line-string tool",
+      "flyover": "Place Line-string"
     }
   },
   "widgets": {
@@ -283,7 +314,9 @@
     "UnifiedSelectionTable": "Unified Selection Table",
     "TableDemo": "Table Demo",
     "TreeDemo": "Tree Demo",
-    "FeedbackDemo": "Feedback Demo"
+    "FeedbackDemo": "Feedback Demo",
+    "ActiveSettings": "Active Settings",
+    "ModelCreation": "Create Models"
   },
   "localFileStage": {
     "localFile": "Local File",

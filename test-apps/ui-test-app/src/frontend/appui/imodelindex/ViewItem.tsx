@@ -13,13 +13,17 @@ class ThumbnailCache {
   private static _thumbnails: Map<string, ThumbnailProps | undefined> = new Map<string, ThumbnailProps>();
 
   /** Caches thumbnails */
-  public static async getThumbnail(iModelConnection: IModelConnection | undefined, _viewProps: ViewDefinitionProps) {
-    if (ThumbnailCache._thumbnails.has(_viewProps.id!.toString()))
-      return ThumbnailCache._thumbnails.get(_viewProps.id!.toString());
+  public static async getThumbnail(iModelConnection: IModelConnection | undefined, viewProps: ViewDefinitionProps) {
+    const viewId = viewProps.id!;
+    // tslint:disable-next-line:no-console
+    console.log(`Retrieving thumbnail for iModel=${iModelConnection!.name} view=${viewId}`);
+
+    if (ThumbnailCache._thumbnails.has(viewId.toString()))
+      return ThumbnailCache._thumbnails.get(viewId.toString());
     else if (iModelConnection) {
       let thumbnail: ThumbnailProps | undefined;
       try {
-        thumbnail = await iModelConnection.views.getThumbnail(_viewProps.id!);
+        thumbnail = await iModelConnection.views.getThumbnail(viewProps.id!);
       } catch {
         if (!thumbnail) {
           // tslint:disable-next-line:no-console
@@ -29,7 +33,7 @@ class ThumbnailCache {
 
       // There are cases where the file may not have a thumbnail for the view
       // Set even if undefined so that we avoid querying over and over again
-      ThumbnailCache._thumbnails.set(_viewProps.id!.toString(), thumbnail);
+      ThumbnailCache._thumbnails.set(viewId.toString(), thumbnail);
       return thumbnail;
     }
     return undefined;

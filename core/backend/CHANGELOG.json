@@ -2,6 +2,63 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.2.0",
+      "tag": "@bentley/imodeljs-backend_v2.2.0",
+      "date": "Fri, 19 Jun 2020 14:10:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to imodeljs-native 2.2.4"
+          },
+          {
+            "comment": "Move analytical domain classes out to new package."
+          },
+          {
+            "comment": "close file on error in StandaloneDb.openFile"
+          },
+          {
+            "comment": "Add DefinitionContainer, DefinitionSet"
+          },
+          {
+            "comment": "Add missing properties to UrlLink and RepositoryLink"
+          },
+          {
+            "comment": "Bump tile version"
+          },
+          {
+            "comment": "Add IModelExporter.wantGeometry to optimize cases where geometry is not required"
+          },
+          {
+            "comment": "Move linear referencing domain types out to new @bentley/linear-referencing-backend package."
+          },
+          {
+            "comment": "Added test for null string access via ECSqlStatement"
+          },
+          {
+            "comment": "Add PhysicalElement.physicalMaterial"
+          },
+          {
+            "comment": "Add PhysicalMaterial"
+          },
+          {
+            "comment": "Add PhysicalMaterial.createCode, PhysicalMaterial.create"
+          },
+          {
+            "comment": "Remove IOS Azure downloader"
+          },
+          {
+            "comment": "reactivate native ULAS tests"
+          },
+          {
+            "comment": "Update to BisCore.01.00.11: Add new SectionDrawing properties, deprecate SectionLocation in favor of SectionDrawingLocation."
+          },
+          {
+            "comment": "Switching from JSC to V8"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.1.0",
       "tag": "@bentley/imodeljs-backend_v2.1.0",
       "date": "Thu, 28 May 2020 22:48:59 GMT",

@@ -1,6 +1,18 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Jun 2020 14:10:03 GMT and should not be manually modified.
+
+## 2.2.0
+Fri, 19 Jun 2020 14:10:03 GMT
+
+### Updates
+
+- Qualified the CSS class names for the face names in Cube Navigation Aid
+- Hiding viewport logo and acsTriad in DrawingNavigationAid viewport
+- Added property editors for multi-line text, slider and numeric input/spinner.
+- Added support for popup with multiple editors
+- Specify the props that can be passed to ThemedSelect instead of just allowing all of the react-select props.
+- Added ViewStateProp & support for obtaining ViewState from function in ViewportComponent and IModelViewportControl
 
 ## 2.1.0
 Thu, 28 May 2020 22:48:59 GMT

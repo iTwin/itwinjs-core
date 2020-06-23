@@ -75,26 +75,26 @@ export interface FrontstageProps extends CommonProps {
   /** The Zone in the bottom-right corner.  @deprecated Place widgets in appropriate stage panel zone. */
   bottomRight?: React.ReactElement<ZoneProps>;
 
-  /** The Zone in the top-left corner that shows tools typically used to query and modify content. To be used in place of deprecated topLeft zone definition.  @alpha */
+  /** The Zone in the top-left corner that shows tools typically used to query and modify content. To be used in place of deprecated topLeft zone definition.  @beta */
   contentManipulationTools?: React.ReactElement<ZoneProps>;
-  /** The Zone the that shows settings for the active tool. To be used in place of deprecated topCenter zone definition. @alpha */
+  /** The Zone the that shows settings for the active tool. To be used in place of deprecated topCenter zone definition. @beta */
   toolSettings?: React.ReactElement<ZoneProps>;
-  /** The Zone in the top-right corner that shows view navigation tools. To be used in place of deprecated topRight zone definition.  @alpha */
+  /** The Zone in the top-right corner that shows view navigation tools. To be used in place of deprecated topRight zone definition.  @beta */
   viewNavigationTools?: React.ReactElement<ZoneProps>;
-  /** The status bar Zone shown as the application footer. To be used in place of deprecated bottomCenter zone definition.  @alpha */
+  /** The status bar Zone shown as the application footer. To be used in place of deprecated bottomCenter zone definition.  @beta */
   statusBar?: React.ReactElement<ZoneProps>;
 
-  /** The StagePanel on the top of the 9-zone area. @alpha */
+  /** The StagePanel on the top of the 9-zone area. @beta */
   topPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the very top across the full width. @alpha  */
+  /** The StagePanel on the very top across the full width. @beta @deprecated Only topPanel is supported in UI 2.0 */
   topMostPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the left. @alpha  */
+  /** The StagePanel on the left. @beta  */
   leftPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the right. @alpha  */
+  /** The StagePanel on the right. @beta  */
   rightPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the bottom of the 9-zone area. @alpha  */
+  /** The StagePanel on the bottom of the 9-zone area. @beta  */
   bottomPanel?: React.ReactElement<StagePanelProps>;
-  /** The StagePanel on the very bottom across the full width. @alpha  */
+  /** The StagePanel on the very bottom across the full width. @beta @deprecated Only bottomPanel is supported in UI 2.0  */
   bottomMostPanel?: React.ReactElement<StagePanelProps>;
 
   /** @internal */

@@ -6,6 +6,8 @@ import { Compiler, DefinePlugin } from "webpack";
 import { IModelJsOptionsDefaulter } from "../utils/IModelJsOptionsDefaulter";
 import { CopyAppAssetsPlugin, CopyBentleyStaticResourcesPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
+import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
+import { addExternalPrefix, handlePrefixedExternals, RequireMagicCommentsPlugin } from "./RequireMagicCommentsPlugin";
 
 // tslint:disable:no-var-requires variable-name
 const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
@@ -25,23 +27,37 @@ export class BackendDefaultsPlugin {
     compiler.options = new IModelJsOptionsDefaulter().process(compiler.options);
 
     // Add default plugins
-    new CopyAppAssetsPlugin("assets").apply(compiler);
-    new CopyBentleyStaticResourcesPlugin(["assets"]).apply(compiler);
-    new CopyExternalsPlugin().apply(compiler);
-    new DefinePlugin({
-      "global.GENTLY": false,
-    }).apply(compiler);
-    new FilterWarningsPlugin({ exclude: /Failed to parse source map/ }).apply(compiler);
-    new ExternalsPlugin("commonjs", [
-      "electron",
-      "debug",
-      "ws",
-      "@bentley/imodeljs-native",
-      "@bentley/imodeljs-native/package.json",
-      "dtrace-provider",
-      "node-report/api",
-      "applicationinsights-native-metrics",
-      "@opentelemetry/tracing",
-    ]).apply(compiler);
+    const plugins = [
+      new CopyAppAssetsPlugin("assets"),
+      new CopyBentleyStaticResourcesPlugin(["assets"]),
+      new CopyExternalsPlugin(),
+      new DefinePlugin({
+        "global.GENTLY": false,
+      }),
+      new FilterWarningsPlugin({ exclude: /Failed to parse source map/ }),
+      new IgnoreOptionalDependenciesPlugin([
+        "debug",
+        "express",
+        "keyv",
+        "ws",
+      ]),
+      new RequireMagicCommentsPlugin([
+        {
+          test: /webpack: *external/i,
+          handler: addExternalPrefix,
+        },
+      ]),
+      new ExternalsPlugin("commonjs", [
+        handlePrefixedExternals,
+        "electron",
+        "@bentley/imodeljs-native",
+        "@bentley/imodeljs-native/package.json",
+        "dtrace-provider",
+        "node-report/api",
+        "applicationinsights-native-metrics",
+        "@opentelemetry/tracing",
+      ]),
+    ];
+    plugins.forEach((p) => p.apply(compiler));
   }
 }

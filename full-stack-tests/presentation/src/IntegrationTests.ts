@@ -15,9 +15,13 @@ import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
-import { Presentation as PresentationBackend, PresentationProps as PresentationBackendProps } from "@bentley/presentation-backend";
-import { LoggingNamespaces, RequestPriority } from "@bentley/presentation-common";
-import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
+import {
+  Presentation as PresentationBackend, PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory,
+  PresentationProps as PresentationBackendProps,
+} from "@bentley/presentation-backend";
+import { RequestPriority } from "@bentley/presentation-common";
+import { PresentationComponentsLoggerCategory } from "@bentley/presentation-components";
+import { PresentationFrontendLoggerCategory, PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
 
 chai.use(sinonChai);
@@ -65,9 +69,12 @@ class IntegrationTestsApp extends NoRenderApp {
 const initializeCommon = async (props: { backendTimeout?: number, useClientServices?: boolean }) => {
   // init logging
   Logger.initializeToConsole();
-  Logger.setLevelDefault(LogLevel.Error);
-  Logger.setLevel(LoggingNamespaces.ECObjects_ECExpressions, LogLevel.Warning);
-  Logger.setLevel(LoggingNamespaces.ECPresentation, LogLevel.Warning);
+  Logger.setLevelDefault(LogLevel.Warning);
+  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
+  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation, LogLevel.Info);
+  Logger.setLevel(PresentationBackendLoggerCategory.Package, LogLevel.Info);
+  Logger.setLevel(PresentationFrontendLoggerCategory.Package, LogLevel.Info);
+  Logger.setLevel(PresentationComponentsLoggerCategory.Package, LogLevel.Info);
 
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: props.backendTimeout ?? 0,

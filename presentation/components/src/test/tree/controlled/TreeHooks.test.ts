@@ -25,7 +25,7 @@ describe("usePresentationNodeLoader", () => {
   const initialProps = {
     imodel: imodelMock.object,
     ruleset: "test",
-    pageSize: 5,
+    pagingSize: 5,
   };
 
   beforeEach(() => {
@@ -77,14 +77,14 @@ describe("usePresentationNodeLoader", () => {
     expect(result.current).to.not.eq(oldNodeLoader);
   });
 
-  it("creates new nodeLoader when pageSize changes", () => {
+  it("creates new nodeLoader when pagingSize changes", () => {
     const { result, rerender } = renderHook(
       (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
       { initialProps },
     );
     const oldNodeLoader = result.current;
 
-    rerender({ ...initialProps, pageSize: 20 });
+    rerender({ ...initialProps, pagingSize: 20 });
 
     expect(result.current).to.not.eq(oldNodeLoader);
   });

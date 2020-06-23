@@ -3,51 +3,39 @@ ignore: true
 ---
 # NextVersion
 
-## Cel-shaded display
+## Thematic display
 
-[DisplayStyle]($backend)s now support displaying 3d models in a cel-shaded "comic book" style using the `numCels` property of [LightSettings]($common).
+Thematic display supports several new gradient mode values for the `mode` property of [ThematicGradientSettings]($common):
+* `ThematicGradientMode.Stepped` applies a stepped color gradient to the scene.
+* `ThematicGradientMode.SteppedWithDelimiter` applies a stepped color gradient to the scene with delimiters (lines between the color steps).
+* `ThematicGradientMode.IsoLines` applies isolines to the scene to achieve an effect similar to a contour map.
 
-![cel-shaded display](./assets/cel-shaded.png)
-<p align="center">Cel-shaded display</p>
+Note: Gradient modes `ThematicGradientMode.SteppedWithDelimiter` and `ThematicGradientMode.IsoLines` cannot be used with a thematic display mode value of `ThematicDisplayMode.InverseDistanceWeightedSensors`.
 
-## Changes in `@bentley/ui-framework`
+![stepped thematic gradient mode applied to height](./assets/thematic_stepped.png)
+<p align="center">Stepped thematic gradient mode applied to height</p>
 
-### `LayoutManager` removed
+![stepped-with-delimiter thematic gradient mode applied to height](./assets/thematic_steppedWithDelimiter.png)
+<p align="center">Stepped-with-delimiter thematic gradient mode applied to height</p>
 
-`LayoutManager.restoreLayout()` is replaced by `FrontstageDef.restoreLayout()`
-`LayoutManager.showWidget()` is replaced by `WidgetDef.show()`
-`LayoutManager.expandWidget()` is replaced by `WidgetDef.expand()`
+![isoline thematic gradient mode applied to height](./assets/thematic_isolines.png)
+<p align="center">Isoline thematic gradient mode applied to height</p>
 
-### `StagePanelDef` changes
+## Hyper-modeling
 
-`StagePanelDef.trySetCurrentSize()` is replaced by `StagePanelDef.size` setter.
+The hyper-modeling [Extension]($frontend) has been replaced by the `hypermodeling-frontend` package to permit customization of its behavior. See [HyperModeling]($hypermodeling) and [SectionMarkerSetDecorator]($hypermodeling). Consult the package's README for further details.
 
-## New *domain* packages
+## ECSql Enhancements
 
-### Analytical
+Added these expressions and functions
 
-The `@bentley/analytical-backend` package contains the backend base classes that specialized Analytical domain schemas extend.
-These classes were previously contained within the `@bentley/imodeljs-backend` package.
-There were no API changes, but imports and dependencies will need to be adjusted if these classes were previously used.
-
-> See: [AnalyticalSchema]($analytical-backend)
-
-### Linear Referencing
-
-The `@bentley/linear-referencing-backend` package contains classes for working with linear referencing on the backend.
-These classes were previously contained within the `@bentley/imodeljs-backend` package.
-There were no API changes, but imports and dependencies will need to be adjusted if these classes were previously used.
-
-> See: [LinearReferencingSchema]($linear-referencing-backend)
-
-The `@bentley/linear-referencing-common` package is new and contains classes for working with linear referencing on the frontend and backend.
-These classes were previously contained within the `@bentley/imodeljs-common` package.
-There were no API changes, but imports and dependencies will need to be adjusted if these classes were previously used.
-
-> See: [LinearReferencingCommon]($linear-referencing-common)
-
-### Physical Material
-
-The `@bentley/physical-material-backend` package is new and contains classes for working with physical materials on the backend.
-
-> See: [PhysicalMaterialSchema]($physical-material-backend)
+1. `<type> IS [NOT] (type-list)` - Filter parent type by subtype
+    * [Lesson 9: Type Filter](../learning/ECSQLTutorial/TypeFilter.md)
+1. `CASE-WHEN-THEN-ELSE` - Conditional expression
+    * [Lesson 10: Conditional Expressions](../learning/ECSQLTutorial/ConditionalExpr.md)
+1. `IIF()`  - Conditional expression
+    * [Lesson 10: Conditional Expressions](../learning/ECSQLTutorial/ConditionalExpr.md)
+1. `ec_classname()` - Get formatted class names for a ECClassId
+    * [Lesson 11: Built-In functions](../learning/ECSQLTutorial/BuiltInFunctions.md)
+1. `ec_classid())` - Get ECClassId from a  qualified classname.
+    * [Lesson 11: Built-In functions](../learning/ECSQLTutorial/BuiltInFunctions.md)

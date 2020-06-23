@@ -34,22 +34,22 @@ export enum GltfMeshMode {
 
 /** @internal */
 export enum GltfDataType {
-  // SignedByte = 0x1400,
+  SignedByte = 0x1400,
   UnsignedByte = 0x1401,
-  // SignedShort = 5122,
+  SignedShort = 5122,
   UnsignedShort = 5123,
   UInt32 = 5125,
   Float = 5126,
-  // Rgb = 6407,
-  // Rgba = 6408,
-  // IntVec2 = 0x8b53,
-  // IntVec3 = 0x8b54,
-  // FloatVec2 = 35664,
-  // FloatVec3 = 35665,
-  // FloatVec4 = 35666,
-  // FloatMat3 = 35675,
-  // FloatMat4 = 35676,
-  // Sampler2d = 35678,
+  Rgb = 6407,
+  Rgba = 6408,
+  IntVec2 = 0x8b53,
+  IntVec3 = 0x8b54,
+  FloatVec2 = 35664,
+  FloatVec3 = 35665,
+  FloatVec4 = 35666,
+  FloatMat3 = 35675,
+  FloatMat4 = 35676,
+  Sampler2d = 35678,
 }
 
 /** @internal */

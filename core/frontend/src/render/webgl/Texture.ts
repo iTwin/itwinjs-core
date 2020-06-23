@@ -243,7 +243,7 @@ class Texture2DCreateParams {
 
     const wrapMode = RenderTexture.Type.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
     const useMipMaps: TextureFlag = (!isSky && !isTile && !isThematic) ? true : undefined;
-    const interpolate: TextureFlag = true;
+    const interpolate: TextureFlag = isThematic ? undefined : true;
     const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
     const anisotropicFilter = isFilteredTile ? maxAnisotropicFilterLevel : undefined;
 
@@ -457,7 +457,7 @@ export class Texture2DHandle extends TextureHandle {
 
   /** Create a texture from a bitmap */
   public static createForImageBuffer(image: ImageBuffer, type: RenderTexture.Type) {
-    if (RenderTexture.Type.TileSection !== type)
+    if (RenderTexture.Type.TileSection !== type && RenderTexture.Type.ThematicGradient !== type)
       assert(isPowerOfTwo(image.width) && isPowerOfTwo(image.height), "###TODO: Resize image dimensions to powers-of-two if necessary");
 
     return this.create(Texture2DCreateParams.createForImageBuffer(image, type));

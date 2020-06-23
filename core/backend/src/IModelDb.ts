@@ -2301,12 +2301,9 @@ export class SnapshotDb extends IModelDb {
   public get filePath(): string { return this.nativeDb.getFilePath(); }
 
   private constructor(nativeDb: IModelJsNative.DgnDb, openMode: OpenMode) {
-    const filePath: string = nativeDb.getFilePath();
+    const filePath = nativeDb.getFilePath();
     const iModelRpcProps: IModelRpcProps = { key: filePath, iModelId: nativeDb.getDbGuid(), changeSetId: "", openMode };
     super(nativeDb, iModelRpcProps, openMode);
-    if (!BriefcaseManager.isStandaloneBriefcaseId(this.getBriefcaseId()))
-      throw new IModelError(IModelStatus.BadRequest, "Not a snapshot iModel", Logger.logError, loggerCategory);
-
     SnapshotDb._openDbs.set(filePath, this);
   }
 
@@ -2323,11 +2320,11 @@ export class SnapshotDb extends IModelDb {
     const optionsString = JSON.stringify(options);
     let status = nativeDb.createIModel(filePath, optionsString);
     if (DbResult.BE_SQLITE_OK !== status) {
-      throw new IModelError(status, "Could not create snapshot iModel", Logger.logError, loggerCategory, () => ({ filePath }));
+      throw new IModelError(status, `Could not create snapshot iModel ${filePath}`, Logger.logError, loggerCategory);
     }
     status = nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
     if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, "Could not set briefcaseId for snapshot iModel", Logger.logError, loggerCategory, () => ({ filePath }));
+      throw new IModelError(status, `Could not set briefcaseId for snapshot iModel ${filePath}`, Logger.logError, loggerCategory);
 
     const snapshotDb = new SnapshotDb(nativeDb, OpenMode.ReadWrite);
     if (options.createClassViews) {
@@ -2365,7 +2362,7 @@ export class SnapshotDb extends IModelDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     const result = nativeDb.openIModel(snapshotFile, OpenMode.ReadWrite, undefined, optionsString);
     if (DbResult.BE_SQLITE_OK !== result)
-      throw new IModelError(result, "Could not open standalone iModel", Logger.logError, loggerCategory, () => ({ snapshotFile }));
+      throw new IModelError(result, `Could not open snapshot iModel ${snapshotFile}`, Logger.logError, loggerCategory);
 
     // Replace iModelId if seedFile is a snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
     if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId()))
@@ -2396,7 +2393,7 @@ export class SnapshotDb extends IModelDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     const status = nativeDb.openIModel(filePath, OpenMode.Readonly, undefined, encryptionPropsString);
     if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, "Could not open snapshot iModel", Logger.logError, loggerCategory, () => ({ filePath }));
+      throw new IModelError(status, `Could not open snapshot iModel ${filePath}`, Logger.logError, loggerCategory);
 
     return new SnapshotDb(nativeDb, OpenMode.Readonly);
   }
@@ -2460,11 +2457,6 @@ export class StandaloneDb extends IModelDb {
     const filePath: string = nativeDb.getFilePath();
     const iModelRpcProps: IModelRpcProps = { key: filePath, iModelId: nativeDb.getDbGuid(), openMode };
     super(nativeDb, iModelRpcProps, openMode);
-    if (!BriefcaseManager.isStandaloneBriefcaseId(this.getBriefcaseId())) {
-      nativeDb.closeIModel();
-      throw new IModelError(IModelStatus.BadRequest, "Not a standalone iModel", Logger.logError, loggerCategory);
-    }
-
     StandaloneDb._openDbs.set(filePath, this);
   }
 
@@ -2496,16 +2488,16 @@ export class StandaloneDb extends IModelDb {
    */
   public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite): StandaloneDb {
     if (StandaloneDb.tryFindByKey(filePath)) {
-      throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open snapshot iModel at ${filePath} again - it has already been opened once`, Logger.logError, loggerCategory);
+      throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open standalone iModel at ${filePath} again - it has already been opened once`, Logger.logError, loggerCategory);
     }
     const nativeDb = new IModelHost.platform.DgnDb();
     const status = nativeDb.openIModel(filePath, openMode);
     if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, "Could not open iModel as Standalone", Logger.logError, loggerCategory, () => ({ filePath }));
 
-    if (openMode === OpenMode.ReadWrite && undefined === nativeDb.queryLocalValue(IModelDb._edit)) {
+    if (openMode === OpenMode.ReadWrite && (!BriefcaseManager.isStandaloneBriefcaseId(nativeDb.getBriefcaseId()) || undefined === nativeDb.queryLocalValue(IModelDb._edit))) {
       nativeDb.closeIModel();
-      throw new IModelError(IModelStatus.ReadOnly, "iModel is not editable", Logger.logError, loggerCategory, () => ({ filePath }));
+      throw new IModelError(IModelStatus.ReadOnly, `${filePath} is not an editable Standalone db`, Logger.logError, loggerCategory);
     }
 
     return new StandaloneDb(nativeDb, openMode);

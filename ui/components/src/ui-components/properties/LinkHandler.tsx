@@ -10,7 +10,6 @@ import * as React from "react";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { UnderlinedButton } from "@bentley/ui-core";
-import { useAsyncValue } from "../common/UseAsyncValue";
 
 /** Render a single anchor tag */
 function renderTag(text: string, record: PropertyRecord, highlight?: (text: string) => React.ReactNode) {
@@ -76,7 +75,7 @@ function renderText(text: string, record: PropertyRecord, highlight?: (text: str
   return parts.map((part, index) => <React.Fragment key={index}>{part}</React.Fragment>);
 }
 
-function renderHighlighted(text: string, highlight: (text: string) => React.ReactNode): React.ReactNode | Promise<React.ReactNode> {
+function renderHighlighted(text: string, highlight: (text: string) => React.ReactNode) {
   return highlight(text);
 }
 
@@ -108,11 +107,10 @@ export const withLinks = (record: PropertyRecord, stringValue: string, highlight
  * Properties for [[LinksRenderer]] component.
  * @alpha
  */
-interface LinksRendererProps {
-  value: string | Promise<string>;
+export interface LinksRendererProps {
+  value: string;
   record: PropertyRecord;
   highlighter?: (text: string) => React.ReactNode;
-  defaultValue?: React.ReactNode;
 }
 
 /**
@@ -120,7 +118,5 @@ interface LinksRendererProps {
  * @alpha
  */
 export function LinksRenderer(props: LinksRendererProps) {
-  const { value } = props;
-  const stringValue = useAsyncValue(value);
-  return <>{stringValue ? withLinks(props.record, stringValue, props.highlighter) : props.defaultValue}</>;
+  return <>{withLinks(props.record, props.value, props.highlighter)}</>;
 }

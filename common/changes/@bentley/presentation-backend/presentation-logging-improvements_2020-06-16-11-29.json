@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-backend",
+      "comment": "Expose logger categories similar to how it's done in core",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/presentation-backend",
+      "comment": "Log RPC requests and their parameters",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "grigas.petraitis@bentley.com"
+}

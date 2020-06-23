@@ -197,6 +197,7 @@ export async function imageElementFromImageSource(source: ImageSource): Promise<
 /** Create an html Image element from a URL.
  * @param url The URL pointing to the image data.
  * @returns A Promise resolving to an HTMLImageElement when the image data has been loaded from the URL.
+ * @see tryImageElementFromUrl.
  * @public
  */
 export async function imageElementFromUrl(url: string): Promise<HTMLImageElement> {
@@ -208,6 +209,19 @@ export async function imageElementFromUrl(url: string): Promise<HTMLImageElement
   });
 }
 
+/** Try to create an html Image element from a URL.
+ * @param url The URL pointing to the image data.
+ * @returns A Promise resolving to an HTMLImageElement when the image data has been loaded from the URL, or to `undefined` if an exception occurred.
+ * @see imageElementFromUrl
+ * @public
+ */
+export async function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined> {
+  try {
+    return await imageElementFromUrl(url);
+  } catch (_) {
+    return undefined;
+  }
+}
 /**
  * Extract the dimensions of the jpeg or png data encoded in an ImageSource.
  * @param source The ImageSource containing the binary jpeg or png data.

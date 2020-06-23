@@ -52,8 +52,9 @@ export interface ToggleProps extends CommonProps {
 export function Toggle(props: ToggleProps) {
   const inputElement = React.useRef<HTMLInputElement>(null);
   const padding = 2;
-  const [height, setHeight] = React.useState(0);
-  const [width, setWidth] = React.useState(0);
+  const defaultHeight = props.large ? 32 : 21;
+  const [height, setHeight] = React.useState(defaultHeight);
+  const [width, setWidth] = React.useState(defaultHeight * 2);
   const [checked, setChecked] = React.useState(props.isOn ? true : false);
   const [toggling, setToggling] = React.useState(false);
 

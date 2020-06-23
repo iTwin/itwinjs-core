@@ -151,21 +151,21 @@ export abstract class MapTilingScheme {
   }
 
   // gets the longitude and latitude into a point with coordinates between 0 and 1
-  public ecefToPixelFraction(point: Point3d): Point3d {
+  private ecefToPixelFraction(point: Point3d, applyTerrain: boolean): Point3d {
     const cartoGraphic = Cartographic.fromEcef(point)!;
-    return Point3d.create(this.longitudeToXFraction(cartoGraphic.longitude), this.latitudeToYFraction(cartoGraphic.latitude), 0.0);
+    return Point3d.create(this.longitudeToXFraction(cartoGraphic.longitude), this.latitudeToYFraction(cartoGraphic.latitude), applyTerrain ? cartoGraphic.height : 0);
   }
 
-  public computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection) {
+  public computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection, applyTerrain: boolean) {
     const dbToEcef = ecefToDb.inverse()!;
 
     const projectCenter = Point3d.create(iModel.projectExtents.center.x, iModel.projectExtents.center.y, bimElevationOffset);
     const projectEast = projectCenter.plusXYZ(1, 0, 0);
     const projectNorth = projectCenter.plusXYZ(0, 1, 0);
 
-    const mercatorOrigin = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectCenter));
-    const mercatorX = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectEast));
-    const mercatorY = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectNorth));
+    const mercatorOrigin = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectCenter), applyTerrain);
+    const mercatorX = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectEast), applyTerrain);
+    const mercatorY = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectNorth), applyTerrain);
 
     const deltaX = Vector3d.createStartEnd(mercatorOrigin, mercatorX);
     const deltaY = Vector3d.createStartEnd(mercatorOrigin, mercatorY);

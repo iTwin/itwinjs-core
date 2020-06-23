@@ -2,17 +2,40 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import {
+  Editor3dRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, NativeAppRpcInterface, RpcInterfaceDefinition,
+  SnapshotIModelRpcInterface,
+} from "@bentley/imodeljs-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { Config } from "@bentley/bentleyjs-core";
 
 /**
  * Returns a list of RPCs supported by this application
  */
 export default function getSupportedRpcs(): RpcInterfaceDefinition[] {
+
+  if (Config.App.has("imjs_TESTAPP_ALLOW_WRITE") && (Config.App.get("imjs_TESTAPP_ALLOW_WRITE") === "1")) {
+    // tslint:disable-next-line: no-console
+    console.log("Using ReadWrite RPC Interfaces");
+    return [
+      IModelReadRpcInterface,
+      IModelTileRpcInterface,
+      SnapshotIModelRpcInterface,
+      PresentationRpcInterface,
+      IModelWriteRpcInterface,
+      Editor3dRpcInterface,
+      NativeAppRpcInterface,
+    ];
+  }
+
+  // tslint:disable-next-line: no-console
+  console.log("Using Readonly RPC Interfaces");
+
   return [
     IModelReadRpcInterface,
     IModelTileRpcInterface,
     SnapshotIModelRpcInterface,
     PresentationRpcInterface,
   ];
+
 }

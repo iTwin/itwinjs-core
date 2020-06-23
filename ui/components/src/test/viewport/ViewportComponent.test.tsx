@@ -111,6 +111,10 @@ describe("ViewportComponent", () => {
     render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
   });
 
+  it("should render with viewState as function", async () => {
+    render(<ViewportComponent imodel={imodelMock.object} viewState={() => viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+  });
+
   it("should render with viewDefinitionId", async () => {
     render(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"id1"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
   });

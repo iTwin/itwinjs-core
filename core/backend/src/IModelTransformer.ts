@@ -40,6 +40,14 @@ export interface IModelTransformOptions {
 
   /** Set to true if IModelTransformer should not record provenance back to the source element in the sourceDb on the target element within the targetDb. */
   noProvenance?: boolean;
+
+  /** Flag that indicates whether or not the transformation process needs to consider the source geometry before cloning/transforming.
+   * For standard cases, it is not required to load the source GeometryStream in JavaScript since the cloning happens in native code.
+   * Also, the target GeometryStream will be available in JavaScript prior to insert.
+   * @note If the source geometry affects the class mapping or transformation logic, then this flag should be set to `true`. The default is `false`.
+   * @see [IModelExporter.wantGeometry]($backend)
+   */
+  loadSourceGeometry?: boolean;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -83,6 +91,7 @@ export class IModelTransformer extends IModelExportHandler {
     }
     this.sourceDb = this.exporter.sourceDb;
     this.exporter.registerHandler(this);
+    this.exporter.wantGeometry = options?.loadSourceGeometry ?? false; // optimization to not load source GeometryStreams by default
     this.exporter.excludeElementAspectClass(ExternalSourceAspect.classFullName); // Provenance specific to the source iModel is not relevant to the target iModel
     this.exporter.excludeElementAspectClass(ChannelRootAspect.classFullName); // Channel boundaries within the source iModel are not relevant to the target iModel
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers

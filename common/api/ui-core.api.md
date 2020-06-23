@@ -173,9 +173,11 @@ export function Centered(props: CommonDivProps): JSX.Element;
 export class Checkbox extends React.PureComponent<CheckboxProps> {
     // (undocumented)
     componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(_prevProps: CheckboxProps): void;
     // (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @public
 export interface CheckBoxInfo {
@@ -191,6 +193,7 @@ export interface CheckBoxInfo {
 
 // @public
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
+    indeterminate?: boolean;
     inputClassName?: string;
     inputStyle?: React.CSSProperties;
     label?: string;
@@ -539,10 +542,10 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     height?: string | number;
     hideHeader?: boolean;
     inset?: boolean;
-    maxHeight?: number;
-    maxWidth?: number;
-    minHeight?: number;
-    minWidth?: number;
+    maxHeight?: string | number;
+    maxWidth?: string | number;
+    minHeight?: string | number;
+    minWidth?: string | number;
     modal?: boolean;
     modelessId?: string;
     movable?: boolean;

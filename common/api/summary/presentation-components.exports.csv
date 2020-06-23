@@ -23,6 +23,7 @@ public;IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataP
 public;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider &
 public;IPresentationTreeDataProvider 
 public;IUnifiedSelectionComponent
+beta;PresentationComponentsLoggerCategory
 public;PresentationLabelsProvider 
 public;PresentationLabelsProviderProps
 public;PresentationPropertyDataProvider 
@@ -31,7 +32,7 @@ public;PresentationTableDataProvider
 public;PresentationTableDataProviderProps
 public;PresentationTreeDataProvider 
 public;PresentationTreeDataProviderProps
-beta;PresentationTreeNodeLoaderProps
+beta;PresentationTreeNodeLoaderProps 
 public;propertyGridWithUnifiedSelection
 public;PropertyGridWithUnifiedSelectionProps
 public;tableWithUnifiedSelection

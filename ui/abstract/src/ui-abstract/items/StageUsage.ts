@@ -14,4 +14,7 @@ export enum StageUsage {
   Private = "Private",
   General = "General",
   Redline = "Redline",
+  ViewOnly = "ViewOnly",
+  Edit = "Edit",
+  Settings = "Settings",
 }

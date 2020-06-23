@@ -2,6 +2,21 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.2.0",
+      "tag": "@bentley/presentation-components_v2.2.0",
+      "date": "Fri, 19 Jun 2020 14:10:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Set paging size for ContentDataProvider to avoid requesting whole content on first request"
+          },
+          {
+            "comment": "BREAKING CHANGE: Change `PresentationTreeNodeLoaderProps` to derive from `PresentationTreeDataProviderProps`. This changes paging attribute name from `pageSize` to `pagingSize`."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.1.0",
       "tag": "@bentley/presentation-components_v2.1.0",
       "date": "Thu, 28 May 2020 22:48:59 GMT",

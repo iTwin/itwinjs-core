@@ -260,6 +260,17 @@ export class Storage {
    * Remove all keys
    * @note Delete all keys and data.
    */
+  public async removeData(key: string): Promise<void> {
+    if (!this._isOpen) {
+      throw new Error(`Storage [Id=${this.id}] is not open`);
+    }
+    return NativeAppRpcInterface.getClient().storageRemove(this.id, key);
+  }
+
+  /**
+   * Remove all keys
+   * @note Delete all keys and data.
+   */
   public async removeAll(): Promise<void> {
     if (!this._isOpen) {
       throw new Error(`Storage [Id=${this.id}] is not open`);

@@ -78,6 +78,8 @@ describe("IModelWriteTest (#integration)", () => {
   before(async () => {
     managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     superRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.super);
+    (superRequestContext as any).activityId = "IModelWriteTest (#integration)";
+
     testProjectId = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(managerRequestContext, testProjectId, "ReadOnlyTest");
     readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
@@ -190,6 +192,7 @@ describe("IModelWriteTest (#integration)", () => {
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
     const firstUserRequestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.super);
+    (firstUserRequestContext as any).activityId = "test change-merging scenarios in optimistic concurrency mode (#integration)";
     const secondUserRequestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     const neutralObserverUserRequestContext: AuthorizedBackendRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
 

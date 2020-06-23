@@ -68,6 +68,8 @@ export interface FeatureOverrideProvider {
 export interface TiledGraphicsProvider {
   /** Apply the supplied function to each [[TileTreeReference]] to be drawn in the specified [[Viewport]]. */
   forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
+  /** If defined, overrides the logic for adding this provider's graphics into the scene. Otherwise, [[TileTreeReference.addToScene]] is invoked for each reference. */
+  addToScene?: (context: SceneContext) => void;
 }
 
 /** @see [[ChangeFlags]]
@@ -1257,10 +1259,7 @@ export abstract class Viewport implements IDisposable {
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.displayStyle.changeBackgroundMapProps(props);
-    if (undefined !== props.transparency)
-      this.invalidateRenderPlan(); // terrain transparency is part of render plan.
-    else
-      this.invalidateScene(); // just need to reselect tiles based on new map settings.
+    this.invalidateRenderPlan();
   }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
@@ -1577,6 +1576,12 @@ export abstract class Viewport implements IDisposable {
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
     this.maybeInvalidateScene();
+  }
+
+  /** @alpha */
+  public forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void {
+    for (const provider of this._tiledGraphicsProviders)
+      func(provider);
   }
 
   /** @internal */
@@ -2393,7 +2398,13 @@ export abstract class Viewport implements IDisposable {
         IModelApp.tileAdmin.clearUsageForViewport(this);
         const context = this.createSceneContext();
         view.createScene(context);
-        this.forEachTiledGraphicsProviderTree((ref) => ref.addToScene(context));
+
+        for (const provider of this._tiledGraphicsProviders) {
+          if (undefined !== provider.addToScene)
+            provider.addToScene(context);
+          else
+            provider.forEachTileTreeRef(this, (ref) => ref.addToScene(context));
+        }
 
         context.requestMissingTiles();
         target.changeScene(context.scene);

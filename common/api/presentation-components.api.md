@@ -223,6 +223,14 @@ export interface IUnifiedSelectionComponent {
     readonly selectionHandler?: SelectionHandler;
 }
 
+// @beta
+export enum PresentationComponentsLoggerCategory {
+    Content = "presentation-components.Content",
+    Hierarchy = "presentation-components.Hierarchy",
+    // (undocumented)
+    Package = "presentation-components"
+}
+
 // @public
 export class PresentationLabelsProvider implements IPresentationLabelsProvider {
     constructor(props: PresentationLabelsProviderProps);
@@ -324,14 +332,12 @@ export interface PresentationTreeDataProviderProps {
 }
 
 // @beta
-export interface PresentationTreeNodeLoaderProps {
+export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataProviderProps {
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
-    imodel: IModelConnection;
-    pageSize: number;
+    pagingSize: number;
     // @alpha
     preloadingEnabled?: boolean;
-    ruleset: Ruleset | string;
 }
 
 // @public

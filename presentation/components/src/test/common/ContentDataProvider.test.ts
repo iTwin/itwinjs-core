@@ -207,7 +207,7 @@ describe("ContentDataProvider", () => {
   describe("keys", () => {
 
     it("sets keys and clears caches", () => {
-      const keys = new KeySet();
+      const keys = new KeySet([createRandomECInstanceKey()]);
       provider.keys = keys;
       expect(provider.keys).to.eq(keys);
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());

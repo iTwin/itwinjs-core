@@ -2547,6 +2547,30 @@ export enum GltfDataType {
     // (undocumented)
     Float = 5126,
     // (undocumented)
+    FloatMat3 = 35675,
+    // (undocumented)
+    FloatMat4 = 35676,
+    // (undocumented)
+    FloatVec2 = 35664,
+    // (undocumented)
+    FloatVec3 = 35665,
+    // (undocumented)
+    FloatVec4 = 35666,
+    // (undocumented)
+    IntVec2 = 35667,
+    // (undocumented)
+    IntVec3 = 35668,
+    // (undocumented)
+    Rgb = 6407,
+    // (undocumented)
+    Rgba = 6408,
+    // (undocumented)
+    Sampler2d = 35678,
+    // (undocumented)
+    SignedByte = 5120,
+    // (undocumented)
+    SignedShort = 5122,
+    // (undocumented)
     UInt32 = 5125,
     // (undocumented)
     UnsignedByte = 5121,
@@ -2649,6 +2673,8 @@ export namespace Gradient {
         static fromJSON(json?: SymbProps): Symb;
         // @beta
         getImage(width: number, height: number): ImageBuffer;
+        // @internal
+        getThematicImageForRenderer(maxDimension: number): ImageBuffer;
         // (undocumented)
         get hasTranslucency(): boolean;
         get isOutlined(): boolean;
@@ -5851,6 +5877,7 @@ export interface TerrainProps {
     exaggeration?: number;
     heightOrigin?: number;
     heightOriginMode?: TerrainHeightOriginMode;
+    nonLocatable?: boolean;
     providerName?: string;
 }
 
@@ -5859,7 +5886,7 @@ export type TerrainProviderName = "CesiumWorldTerrain";
 
 // @public
 export class TerrainSettings {
-    constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
+    constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode, locatable?: boolean);
     readonly applyLighting: boolean;
     clone(changedProps?: TerrainProps): TerrainSettings;
     // (undocumented)
@@ -5870,6 +5897,7 @@ export class TerrainSettings {
     static fromJSON(json?: TerrainProps): TerrainSettings;
     readonly heightOrigin: number;
     readonly heightOriginMode: TerrainHeightOriginMode;
+    readonly locatable: boolean;
     readonly providerName: TerrainProviderName;
     // (undocumented)
     toJSON(): TerrainProps;
@@ -6115,13 +6143,9 @@ export enum ThematicGradientColorScheme {
 
 // @beta (undocumented)
 export enum ThematicGradientMode {
-    // (undocumented)
     IsoLines = 3,
-    // (undocumented)
     Smooth = 0,
-    // (undocumented)
     Stepped = 1,
-    // (undocumented)
     SteppedWithDelimiter = 2
 }
 

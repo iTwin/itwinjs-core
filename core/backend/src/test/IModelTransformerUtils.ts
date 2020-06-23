@@ -1380,6 +1380,7 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.outputFileName = outputFileName;
     this.exporter = new IModelExporter(sourceDb);
     this.exporter.registerHandler(this);
+    this.exporter.wantGeometry = false;
   }
   public export(): void {
     this._shouldIndent = true;
@@ -1487,6 +1488,7 @@ export class ClassCounter extends IModelExportHandler {
     this.outputFileName = outputFileName;
     this.exporter = new IModelExporter(sourceDb);
     this.exporter.registerHandler(this);
+    this.exporter.wantGeometry = false;
   }
   public count(): void {
     this.exporter.exportAll();

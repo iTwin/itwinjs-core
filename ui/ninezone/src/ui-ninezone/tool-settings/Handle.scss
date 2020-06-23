@@ -16,6 +16,7 @@
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
+  touch-action: none;
 
   &:hover {
     background: $buic-background-2;

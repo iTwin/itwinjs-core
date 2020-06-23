@@ -2,6 +2,27 @@
   "name": "@bentley/ui-abstract",
   "entries": [
     {
+      "version": "2.2.0",
+      "tag": "@bentley/ui-abstract_v2.2.0",
+      "date": "Fri, 19 Jun 2020 14:10:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to use a string in place of StageUsage to make it consistent with other methods."
+          },
+          {
+            "comment": "Added property editors for multi-line text, slider and numeric input/spinner."
+          },
+          {
+            "comment": "Replace 'Plugin' with 'Extension' in comments and examples."
+          },
+          {
+            "comment": "Added support for popup with multiple editors"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.1.0",
       "tag": "@bentley/ui-abstract_v2.1.0",
       "date": "Thu, 28 May 2020 22:48:59 GMT",

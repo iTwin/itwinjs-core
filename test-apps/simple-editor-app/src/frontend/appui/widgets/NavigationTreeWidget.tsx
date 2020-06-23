@@ -94,7 +94,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props: NavigationTreeProp
   const nodeLoader = usePresentationTreeNodeLoader({
     imodel: props.iModelConnection,
     ruleset: props.rulesetId,
-    pageSize: 20,
+    pagingSize: 20,
   });
   const modelSource = nodeLoader.modelSource;
   const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader, collapsedChildrenDisposalEnabled: true });

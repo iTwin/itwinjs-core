@@ -29,9 +29,7 @@ const argv = yargs.strict(true)
         describe: "Path to a directory containing the files to be published",
         string: true,
         demandOption: true,
-      })
-      .demandOption("extensionName")
-      .demandOption("extensionVersion"),
+      }),
     (a) => {
       command = "publish";
       filePath = a.extensionPath;
@@ -96,6 +94,7 @@ const argv = yargs.strict(true)
 
 (async () => {
   await IModelHost.startup();
+  process.stdout.write("Signing in...\n");
   const token = await signIn();
   const requestContext = new AuthorizedClientRequestContext(token);
   const client = new ExtensionClient();
@@ -121,12 +120,34 @@ const argv = yargs.strict(true)
       const tarFileName = argv.extensionName + "." + argv.extensionVersion + ".tar";
       const filesToTar = fs.readdirSync(filePath);
       try {
+        process.stdout.write("Packaging extension...\n");
         await tar.create({ file: tarFileName, cwd: filePath }, filesToTar);
         const buffer = fs.readFileSync(tarFileName);
         const checksum = Buffer.from(sha256.hash(buffer)).toString("hex");
 
-        process.stdout.write("Ready to upload\n");
-        await client.createExtension(requestContext, contextId, argv.extensionName!, argv.extensionVersion!, checksum, buffer);
+        let name: string, version: string;
+        if (argv.extensionName === undefined || argv.extensionVersion === undefined) {
+          const packageFileName = path.join(process.cwd(), "package.json");
+          if (!fs.existsSync(packageFileName)) {
+            throw new IModelError(ExtensionStatus.BadRequest, "Could not find package.json in current working directory. Please provide both extension name and version to publish.");
+          }
+          const packageBuffer = fs.readFileSync(packageFileName);
+          const packageJson = JSON.parse(packageBuffer.toString());
+          name = argv.extensionName ?? (() => {
+            const foundName = (packageJson.name as string).split("/").pop()!;
+            process.stdout.write(`Found extension name: ${foundName}\n`);
+            return foundName;
+          })();
+          version = argv.extensionVersion ?? (() => {
+            process.stdout.write(`Found extension version: ${packageJson.version}\n`);
+            return packageJson.version;
+          })();
+        } else {
+          name = argv.extensionName!;
+          version = argv.extensionVersion!;
+        }
+        process.stdout.write("Ready to upload.\n");
+        await client.createExtension(requestContext, contextId, name, version, checksum, buffer);
         process.stdout.write("Uploading extension...\n");
 
         while (true) {
@@ -196,7 +217,7 @@ const argv = yargs.strict(true)
   if (err instanceof BentleyError)
     process.stderr.write("Error: " + err.name + ": " + err.message);
   else
-    process.stderr.write("Unknown error " + err.message);
+    process.stderr.write("Unknown error: " + err.message);
   process.exit(err.errorNumber ?? -1);
 });
 

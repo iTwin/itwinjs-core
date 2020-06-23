@@ -28,7 +28,7 @@ The package must be initialized before use. This can be done when your applicati
 Example of initializing at start-up:
 
 ```ts
-  IModelApp.startup();
+  await IModelApp.startup();
   await FrontendDevTools.initialize();
 ```
 

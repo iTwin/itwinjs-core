@@ -34,7 +34,10 @@ package-deps.json
 # xcode
 /**/xcuserdata
 
-.env
+# Output of 'npm pack'
+*.tgz
 
 # Mac specfic
 .DS_Store
+
+.env

@@ -14,3 +14,11 @@ export const paths = {
   appPackageJson: resolveApp("package.json"),
   appNodeModules: resolveApp("node_modules"),
 };
+
+export function getAppRelativePath(p: string) {
+  return path.relative(appDirectory, p);
+}
+
+export function getSourcePosition(module: any, loc: any) {
+  return `${getAppRelativePath(module.resource)}:${loc.start.line}:${loc.start.column}`;
+}

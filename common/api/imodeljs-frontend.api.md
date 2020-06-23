@@ -3152,6 +3152,8 @@ export abstract class GltfReader {
     // (undocumented)
     protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined;
     // (undocumented)
+    protected readonly _extensions: any;
+    // (undocumented)
     protected extractReturnToCenter(extensions: any): number[] | undefined;
     // (undocumented)
     protected findTextureMapping(textureId: string): TextureMapping | undefined;
@@ -4609,9 +4611,7 @@ export abstract class MapTilingScheme {
     cartographicToFraction(latitudeRadians: number, longitudeRadians: number, result: Point2d): Point2d;
     cartographicToTileXY(carto: Cartographic, level: number, result?: Point2d): Point2d;
     // (undocumented)
-    computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection): Transform;
-    // (undocumented)
-    ecefToPixelFraction(point: Point3d): Point3d;
+    computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection, applyTerrain: boolean): Transform;
     fractionToCartographic(xFraction: number, yFraction: number, result: Cartographic, height?: number): Cartographic;
     getNumberOfXTilesAtLevel(level: number): number;
     getNumberOfYTilesAtLevel(level: number): number;
@@ -6469,6 +6469,8 @@ export interface RenderPlan {
     // (undocumented)
     readonly lights?: LightSettings;
     // (undocumented)
+    readonly locatableTerrain: boolean;
+    // (undocumented)
     readonly monochromeMode: MonochromeMode;
     // (undocumented)
     readonly monoColor: ColorDef;
@@ -7786,6 +7788,7 @@ export class Storage {
     readonly id: string;
     get isOpen(): boolean;
     removeAll(): Promise<void>;
+    removeData(key: string): Promise<void>;
     setData(key: string, value: StorageValue): Promise<void>;
 }
 
@@ -8040,6 +8043,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     logRealityTiles: boolean;
     // (undocumented)
     modelToView(modelPt: XYZ, result?: Point3d): Point3d;
+    // (undocumented)
+    nonLocatableTerrain: boolean;
     // (undocumented)
     onBatchDisposed(batch: Batch): void;
     // (undocumented)
@@ -8543,6 +8548,7 @@ export interface TileContent {
 
 // @beta
 export interface TiledGraphicsProvider {
+    addToScene?: (context: SceneContext) => void;
     forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
 }
 
@@ -9259,6 +9265,9 @@ export class TraversalSelectionContext {
     // (undocumented)
     selectOrQueue(tile: RealityTile, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
 }
+
+// @public
+export function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined>;
 
 // @beta
 export class TwoWayViewportSync {
@@ -10244,6 +10253,8 @@ export abstract class Viewport implements IDisposable {
     flashIntensity: number;
     // @internal
     flashUpdateTime?: BeTimePoint;
+    // @alpha (undocumented)
+    forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void;
     // @internal (undocumented)
     protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void;
     // @internal (undocumented)

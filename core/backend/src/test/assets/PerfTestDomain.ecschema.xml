@@ -26,4 +26,30 @@
         <ECProperty propertyName="Sub3Long" typeName="long"/>
         <ECProperty propertyName="Sub3Double" typeName="double"/>
     </ECEntityClass>
+    <!--Class Hierarchy used by PerformanceElementsCRUDTests -->
+    <ECEntityClass typeName="PerfElement2d">
+        <BaseClass>bis:GraphicalElement2d</BaseClass>
+        <ECProperty propertyName="BaseStr" typeName="string"/>
+        <ECProperty propertyName="BaseStr2" typeName="string"/>
+        <ECProperty propertyName="BaseLong" typeName="long"/>
+        <ECProperty propertyName="BaseDouble" typeName="double"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="PerfElement2dSub1">
+        <BaseClass>PerfElement2d</BaseClass>
+        <ECProperty propertyName="Sub1Str" typeName="string"/>
+        <ECProperty propertyName="Sub1Long" typeName="long"/>
+        <ECProperty propertyName="Sub1Double" typeName="double"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="PerfElement2dSub2">
+        <BaseClass>PerfElement2dSub1</BaseClass>
+        <ECProperty propertyName="Sub2Str" typeName="string"/>
+        <ECProperty propertyName="Sub2Long" typeName="long"/>
+        <ECProperty propertyName="Sub2Double" typeName="double"/>
+    </ECEntityClass>
+    <ECEntityClass typeName="PerfElement2dSub3">
+        <BaseClass>PerfElement2dSub2</BaseClass>
+        <ECProperty propertyName="Sub3Str" typeName="string"/>
+        <ECProperty propertyName="Sub3Long" typeName="long"/>
+        <ECProperty propertyName="Sub3Double" typeName="double"/>
+    </ECEntityClass>
 </ECSchema>

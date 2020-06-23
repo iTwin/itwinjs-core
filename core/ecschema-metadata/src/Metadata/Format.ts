@@ -386,4 +386,5 @@ export abstract class MutableFormat extends Format {
   public abstract setThousandSeparator(separator: string): void;
   public abstract setUomSeparator(separator: string): void;
   public abstract setStationSeparator(separator: string): void;
+  public abstract setDisplayLabel(displayLabel: string): void;
 }

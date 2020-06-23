@@ -69,6 +69,7 @@ alpha;CardSelectedEventArgs
 public;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
 internal;ChangeSetInfo
+beta;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 public;COLOR_THEME_DEFAULT = ColorTheme.Light
 public;ColorTheme
@@ -235,6 +236,7 @@ public;GroupItemProps
 alpha;HideIsolateEmphasizeAction
 alpha;class HideIsolateEmphasizeActionHandler
 alpha;HideIsolateEmphasizeManager 
+internal;HollowIcon(props: IconProps): JSX.Element
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
 beta;IModelAppUiSettings 
@@ -309,6 +311,7 @@ public;MessageAddedEvent
 public;MessageAddedEventArgs
 public;MessageCenterField 
 public;MessageCenterFieldProps 
+internal;MessageLabel(props:
 public;MessageManager
 public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
@@ -354,8 +357,8 @@ public;NotifyMessageType = MessageType
 internal;packNineZoneState(state: NineZoneState): SavedNineZoneState
 internal;PanelSizeChangedEvent 
 internal;PanelSizeChangedEventArgs
-alpha;PanelStateChangedEvent 
-alpha;PanelStateChangedEventArgs
+beta;PanelStateChangedEvent 
+beta;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
 public;PointerMessage 
 public;PointerMessageChangedEvent 
@@ -394,7 +397,9 @@ beta;ReviewToolWidgetProps
 internal;RotationData
 internal;RULESET_CATEGORIES: Ruleset
 internal;RULESET_MODELS: Ruleset
+internal;RULESET_MODELS_GROUPED_BY_CLASS: Ruleset
 internal;RULESET_SPATIAL_BREAKDOWN: Ruleset
+internal;RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset
 alpha;SafeAreaContext: React.Context
 public;SavedView
 public;SavedViewLayout
@@ -436,22 +441,22 @@ public;SpatialContainmentTreeProps
 public;SpecialKey
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
-alpha;StagePanel 
+beta;StagePanel 
 public;StagePanelChangeHandler
-alpha;StagePanelDef 
-alpha;StagePanelDefaultProps = Pick
+beta;StagePanelDef 
+beta;StagePanelDefaultProps = Pick
 alpha;StagePanelHeader 
 alpha;StagePanelHeaderProps 
 alpha;StagePanelLocation
-alpha;StagePanelProps
+beta;StagePanelProps
 internal;StagePanelRuntimeProps
 alpha;StagePanelSection
-alpha;StagePanelState
+beta;StagePanelState
 internal;StagePanelZoneDef 
 internal;StagePanelZoneDefKeys = keyof Pick
-alpha;StagePanelZoneProps
+beta;StagePanelZoneProps
 internal;StagePanelZonesDef
-alpha;StagePanelZonesProps
+beta;StagePanelZonesProps
 public;StandardMessageBox 
 public;StandardMessageBoxProps 
 alpha;StandardRotationNavigationAid 
@@ -477,6 +482,8 @@ public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
 internal;StatusBarZoneProps 
 public;StatusFieldProps 
+beta;StickyMessage(props: StickyMessageProps): JSX.Element
+beta;StickyMessageProps
 public;SupportsViewSelectorChange
 public;SyncToolSettingsPropertiesEvent 
 public;SyncToolSettingsPropertiesEventArgs
@@ -495,6 +502,8 @@ public;TaskProps
 public;TaskPropsList
 public;ThemeManager: import("react-redux").ConnectedComponent
 beta;TileLoadingIndicator 
+beta;ToastMessage(props: ToastMessageProps): JSX.Element
+beta;ToastMessageProps
 alpha;toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise
 public;ToolActivatedEvent 
 public;ToolActivatedEventArgs

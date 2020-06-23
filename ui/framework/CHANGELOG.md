@@ -1,6 +1,27 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Jun 2020 14:10:03 GMT and should not be manually modified.
+
+## 2.2.0
+Fri, 19 Jun 2020 14:10:03 GMT
+
+### Updates
+
+- Update the IModelApp.features.track calls in HideIsolateEmphasizeManager
+- Update uses of StageUsage to use strings.
+- Added MessageManager.MaxDisplayedStickyMessages & support for maximum displayed sticky messages
+- Added property editors for multi-line text, slider and numeric input/spinner.
+- Replace 'Plugin' with 'Extension' in comments and examples.
+- Exported ToastMessage & StickyMessage components
+- Added support for popup with multiple editors
+- Use the DialogGridContainer not the ToolSettingsGridContainer for popup toolsetting since these popup are not in widgets.
+- Tracking time spent in frontstages for application telemetry
+- Do not save tab labels when saving frontstage layout.
+- Set ui-framework test coverage thresholds to 100%
+- Move LayoutManager API to FrontstageDef and WidgetDef.
+- Introduce an option to group elements by class in `ModelsTree` and `SpatialContainmentTree`. Also allow specifying the option for both trees when creating `VisibilityWidget`.
+- Fix bottom/top stage panel tab duplication.
+- Added ViewStateProp & support for obtaining ViewState from function in ViewportComponent and IModelViewportControl
 
 ## 2.1.0
 Thu, 28 May 2020 22:48:59 GMT

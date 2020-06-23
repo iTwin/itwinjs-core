@@ -132,6 +132,7 @@ class OngoingActivityMessage {
  */
 export class MessageManager {
   private static _maxCachedMessages = 500;
+  private static _maxDisplayedStickyMessages = 3;
   private static _messages: NotifyMessageDetailsType[] = [];
   private static _OngoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
   private static _lastMessage?: NotifyMessageDetailsType;
@@ -175,15 +176,28 @@ export class MessageManager {
     this.checkMaxCachedMessages();
   }
 
+  /** The maximum number of displayed Sticky messages. */
+  public static get maxDisplayedStickyMessages(): number { return this._maxDisplayedStickyMessages; }
+  public static set maxDisplayedStickyMessages(max: number) { this._maxDisplayedStickyMessages = max; }
+
   /** Output a message and/or alert to the user.
    * @param  message  Details about the message to output.
    */
   public static outputMessage(message: NotifyMessageDetailsType): void {
     if (message.msgType === OutputMessageType.Pointer) {
       PointerMessage.showMessage(message);
-    } else if (message.msgType === OutputMessageType.InputField && message.inputField) {
-      MessageManager.displayInputFieldMessage(message.inputField, message.briefMessage, message.detailedMessage, message.priority);
+    } else if (message.msgType === OutputMessageType.InputField) {
+      if (message.inputField)
+        MessageManager.displayInputFieldMessage(message.inputField, message.briefMessage, message.detailedMessage, message.priority);
+      else
+        message.msgType = OutputMessageType.Sticky; // Note: Changing the message.msgType here for InputField without inputField
+    } else if (message.msgType === OutputMessageType.Alert) {
+      if (message.openAlert === OutputMessageAlert.Balloon)
+        message.msgType = OutputMessageType.Sticky; // Note: Changing the message.msgType here for Balloon
+      else
+        MessageManager.showAlertMessageBox(message);
     }
+
     MessageManager.addMessage(message);
   }
 
@@ -194,13 +208,6 @@ export class MessageManager {
     if (!_.isEqual(message, this._lastMessage)) {
       this.addToMessageCenter(message);
       this._lastMessage = message;
-    }
-
-    if (message.msgType === OutputMessageType.Alert) {
-      if (message.openAlert === OutputMessageAlert.Balloon)
-        message.msgType = OutputMessageType.Sticky; // Note: Changing the message.msgType here for Balloon
-      else
-        this.showAlertMessageBox(message);
     }
 
     this.onMessageAddedEvent.emit({ message });

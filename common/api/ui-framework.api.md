@@ -164,6 +164,7 @@ import { ViewFlagProps } from '@bentley/imodeljs-common';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
+import { ViewStateProp } from '@bentley/ui-components';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
 import { WidgetState as WidgetState_2 } from '@bentley/ui-abstract';
 import { WidgetState as WidgetState_3 } from '@bentley/ui-ninezone';
@@ -744,6 +745,13 @@ export interface ChangeSetInfo {
 }
 
 // @beta
+export enum ClassGroupingOption {
+    No = 0,
+    Yes = 1,
+    YesWithCounts = 2
+}
+
+// @beta
 export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element;
 
 // @public
@@ -980,6 +988,10 @@ export type ContentCallback = (content: ContentProps) => void;
 // @public
 export class ContentControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    protected getKeyedReactNode(): React.ReactNode;
+    // (undocumented)
+    protected getReactNode(): React.ReactNode;
     getType(): ConfigurableUiControlType;
     get isViewport(): boolean;
     get navigationAidControl(): string;
@@ -990,6 +1002,8 @@ export class ContentControl extends ConfigurableUiControl {
     set reactElement(r: React.ReactNode);
     get reactNode(): React.ReactNode;
     set reactNode(r: React.ReactNode);
+    // (undocumented)
+    protected _reactNode: React.ReactNode;
     get viewport(): ScreenViewport | undefined;
 }
 
@@ -2091,9 +2105,9 @@ export class FrontstageDef {
     get bottomCenter(): ZoneDef | undefined;
     // (undocumented)
     get bottomLeft(): ZoneDef | undefined;
-    // @alpha (undocumented)
+    // @beta @deprecated (undocumented)
     get bottomMostPanel(): StagePanelDef | undefined;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     get bottomPanel(): StagePanelDef | undefined;
     // (undocumented)
     get bottomRight(): ZoneDef | undefined;
@@ -2119,7 +2133,7 @@ export class FrontstageDef {
     findWidgetDef(id: string): WidgetDef | undefined;
     // (undocumented)
     get frontstageProvider(): FrontstageProvider | undefined;
-    // @alpha
+    // @beta
     getStagePanelDef(location: StagePanelLocation_2): StagePanelDef | undefined;
     getZoneDef(zoneId: number): ZoneDef | undefined;
     // (undocumented)
@@ -2129,7 +2143,7 @@ export class FrontstageDef {
     initializeFromProvider(frontstageProvider: FrontstageProvider): void;
     // (undocumented)
     get isInFooterMode(): boolean;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     get leftPanel(): StagePanelDef | undefined;
     // @internal (undocumented)
     get nineZone(): NineZoneManagerProps | undefined;
@@ -2143,11 +2157,11 @@ export class FrontstageDef {
     protected _onDeactivated(): void;
     onFrontstageReady(): void;
     protected _onFrontstageReady(): void;
-    // @alpha
+    // @beta
     get panelDefs(): StagePanelDef[];
     // @beta (undocumented)
     restoreLayout(): void;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     get rightPanel(): StagePanelDef | undefined;
     setActiveContent(): boolean;
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
@@ -2160,9 +2174,9 @@ export class FrontstageDef {
     get topCenter(): ZoneDef | undefined;
     // (undocumented)
     get topLeft(): ZoneDef | undefined;
-    // @alpha (undocumented)
+    // @beta @deprecated (undocumented)
     get topMostPanel(): StagePanelDef | undefined;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     get topPanel(): StagePanelDef | undefined;
     // (undocumented)
     get topRight(): ZoneDef | undefined;
@@ -2281,9 +2295,9 @@ export interface FrontstageProps extends CommonProps {
     bottomCenter?: React.ReactElement<ZoneProps>;
     // @deprecated
     bottomLeft?: React.ReactElement<ZoneProps>;
-    // @alpha
+    // @beta @deprecated
     bottomMostPanel?: React.ReactElement<StagePanelProps>;
-    // @alpha
+    // @beta
     bottomPanel?: React.ReactElement<StagePanelProps>;
     // @deprecated
     bottomRight?: React.ReactElement<ZoneProps>;
@@ -2292,36 +2306,36 @@ export interface FrontstageProps extends CommonProps {
     // @deprecated
     centerRight?: React.ReactElement<ZoneProps>;
     contentGroup: string | ContentGroup;
-    // @alpha
+    // @beta
     contentManipulationTools?: React.ReactElement<ZoneProps>;
     defaultContentId?: string;
     defaultLayout: string | ContentLayoutDef;
     defaultTool: ToolItemDef;
     id: string;
     isInFooterMode?: boolean;
-    // @alpha
+    // @beta
     leftPanel?: React.ReactElement<StagePanelProps>;
-    // @alpha
+    // @beta
     rightPanel?: React.ReactElement<StagePanelProps>;
     // @internal (undocumented)
     runtimeProps?: FrontstageRuntimeProps;
-    // @alpha
+    // @beta
     statusBar?: React.ReactElement<ZoneProps>;
-    // @alpha
+    // @beta
     toolSettings?: React.ReactElement<ZoneProps>;
     // @deprecated
     topCenter?: React.ReactElement<ZoneProps>;
     // @deprecated
     topLeft?: React.ReactElement<ZoneProps>;
-    // @alpha
+    // @beta @deprecated
     topMostPanel?: React.ReactElement<StagePanelProps>;
-    // @alpha
+    // @beta
     topPanel?: React.ReactElement<StagePanelProps>;
     // @deprecated
     topRight?: React.ReactElement<ZoneProps>;
     usage?: string;
     version?: number;
-    // @alpha
+    // @beta
     viewNavigationTools?: React.ReactElement<ZoneProps>;
 }
 
@@ -2592,6 +2606,9 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     processIsolateSelectedElementsModel(): Promise<void>;
     }
 
+// @internal
+export function HollowIcon(props: IconProps): JSX.Element;
+
 // @alpha
 export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps, HTMLElementPopupState> {
     // (undocumented)
@@ -2698,29 +2715,40 @@ export interface IModelUserInfo {
 
 // @beta
 export class IModelViewportControl extends ViewportContentControl {
-    constructor(info: ConfigurableCreateInfo, options: IModelViewportControlOptions);
+    constructor(info: ConfigurableCreateInfo, _options: IModelViewportControlOptions);
+    // (undocumented)
+    protected _alwaysUseSuppliedViewState: boolean;
     // (undocumented)
     protected _disableDefaultViewOverlay: boolean;
     protected getImodelConnectedViewportReactElement(): React.ReactNode;
-    protected getImodelViewportReactElement(iModelConnection: IModelConnection, viewState: ViewState): React.ReactNode;
+    protected getImodelViewportReactElement(iModelConnection: IModelConnection, viewState: ViewStateProp): React.ReactNode;
     protected getNoContentReactElement(_options: IModelViewportControlOptions): React.ReactNode;
     getReactElementForViewSelectorChange(iModelConnection: IModelConnection, _unusedViewDefinitionId: Id64String, viewState: ViewState, _name: string): React.ReactNode;
+    // (undocumented)
+    protected getReactNode(): React.ReactNode;
     protected _getViewOverlay: (viewport: ScreenViewport) => React.ReactNode;
     // (undocumented)
     static get id(): string;
     // (undocumented)
     protected _iModelConnection: IModelConnection | undefined;
+    // (undocumented)
+    protected initializeReactNode(): void;
     get navigationAidControl(): string;
     // (undocumented)
-    protected _viewState: ViewState | undefined;
+    protected _options: IModelViewportControlOptions;
+    // (undocumented)
+    protected _viewState: ViewStateProp | undefined;
 }
 
 // @beta
 export interface IModelViewportControlOptions {
+    alwaysUseSuppliedViewState?: boolean;
     bgColor?: string;
+    deferNodeInitialization?: boolean;
     disableDefaultViewOverlay?: boolean;
     iModelConnection?: IModelConnection | (() => IModelConnection);
-    viewState?: ViewState | (() => ViewState);
+    supplyViewOverlay?: (_viewport: ScreenViewport) => React.ReactNode;
+    viewState?: ViewStateProp;
 }
 
 // @internal
@@ -3293,6 +3321,12 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
     targetRef?: React.Ref<HTMLElement>;
 }
 
+// @internal
+export function MessageLabel(props: {
+    message: NotifyMessageType;
+    className: string;
+}): JSX.Element;
+
 // @public
 export class MessageManager {
     static addMessage(message: NotifyMessageDetailsType): void;
@@ -3306,6 +3340,8 @@ export class MessageManager {
     static getIconType(details: NotifyMessageDetailsType): MessageBoxIconType;
     static getSeverity(details: NotifyMessageDetailsType): MessageSeverity;
     static hideInputFieldMessage(): void;
+    static get maxDisplayedStickyMessages(): number;
+    static set maxDisplayedStickyMessages(max: number);
     static get messages(): Readonly<NotifyMessageDetailsType[]>;
     static readonly onActivityMessageCancelledEvent: ActivityMessageCancelledEvent;
     static readonly onActivityMessageUpdatedEvent: ActivityMessageUpdatedEvent;
@@ -3482,6 +3518,8 @@ export enum ModelsTreeNodeType {
     // (undocumented)
     Element = 4,
     // (undocumented)
+    Grouping = 5,
+    // (undocumented)
     Model = 2,
     // (undocumented)
     Subject = 1,
@@ -3494,6 +3532,8 @@ export interface ModelsTreeProps {
     activeView?: Viewport;
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
+    // @beta
+    enableElementsClassGrouping?: ClassGroupingOption;
     enablePreloading?: boolean;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
@@ -3644,11 +3684,11 @@ export interface PanelSizeChangedEventArgs {
     size: number | undefined;
 }
 
-// @alpha
+// @beta
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface PanelStateChangedEventArgs {
     // (undocumented)
     panelDef: StagePanelDef;
@@ -3983,11 +4023,17 @@ export interface RotationData {
 // @internal
 export const RULESET_CATEGORIES: Ruleset;
 
-// @internal
+// @internal (undocumented)
 export const RULESET_MODELS: Ruleset;
 
-// @internal
+// @internal (undocumented)
+export const RULESET_MODELS_GROUPED_BY_CLASS: Ruleset;
+
+// @internal (undocumented)
 export const RULESET_SPATIAL_BREAKDOWN: Ruleset;
+
+// @internal (undocumented)
+export const RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset;
 
 // @alpha
 export const SafeAreaContext: React.Context<SafeAreaInsets>;
@@ -4597,7 +4643,10 @@ export function SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.
 
 // @public
 export interface SpatialContainmentTreeProps {
+    // @internal
     dataProvider?: IPresentationTreeDataProvider;
+    // @beta
+    enableElementsClassGrouping?: ClassGroupingOption;
     enablePreloading?: boolean;
     // (undocumented)
     iModel: IModelConnection;
@@ -4651,7 +4700,7 @@ export interface SplitterPaneTargetProps {
     paneIndex: number;
 }
 
-// @alpha
+// @beta
 export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {
     constructor(props: StagePanelProps);
     // (undocumented)
@@ -4680,7 +4729,7 @@ export interface StagePanelChangeHandler {
     handleTogglePanelCollapse(panelLocation: StagePanelLocation_2): void;
 }
 
-// @alpha
+// @beta
 export class StagePanelDef extends WidgetHost {
     constructor();
     get applicationData(): any | undefined;
@@ -4699,7 +4748,7 @@ export class StagePanelDef extends WidgetHost {
     set size(size: number | undefined);
     }
 
-// @alpha
+// @beta
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 
 // @alpha
@@ -4732,7 +4781,7 @@ export enum StagePanelLocation {
     TopMost = 102
 }
 
-// @alpha
+// @beta
 export interface StagePanelProps {
     allowedZones?: ZoneLocation[];
     applicationData?: any;
@@ -4784,7 +4833,7 @@ export enum StagePanelSection {
     Start = 0
 }
 
-// @alpha
+// @beta
 export enum StagePanelState {
     // (undocumented)
     Minimized = 1,
@@ -4805,7 +4854,7 @@ export class StagePanelZoneDef extends WidgetHost {
 // @internal (undocumented)
 export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "middle" | "end">;
 
-// @alpha
+// @beta
 export interface StagePanelZoneProps {
     applicationData?: any;
     widgets: Array<React.ReactElement<WidgetProps>>;
@@ -4825,7 +4874,7 @@ export class StagePanelZonesDef {
     get start(): StagePanelZoneDef | undefined;
     }
 
-// @alpha
+// @beta
 export interface StagePanelZonesProps {
     end?: StagePanelZoneProps;
     middle?: StagePanelZoneProps;
@@ -4998,6 +5047,21 @@ export interface StatusFieldProps extends CommonProps {
     openWidget: StatusBarFieldId;
 }
 
+// @beta
+export function StickyMessage(props: StickyMessageProps): JSX.Element;
+
+// @beta
+export interface StickyMessageProps {
+    // (undocumented)
+    closeMessage: (id: string) => void;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    messageDetails: NotifyMessageDetailsType;
+    // (undocumented)
+    severity: MessageSeverity;
+}
+
 // @public
 export interface SupportsViewSelectorChange {
     processViewSelectorChange(iModel: IModelConnection, viewDefinitionId: Id64String, viewState: ViewState, name: string): Promise<void>;
@@ -5166,6 +5230,23 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     componentWillUnmount(): void;
     render(): JSX.Element;
     }
+
+// @beta
+export function ToastMessage(props: ToastMessageProps): JSX.Element;
+
+// @beta
+export interface ToastMessageProps {
+    // (undocumented)
+    closeMessage: (id: string) => void;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    messageDetails: NotifyMessageDetailsType;
+    // (undocumented)
+    severity: MessageSeverity;
+    // (undocumented)
+    toastTarget: HTMLElement | null;
+}
 
 // @alpha
 export function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
@@ -5957,6 +6038,11 @@ export interface VisibilityComponentConfig {
     modelsTree?: {
         selectionMode?: SelectionMode;
         selectionPredicate?: ModelsTreeSelectionPredicate;
+        enableElementsClassGrouping?: ClassGroupingOption;
+    };
+    // (undocumented)
+    spatialContainmentTree?: {
+        enableElementsClassGrouping?: ClassGroupingOption;
     };
 }
 
@@ -5997,6 +6083,8 @@ export class VisibilityHandler implements IVisibilityHandler {
 export interface VisibilityHandlerProps {
     // (undocumented)
     onVisibilityChange?: () => void;
+    // (undocumented)
+    rulesetId: string;
     // (undocumented)
     viewport: Viewport;
 }

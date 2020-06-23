@@ -14,9 +14,9 @@ import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContai
 import { UiComponents } from "../../UiComponents";
 import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../ValueRendererManager";
 import { ActionButtonRenderer } from "./ActionButtonRenderer";
-import { PropertyGridColumnInfo } from "./PropertyGridColumns";
 import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
 import { PrimitivePropertyRenderer, PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
+import { PropertyGridColumnInfo } from "./PropertyGridColumns";
 
 /** Properties shared by all renderers and PropertyView
  * @public
@@ -128,12 +128,9 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
       orientation: this.props.orientation,
       containerType: PropertyContainerType.PropertyPane,
     };
-    let displayValue: React.ReactNode | undefined;
+    const renderer = this.props.propertyValueRendererManager ?? PropertyValueRendererManager.defaultManager;
 
-    if (this.props.propertyValueRendererManager)
-      displayValue = this.props.propertyValueRendererManager.render(props.propertyRecord, rendererContext);
-    else
-      displayValue = PropertyValueRendererManager.defaultManager.render(props.propertyRecord, rendererContext);
+    let displayValue = renderer.render(props.propertyRecord, rendererContext);
 
     // Align value with label if orientation is vertical
     if (this.props.orientation === Orientation.Vertical)

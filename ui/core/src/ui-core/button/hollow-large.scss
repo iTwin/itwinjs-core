@@ -10,16 +10,4 @@
     @include uicore-buttons-hollow;
     @include uicore-buttons-large-bordered-size;
 
-    &, &:active, &:focus {
-
-        @include uicore-buttons-large-bordered-size;
-    }
-
-    &[disabled],
-    &[disabled]:hover,
-    &[disabled]:active,
-    &[disabled]:focus {
-
-        @include uicore-buttons-large-size;
-    }
 }

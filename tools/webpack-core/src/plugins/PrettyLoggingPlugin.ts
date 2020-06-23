@@ -60,9 +60,33 @@ export class PrettyLoggingPlugin {
     this._grouped = true;
   }
 
+  public handlePluginLogs(logs: any) {
+    const logLevelColors: any = {
+      error: chalk.red,
+      warn: chalk.yellow,
+      info: chalk.blue,
+      log: chalk.dim,
+      debug: chalk.gray,
+      trace: chalk.gray,
+    };
+
+    const formattedLogs = [];
+    for (const plugin of Object.keys(logs)) {
+      for (const { type, message } of logs[plugin].entries) {
+        formattedLogs.push(logLevelColors[type](`  ${type.toUpperCase()} \t[ ${plugin} ]\t${message}`));
+      }
+    }
+
+    if (formattedLogs.length > 0) {
+      console.log(chalk.bold(`\nWebpack Plugin Logs:`));
+      console.log(formattedLogs.join("\n"));
+      console.log();
+    }
+  }
+
   // Reformats warnings and errors with react-dev-utils.
-  private handleWarningsAndErrors(elapsed: number, stats: any) {
-    const { errors, warnings } = this._formatter(stats.toJson({}, true));
+  private handleWarningsAndErrors(elapsed: number, jsonStats: Stats.ToJsonOutput) {
+    const { errors, warnings } = this._formatter(jsonStats);
     if (errors.length)
       throw new PrettyLoggingError(errors.join("\n\n"));
 
@@ -108,10 +132,14 @@ export class PrettyLoggingPlugin {
     compiler.hooks.done.tap("PrettyLoggingPlugin", (stats: any) => {
       this.clearIfInteractive();
       const elapsed = Date.now() - this._startTime;
+      const jsonStats = stats.toJson({ logging: compiler.options.profile }, true);
+
+      if (compiler.options.profile)
+        this.handlePluginLogs(jsonStats.logging);
 
       let isSuccessful;
       try {
-        isSuccessful = this.handleWarningsAndErrors(elapsed, stats);
+        isSuccessful = this.handleWarningsAndErrors(elapsed, jsonStats);
       } catch (err) {
         if (!this.isInteractive)
           this.printHeading("Failed to compile", "red", elapsed);

@@ -213,6 +213,7 @@ describe("BackgroundMapSettings", () => {
         expect(outTerrain.applyLighting).to.equal(expTerrain.applyLighting);
         expect(outTerrain.heightOrigin).to.equal(expTerrain.heightOrigin);
         expect(outTerrain.heightOriginMode).to.equal(expTerrain.heightOriginMode);
+        expect(outTerrain.nonLocatable).to.equal(expTerrain.nonLocatable);
       }
 
       expect(settings.equalsJSON(expected)).to.be.true;
@@ -271,6 +272,9 @@ describe("BackgroundMapSettings", () => {
     roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: -99 } }, {});
 
+    roundTrip({ terrainSettings: { nonLocatable: false } }, { });
+    roundTrip({ terrainSettings: { nonLocatable: true } }, "input");
+
     roundTrip({
       providerName: "BingProvider",
       providerData: { mapType: BackgroundMapType.Hybrid },
@@ -284,6 +288,7 @@ describe("BackgroundMapSettings", () => {
         exaggeration: 1,
         heightOrigin: 0,
         heightOriginMode: TerrainHeightOriginMode.Geodetic,
+        nonLocatable: false,
       },
     }, {});
   });
@@ -477,6 +482,28 @@ describe("ThematicDisplay", () => {
     expect(td.gradientSettings.customKeys[0].value).to.equal(0.0); // value for black should be 0.0
     expect(td.gradientSettings.customKeys[1].color).to.deep.equal(ColorDef.from(0, 0, 0, 0)); // second should be black
     expect(td.gradientSettings.customKeys[1].value).to.equal(1.0); // value for white should be 1.0
+    verifyBackAndForth(td);
+
+    // check if incorrectly configuring gradient mode / thematic display mode combination is resolved as expected - IsoLines / Sensors
+    badThematicProps = {
+      gradientSettings: {
+        mode: ThematicGradientMode.IsoLines,
+      },
+      displayMode: ThematicDisplayMode.InverseDistanceWeightedSensors,
+    };
+    td = ThematicDisplay.fromJSON(badThematicProps);
+    expect(td.gradientSettings.mode).to.equal(ThematicGradientMode.Smooth); // should default to smooth because of incorrect combo
+    verifyBackAndForth(td);
+
+    // check if incorrectly configuring gradient mode / thematic display mode combination is resolved as expected - SteppedWithDelimiter / Sensors
+    badThematicProps = {
+      gradientSettings: {
+        mode: ThematicGradientMode.SteppedWithDelimiter,
+      },
+      displayMode: ThematicDisplayMode.InverseDistanceWeightedSensors,
+    };
+    td = ThematicDisplay.fromJSON(badThematicProps);
+    expect(td.gradientSettings.mode).to.equal(ThematicGradientMode.Smooth); // should default to smooth because of incorrect combo
     verifyBackAndForth(td);
   });
 });

@@ -9,7 +9,7 @@ import { IPresentationTreeDataProvider } from "@bentley/presentation-components"
 import { FilteringInput, SelectableContent, SelectionMode } from "@bentley/ui-components";
 import { WebFontIcon } from "@bentley/ui-core";
 import {
-  CategoryTree, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories, WidgetControl,
+  CategoryTree, ClassGroupingOption, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories, WidgetControl,
 } from "@bentley/ui-framework";
 
 export class VisibilityWidgetControl extends WidgetControl {
@@ -86,6 +86,7 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
       />
       <ModelsTree
         {...props}
+        enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
         filterInfo={{
           filter: filterString,
           activeMatchIndex,

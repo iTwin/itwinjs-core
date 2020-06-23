@@ -8,6 +8,8 @@ const glob = require("glob");
 const webpack = require("webpack");
 const raw = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig.init(true /*suppress error*/, true);
 
+// const { IModeljsLibraryExportsPlugin } = require('@bentley/webpack-tools-core');
+
 function createConfig(shouldInstrument) {
   const config = {
     mode: "development",
@@ -63,7 +65,8 @@ function createConfig(shouldInstrument) {
           }, {
             IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
           }),
-      })
+      }),
+      // new IModeljsLibraryExportsPlugin(),
     ]
   };
 

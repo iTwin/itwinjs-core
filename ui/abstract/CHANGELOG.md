@@ -1,6 +1,16 @@
 # Change Log - @bentley/ui-abstract
 
-This log was last generated on Thu, 28 May 2020 22:48:59 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Jun 2020 14:10:03 GMT and should not be manually modified.
+
+## 2.2.0
+Fri, 19 Jun 2020 14:10:03 GMT
+
+### Updates
+
+- Update to use a string in place of StageUsage to make it consistent with other methods.
+- Added property editors for multi-line text, slider and numeric input/spinner.
+- Replace 'Plugin' with 'Extension' in comments and examples.
+- Added support for popup with multiple editors
 
 ## 2.1.0
 Thu, 28 May 2020 22:48:59 GMT

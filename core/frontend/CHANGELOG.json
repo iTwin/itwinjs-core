@@ -2,6 +2,51 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.2.0",
+      "tag": "@bentley/imodeljs-frontend_v2.2.0",
+      "date": "Fri, 19 Jun 2020 14:10:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add ViewState.adjustAspectRatio"
+          },
+          {
+            "comment": "Promote EmphasizeElements and IModelConnection.query() to public API."
+          },
+          {
+            "comment": "Add support for cel-shaded views; promote many APIs, particularly display-related ones."
+          },
+          {
+            "comment": "Expand frustum when fitting background map to avoid clipping in plan views."
+          },
+          {
+            "comment": "Refactor FeatureTrackingManager"
+          },
+          {
+            "comment": "Return the new GeoServiceStatus instead of IModelStatus.BadRequest"
+          },
+          {
+            "comment": "Gpu profiler fix for readPixel calls"
+          },
+          {
+            "comment": "Orient silhouette clip for background map correctly in parallel projections"
+          },
+          {
+            "comment": "Added MessageManager.MaxDisplayedStickyMessages & support for maximum displayed sticky messages"
+          },
+          {
+            "comment": "Add support for applying different clip volumes to groups of models in a spatial view."
+          },
+          {
+            "comment": "A GeometricModel may override specific view flag at display time, e.g. to specify that the model should always be drawn in wireframe mode."
+          },
+          {
+            "comment": "Optimize thematic sensor display by using eye space instead of world space in the shaders."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.1.0",
       "tag": "@bentley/imodeljs-frontend_v2.1.0",
       "date": "Thu, 28 May 2020 22:48:59 GMT",

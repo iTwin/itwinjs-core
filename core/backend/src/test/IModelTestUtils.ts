@@ -18,7 +18,7 @@ import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ClassRegistry } from "../ClassRegistry";
-import { PhysicalElement, Subject } from "../Element";
+import { Drawing, PhysicalElement, Subject } from "../Element";
 import {
   BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, InformationPartitionElement, Model,
   PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
@@ -27,6 +27,7 @@ import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { Schema, Schemas } from "../Schema";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { DrawingModel } from "../Model";
 
 /** Class for simple test timing */
 export class Timer {
@@ -286,6 +287,42 @@ export class IModelTestUtils {
     const modeledElementRef = new RelatedElement({ id: eid });
     const mid = await IModelTestUtils.createAndInsertPhysicalModelAsync(rqctx, testImodel, modeledElementRef, privateModel);
     rqctx.enter();
+    return [eid, mid];
+  }
+
+  // Create and insert a Drawing Partition element (in the repositoryModel).
+  public static createAndInsertDrawingPartition(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
+    const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
+    const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
+
+    const modeledElementProps: ElementProps = {
+      classFullName: Drawing.classFullName,
+      parent,
+      model,
+      code: newModelCode,
+    };
+    const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
+    return testDb.elements.insertElement(modeledElement);
+  }
+
+  // Create and insert a DrawingModel associated with Drawing Partition.
+  public static createAndInsertDrawingModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
+    const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: DrawingModel.classFullName, isPrivate: privateModel });
+    const newModelId = testDb.models.insertModel(newModel);
+    assert.isTrue(Id64.isValidId64(newModelId));
+    assert.isTrue(Id64.isValidId64(newModel.id));
+    assert.deepEqual(newModelId, newModel.id);
+    return newModelId;
+  }
+
+  //
+  // Create and insert a Drawing Partition element (in the repositoryModel) and an associated DrawingModel.
+  // @return [modeledElementId, modelId]
+  //
+  public static createAndInsertDrawingPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
+    const eid = IModelTestUtils.createAndInsertDrawingPartition(testImodel, newModelCode, parent);
+    const modeledElementRef = new RelatedElement({ id: eid });
+    const mid = IModelTestUtils.createAndInsertDrawingModel(testImodel, modeledElementRef, privateModel);
     return [eid, mid];
   }
 

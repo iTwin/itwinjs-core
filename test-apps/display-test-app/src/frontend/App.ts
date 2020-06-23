@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { FrontendDevTools } from "@bentley/frontend-devtools";
+import { HyperModeling, SectionMarkerSetDecorator } from "@bentley/hypermodeling-frontend";
 import {
   AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, SelectionTool, SnapMode, TileAdmin, Tool,
 } from "@bentley/imodeljs-frontend";
@@ -22,6 +23,7 @@ import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { AttachViewTool, DetachViewsTool } from "./AttachViewTool";
 import { VersionComparisonTool } from "./VersionComparison";
+import { TimePointComparisonTool } from "./TimePointComparison";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -102,7 +104,10 @@ class LoadHypermodelingTool extends Tool {
   public static toolId = "LoadHypermodeling";
 
   public run(_args: any[]): boolean {
-    IModelApp.tools.parseAndRun("load extension localhost:3000/hypermodeling on");
+    HyperModeling.initialize().then(() => {
+      if (undefined !== IModelApp.viewManager.selectedView)
+        SectionMarkerSetDecorator.showOrHide(IModelApp.viewManager.selectedView);
+    }).catch((_) => undefined);
     return true;
   }
 }
@@ -159,6 +164,7 @@ export class DisplayTestApp {
       SaveImageTool,
       ShutDownTool,
       SVTSelectionTool,
+      TimePointComparisonTool,
       ToggleShadowMapTilesTool,
       VersionComparisonTool,
       ZoomToSelectedElementsTool,

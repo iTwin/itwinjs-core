@@ -2,6 +2,21 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "2.2.0",
+      "tag": "@bentley/ecschema-metadata_v2.2.0",
+      "date": "Fri, 19 Jun 2020 14:10:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "SchemaKey names are compared case-insensitive."
+          },
+          {
+            "comment": "Added Editor classes to enable in-memory schema edits."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.1.0",
       "tag": "@bentley/ecschema-metadata_v2.1.0",
       "date": "Thu, 28 May 2020 22:48:59 GMT",

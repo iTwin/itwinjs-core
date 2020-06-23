@@ -40,7 +40,7 @@ describe("UiItemsArbiter", () => {
 
     class TestUiProvider implements UiItemsProvider {
       public readonly id = "TestUiProvider";
-      public provideToolbarButtonItems(_stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+      public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
         if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
           const simpleActionSpec1 = ToolbarItemUtilities.createActionButton("test1", 100, "icon-developer", "addon-tool-1", (): void => { });
           const simpleActionSpec2 = ToolbarItemUtilities.createActionButton("test2", 200, "icon-developer", "addon-tool-2", (): void => { });

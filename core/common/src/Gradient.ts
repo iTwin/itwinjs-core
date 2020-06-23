@@ -116,6 +116,7 @@ export namespace Gradient {
     }
 
     private static _fixedSchemeKeys = [
+      // NB: these color values are ordered as rbg.  Note how the components are applied below.
       [[0.0, 0, 255, 0], [0.25, 0, 255, 255], [0.5, 0, 0, 255], [0.75, 255, 0, 255], [1.0, 255, 0, 0]],  // Blue Red.
       [[0.0, 255, 0, 0], [0.25, 255, 0, 255], [0.5, 0, 0, 255], [0.75, 0, 255, 255], [1.0, 0, 255, 0]], // Red blue.
       [[0.0, 0, 0, 0], [1.0, 255, 255, 255]], // Monochrome.
@@ -139,7 +140,7 @@ export namespace Gradient {
           settings.customKeys.forEach((keyColor) => result.keys.push(keyColor));
         } else { // if custom color keys are not specified properly, revert to some basic key scheme and assert
           for (const keyValue of Gradient.Symb._fixedCustomKeys)
-          result.keys.push(new KeyColor({ value: keyValue[0], color: ColorDef.from(keyValue[1], keyValue[3], keyValue[2]).toJSON() }));
+            result.keys.push(new KeyColor({ value: keyValue[0], color: ColorDef.from(keyValue[1], keyValue[3], keyValue[2]).toJSON() }));
         }
       }
       return result;
@@ -276,6 +277,70 @@ export namespace Gradient {
     /** Returns true if the [[Gradient.Flags.Outline]] flag is set. */
     public get isOutlined(): boolean { return 0 !== (this.flags & Flags.Outline); }
 
+    /** This function (for internal use only) provides the WebGL renderer with a thematic image that its shaders
+     * can use properly with various thematic rendering techniques.
+     * If you want a regular gradient image, use the method [[Gradient.Symb.getImage]].
+     * @internal
+     */
+    public getThematicImageForRenderer(maxDimension: number): ImageBuffer {
+      assert(Mode.Thematic === this.mode, "getThematicImageForRenderer only is used for thematic display.");
+
+      let settings = this.thematicSettings;
+      if (settings === undefined) {
+        settings = ThematicGradientSettings.defaults;
+      }
+
+      const dimension = (ThematicGradientMode.Smooth === settings.mode) ? maxDimension : settings.stepCount + 1;
+      const hasAlpha = this.hasTranslucency;
+      const image = new Uint8Array(1 * dimension * (hasAlpha ? 4 : 3));
+      let currentIdx = image.length - 1;
+
+      function addColor(color: ColorDef) {
+        if (hasAlpha)
+          image[currentIdx--] = color!.getAlpha();
+
+        image[currentIdx--] = color!.colors.b;
+        image[currentIdx--] = color!.colors.g;
+        image[currentIdx--] = color!.colors.r;
+      }
+
+      switch (settings.mode) {
+        case ThematicGradientMode.Smooth: {
+          addColor(settings.marginColor);
+          for (let j = 0; j < dimension - 2; j++) {
+            const f = (1 - j / (dimension - 2));
+            addColor(this.mapColor(f));
+          }
+          addColor(settings.marginColor);
+          break;
+        }
+
+        case ThematicGradientMode.SteppedWithDelimiter:
+        case ThematicGradientMode.IsoLines:
+        // The work to generate the delimiter lines and isolines is done completely in the shader.
+        // Therefore, we just fall through here and use a regular stepped gradient.
+        case ThematicGradientMode.Stepped: {
+          assert(settings.stepCount > 1, "Step count must be at least two to generate renderer gradient for thematic display");
+          addColor(settings.marginColor);
+          for (let j = 0; j < dimension - 1; j++) {
+            // If we use smooth's approach to generate the gradient...
+            // We would get these values for stepCount five: 0   .2   .4   .6   .8
+            //                  We really want these values: 0   .25  .5   .75   1
+            // This preserves an exact color mapping of a n-step gradient when stepCount also equals n.
+            // stepCount must be at least two for this.  The thematic API enforces stepCount of at least 2.
+            const f = (1 - j / (dimension - 2));
+            addColor(this.mapColor(f));
+          }
+          break;
+        }
+      }
+
+      assert(-1 === currentIdx);
+      const imageBuffer = ImageBuffer.create(image, hasAlpha ? ImageBufferFormat.Rgba : ImageBufferFormat.Rgb, 1);
+      assert(undefined !== imageBuffer);
+      return imageBuffer!;
+    }
+
     /** Applies this gradient's settings to produce a bitmap image.
      * @beta
      */
@@ -405,7 +470,6 @@ export namespace Gradient {
             settings = ThematicGradientSettings.defaults;
           }
 
-          // TBD - Stepped and isolines...
           for (let j = 0; j < height; j++) {
             let f = 1 - j / height;
             let color: ColorDef;
@@ -416,14 +480,11 @@ export namespace Gradient {
               f = (f - ThematicGradientSettings.margin) / (ThematicGradientSettings.contentRange);
               switch (settings.mode) {
                 case ThematicGradientMode.SteppedWithDelimiter:
+                case ThematicGradientMode.IsoLines:
                 case ThematicGradientMode.Stepped: {
-                  if (settings.stepCount !== 0) {
-                    const fStep = Math.floor(f * settings.stepCount + .99999) / settings.stepCount;
-                    const delimitFraction = 1 / 1024;
-                    if (settings.mode === ThematicGradientMode.SteppedWithDelimiter && Math.abs(fStep - f) < delimitFraction)
-                      color = ColorDef.fromJSON(0xff000000);
-                    else
-                      color = this.mapColor(fStep);
+                  if (settings.stepCount > 1) {
+                    const fStep = Math.floor(f * settings.stepCount - 0.00001) / (settings.stepCount - 1);
+                    color = this.mapColor(fStep);
                   }
                   break;
                 }

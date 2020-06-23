@@ -24,8 +24,9 @@ import { initializeLogging } from "./web/BackendServer";
 
     IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
 
-    if (!electron)
+    if (!electron) {
       initializeLogging();
+    }
 
     // initialize imodeljs-backend
     await IModelHost.startup();
@@ -36,6 +37,7 @@ import { initializeLogging } from "./web/BackendServer";
       // May be omitted if application doesn't have any presentation rules.
       rulesetDirectories: [path.join("assets", "presentation_rules")],
       enableSchemasPreload: true,
+      updatesPollInterval: 100,
     });
 
     // invoke platform-specific initialization

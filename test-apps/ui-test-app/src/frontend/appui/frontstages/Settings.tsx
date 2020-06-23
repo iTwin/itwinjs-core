@@ -11,8 +11,8 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
 import { Toggle } from "@bentley/ui-core";
-import { ColorTheme, ModalFrontstageInfo, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
-import { RootState, SampleAppActions, SampleAppIModelApp } from "../..";
+import { ColorTheme, ModalFrontstageInfo, SyncUiEventDispatcher, UiFramework, UiShowHideManager } from "@bentley/ui-framework";
+import { RootState, SampleAppActions, SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
 /** Modal frontstage displaying the active settings.
  * @alpha
@@ -138,6 +138,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     },
     onToggleFrameworkVersion: async () => {
       dispatch(SampleAppActions.toggleFrameworkVersion());
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SampleAppUiActionId.toggleFrameworkVersion);
       await SampleAppIModelApp.appUiSettings.frameworkVersion.saveSetting(SampleAppIModelApp.uiSettings);
     },
     dispatch,

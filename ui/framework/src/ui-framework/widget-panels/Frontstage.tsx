@@ -151,8 +151,10 @@ type WidgetIdTypes = "leftStart" |
   "rightStart" |
   "rightMiddle" |
   "rightEnd" |
-  "top" |
-  "bottom";
+  "topStart" |
+  "topEnd" |
+  "bottomStart" |
+  "bottomEnd";
 
 function getPanelDefKey(side: PanelSide): FrontstagePanelDefKeys {
   switch (side) {
@@ -203,10 +205,15 @@ export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): Widget
       return "rightEnd";
     }
     case "top": {
-      return "top";
+      if (key === "start") {
+        return "topStart";
+      }
+      return "topEnd";
     }
     case "bottom": {
-      return "bottom";
+      if (key === "start")
+        return "bottomStart";
+      return "bottomEnd";
     }
   }
 }
@@ -235,19 +242,13 @@ export function addPanelWidgets(
         break;
       }
       case "top": {
-        const widgets = [
-          ...(frontstageDef.topPanel?.widgetDefs || []),
-          ...(frontstageDef.topMostPanel?.widgetDefs || []),
-        ];
-        state = addWidgets(state, widgets, side, "top");
+        state = addWidgets(state, frontstageDef.topPanel?.widgetDefs || [], side, "topStart");
+        state = addWidgets(state, frontstageDef.topMostPanel?.widgetDefs || [], side, "topEnd"); // tslint:disable-line: deprecation
         break;
       }
       case "bottom": {
-        const widgets = [
-          ...(frontstageDef.bottomPanel?.widgetDefs || []),
-          ...(frontstageDef.bottomMostPanel?.widgetDefs || []),
-        ];
-        state = addWidgets(state, widgets, side, "bottom");
+        state = addWidgets(state, frontstageDef.bottomPanel?.widgetDefs || [], side, "bottomStart");
+        state = addWidgets(state, frontstageDef.bottomMostPanel?.widgetDefs || [], side, "bottomEnd"); // tslint:disable-line: deprecation
         break;
       }
     }
@@ -272,7 +273,7 @@ export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult)
   return false;
 }
 
-const stateVersion = 3; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+const stateVersion = 4; // this needs to be bumped when NineZoneState is changed (to recreate layout).
 
 /** @internal */
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
@@ -300,11 +301,11 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
     ], [frontstageDef.rightPanel?.panelState]);
     stateDraft.panels.top.collapsed = isPanelCollapsed([], [
       frontstageDef.topPanel?.panelState,
-      frontstageDef.topMostPanel?.panelState,
+      frontstageDef.topMostPanel?.panelState, // tslint:disable-line: deprecation
     ]);
     stateDraft.panels.bottom.collapsed = isPanelCollapsed([], [
       frontstageDef.bottomPanel?.panelState,
-      frontstageDef.bottomMostPanel?.panelState,
+      frontstageDef.bottomMostPanel?.panelState, // tslint:disable-line: deprecation
     ]);
     stateDraft.panels.left.size = frontstageDef.leftPanel?.size;
     stateDraft.panels.right.size = frontstageDef.rightPanel?.size;

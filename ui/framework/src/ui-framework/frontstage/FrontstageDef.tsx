@@ -91,17 +91,17 @@ export class FrontstageDef {
   public get bottomCenter(): ZoneDef | undefined { return this._bottomCenter; }
   public get bottomRight(): ZoneDef | undefined { return this._bottomRight; }
 
-  /** @alpha */
+  /** @beta */
   public get topPanel(): StagePanelDef | undefined { return this._topPanel; }
-  /** @alpha */
+  /** @beta @deprecated Only topPanel is supported in UI 2.0 */
   public get topMostPanel(): StagePanelDef | undefined { return this._topMostPanel; }
-  /** @alpha */
+  /** @beta */
   public get leftPanel(): StagePanelDef | undefined { return this._leftPanel; }
-  /** @alpha */
+  /** @beta */
   public get rightPanel(): StagePanelDef | undefined { return this._rightPanel; }
-  /** @alpha */
+  /** @beta */
   public get bottomPanel(): StagePanelDef | undefined { return this._bottomPanel; }
-  /** @alpha */
+  /** @beta @deprecated Only bottomPanel is supported in UI 2.0  */
   public get bottomMostPanel(): StagePanelDef | undefined { return this._bottomMostPanel; }
 
   public get defaultLayout(): ContentLayoutDef | undefined { return this._defaultLayout; }
@@ -116,6 +116,8 @@ export class FrontstageDef {
   /** @internal */
   public get nineZoneState(): NineZoneState | undefined { return this._nineZoneState; }
   public set nineZoneState(state: NineZoneState | undefined) {
+    if (this._nineZoneState === state)
+      return;
     this._nineZoneState = state;
     FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
       frontstageDef: this,
@@ -338,7 +340,7 @@ export class FrontstageDef {
   }
 
   /** Gets a [[StagePanelDef]] based on a given panel location
-   * @alpha
+   * @beta
    */
   public getStagePanelDef(location: StagePanelLocation): StagePanelDef | undefined {
     let panelDef: StagePanelDef | undefined;
@@ -348,7 +350,7 @@ export class FrontstageDef {
         panelDef = this.topPanel;
         break;
       case StagePanelLocation.TopMost:
-        panelDef = this.topMostPanel;
+        panelDef = this.topMostPanel; // tslint:disable-line: deprecation
         break;
       case StagePanelLocation.Left:
         panelDef = this.leftPanel;
@@ -360,7 +362,7 @@ export class FrontstageDef {
         panelDef = this.bottomPanel;
         break;
       case StagePanelLocation.BottomMost:
-        panelDef = this.bottomMostPanel;
+        panelDef = this.bottomMostPanel; // tslint:disable-line: deprecation
         break;
       // istanbul ignore next
       default:
@@ -373,7 +375,7 @@ export class FrontstageDef {
   }
 
   /** Gets a list of [[StagePanelDef]]s
-   * @alpha
+   * @beta
    */
   public get panelDefs(): StagePanelDef[] {
     const panels = [

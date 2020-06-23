@@ -551,7 +551,15 @@ export class Platform {
   /** The Electron info object, if this is running in Electron.
    * @beta
    */
-  public static get electron(): any { return ((typeof (process) !== "undefined") && ("electron" in process.versions)) ? require("electron") : undefined; }
+  public static get electron(): any {
+    if ((typeof (process) !== "undefined") && ("electron" in process.versions)) {
+      // Wrapping this require in a try/catch signals to webpack that this is only an optional dependency
+      try {
+        return require("electron"); // tslint:disable-line:no-var-requires
+      } catch (error) { }
+    }
+    return undefined;
+  }
 
   /** Query if this is a desktop configuration */
   public static get isDesktop(): boolean { return Platform.electron !== undefined; }
