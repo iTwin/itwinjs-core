@@ -6,7 +6,7 @@
  * @module Authentication
  */
 
-import { GrantParams, TokenSet } from "openid-client";
+import { GrantBody, TokenSet } from "openid-client";
 import { BentleyError, BentleyStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken, IncludePrefix, SamlAccessToken } from "@bentley/itwin-client";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
@@ -45,7 +45,7 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
   private async exchangeToJwtToken(requestContext: ClientRequestContext, accessToken: AccessToken | SamlAccessToken, grantType: string): Promise<AccessToken> {
     requestContext.enter();
 
-    const grantParams: GrantParams = {
+    const grantParams: GrantBody = {
       grant_type: grantType,
       scope: this._configuration.scope,
       assertion: accessToken.toTokenString(IncludePrefix.No),
@@ -78,7 +78,7 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     requestContext.enter();
 
     const grantType = "urn:ietf:params:oauth:grant-type:jwt-bearer";
-    const params: GrantParams = {
+    const params: GrantBody = {
       grant_type: grantType,
       scope: this._configuration.scope,
       assertion: accessToken.toTokenString(IncludePrefix.No),
@@ -87,9 +87,11 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     const client = await this.getClient(requestContext);
     const tokenSet: TokenSet = await client.grant(params);
 
+    if (!tokenSet.access_token) {
+      throw new BentleyError(BentleyStatus.ERROR, `Could not convert empty jwt to accessToken`);
+    }
+
     const samlToken = SamlAccessToken.fromSamlTokenString(tokenSet.access_token, IncludePrefix.No);
-    if (!samlToken)
-      throw new BentleyError(BentleyStatus.ERROR, `Could not convert jwt to accessToken`);
     return samlToken;
   }
 
