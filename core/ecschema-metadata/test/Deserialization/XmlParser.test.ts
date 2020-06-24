@@ -1784,8 +1784,43 @@ describe("XmlParser", () => {
       // Call Provider
       const caInstance = providers[0][1](testClass!);
 
+      expect(providers[0][0]).to.equal("TestSchema.TestCustomAttribute");
       expect(caInstance).to.not.be.undefined;
       expect(caInstance.className).to.equal("TestSchema.TestCustomAttribute");
+    });
+
+    it("Schema CustomAttribute with no xmlns, CustomAttribute defined in schema, CustomAttributeProvider should provide valid CustomAttribute with current schema namespace.", async () => {
+      const itemXml = `
+        <ECCustomAttributes>
+          <TestCustomAttribute/>
+        </ECCustomAttributes>`;
+
+      const testClass = await getTestCAClass("");
+      const providers = getCAProviders(itemXml);
+
+      // Call Provider
+      const caInstance = providers[0][1](testClass!);
+
+      expect(providers[0][0]).to.equal("TestSchema.TestCustomAttribute");
+      expect(caInstance).to.not.be.undefined;
+      expect(caInstance.className).to.equal("TestSchema.TestCustomAttribute");
+    });
+
+    it("EntityClass CustomAttribute wih no xmlns, CustomAttribute defined in schema, CustomAttributeProvider should provide valid CustomAttribute with current schema namespace.", async () => {
+      const itemXml = `
+        <ECEntityClass typeName="TestEntityClass">
+          <ECCustomAttributes>
+            <TestAttribute/>
+          </ECCustomAttributes>
+        </ECEntityClass>`;
+
+      const schemaDoc = createSchemaXmlWithItems(itemXml);
+      parser = new XmlParser(schemaDoc);
+      const entityElements = schemaDoc.getElementsByTagName("ECEntityClass");
+      const providers = Array.from(parser.getClassCustomAttributeProviders(entityElements[0]));
+
+      expect(providers.length).to.equal(1);
+      expect(providers[0][0]).to.equal("TestSchema.TestAttribute");
     });
 
     it("CustomAttributeProvider should not provide Mixin CustomAttribute.", async () => {

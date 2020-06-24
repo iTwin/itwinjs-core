@@ -5,6 +5,7 @@
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
+import { DOMParser } from "xmldom";
 import { SchemaContext } from "../../src/Context";
 import { SchemaReadHelper } from "../../src/Deserialization/Helper";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
@@ -14,6 +15,7 @@ import { AnyClass } from "../../src/Interfaces";
 import { NavigationProperty } from "../../src/Metadata/Property";
 import { Schema } from "../../src/Metadata/Schema";
 import { ISchemaPartVisitor } from "../../src/SchemaPartVisitorDelegate";
+import { XmlParser } from "../../src/Deserialization/XmlParser";
 
 describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {
@@ -648,6 +650,48 @@ describe("Full Schema Deserialization", () => {
       expect(testSchema.customAttributes!.get("ValidSchema.TestCAClassB")).to.exist;
       assert.isFalse(testSchema.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses);
       assert.isTrue(testSchema.customAttributes!.get("ValidSchema.TestCAClassB")!.ShowClasses);
+    });
+
+    it("with class containing attribute with no namespace", () => {
+      const parser = new DOMParser();
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECCustomAttributeClass typeName="TestAttribute" description="Test attribute" displayLabel="Test Attribute" appliesTo="Schema" modifier="Sealed"/>
+          <ECEntityClass typeName="EntityTest"
+                        description="Test Entity Class"
+                        modifier="None">
+            <ECCustomAttributes>
+              <TestAttribute/>
+            </ECCustomAttributes>
+          </ECEntityClass>
+        </ECSchema>`;
+      const document = parser.parseFromString(schemaXml);
+      const context = new SchemaContext();
+      let schema: Schema = new Schema(context);
+      const reader = new SchemaReadHelper(XmlParser, context);
+
+      schema = reader.readSchemaSync(schema, document);
+      expect(schema).to.not.be.undefined;
+    });
+
+    it("with class containing attribute with no namespace, custom attribute not defined in schema, throws", () => {
+      const parser = new DOMParser();
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECEntityClass typeName="EntityTest"
+                        description="Test Entity Class"
+                        modifier="None">
+            <ECCustomAttributes>
+              <TestAttribute/>
+            </ECCustomAttributes>
+          </ECEntityClass>
+        </ECSchema>`;
+      const document = parser.parseFromString(schemaXml);
+      const context = new SchemaContext();
+      const schema: Schema = new Schema(context);
+      const reader = new SchemaReadHelper(XmlParser, context);
+
+      expect(() => reader.readSchemaSync(schema, document)).to.throw(ECObjectsError, "Unable to locate SchemaItem TestSchema.TestAttribute.");
     });
   });
 
