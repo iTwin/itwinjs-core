@@ -10,7 +10,7 @@ jobs:
       matrix:
         "Windows - Node 10":
           NodeVersion: 10
-          OS: vs2017-win2016
+          OS: windows-latest
         "Linux - Node 10":
           NodeVersion: 10
           OS: ubuntu-latest
@@ -45,3 +45,6 @@ jobs:
       - template: templates/publish-test-results.yaml
         parameters:
           NodeVersion: $(NodeVersion) # set to a non-boolean value to h
+
+      # The publish script identifies any new packages not previously published and tags the build
+      - template: templates/publish.yaml
