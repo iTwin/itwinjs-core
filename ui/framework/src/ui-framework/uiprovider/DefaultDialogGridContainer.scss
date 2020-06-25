@@ -50,11 +50,13 @@ div.uifw-default-inline-editor-group .uifw-default-label {
   margin-right: 4px;
   margin-left: 4px;
   width: auto;
+  align-self: center;
+  margin-bottom: 6px;
 }
 
 div.uifw-default-inline-editor-group .uifw-default-editor {
   margin-right: 6px;
-  margin-bottom: 3px;
+  margin-bottom: 6px;
 
   &:last-child {
     margin-right: 0px;
@@ -65,10 +67,14 @@ div.uifw-default-lock-and-label {
   align-content: flex-start;
   flex-direction: row;
   display: inline-flex;
+  margin-bottom: 6px;
+
+  &:last-child {
+    margin-bottom: 3px;
+  }
 }
 
 .uifw-default-inline-label-and-editor {
-  align-items: center;
   display: flex;
   flex-direction: row;
   width: auto;
@@ -110,7 +116,7 @@ div.uifw-default-container {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-  align-items: baseline;
+  align-items: center;
   margin: 4px 4px 0px 4px;
 }
 
@@ -152,9 +158,14 @@ div.uifw-default-container.uifw-default-narrow .uifw-default-lock {
   margin-left: 0px;
 }
 
+div.uifw-default-container.uifw-default-narrow .uifw-default-lock-and-label {
+  margin-bottom: 0px;
+}
+
 div.uifw-default-container.uifw-default-narrow .uifw-default-label {
   text-align: left;
   margin-bottom: 3px;
+  align-self: flex-start;
 }
 
 div.uifw-default-container.uifw-default-narrow .uifw-default-inline-label-and-editor {
