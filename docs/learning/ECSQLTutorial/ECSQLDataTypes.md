@@ -15,17 +15,13 @@ ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECC
 
 > **Try it yourself**
 >
-> *Goal:* Return the actual Element subclass of the [Element](../../bis/domains/BisCore.ecschema.md#element) with id 0x10000000020.
+> *Goal:* Return the actual Element subclass of the [Element](../../bis/domains/BisCore.ecschema.md#element) with id 0x20000000004.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x10000000020
+> SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x20000000004
 > ```
-> *Result*
->
-> ECClassId | CodeValue
-> --- | ---
-> MyDomain.Device | DEV-A-G-1
+<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x20000000004"></iframe>
 
 ## Primitive Data Types
 
@@ -43,19 +39,7 @@ For Boolean types ECSQL supports the literals `True` and `False`.
 > ```sql
 > SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model
 > ```
-> *Result*
->
-> ECInstanceId | ECClassId | IsPrivate
-> --- | --- | ---
-> 0x1 | BisCore.RepositoryModel | false
-> 0xe | BisCore.LinkModel | true
-> 0x10 | BisCore.DictionaryModel | true
-> 0x10000000002 | BisCore.PhysicalModel | false
-> 0x10000000003 | BisCore.DocumentListModel | false
-> 0x10000000004 | BisCore.DefinitionModel | false
-> 0x10000000037 | BisCore.DrawingModel | false
-> 0x1000000003d | BisCore.DrawingModel | false
-> 0x10000000042 | BisCore.DrawingModel | false
+<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model"></iframe>
 
 Boolean properties or expressions do not need to be compared to `True` and `False` as they return a
 boolean value already.
@@ -73,13 +57,7 @@ boolean value already.
 > SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate
 > ```
 > are equivalent.
->
-> *Result*
->
-> ECInstanceId | ECClassId
-> --- | ---
-> 0xe | BisCore.LinkModel
-> 0x10 | BisCore.DictionaryModel
+<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate"></iframe>
 
 And the same example with `False`:
 
@@ -95,19 +73,7 @@ And the same example with `False`:
 > ```sql
 > SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate
 > ```
-> are equivalent.
->
-> *Result*
->
-> ECInstanceId | ECClassId
-> --- | ---
-> 0x1 | BisCore.RepositoryModel
-> 0x10000000002 | BisCore.PhysicalModel
-> 0x10000000003 | BisCore.DocumentListModel
-> 0x10000000004 | BisCore.DefinitionModel
-> 0x10000000037 | BisCore.DrawingModel
-> 0x1000000003d | BisCore.DrawingModel
-> 0x10000000042 | BisCore.DrawingModel
+<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate"></iframe>
 
 ## DateTime
 
@@ -119,17 +85,13 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 
 > **Try it yourself**
 >
-> *Goal:* Find all [Device](./MyDomain.ecschema.md#device)s which were modified between 4pm and 6pm UTC on December, 18th 2018.
+> *Goal:* Find all elements which were modified between 9am and 10am UTC on February, 25th 2020.
 >
 > *ECSQL*
 > ```sql
-> SELECT CodeValue,LastMod FROM mydomain.Device WHERE LastMod BETWEEN TIMESTAMP '2018-12-18T16:00:00Z' AND TIMESTAMP '2018-12-18T18:00:00Z'
+> SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE CodeValue LIKE '%Plant%' AND LastMod BETWEEN TIMESTAMP '2020-02-25T09:34:27.402Z' AND TIMESTAMP '2020-02-25T10:08:52.355Z'
 > ```
-> *Result*
->
-> CodeValue | LastMod
-> --- | ---
-> DEV-A-G-4 | 2018-12-18T16:03:15.206Z
+<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE CodeValue LIKE '%Plant%' AND LastMod BETWEEN TIMESTAMP '2020-02-25T09:34:27.402Z' AND TIMESTAMP '2020-02-25T10:08:52.355Z'"></iframe>
 
 ## Points
 
@@ -146,22 +108,17 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Find all [Device](./MyDomain.ecschema.md#device)s whose origin lies within the cube with the
+> *Goal:* Find all [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement) elements whose origin lies within the cube with the
 > lower corner point (50, 30, 10) and the upper corner point (70, 40, 20).
 >
 > *ECSQL*
 > ```sql
-> SELECT CodeValue, Origin FROM MyDomain.Device
-> WHERE Origin.X BETWEEN 50 AND 70 AND
-> Origin.Y BETWEEN 30 AND 40 AND Origin.Z BETWEEN 10 AND 20
+> SELECT ecinstanceid, Origin FROM bis.spatialelement
+> WHERE Origin.X BETWEEN 400 AND 450 AND
+> Origin.Y BETWEEN 115 AND 120 AND
+> Origin.Z BETWEEN 5 AND 10
 > ```
->
-> *Result*
->
-> CodeValue | Origin
-> --- | ---
-> DEV-A-2-6 | {"x":55,"y":35,"z":11}
-> DEV-A-2-7 | {"x":65,"y":35,"z":11}
+<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ecinstanceid, Origin FROM bis.spatialelement WHERE Origin.X BETWEEN 400 AND 450 AND Origin.Y BETWEEN 115 AND 120 AND Origin.Z BETWEEN 5 AND 10"></iframe>
 
 ## Navigation Properties
 
@@ -181,50 +138,36 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the parent [Element](../../bis/domains/BisCore.ecschema.md#element) for the [Space](./MyDomain.ecschema.md#space) with code value *A-G-2*.
+> *Goal:* Return the parent [Element](../../bis/domains/BisCore.ecschema.md#element) for the element with code value *0x20000000007*.
 >
 > *ECSQL*
 > ```sql
-> SELECT Parent FROM MyDomain.Space WHERE CodeValue='A-G-2'
+> SELECT ECInstanceId, CodeValue, LastMod, Parent FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
-> *Result*
+<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECInstanceId, CodeValue, LastMod, Parent FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
+
+
+> **Try it yourself**
 >
-> Parent |
-> --- |
-> {"id":"0x1000000001e","relClassName":"BisCore.ElementOwnsChildElements"} |
+> *Goal:* Return the id of the parent [Element](../../bis/domains/BisCore.ecschema.md#element) for the element with id value *0x20000000007*.
+>
+> *ECSQL*
+> ```sql
+> SELECT ECInstanceId, CodeValue, LastMod, Parent.Id FROM bis.Element WHERE ECInstanceId = 0x20000000007
+> ```
+<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECInstanceId, CodeValue, LastMod, Parent.Id FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
 
 ---
 
 > **Try it yourself**
 >
-> *Goal:* Return the id of the parent [Element](../../bis/domains/BisCore.ecschema.md#element) for the [Space](./MyDomain.ecschema.md#space) with code value *A-G-2*.
+> *Goal:* Return the id and RelECClassId of the parent [Element](../../bis/domains/BisCore.ecschema.md#element) separately for the element with id value *0x20000000007*.
 >
 > *ECSQL*
 > ```sql
-> SELECT Parent.Id FROM MyDomain.Space WHERE CodeValue='A-G-2'
+> SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
-> *Result*
->
-> Parent.Id |
-> --- |
-> 0x1000000001e |
-
----
-
-> **Try it yourself**
->
-> *Goal:* Return the id and RelECClassId of the parent [Element](../../bis/domains/BisCore.ecschema.md#element) separately for the [Space](./MyDomain.ecschema.md#space) with code value *A-G-2*.
->
-> *ECSQL*
-> ```sql
-> SELECT Parent.Id, Parent.RelECClassId FROM MyDomain.Space WHERE CodeValue='A-G-2'
-> ```
->
-> *Result*
->
-> Parent.Id | Parent.RelECClassId
-> --- | ---
-> 0x1000000001e | BisCore.ElementOwnsChildElements
+<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
 
 Find more examples in the lesson about [Joins and ECRelationshipClasses](./Joins.md#examples).
 
@@ -280,19 +223,15 @@ In ECSQL you can refer to Array ECProperties only as a whole.
 
 > **Try it yourself**
 >
-> *Goal:* Return the ECEnumeration values for the ECEnumeration [FlameDetectionTechnique](./MyDomain.ecschema.md#flamedetectiontechnique). The ECEnumeration values are stored
+> *Goal:* Return the ECEnumeration values for the ECEnumeration IsmLoadCase_LoadCause. The ECEnumeration values are stored
 in the array property [ECEnumerationDef.EnumValues](../ECDbMeta.ecschema.md#ecenumerationdef).
 >
 > *ECSQL*
 > ```sql
-> SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='FlameDetectionTechnique'
+> SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='IsmLoadCase_LoadCause'
 > ```
 >
-> *Result*
->
-> Name | EnumValues
-> --- | ---
-> FlameDetectionTechnique | [{"name": "Optical", "intValue":0},{"name":"Ultraviolet", "intValue":1},{"name":"Infrared", "intValue":2}]
+<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='IsmLoadCase_LoadCause'"></iframe>
 
 You can find more ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL.md#arrays).
 
