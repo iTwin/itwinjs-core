@@ -17,6 +17,7 @@ export const useProximityToMouse = (elementRef: React.RefObject<Element>) => {
   const [proximity, setProximity] = React.useState(0);
   React.useEffect(() => {
     const handleDocumentPointerMove = (e: PointerEvent) => {
+      // istanbul ignore else
       if (elementRef.current) {
         const clientRect = elementRef.current.getBoundingClientRect();
         const rectangle = Rectangle.create(clientRect);

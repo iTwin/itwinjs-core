@@ -70,6 +70,10 @@ describe("<ThemedSelect />", () => {
     shallow(<ThemedSelect options={colorChoices} value={colorChoices[0]} isMenuFixed={true} />).should.matchSnapshot();
   });
 
+  it("renders with no options correctly", () => {
+    shallow(<ThemedSelect options={colorChoices} value={colorChoices[0]} noOptionsMessage={() => "No options"} />).should.matchSnapshot();
+  });
+
 });
 
 describe("<ThemedSelect - React Testing Library />", () => {

@@ -18,7 +18,7 @@ describe("<Toggle />", () => {
 
     let label = wrapper.find("label.core-toggle");
     label.length.should.eq(1);
-    label = wrapper.find("label.core-toggle.rounded");
+    label = wrapper.find("label.core-toggle.core-toggle-rounded");
     label.length.should.eq(1);
 
     wrapper.unmount();

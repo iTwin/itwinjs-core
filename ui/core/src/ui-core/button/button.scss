@@ -2,80 +2,77 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "../style/index";
-@import "../inputs/variables";
+@import "./variables";
 
 // cspell:ignore unbordered
-
-$uicore-button-height: 28px;
-$uicore-button-line-height: $uicore-baseline * 1.5;
-$uicore-button-padding: ($uicore-button-height - $uicore-button-line-height) / 2;
-$uicore-button-padding-bordered: $uicore-button-padding - 1px;
-$uicore-button-padding-bordered-large: $uicore-inputs-padding-large - 1px;
-$uicore-unbordered-padding: $uicore-baseline;
-$uicore-bordered-padding: $uicore-unbordered-padding - 1px;
 
 /// Mixins ---------------------------------------------------------------------
 
 @mixin uicore-buttons-button {
 
-    display:                inline-block;
+  display:                inline-block;
 
-    padding:                $uicore-button-padding $uicore-unbordered-padding;
-    margin:                 $uicore-inputs-margin 0;
-    border-radius:          $uicore-border-radius;
-    line-height:            $uicore-button-line-height;
-    outline:                none;
-    box-shadow:             none;
-    font-family:            $uicore-font-family;
-    font-size:              $uicore-font-size;
-    text-decoration:        none;
-    cursor:                 pointer;
-    box-sizing:             border-box;
+  padding:                $uicore-button-padding $uicore-unbordered-padding;
+  margin:                 $uicore-inputs-margin 0;
+  border-radius:          $uicore-border-radius;
+  line-height:            $uicore-button-line-height;
+  outline:                none;
+  font-family:            $uicore-font-family;
+  font-size:              $uicore-font-size;
+  text-decoration:        none;
+  cursor:                 pointer;
+  box-sizing:             border-box;
+  box-shadow:             transparent 0px 1px 1px inset;
+  border:                 1px solid transparent;
+  transition:             all 0.15s ease-in-out;
 
-    &:hover {
+  &:active,
+  &:focus {
 
-        text-decoration:    none;
-    }
+    @include uicore-buttons-button-focused;
+  }
 
-    &:active,
-    &:focus {
+  &[disabled],
+  &[disabled]:hover,
+  &[disabled]:active,
+  &[disabled]:focus {
 
-        outline:            none;
-        box-shadow:         none;
-        text-decoration:    none;
-    }
+    @include uicore-buttons-button-disabled;
+  }
+}
 
-    &[disabled],
-    &[disabled]:hover,
-    &[disabled]:active,
-    &[disabled]:focus {
+@mixin uicore-buttons-button-focused {
 
-        @include uicore-buttons-button-disabled;
-    }
+  box-shadow:           $uicore-button-focus-boxshadow;
+}
+
+@mixin uicore-buttons-button-unbordered {
+
+  border-color:         transparent;
+  box-shadow:           transparent 0px 1px 1px inset;
 }
 
 @mixin uicore-buttons-button-disabled {
 
-    opacity:                0.4;
-    background-color:       $uicore-gray;
-    border:                 0;
-    color:                  $uicore-white;
-    cursor:                 not-allowed;
+  opacity:                0.4;
+  background-color:       $uicore-gray;
+  border:                 0;
+  color:                  $uicore-white;
+  cursor:                 not-allowed;
 }
 
 @mixin uicore-buttons-large-size {
 
-    padding:                $uicore-inputs-padding-large $uicore-unbordered-padding-large;
-    margin:                 $uicore-inputs-margin-large 0;
-    font-size:              $uicore-font-size-leading;
-    font-weight:            $uicore-font-weight-normal;
+  padding:                $uicore-inputs-padding-large $uicore-unbordered-padding-large;
+  margin:                 $uicore-inputs-margin-large 0;
+  font-size:              $uicore-font-size-leading;
+  font-weight:            $uicore-font-weight-normal;
 }
 
 @mixin uicore-buttons-large-bordered-size {
 
-    padding:                $uicore-button-padding-bordered-large $uicore-bordered-padding-large;
-    margin:                 $uicore-inputs-margin-large 0;
-    font-size:              $uicore-font-size-leading;
-    font-weight:            $uicore-font-weight-normal;
+  padding:                $uicore-button-padding-bordered-large $uicore-bordered-padding-large;
+  margin:                 $uicore-inputs-margin-large 0;
+  font-size:              $uicore-font-size-leading;
+  font-weight:            $uicore-font-weight-normal;
 }

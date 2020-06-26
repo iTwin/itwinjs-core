@@ -65,7 +65,7 @@ export class ExpandableList extends React.PureComponent<ExpandableListProps, Exp
 
   public render(): JSX.Element {
     return (
-      <div className={classnames("BwcExpandableBlocksList", this.props.className)} style={this.props.style}>
+      <div className={classnames("uicore-expandable-blocks-list", this.props.className)} style={this.props.style}>
         {this.renderBlocks()}
       </div>
     );

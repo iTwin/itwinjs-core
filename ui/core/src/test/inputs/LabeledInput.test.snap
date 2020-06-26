@@ -19,6 +19,27 @@ exports[`<LabeledInput /> renders correctly 1`] = `
 </label>
 `;
 
+exports[`<LabeledInput /> renders disabled correctly 1`] = `
+<label
+  className="uicore-inputs-labeled-input uicore-disabled"
+>
+  <div
+    className="uicore-label"
+  >
+     
+    input test
+     
+  </div>
+  <div
+    className="input"
+  >
+    <Input
+      disabled={true}
+    />
+  </div>
+</label>
+`;
+
 exports[`<LabeledInput /> renders message correctly 1`] = `
 <label
   className="uicore-inputs-labeled-input"

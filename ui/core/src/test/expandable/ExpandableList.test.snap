@@ -2,6 +2,6 @@
 
 exports[`ExpandableList renders correctly 1`] = `
 <div
-  className="BwcExpandableBlocksList"
+  className="uicore-expandable-blocks-list"
 />
 `;

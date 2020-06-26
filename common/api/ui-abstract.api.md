@@ -780,6 +780,72 @@ export enum StageUsage {
 }
 
 // @beta
+export enum StandardEditorNames {
+    // (undocumented)
+    ColorPicker = "color-picker",
+    // (undocumented)
+    EnumButtonGroup = "enum-buttongroup",
+    // (undocumented)
+    IconPicker = "icon-picker",
+    // (undocumented)
+    MultiLine = "multi-line",
+    // (undocumented)
+    NumberCustom = "number-custom",
+    // (undocumented)
+    NumericInput = "numeric-input",
+    // (undocumented)
+    Slider = "slider",
+    // (undocumented)
+    Toggle = "toggle",
+    // (undocumented)
+    WeightPicker = "weight-picker"
+}
+
+// @beta
+export enum StandardTypeNames {
+    // (undocumented)
+    Array = "array",
+    // (undocumented)
+    Bool = "bool",
+    // (undocumented)
+    Boolean = "boolean",
+    // (undocumented)
+    Composite = "composite",
+    // (undocumented)
+    DateTime = "dateTime",
+    // (undocumented)
+    Double = "double",
+    // (undocumented)
+    Enum = "enum",
+    // (undocumented)
+    Float = "float",
+    // (undocumented)
+    Hex = "hex",
+    // (undocumented)
+    Hexadecimal = "hexadecimal",
+    // (undocumented)
+    Int = "int",
+    // (undocumented)
+    Integer = "integer",
+    // (undocumented)
+    Navigation = "navigation",
+    // (undocumented)
+    Number = "number",
+    // (undocumented)
+    Point2d = "point2d",
+    // (undocumented)
+    Point3d = "point3d",
+    // (undocumented)
+    ShortDate = "shortdate",
+    // (undocumented)
+    String = "string",
+    // (undocumented)
+    Struct = "struct",
+    // (undocumented)
+    Text = "text"
+}
+
+// @beta
 export type StatusBarItemId = CommonStatusBarItem["id"];
 
 // @internal

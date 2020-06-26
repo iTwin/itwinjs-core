@@ -7,13 +7,12 @@
  */
 
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Point3d, Transform } from "@bentley/geometry-core";
 import { NpcCenter } from "@bentley/imodeljs-common";
 import {
   IModelApp, IModelConnection, ScreenViewport, TentativePoint, ToolSettings, ViewManager, Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
-import { UiError } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 import {
@@ -80,10 +79,17 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     this._mounted = true;
 
     // istanbul ignore next
-    if (!this._viewportDiv.current)
-      throw new UiError(UiComponents.loggerCategory(this), `Parent <div> failed to load`);
+    if (!this._viewportDiv.current) {
+      Logger.logError(UiComponents.loggerCategory(this), `Parent <div> failed to load`);
+      return;
+    }
 
     const viewState = await this.getViewState();
+    if (viewState === undefined) {
+      Logger.logError(UiComponents.loggerCategory(this), `Failed to obtain ViewState`);
+      return;
+    }
+
     /* istanbul ignore next */
     if (!this._mounted)
       return;
@@ -131,6 +137,10 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     /* istanbul ignore else */
     if (this._vp) {
       const viewState = await this.getViewState();
+      if (viewState === undefined) {
+        Logger.logError(UiComponents.loggerCategory(this), `Failed to obtain ViewState`);
+        return;
+      }
 
       this._vp.changeView(viewState);
 
@@ -140,7 +150,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     }
   }
 
-  private async getViewState(): Promise<ViewState> {
+  private async getViewState(): Promise<ViewState | undefined> {
     let viewState: ViewState;
 
     if (this.props.viewState) {
@@ -150,12 +160,13 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
         viewState = this.props.viewState;
     } else if (this.props.viewDefinitionId) {
       viewState = await this.props.imodel.views.load(this.props.viewDefinitionId);
-      // istanbul ignore next
       if (!viewState) {
-        throw new UiError(UiComponents.loggerCategory(this), `View state failed to load`);
+        Logger.logError(UiComponents.loggerCategory(this), `View state failed to load`);
+        return undefined;
       }
-    } /* istanbul ignore next */ else {
-      throw new UiError(UiComponents.loggerCategory(this), `Either viewDefinitionId or viewState must be provided as a ViewportComponent Prop`);
+    } else {
+      Logger.logError(UiComponents.loggerCategory(this), `Either viewDefinitionId or viewState must be provided as a ViewportComponent Prop`);
+      return undefined;
     }
 
     return viewState;

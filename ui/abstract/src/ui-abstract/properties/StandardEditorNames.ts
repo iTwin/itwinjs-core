@@ -3,14 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module PropertyEditors
+ * @module Properties
  */
-
-// cspell:ignore buttongroup
 
 /**
  * Standard Editor Names for property editors.
- * @deprecated Use [[StandardEditorNames]] in ui-abstract instead
  * @beta
  */
 export enum StandardEditorNames {

@@ -23,6 +23,8 @@ export interface ExpandableBlockProps extends CommonProps {
   onClick: React.MouseEventHandler<HTMLDivElement>;
   /** Callback function for key press event */
   onKeyPress?: React.KeyboardEventHandler<HTMLDivElement>;
+  /** Callback function for key down event */
+  onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
   /** Additional text displayed in the block below the label and in a smaller font size */
   caption?: string;
 }
@@ -40,11 +42,12 @@ export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {
       this.props.className,
     );
     const ariaExpanded = this.props.isExpanded ? "true" : "false";
+    const tabIndex = (this.props.onKeyPress || this.props.onKeyDown) ? 0 : undefined;
 
     return (
       <div className={cName} style={this.props.style}>
         <div aria-expanded={ariaExpanded} className="header" onClick={this.props.onClick}
-          onKeyPress={this.props.onKeyPress} tabIndex={this.props.onKeyPress ? 0 : undefined}>
+          onKeyPress={this.props.onKeyPress} onKeyDown={this.props.onKeyDown} tabIndex={tabIndex}>
           <div className="icon-container">
             <i className="icon icon-chevron-right" />
           </div>

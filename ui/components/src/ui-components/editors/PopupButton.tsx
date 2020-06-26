@@ -20,11 +20,15 @@ export interface PopupButtonProps extends CommonProps {
   label: string | React.ReactNode;
   /** Contents of the popup */
   children: React.ReactNode;
+  /** Element to receive focus, specified by React.RefObject or CSS selector string. If undefined and moveFocus is true then focus is moved to first focusable element. */
+  focusTarget?: React.RefObject<HTMLElement> | string;
 
   /** Show or hide the box shadow (defaults to false) */
   showShadow?: boolean;
   /** Show or hide the arrow (defaults to false) */
   showArrow?: boolean;
+  /** Indicates whether to set focus to the input element */
+  setFocus?: boolean;
 
   /** Listens for click events on button area */
   onClick?: (event: React.MouseEvent) => void;
@@ -43,7 +47,7 @@ interface PopupButtonState {
  * @alpha
  */
 export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButtonState> {
-  private _targetPopup: HTMLElement | null = null;
+  private _buttonRef = React.createRef<HTMLDivElement>();
 
   /** @internal */
   public readonly state: Readonly<PopupButtonState> = {
@@ -52,6 +56,8 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
 
   /** @internal */
   public componentDidMount() {
+    if (this.props.setFocus && this._buttonRef.current)
+      this._buttonRef.current.focus();
   }
 
   /** @internal */
@@ -67,7 +73,22 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
   private _closePopup = () => {
     this.setState(
       { showPopup: false },
-      () => this.props.onClose && this.props.onClose());
+      () => {
+        this.props.onClose && this.props.onClose();
+
+        // istanbul ignore else
+        if (this._buttonRef.current)
+          this._buttonRef.current.focus();
+      });
+  }
+
+  private _handleKeyDown = (event: React.KeyboardEvent) => {
+    // istanbul ignore else
+    if (event.key === "ArrowDown" && !this.state.showPopup) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.setState({ showPopup: true });
+    }
   }
 
   /** @internal */
@@ -75,22 +96,32 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
     const showArrow = this.props.showArrow ?? false;
     const showShadow = this.props.showShadow ?? false;
 
+    const classNames = classnames(
+      "components-popup-button",
+      this.state.showPopup && "components-popup-expanded",
+    );
+
     return (
       <div className={this.props.className}>
-        <div className="components-popup-button"
-          onClick={this._togglePopup} ref={(element) => { this._targetPopup = element; }}
+        <div className={classNames}
+          onClick={this._togglePopup}
+          onKeyDown={this._handleKeyDown}
           data-testid="components-popup-button"
+          tabIndex={0}
+          ref={this._buttonRef}
         >
           <div className="components-popup-button-value">
             {this.props.label}
           </div>
-          <div className={"components-popup-button-arrow"} tabIndex={0}>
+          <div className={"components-popup-button-arrow"}>
             <div className={classnames("components-popup-button-arrow-icon", "icon", "icon-chevron-down")} />
           </div>
         </div>
         <Popup className="components-popup-button-popup" isOpen={this.state.showPopup} position={RelativePosition.Bottom}
-          onClose={this._closePopup} onEnter={this.props.onEnter} target={this._targetPopup}
+          onClose={this._closePopup} onEnter={this.props.onEnter} target={this._buttonRef.current}
           showArrow={showArrow} showShadow={showShadow}
+        /** Get an onBlur when using a key in Textarea or mouse movement in  Slider */
+        /* focusTarget={this.props.focusTarget} moveFocus={true} */
         >
           {this.props.children}
         </Popup>

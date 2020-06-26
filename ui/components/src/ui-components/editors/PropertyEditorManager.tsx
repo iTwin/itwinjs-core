@@ -8,8 +8,7 @@
 
 import * as React from "react";
 import { TextEditor } from "./TextEditor";
-import { StandardTypeNames } from "../common/StandardTypeNames";
-import { PropertyDescription, PropertyRecord, PropertyValue } from "@bentley/ui-abstract";
+import { PropertyDescription, PropertyRecord, PropertyValue, StandardTypeNames } from "@bentley/ui-abstract";
 import { OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 
 /** Asynchronous Error Message returned as part of [[AsyncValueProcessingResult]]

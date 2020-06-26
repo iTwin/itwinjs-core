@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Dialog, DialogButtonType } from "@bentley/ui-core";
+import { LoremIpsum } from "lorem-ipsum";
+import { Checkbox, Dialog, DialogButtonType } from "@bentley/ui-core";
 
 export interface TestModalDialogProps {
   opened: boolean;
@@ -19,6 +20,7 @@ export interface TestModalDialogState {
 
 export class TestModalDialog extends React.Component<TestModalDialogProps, TestModalDialogState> {
   public readonly state: Readonly<TestModalDialogState>;
+  private _paragraphs: string[] = [];
 
   constructor(props: TestModalDialogProps) {
     super(props);
@@ -28,6 +30,10 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
       resizable: false,
       overlay: true,
     };
+
+    const lorem = new LoremIpsum();
+    for (let i = 0; i < 4; i++)
+      this._paragraphs.push(lorem.generateWords(40));
   }
   public render(): JSX.Element {
     // cspell:disable
@@ -50,14 +56,16 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
         maxWidth={"1000px"}
         onOutsideClick={this._handleCancel}
       >
-        <p>Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per. Vel scripta ornatus assentior cu. Duo nonumy equidem te, per ad malis deserunt consetetur. In per invidunt conceptam. Ea pri aeque corrumpit. Eum ea ipsum perfecto vulputate, an cum oblique ornatus.</p>
-        <p>Deserunt perpetua intellegam ex qui. Sanctus epicuri molestiae vim ut, vix in dolorem mnesarchum. Quas tollit malorum usu id, sea dicat congue abhorreant ex. Reque tibique cu mel. Ea vix posse consequuntur, nam dicat nostrud ne. Id mea autem viderer, minim minimum adversarium ex vis, commodo malorum sea ei.</p>
-        <p>Cu novum viris detraxit eam. Erat inimicus necessitatibus vim in, noster placerat pro an, modus homero percipitur duo no. Ius voluptatum reprehendunt id, nulla nemore ut his. Mei ei quis qualisque consetetur, illud possim id vel.</p>
-        <p>Quando verear regione ius ei. Eum tractatos ullamcorper ei, vidisse repudiare ea his. Possim intellegam ne duo, solet malorum nostrum eum ut, ei alterum corrumpit eum. Has ad utroque eloquentiam. Qui case forensibus eloquentiam ne. Usu no nominati principes, primis luptatum mea ex. No dicit nullam qui.</p>
+        <p>{this._paragraphs[0]}</p>
+        <p>{this._paragraphs[1]}</p>
+        <p>{this._paragraphs[2]}</p>
+        <p>{this._paragraphs[3]}</p>
         <p>
-          movable: <input type="checkbox" checked={this.state.movable} onChange={(_) => { this.setState((prevState) => ({ movable: !prevState.movable })); }} />
-          resizable: <input type="checkbox" checked={this.state.resizable} onChange={(_) => { this.setState((prevState) => ({ resizable: !prevState.resizable })); }} />
-          overlay: <input type="checkbox" checked={this.state.overlay} onChange={(_) => { this.setState((prevState) => ({ overlay: !prevState.overlay })); }} />
+          <Checkbox checked={this.state.movable} label="Movable" onChange={(_) => { this.setState((prevState) => ({ movable: !prevState.movable })); }} />
+          <br />
+          <Checkbox checked={this.state.resizable} label="Resizable" onChange={(_) => { this.setState((prevState) => ({ resizable: !prevState.resizable })); }} />
+          <br />
+          <Checkbox checked={this.state.overlay} label="Modal" onChange={(_) => { this.setState((prevState) => ({ overlay: !prevState.overlay })); }} />
         </p>
       </Dialog>
     );

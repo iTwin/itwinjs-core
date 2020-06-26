@@ -15,6 +15,10 @@ describe("<LabeledInput />", () => {
     shallow(<LabeledInput label="input test" />).should.matchSnapshot();
   });
 
+  it("renders disabled correctly", () => {
+    shallow(<LabeledInput label="input test" disabled />).should.matchSnapshot();
+  });
+
   it("renders status correctly", () => {
     shallow(<LabeledInput label="input test" status={InputStatus.Success} />).should.matchSnapshot();
   });

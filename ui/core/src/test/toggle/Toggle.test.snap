@@ -2,7 +2,7 @@
 
 exports[`<Toggle /> renders correctly 1`] = `
 <label
-  className="core-toggle rounded"
+  className="core-toggle core-toggle-rounded"
   onBlur={[Function]}
   style={
     Object {
@@ -41,7 +41,7 @@ exports[`<Toggle /> renders correctly 1`] = `
 
 exports[`<Toggle /> renders large correctly 1`] = `
 <label
-  className="core-toggle core-toggle-large rounded"
+  className="core-toggle core-toggle-large core-toggle-rounded"
   onBlur={[Function]}
   style={
     Object {

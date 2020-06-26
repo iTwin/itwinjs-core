@@ -6,7 +6,8 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent } from "@bentley/bentleyjs-core";
+
+import { BeEvent, Logger } from "@bentley/bentleyjs-core";
 import { AxisIndex, Matrix3d, Point3d, Vector3d, WritableXAndY } from "@bentley/geometry-core";
 import { Frustum, SpatialViewDefinitionProps } from "@bentley/imodeljs-common";
 import {
@@ -15,6 +16,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { Face } from "@bentley/ui-core";
 import { cleanup, fireEvent, render } from "@testing-library/react";
+
 import { ViewportComponent } from "../../ui-components";
 import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
 import TestUtils from "../TestUtils";
@@ -131,18 +133,33 @@ describe("ViewportComponent", () => {
     render(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"id2"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />, component);
   });
 
-  it.skip("should throw error when fake viewDefinitionId is used", () => {
-    expect(async () => {
-      render(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"FakeId"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
-      await TestUtils.flushAsyncOperations();
-    }).to.throw(Error);
+  it("should log error when fake viewDefinitionId is used", async () => {
+    const spyLogger = sinon.spy(Logger, "logError");
+    render(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"FakeId"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+    await TestUtils.flushAsyncOperations();
+    spyLogger.called.should.true;
+    (Logger.logError as any).restore();
   });
 
-  it.skip("should throw error when rendering without viewState or viewDefinitionId", () => {
-    expect(async () => {
-      render(<ViewportComponent imodel={imodelMock.object} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
-      await TestUtils.flushAsyncOperations();
-    }).to.throw(Error);
+  it("should log error when rendering without viewState or viewDefinitionId", async () => {
+    const spyLogger = sinon.spy(Logger, "logError");
+    render(<ViewportComponent imodel={imodelMock.object} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+    await TestUtils.flushAsyncOperations();
+    spyLogger.called.should.true;
+    (Logger.logError as any).restore();
+  });
+
+  it("should log error when re-rendering with fake viewDefinitionId", async () => {
+    const spyLogger = sinon.spy(Logger, "logError");
+    const component = render(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"id1"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+    await TestUtils.flushAsyncOperations();
+    spyLogger.called.should.false;
+
+    component.rerender(<ViewportComponent imodel={imodelMock.object} viewDefinitionId={"FakeId"} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+    await TestUtils.flushAsyncOperations();
+    spyLogger.called.should.true;
+
+    (Logger.logError as any).restore();
   });
 
   it("should return viewport to viewportRef callback", async () => {
@@ -152,11 +169,12 @@ describe("ViewportComponent", () => {
     expect(viewportRef).to.be.calledWith(viewportMock.object);
   });
 
-  // it("should return view to getViewOverlay callback", async () => {
-  //   const getViewOverlay = sinon.spy();
-  //   render(<ViewportComponent imodel={imodelMock.object} getViewOverlay={getViewOverlay} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
-  //   expect(getViewOverlay).to.be.calledWith(viewState);
-  // });
+  it("should return view to getViewOverlay callback", async () => {
+    const getViewOverlay = sinon.spy();
+    render(<ViewportComponent imodel={imodelMock.object} getViewOverlay={getViewOverlay} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
+    await TestUtils.flushAsyncOperations();
+    expect(getViewOverlay).to.be.calledWith(viewportMock.object);
+  });
 
   it("should not error when contextMenu event is triggered", async () => {
     const component = render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);

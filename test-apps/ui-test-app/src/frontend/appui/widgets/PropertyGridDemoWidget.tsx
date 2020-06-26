@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
 import { PropertyCategory, PropertyGrid, PropertyUpdatedArgs, SimplePropertyDataProvider } from "@bentley/ui-components";
 import { Orientation } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@bentley/ui-framework";
 import { HorizontalAnchor, ScrollableWidgetContent, WidgetContent } from "@bentley/ui-ninezone";
 
 class SamplePropertyRecord extends PropertyRecord {
-  constructor(name: string, index: number, value: any, typename: string = "string", editor?: string) {
+  constructor(name: string, index: number, value: any, typename: string = StandardTypeNames.String, editor?: string) {
     const v = {
       valueFormat: PropertyValueFormat.Primitive,
       value,
@@ -44,7 +44,7 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
     for (let i = 0; i < categoryCount; i++) {
       for (let iVolume = 0; iVolume < 10; iVolume++) {
 
-        const enumPropertyRecord = new SamplePropertyRecord("Enum", iVolume, 0, "enum");
+        const enumPropertyRecord = new SamplePropertyRecord("Enum", iVolume, 0, StandardTypeNames.Enum);
         enumPropertyRecord.property.enum = { choices: [], isStrict: false };
         enumPropertyRecord.property.enum.choices = [
           { label: "Yellow", value: 0 },
@@ -53,7 +53,7 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
           { label: "Blue", value: 3 },
         ];
 
-        const booleanPropertyRecord = new SamplePropertyRecord("Boolean", iVolume, true, "boolean", iVolume % 2 ? "toggle" : undefined);
+        const booleanPropertyRecord = new SamplePropertyRecord("Boolean", iVolume, true, StandardTypeNames.Boolean, iVolume % 2 ? StandardEditorNames.Toggle : undefined);
         // booleanPropertyRecord.editorLabel = "Optional CheckBox Label";
 
         const propData = [
@@ -73,8 +73,8 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
             new SamplePropertyRecord("Area", iVolume, "6.1875", "ft2"),
             new SamplePropertyRecord("Height", iVolume, "1.375", "ft"),
             new SamplePropertyRecord("Width", iVolume, "4.5", "ft"),
-            new SamplePropertyRecord("Integer", iVolume, "5", "", "int"),
-            new SamplePropertyRecord("Float", iVolume, "7.0", "", "float"),
+            new SamplePropertyRecord("Integer", iVolume, "5", "", StandardTypeNames.Int),
+            new SamplePropertyRecord("Float", iVolume, "7.0", "", StandardTypeNames.Float),
           ],
         ];
 

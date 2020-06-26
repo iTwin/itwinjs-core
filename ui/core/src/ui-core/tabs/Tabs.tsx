@@ -45,9 +45,9 @@ export class Tabs extends React.PureComponent<MainTabsProps> {
     );
 
     return (
-      <ul className={ulClassNames} style={this.props.style}>
+      <ul className={ulClassNames} style={this.props.style} tabIndex={0} role="tablist">
         {this.props.labels.map((label, index) =>
-          <li key={index} className={classnames({ active: index === this.props.activeIndex })}>
+          <li key={index} className={classnames({ "core-active": index === this.props.activeIndex })} role="tab">
             <a onClick={() => { this.props.onClickLabel && this.props.onClickLabel(index); }}>
               {label}
             </a>

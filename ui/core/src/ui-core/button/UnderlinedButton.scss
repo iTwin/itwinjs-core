@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "../style/index.scss";
+@import "../inputs/index.scss";
 
 $color: $buic-foreground-primary;
 $hoverColor: $buic-foreground-primary-tone;
@@ -21,4 +22,12 @@ $hoverColor: $buic-foreground-primary-tone;
     color: $hoverColor;
     border-color: $hoverColor;
   }
+
+  &:focus {
+    color: $hoverColor;
+    border-color: $hoverColor;
+    box-shadow:         $uicore-inputs-focus-gradient;
+    outline: none;
+  }
+
 }

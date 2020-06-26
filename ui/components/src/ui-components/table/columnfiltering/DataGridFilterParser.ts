@@ -126,6 +126,7 @@ export class DataGridFilterParser {
     2: {value: "Title 10000", label: "Title 10000"}
     length: 3
     */
+    // istanbul ignore else
     if (filter.filterTerm) {
       const filterData = filter.filterTerm as unknown as TableDistinctValue[];
       if (filterData.length) {
@@ -142,6 +143,7 @@ export class DataGridFilterParser {
     SingleSelect filters
     filter.filterTerm: {value: 1, label: "Red"}
     */
+    // istanbul ignore else
     if (filter.filterTerm) {
       const filterData = filter.filterTerm as unknown as TableDistinctValue;
       filterDescriptor.distinctFilter.addDistinctValue(filterData.value);

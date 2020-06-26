@@ -6,7 +6,7 @@
 
 @mixin uicore-inputs-checkbox {
   font-family: $uicore-font-family;
-  display: table; // this centers the span
+  display: inline-table; // this centers the span
   position: relative;
   font-size: $uicore-font-size;
   height: 1em;
@@ -30,6 +30,11 @@
 
   &:hover input[type="checkbox"]:not([disabled]) + .core-checkbox-label::before {
     border-color: $buic-foreground-activehover;
+  }
+
+  &:hover input[type="checkbox"]:not([disabled]) + .core-checkbox-label::before {
+    border-color:     $buic-foreground-focus-border;
+    box-shadow:       $uicore-inputs-focus-gradient;
   }
 
   input[type="checkbox"] + .core-checkbox-label {
@@ -67,9 +72,14 @@
   input[type="checkbox"] + .core-checkbox-label:before {
     content: '';
     background: $buic-background-control;
-    border: 1px solid $buic-foreground-body;
+    border: 1px solid $buic-inputs-border;
     border-radius: 3px;
     transition: border-color .1s ease;
+  }
+
+  input[type="checkbox"]:focus + .core-checkbox-label:before {
+    border-color:     $buic-foreground-focus-border;
+    box-shadow:       $uicore-inputs-focus-gradient;
   }
 
   input[type="checkbox"]:checked + .core-checkbox-label:after {

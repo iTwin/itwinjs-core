@@ -6,10 +6,9 @@
  * @module TypeConverters
  */
 
-import { Primitives } from "@bentley/ui-abstract";
+import { Primitives, StandardTypeNames } from "@bentley/ui-abstract";
 import { LessGreaterOperatorProcessor, TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /**
  * Base Numeric Type Converter.

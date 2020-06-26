@@ -117,7 +117,7 @@ export function Toggle(props: ToggleProps) {
   const checkmarkClassName = classnames(
     "core-toggle-checkmark",
     "icon", "icon-checkmark",
-    showCheckmark && "visible",
+    showCheckmark && "core-visible",
     toggling && "core-toggling",
   );
   const toggleStyle: React.CSSProperties = { borderRadius: rounded ? halfHeight : 3, fontSize: halfHeight, ...props.style };
@@ -125,7 +125,7 @@ export function Toggle(props: ToggleProps) {
     "core-toggle",
     buttonType === ToggleButtonType.Primary && "core-toggle-primary",
     props.large && "core-toggle-large",
-    rounded && "rounded",
+    rounded && "core-toggle-rounded",
     props.disabled && "uicore-disabled",
     props.className);
   const toggleHandleStyle: React.CSSProperties = {

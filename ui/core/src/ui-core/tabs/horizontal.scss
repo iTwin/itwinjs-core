@@ -39,7 +39,7 @@
       }
     }
 
-    &:not(.active) {
+    &:not(.core-active) {
       border-bottom: 1px solid $buic-background-dialog-stroke;
     }
 
@@ -47,13 +47,23 @@
       border-left: 1px solid $buic-background-dialog-stroke;
     }
 
-    &.active {
+    &.core-active {
       > a {
 
         color:              $buic-foreground-primary;
-        background:         $buic-background-tab-active;
+        background-color:   $buic-background-tab-active;
       }
     }
-
   }
+
+  &:focus {
+    > li {
+      &.core-active {
+        > a {
+          background-color: $buic-background-focus-overlay;
+        }
+      }
+    }
+  }
+
 }

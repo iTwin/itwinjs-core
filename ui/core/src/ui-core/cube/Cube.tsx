@@ -128,6 +128,7 @@ export class CubeFace extends React.Component<CubeFaceProps> {
   private getCSSClassNameFromFace(face: Face): string {
     let className = "";
 
+    // istanbul ignore else
     if (face !== Face.None)
       className = `cube-${face}`;
 

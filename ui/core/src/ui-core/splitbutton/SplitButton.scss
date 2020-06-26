@@ -9,7 +9,7 @@
 @import "../style/themecolors";
 @import "../text/mixins";
 
-// cspell:ignore themecolors
+// cspell:ignore themecolors unbordered
 
 .core-split-button {
   flex-shrink: 1;
@@ -17,7 +17,9 @@
   @include uicore-font-family;
   @include uicore-buttons-button;
 
-  padding:  $uicore-button-padding;
+  padding:        $uicore-button-padding;
+  border-color:   $buic-background-control;
+  box-shadow:     none;
 
   cursor: pointer;
   margin: 0;
@@ -27,7 +29,8 @@
   box-sizing: border-box;
 
   &.core-split-button-border {
-    border: 1px solid $buic-inputs-border;
+    border-color:   $buic-text-color-disabled;
+    box-shadow:     $buic-inputs-boxshadow 0px 1px 1px inset;
   }
 
   > .core-split-button-label {
@@ -42,21 +45,12 @@
     width: 2px;
 
     &.core-split-button-border {
+      width: 5px;
       border-right: 1px solid $buic-inputs-border;
     }
   }
 
   > .core-split-button-arrow {
-    &:focus {
-      border: none;
-      box-shadow: none;
-      outline: 0px;
-
-      > .core-split-button-arrow-icon {
-        color: $buic-foreground-primary;
-      }
-    }
-
     > .core-split-button-arrow-icon {
       transition: transform .2s;
 
@@ -78,7 +72,37 @@
     }
   }
 
+  &:active,
+  &:focus {
+    @include uicore-buttons-button-unbordered;
+    border-color:         $buic-foreground-focus;
+
+    &.core-split-button-border {
+      border-color:   $buic-background-control;
+      @include uicore-buttons-button-focused;
+    }
+  }
+
+  &:focus {
+    > .core-split-button-arrow {
+      border: none;
+      box-shadow: none;
+      outline: 0px;
+
+      > .core-split-button-arrow-icon {
+        color: $buic-foreground-primary;
+      }
+    }
+  }
+
   &.core-expanded {
+    border-color:         $buic-foreground-focus;
+
+    &.core-split-button-border {
+      border-color:   $buic-background-control;
+      @include uicore-buttons-button-focused;
+    }
+
     > .core-split-button-arrow > .core-split-button-arrow-icon {
       transform: scaleY(-1);
     }

@@ -17,11 +17,12 @@
   color:              $buic-text-color;
   background-color:   $buic-background-control;
   background-image:   none;
-  border: 1px solid   $buic-inputs-border;
+  border:             1px solid $buic-inputs-border;
   border-radius:      $uicore-border-radius;
   box-sizing:         border-box;
   box-shadow:         $buic-inputs-boxshadow 0px 1px 1px inset;
   transition:         border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  cursor:             pointer;
 
   @include firefox-only {
     padding-top:      $uicore-select-padding-bordered - 1px;
@@ -53,8 +54,8 @@
 
   &:focus {
 
-    border-color: $buic-inputs-border;
     outline: 0px;
-    box-shadow: $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, $buic-inputs-focus-boxshadow-gradient2 0px 0px 0px 2px;
+    border-color: $buic-foreground-focus-border;
+    box-shadow: $uicore-inputs-focus-gradient;
   }
 }
