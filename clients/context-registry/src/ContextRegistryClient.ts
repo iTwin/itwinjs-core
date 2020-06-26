@@ -26,6 +26,9 @@ export class Context extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ContextTypeId")
   public contextTypeId?: ContextType;
 
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Image")
+  public image?: string;
+
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
 
