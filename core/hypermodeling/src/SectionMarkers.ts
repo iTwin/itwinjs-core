@@ -12,20 +12,18 @@ import { IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, IModelApp, InputSource, Marker, MarkerImage, MarkerSet, ScreenViewport, ViewClipTool,
 } from "@bentley/imodeljs-frontend";
-import { AbstractToolbarProps, BadgeType } from "@bentley/ui-abstract";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
-import { HyperModeling } from "./HyperModelingApi";
+import { HyperModeling } from "./HyperModeling";
 
 const markerSize = Point2d.create(40, 40);
 
 /** A [Marker]($frontend) associated with a [[SectionDrawingLocationState]], displayed as a canvas decoration at the location of the section.
  * Clicking on the marker toggles display of the section graphics. Mousing over the marker produces a toolbar with additional interactions.
- * @see [[SectionMarkerSetDecorator]]
+ * @see [[HyperModelingDecorator]] for a [Decorator]($frontend) capable of displaying section markers for each section drawing location.
+ * @see [[SectionMarkerHandler]] to customize the marker interactions.
  * @beta
  */
 export class SectionMarker extends Marker {
-  /** @internal */
-  public isSelected = false;
   /** The section drawing location state associated with the marker. */
   public readonly state: SectionDrawingLocationState;
   /** A description displayed as part of the tooltip when this marker is clustered with other markers. */
@@ -34,8 +32,10 @@ export class SectionMarker extends Marker {
   public readonly onMouseEnterEvent = new BeEvent<(marker: SectionMarker) => void>();
   /** @internal */
   public readonly onMouseButtonEvent = new BeEvent<(marker: SectionMarker) => void>();
+  /** @internal */
+  private _isActive = false;
 
-  /** Constructor. Typically invoked indirectly via [[SectionMarkerSetDecorator]].
+  /** Constructor, typically invoked indirectly via [[HyperModelingDecorator]].
    * @param state The section drawing location state this marker will represent.
    * @param pos The world coordinates at which to display the marker.
    * @param description A brief description of this marker, used as part of the tooltip when this marker is part of a cluster.
@@ -57,8 +57,22 @@ export class SectionMarker extends Marker {
   /** @internal */
   public get isHilited(): boolean { return this._isHilited; }
 
+  /** Returns true if this is the "active" section marker. At most one marker is active at a given time.
+   * @see [[HyperModelingDecorator.activeMarker]].
+   * @see [[HyperModelingDecorator.setActiveMarker]].
+   * @see [[SectionMarkerHandler.toggleMarker]].
+   */
+  public get isActive(): boolean {
+    return this._isActive;
+  }
+
   /** @internal */
-  protected drawSelected(ctx: CanvasRenderingContext2D) {
+  public setActive(active: boolean): void {
+    this._isActive = active;
+  }
+
+  /** @internal */
+  protected drawActive(ctx: CanvasRenderingContext2D) {
     ctx.shadowBlur = 30;
     ctx.shadowColor = "gold";
     return false;
@@ -66,7 +80,7 @@ export class SectionMarker extends Marker {
 
   /** @internal */
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
-    if (!this.isSelected || !this.drawSelected(ctx))
+    if (!this.isActive || !this.drawActive(ctx))
       super.drawDecoration(ctx);
   }
 
@@ -98,60 +112,6 @@ export class SectionMarker extends Marker {
     super.addMarker(context);
     if (this.isHilited)
       ViewClipTool.drawClip(context, this.state.clip, undefined, { fillClipPlanes: true, hasPrimaryPlane: true });
-  }
-
-  /** ###TODO Move elsewhere for customization.
-   * @internal
-   */
-  public getToolbarProps(): AbstractToolbarProps {
-    const i18n = IModelApp.i18n;
-    return {
-      items: [
-        {
-          id: "toggle_section",
-          itemPriority: 10,
-          label: i18n.translate("HyperModeling:Message.ToggleSection"),
-          icon: "icon-section-tool",
-          badgeType: BadgeType.None,
-          execute: () => { },
-        },
-        {
-          id: "align_view",
-          itemPriority: 20,
-          label: i18n.translate("HyperModeling:Message.AlignSection"),
-          icon: "icon-plane",
-          badgeType: BadgeType.None,
-          execute: () => { },
-        },
-        {
-          id: "apply_view",
-          itemPriority: 40,
-          label: i18n.translate("HyperModeling:Message.ApplyView"),
-          icon: "icon-3d",
-          badgeType: BadgeType.New,
-          execute: () => { },
-          isDisabled: false,
-        },
-        {
-          id: "open_section",
-          itemPriority: 30,
-          label: i18n.translate("HyperModeling:Message.OpenSection"),
-          icon: "icon-2d",
-          badgeType: BadgeType.None,
-          execute: () => { },
-          isDisabled: false,
-        },
-        {
-          id: "open_sheet",
-          itemPriority: 30,
-          label: i18n.translate("HyperModeling:Message.OpenSheet"),
-          icon: "icon-boundary-offset",
-          badgeType: BadgeType.New,
-          execute: () => { },
-          isDisabled: undefined === this.state.viewAttachment?.viewId,
-        },
-      ],
-    };
   }
 }
 
@@ -202,7 +162,7 @@ export class SectionMarkerCluster extends Marker {
 }
 
 /** A [MarkerSet]($frontend) containing [[SectionMarker]]s identifying [SectionDrawingLocation]($backend)s within a spatial view.
- * @see [[SectionMarkerSetDecorator]]
+ * Typically used indirectly via [[HyperModelingDecorator]].
  * @beta
  */
 export class SectionMarkerSet extends MarkerSet<SectionMarker> {
@@ -211,7 +171,7 @@ export class SectionMarkerSet extends MarkerSet<SectionMarker> {
   /** Constructor
    * @param viewport The viewport in which the markers are to be displayed.
    * @param markers The markers to be displayed.
-   * @note Each marker's [[SectionDrawingLocationState]] must be associated with the same [IModelConnection]($frontend) as the viewport; if not, it will be ignored.
+   * @note Each marker's [[SectionDrawingLocationState]] must be associated with the same [IModelConnection]($frontend) as the viewport; any markers from other iModels will be omitted.
    */
   public constructor(viewport: ScreenViewport, markers: SectionMarker[]) {
     super(viewport);

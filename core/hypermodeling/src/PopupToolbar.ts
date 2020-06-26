@@ -10,6 +10,7 @@ import { XAndY } from "@bentley/geometry-core";
 import { AbstractToolbarProps } from "@bentley/ui-abstract";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 
+/** @internal */
 export interface PopupToolbarProvider {
   toolbarProps: AbstractToolbarProps;
   overToolbarHotspot: boolean;
@@ -17,6 +18,7 @@ export interface PopupToolbarProvider {
   onToolbarItemExecuted(id: string): void;
 }
 
+/** @internal */
 export class PopupToolbarManager {
   private static _provider?: PopupToolbarProvider;
   private static _current?: PopupToolbarProvider;

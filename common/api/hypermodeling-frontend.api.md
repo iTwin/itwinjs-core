@@ -10,6 +10,7 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { ClipVector } from '@bentley/geometry-core';
 import { Cluster } from '@bentley/imodeljs-frontend';
 import { DecorateContext } from '@bentley/imodeljs-frontend';
+import { Decorator } from '@bentley/imodeljs-frontend';
 import { DrawingViewState } from '@bentley/imodeljs-frontend';
 import { I18NNamespace } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
@@ -31,21 +32,60 @@ import { XYZProps } from '@bentley/geometry-core';
 // @beta
 export function createSectionGraphicsProvider(state: SectionDrawingLocationState): Promise<TiledGraphicsProvider>;
 
-// @alpha
-export function getDefaultSectionGraphicsConfig(): SectionGraphicsConfig;
-
-// @alpha
-export function getSectionGraphicsConfig(): SectionGraphicsConfig;
-
 // @beta
 export class HyperModeling {
     // @internal (undocumented)
     static getMarkerData(type: SectionType): MarkerData;
-    static initialize(): Promise<void>;
+    static get graphicsConfig(): SectionGraphicsConfig;
+    static initialize(config?: HyperModelingConfig): Promise<void>;
     static isSupportedForIModel(imodel: IModelConnection): Promise<boolean>;
+    static get markerConfig(): SectionMarkerConfig;
+    static get markerHandler(): SectionMarkerHandler;
     // @internal (undocumented)
     static get namespace(): I18NNamespace;
-    }
+    static replaceConfiguration(config?: HyperModelingConfig): void;
+    // @internal (undocumented)
+    static resources?: Resources;
+    static startOrStop(vp: ScreenViewport, start?: boolean): Promise<HyperModelingDecorator | undefined>;
+    static updateConfiguration(config: HyperModelingConfig): void;
+}
+
+// @beta
+export interface HyperModelingConfig {
+    readonly graphics?: SectionGraphicsConfig;
+    readonly markerHandler?: SectionMarkerHandler;
+    readonly markers?: SectionMarkerConfig;
+}
+
+// @beta
+export class HyperModelingDecorator implements Decorator {
+    get activeMarker(): SectionMarker | undefined;
+    alignView(marker: SectionMarker): void;
+    applySpatialView(marker: SectionMarker): Promise<boolean>;
+    // @internal (undocumented)
+    get config(): SectionMarkerConfig;
+    static create(vp: ScreenViewport, config: SectionMarkerConfig): Promise<HyperModelingDecorator | undefined>;
+    // @internal (undocumented)
+    decorate(context: DecorateContext): void;
+    // @internal (undocumented)
+    dispose(): void;
+    static getForViewport(vp: ScreenViewport): HyperModelingDecorator | undefined;
+    // @internal (undocumented)
+    readonly markers: SectionMarkerSet;
+    openSection(marker: SectionMarker): Promise<boolean>;
+    openSheet(marker: SectionMarker): Promise<boolean>;
+    replaceConfiguration(config?: SectionMarkerConfig): void;
+    // @internal (undocumented)
+    requestSync(): void;
+    setActiveMarker(marker: SectionMarker | undefined): Promise<boolean>;
+    // @internal (undocumented)
+    syncImmediately: boolean;
+    toggleAttachment(marker: SectionMarker, enable: boolean): Promise<boolean>;
+    toggleClipVolume(marker: SectionMarker, enable: boolean): void;
+    toggleSection(marker: SectionMarker, enable: boolean): Promise<boolean>;
+    updateConfiguration(config: SectionMarkerConfig): void;
+    get viewport(): ScreenViewport;
+}
 
 // @internal (undocumented)
 export interface MarkerData {
@@ -65,7 +105,7 @@ export class SectionDrawingLocationState {
     readonly drawingViewId: Id64String;
     readonly id: Id64String;
     readonly iModel: IModelConnection;
-    readonly modelId: Id64String;
+    readonly model: Id64String;
     readonly placement: Placement3d;
     static queryAll(iModel: IModelConnection): Promise<SectionDrawingLocationState[]>;
     readonly sectionType: SectionType;
@@ -74,12 +114,7 @@ export class SectionDrawingLocationState {
     tryLoadSheetView(): Promise<SheetViewState | undefined>;
     tryLoadSpatialView(): Promise<SpatialViewState | undefined>;
     readonly userLabel: string;
-    readonly viewAttachment?: {
-        readonly id: Id64String;
-        readonly viewId?: Id64String;
-        readonly transformToSpatial: Transform;
-        readonly clip?: ClipVector;
-    };
+    readonly viewAttachment?: SectionViewAttachment;
 }
 
 // @internal
@@ -124,12 +159,12 @@ export interface SectionDrawingLocationStateData {
     yaw?: number;
 }
 
-// @alpha
+// @beta
 export interface SectionGraphicsConfig {
-    applyClipVolumes: boolean;
-    debugClipVolumes: boolean;
-    displayDrawings: boolean;
-    displaySheets: boolean;
+    readonly debugClipVolumes?: boolean;
+    readonly hideSectionGraphics?: boolean;
+    readonly hideSheetAnnotations?: boolean;
+    readonly ignoreClip?: boolean;
 }
 
 // @beta
@@ -139,15 +174,12 @@ export class SectionMarker extends Marker {
     addMarker(context: DecorateContext): void;
     readonly description: string;
     // @internal (undocumented)
-    drawDecoration(ctx: CanvasRenderingContext2D): void;
+    protected drawActive(ctx: CanvasRenderingContext2D): boolean;
     // @internal (undocumented)
-    protected drawSelected(ctx: CanvasRenderingContext2D): boolean;
-    // @internal
-    getToolbarProps(): AbstractToolbarProps;
+    drawDecoration(ctx: CanvasRenderingContext2D): void;
+    get isActive(): boolean;
     // @internal (undocumented)
     get isHilited(): boolean;
-    // @internal (undocumented)
-    isSelected: boolean;
     // @internal (undocumented)
     onMouseButton(ev: BeButtonEvent): boolean;
     // @internal (undocumented)
@@ -156,6 +188,8 @@ export class SectionMarker extends Marker {
     onMouseEnter(ev: BeButtonEvent): void;
     // @internal (undocumented)
     readonly onMouseEnterEvent: BeEvent<(marker: SectionMarker) => void>;
+    // @internal (undocumented)
+    setActive(active: boolean): void;
     readonly state: SectionDrawingLocationState;
 }
 
@@ -165,6 +199,21 @@ export class SectionMarkerCluster extends Marker {
     drawFunc(ctx: CanvasRenderingContext2D): void;
     // (undocumented)
     onMouseButton(_ev: BeButtonEvent): boolean;
+}
+
+// @beta
+export interface SectionMarkerConfig {
+    readonly hiddenSectionTypes?: SectionType[];
+    readonly ignoreCategorySelector?: boolean;
+    readonly ignoreModelSelector?: boolean;
+}
+
+// @beta
+export class SectionMarkerHandler {
+    activateMarker(marker: SectionMarker, decorator: HyperModelingDecorator): Promise<boolean>;
+    deactivateMarker(marker: SectionMarker, decorator: HyperModelingDecorator): Promise<void>;
+    executeCommand(commandId: string, marker: SectionMarker, decorator: HyperModelingDecorator): Promise<void>;
+    getToolbarProps(marker: SectionMarker, _decorator: HyperModelingDecorator): AbstractToolbarProps;
 }
 
 // @beta
@@ -178,58 +227,12 @@ export class SectionMarkerSet extends MarkerSet<SectionMarker> {
 }
 
 // @beta
-export class SectionMarkerSetDecorator {
-    // (undocumented)
-    static create(vp: ScreenViewport, props?: SectionMarkerSetDecoratorProps): Promise<SectionMarkerSetDecorator | undefined>;
-    // (undocumented)
-    decorate(context: DecorateContext): void;
-    static defaultProps: {
-        display: {
-            model: boolean;
-            category: boolean;
-            section: boolean;
-            detail: boolean;
-            elevation: boolean;
-            plan: boolean;
-            selectedOnly: boolean;
-        };
-    };
-    // (undocumented)
-    static getForViewport(vp: ScreenViewport): SectionMarkerSetDecorator | undefined;
-    // (undocumented)
-    onToolbarItemExecuted(id: string): void;
-    // (undocumented)
-    setCategoryDisplay(display?: boolean): void;
-    // (undocumented)
-    static setDefaultCategoryDisplay(display?: boolean): void;
-    // (undocumented)
-    static setDefaultMarkerTypeDisplay(type: SectionType, display?: boolean): void;
-    // (undocumented)
-    static setDefaultModelDisplay(display?: boolean): void;
-    // (undocumented)
-    setMarkerTypeDisplay(type: SectionType, display?: boolean): void;
-    // (undocumented)
-    setModelDisplay(display?: boolean): void;
-    static showOrHide(vp: ScreenViewport, enable?: boolean): Promise<void>;
-    // (undocumented)
-    get viewport(): ScreenViewport;
+export interface SectionViewAttachment {
+    readonly clip?: ClipVector;
+    readonly id: Id64String;
+    readonly transformToSpatial: Transform;
+    readonly viewId?: Id64String;
 }
-
-// @beta
-export interface SectionMarkerSetDecoratorProps {
-    display: {
-        model: boolean;
-        category: boolean;
-        section: boolean;
-        detail: boolean;
-        elevation: boolean;
-        plan: boolean;
-        selectedOnly: boolean;
-    };
-}
-
-// @alpha
-export function setSectionGraphicsConfig(config: SectionGraphicsConfig): void;
 
 
 // (No @packageDocumentation comment for this package)

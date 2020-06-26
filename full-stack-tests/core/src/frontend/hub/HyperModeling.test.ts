@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { Point3d } from "@bentley/geometry-core";
 import { SectionType } from "@bentley/imodeljs-common";
 import {
-  IModelApp, IModelConnection, RemoteBriefcaseConnection, SnapshotConnection,
+  IModelApp, IModelConnection, ParseAndRunResult, RemoteBriefcaseConnection, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import {
-  HyperModeling, SectionDrawingLocationState, SectionMarker, SectionMarkerSetDecorator,
+  HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
 } from "@bentley/hypermodeling-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
@@ -102,29 +102,33 @@ describe("HyperModeling (#integration)", () => {
 
   it("does not register decorator if no section drawing locations are present", async () => {
     await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      await SectionMarkerSetDecorator.showOrHide(vp, true);
-      expect(SectionMarkerSetDecorator.getForViewport(vp)).to.be.undefined;
+      const decorator = await HyperModeling.startOrStop(vp, true);
+      expect(decorator).to.be.undefined;
+      expect(HyperModelingDecorator.getForViewport(vp)).to.be.undefined;
     });
   });
 
   it("toggles decorator", async () => {
     await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
-      await SectionMarkerSetDecorator.showOrHide(vp, true);
-      expect(SectionMarkerSetDecorator.getForViewport(vp)).not.to.be.undefined;
-      await SectionMarkerSetDecorator.showOrHide(vp, false);
-      expect(SectionMarkerSetDecorator.getForViewport(vp)).to.be.undefined;
-      await SectionMarkerSetDecorator.showOrHide(vp);
-      expect(SectionMarkerSetDecorator.getForViewport(vp)).not.to.be.undefined;
-      await SectionMarkerSetDecorator.showOrHide(vp);
-      expect(SectionMarkerSetDecorator.getForViewport(vp)).to.be.undefined;
+      let decorator = await HyperModeling.startOrStop(vp, true);
+      expect(HyperModelingDecorator.getForViewport(vp)).not.to.be.undefined;
+      expect(HyperModelingDecorator.getForViewport(vp)).to.equal(decorator);
+      decorator = await HyperModeling.startOrStop(vp, false);
+      expect(HyperModelingDecorator.getForViewport(vp)).to.be.undefined;
+      expect(HyperModelingDecorator.getForViewport(vp)).to.equal(decorator);
+      decorator = await HyperModeling.startOrStop(vp);
+      expect(HyperModelingDecorator.getForViewport(vp)).not.to.be.undefined;
+      expect(HyperModelingDecorator.getForViewport(vp)).to.equal(decorator);
+      decorator = await HyperModeling.startOrStop(vp);
+      expect(HyperModelingDecorator.getForViewport(vp)).to.be.undefined;
+      expect(HyperModelingDecorator.getForViewport(vp)).to.equal(decorator);
     });
   });
 
   it("toggles 2d graphics", async () => {
     await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
-      await SectionMarkerSetDecorator.showOrHide(vp, true);
-      const dec = SectionMarkerSetDecorator.getForViewport(vp)!;
-      const markers = Array.from((dec as any)._markers.markers as Set<SectionMarker>);
+      const dec = (await HyperModeling.startOrStop(vp, true))!;
+      const markers = Array.from(dec.markers.markers);
       expect(markers.length).to.equal(3);
 
       const countTileTrees = () => {
@@ -136,16 +140,270 @@ describe("HyperModeling (#integration)", () => {
       expect(countTileTrees()).to.equal(1);
 
       let marker = markers.find((x) => undefined !== x.state.viewAttachment)!;
-      await (dec as any).toggleSection(marker);
+      await dec.toggleSection(marker, true);
       expect(countTileTrees()).to.equal(3);
-      await (dec as any).toggleSection(marker);
+      await dec.toggleSection(marker, false);
       expect(countTileTrees()).to.equal(1);
 
       marker = markers.find((x) => undefined === x.state.viewAttachment)!;
-      await (dec as any).toggleSection(marker);
+      await dec.toggleSection(marker, true);
       expect(countTileTrees()).to.equal(2);
-      await (dec as any).toggleSection(marker);
+
+      await dec.toggleSection(marker, true);
+      expect(countTileTrees()).to.equal(2);
+
+      await dec.toggleSection(marker, false);
+      expect(countTileTrees()).to.equal(1);
+
+      await dec.toggleSection(marker, false);
       expect(countTileTrees()).to.equal(1);
     });
+  });
+
+  function expectMarkerConfig(actual: SectionMarkerConfig, expected: SectionMarkerConfig): void {
+    expect(true === actual.ignoreModelSelector).to.equal(true === expected.ignoreModelSelector);
+    expect(true === actual.ignoreCategorySelector).to.equal(true === expected.ignoreCategorySelector);
+    if (undefined === expected.hiddenSectionTypes)
+      expect(undefined === actual.hiddenSectionTypes || 0 === actual.hiddenSectionTypes.length).to.be.true;
+    else
+      expect(actual.hiddenSectionTypes).to.deep.equal(expected.hiddenSectionTypes);
+  }
+
+  it("uses global marker display config for new decorators", async () => {
+    let dec1: HyperModelingDecorator | undefined;
+    let dec2: HyperModelingDecorator | undefined;
+    let dec3: HyperModelingDecorator | undefined;
+    let dec4: HyperModelingDecorator | undefined;
+    await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
+      dec1 = await HyperModeling.startOrStop(vp, true);
+    });
+    await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
+      HyperModeling.updateConfiguration({ markers: { ignoreModelSelector: true } });
+      dec2 = await HyperModeling.startOrStop(vp, true);
+    });
+    await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
+      HyperModeling.updateConfiguration({ markers: { hiddenSectionTypes: [ SectionType.Plan ] } });
+      dec3 = await HyperModeling.startOrStop(vp, true);
+    });
+    await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
+      HyperModeling.replaceConfiguration({ markers: { ignoreCategorySelector: true } });
+      dec4 = await HyperModeling.startOrStop(vp, true);
+    });
+
+    expect(dec1).not.to.be.undefined;
+    expectMarkerConfig(dec1!.config, { });
+
+    expect(dec2).not.to.be.undefined;
+    expectMarkerConfig(dec2!.config, { ignoreModelSelector: true });
+
+    expect(dec3).not.to.be.undefined;
+    expectMarkerConfig(dec3!.config, { ignoreModelSelector: true, hiddenSectionTypes: [ SectionType.Plan ] });
+
+    expect(dec4).not.to.be.undefined;
+    expectMarkerConfig(dec4!.config, { ignoreCategorySelector: true });
+
+    // Reset for subsequent tests.
+    HyperModeling.replaceConfiguration();
+  });
+
+  it("adjusts marker display via key-in", async () => {
+    await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
+      const dec = (await HyperModeling.startOrStop(vp, true))!;
+      expect(dec).not.to.be.undefined;
+
+      const test = (keyin: string, config: SectionMarkerConfig) => {
+        expect(IModelApp.tools.parseAndRun(keyin)).to.equal(ParseAndRunResult.Success);
+        expectMarkerConfig(dec.config, config);
+      };
+
+      test("hypermodeling marker config model=0", { ignoreModelSelector: true });
+      test("hypermodeling marker config cat=0", { ignoreModelSelector: true, ignoreCategorySelector: true });
+      test("hypermodeling marker config m=1 c=1", { ignoreModelSelector: false, ignoreCategorySelector: false });
+      test("hypermodeling marker config", { });
+      test("hypermodeling marker config hidden=pe", { hiddenSectionTypes: [ SectionType.Plan, SectionType.Elevation ] });
+      test("hypermodeling marker config h=abc123s#@!zyx", { hiddenSectionTypes: [ SectionType.Section ] });
+      test("hypermodeling marker config", { });
+    });
+  });
+
+  it("updates marker visibility", async () => {
+    await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
+      const dec = (await HyperModeling.startOrStop(vp, true))!;
+      expect(dec.markers.markers.size).to.equal(3);
+
+      // Synchronization happens in a requestAnimationFrame by default. Lose the asynchronicity for more straightforward testing.
+      // Note we must also invoke Viewport.renderFrame() to dispatch the model/category selector changed events.
+      dec.syncImmediately = true;
+
+      // Activating/deactivating markers is a no-op
+      class Handler extends SectionMarkerHandler {
+        public async activateMarker(_marker: SectionMarker, _decorator: HyperModelingDecorator) { return true; }
+        public async deactivateMarker(_marker: SectionMarker, _decorator: HyperModelingDecorator) { }
+      }
+
+      HyperModeling.updateConfiguration({ markerHandler: new Handler() });
+
+      // Add some fake SectionMarkers belonging to different models/categories
+      let firstMarker: SectionMarker | undefined;
+      for (const marker of dec.markers.markers) {
+        firstMarker = marker!;
+        break;
+      }
+
+      expect(firstMarker).not.to.be.undefined;
+      const cloneMarker = (type: SectionType, categoryId?: string, model?: string) => {
+        const state = firstMarker!.state;
+        const props = {
+          sectionType: type,
+          drawingToSpatialTransform: JSON.stringify(state.drawingToSpatialTransform.toJSON()),
+          spatialViewId: state.spatialViewId,
+          sectionLocationId: hypermodel.transientIds.next,
+          sectionLocationModelId: model ?? state.model,
+          sectionViewId: state.drawingViewId,
+          categoryId: categoryId ?? state.category,
+          userLabel: state.userLabel,
+        };
+
+        return new SectionMarker(new SectionDrawingLocationState(props, hypermodel));
+      };
+
+      dec.markers.markers.add(cloneMarker(SectionType.Plan, "mycat"));
+      dec.markers.markers.add(cloneMarker(SectionType.Elevation, undefined, "mymod"));
+      dec.markers.markers.add(cloneMarker(SectionType.Section, "mycat", "mymod"));
+
+      const modelId = firstMarker!.state.model;
+      const catId = firstMarker!.state.category;
+
+      const test = (expectedNumVisible: number, visibilityPredicate: (mkr: SectionMarker) => boolean) => {
+        let numVisible = 0;
+        for (const marker of dec.markers.markers)
+          if (marker.visible)
+            ++numVisible;
+
+        expect(numVisible).to.equal(expectedNumVisible);
+        for (const marker of dec.markers.markers)
+          expect(marker.visible).to.equal(visibilityPredicate(marker));
+      };
+
+      dec.requestSync();
+      test(3, (m) => m.state.model !== "mymod" && m.state.category !== "mycat");
+
+      vp.changeModelDisplay("mymod", true);
+      vp.renderFrame();
+      test(4, (m) => m.state.category !== "mycat");
+
+      vp.changeCategoryDisplay("mycat", true);
+      vp.renderFrame();
+      test(6, (_) => true);
+
+      vp.changeModelDisplay(modelId, false);
+      vp.renderFrame();
+      test(2, (m) => m.state.model === "mymod");
+
+      vp.changeCategoryDisplay(catId, false);
+      vp.renderFrame();
+      test(1, (m) => m.state.model === "mymod" && m.state.category === "mycat");
+
+      dec.replaceConfiguration({ ignoreModelSelector: true });
+      test(2, (m) => m.state.category === "mycat");
+
+      dec.replaceConfiguration({ ignoreCategorySelector: true });
+      test(2, (m) => m.state.model === "mymod");
+
+      dec.updateConfiguration({ ignoreModelSelector: true });
+      test(6, (_) => true);
+
+      dec.updateConfiguration({ hiddenSectionTypes: [ SectionType.Plan ] });
+      test(4, (m) => m.state.sectionType !== SectionType.Plan);
+
+      await dec.setActiveMarker(firstMarker!);
+      test(1, (m) => m === firstMarker);
+
+      dec.replaceConfiguration({ hiddenSectionTypes: [ firstMarker!.state.sectionType ] });
+      vp.changeModelDisplay([ "mymod", modelId ], false);
+      vp.changeCategoryDisplay([ "mycat", catId ], false);
+      vp.renderFrame();
+      test(1, (m) => m === firstMarker);
+
+      await dec.setActiveMarker(undefined);
+      test(0, (_) => false);
+
+      // Reset for subsequent tests.
+      HyperModeling.replaceConfiguration();
+    });
+  });
+
+  it("Activates and deactivates markers", async () => {
+    class Handler extends SectionMarkerHandler {
+      public allowActivate = true;
+      private _activateCalled = false;
+      private _deactivateCalled = false;
+
+      public async activateMarker(_marker: SectionMarker, _dec: HyperModelingDecorator): Promise<boolean> {
+        expect(this._activateCalled).to.be.false;
+        this._activateCalled = true;
+        return this.allowActivate;
+      }
+
+      public async deactivateMarker(_marker: SectionMarker, _dec: HyperModelingDecorator): Promise<void> {
+        expect(this._deactivateCalled).to.be.false;
+        this._deactivateCalled = true;
+      }
+
+      public check(activated: boolean, deactivated: boolean): void {
+        expect(this._activateCalled).to.equal(activated);
+        expect(this._deactivateCalled).to.equal(deactivated);
+        this._activateCalled = this._deactivateCalled = false;
+      }
+    }
+
+    const handler = new Handler();
+    await HyperModeling.initialize({ markerHandler: handler });
+    await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
+      const dec = (await HyperModeling.startOrStop(vp, true))!;
+      expect(dec.markers.markers.size > 2).to.be.true;
+      const markers: SectionMarker[] = [];
+      for (const marker of dec.markers.markers) {
+        markers.push(marker);
+        if (markers.length === 2)
+          break;
+      }
+
+      expect(markers.length).to.equal(2);
+      const m0 = markers[0];
+      const m1 = markers[1];
+
+      expect(dec.activeMarker).to.be.undefined;
+      expect(await dec.setActiveMarker(m0)).to.be.true;
+      expect(dec.activeMarker).to.equal(m0);
+      handler.check(true, false);
+      expect(await dec.setActiveMarker(m0)).to.be.true;
+      expect(dec.activeMarker).to.equal(m0);
+      handler.check(false, false);
+      expect(await dec.setActiveMarker(m1)).to.be.true;
+      expect(dec.activeMarker).to.equal(m1);
+      handler.check(true, true);
+      expect(await dec.setActiveMarker(undefined)).to.be.true;
+      expect(dec.activeMarker).to.be.undefined;
+      handler.check(false, true);
+
+      handler.allowActivate = false;
+      expect(await dec.setActiveMarker(m0)).to.be.false;
+      expect(dec.activeMarker).to.be.undefined;
+      handler.check(true, false);
+
+      handler.allowActivate = true;
+      expect(await dec.setActiveMarker(m0)).to.be.true;
+      expect(dec.activeMarker).to.equal(m0);
+      handler.check(true, false);
+
+      handler.allowActivate = false;
+      expect(await dec.setActiveMarker(m1)).to.be.false;
+      expect(dec.activeMarker).to.be.undefined;
+      handler.check(true, true);
+    });
+
+    // Reset for subsequent tests
+    HyperModeling.replaceConfiguration();
   });
 });
