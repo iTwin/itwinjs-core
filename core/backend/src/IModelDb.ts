@@ -45,6 +45,7 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { AdditionalFeatureData, UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { ChangesType } from "@bentley/imodelhub-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -2170,7 +2171,7 @@ export class BriefcaseDb extends IModelDb {
    * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
    * @note This function is a no-op if there are no changes to push.
    */
-  public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void> {
+  public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType: ChangesType = ChangesType.Regular): Promise<void> {
     requestContext.enter();
     if (this.nativeDb.hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes", Logger.logError, loggerCategory, () => this.getRpcProps());
@@ -2183,7 +2184,7 @@ export class BriefcaseDb extends IModelDb {
 
     await this.concurrencyControl.onPushChanges(requestContext);
 
-    await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
+    await BriefcaseManager.pushChanges(requestContext, this.briefcase, description, changeType);
     requestContext.enter();
     this.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();

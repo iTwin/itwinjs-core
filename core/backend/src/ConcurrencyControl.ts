@@ -859,6 +859,12 @@ export namespace ConcurrencyControl {
       return this._iModel.concurrencyControl.requestResourcesForUpdate(req, [channelRoot]);
     }
 
+    public get isChannelRootLocked(): boolean {
+      if (this.channelRoot === undefined)
+        return false;
+      return this._iModel.concurrencyControl.holdsLock(ConcurrencyControl.Request.getElementLock(this.channelRoot, LockLevel.Exclusive));
+    }
+
     public getChannelRootInfo0(props: ElementProps): any {
       // special case of legacy *bridges*
       if (props.classFullName === Subject.classFullName) {

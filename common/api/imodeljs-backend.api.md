@@ -427,7 +427,7 @@ export class BriefcaseDb extends IModelDb {
     static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void>;
+    pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType?: ChangesType): Promise<void>;
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     saveChanges(description?: string): void;
@@ -923,6 +923,8 @@ export namespace ConcurrencyControl {
         getChannelRootInfo0(props: ElementProps): any;
         // (undocumented)
         isChannelRoot(props: ElementProps): any | undefined;
+        // (undocumented)
+        get isChannelRootLocked(): boolean;
         // (undocumented)
         get isRepositoryChannel(): boolean;
         // (undocumented)
