@@ -29,11 +29,13 @@ function createConfig(shouldInstrument) {
         /draco_encoder_nodejs.js$/
       ],
       rules: [
+        /* Commented out per Caleb until OOM errors on Linux are resolved.
         {
           test: /\.js$/,
           use: "source-map-loader",
           enforce: "pre"
         },
+        */
         {
           test: /azure-storage|AzureFileHandler|UrlFileHandler/,
           use: "null-loader"

@@ -859,6 +859,12 @@ export namespace ConcurrencyControl {
       return this._iModel.concurrencyControl.requestResourcesForUpdate(req, [channelRoot]);
     }
 
+    public get isChannelRootLocked(): boolean {
+      if (this.channelRoot === undefined)
+        return false;
+      return this._iModel.concurrencyControl.holdsLock(ConcurrencyControl.Request.getElementLock(this.channelRoot, LockLevel.Exclusive));
+    }
+
     public getChannelRootInfo0(props: ElementProps): any {
       // special case of legacy *bridges*
       if (props.classFullName === Subject.classFullName) {
@@ -869,6 +875,8 @@ export namespace ConcurrencyControl {
 
       let info;
       if (props.id !== undefined) {
+        if (!this._iModel.containsClass(ChannelRootAspect.classFullName))
+          return undefined;
         this._iModel.withPreparedStatement(`SELECT owner from ${ChannelRootAspect.classFullName} where element.id=?`, (stmt) => {
           stmt.bindId(1, props.id!);
           if (DbResult.BE_SQLITE_ROW === stmt.step()) {
@@ -1094,15 +1102,15 @@ export namespace ConcurrencyControl {
     public get codes(): CodeProps[] { return this._codes; }
 
     public static get dbLock(): LockProps {
-      return { type: LockType.Db, objectId: "1", level: LockLevel.Shared };
+      return { type: LockType.Db, objectId: "0x1", level: LockLevel.Shared };
     }
 
     public static get schemaLock(): LockProps {
-      return { type: LockType.Schemas, objectId: "1", level: LockLevel.Exclusive };
+      return { type: LockType.Schemas, objectId: "0x1", level: LockLevel.Exclusive };
     }
 
     public static get codeSpecsLock(): LockProps {
-      return { type: LockType.CodeSpecs, objectId: "1", level: LockLevel.Exclusive };
+      return { type: LockType.CodeSpecs, objectId: "0x1", level: LockLevel.Exclusive };
     }
 
     public static getElementLock(objectId: Id64String, level: LockLevel): LockProps {
@@ -1329,7 +1337,7 @@ export namespace ConcurrencyControl {
       if (!this.concurrencyControl.iModel.isPushEnabled)
         throw new IModelError(IModelStatus.NotOpenForWrite, "not a briefcase that can be used to push changes to the IModel Hub", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel.briefcase.getDebugInfo());
       if (!this.isOpen)
-        throw new IModelError(IModelStatus.NotOpen, "not open", Logger.logError, loggerCategory, () => this.computeCacheFileName());
+        throw new IModelError(IModelStatus.NotOpen, "not open", Logger.logError, loggerCategory, () => ({ cacheFileName: this.computeCacheFileName() }));
     }
 
     private static onOpen(fn: string) {
@@ -1519,7 +1527,6 @@ export namespace ConcurrencyControl {
 
       this.saveChanges();
     }
-
   }
 
 }

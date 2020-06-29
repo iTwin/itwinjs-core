@@ -52,21 +52,20 @@ const applyPlanarClassificationColor = `
   }
 
   vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
-  float isClassified = ceil(colorTexel.a);
-  float param = mix(u_pClassColorParams.y, u_pClassColorParams.x, isClassified);
+  bool isClassified = colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0;
+  float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
   if (kClassifierDisplay_Off == param)
     return vec4(0.0);
 
   vec4 classColor;
   if (kClassifierDisplay_On == param)
     classColor = baseColor;
-  else if (0.0 == isClassified || kClassifierDisplay_Dimmed == param)
+  else if (!isClassified || kClassifierDisplay_Dimmed == param)
     classColor = vec4(baseColor.rgb * dimScale, 1.0);
   else if (kClassifierDisplay_Hilite == param)
     classColor = vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), 1.0);
   else {
-    // black indicates discard (clip masking).
-    if (0.0 == colorTexel.r && 0.0 == colorTexel.g && 0.0 == colorTexel.b) {
+    if (colorTexel.b > colorTexel.a) {
       discard;
       return vec4(0.0);
     }
@@ -78,7 +77,7 @@ const applyPlanarClassificationColor = `
     classColor = vec4(rgb, alpha);
   }
 
-  if (kClassifierDisplay_Element != param && 0.0 != isClassified) {
+  if (kClassifierDisplay_Element != param && isClassified) {
     if (colorTexel.r > colorTexel.a && kClassifierDisplay_Hilite != param)
       classColor = vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), 1.0);
 
@@ -90,45 +89,48 @@ const applyPlanarClassificationColor = `
 `;
 
 const applyPlanarClassificationColorForThematic = `
-vec2 classPos = v_pClassPos / v_pClassPosW;
-if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
-  if (u_pClassColorParams.x > kTextureDrape) {
-    return volClassColor(baseColor, depth);
+  vec2 classPos = v_pClassPos / v_pClassPosW;
+  if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain drape.
+    if (u_pClassColorParams.x > kTextureDrape) {
+      return volClassColor(baseColor, depth);
+    }
+    if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
+      discard;
+
+    vec3 rgb = TEXTURE(s_pClassSampler, classPos.xy).rgb;
+    return vec4(rgb, baseColor.a);
   }
-  if (classPos.x < 0.0 || classPos.x > 1.0 || classPos.y < 0.0 || classPos.y > 1.0)
-    discard;
 
-  vec3 rgb = TEXTURE(s_pClassSampler, classPos.xy).rgb;
-  return vec4(rgb, baseColor.a);
-}
-
-vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
-float isClassified = ceil(colorTexel.a);
-float param = mix(u_pClassColorParams.y, u_pClassColorParams.x, isClassified);
-if (kClassifierDisplay_Off == param)
-  return vec4(0.0);
-
-vec4 classColor = baseColor;
-
-if (kClassifierDisplay_Element == param) {
-  if (0.0 == colorTexel.r && 0.0 == colorTexel.g && 0.0 == colorTexel.b) {
-    // black indicates discard (clip masking).
-    discard;
+  vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(classPos.x, classPos.y / 2.0));
+  bool isClassified = colorTexel.r + colorTexel.g + colorTexel.b + colorTexel.a > 0.0;
+  float param = isClassified ? u_pClassColorParams.x : u_pClassColorParams.y;
+  if (kClassifierDisplay_Off == param)
     return vec4(0.0);
+
+  vec4 classColor = baseColor;
+
+  if (kClassifierDisplay_Element == param) {
+    if (colorTexel.b > colorTexel.a) {
+      discard;
+      return vec4(0.0);
+    }
+
+    // We stashed the element alpha in blue channel. Make sure to handle pre-multiplied alpha.
+    baseColor.rgb = baseColor.rgb / baseColor.a;
+    classColor = vec4(baseColor.rgb, colorTexel.b);
+    classColor.rgb *= classColor.a;
+    colorTexel.a = 0.5; // make conditions below potentially pass
   }
-  classColor = vec4(baseColor.rgb, colorTexel.a);
-  colorTexel.a = 0.5; // make conditions below potentially pass
-}
 
-if (0.0 != isClassified) {
-  if (colorTexel.r > colorTexel.a && kClassifierDisplay_Hilite != param)
-    classColor = vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), 1.0);
+  if (isClassified) {
+    if (colorTexel.r > colorTexel.a && kClassifierDisplay_Hilite != param)
+      classColor = vec4(mix(baseColor.rgb, u_hilite_settings[0], u_hilite_settings[2][0]), 1.0);
 
-  if (colorTexel.g > colorTexel.a)
-    classColor = applyClassifierFlash(classColor);
-}
+    if (colorTexel.g > colorTexel.a)
+      classColor = applyClassifierFlash(classColor);
+  }
 
-return classColor;
+  return classColor;
 `;
 
 const overrideFeatureId = `
@@ -285,7 +287,7 @@ export function addHilitePlanarClassifier(builder: ProgramBuilder, supportTextur
 }
 
 const overrideClassifierColorPrelude = `
-  if (0.0 == u_overrideClassifierColor)
+  if (0.0 == u_planarClassifierInsideMode)
     return currentColor;
 
   if (0.0 == currentColor.a)
@@ -293,9 +295,11 @@ const overrideClassifierColorPrelude = `
 `;
 
 const overrideClassifierEmphasis = `
-  float emph = floor(v_feature_emphasis + 0.5);
-  if (0.0 != emph)
-    return vec4(extractNthBit(emph, kEmphBit_Hilite), extractNthBit(emph, kEmphBit_Flash), 0.0, 0.5);
+  if (kClassifierDisplay_Element != u_planarClassifierInsideMode) {
+    float emph = floor(v_feature_emphasis + 0.5);
+    if (0.0 != emph)
+      return vec4(extractNthBit(emph, kEmphBit_Hilite), extractNthBit(emph, kEmphBit_Flash), 0.0, 0.5);
+  }
 `;
 
 const overrideClassifierColorPostlude = `
@@ -306,23 +310,25 @@ const overrideClassifierWithFeatures = overrideClassifierColorPrelude + override
 const overrideClassifierForClip = overrideClassifierColorPrelude + overrideClassifierColorPostlude;
 
 const overrideClassifierColorPreludeForThematic = `
-  if (0.0 == u_overrideClassifierColor || (kClassifierDisplay_Element == u_overrideClassifierColor && 0.0 == currentColor.r && 0.0 == currentColor.g && 0.0 == currentColor.b))
+  if (0.0 == u_planarClassifierInsideMode)
     return currentColor;
 
   if (0.0 == currentColor.a)
     return vec4(0.0, 0.0, 1.0, 0.5);
+
+  bool isElem = kClassifierDisplay_Element == u_planarClassifierInsideMode;
 `;
 
 const overrideClassifierEmphasisForThematic = `
   float emph = floor(v_feature_emphasis + 0.5);
   if (0.0 != emph)
-    return vec4(extractNthBit(emph, kEmphBit_Hilite), extractNthBit(emph, kEmphBit_Flash), 0.0, kClassifierDisplay_Element == u_overrideClassifierColor ? currentColor.a : 0.5);
-  else if (kClassifierDisplay_Element == u_overrideClassifierColor)
-    return vec4(0.0, 0.0, 1.0, currentColor.a);
+    return vec4(extractNthBit(emph, kEmphBit_Hilite), extractNthBit(emph, kEmphBit_Flash), isElem ? currentColor.a : 0.0, isElem ? 1.0 : 0.5);
+  else if (kClassifierDisplay_Element == u_planarClassifierInsideMode)
+    return vec4(0.0, 0.0, currentColor.a, 1.0);
 `;
 
 const overrideClassifierColorPostludeClipForThematic = `
-  return kClassifierDisplay_Element == u_overrideClassifierColor ? vec4(0.0, 0.0, 1.0, currentColor.a) : currentColor;
+  return isElem ? vec4(0.0, 0.0, currentColor.a, 1.0) : currentColor;
 `;
 
 const overrideClassifierWithFeaturesForThematic = overrideClassifierColorPreludeForThematic + overrideClassifierEmphasisForThematic + overrideClassifierColorPostlude;
@@ -331,39 +337,16 @@ const overrideClassifierForClipForThematic = overrideClassifierColorPreludeForTh
 /** The classified geometry needs some information about the classifier geometry. The classified fragment shader outputs special values that do not represent valid RGB+A combinations when using
  * pre-multiplied alpha. The alpha channel will be 0.5, and the red, green, and/or blue channels will be 1.0:
  * - Red: hilited.
- * - Blue: flashed.
- * - Green: fully-transparent. Indicates clipping mask (discard the classified pixel).
+ * - Green: flashed.
+ * - Blue: fully-transparent. Indicates clipping mask (discard the classified pixel).
  * @internal
  */
 export function addOverrideClassifierColor(builder: ProgramBuilder, isThematic: IsThematic): void {
-  if (isThematic === IsThematic.Yes)
-    addPlanarClassifierConstants(builder.frag);
-
-  builder.frag.addUniform("u_overrideClassifierColor", VariableType.Float, (prog) => {
-    prog.addGraphicUniform("u_overrideClassifierColor", (uniform, params) => {
-      let override = 0;
+  addPlanarClassifierConstants(builder.frag);
+  builder.frag.addUniform("u_planarClassifierInsideMode", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_planarClassifierInsideMode", (uniform, params) => {
       const classifier = params.target.currentlyDrawingClassifier;
-      if (undefined !== classifier) {
-        if (isThematic === IsThematic.No) { // for non-thematic, we just store on/off
-          switch (classifier.properties.flags.inside) {
-            case SpatialClassificationProps.Display.On:
-            case SpatialClassificationProps.Display.Dimmed:
-            case SpatialClassificationProps.Display.Hilite:
-              override = 1;
-              break;
-          }
-        } else { // for thematic, we store the actual value of the classification mode (and we include element color)
-          switch (classifier.properties.flags.inside) {
-            case SpatialClassificationProps.Display.On:
-            case SpatialClassificationProps.Display.Dimmed:
-            case SpatialClassificationProps.Display.Hilite:
-            case SpatialClassificationProps.Display.ElementColor:
-              override = classifier.properties.flags.inside;
-              break;
-          }
-        }
-      }
-
+      const override = undefined !== classifier ? classifier.properties.flags.inside : 0;
       uniform.setUniform1f(override);
     });
   });

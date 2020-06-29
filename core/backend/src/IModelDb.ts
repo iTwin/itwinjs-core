@@ -16,15 +16,16 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
-  CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
+  CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
   FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, IModel, IModelCoordinatesResponseProps, IModelEncryptionProps,
   IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelVersion, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota,
+  MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota,
   QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SpatialViewDefinitionProps, SyncMode, ThumbnailProps,
-  TileTreeProps, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
+  TileTreeProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
@@ -45,6 +46,7 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { AdditionalFeatureData, UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { ChangesType } from "@bentley/imodelhub-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -1983,8 +1985,8 @@ export class BriefcaseDb extends IModelDb {
   private clearEventSink() { if (this._eventSink) { EventSinkManager.delete(this._eventSink.id); } }
   private initializeEventSink() { if (this._fileKey !== "") { this._eventSink = EventSinkManager.get(this._fileKey); } }
 
-  private constructor(briefcaseEntry: BriefcaseEntry, iModelRpcProps: IModelRpcProps) {
-    super(briefcaseEntry.nativeDb, iModelRpcProps, briefcaseEntry.openMode);
+  private constructor(briefcaseEntry: BriefcaseEntry) {
+    super(briefcaseEntry.nativeDb, briefcaseEntry.getIModelRpcProps(), briefcaseEntry.openMode);
     this.syncMode = briefcaseEntry.syncMode;
     this.setupBriefcaseEntry(briefcaseEntry);
     this.setDefaultConcurrentControlAndPolicy();
@@ -2011,81 +2013,135 @@ export class BriefcaseDb extends IModelDb {
       this.concurrencyControl.onSavedChanges();
   }
 
+  /**
+   * Acquires a schema lock
+   * @param requestContext Locks
+   * @param briefcase
+   */
+  private static async lockSchema(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry): Promise<void> {
+    requestContext.enter();
+
+    const lock = new Lock();
+    lock.briefcaseId = briefcase.briefcaseId;
+    lock.lockLevel = LockLevel.Exclusive;
+    lock.lockType = LockType.Schemas;
+    lock.objectId = "0x1";
+    lock.releasedWithChangeSet = briefcase.currentChangeSetId;
+    lock.seedFileId = briefcase.fileId!;
+
+    Logger.logTrace(loggerCategory, `lockSchema`);
+    const res = await BriefcaseManager.imodelClient.locks.update(requestContext, briefcase.iModelId, [lock]);
+    if (res.length !== 1 || res[0].lockLevel !== LockLevel.Exclusive)
+      throw new IModelError(IModelStatus.UpgradeFailed, "BriefcaseManager.lockSchema: Could not acquire schema lock", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+  }
+
   /** Open a previously downloaded briefcase
    * @param requestContext The client request context.
    * @param briefcaseKey Key that identifies the briefcase in the cache. See [[BriefcaseManager.download]]
-   * @param openOptions Optional parameter to affect the opening of the briefcase
+   * @param options Optional parameter to affect the opening and upgrading the briefcase.
+   * @remarks If the briefcase is upgraded, the resulting changes are saved in the briefcase, but it's the caller's responsibility to push these changes
+   * to the iModelHub.
    */
-  public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<BriefcaseDb> {
+  public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, options?: OpenBriefcaseOptions & UpgradeOptions): Promise<BriefcaseDb> {
     requestContext.enter();
-
     const briefcaseEntry = BriefcaseManager.findBriefcaseByKey(briefcaseKey);
     if (briefcaseEntry === undefined)
       throw new IModelError(IModelStatus.BadRequest, "BriefcaseDb.open: Cannot open a briefcase that has not been downloaded", Logger.logError, loggerCategory, () => briefcaseKey);
     if (briefcaseEntry.downloadStatus !== DownloadBriefcaseStatus.Complete)
       throw new IModelError(IModelStatus.BadRequest, "BriefcaseDb.open: Cannot open a briefcase that has not been completely downloaded", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
-
     Logger.logTrace(loggerCategory, "BriefcaseDb.open: Processing call to open briefcase", () => briefcaseEntry.getDebugInfo());
-
-    let briefcaseProps = briefcaseEntry.getBriefcaseProps();
-    BriefcaseDb.onOpen.raiseEvent(requestContext, briefcaseProps);
 
     let briefcaseDb: BriefcaseDb;
     const isOpen = briefcaseEntry.iModelDb !== undefined;
     if (isOpen !== briefcaseEntry.isOpen) {
-      // All open briefcases should have the iModelDb property setup - eventually turn this into an assertion.
+      // NEEDS_WORK: All open briefcases should have the iModelDb property setup - eventually turn this into an assertion.
       Logger.logError(loggerCategory, "BriefcaseDb.open: Open state was not expected", () => briefcaseEntry.getDebugInfo());
     }
 
-    if (briefcaseEntry.iModelDb === undefined) {
-      briefcaseEntry.openMode = openOptions?.openAsReadOnly ? OpenMode.Readonly : briefcaseEntry.openMode; // Override default openMode if user has requested it
-      BriefcaseManager.openBriefcase(briefcaseEntry);
+    BriefcaseDb.onOpen.raiseEvent(requestContext, briefcaseEntry.getBriefcaseProps());
 
-      briefcaseProps = briefcaseEntry.getBriefcaseProps();
-      const iModelRpcProps: IModelRpcProps = {
-        key: briefcaseProps.key,
-        contextId: briefcaseProps.contextId,
-        iModelId: briefcaseProps.iModelId,
-        changeSetId: briefcaseProps.changeSetId,
-        openMode: briefcaseProps.openMode,
-      };
-      briefcaseDb = new BriefcaseDb(briefcaseEntry, iModelRpcProps);
-      briefcaseEntry.iModelDb = briefcaseDb;
+    const openOptions = options as OpenBriefcaseOptions;
+    const requestedOpenMode = openOptions?.openAsReadOnly ? OpenMode.Readonly : briefcaseEntry.openMode; // Override default openMode if user has requested it
+    const upgradeOptions = options as UpgradeOptions;
+    const isUpgradeRequested = upgradeOptions?.domain === DomainOptions.Upgrade || upgradeOptions?.profile === ProfileOptions.Upgrade;
 
-      if (briefcaseDb.isPushEnabled) {
-        if (!(requestContext instanceof AuthorizedClientRequestContext))
-          throw new IModelError(BentleyStatus.ERROR, "BriefcaseDb.open: Opening a briefcase with SyncMode = PullPush requires authorization - pass AuthorizedClientRequestContext instead of ClientRequestContext", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
-        await briefcaseDb.concurrencyControl.onOpened(requestContext);
-      }
-      this.onOpened.raiseEvent(requestContext, briefcaseDb);
-    } else {
-      if (openOptions?.openAsReadOnly && briefcaseEntry.openMode === OpenMode.ReadWrite)
-        throw new IModelError(IModelStatus.AlreadyOpen, "BriefcaseDb.open: The briefcase is already open ReadWrite. Cannot re-open it Readonly now", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+    /* Briefcase is already open */
+    if (briefcaseEntry.iModelDb !== undefined) {
+      // NEEDS_WORK: reopen a new connection every time open is called instead of reusing it
+      if (requestedOpenMode !== briefcaseEntry.openMode)
+        throw new IModelError(IModelStatus.AlreadyOpen, "BriefcaseDb.open: The briefcase is already open with a different openMode. Close it before reopening it.", Logger.logError, loggerCategory, () => ({ ...briefcaseEntry.getDebugInfo(), requestedOpenMode }));
+      if (isUpgradeRequested)
+        throw new IModelError(IModelStatus.UpgradeFailed, "BriefcaseDb.open: Cannot pass options to upgrade a briefcase that's already open. Close it first before reopening it for upgrades.", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+
+      briefcaseDb = briefcaseEntry.iModelDb as BriefcaseDb; // NEEDS_WORK: change iModelDb type in BriefcaseEntry
       Logger.logTrace(loggerCategory, "BriefcaseDb.open: Reusing an existing open briefcase", () => briefcaseEntry.getDebugInfo());
-      briefcaseDb = briefcaseEntry.iModelDb as BriefcaseDb; // WIP: change iModelDb type in BriefcaseEntry
+
+      await briefcaseDb.logUsage(requestContext);
+      return briefcaseDb;
     }
 
-    if (requestContext instanceof AuthorizedClientRequestContext) {
-      // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
-      Logger.logTrace(loggerCategory, "BriefcaseDb.open: Logging usage", () => briefcaseEntry.getDebugInfo());
-      await briefcaseDb.logUsage(requestContext, briefcaseProps.contextId);
+    /* Briefcase is opened the first time */
+    briefcaseEntry.openMode = requestedOpenMode;
+
+    const isPushEnabled = briefcaseEntry.syncMode === SyncMode.PullAndPush && briefcaseEntry.openMode === OpenMode.ReadWrite;
+    if (isPushEnabled && !(requestContext instanceof AuthorizedClientRequestContext))
+      throw new IModelError(BentleyStatus.ERROR, "BriefcaseDb.open: Pushing changes to iModelHub requires authorization - passed AuthorizedClientRequestContext instead of ClientRequestContext", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+
+    if (isUpgradeRequested) {
+      if (!isPushEnabled)
+        throw new IModelError(IModelStatus.UpgradeFailed, "BriefcaseManager.openBriefcase: Cannot upgrade a briefcase that's not opened with SyncMode=PullAndPush", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+      await this.lockSchema(requestContext as AuthorizedClientRequestContext, briefcaseEntry);
+      requestContext.enter();
     }
+
+    BriefcaseManager.openBriefcase(briefcaseEntry, upgradeOptions);
+    briefcaseDb = new BriefcaseDb(briefcaseEntry);
+
+    if (isPushEnabled) {
+      await briefcaseDb.concurrencyControl.onOpened(requestContext as AuthorizedClientRequestContext);
+
+      if (isUpgradeRequested) {
+        try {
+          // Sync the concurrencyControl cache so that it includes the schema lock we requested before the open
+          await briefcaseDb.concurrencyControl.syncCache(requestContext as AuthorizedClientRequestContext);
+          // Note: We assume that at this point there cannot be any changes to elements or models through the
+          // native or typescript code - so we do not request any additional locks.
+        } catch (err) {
+          requestContext.enter();
+          briefcaseDb.abandonChanges();
+          throw err;
+        }
+      }
+    }
+
+    this.onOpened.raiseEvent(requestContext, briefcaseDb);
+    await briefcaseDb.logUsage(requestContext);
     return briefcaseDb;
   }
 
-  /** Log usage when opening the iModel */
-  private async logUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString) {
+  /** Log usage when opening the iModel
+   * @remarks Failure to log usage is not considered a critical error - we simply log the error and move on
+   */
+  private async logUsage(requestContext: ClientRequestContext | AuthorizedClientRequestContext) {
     requestContext.enter();
-    if (IModelHost.configuration && IModelHost.configuration.applicationType === ApplicationType.WebAgent)
-      return; // We do not log usage for agents, since the usage logging service cannot handle them.
 
+    if (!(requestContext instanceof AuthorizedClientRequestContext)) {
+      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage without appropriate authorization", () => this.briefcase.getDebugInfo());
+      return;
+    }
+    if (IModelHost.configuration && IModelHost.configuration.applicationType === ApplicationType.WebAgent) {
+      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: Cannot log usage in agents", () => this.briefcase.getDebugInfo());
+      return; // Note: The usage logging service has not been setup to log usage for agents
+    }
+
+    const contextId = this.briefcase.contextId;
     const authType = IModelJsNative.AuthType.OIDC;
     try {
+      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting user usage", () => this.briefcase.getDebugInfo());
       await UsageLoggingUtilities.postUserUsage(requestContext, contextId, authType, os.hostname(), IModelJsNative.UsageType.Trial);
     } catch (err) {
-      // Note: We do not treat usage logging as mandatory
       requestContext.enter();
-      Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, iModelToken: this.getRpcProps() }));
+      Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.briefcase.getDebugInfo() }));
     }
 
     const featureId = "7a6424d1-2114-4e89-b13b-43670a38ccd4"; // Feature: "iModel Use" - registration is pending
@@ -2094,11 +2150,11 @@ export class BriefcaseDb extends IModelDb {
       iModelJsVersion: IModelHost.backendVersion,
     };
     try {
+      Logger.logTrace(loggerCategory, "BriefcaseDb.logUsage: posting feature usage", () => this.briefcase.getDebugInfo());
       await UsageLoggingUtilities.postFeatureUsage(requestContext, featureId, authType, os.hostname(), IModelJsNative.UsageType.Trial, contextId, new Date(), new Date(), additionalFeatureData);
     } catch (err) {
-      // Note: We do not treat feature logging as mandatory
       requestContext.enter();
-      Logger.logError(loggerCategory, `Could not log feature usage: ${featureId}`, () => ({ errorStatus: err.status, errorMessage: err.message, iModelToken: this.getRpcProps() }));
+      Logger.logError(loggerCategory, `Could not log feature usage: ${featureId}`, () => ({ errorStatus: err.status, errorMessage: err.message, ...this.briefcase.getDebugInfo() }));
     }
   }
 
@@ -2170,7 +2226,7 @@ export class BriefcaseDb extends IModelDb {
    * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
    * @note This function is a no-op if there are no changes to push.
    */
-  public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void> {
+  public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType: ChangesType = ChangesType.Regular): Promise<void> {
     requestContext.enter();
     if (this.nativeDb.hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes", Logger.logError, loggerCategory, () => this.getRpcProps());
@@ -2183,7 +2239,7 @@ export class BriefcaseDb extends IModelDb {
 
     await this.concurrencyControl.onPushChanges(requestContext);
 
-    await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
+    await BriefcaseManager.pushChanges(requestContext, this.briefcase, description, changeType);
     requestContext.enter();
     this.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
@@ -2486,12 +2542,16 @@ export class StandaloneDb extends IModelDb {
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
    * @throws [[IModelError]]
    */
-  public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite): StandaloneDb {
+  public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, upgradeOptions?: UpgradeOptions): StandaloneDb {
     if (StandaloneDb.tryFindByKey(filePath)) {
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open standalone iModel at ${filePath} again - it has already been opened once`, Logger.logError, loggerCategory);
     }
+    const isUpgradeRequested = upgradeOptions?.domain === DomainOptions.Upgrade || upgradeOptions?.profile === ProfileOptions.Upgrade;
+    if (isUpgradeRequested && openMode !== OpenMode.ReadWrite)
+      throw new IModelError(IModelStatus.UpgradeFailed, "Cannot upgrade a Readonly Db", Logger.logError, loggerCategory);
+
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(filePath, openMode);
+    const status = nativeDb.openIModel(filePath, openMode, upgradeOptions as any);
     if (DbResult.BE_SQLITE_OK !== status)
       throw new IModelError(status, "Could not open iModel as Standalone", Logger.logError, loggerCategory, () => ({ filePath }));
 
