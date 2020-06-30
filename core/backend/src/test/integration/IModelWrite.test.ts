@@ -110,7 +110,7 @@ describe("IModelWriteTest (#integration)", () => {
 
   it("acquire codespec lock", async () => {
     const iModel = await IModelTestUtils.downloadAndOpenBriefcaseDb(superRequestContext, testProjectId, readWriteTestIModel.id, SyncMode.PullAndPush);
-    const codeSpec1 = CodeSpec.create(iModel, "MyCodeSpec", CodeScopeSpec.Type.Model);
+    const codeSpec1 = CodeSpec.create(iModel, "MyCodeSpec1", CodeScopeSpec.Type.Model);
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
     const locks = await iModel.concurrencyControl.lockCodeSpecs(superRequestContext);
@@ -120,7 +120,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isTrue(iModel.concurrencyControl.hasCodeSpecsLock);
     iModel.insertCodeSpec(codeSpec1);
     iModel.saveChanges();
-    await iModel.pushChanges(superRequestContext, "inserted MyCodeSpec");
+    await iModel.pushChanges(superRequestContext, "inserted MyCodeSpec1");
     assert.isFalse(iModel.concurrencyControl.hasCodeSpecsLock, "pushChanges should automatically release all locks");
 
     // Verify that locks are released even if there are no changes.
@@ -149,6 +149,7 @@ describe("IModelWriteTest (#integration)", () => {
     codeSpecsLock.objectId = "0x1";
     codeSpecsLock.seedFileId = model.briefcase.fileId;
     await model.pullAndMergeChanges(superRequestContext);
+    codeSpecsLock.releasedWithChangeSet = model.changeSetId;
     const locks = await BriefcaseManager.imodelClient.locks.update(superRequestContext, model.briefcase.iModelId, [codeSpecsLock]);
     assert.equal(locks.length, 1);
     model.insertCodeSpec(codeSpec1);
