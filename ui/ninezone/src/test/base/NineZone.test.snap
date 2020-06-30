@@ -6,10 +6,4 @@ exports[`<NineZone /> renders correctly 1`] = `
 />
 `;
 
-exports[`<NineZone /> should measure NineZone bounds 1`] = `
-<div
-  style="position: absolute; width: 100%; height: 100%; top: 0px; left: 0px; visibility: hidden;"
-/>
-`;
-
 exports[`<NineZoneProvider /> renders correctly 1`] = `9-Zone`;

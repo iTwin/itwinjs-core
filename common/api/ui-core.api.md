@@ -858,6 +858,9 @@ export interface GlobalDialogProps extends DialogProps {
     identifier?: string;
 }
 
+// @internal
+export function hasPointerEventsSupport(): boolean;
+
 // @public
 export function Headline(props: TextProps): JSX.Element;
 
@@ -1279,6 +1282,9 @@ export enum Orientation {
     // (undocumented)
     Vertical = 1
 }
+
+// @internal (undocumented)
+export type OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent;
 
 // @internal
 export class Point implements PointProps {
@@ -2190,7 +2196,7 @@ export function useEffectSkipFirst(callback: () => (void | (() => void | undefin
 
 // @internal
 export function useOnOutsideClick<T extends Element>(onOutsideClick?: () => void,
-outsideEventPredicate?: (e: PointerEvent) => boolean): React.MutableRefObject<T | null>;
+outsideEventPredicate?: (e: OutsideClickEvent) => boolean): React.RefObject<T>;
 
 // @public
 export function useOptionalDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable | undefined): TDisposable | undefined;

@@ -14,7 +14,7 @@ import { assert } from "../base/assert";
 import { useDragTab } from "../base/DragManager";
 import { MeasureContext, NineZoneDispatchContext } from "../base/NineZone";
 import { TabState } from "../base/NineZoneState";
-import { usePointerCaptor } from "../base/PointerCaptor";
+import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { WidgetTabsEntryContext } from "./Tabs";
@@ -89,13 +89,18 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
       id,
     });
   }, [dispatch, floatingWidgetId, widgetId, id, side]);
-  const handlePointerDown = React.useCallback((e: PointerEvent) => {
-    initialPointerPosition.current = new Point(e.clientX, e.clientY);
+  const handlePointerDown = React.useCallback((args: PointerCaptorArgs, e: PointerCaptorEvent) => {
+    initialPointerPosition.current = new Point(args.clientX, args.clientY);
     dragStartTimer.current.start();
-  }, []);
-  const handlePointerMove = React.useCallback((e: PointerEvent) => {
-    assert(initialPointerPosition.current);
-    const distance = initialPointerPosition.current.getDistanceTo({ x: e.clientX, y: e.clientY });
+    e.type === "touchstart" && floatingWidgetId && dispatch({
+      type: "FLOATING_WIDGET_BRING_TO_FRONT",
+      id: floatingWidgetId,
+    });
+  }, [dispatch, floatingWidgetId]);
+  const handlePointerMove = React.useCallback((args: PointerCaptorArgs) => {
+    if (!initialPointerPosition.current)
+      return;
+    const distance = initialPointerPosition.current.getDistanceTo({ x: args.clientX, y: args.clientY });
     if (distance < 10)
       return;
     handleTabDragStart();

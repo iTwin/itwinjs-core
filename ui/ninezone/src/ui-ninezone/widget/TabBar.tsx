@@ -13,7 +13,7 @@ import { assert } from "../base/assert";
 import { isTabTarget, useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
 import { WidgetTargetState } from "../base/NineZoneState";
-import { usePointerCaptor } from "../base/PointerCaptor";
+import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
 import { TabBarButtons } from "./Buttons";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { WidgetTabs } from "./Tabs";
@@ -26,14 +26,6 @@ export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disab
   assert(id);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   const widgetId = floatingWidgetId === undefined ? id : floatingWidgetId;
-  const handleWidgetDragStart = useDragWidget({
-    widgetId,
-  });
-  const handleDragStart = React.useCallback((initialPointerPosition) => {
-    handleWidgetDragStart({
-      initialPointerPosition,
-    });
-  }, [handleWidgetDragStart]);
   const onDrag = React.useCallback<NonNullable<UseDragWidgetArgs["onDrag"]>>((dragBy) => {
     floatingWidgetId !== undefined && dispatch({
       type: "WIDGET_DRAG",
@@ -59,12 +51,23 @@ export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disab
       target,
     });
   }, [dispatch, floatingWidgetId]);
-  useDragWidget({
-    widgetId: id,
+  const handleWidgetDragStart = useDragWidget({
+    widgetId,
     onDrag,
     onDragEnd,
   });
-  const ref = useDrag(handleDragStart);
+  const handleDragStart = React.useCallback((initialPointerPosition: Point) => {
+    handleWidgetDragStart({
+      initialPointerPosition,
+    });
+  }, [handleWidgetDragStart]);
+  const handleTouchStart = React.useCallback(() => {
+    floatingWidgetId && dispatch({
+      type: "FLOATING_WIDGET_BRING_TO_FRONT",
+      id: floatingWidgetId,
+    });
+  }, [dispatch, floatingWidgetId]);
+  const ref = useDrag(handleDragStart, undefined, undefined, handleTouchStart);
   return (
     <div
       className="nz-widget-tabBar"
@@ -83,26 +86,37 @@ export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disab
  * Starts drag interaction after pointer moves or after timeout.
  * @internal
  */
-export function useDrag<T extends HTMLElement>(onDragStart: (initialPointerPosition: Point) => void) {
+export function useDrag<T extends HTMLElement>(
+  onDragStart?: (initialPointerPosition: Point) => void,
+  onDrag?: (position: Point) => void,
+  onDragEnd?: () => void,
+  onTouchStart?: () => void,
+) {
   const dragStartTimer = React.useRef<Timer>(new Timer(300));
   const initialPointerPosition = React.useRef<Point>();
-  const handlePointerDown = React.useCallback((e: PointerEvent) => {
-    initialPointerPosition.current = new Point(e.clientX, e.clientY);
+  const handlePointerDown = React.useCallback((args: PointerCaptorArgs, e: PointerCaptorEvent) => {
+    initialPointerPosition.current = new Point(args.clientX, args.clientY);
     dragStartTimer.current.start();
-  }, []);
-  const handlePointerMove = React.useCallback(() => {
-    initialPointerPosition.current && onDragStart(initialPointerPosition.current);
-    dragStartTimer.current.stop();
-    initialPointerPosition.current = undefined;
-  }, [onDragStart]);
+    e.type === "touchstart" && onTouchStart && onTouchStart();
+  }, [onTouchStart]);
+  const handlePointerMove = React.useCallback((args: PointerCaptorArgs) => {
+    if (initialPointerPosition.current) {
+      onDragStart && onDragStart(initialPointerPosition.current);
+      dragStartTimer.current.stop();
+      initialPointerPosition.current = undefined;
+      return;
+    }
+    onDrag && onDrag(new Point(args.clientX, args.clientY));
+  }, [onDragStart, onDrag]);
   const handlePointerUp = React.useCallback(() => {
     dragStartTimer.current.stop();
     initialPointerPosition.current = undefined;
-  }, []);
+    onDragEnd && onDragEnd();
+  }, [onDragEnd]);
   React.useEffect(() => {
     const listener = () => {
       assert(initialPointerPosition.current);
-      onDragStart(initialPointerPosition.current);
+      onDragStart && onDragStart(initialPointerPosition.current);
       initialPointerPosition.current = undefined;
     };
     const timer = dragStartTimer.current;

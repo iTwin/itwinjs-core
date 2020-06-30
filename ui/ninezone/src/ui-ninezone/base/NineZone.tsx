@@ -12,7 +12,7 @@ import { Rectangle, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { CursorType } from "../widget-panels/CursorOverlay";
 import { PanelSide } from "../widget-panels/Panel";
 import { WidgetContentManager } from "../widget/ContentManager";
-import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetContext, DragProvider } from "./DragManager";
+import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdContext, DragProvider } from "./DragManager";
 import {
   DraggedTabState, FloatingWidgetsState, NineZoneActionTypes, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
 } from "./NineZoneState";
@@ -150,7 +150,7 @@ MeasureContext.displayName = "nz:MeasureContext";
 
 function CursorTypeProvider(props: { children?: React.ReactNode }) {
   const draggedTab = React.useContext(DraggedTabContext);
-  const draggedWidget = React.useContext(DraggedWidgetContext);
+  const draggedWidget = React.useContext(DraggedWidgetIdContext);
   const draggedPanelSide = React.useContext(DraggedPanelSideContext);
   const draggedResizeHandle = React.useContext(DraggedResizeHandleContext);
   let type: CursorType | undefined;

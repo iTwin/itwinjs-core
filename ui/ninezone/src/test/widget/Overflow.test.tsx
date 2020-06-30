@@ -67,8 +67,8 @@ describe("WidgetOverflow", () => {
     document.getElementsByClassName("nz-widget-menu").length.should.eq(1);
 
     act(() => {
-      fireEvent.pointerDown(document);
-      fireEvent.pointerUp(document);
+      fireEvent.mouseDown(document);
+      fireEvent.mouseUp(document);
     });
 
     document.getElementsByClassName("nz-widget-menu").length.should.eq(0);

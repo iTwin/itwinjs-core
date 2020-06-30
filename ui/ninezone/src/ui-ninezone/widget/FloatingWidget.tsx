@@ -9,7 +9,7 @@
 import "./FloatingWidget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Point, PointProps, Rectangle } from "@bentley/ui-core";
+import { CommonProps, Point, PointProps, Rectangle, useRefs } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
@@ -17,6 +17,7 @@ import { FloatingWidgetState, WidgetState } from "../base/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetProvider } from "./Widget";
+import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 
 /** @internal */
 export type FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom";
@@ -67,10 +68,11 @@ FloatingWidgetIdContext.displayName = "nz:FloatingWidgetIdContext";
 const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // tslint:disable-line: no-shadowed-variable variable-name
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   assert(floatingWidgetId);
-  const dragged = useIsDraggedItem({
+  const item = React.useMemo(() => ({
     id: floatingWidgetId,
-    type: "widget",
-  });
+    type: "widget" as "widget",
+  }), [floatingWidgetId]);
+  const dragged = useIsDraggedItem(item);
   const className = classnames(
     "nz-widget-floatingWidget",
     dragged && "nz-dragged",
@@ -97,11 +99,10 @@ interface FloatingWidgetHandleProps {
 
 const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function FloatingWidgetHandle(props) { // tslint:disable-line: no-shadowed-variable variable-name
   const id = React.useContext(FloatingWidgetIdContext);
-  assert(id !== undefined);
+  const dispatch = React.useContext(NineZoneDispatchContext);
   const { handle } = props;
   const relativePosition = React.useRef<Point>(new Point());
-  const dispatch = React.useContext(NineZoneDispatchContext);
-
+  assert(id !== undefined);
   const onDrag = React.useCallback<NonNullable<UseDragResizeHandleArgs["onDrag"]>>((pointerPosition) => {
     assert(ref.current);
     const bounds = Rectangle.create(ref.current.getBoundingClientRect());
@@ -119,11 +120,10 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
     widgetId: id,
     onDrag,
   });
-  const handlePointerDown = React.useCallback((e: React.PointerEvent) => {
-    e.preventDefault();
+  const handlePointerDown = React.useCallback((args: PointerCaptorArgs) => {
     assert(ref.current);
     const bounds = Rectangle.create(ref.current.getBoundingClientRect());
-    const initialPointerPosition = new Point(e.clientX, e.clientY);
+    const initialPointerPosition = new Point(args.clientX, args.clientY);
     relativePosition.current = bounds.topLeft().getOffsetTo(initialPointerPosition);
     handleDragStart({
       initialPointerPosition,
@@ -133,7 +133,9 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
       id,
     });
   }, [dispatch, handleDragStart, id]);
+  const pointerCaptorRef = usePointerCaptor(handlePointerDown);
   const ref = React.useRef<HTMLDivElement>(null);
+  const refs = useRefs(ref, pointerCaptorRef);
   const className = classnames(
     "nz-widget-floatingWidget_handle",
     `nz-${handle}`,
@@ -141,8 +143,7 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
   return (
     <div
       className={className}
-      onPointerDown={handlePointerDown}
-      ref={ref}
+      ref={refs}
     />
   );
 });

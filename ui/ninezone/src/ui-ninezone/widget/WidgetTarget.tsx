@@ -10,11 +10,10 @@ import "./WidgetTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { assert } from "../base/assert";
-import { DraggedWidgetContext, useWidgetTarget } from "../base/DragManager";
+import { DraggedWidgetIdContext, useWidgetTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { PanelSideContext } from "../widget-panels/Panel";
-import { useTarget } from "./TabTarget";
 
 /** @internal */
 export interface WidgetTargetProps {
@@ -26,19 +25,13 @@ export interface WidgetTargetProps {
 export const WidgetTarget = React.memo<WidgetTargetProps>(function WidgetTarget(props) { // tslint:disable-line: variable-name no-shadowed-variable
   const cursorType = React.useContext(CursorTypeContext);
   const draggedTab = React.useContext(DraggedTabContext);
-  const draggedWidget = React.useContext(DraggedWidgetContext);
+  const draggedWidget = React.useContext(DraggedWidgetIdContext);
   const side = React.useContext(PanelSideContext);
   assert(side);
-  const onTargeted = useWidgetTarget({
+  const [ref, targeted] = useWidgetTarget<HTMLDivElement>({
     side,
     widgetIndex: props.widgetIndex,
   });
-  const [targeted, setTargeted] = React.useState(false);
-  const handleTargeted = React.useCallback((t) => {
-    setTargeted(t);
-    onTargeted(t);
-  }, [onTargeted]);
-  const ref = useTarget<HTMLDivElement>(handleTargeted);
   const hidden = !draggedTab && !draggedWidget;
   const className = classnames(
     "nz-widget-widgetTarget",

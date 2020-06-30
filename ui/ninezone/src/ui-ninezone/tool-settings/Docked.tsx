@@ -9,7 +9,7 @@
 import "./Docked.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { CommonProps, OutsideClickEvent, useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { DockedToolSettingsHandle } from "./Handle";
 import { DockedToolSettingsOverflow } from "./Overflow";
@@ -77,7 +77,7 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
   const onOutsideClick = React.useCallback(() => {
     setIsOverflowPanelOpen(false);
   }, []);
-  const isOutsideEvent = React.useCallback((e: PointerEvent) => {
+  const isOutsideEvent = React.useCallback((e: OutsideClickEvent) => {
     return !!ref.current && (e.target instanceof Node) && !ref.current.contains(e.target);
   }, []);
   const panelRef = useOnOutsideClick<HTMLDivElement>(onOutsideClick, isOutsideEvent);

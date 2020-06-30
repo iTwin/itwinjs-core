@@ -7,37 +7,83 @@
  */
 
 import * as React from "react";
+import { hasPointerEventsSupport, Timer } from "../../../ui-core";
+
+/** @internal */
+export type OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent;
 
 /** Invokes onOutsideClick handler when user clicks outside of referenced element.
  * @internal
  */
 export function useOnOutsideClick<T extends Element>(
   onOutsideClick?: () => void,
-  /** Invoked for intermediate pointer events. Return `false` to prevent outside click. */
-  outsideEventPredicate?: (e: PointerEvent) => boolean,
+  /** Invoked for intermediate events. Return `false` to prevent outside click. */
+  outsideEventPredicate?: (e: OutsideClickEvent) => boolean,
 ) {
-  const ref = React.useRef<T | null>(null);
+  const handleMouseEvents = React.useRef(true);
+  const handleMouseEventsTimer = React.useRef(new Timer(1000));
+  const ref = React.useRef<T>(null);
   const isDownOutside = React.useRef(false);
   React.useEffect(() => {
-    const onPointerDown = (e: PointerEvent) => {
+    const listener = (e: OutsideClickEvent) => {
+      if (e.type === "touchstart") {
+        // Skip mouse event handlers after touch event.
+        handleMouseEvents.current = false;
+        handleMouseEventsTimer.current.start();
+      } else if (e.type === "mousedown" && !handleMouseEvents.current) {
+        return;
+      }
       const isOutsideEvent = !outsideEventPredicate || outsideEventPredicate(e);
       isDownOutside.current = (!!ref.current && (e.target instanceof Node) && !ref.current.contains(e.target)) && isOutsideEvent;
     };
-    document.addEventListener("pointerdown", onPointerDown);
+    if (hasPointerEventsSupport()) {
+      document.addEventListener("pointerdown", listener);
+    } else {
+      document.addEventListener("mousedown", listener);
+      document.addEventListener("touchstart", listener);
+    }
     return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
+      if (hasPointerEventsSupport()) {
+        document.removeEventListener("pointerdown", listener);
+      } else {
+        document.removeEventListener("mousedown", listener);
+        document.removeEventListener("touchstart", listener);
+      }
     };
   }, [outsideEventPredicate]);
   React.useEffect(() => {
-    const onPointerUp = (e: PointerEvent) => {
+    const listener = (e: OutsideClickEvent) => {
+      if (e.type === "mouseup" && !handleMouseEvents.current) {
+        return;
+      }
       onOutsideClick && isDownOutside.current && (!outsideEventPredicate || outsideEventPredicate(e)) &&
         ref.current && e.target instanceof Node && !ref.current.contains(e.target) && onOutsideClick();
       isDownOutside.current = false;
     };
-    document.addEventListener("pointerup", onPointerUp);
+    if (hasPointerEventsSupport()) {
+      document.addEventListener("pointerup", listener);
+    } else {
+      document.addEventListener("mouseup", listener);
+      document.addEventListener("touchend", listener);
+    }
     return () => {
-      document.removeEventListener("pointerup", onPointerUp);
+      if (hasPointerEventsSupport()) {
+        document.removeEventListener("pointerup", listener);
+      } else {
+        document.removeEventListener("mouseup", listener);
+        document.removeEventListener("touchend", listener);
+      }
     };
   }, [onOutsideClick, outsideEventPredicate]);
+  React.useEffect(() => {
+    const listener = () => {
+      handleMouseEvents.current = true;
+    };
+    const timer = handleMouseEventsTimer.current;
+    timer.setOnExecute(listener);
+    return () => {
+      timer.setOnExecute(undefined);
+    };
+  }, []);
   return ref;
 }

@@ -10,11 +10,10 @@ import "./PanelTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { assert } from "../base/assert";
-import { DraggedWidgetContext, usePanelTarget } from "../base/DragManager";
+import { DraggedWidgetIdContext, usePanelTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { isHorizontalPanelState } from "../base/NineZoneState";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { useTarget } from "../widget/TabTarget";
 import { PanelStateContext } from "./Panel";
 
 /** @internal */
@@ -22,17 +21,11 @@ export const PanelTarget = React.memo(function PanelTarget() { // tslint:disable
   const panel = React.useContext(PanelStateContext);
   const cursorType = React.useContext(CursorTypeContext);
   const draggedTab = React.useContext(DraggedTabContext);
-  const draggedWidget = React.useContext(DraggedWidgetContext);
+  const draggedWidget = React.useContext(DraggedWidgetIdContext);
   assert(panel);
-  const [targeted, setTargeted] = React.useState(false);
-  const onTargeted = usePanelTarget({
+  const [ref, targeted] = usePanelTarget<HTMLDivElement>({
     side: panel.side,
   });
-  const handleTargeted = React.useCallback((t) => {
-    setTargeted(t);
-    onTargeted(t);
-  }, [onTargeted]);
-  const ref = useTarget<HTMLDivElement>(handleTargeted);
   const hidden = !draggedTab && !draggedWidget;
   const className = classnames(
     "nz-widgetPanels-panelTarget",

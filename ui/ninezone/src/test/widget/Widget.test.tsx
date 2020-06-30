@@ -39,8 +39,8 @@ describe("PanelWidget", () => {
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     act(() => {
-      fireEvent.pointerDown(handle);
-      fireEvent.pointerMove(handle);
+      fireEvent.mouseDown(handle);
+      fireEvent.mouseMove(handle);
     });
 
     dispatch.calledOnceWithExactly(sinon.match({
@@ -68,11 +68,8 @@ describe("PanelWidget", () => {
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     act(() => {
-      const pointerDown = new MouseEvent("pointerdown", {
-        clientX: 230,
-      });
-      handle.dispatchEvent(pointerDown);
-      fireEvent.pointerMove(handle);
+      fireEvent.mouseDown(handle, { clientX: 230 });
+      fireEvent.mouseMove(handle);
     });
 
     dispatch.calledOnce.should.true;
@@ -105,13 +102,8 @@ describe("PanelWidget", () => {
 
     const tab = container.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
-      fireEvent.pointerDown(tab);
-
-      const moveEvent = document.createEvent("MouseEvent");
-      moveEvent.initEvent("pointermove");
-      sinon.stub(moveEvent, "clientX").get(() => 10);
-      sinon.stub(moveEvent, "clientY").get(() => 10);
-      fireEvent(document, moveEvent);
+      fireEvent.mouseDown(tab);
+      fireEvent.mouseMove(document, { clientX: 10, clientY: 10 });
     });
 
     spy.calledOnce.should.true;

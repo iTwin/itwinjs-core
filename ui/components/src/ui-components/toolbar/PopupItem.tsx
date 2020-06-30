@@ -10,7 +10,7 @@ import "./PopupItem.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ActionButton } from "@bentley/ui-abstract";
-import { useOnOutsideClick } from "@bentley/ui-core";
+import { OutsideClickEvent, useOnOutsideClick } from "@bentley/ui-core";
 import { ToolbarButtonItemProps } from "./Item";
 import { ToolbarPanelAlignmentHelpers, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
 import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
@@ -80,7 +80,7 @@ export function PopupItem(props: PopupItemProps) {
     processPanelOpenClose(false);
   }, [processPanelOpenClose]);
   // istanbul ignore next
-  const isOutsideEvent = React.useCallback((e: PointerEvent) => {
+  const isOutsideEvent = React.useCallback((e: OutsideClickEvent) => {
     // if clicking on button that open panel - don't trigger outside click processing
     return !!ref.current && (e.target instanceof Node) && !ref.current.contains(e.target);
   }, []);

@@ -57,8 +57,8 @@ describe("FloatingWidget", () => {
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     act(() => {
-      fireEvent.pointerDown(handle);
-      fireEvent.pointerMove(handle);
+      fireEvent.mouseDown(handle);
+      fireEvent.mouseMove(handle);
     });
     container.firstChild!.should.matchSnapshot();
   });
@@ -80,9 +80,9 @@ describe("FloatingWidget", () => {
     );
     const handle = container.getElementsByClassName("nz-widget-floatingWidget_handle")[0];
     act(() => {
-      fireEvent.pointerDown(handle);
+      fireEvent.mouseDown(handle);
       dispatch.reset();
-      fireEvent.pointerMove(handle);
+      fireEvent.mouseMove(handle);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: "FLOATING_WIDGET_RESIZE",

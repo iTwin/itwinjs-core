@@ -13,7 +13,7 @@ import {
   ActionButton, CommonToolbarItem, ConditionalBooleanValue, ConditionalStringValue, CustomButtonDefinition,
   GroupButton, OnItemExecutedFunc, ToolbarItemUtilities,
 } from "@bentley/ui-abstract";
-import { BadgeUtilities, CommonProps, IconHelper, NoChildrenProps, useOnOutsideClick, useRefs } from "@bentley/ui-core";
+import { BadgeUtilities, CommonProps, IconHelper, NoChildrenProps, OutsideClickEvent, useOnOutsideClick, useRefs } from "@bentley/ui-core";
 import { ToolbarButtonItem } from "./Item";
 import { ToolbarItems } from "./Items";
 import { ItemWrapper, useResizeObserverSingleDimension } from "./ItemWrapper";
@@ -319,7 +319,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
   const onOutsideClick = React.useCallback(() => {
     setIsOverflowPanelOpen(false);
   }, []);
-  const isOutsideEvent = React.useCallback((e: PointerEvent) => {
+  const isOutsideEvent = React.useCallback((e: OutsideClickEvent) => {
     return !!ref.current && (e.target instanceof Node) && !ref.current.contains(e.target);
   }, []);
   const panelRef = useOnOutsideClick<HTMLDivElement>(onOutsideClick, isOutsideEvent);

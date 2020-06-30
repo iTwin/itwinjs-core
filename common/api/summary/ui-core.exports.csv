@@ -93,6 +93,7 @@ public;GlobalContextMenu
 public;GlobalContextMenuProps 
 public;GlobalDialog 
 public;GlobalDialogProps 
+internal;hasPointerEventsSupport(): boolean
 public;Headline(props: TextProps): JSX.Element
 public;HorizontalAlignment
 public;HorizontalTabs 
@@ -159,6 +160,7 @@ public;OmitChildrenProp
 beta;OptionsType = Array
 beta;OptionType
 public;Orientation
+internal;OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent
 internal;Point 
 public;PointProps
 public;Popup 
