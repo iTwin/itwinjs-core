@@ -336,6 +336,7 @@ export enum DbResult {
     BE_SQLITE_ERROR_SchemaTooNew = 268435466,
     BE_SQLITE_ERROR_SchemaTooOld = 285212682,
     BE_SQLITE_ERROR_SchemaUpgradeFailed = 318767114,
+    BE_SQLITE_ERROR_SchemaUpgradeRecommended = 369098762,
     BE_SQLITE_ERROR_SchemaUpgradeRequired = 251658250,
     BE_SQLITE_FORMAT = 24,
     BE_SQLITE_FULL = 13,

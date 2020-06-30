@@ -96,6 +96,7 @@ public;DisplayStyleProps
 public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
+internal;DomainOptions
 beta;DownloadBriefcaseOptions
 internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
@@ -314,6 +315,7 @@ internal;PolylineFlags
 internal;PolylineTypeFlags
 internal;PrimaryTileTreeId
 beta;PrimitiveTypeCode
+internal;ProfileOptions
 beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
 beta;PropertyMetaDataProps
@@ -477,6 +479,7 @@ beta;Tweens
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
 beta;UpdateCallback = (obj: any, t: number) => void
+internal;UpgradeOptions
 public;UrlLinkProps 
 public;ViewAttachmentLabelProps 
 public;ViewAttachmentProps 

@@ -6,10 +6,10 @@
  * @module Framework
  */
 import { ChangesType, LockLevel } from "@bentley/imodelhub-client";
-import { BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative, SnapshotDb, Subject, SubjectOwnsSubjects } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, IModelJsNative } from "@bentley/imodeljs-backend";
 import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { DownloadBriefcaseOptions, IModel, IModelError, SubjectProps, SyncMode } from "@bentley/imodeljs-common";
+import { DownloadBriefcaseOptions, SyncMode } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -479,18 +479,20 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     let briefcaseDb: BriefcaseDb | undefined;
     if (this._bridgeArgs.updateDbProfile) {
       briefcaseProps.openMode = OpenMode.ReadWrite;
-      briefcaseEntry.upgrade = IModelJsNative.UpgradeMode.Profile;
-      briefcaseDb = await BriefcaseDb.open(this._requestContext, briefcaseProps.key); // throws if open fail
+      const profileUpgradeOptions: UpgradeOptions = {
+        profile: ProfileOptions.Upgrade,
+      };
+      briefcaseDb = await BriefcaseDb.open(this._requestContext, briefcaseProps.key, profileUpgradeOptions); // throws if open fails
       await briefcaseDb.pushChanges(this._requestContext, "Open with Db Profile update");
       if (this._bridgeArgs.updateDomainSchemas)
         briefcaseDb.close();
     }
 
     if (this._bridgeArgs.updateDomainSchemas) {
-      briefcaseEntry.upgrade = IModelJsNative.UpgradeMode.Domain;
-      briefcaseDb = await BriefcaseDb.open(this._requestContext, briefcaseProps.key);
-      if (briefcaseDb === undefined)
-        throw new Error("Unable to download and open briefcase with domain schema upgrade");
+      const domainUpgradeOptions: UpgradeOptions = {
+        domain: DomainOptions.Upgrade,
+      };
+      briefcaseDb = await BriefcaseDb.open(this._requestContext, briefcaseProps.key, domainUpgradeOptions); // throws if open fails
       await briefcaseDb.pushChanges(this._requestContext, "Open with Domain Schema update");
     }
 

@@ -1604,6 +1604,14 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
     subCategory?: Id64String;
 }
 
+// @internal
+export enum DomainOptions {
+    CheckRecommendedUpgrades = 1,
+    CheckRequiredUpgrades = 0,
+    SkipCheck = 3,
+    Upgrade = 2
+}
+
 // @beta
 export interface DownloadBriefcaseOptions {
     syncMode: SyncMode;
@@ -4345,6 +4353,12 @@ export enum PrimitiveTypeCode {
     Uninitialized = 0
 }
 
+// @internal
+export enum ProfileOptions {
+    None = 0,
+    Upgrade = 1
+}
+
 // @beta
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
@@ -6461,6 +6475,12 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
 
 // @beta (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
+
+// @internal
+export interface UpgradeOptions {
+    domain?: DomainOptions;
+    profile?: ProfileOptions;
+}
 
 // @public
 export interface UrlLinkProps extends ElementProps {
