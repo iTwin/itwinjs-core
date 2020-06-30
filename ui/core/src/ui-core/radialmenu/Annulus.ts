@@ -95,7 +95,7 @@ export class AnnularSector {
     this.end = new Line(this.outerEnd, this.innerEnd);
 
     const angleDiff = endAngle - startAngle;
-    const largeArc = (angleDiff % (Math.PI * 2)) > Math.PI ? 1 : 0;
+    const largeArc = (angleDiff % (Math.PI * 2)) > Math.PI ? /* istanbul ignore next */ 1 : 0;
 
     const sectorCommands = [];
 

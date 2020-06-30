@@ -8,12 +8,13 @@
 
 import "./Popup.scss";
 import classnames from "classnames";
-// cSpell:ignore focustrap focusable
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { FocusTrap } from "../focustrap/FocusTrap";
 import { CommonProps } from "../utils/Props";
+
+// cSpell:ignore focustrap focusable alertdialog
 
 /** @internal */
 interface PopupPoint {
@@ -50,7 +51,7 @@ export interface PopupProps extends CommonProps {
   /** Target element to position popup */
   target?: HTMLElement | null;
   /** Role - if not specified "dialog" is used */
-  role?: "dialog" | "alert" | "alertdialog";  // cSpell:ignore alertdialog
+  role?: "dialog" | "alert" | "alertdialog";
   /** accessibility label */
   ariaLabel?: string;
   /** set focus to popup - default to not set focus */
@@ -165,7 +166,6 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     if (this.props.onOutsideClick)
       return this.props.onOutsideClick(event);
 
-    // istanbul ignore if
     if (this.props.target && this.props.target.contains(event.target as Node))
       return;
 
@@ -274,8 +274,8 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return point;
 
     // relative position
-    const scrollY = (window.scrollY !== undefined) ? window.scrollY : window.pageYOffset;
-    const scrollX = (window.scrollX !== undefined) ? window.scrollX : window.pageXOffset;
+    const scrollY = (window.scrollY !== undefined) ? window.scrollY : /* istanbul ignore next */ window.pageYOffset;
+    const scrollX = (window.scrollX !== undefined) ? window.scrollX : /* istanbul ignore next */ window.pageXOffset;
 
     // const popupRect = this._popup.getBoundingClientRect();
     const targetRect = target!.getBoundingClientRect();
@@ -322,9 +322,6 @@ export class Popup extends React.Component<PopupProps, PopupState> {
         point.y = scrollY + targetRect.top + (targetRect.height / 2) - (popupHeight / 2);
         point.x = scrollX + targetRect.right + offset + offsetArrow;
         break;
-
-      default:
-        break;
     }
 
     return point;
@@ -354,10 +351,9 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     const targetRect = target.getBoundingClientRect();
     const { popupWidth, popupHeight } = this._getPopupDimensions();
     const containerStyle = window.getComputedStyle(target);
-    const offsetArrow = (this.props.showArrow) ? 10 : 2;
+    const offsetArrow = this.props.showArrow ? /* istanbul ignore next */ 10 : 2;
 
-    const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
-    // istanbul ignore else
+    const bottomMargin = parseMargin(containerStyle.marginBottom);
     if ((targetRect.bottom + popupHeight + bottomMargin + offsetArrow + offset) > viewportRect.bottom) {
       if (newPosition === RelativePosition.Bottom)
         newPosition = RelativePosition.Top;
@@ -367,8 +363,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
         newPosition = RelativePosition.TopRight;
     }
 
-    const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
-    // istanbul ignore else
+    const topMargin = parseMargin(containerStyle.marginTop);
     if ((targetRect.top - popupHeight - topMargin - offsetArrow - offset) < viewportRect.top) {
       if (newPosition === RelativePosition.Top)
         newPosition = RelativePosition.Bottom;
@@ -378,15 +373,13 @@ export class Popup extends React.Component<PopupProps, PopupState> {
         newPosition = RelativePosition.BottomRight;
     }
 
-    const leftMargin = containerStyle.marginLeft ? parseFloat(containerStyle.marginLeft) : 0;
-    // istanbul ignore else
+    const leftMargin = parseMargin(containerStyle.marginLeft);
     if ((targetRect.left - popupWidth - leftMargin - offsetArrow - offset) < viewportRect.left) {
       if (newPosition === RelativePosition.Left)
         newPosition = RelativePosition.Right;
     }
 
-    const rightMargin = containerStyle.marginRight ? parseFloat(containerStyle.marginRight) : 0;
-    // istanbul ignore else
+    const rightMargin = parseMargin(containerStyle.marginRight);
     if ((targetRect.right + popupWidth + rightMargin + offsetArrow + offset) > viewportRect.right) {
       if (newPosition === RelativePosition.Right)
         newPosition = RelativePosition.Left;
@@ -399,6 +392,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   private _fitPopup = (point: PopupPoint) => {
     const fittedPoint = point;
 
+    // istanbul ignore if
     if (!this._popup) {
       return fittedPoint;
     }
@@ -407,14 +401,17 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     const { popupWidth, popupHeight } = this._getPopupDimensions();
     const { innerWidth, innerHeight } = window;
 
+    // istanbul ignore if
     if (fittedPoint.y + popupHeight > innerHeight) {
       fittedPoint.y = innerHeight - popupHeight;
     }
 
+    // istanbul ignore if
     if (fittedPoint.x + popupWidth > innerWidth) {
       fittedPoint.x = innerWidth - popupWidth;
     }
 
+    // istanbul ignore if
     if (fittedPoint.y < 0) {
       fittedPoint.y = 0;
     }
@@ -469,4 +466,8 @@ export class Popup extends React.Component<PopupProps, PopupState> {
 function parsePxString(pxStr: string): number {
   const parsed = parseInt(pxStr, 10);
   return parsed || 0;
+}
+
+function parseMargin(value: string) {
+  return value ? /* istanbul ignore next */ parseFloat(value) : 0;
 }

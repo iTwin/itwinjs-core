@@ -272,7 +272,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
           onHotKeyParsed: boundHandleHotKeyParse,
         };
         if (child.type === ContextSubMenu) { // add direction only to sub-menus
-          childProps.direction = child.props.direction || direction;
+          childProps.direction = child.props.direction || /* istanbul ignore next */ direction;
         }
         index++;
         return React.cloneElement(child, childProps);
@@ -313,6 +313,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     if (autoflip && parentMenu === undefined) {
       const menuRect = this.getRect();
       renderDirection = ContextMenu.autoFlip(renderDirection!, menuRect, window.innerWidth, window.innerHeight);
+      // istanbul ignore next
       if (renderDirection !== this.state.direction)
         this.setState({ direction: renderDirection });
     }
@@ -331,11 +332,13 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   }
 
   public getRect = (): ClientRect => {
+    let clientRect: ClientRect = { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
+
     // istanbul ignore else
     if (this._menuElement) {
-      return this._menuElement.getBoundingClientRect();
+      clientRect = this._menuElement.getBoundingClientRect();
     }
-    return { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
+    return clientRect;
   }
 
   private _handleFocusChange = (event: any) => {
@@ -393,7 +396,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       event.stopPropagation();
 
       // istanbul ignore else
-      if (event.keyCode === 13 || this._selectedElement instanceof ContextSubMenu) {
+      if (event.keyCode === 13 || /* istanbul ignore next */ this._selectedElement instanceof ContextSubMenu) {
         // istanbul ignore else
         if (this._selectedElement.select)
           this._selectedElement.select();
@@ -457,28 +460,38 @@ export interface GlobalContextMenuProps extends ContextMenuProps {
  */
 export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps> {
   private _container: HTMLDivElement;
+
   constructor(props: GlobalContextMenuProps) {
     super(props);
+
     this._container = document.createElement("div");
     this._container.id = props.identifier !== undefined ? `core-context-menu-${props.identifier}` : "core-context-menu";
     let rt = document.getElementById("core-context-menu-root") as HTMLDivElement;
+
+    // istanbul ignore else
     if (!rt) {
       rt = document.createElement("div");
       rt.id = "core-context-menu-root";
       document.body.appendChild(rt);
     }
+
     rt.appendChild(this._container);
   }
+
   public componentWillUnmount() {
     // istanbul ignore else
     if (this._container.parentElement) { // cleanup
       this._container.parentElement.removeChild(this._container);
     }
+
     const rt = document.getElementById("core-context-menu-root") as HTMLDivElement;
+
+    // istanbul ignore else
     if (rt && rt.parentElement !== null && rt.children.length === 0) {
       rt.parentElement.removeChild(rt);
     }
   }
+
   public render(): React.ReactNode {
     const { x, y, identifier, contextMenuComponent, ...props } = this.props;
     const positioningStyle: React.CSSProperties = {
@@ -593,7 +606,8 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
     const hotKey = TildeFinder.findAfterTilde(node).character;
     if (hotKey && hotKey !== this.state.hotKey) {
       this.setState({ hotKey });
-      this.props.onHotKeyParsed!(hotKey);
+      if (this.props.onHotKeyParsed)
+        this.props.onHotKeyParsed(hotKey);
     }
   }
 
@@ -759,7 +773,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     const direction = this.props.direction!;
     if ((this.state.opened !== prevState.opened && direction !== this.state.direction) || prevProps.direction !== direction)
       this.checkRenderDirection();
-    if (this.props.children !== prevProps.children) {
+    if (this.props.label !== prevProps.label) {
       this._updateHotkey(this.props.label);
     }
   }
@@ -771,6 +785,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     if (autoflip && this._menuElement) {
       const menuRect = this._menuElement.getRect();
       renderDirection = ContextMenu.autoFlip(renderDirection, menuRect, window.innerWidth, window.innerHeight);
+      // istanbul ignore next
       if (renderDirection !== this.state.direction)
         this.setState({ direction: renderDirection });
     }
@@ -780,7 +795,8 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     const hotKey = TildeFinder.findAfterTilde(node).character;
     if (hotKey && hotKey !== this.state.hotKey) {
       this.setState({ hotKey });
-      this.props.onHotKeyParsed!(hotKey);
+      if (this.props.onHotKeyParsed)
+        this.props.onHotKeyParsed(hotKey);
     }
   }
 

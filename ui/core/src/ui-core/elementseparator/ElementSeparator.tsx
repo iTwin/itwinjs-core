@@ -72,6 +72,7 @@ const useElementSeparatorPointerHandler = ({
     pointerOutOfBounds.current = false;
 
   const stopDrag = useCallback(() => {
+    // istanbul ignore else
     if (isGroupDragged) {
       setIsDragged(false);
       if (onResizeHandleDragChanged)
@@ -82,6 +83,7 @@ const useElementSeparatorPointerHandler = ({
   const startDrag = useCallback((e: PointerEvent | React.PointerEvent) => {
     globalPosition.current = getCurrentGlobalPosition(orientation, e);
 
+    // istanbul ignore else
     if (!isGroupDragged) {
       setIsDragged(true);
       if (onResizeHandleDragChanged)
@@ -143,6 +145,7 @@ const useElementSeparatorPointerHandler = ({
   }, [isGroupDragged, startDrag, stopDrag]);
 
   const onPointerOver = useCallback(() => {
+    // istanbul ignore next
     if (isGroupHovered)
       return;
 
@@ -153,6 +156,7 @@ const useElementSeparatorPointerHandler = ({
   }, [isGroupHovered, onResizeHandleHoverChanged]);
 
   const onPointerOut = useCallback(() => {
+    // istanbul ignore next
     if (!isGroupHovered)
       return;
 

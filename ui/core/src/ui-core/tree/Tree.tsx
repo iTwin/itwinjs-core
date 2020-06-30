@@ -50,6 +50,7 @@ export class Tree extends React.PureComponent<TreeProps> {
     if (!container)
       return;
 
+    // istanbul ignore next
     if (!Element.prototype.scrollTo) {
       // workaround for Edge scrollTo issue https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/15534521/
       element.scrollIntoView();
