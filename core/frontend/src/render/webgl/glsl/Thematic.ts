@@ -38,47 +38,37 @@ const unpackSensor = `
   }
 `;
 
-// Convert a thematic index to an index that takes into account a stepped gradient texture.
-// A stepped gradient texture is arranged like this: {single color pixel for each color step}..., {U=1; marginColor}
-// The dimension of a stepped gradient texture is stepCount + 1.
-const getSteppedIndex = `
-float getSteppedIndex(float ndxIn, float stepCount) {
-  if (ndxIn < 0.0 || ndxIn > 1.0)
-    return 1.0;
+// Access a gradient texture at the specified index.
+// A stepped gradient texture is arranged with single unique color pixels for each step. The dimension of a stepped gradient texture is stepCount.
+// A smooth gradient texture is arranged with blended color pixels across the entire span of the texture. The dimension of a smooth gradient texture is the system's maximum texture size.
+const getColor = `
+vec3 getColor(float ndx) {
+  if (ndx < 0.0 || ndx > 1.0)
+    return u_marginColor;
 
-  float ndxOut = clamp(ndxIn, 0.0, 1.0);
-  float max = 1.0 - 1.0 / (stepCount + 1.0);
-  return ndxOut * max;
+  return TEXTURE(s_texture, vec2(0.0, ndx)).rgb;
 }
 `;
 
-// Convert a thematic index to an index that takes into account a stepped gradient texture specifically for isolines.
+// Access a stepped gradient texture at the specified index taking into account isolines.
 // The texture format is exactly as described above for stepped mode.  We just access the gradient differently,
 // specifically to ensure that the texels sampled result in lines of overall singular colors - no stepping into the
 // neighboring bands.
-const getIsoLineIndex = `
-float getIsoLineIndex(float ndxIn, float stepCount) {
-  if (ndxIn < 0.01 || ndxIn > 0.99)
-    return 1.0;
+const getIsoLineColor = `
+vec3 getIsoLineColor(float ndx, float stepCount) {
+  if (ndx < 0.01 || ndx > 0.99)
+    return u_marginColor;
 
-  return clamp(ndxIn, 1.0 / (stepCount + 1.0), 1.0);
-}
-`;
-
-// Convert a thematic index to an index that takes into account a smooth gradient texture.
-// A smooth gradient texture is arranged like this: {U=0; marginColor}, {smoothed color pixel along entire texture dimensions}..., {U=1; marginColor}
-// The dimension of a smoothed gradient texture is system maximum texture size.
-const getSmoothIndex = `
-float getSmoothIndex(float ndxIn) {
-  return clamp(ndxIn, 0.0, 1.0);
+  ndx += 0.5 / stepCount; // center on step pixels
+  return TEXTURE(s_texture, vec2(0.0, ndx)).rgb;
 }
 `;
 
 const fwidthWhenAvailable = `float _universal_fwidth(float coord) { return fwidth(coord); }`;
 const fwidthWhenNotAvailable = `float _universal_fwidth(float coord) { return coord; }`; // ###TODO: can we do something reasonable in this case?
 
-// Access the gradient texture for the calculated index.
-const applyThematicHeight = `
+// Access the appropriate gradient texel for a particular index based on display mode and gradient mode.
+const applyThematicColor = `
 float ndx = v_thematicIndex;
 
 if (kThematicDisplayMode_InverseDistanceWeightedSensors == u_thematicDisplayMode) {
@@ -111,19 +101,38 @@ if (kThematicDisplayMode_InverseDistanceWeightedSensors == u_thematicDisplayMode
 
   if (contributionSum > 0.0) // avoid division by zero
     ndx = sensorSum / contributionSum;
+} else if (kThematicDisplayMode_Slope == u_thematicDisplayMode) {
+  float d = dot(v_n, u_thematicAxis);
+  if (d < 0.0)
+    d = -d;
+
+  // The range of d is now 0 to 1 (90 degrees to 0 degrees).
+  // However, the range from 0 to 1 is not linear. Therefore, we use acos() to find the actual angle in radians.
+  d = acos(d);
+
+  // range of d is currently 1.5708 to 0 radians.
+  if (d < u_thematicRange.x || d > u_thematicRange.y)
+    d = -1.0; // use marginColor if outside the requested range
+  else { // convert d from radians to 0 to 1 using requested range
+    d -= u_thematicRange.x;
+    d /= (u_thematicRange.y - u_thematicRange.x);
+  }
+
+  ndx = d;
+} else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
+  float d = dot(v_n, u_thematicSunDirection);
+
+  // In the case of HillShade, v_thematicIndex contains the normal's z in world space.
+  if (!gl_FrontFacing && v_thematicIndex < 0.0)
+    d = -d;
+
+  ndx = max(0.0, d);
 }
 
 float gradientMode = u_thematicSettings.x;
 float stepCount = u_thematicSettings.z;
 
-if (kThematicGradientMode_Smooth == gradientMode)
-  ndx = getSmoothIndex(ndx);
-else if (kThematicGradientMode_IsoLines == gradientMode)
-  ndx = getIsoLineIndex(ndx, stepCount);
-else // stepped / stepped delimiter
-  ndx = getSteppedIndex(ndx, stepCount);
-
-vec4 rgba = vec4(TEXTURE(s_texture, vec2(0.0, ndx)).rgb, baseColor.a);
+vec4 rgba = vec4((kThematicGradientMode_IsoLines == gradientMode) ? getIsoLineColor(ndx, stepCount) : getColor(ndx), baseColor.a);
 
 if (kThematicGradientMode_IsoLines == gradientMode) {
   float coord = v_thematicIndex * stepCount;
@@ -152,6 +161,13 @@ export function getComputeThematicIndex(instanced: boolean): string {
     vec3 b = v * u_thematicRange.t;
     vec3 c = proju;
     v_thematicIndex = findFractionalPositionOnLine(a, b, c);
+  } else if (kThematicDisplayMode_HillShade == u_thematicDisplayMode) {
+    vec2 tc = g_vertexBaseCoords;
+    tc.x += 3.0 * g_vert_stepX;
+    vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+    vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertexData2;
+    vec3 norm = u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? normalize(octDecodeNormal(normal)) : vec3(0.0);
+    v_thematicIndex = norm.z;
   }
   `;
 }
@@ -165,6 +181,8 @@ return dot(b - a, c - a) / (abDist * abDist);
 function addThematicDisplayModeConstants(builder: ShaderBuilder) {
   builder.addDefine("kThematicDisplayMode_Height", ThematicDisplayMode.Height.toFixed(1));
   builder.addDefine("kThematicDisplayMode_InverseDistanceWeightedSensors", ThematicDisplayMode.InverseDistanceWeightedSensors.toFixed(1));
+  builder.addDefine("kThematicDisplayMode_Slope", ThematicDisplayMode.Slope.toFixed(1));
+  builder.addDefine("kThematicDisplayMode_HillShade", ThematicDisplayMode.HillShade.toFixed(1));
 }
 
 function addThematicGradientModeConstants(builder: ShaderBuilder) {
@@ -193,15 +211,21 @@ export function addThematicDisplay(builder: ProgramBuilder) {
     });
   });
 
-  vert.addUniform("u_thematicRange", VariableType.Vec2, (prog) => {
+  builder.addUniform("u_thematicRange", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_thematicRange", (uniform, params) => {
       params.target.uniforms.thematic.bindRange(uniform);
     });
   });
 
-  vert.addUniform("u_thematicAxis", VariableType.Vec3, (prog) => {
+  builder.addUniform("u_thematicAxis", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_thematicAxis", (uniform, params) => {
       params.target.uniforms.thematic.bindAxis(uniform);
+    });
+  });
+
+  builder.addUniform("u_thematicSunDirection", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_thematicSunDirection", (uniform, params) => {
+      params.target.uniforms.thematic.bindSunDirection(uniform);
     });
   });
 
@@ -213,6 +237,12 @@ export function addThematicDisplay(builder: ProgramBuilder) {
   builder.addUniform("u_thematicDisplayMode", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_thematicDisplayMode", (uniform, params) => {
       params.target.uniforms.thematic.bindDisplayMode(uniform);
+    });
+  });
+
+  frag.addUniform("u_marginColor", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_marginColor", (uniform, params) => {
+      params.target.uniforms.thematic.bindMarginColor(uniform);
     });
   });
 
@@ -267,9 +297,8 @@ export function addThematicDisplay(builder: ProgramBuilder) {
     frag.addFunction(unpackSensor);
   }
 
-  frag.addFunction(getSmoothIndex);
-  frag.addFunction(getSteppedIndex);
-  frag.addFunction(getIsoLineIndex);
+  frag.addFunction(getColor);
+  frag.addFunction(getIsoLineColor);
 
-  frag.set(FragmentShaderComponent.ApplyThematicDisplay, applyThematicHeight);
+  frag.set(FragmentShaderComponent.ApplyThematicDisplay, applyThematicColor);
 }

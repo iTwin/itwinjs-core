@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Implement new thematic display modes: slope and hillshade.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Mark.Schlosser@bentley.com"
+}

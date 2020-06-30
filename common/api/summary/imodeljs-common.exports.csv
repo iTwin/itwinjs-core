@@ -36,6 +36,7 @@ internal;BriefcaseKey = string
 internal;BriefcaseProps 
 beta;calculateSolarAngles(date: Date, location: Cartographic):
 beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
+beta;calculateSolarDirectionFromAngles(azimuthElevation:
 beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
 public;CalloutProps 
 public;Camera 

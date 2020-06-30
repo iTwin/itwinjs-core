@@ -566,6 +566,12 @@ export function calculateSolarAngles(date: Date, location: Cartographic): {
 export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d;
 
 // @beta
+export function calculateSolarDirectionFromAngles(azimuthElevation: {
+    azimuth: number;
+    elevation: number;
+}): Vector3d;
+
+// @beta
 export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date;
 
 // @public (undocumented)
@@ -6068,6 +6074,7 @@ export class ThematicDisplay {
     readonly range: Range1d;
     // @alpha
     readonly sensorSettings: ThematicDisplaySensorSettings;
+    readonly sunDirection: Vector3d;
     // (undocumented)
     toJSON(): ThematicDisplayProps;
 }
@@ -6075,8 +6082,10 @@ export class ThematicDisplay {
 // @beta
 export enum ThematicDisplayMode {
     Height = 0,
+    HillShade = 3,
     // @alpha
-    InverseDistanceWeightedSensors = 1
+    InverseDistanceWeightedSensors = 1,
+    Slope = 2
 }
 
 // @beta
@@ -6087,6 +6096,7 @@ export interface ThematicDisplayProps {
     range?: Range1dProps;
     // @alpha
     sensorSettings?: ThematicDisplaySensorSettingsProps;
+    sunDirection?: XYZProps;
 }
 
 // @alpha
