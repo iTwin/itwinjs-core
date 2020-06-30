@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "../style/themecolors";
+@import "../button/button";
 @import "../z-index";
 
 $uicore-slider-height:          24px;
 $uicore-slider-rail-height:     4px;
-$uicore-slider-handle-size:     12px;
+$uicore-slider-handle-size:     14px;
 $uicore-slider-minmax-margin:   6px;
 
 .core-slider-container {
@@ -82,6 +83,16 @@ $uicore-slider-minmax-margin:   6px;
       border-style: solid;
       border-color: $buic-background-control-stroke;
       background: $buic-background-control;
+      box-sizing: border-box;
+      outline: none;
+
+      &:hover {
+        border-color: $buic-foreground-focus;
+      }
+
+      &:focus, &:active {
+        @include uicore-buttons-button-focused
+      }
     }
 
     .core-slider-tick-mark {

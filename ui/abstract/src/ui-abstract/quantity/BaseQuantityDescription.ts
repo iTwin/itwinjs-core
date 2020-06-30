@@ -8,6 +8,8 @@
 
 import { PropertyDescription, PropertyEditorInfo } from "../properties/Description";
 import { CustomFormattedNumberParams, IconEditorParams, ParseResults, PropertyEditorParamTypes } from "../properties/EditorParams";
+import { StandardTypeNames } from "../properties/StandardTypeNames";
+import { StandardEditorNames } from "../properties/StandardEditorNames";
 
 /**
  * Base Quantity Property Description
@@ -22,9 +24,9 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
   constructor(name: string, displayLabel: string, iconSpec?: string) {
     this.name = name;
     this.displayLabel = displayLabel;
-    this.typename = "number";
+    this.typename = StandardTypeNames.Number;
     this.editor = {
-      name: "number-custom",
+      name: StandardEditorNames.NumberCustom,
       params: [{
         type: PropertyEditorParamTypes.CustomFormattedNumber,
         formatFunction: this.format,

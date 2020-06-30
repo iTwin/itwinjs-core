@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { DbOpcode, DbResult, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
-import {
-  CodeState, HubCode, HubIModel, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType, MultiCode,
-} from "@bentley/imodelhub-client";
-import { CodeScopeSpec, CodeSpec, IModel, IModelError, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
+import { CodeState, HubCode, HubIModel, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType, MultiCode } from "@bentley/imodelhub-client";
+import { CodeScopeSpec, CodeSpec, DomainOptions, IModel, IModelError, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { assert, expect } from "chai";
+import * as semver from "semver";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseEntry, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelJsFs,
   SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
@@ -939,6 +938,133 @@ describe("IModelWriteTest (#integration)", () => {
       assert.equal(rowCount, 2);
     });
     iModel.close();
+  });
+
+  it("should be able to upgrade a briefcase with an older schema", async () => {
+    const projectName = "iModelJsIntegrationTest";
+    const projectId = await HubUtility.queryProjectIdByName(managerRequestContext, projectName);
+
+    /**
+     * Test validates that -
+     * - User "manager" upgrades the BisCore schema in the briefcase from version 1.0.0 to 1.0.10+
+     * - User "super" fails to upgrade while the above upgrade in process
+     * - User "manager" can push the changes made to the schemas up to iModelHub
+     * - User "super" can get the upgrade "manager" made as change sets without requiring schema locks
+     */
+
+    /* Setup test - Push an iModel with an old BisCore schema up to the Hub */
+    const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const hubName = HubUtility.generateUniqueName("CompatibilityTest");
+    const iModelId = await HubUtility.pushIModel(managerRequestContext, projectId, pathname, hubName);
+
+    /* User "manager" upgrades the briefcase */
+    const briefcaseProps = await BriefcaseManager.download(managerRequestContext, projectId, iModelId, { syncMode: SyncMode.PullAndPush }, IModelVersion.latest());
+    managerRequestContext.enter();
+
+    // Validate the original state of the BisCore schema in the briefcase
+    let iModel: BriefcaseDb;
+    let result: DbResult = DbResult.BE_SQLITE_OK;
+    iModel = await BriefcaseDb.open(managerRequestContext, briefcaseProps.key);
+    const beforeVersion = iModel.querySchemaVersion("BisCore");
+    assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
+    assert.isFalse(iModel.nativeDb.hasPendingTxns());
+    iModel.close();
+
+    // Open the briefcase to find that the BisCore schema can be upgraded
+    try {
+      iModel = await BriefcaseDb.open(managerRequestContext, briefcaseProps.key, { domain: DomainOptions.CheckRecommendedUpgrades });
+      managerRequestContext.enter();
+    } catch (err) {
+      managerRequestContext.enter();
+      assert(err instanceof IModelError);
+      result = err.errorNumber;
+    }
+    assert.strictEqual(result, DbResult.BE_SQLITE_ERROR_SchemaUpgradeRecommended);
+
+    // Open briefcase and upgrade schemas
+    iModel = await BriefcaseDb.open(managerRequestContext, briefcaseProps.key, { domain: DomainOptions.Upgrade });
+    managerRequestContext.enter();
+    const afterVersion = iModel.querySchemaVersion("BisCore");
+    assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
+    assert.isTrue(iModel.nativeDb.hasPendingTxns());
+
+    // Validate state after upgrade
+    assert.isTrue(iModel.concurrencyControl.hasSchemaLock);
+    let schemaLocks = await BriefcaseManager.imodelClient.locks.get(managerRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
+    assert.isTrue(schemaLocks.length === 1);
+    assert.isFalse(iModel.nativeDb.hasUnsavedChanges());
+    assert.isTrue(iModel.nativeDb.hasPendingTxns());
+
+    /* User "super" fails to upgrade while the above upgrade in process, and the "manager" holds the schema lock */
+    const superBriefcaseProps = await BriefcaseManager.download(superRequestContext, projectId, iModelId, { syncMode: SyncMode.PullAndPush }, IModelVersion.latest());
+    superRequestContext.enter();
+    let superStatus = IModelHubStatus.Success;
+    try {
+      await BriefcaseDb.open(superRequestContext, superBriefcaseProps.key, { domain: DomainOptions.Upgrade });
+      superRequestContext.enter();
+    } catch (err) {
+      superRequestContext.enter();
+      assert(err instanceof IModelHubError);
+      superStatus = err.errorNumber;
+    }
+    assert.strictEqual(superStatus, IModelHubStatus.LockOwnedByAnotherBriefcase);
+
+    /* User "manager" can push the changes made to the schemas up to iModelHub */
+    await iModel.pushChanges(managerRequestContext, "Upgrading schemas");
+
+    // Validate that the schema lock is now released
+    assert.isFalse(iModel.concurrencyControl.hasSchemaLock);
+    schemaLocks = await BriefcaseManager.imodelClient.locks.get(managerRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
+    assert.isTrue(schemaLocks.length === 0);
+
+    /* User "super" can get the upgrade "manager" made as change sets without requiring schema locks */
+
+    // Check for recommended upgrades
+    result = DbResult.BE_SQLITE_OK;
+    try {
+      await BriefcaseDb.open(superRequestContext, superBriefcaseProps.key, { domain: DomainOptions.CheckRecommendedUpgrades });
+      superRequestContext.enter();
+    } catch (err) {
+      superRequestContext.enter();
+      assert(err instanceof IModelError);
+      result = err.errorNumber;
+    }
+    assert.strictEqual(result, DbResult.BE_SQLITE_ERROR_SchemaUpgradeRecommended);
+
+    // Upgrade schemas - should fail since the briefcase has not been updated with all the change sets
+    // NEEDS_WORK: The check below does not work - mailed the Hub team on it
+    // superStatus = IModelHubStatus.Success;
+    // try {
+    //   await BriefcaseDb.open(superRequestContext, superBriefcaseProps.key, { domain: DomainOptions.Upgrade });
+    //   superRequestContext.enter();
+    // } catch (err) {
+    //   superRequestContext.enter();
+    //   assert(err instanceof IModelHubError);
+    //   superStatus = err.errorNumber;
+    // }
+    // assert.strictEqual(superStatus, IModelHubStatus.LockOwnedByAnotherBriefcase);
+
+    // Open briefcase and pull change sets to upgrade
+    const superIModel = await BriefcaseDb.open(superRequestContext, superBriefcaseProps.key, { domain: DomainOptions.SkipCheck });
+    superRequestContext.enter();
+    await superIModel.pullAndMergeChanges(superRequestContext);
+    superRequestContext.enter();
+    const superVersion = superIModel.querySchemaVersion("BisCore");
+    assert.isTrue(semver.satisfies(superVersion!, ">= 1.0.10"));
+    assert.isFalse(iModel.nativeDb.hasUnsavedChanges()); // Validate no changes were made
+    assert.isFalse(superIModel.nativeDb.hasPendingTxns()); // Validate no changes were made
+    schemaLocks = await BriefcaseManager.imodelClient.locks.get(superRequestContext, iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
+    assert.isTrue(schemaLocks.length === 0); // Validate no schema locks held by the hub
+    assert.isFalse(superIModel.concurrencyControl.hasSchemaLock); // Validate no schema locks cached in briefcase
+
+    /* Cleanup after test */
+    iModel.close();
+    await BriefcaseManager.delete(managerRequestContext, briefcaseProps.key); // delete from local disk
+    superIModel.close();
+    await BriefcaseManager.delete(superRequestContext, superBriefcaseProps.key); // delete from local disk
+    managerRequestContext.enter();
+    await HubUtility.deleteIModel(managerRequestContext, projectName, hubName); // delete from hub
+    managerRequestContext.enter();
   });
 
 });

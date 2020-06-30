@@ -8,6 +8,7 @@
 
 import { PropertyDescription } from "./Description";
 import { PropertyValue, PropertyValueFormat } from "./Value";
+import { StandardTypeNames } from "./StandardTypeNames";
 
 /** Properties for the [[PropertyRecord]] with link info supplied
  * @beta
@@ -71,13 +72,13 @@ export class PropertyRecord {
       description = {
         name: descriptionOrName,
         displayLabel: descriptionOrName,
-        typename: "string",
+        typename: StandardTypeNames.String,
       };
     } else {
       description = {
         name: "string_value",
         displayLabel: "String Value",
-        typename: "string",
+        typename: StandardTypeNames.String,
       };
     }
     return new PropertyRecord({

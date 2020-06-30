@@ -7,19 +7,26 @@
 import { AccessToken } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
-import { ChangesType } from '@bentley/imodelhub-client';
+import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { Element } from '@bentley/imodeljs-backend';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelDb } from '@bentley/imodeljs-backend';
+import { IModelStatus } from '@bentley/bentleyjs-core';
+import { Subject } from '@bentley/imodeljs-backend';
 
 // @alpha
 export class BridgeJobDefArgs {
     allDocsProcessed: boolean;
+    argsJson: any;
     bridgeModule?: string;
+    dmsAccessToken?: string;
+    dmsServerUrl?: string;
     // (undocumented)
     documentGuid?: string;
+    isSnapshot: boolean;
+    outputDir?: string;
     revisionComments?: string;
     sourcePath?: string;
-    stagingdir?: string;
     updateDbProfile: boolean;
     updateDomainSchemas: boolean;
 }
@@ -31,13 +38,12 @@ export enum BridgeLoggerCategory {
 
 // @alpha
 export class BridgeRunner {
-    constructor(_jobDefArgs: BridgeJobDefArgs, _serverArgs: ServerArgs);
+    constructor(jobDefArgs: BridgeJobDefArgs, serverArgs?: ServerArgs | IModelBankArgs);
     static fromArgs(args: string[]): BridgeRunner;
     // (undocumented)
     getCacheDirectory(): string | undefined;
-    pushDataChanges(pushComments: string, type: ChangesType): Promise<void>;
     synchronize(): Promise<BentleyStatus>;
-    }
+}
 
 // @alpha
 export interface IModelBridge {
@@ -46,19 +52,21 @@ export interface IModelBridge {
     // (undocumented)
     getApplicationVersion(): string;
     // (undocumented)
+    getBridgeName(): string;
+    // (undocumented)
+    getSynchronizer(): Synchronizer;
     importDefinitions(): Promise<any>;
+    importDomainSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
+    importDynamicSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
+    initialize(params: BridgeJobDefArgs): any;
+    initializeJob(): Promise<void>;
+    onOpenIModel(): Promise<BentleyStatus>;
+    openSourceData(sourcePath: string): Promise<BentleyStatus>;
     // (undocumented)
-    importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
+    setJobSubject(subject: Subject): void;
     // (undocumented)
-    importDynamicSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
-    // (undocumented)
-    initialize(params: any): any;
-    // (undocumented)
-    onOpenBim(sync: Synchronizer): Promise<BentleyStatus>;
-    // (undocumented)
-    openSource(sourcePath: string, dmsAccessToken: string | undefined, documentGuid: string | undefined): Promise<BentleyStatus>;
-    // (undocumented)
-    updateExistingData(sourcePath: string): Promise<any>;
+    setSynchronizer(synchronizer: Synchronizer): void;
+    updateExistingData(): Promise<any>;
 }
 
 // @alpha
@@ -68,37 +76,37 @@ export abstract class IModelBridgeBase implements IModelBridge {
     // (undocumented)
     abstract getApplicationVersion(): string;
     // (undocumented)
+    abstract getBridgeName(): string;
+    // (undocumented)
+    getSynchronizer(): Synchronizer;
+    // (undocumented)
     abstract importDefinitions(): Promise<any>;
     // (undocumented)
-    abstract importDomainSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
+    abstract importDomainSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
     // (undocumented)
-    abstract importDynamicSchema(requestContext: AuthorizedClientRequestContext): Promise<any>;
+    abstract importDynamicSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
     // (undocumented)
-    abstract initialize(params: any): any;
+    abstract initialize(params: BridgeJobDefArgs): any;
     // (undocumented)
-    onOpenBim(sync: Synchronizer): Promise<BentleyStatus>;
+    abstract initializeJob(): Promise<void>;
     // (undocumented)
-    abstract openSource(sourcePath: string, dmsAccessToken: string | undefined, documentGuid: string | undefined): Promise<BentleyStatus>;
+    get jobSubject(): Subject;
     // (undocumented)
-    protected _synchronizer: Synchronizer | undefined;
+    onOpenIModel(): Promise<BentleyStatus>;
     // (undocumented)
-    abstract updateExistingData(sourcePath: string): Promise<any>;
+    abstract openSourceData(sourcePath: string): Promise<BentleyStatus>;
+    // (undocumented)
+    setJobSubject(subject: Subject): void;
+    // (undocumented)
+    setSynchronizer(sync: Synchronizer): void;
+    // (undocumented)
+    get synchronizer(): Synchronizer;
+    // (undocumented)
+    abstract updateExistingData(): Promise<any>;
 }
 
-// @alpha
-export class ServerArgs {
-    contextId?: string;
-    contextName?: string;
-    // @internal
-    createiModel: boolean;
-    dmsAccessToken?: string;
-    dmsServerUrl?: string;
-    environment?: string;
-    // (undocumented)
-    getToken?: () => Promise<AccessToken>;
-    iModelId?: string;
-    iModelName?: string;
-}
+// @alpha (undocumented)
+export const loggerCategory: string;
 
 
 // (No @packageDocumentation comment for this package)

@@ -11,12 +11,11 @@ import classnames from "classnames";
 import * as React from "react";
 import {
   IconListEditorParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+  StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { IconPickerButton } from "../iconpicker/IconPickerButton";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
-import { StandardEditorNames } from "./StandardEditorNames";
 
 // cspell:ignore iconpicker
 

@@ -179,7 +179,7 @@ internal;Rectangle
 public;RectangleProps
 internal;ResizeObserver: ResizeObserverType
 internal;ResizeObserverType = typeof import("resize-observer-polyfill").default
-alpha;ScrollPositionMaintainer 
+beta;ScrollPositionMaintainer 
 public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 
 public;SearchBoxProps 

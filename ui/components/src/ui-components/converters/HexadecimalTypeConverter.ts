@@ -7,10 +7,9 @@
  */
 
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Primitives } from "@bentley/ui-abstract";
+import { Primitives, StandardTypeNames } from "@bentley/ui-abstract";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /** Hexadecimal Type Converter.
  * @public

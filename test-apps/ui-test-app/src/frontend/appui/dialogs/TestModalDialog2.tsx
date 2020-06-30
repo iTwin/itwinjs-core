@@ -75,6 +75,8 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
           { type: DialogButtonType.Cancel, onClick: this._handleCancel },
         ]}
         onEscape={this._handleCancel}
+        onClose={this._handleCancel}
+        onOutsideClick={this._handleCancel}
         minHeight={150}
         maxHeight={400}
       >

@@ -3172,7 +3172,7 @@ export interface SortComparer {
     sortCompare(valueA: Primitives.Value, valueB: Primitives.Value, ignoreCase?: boolean): number;
 }
 
-// @beta
+// @beta @deprecated
 export enum StandardEditorNames {
     // (undocumented)
     ColorPicker = "color-picker",
@@ -3242,7 +3242,7 @@ export enum StandardTypeConverterTypeNames {
     Text = "text"
 }
 
-// @beta
+// @beta @deprecated
 export enum StandardTypeNames {
     // (undocumented)
     Array = "array",

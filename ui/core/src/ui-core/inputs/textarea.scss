@@ -24,22 +24,23 @@
   box-shadow:             $buic-inputs-boxshadow 0px 1px 1px inset;
   transition:             border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
-  &:-ms-input-placeholder {       color: $buic-foreground-disabled; /* $uicore-gray-9;*/ }
-  &::-webkit-input-placeholder {  color: $buic-foreground-disabled; /* $uicore-gray-9;*/ }
-  &::placeholder {                color: $buic-foreground-disabled; /* $uicore-gray-9;*/ }
+  &:-ms-input-placeholder {       color: $buic-foreground-disabled; }
+  &::-webkit-input-placeholder {  color: $buic-foreground-disabled; }
+  &::placeholder {                color: $buic-foreground-disabled; }
 
   &[disabled],
   &[readonly] {
 
-    background-color:   $buic-background-control-disabled; // $uicore-gray-b;
-    color:              $buic-foreground-muted; // $uicore-gray-9;
+    background-color:   $buic-background-control-disabled;
+    border-color:       $buic-foreground-disabled;
+    color:              $buic-foreground-disabled;
     cursor:             not-allowed;
   }
 
   &:focus {
 
-    border-color:       $buic-inputs-border;
+    border-color:       $buic-foreground-focus-border;
     outline:            0px;
-    box-shadow:         $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, $buic-inputs-focus-boxshadow-gradient2 0px 0px 0px 2px;
+    box-shadow:         $uicore-inputs-focus-gradient;
   }
 }

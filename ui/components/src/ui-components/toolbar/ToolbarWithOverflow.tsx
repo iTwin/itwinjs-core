@@ -390,7 +390,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
     <ToolbarWithOverflowDirectionContext.Provider value={
       {
         expandsTo, direction, overflowExpandsTo, panelAlignment, useDragInteraction,
-        toolbarOpacitySetting: props.toolbarOpacitySetting ? props.toolbarOpacitySetting : ToolbarOpacitySetting.Proximity,
+        toolbarOpacitySetting: undefined !== props.toolbarOpacitySetting ? props.toolbarOpacitySetting : ToolbarOpacitySetting.Proximity,
         overflowDirection: direction === OrthogonalDirection.Horizontal ? OrthogonalDirection.Vertical : OrthogonalDirection.Horizontal,
         openPopupCount: popupPanelCount, onPopupPanelOpenClose: handlePopupPanelOpenClose, overflowDisplayActive: overflowPanelItems.length > 0 && isOverflowPanelOpen,
         onItemExecuted: props.onItemExecuted ? props.onItemExecuted : () => { },

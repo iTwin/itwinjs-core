@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "../../ui-abstract";
+import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, StandardTypeNames } from "../../ui-abstract";
 
 const value1: PropertyValue = { valueFormat: PropertyValueFormat.Primitive, value: 3 };
 const value2: PropertyValue = { valueFormat: PropertyValueFormat.Primitive, value: 10 };
@@ -12,7 +12,7 @@ const getPropertyDescription = (): PropertyDescription => {
   return {
     name: "Item1",
     displayLabel: "Item One",
-    typename: "number",
+    typename: StandardTypeNames.Number,
   };
 };
 

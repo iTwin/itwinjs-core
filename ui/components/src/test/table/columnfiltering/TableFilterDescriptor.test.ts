@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
+import { StandardTypeNames } from "@bentley/ui-abstract";
 import { BooleanTypeConverter } from "../../../ui-components/converters/BooleanTypeConverter";
-import { StandardTypeNames } from "../../../ui-components/common/StandardTypeNames";
 import { FilterOperator, OperatorValueFilterDescriptorCollection } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
 import { ColumnFilteringUtilities } from "../../../ui-components/table/columnfiltering/ColumnFilteringUtilities";
 import { NumericFilterType, NumericRangeData } from "../../../ui-components/table/columnfiltering/DataGridFilterParser";

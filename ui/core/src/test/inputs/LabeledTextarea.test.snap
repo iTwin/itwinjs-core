@@ -17,6 +17,24 @@ exports[`<LabeledTextarea /> renders correctly 1`] = `
 </label>
 `;
 
+exports[`<LabeledTextarea /> renders disabled correctly 1`] = `
+<label
+  className="uicore-inputs-labeled-textarea uicore-disabled"
+>
+  <div
+    className="uicore-label"
+  >
+     
+    textarea test
+     
+  </div>
+  <Textarea
+    disabled={true}
+    rows={3}
+  />
+</label>
+`;
+
 exports[`<LabeledTextarea /> renders message correctly 1`] = `
 <label
   className="uicore-inputs-labeled-textarea"

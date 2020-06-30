@@ -15,6 +15,10 @@ describe("<LabeledTextarea />", () => {
     shallow(<LabeledTextarea label="textarea test" />).should.matchSnapshot();
   });
 
+  it("renders disabled correctly", () => {
+    shallow(<LabeledTextarea label="textarea test" disabled />).should.matchSnapshot();
+  });
+
   it("renders status correctly", () => {
     shallow(<LabeledTextarea label="textarea test" status={InputStatus.Success} />).should.matchSnapshot();
   });

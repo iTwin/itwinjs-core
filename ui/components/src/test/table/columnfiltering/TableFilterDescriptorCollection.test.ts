@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { SortDirection } from "@bentley/ui-core";
-import { StandardTypeNames } from "../../../ui-components/common/StandardTypeNames";
+import { StandardTypeNames } from "@bentley/ui-abstract";
 import { FilterCompositionLogicalOperator, FilterOperator } from "../../../ui-components/table/columnfiltering/ColumnFiltering";
 import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn";
 import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";

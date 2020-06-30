@@ -15,6 +15,10 @@ describe("<LabeledSelect />", () => {
     shallow(<LabeledSelect label="select test" options={[]} />).should.matchSnapshot();
   });
 
+  it("renders disabled correctly", () => {
+    shallow(<LabeledSelect label="select test" disabled options={[]} />).should.matchSnapshot();
+  });
+
   it("renders status correctly", () => {
     shallow(<LabeledSelect label="select test" status={InputStatus.Success} options={[]} />).should.matchSnapshot();
   });

@@ -68,7 +68,7 @@
         &:focus {
 
           border-color:   $color;
-          box-shadow:     $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, rgba( $color, 0.15 ) 0px 0px 0px 2px;
+          box-shadow:     $buic-focus-boxshadow-gradient1 0px 1px 1px inset, rgba( $color, 0.15 ) 0px 0px 0px 2px;
         }
       }
     }

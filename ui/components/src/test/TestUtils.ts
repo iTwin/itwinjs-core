@@ -6,12 +6,10 @@ import { ColorByName } from "@bentley/imodeljs-common";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
   ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, ParseResults, PrimitiveValue,
-  PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValueFormat, StructValue,
+  PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValueFormat, StandardEditorNames, StandardTypeNames, StructValue,
 } from "@bentley/ui-abstract";
 import { ColumnDescription, CompositeFilterDescriptorCollection, FilterableTable, UiComponents } from "../ui-components";
 import { TableFilterDescriptorCollection } from "../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
-import { StandardEditorNames } from "../ui-components/editors/StandardEditorNames";
-import { StandardTypeNames } from "../ui-components/common/StandardTypeNames";
 
 // cSpell:ignore buttongroup
 

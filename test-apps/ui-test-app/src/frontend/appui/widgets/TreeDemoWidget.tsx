@@ -12,6 +12,7 @@ import {
 } from "./demodataproviders/demoTreeDataProvider";
 import { ChildDragLayer } from "./draglayers/ChildDragLayer";
 import { ParentDragLayer } from "./draglayers/ParentDragLayer";
+import { Checkbox } from "@bentley/ui-core";
 
 // tslint:disable-next-line:variable-name
 const DragDropTree = DEPRECATED_withTreeDragDrop<TreeProps, DemoTreeDragDropType>(DEPRECATED_Tree);
@@ -62,7 +63,7 @@ class TreeDemoWidget extends React.Component<Props, State> {
     return (
       <div style={{ height: "100%" }}>
         <label htmlFor="receives_row">Can accept rows: </label>
-        <input id="receives_row" type="checkbox" onChange={(event) => {
+        <Checkbox id="receives_row" onChange={(event) => {
           this.setState({ checked: event.target.checked });
         }} />
         <div style={{ height: "calc(100% - 20px)" }}>

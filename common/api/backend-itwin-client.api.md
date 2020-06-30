@@ -56,7 +56,7 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     constructor(configuration: BackendAuthorizationClientConfiguration);
     // (undocumented)
     protected _configuration: BackendAuthorizationClientConfiguration;
-    discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer>;
+    discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer<Client>>;
     // (undocumented)
     protected getClient(requestContext: ClientRequestContext): Promise<Client>;
     }

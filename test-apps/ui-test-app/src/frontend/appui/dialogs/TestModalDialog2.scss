@@ -7,7 +7,7 @@ div.modal-dialog2 {
   flex-direction: row;
   flex-wrap: wrap;
   width: 100%;
-  overflow-y: scroll;
+  overflow-y: auto;
 
   .color-picker-text {
     justify-self: center;

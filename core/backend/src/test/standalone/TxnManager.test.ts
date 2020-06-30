@@ -21,7 +21,10 @@ describe("TxnManager", () => {
 
   const performUpgrade = (pathname: string): DbResult => {
     const nativeDb = new IModelHost.platform.DgnDb();
-    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeMode.Domain);
+    const upgradeOptions: IModelJsNative.UpgradeOptions = {
+      domain: IModelJsNative.DomainOptions.Upgrade,
+    };
+    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
     if (DbResult.BE_SQLITE_OK === res) {
       nativeDb.deleteAllTxns();
       nativeDb.closeIModel();

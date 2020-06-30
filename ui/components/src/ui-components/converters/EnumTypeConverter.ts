@@ -6,10 +6,9 @@
  * @module TypeConverters
  */
 
-import { EnumerationChoice, Primitives, PropertyDescription } from "@bentley/ui-abstract";
+import { EnumerationChoice, Primitives, PropertyDescription, StandardTypeNames } from "@bentley/ui-abstract";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /**
  * Enum Type Converter.

@@ -7,12 +7,11 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { ColorByName } from "@bentley/imodeljs-common";
-import { PrimitiveValue } from "@bentley/ui-abstract";
+import { PrimitiveValue, StandardEditorNames } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import { ColorEditor } from "../../ui-components/editors/ColorEditor";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { StandardEditorNames } from "../../ui-components/editors/StandardEditorNames";
 
 // cspell:ignore colorpicker
 

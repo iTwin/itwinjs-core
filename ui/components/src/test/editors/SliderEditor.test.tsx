@@ -8,11 +8,10 @@ import { mount, shallow } from "enzyme";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
-import { BasePropertyEditorParams, PropertyEditorParamTypes, SliderEditorParams } from "@bentley/ui-abstract";
+import { BasePropertyEditorParams, PropertyEditorParamTypes, SliderEditorParams, StandardEditorNames } from "@bentley/ui-abstract";
 import { SliderEditor } from "../../ui-components/editors/SliderEditor";
 import TestUtils from "../TestUtils";
 import { EditorContainer } from "../../ui-components/editors/EditorContainer";
-import { StandardEditorNames } from "../../ui-components/editors/StandardEditorNames";
 
 describe("<SliderEditor />", () => {
   before(async () => {

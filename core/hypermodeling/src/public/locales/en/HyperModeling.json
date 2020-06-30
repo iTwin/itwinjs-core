@@ -1,55 +1,19 @@
 {
   "tools": {
     "HyperModeling": {
+      "keyin": "hypermodeling",
       "Graphics": {
         "Config": {
           "keyin": "hypermodeling graphics config"
         }
       },
       "Marker": {
-        "Display": {
-          "keyin": "hypermodeling marker display"
-        },
-        "Model": {
-          "keyin": "hypermodeling marker model"
-        },
-        "Category": {
-          "keyin": "hypermodeling marker category"
-        },
-        "Type": {
-          "Section": {
-            "keyin": "hypermodeling marker type section"
-          },
-          "Detail": {
-            "keyin": "hypermodeling marker type detail"
-          },
-          "Elevation": {
-            "keyin": "hypermodeling marker type elevation"
-          },
-          "Plan": {
-            "keyin": "hypermodeling marker type plan"
-          }
+        "Config": {
+          "keyin": "hypermodeling marker config"
         },
         "Default": {
-          "Model": {
-            "keyin": "hypermodeling marker default model"
-          },
-          "Category": {
-            "keyin": "hypermodeling marker default category"
-          },
-          "Type": {
-            "Section": {
-              "keyin": "hypermodeling marker default type section"
-            },
-            "Detail": {
-              "keyin": "hypermodeling marker default type detail"
-            },
-            "Elevation": {
-              "keyin": "hypermodeling marker default type elevation"
-            },
-            "Plan": {
-              "keyin": "hypermodeling marker default type plan"
-            }
+          "Config": {
+            "keyin": "hypermodeling marker default config"
           }
         }
       }
@@ -60,15 +24,9 @@
     "DetailCallout": "Detail Callout",
     "ElevationCallout": "Elevation Callout",
     "PlanCallout": "Plan Callout",
-    "ToggleSection": "Toggle Section Display",
-    "AlignSection": "Align View To Section",
+    "ApplySection": "Apply Section",
     "OpenSection": "Open Section View",
     "OpenSheet": "Open Sheet View",
     "ApplyView": "Apply Spatial View"
-  },
-  "Error": {
-    "NotFoundModels": "No section locations found for displayed models",
-    "NotFoundCategories": "No section locations found for displayed categories",
-    "NotFoundTypes": "No section locations found for displayed types"
   }
 }

@@ -10,18 +10,19 @@
 
 @mixin uicore-buttons-primary {
 
-    @include uicore-buttons-button;
+  @include uicore-buttons-button;
 
-    &, &:active, &:focus {
+  border-color:       $uicore-green;
+  background-color:   $uicore-green;
+  color:              $uicore-white;
 
-        color:              $uicore-white;
-        border:             none;
-        background-color:   $uicore-green;
-    }
+  &:hover {
+    border-color:       $uicore-green-5;
+    background-color:   $uicore-green-5;
+  }
 
-    &:hover {
-
-        background-color:   $uicore-green-5;
-        color:              $uicore-white;
-    }
+  &:active {
+    border-color:       $uicore-green-4;
+    background-color:   $uicore-green-4;
+  }
 }

@@ -6,68 +6,71 @@
 
 @mixin uicore-tabs {
 
-    display:            block;
-    list-style:         none;
-    padding:            0;
-    margin:             0;
+  display:            block;
+  list-style:         none;
+  padding:            0;
+  margin:             0;
+  box-sizing:         border-box;
+  border:             none;
+  outline:            none;
 
-    > li {
+  > li {
 
-        display:        block;
-        position:       relative;
-        padding:        0;
-        margin:         0;
+    display:        block;
+    position:       relative;
+    padding:        0;
+    margin:         0;
 
-        > a {
+    > a {
 
-            display:        block;
-            position:       relative;
-            padding:        $uicore-bordered-padding ( $uicore-font-size - 1px ) $uicore-unbordered-padding;
-            margin:         0;
-            line-height:    $uicore-line-height;
-            color:          $buic-text-color;
-            cursor:         pointer;
+      display:        block;
+      position:       relative;
+      padding:        $uicore-bordered-padding ( $uicore-font-size - 1px ) $uicore-unbordered-padding;
+      margin:         0;
+      line-height:    $uicore-line-height;
+      color:          $buic-text-color;
+      cursor:         pointer;
 
-            &::after {
+      &::after {
 
-                content:            "";
-                position:           absolute;
-                z-index:            1;
-                transition:         all 0.5s;
-                top:                0;
-                left:               0;
-                background:         $buic-foreground-primary;
-                opacity:            0;
-            }
+        content:            "";
+        position:           absolute;
+        z-index:            1;
+        transition:         all 0.15s;
+        top:                0;
+        left:               0;
+        background:         $buic-foreground-primary;
+        opacity:            0;
+      }
 
-            &:hover {
+      &:hover {
 
-                text-decoration:    none;
-                color:              $buic-foreground-activehover;
+        text-decoration:    none;
+        color:              $buic-foreground-activehover;
 
-                &::after {
+        &::after {
 
-                    opacity:        1;
-                }
-            }
+          opacity:        1;
         }
-
-        &.active {
-
-            > a {
-
-                font-weight:        $uicore-font-weight-bold;
-
-                &::after {
-
-                    opacity:        1;
-                }
-            }
-        }
+      }
     }
 
-    &.uicore-tabs-green > li > a::after {
+    &.core-active {
 
-        background:     $buic-foreground-success;
+      > a {
+
+        font-weight:        $uicore-font-weight-bold;
+
+        &::after {
+
+          opacity:        1;
+        }
+      }
     }
+  }
+
+  &.uicore-tabs-green > li > a::after {
+
+    background-color:     $buic-foreground-success;
+  }
 }

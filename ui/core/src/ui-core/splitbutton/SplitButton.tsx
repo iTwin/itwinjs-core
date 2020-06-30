@@ -28,6 +28,8 @@ export interface SplitButtonProps extends CommonProps {
   label: string | React.ReactNode;
   /** Listens for click events on button area */
   onClick?: (event: any) => any;
+  /** Listens for execute on button area */
+  onExecute?: () => any;
   /** Specifies icon for Splitbutton component */
   icon?: IconSpec;
   /** Indicates whether to draw a border around the button */
@@ -44,7 +46,8 @@ interface SplitButtonState {
  * @public
  */
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
-  private _arrowElement: HTMLElement | null = null;
+  private _arrowElement = React.createRef<HTMLDivElement>();
+  private _buttonRef = React.createRef<HTMLDivElement>();
   private _menu: ContextMenu | null = null;
   private _closing: boolean = false;
 
@@ -73,10 +76,13 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
       <div data-testid="core-split-button-root"
         className={classNames}
         style={this.props.style}
+        tabIndex={0}
+        onKeyUp={this._handleKeyUp}
+        ref={this._buttonRef}
       >
         <div data-testid="core-split-button-label" onClick={this.props.onClick} className={"core-split-button-label"}>{icon} {this.props.label}</div>
         <div className={classnames("core-split-button-divider", this.props.drawBorder && "core-split-button-border")} />
-        <div className={"core-split-button-arrow"} ref={(el) => { this._arrowElement = el; }} onClick={this._handleClick} tabIndex={0} onKeyUp={this._handleKeyUp}>
+        <div className={"core-split-button-arrow"} ref={this._arrowElement} onClick={this._handleArrowClick}>
           <div className={classnames("core-split-button-arrow-icon", "icon", "icon-chevron-down")} />
           <ContextMenu
             ref={(el) => { this._menu = el; }}
@@ -93,8 +99,10 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     );
   }
 
-  private _handleKeyUp = (event: any) => {
-    if ((event.keyCode === 13 /*<Return>*/ || event.keyCode === 40 /*<Down>*/) && !this.state.expanded) {
+  private _handleKeyUp = (event: React.KeyboardEvent) => {
+    if (event.keyCode === 13 /*<Return>*/) {
+      this.props.onExecute && this.props.onExecute();
+    } else if (event.keyCode === 40 /*<Down>*/ && !this.state.expanded) {
       this._closing = false;
       this._open();
     } else {
@@ -117,7 +125,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     }
   }
 
-  private _handleClick = (event: any) => {
+  private _handleArrowClick = (event: React.MouseEvent) => {
     if (this.state.expanded) {
       event.stopPropagation();
       this.setState({ expanded: false });
@@ -129,11 +137,11 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
 
   private _handleClose = (event: any) => {
     // istanbul ignore else
-    if (this._arrowElement) {
-      if (this.state.expanded && "target" in event && this._arrowElement.contains(event.target))
+    if (this._arrowElement.current && this._buttonRef.current) {
+      if (this.state.expanded && "target" in event && this._arrowElement.current.contains(event.target))
         this._closing = true;
       this.setState((_prevState) => ({ expanded: false }));
-      this._arrowElement.focus();
+      this._buttonRef.current.focus();
     }
   }
 }

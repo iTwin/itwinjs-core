@@ -74,7 +74,24 @@ export interface SectionDrawingLocationStateData {
   userLabel: string;
 }
 
+/** Represents a [ViewAttachment]($backend) that attaches a [[SectionDrawingLocationState]] to a [Sheet]($backend) model.
+ * @beta
+ */
+export interface SectionViewAttachment {
+  /** The view attachment's element Id. */
+  readonly id: Id64String;
+  /** The Id of a [SheetViewDefinition]($backend) that displays this view attachment.
+   * This is used when navigating from the spatial view to the view attachment.
+   */
+  readonly viewId?: Id64String;
+  /** The transform from the [Sheet]($backend) coordinate space to the spatial coordinate space. */
+  readonly transformToSpatial: Transform;
+  /** Optional 2d clip vector used to clip out portions of the [Sheet]($backend) containing annotations not relevant to this section drawing. */
+  readonly clip?: ClipVector;
+}
+
 /** Represents a [SectionDrawingLocation]($backend), including data from related elements like [SectionDrawing]($backend) used in a hyper-modeling context.
+ * @see [[SectionMarker]] for a widget that allows the user to interact with a section drawing location.
  * @beta
  */
 export class SectionDrawingLocationState {
@@ -83,7 +100,7 @@ export class SectionDrawingLocationState {
   /** The element Id of the section drawing location. */
   public readonly id: Id64String;
   /** The Id of the [GeometricModel3d]($backend) in which this section drawing location resides. */
-  public readonly modelId: Id64String;
+  public readonly model: Id64String;
   /** A user-friendly label for the section drawing location. */
   public readonly userLabel: string;
   /** The Id of the [SpatialCategory]($backend) to which this section drawing location belongs. */
@@ -105,25 +122,13 @@ export class SectionDrawingLocationState {
   /** If the section drawing is attached to a [Sheet]($backend), details about the corresponding [ViewAttachment]($backend).
    * When this section drawing location is displayed in a spatial context, annotations in the sheet model can be displayed along with the section graphics.
    */
-  public readonly viewAttachment?: {
-    /** The view attachment's element Id. */
-    readonly id: Id64String;
-    /** The Id of a [SheetViewDefinition]($backend) that displays this view attachment.
-     * This is used when navigating from the spatial view to the view attachment.
-     * @internal
-     */
-    readonly viewId?: Id64String;
-    /** The transform from the [Sheet]($backend) coordinate space to the spatial coordinate space. */
-    readonly transformToSpatial: Transform;
-    /** Optional 2d clip vector used to clip out portions of the [Sheet]($backend) containing annotations not relevant to this section drawing. */
-    readonly clip?: ClipVector;
-  };
+  public readonly viewAttachment?: SectionViewAttachment;
 
   /** @internal */
   public constructor(props: SectionDrawingLocationStateData, iModel: IModelConnection) {
     this.iModel = iModel;
     this.id = props.sectionLocationId;
-    this.modelId = props.sectionLocationModelId;
+    this.model = props.sectionLocationModelId;
     this.userLabel = props.userLabel;
     this.category = props.categoryId;
     this.sectionType = props.sectionType;

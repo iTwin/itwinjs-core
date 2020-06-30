@@ -25,6 +25,8 @@ export class Context extends WsgInstance {
     // (undocumented)
     dataLocationId?: string;
     // (undocumented)
+    image?: string;
+    // (undocumented)
     name?: string;
     // (undocumented)
     number?: string;

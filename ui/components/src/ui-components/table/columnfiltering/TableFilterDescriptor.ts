@@ -7,10 +7,10 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
+import { StandardTypeNames } from "@bentley/ui-abstract";
 import { StringOperatorProcessor } from "../../../ui-components";
 import { BooleanTypeConverter } from "../../converters/BooleanTypeConverter";
 import { LessGreaterOperatorProcessor, NullableOperatorProcessor } from "../../converters/TypeConverter";
-import { StandardTypeNames } from "../../common/StandardTypeNames";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { UiComponents } from "../../UiComponents";
 import { RowItem } from "../TableDataProvider";

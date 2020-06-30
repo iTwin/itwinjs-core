@@ -88,6 +88,8 @@ beta;SliderEditorParams
 beta;StagePanelLocation
 beta;StagePanelSection
 beta;StageUsage
+beta;StandardEditorNames
+beta;StandardTypeNames
 beta;StatusBarItemId = CommonStatusBarItem["id"]
 internal;StatusBarItemsChangedArgs
 internal;StatusBarItemsManager

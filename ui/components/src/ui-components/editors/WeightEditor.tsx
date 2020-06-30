@@ -9,12 +9,10 @@
 import "./WeightEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PrimitiveValue, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
 import { WeightPickerButton } from "../lineweight/WeightPickerButton";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
-import { StandardEditorNames } from "./StandardEditorNames";
 
 // cspell:ignore lineweight
 

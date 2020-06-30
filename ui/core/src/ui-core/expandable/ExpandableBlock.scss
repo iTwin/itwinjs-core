@@ -58,6 +58,12 @@
       -o-transition: 0.15s ease-in-out;
       transition: 0.15s ease-in-out;
     }
+
+    &:focus {
+      background-color: $buic-background-focus-overlay;
+      outline: none;
+    }
+
   }
 
   > .content {

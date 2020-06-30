@@ -23,7 +23,11 @@ Note: Gradient modes `ThematicGradientMode.SteppedWithDelimiter` and `ThematicGr
 
 ## Hyper-modeling
 
-The hyper-modeling [Extension]($frontend) has been replaced by the `hypermodeling-frontend` package to permit customization of its behavior. See [HyperModeling]($hypermodeling) and [SectionMarkerSetDecorator]($hypermodeling). Consult the package's README for further details.
+The hyper-modeling [Extension]($frontend) has been replaced by the `hypermodeling-frontend` package to permit customization of its behavior.
+
+* Use [HyperModeling.initialize]($hypermodeling) to initialize the package before using any of its APIs.
+* Use [HyperModeling.startOrStop]($hypermodeling) to enable or disable hypermodeling for a [Viewport]($frontend).
+* Use [HyperModelingConfig]($hypermodeling) to customize the package's behavior.
 
 ## ECSql Enhancements
 
@@ -39,3 +43,7 @@ Added these expressions and functions
     * [Lesson 11: Built-In functions](../learning/ECSQLTutorial/BuiltInFunctions.md)
 1. `ec_classid())` - Get ECClassId from a  qualified classname.
     * [Lesson 11: Built-In functions](../learning/ECSQLTutorial/BuiltInFunctions.md)
+
+## Schema upgrades
+
+Domain schemas can now be upgraded when opening BriefcaseDb-s and StandaloneDb-s. See new upgrade options that can be passed in to the open call.

@@ -5,4 +5,4 @@ public;BridgeLoggerCategory
 alpha;BridgeRunner
 alpha;IModelBridge
 alpha;class IModelBridgeBase 
-alpha;ServerArgs
+alpha;loggerCategory: string

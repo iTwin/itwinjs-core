@@ -10,6 +10,7 @@ exports[`SearchBox renders renders correctly 1`] = `
     onKeyDown={[Function]}
     onPaste={[Function]}
     placeholder="searchbox.search"
+    role="searchbox"
   />
   <div
     className="core-searchbox-button"

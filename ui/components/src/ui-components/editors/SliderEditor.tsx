@@ -12,12 +12,11 @@ import * as React from "react";
 import {
   PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes,
   PropertyValue, PropertyValueFormat, SliderEditorParams,
+  StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Icon, Slider } from "@bentley/ui-core";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
-import { StandardEditorNames } from "./StandardEditorNames";
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
 
 /** @internal */
@@ -246,7 +245,8 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
 
     return (
       <div className={className}>
-        <PopupButton label={this.state.value} onClose={this._handleClose} onEnter={this._handleEnter}>
+        <PopupButton label={this.state.value} onClose={this._handleClose} onEnter={this._handleEnter}
+          setFocus={this.props.setFocus} focusTarget=".core-slider-handle">
           <PopupContent>
             {popupContent}
             <PopupOkCancelButtons onOk={this._handleOk} onCancel={this._handleCancel} />

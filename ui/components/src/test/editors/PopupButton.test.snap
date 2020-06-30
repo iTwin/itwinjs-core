@@ -6,6 +6,8 @@ exports[`<PopupButton /> renders correctly 1`] = `
     className="components-popup-button"
     data-testid="components-popup-button"
     onClick={[Function]}
+    onKeyDown={[Function]}
+    tabIndex={0}
   >
     <div
       className="components-popup-button-value"
@@ -14,7 +16,6 @@ exports[`<PopupButton /> renders correctly 1`] = `
     </div>
     <div
       className="components-popup-button-arrow"
-      tabIndex={0}
     >
       <div
         className="components-popup-button-arrow-icon icon icon-chevron-down"
@@ -46,6 +47,8 @@ exports[`<PopupButton /> renders correctly with showArrow and showShadow 1`] = `
     className="components-popup-button"
     data-testid="components-popup-button"
     onClick={[Function]}
+    onKeyDown={[Function]}
+    tabIndex={0}
   >
     <div
       className="components-popup-button-value"
@@ -54,7 +57,6 @@ exports[`<PopupButton /> renders correctly with showArrow and showShadow 1`] = `
     </div>
     <div
       className="components-popup-button-arrow"
-      tabIndex={0}
     >
       <div
         className="components-popup-button-arrow-icon icon icon-chevron-down"

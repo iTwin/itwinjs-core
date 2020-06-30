@@ -4,11 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ButtonGroupEditorParams, DialogItem, DialogItemsManager, DialogItemValue, DialogRow, PropertyDescription, PropertyEditorParamTypes,
-  SuppressLabelEditorParams,
-  UiDataProvider,
+  ButtonGroupEditorParams, DialogItem, DialogItemsManager, DialogItemValue, DialogRow, PrimitiveValue, PropertyDescription, PropertyEditorParamTypes,
+  StandardEditorNames, StandardTypeNames, SuppressLabelEditorParams, UiDataProvider,
 } from "../../ui-abstract";
-import { PrimitiveValue } from "../../ui-abstract/properties/Value";
 
 const value1: DialogItemValue = { value: 3 };
 const value2: DialogItemValue = { value: 10 };
@@ -19,7 +17,7 @@ const getItem1Description = (): PropertyDescription => {
   return {
     name: "Item1",
     displayLabel: "Item One",
-    typename: "number",
+    typename: StandardTypeNames.Number,
   };
 };
 
@@ -27,7 +25,7 @@ const getItem2Description = (): PropertyDescription => {
   return {
     name: "Item2",
     displayLabel: "Item Two",
-    typename: "number",
+    typename: StandardTypeNames.Number,
   };
 };
 
@@ -35,17 +33,17 @@ const getLockToggleDescription = (): PropertyDescription => {
   return {
     name: "LockToggle",
     displayLabel: "Lock",
-    typename: "boolean",
-    editor: { name: "toggle" },
+    typename: StandardTypeNames.Boolean,
+    editor: { name: StandardEditorNames.Toggle },
   };
 };
 const getButtonGroupItemDescription = (): PropertyDescription => {
   return {
     name: "ButtonGroupName",
     displayLabel: "",
-    typename: "enum",
+    typename: StandardTypeNames.Enum,
     editor: {
-      name: "enum-buttongroup",
+      name: StandardEditorNames.EnumButtonGroup,
       params: [{
         type: PropertyEditorParamTypes.ButtonGroupData,
         buttons: [

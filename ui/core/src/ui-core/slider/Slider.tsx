@@ -271,7 +271,7 @@ function TooltipTrack(props: TooltipTrackProps) {
 
   const [percent, setPercent] = React.useState(null as number | null);
 
-  // istanbul ignore next - WIP
+  // istanbul ignore next
   const _onPointerMove = (e: React.PointerEvent) => {
     if (activeHandleID) {
       setPercent(null);
@@ -281,7 +281,7 @@ function TooltipTrack(props: TooltipTrackProps) {
     }
   };
 
-  // istanbul ignore next - WIP
+  // istanbul ignore next
   const _onPointerLeave = () => {
     setPercent(null);
   };
@@ -293,7 +293,7 @@ function TooltipTrack(props: TooltipTrackProps) {
     tooltipText = `${sourceValue} : ${targetValue}`;
   }
 
-  // istanbul ignore next - WIP
+  // istanbul ignore next
   return (
     <>
       {!activeHandleID && percent && showTooltip && multipleValues ? (
@@ -361,24 +361,35 @@ function Handle(props: HandleProps) {
   } = props;
 
   const [mouseOver, setMouseOver] = React.useState(false);
+  const [focused, setFocused] = React.useState(false);
 
-  // istanbul ignore next - WIP
+  // istanbul ignore next
   const _onMouseEnter = () => {
     setMouseOver(true);
   };
 
-  // istanbul ignore next - WIP
+  // istanbul ignore next
   const _onMouseLeave = () => {
     setMouseOver(false);
   };
 
-  // istanbul ignore next - WIP
+  // istanbul ignore next
+  const _onFocus = () => {
+    setFocused(true);
+  };
+
+  // istanbul ignore next
+  const _onBlur = () => {
+    setFocused(false);
+  };
+
+  // istanbul ignore next
   return (
     <>
-      {(mouseOver || isActive) && !disabled && showTooltip ? (
+      {(mouseOver || isActive || focused) && !disabled && showTooltip ? (
         <Tooltip percent={percent} below={tooltipBelow} value={formatTooltip ? formatTooltip(value) : value.toString()} />
       ) : null}
-      <div
+      <button
         role="slider"
         aria-valuemin={min}
         aria-valuemax={max}
@@ -389,8 +400,9 @@ function Handle(props: HandleProps) {
         {...getHandleProps(id, {
           onMouseEnter: _onMouseEnter,
           onMouseLeave: _onMouseLeave,
-        })} >
-      </div>
+          onFocus: _onFocus,
+          onBlur: _onBlur,
+        })} />
     </>
   );
 }

@@ -557,6 +557,7 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     resizable?: boolean;
     title?: string | JSX.Element;
     titleStyle?: React.CSSProperties;
+    trapFocus?: boolean;
     width?: string | number;
     x?: number;
     y?: number;
@@ -670,6 +671,7 @@ export interface ExpandableBlockProps extends CommonProps {
     caption?: string;
     isExpanded: boolean;
     onClick: React.MouseEventHandler<HTMLDivElement>;
+    onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
     onKeyPress?: React.KeyboardEventHandler<HTMLDivElement>;
     title: string;
 }
@@ -1578,7 +1580,7 @@ export const ResizeObserver: ResizeObserverType;
 // @internal (undocumented)
 export type ResizeObserverType = typeof import("resize-observer-polyfill").default;
 
-// @alpha
+// @beta
 export class ScrollPositionMaintainer implements IDisposable {
     constructor(el: Element);
     // (undocumented)
@@ -1752,6 +1754,7 @@ export interface SplitButtonProps extends CommonProps {
     icon?: IconSpec;
     label: string | React.ReactNode;
     onClick?: (event: any) => any;
+    onExecute?: () => any;
 }
 
 // @beta

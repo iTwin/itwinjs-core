@@ -15,58 +15,7 @@ import {
   TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSet, TileTreeSupplier, Viewport, ViewState2d,
 } from "@bentley/imodeljs-frontend";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
-
-/** Configures how section graphics are displayed in a viewport.
- * @alpha
- */
-export interface SectionGraphicsConfig {
-  /** Whether or not to clip the 2d view based on the view attachment's boundary. */
-  applyClipVolumes: boolean;
-  /** If true, display clip volumes as shapes for debugging. */
-  debugClipVolumes: boolean;
-  /** If false, don't draw the drawing view. */
-  displayDrawings: boolean;
-  /** If false, don't draw the sheet view (if any). */
-  displaySheets: boolean;
-}
-
-/** Obtain a copy of the default configuration.
- * @alpha
- */
-export function getDefaultSectionGraphicsConfig(): SectionGraphicsConfig {
-  return {
-    applyClipVolumes: true,
-    debugClipVolumes: false,
-    displayDrawings: true,
-    displaySheets: true,
-  };
-}
-
-const globalConfig = getDefaultSectionGraphicsConfig();
-
-/** Obtain a copy of the current configuration.
- * @alpha
- */
-export function getSectionGraphicsConfig(): SectionGraphicsConfig {
-  return { ...globalConfig };
-}
-
-/** Change the current configuration.
- * @alpha
- */
-export function setSectionGraphicsConfig(config: SectionGraphicsConfig): void {
-  let changed = false;
-  const props: Array<keyof SectionGraphicsConfig> = ["applyClipVolumes", "debugClipVolumes", "displayDrawings", "displaySheets"];
-  for (const prop of props) {
-    if (globalConfig[prop] !== config[prop]) {
-      globalConfig[prop] = config[prop];
-      changed = true;
-    }
-  }
-
-  if (changed)
-    IModelApp.viewManager.invalidateViewportScenes();
-}
+import { HyperModeling } from "./HyperModeling";
 
 interface ProxyTreeId {
   state: SectionDrawingLocationState;
@@ -241,7 +190,7 @@ abstract class ProxyTree extends TileTree {
       return;
 
     if (this.clipVolume)
-      this.viewFlagOverrides.setShowClipVolume(globalConfig.applyClipVolumes);
+      this.viewFlagOverrides.setShowClipVolume(true !== HyperModeling.graphicsConfig.ignoreClip);
 
     const tiles = this.selectTiles(args);
     for (const tile of tiles)
@@ -290,7 +239,7 @@ class DrawingProxyTree extends ProxyTree {
     super(params, location, clipVolume);
   }
 
-  protected get isDisplayed() { return globalConfig.displayDrawings; }
+  protected get isDisplayed() { return true !== HyperModeling.graphicsConfig.hideSectionGraphics; }
 }
 
 class SheetProxyTree extends ProxyTree {
@@ -310,7 +259,7 @@ class SheetProxyTree extends ProxyTree {
     this.symbologyOverrides.ignoreSubCategory = true;
   }
 
-  protected get isDisplayed() { return globalConfig.displaySheets; }
+  protected get isDisplayed() { return true !== HyperModeling.graphicsConfig.hideSheetAnnotations; }
 }
 
 /** The single Tile belonging to a ProxyTree, serving as a proxy for all of the proxied tree's tiles. */
@@ -340,7 +289,7 @@ class ProxyTile extends Tile {
     if (undefined !== rangeGfx)
       args.graphics.add(rangeGfx);
 
-    if (!globalConfig.debugClipVolumes || undefined === proxyTree.clipVolume)
+    if (true !== HyperModeling.graphicsConfig.debugClipVolumes || undefined === proxyTree.clipVolume)
       return;
 
     const builder = args.context.createSceneGraphicBuilder();
@@ -380,10 +329,10 @@ class SectionGraphicsProvider implements TiledGraphicsProvider {
   }
 }
 
-/** Creates a TiledGraphicsProvider that can be associated with a [Viewport]($frontend) to display 2d section graphics and annotations in the context of a
- * [SpatialViewState]($frontend). Typically used indirectly via [[SectionMarkerSetDecorator]].
+/** Creates a TiledGraphicsProvider that can be associated with a [Viewport]($frontend) to display 2d section graphics and annotations in the context of a [SpatialViewState]($frontend). Typically used indirectly via [[HyperModelingDecorator]].
  * @param state The section drawing location specifying which section drawing to display.
  * @returns A provider suitable for passing to [Viewport.addTiledGraphicsProvider]($frontend).
+ * @see [[HyperModelingDecorator.toggleAttachment]] to activate section graphics for a given [[SectionMarker]].
  * @beta
  */
 export async function createSectionGraphicsProvider(state: SectionDrawingLocationState): Promise<TiledGraphicsProvider> {

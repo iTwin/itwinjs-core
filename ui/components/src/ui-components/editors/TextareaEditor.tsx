@@ -12,13 +12,12 @@ import * as React from "react";
 import {
   InputEditorSizeParams, MultilineTextEditorParams, PrimitiveValue, PropertyEditorParams,
   PropertyEditorParamTypes, PropertyValue, PropertyValueFormat,
+  StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Textarea, TextareaProps } from "@bentley/ui-core";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
-import { StandardEditorNames } from "./StandardEditorNames";
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
 
 /** @internal */
@@ -142,6 +141,11 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
     }
   }
 
+  // private _handleBlur = (_event: React.FocusEvent): void => {
+  //   // tslint:disable-next-line: no-console
+  //   console.log("_handleBlur");
+  // }
+
   /** @internal */
   public render(): React.ReactNode {
     const className = classnames("components-cell-editor", "components-textarea-editor", this.props.className);
@@ -158,14 +162,14 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
       disabled: this.state.isDisabled,
       maxLength: this.state.maxLength,
       defaultValue: this.state.inputValue,
-      onBlur: this.props.onBlur,
+      // onBlur: this._handleBlur,
       onChange: this._updateTextareaValue,
       setFocus: this.props.setFocus && !this.state.isDisabled,
     };
 
     return (
       <div className={className}>
-        <PopupButton label={this.state.inputValue}>
+        <PopupButton label={this.state.inputValue} setFocus={this.props.setFocus} focusTarget=".uicore-inputs-textarea">
           <PopupContent>
             <Textarea
               {...textareaProps}
