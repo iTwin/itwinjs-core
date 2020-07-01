@@ -58,8 +58,8 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
           },
         },
         "size": Object {
-          "height": NaN,
-          "width": NaN,
+          "height": 0,
+          "width": 0,
         },
         "tabs": Object {
           "nz-tool-settings-tab": Object {
@@ -189,8 +189,8 @@ Object {
     },
   },
   "size": Object {
-    "height": NaN,
-    "width": NaN,
+    "height": 0,
+    "width": 0,
   },
   "tabs": Object {
     "nz-tool-settings-tab": Object {
@@ -269,8 +269,8 @@ Object {
     },
   },
   "size": Object {
-    "height": NaN,
-    "width": NaN,
+    "height": 0,
+    "width": 0,
   },
   "tabs": Object {
     "t1": Object {
@@ -352,8 +352,8 @@ Object {
     },
   },
   "size": Object {
-    "height": NaN,
-    "width": NaN,
+    "height": 0,
+    "width": 0,
   },
   "tabs": Object {
     "nz-tool-settings-tab": Object {
@@ -424,8 +424,8 @@ Object {
     },
   },
   "size": Object {
-    "height": NaN,
-    "width": NaN,
+    "height": 0,
+    "width": 0,
   },
   "tabs": Object {
     "nz-tool-settings-tab": Object {

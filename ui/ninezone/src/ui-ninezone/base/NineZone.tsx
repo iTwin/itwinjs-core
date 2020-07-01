@@ -168,8 +168,13 @@ function CursorTypeProvider(props: { children?: React.ReactNode }) {
 }
 
 const Measurer = React.forwardRef<HTMLDivElement>(function Measurer(_, ref) { // tslint:disable-line: variable-name no-shadowed-variable
+  const size = React.useRef<{ height?: number, width?: number }>({});
   const dispatch = React.useContext(NineZoneDispatchContext);
   const handleResize = React.useCallback((width, height) => {
+    if (size.current.width === width && size.current.height === height)
+      return;
+    size.current.height = height;
+    size.current.width = width;
     dispatch({
       type: "RESIZE",
       size: {

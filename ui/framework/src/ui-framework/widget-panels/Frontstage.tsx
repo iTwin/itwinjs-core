@@ -10,7 +10,7 @@ import "./Frontstage.scss";
 import produce, { Draft } from "immer";
 import * as React from "react";
 import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
-import { UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
+import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
   addPanelWidget, addTab, assert, createNineZoneState, createTabsState, floatingWidgetBringToFront, FloatingWidgets, FloatingWidgetState,
   NineZone, NineZoneDispatch, NineZoneState, NineZoneStateReducer, PanelSide, panelSides, TabState, toolSettingsTabId,
@@ -75,13 +75,37 @@ export function useNineZoneState(frontstageDef: FrontstageDef) {
   return nineZone;
 }
 
+/** Update in-memory NineZoneState of newly activated frontstage with up to date size.
+ * @internal
+ */
+export function useUpdateNineZoneSize(frontstageDef: FrontstageDef) {
+  React.useEffect(() => {
+    const size = FrontstageManager.nineZoneSize;
+    let state = frontstageDef.nineZoneState;
+    if (!size || !state)
+      return;
+    state = NineZoneStateReducer(state, {
+      type: "RESIZE",
+      size: {
+        height: size.height,
+        width: size.width,
+      },
+    });
+    frontstageDef.nineZoneState = state;
+  }, [frontstageDef]);
+}
+
 /** @internal */
 export function useNineZoneDispatch(frontstageDef: FrontstageDef) {
-  return React.useCallback<NineZoneDispatch>((action) => {
+  const dispatch = React.useCallback<NineZoneDispatch>((action) => {
     if (!frontstageDef.nineZoneState)
       return;
+    if (action.type === "RESIZE") {
+      FrontstageManager.nineZoneSize = Size.create(action.size);
+    }
     frontstageDef.nineZoneState = NineZoneStateReducer(frontstageDef.nineZoneState, action);
   }, [frontstageDef]);
+  return dispatch;
 }
 
 /** @internal */
@@ -100,6 +124,7 @@ const defaultNineZone = createNineZoneState();
 export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: FrontstageDef }) {
   const nineZone = useNineZoneState(frontstageDef);
   const dispatch = useNineZoneDispatch(frontstageDef);
+  useUpdateNineZoneSize(frontstageDef);
   useSavedFrontstageState(frontstageDef);
   useSaveFrontstageSettings(frontstageDef);
   useFrontstageManager(frontstageDef);
@@ -277,7 +302,7 @@ const stateVersion = 4; // this needs to be bumped when NineZoneState is changed
 
 /** @internal */
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
-  let nineZone = createNineZoneState();
+  let nineZone = defaultNineZone;
   nineZone = addPanelWidgets(nineZone, frontstageDef, "left");
   nineZone = addPanelWidgets(nineZone, frontstageDef, "right");
   nineZone = addPanelWidgets(nineZone, frontstageDef, "top");
@@ -311,6 +336,12 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
     stateDraft.panels.right.size = frontstageDef.rightPanel?.size;
     stateDraft.panels.top.size = frontstageDef.topPanel?.size;
     stateDraft.panels.bottom.size = frontstageDef.bottomPanel?.size;
+    if (FrontstageManager.nineZoneSize) {
+      stateDraft.size = {
+        height: FrontstageManager.nineZoneSize.height,
+        width: FrontstageManager.nineZoneSize.width,
+      };
+    }
   });
   return nineZone;
 }
@@ -341,6 +372,15 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
     }
     return;
   });
+  if (FrontstageManager.nineZoneSize) {
+    restored = NineZoneStateReducer(restored, {
+      type: "RESIZE",
+      size: {
+        height: FrontstageManager.nineZoneSize.height,
+        width: FrontstageManager.nineZoneSize.width,
+      },
+    });
+  }
   return restored;
 }
 

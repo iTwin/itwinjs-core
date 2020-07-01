@@ -15,12 +15,14 @@ import { WidgetState } from "@bentley/ui-abstract";
 import { ConfigurableUiContent, CoreTools, FrontstageManager } from "../../ui-framework";
 import TestUtils, { storageMock } from "../TestUtils";
 import { TestFrontstage, TestFrontstage2, TestFrontstage3 } from "./FrontstageTestUtils";
+import { Size } from "@bentley/ui-core";
 
 const mySessionStorage = storageMock();
 
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;
 
 describe("FrontstageManager", () => {
+  const sandbox = sinon.createSandbox();
 
   before(async () => {
     Object.defineProperty(window, "sessionStorage", {
@@ -41,6 +43,10 @@ describe("FrontstageManager", () => {
 
     // restore the overriden property getter
     Object.defineProperty(window, "sessionStorage", propertyDescriptorToRestore);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   it("initialized should return true", () => {
@@ -179,4 +185,21 @@ describe("FrontstageManager", () => {
 
   });
 
+  describe("nineZoneSize", () => {
+    let nineZoneSize: typeof FrontstageManager.nineZoneSize;
+
+    before(() => {
+      nineZoneSize = FrontstageManager.nineZoneSize;
+    });
+
+    afterEach(() => {
+      FrontstageManager.nineZoneSize = nineZoneSize;
+    });
+
+    it("should set nineZoneSize", () => {
+      FrontstageManager.nineZoneSize = new Size(10, 20);
+      FrontstageManager.nineZoneSize.width.should.eq(10);
+      FrontstageManager.nineZoneSize.height.should.eq(20);
+    });
+  });
 });
