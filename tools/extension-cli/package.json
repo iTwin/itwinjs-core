@@ -33,6 +33,7 @@
   "dependencies": {
     "@bentley/extension-client": "2.3.0-dev.12",
     "@bentley/bentleyjs-core": "2.3.0-dev.12",
+    "@bentley/geometry-core": "2.3.0-dev.12",
     "@bentley/imodeljs-backend": "2.3.0-dev.12",
     "@bentley/imodeljs-common": "2.3.0-dev.12",
     "@bentley/itwin-client": "2.3.0-dev.12",
