@@ -100,7 +100,7 @@ export interface BriefcaseDownloader {
 }
 
 /** Option to control the validation and upgrade of domain schemas in the Db
- * @internal
+ * @beta
  */
 export enum DomainOptions {
   /** Domain schemas will be validated for any required upgrades. Any errors will be reported back, and cause the application to fail opening the Db */
@@ -117,7 +117,7 @@ export enum DomainOptions {
 }
 
 /** Options that control whether a profile upgrade should be performed when opening a Db
- * @internal
+ * @beta
  */
 export enum ProfileOptions {
   /** No profile upgrade will be performed. If a profile upgrade was required, opening the file will fail */
@@ -128,7 +128,7 @@ export enum ProfileOptions {
 }
 
 /** Arguments to validate and update the profile and domain schemas when opening a Db
- * @internal
+ * @beta
  */
 export interface UpgradeOptions {
   /** Option to control the validation and upgrade of domain schemas in the Db */
