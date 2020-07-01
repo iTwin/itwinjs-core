@@ -132,7 +132,7 @@ export class BriefcaseEntry {
   /** Mode used to open the briefcase */
   public openMode: OpenMode;
 
-  /** Whether to performan any upgrades upon opening the db */
+  /** Whether to perform any upgrades upon opening the db */
   public upgrade: IModelJsNative.UpgradeMode = IModelJsNative.UpgradeMode.None;
 
   /** Params used to open the briefcase */

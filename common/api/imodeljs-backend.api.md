@@ -1649,6 +1649,8 @@ export class Element extends Entity implements ElementProps {
     parent?: RelatedElement;
     // @beta
     static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined): void;
+    // @internal (undocumented)
+    static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
     // (undocumented)
     setJsonProperty(nameSpace: string, value: any): void;
@@ -1821,6 +1823,8 @@ export class Entity implements EntityProps {
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
     iModel: IModelDb;
+    // @internal (undocumented)
+    static get protectedOperations(): string[];
     static schema: typeof Schema;
     get schemaName(): string;
     // @internal (undocumented)
@@ -3165,6 +3169,8 @@ export class Model extends Entity implements ModelProps {
     readonly parentModel: Id64String;
     // @beta
     static populateRequest(req: ConcurrencyControl.Request, props: ModelProps, iModel: IModelDb, opcode: DbOpcode): void;
+    // @internal (undocumented)
+    static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
     // (undocumented)
     setJsonProperty(name: string, value: any): void;
@@ -3456,6 +3462,8 @@ export class RoleModel extends Model {
 export class Schema {
     // @internal
     protected constructor();
+    // @internal
+    static get missingRequiredBehavior(): boolean;
     static get schemaName(): string;
 }
 

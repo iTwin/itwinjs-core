@@ -82,4 +82,7 @@ export class Entity implements EntityProps {
 
   /** Get the full BIS class name of this Entity in the form "schema:class". */
   public get classFullName(): string { return this._ctor.classFullName; }
+
+  /** @internal */
+  public static get protectedOperations(): string[] { return []; }
 }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "disallow protected operations for missing schemas marked with SchemaHasBehavior custom attribute",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Keith.Bentley@bentley.com"
+}
