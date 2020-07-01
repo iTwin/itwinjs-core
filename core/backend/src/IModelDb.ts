@@ -25,7 +25,7 @@ import {
   TileTreeProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
+import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
@@ -46,7 +46,6 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { AdditionalFeatureData, UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { ChangesType } from "@bentley/imodelhub-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 

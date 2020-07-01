@@ -6,10 +6,10 @@
  * @module Framework
  */
 import { ChangesType, LockLevel } from "@bentley/imodelhub-client";
-import { BriefcaseDb, BriefcaseManager, IModelJsNative } from "@bentley/imodeljs-backend";
+import { BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, SnapshotDb, Subject, SubjectOwnsSubjects } from "@bentley/imodeljs-backend";
 import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { DownloadBriefcaseOptions, SyncMode } from "@bentley/imodeljs-common";
+import { DomainOptions, DownloadBriefcaseOptions, IModel, IModelError, ProfileOptions, SubjectProps, SyncMode, UpgradeOptions } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
 
