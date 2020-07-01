@@ -62,4 +62,5 @@ Added these expressions and functions
 
 ## Schema upgrades
 
-Domain schemas can now be upgraded when opening BriefcaseDb-s and StandaloneDb-s. See new upgrade options that can be passed in to the open call.
+Domain schemas can now be upgraded when opening BriefcaseDb-s and StandaloneDb-s. See new [UpgradeOptions]($common) options that can be passed in to the [IModelDb.open]($backend) call.
+
