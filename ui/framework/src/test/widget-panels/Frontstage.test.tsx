@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import produce, { castDraft } from "immer";
 import { StagePanelLocation } from "@bentley/ui-abstract";
-import { UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
-import { addFloatingWidget, addPanelWidget, addTab, createNineZoneState, createWidgetState } from "@bentley/ui-ninezone";
+import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
+import { addFloatingWidget, addPanelWidget, addTab, createNineZoneState, createWidgetState, NineZoneState } from "@bentley/ui-ninezone";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
   ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, expandWidget, findTab, FrontstageDef,
@@ -20,10 +20,11 @@ import {
 } from "../../ui-framework";
 import TestUtils, { UiSettingsStub } from "../TestUtils";
 import { Logger } from "@bentley/bentleyjs-core";
+import { useUpdateNineZoneSize } from "../../ui-framework/widget-panels/Frontstage";
 
-function createSavedNineZoneState() {
+function createSavedNineZoneState(args?: Partial<NineZoneState>) {
   return {
-    ...createNineZoneState(),
+    ...createNineZoneState(args),
     tabs: {},
   };
 }
@@ -151,6 +152,21 @@ describe("useNineZoneDispatch", () => {
       size: 200,
     });
     (frontstageDef.nineZoneState === undefined).should.true;
+  });
+
+  it("should set nineZoneSize when RESIZE is received", () => {
+    const spy = sinon.stub(FrontstageManager, "nineZoneSize").set(() => { });
+    const frontstageDef = new FrontstageDef();
+    frontstageDef.nineZoneState = createNineZoneState();
+    const { result } = renderHook(() => useNineZoneDispatch(frontstageDef));
+    result.current({
+      type: "RESIZE",
+      size: {
+        width: 5,
+        height: 10,
+      },
+    });
+    spy.calledOnceWithExactly(sinon.match({ width: 5, height: 10 }));
   });
 });
 
@@ -475,6 +491,12 @@ describe("useSyncDefinitions", () => {
 });
 
 describe("initializeNineZoneState", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("should initialize widgets", () => {
     const frontstageDef = new FrontstageDef();
     sinon.stub(frontstageDef, "centerLeft").get(() => new ZoneDef());
@@ -501,6 +523,19 @@ describe("initializeNineZoneState", () => {
     sinon.stub(centerLeft, "widgetDefs").get(() => [widgetDef]);
     const state = initializeNineZoneState(frontstageDef);
     state.widgets.leftStart.activeTabId!.should.eq("w1");
+  });
+
+  it("should initialize size", () => {
+    sandbox.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
+    const frontstageDef = new FrontstageDef();
+    const sut = initializeNineZoneState(frontstageDef);
+    sut.size.should.eql({ width: 10, height: 20 });
+  });
+
+  it("should not initialize size", () => {
+    const frontstageDef = new FrontstageDef();
+    const sut = initializeNineZoneState(frontstageDef);
+    sut.size.should.eql({ width: 0, height: 0 });
   });
 });
 
@@ -777,6 +812,46 @@ describe("restoreNineZoneState", () => {
     sut.should.matchSnapshot();
   });
 
+  it("should RESIZE", () => {
+    sandbox.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
+    const frontstageDef = new FrontstageDef();
+    const savedState = {
+      ...createSavedNineZoneState({
+        size: {
+          width: 1,
+          height: 2,
+        },
+      }),
+      tabs: {
+        t1: {
+          id: "t1",
+        },
+      },
+    };
+
+    const sut = restoreNineZoneState(frontstageDef, savedState);
+    sut.size.should.eql({ width: 10, height: 20 });
+  });
+
+  it("should not RESIZE", () => {
+    const frontstageDef = new FrontstageDef();
+    const savedState = {
+      ...createSavedNineZoneState({
+        size: {
+          width: 1,
+          height: 2,
+        },
+      }),
+      tabs: {
+        t1: {
+          id: "t1",
+        },
+      },
+    };
+
+    const sut = restoreNineZoneState(frontstageDef, savedState);
+    sut.size.should.eql({ width: 1, height: 2 });
+  });
 });
 
 describe("packNineZoneState", () => {
@@ -786,5 +861,36 @@ describe("packNineZoneState", () => {
     nineZone = addTab(nineZone, "w1", "t1");
     const sut = packNineZoneState(nineZone);
     sut.should.matchSnapshot();
+  });
+});
+
+describe("useUpdateNineZoneSize", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should update size of nine zone state when new frontstage is activated", () => {
+    const { rerender } = renderHook((props) => useUpdateNineZoneSize(props), { initialProps: new FrontstageDef() });
+
+    const newFrontstageDef = new FrontstageDef();
+    newFrontstageDef.nineZoneState = createNineZoneState();
+
+    sandbox.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
+    rerender(newFrontstageDef);
+
+    newFrontstageDef.nineZoneState!.size.should.eql({ width: 10, height: 20 });
+  });
+
+  it("should not update size if FrontstageManager.nineZoneSize is not initialized", () => {
+    const { rerender } = renderHook((props) => useUpdateNineZoneSize(props), { initialProps: new FrontstageDef() });
+
+    const newFrontstageDef = new FrontstageDef();
+    newFrontstageDef.nineZoneState = createNineZoneState({ size: { height: 1, width: 2 } });
+
+    rerender(newFrontstageDef);
+
+    newFrontstageDef.nineZoneState!.size.should.eql({ height: 1, width: 2 });
   });
 });

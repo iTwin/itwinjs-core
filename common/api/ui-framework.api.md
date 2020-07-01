@@ -2245,6 +2245,9 @@ export class FrontstageManager {
     static get modalFrontstageCount(): number;
     static get nestedFrontstageCount(): number;
     static get NineZoneManager(): NineZoneManager;
+    // @internal (undocumented)
+    static get nineZoneSize(): Size | undefined;
+    static set nineZoneSize(size: Size | undefined);
     static readonly onContentControlActivatedEvent: ContentControlActivatedEvent;
     static readonly onContentLayoutActivatedEvent: ContentLayoutActivatedEvent;
     static readonly onFrontstageActivatedEvent: FrontstageActivatedEvent;
@@ -5879,6 +5882,9 @@ export function useUiSettingsContext(): UiSettings;
 
 // @internal (undocumented)
 export function useUiVisibility(): boolean;
+
+// @internal
+export function useUpdateNineZoneSize(frontstageDef: FrontstageDef): void;
 
 // @alpha
 export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
