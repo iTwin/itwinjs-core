@@ -47,10 +47,10 @@ describe("WidgetTitleBar", () => {
     const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
     const handle = titleBar.getElementsByClassName("nz-handle")[0];
     act(() => {
-      fireEvent.pointerDown(handle);
-      fireEvent.pointerMove(document);
+      fireEvent.mouseDown(handle);
+      fireEvent.mouseMove(document);
       dispatch.reset();
-      fireEvent.pointerUp(document);
+      fireEvent.mouseUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: "WIDGET_DRAG_END",
@@ -92,10 +92,10 @@ describe("WidgetTitleBar", () => {
     const target = container.getElementsByClassName("nz-widget-tabTarget")[0];
     sandbox.stub(document, "elementFromPoint").returns(target);
     act(() => {
-      fireEvent.pointerDown(handle);
-      fireEvent.pointerMove(target);
+      fireEvent.mouseDown(handle);
+      fireEvent.mouseMove(target);
       dispatch.reset();
-      fireEvent.pointerUp(document);
+      fireEvent.mouseUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: "WIDGET_DRAG_END",
@@ -139,10 +139,10 @@ describe("WidgetTitleBar", () => {
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
     sandbox.stub(document, "elementFromPoint").returns(target);
     act(() => {
-      fireEvent.pointerDown(handle);
-      fireEvent.pointerMove(target);
+      fireEvent.mouseDown(handle);
+      fireEvent.mouseMove(target);
       dispatch.reset();
-      fireEvent.pointerUp(document);
+      fireEvent.mouseUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: "WIDGET_DRAG_END",
@@ -152,6 +152,41 @@ describe("WidgetTitleBar", () => {
         side: "right",
         type: "panel",
       },
+    })).should.true;
+  });
+
+  it("should dispatch FLOATING_WIDGET_BRING_TO_FRONT", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = produce(nineZone, (stateDraft) => {
+      stateDraft.panels.left.widgets = [];
+      stateDraft.floatingWidgets.byId.w1 = {
+        bounds: new Rectangle(0, 100, 200, 400).toProps(),
+        id: "w1",
+      };
+    });
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <FloatingWidget
+          floatingWidget={nineZone.floatingWidgets.byId.w1!}
+          widget={nineZone.widgets.w1}
+        />
+      </NineZoneProvider>,
+    );
+    const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
+    const handle = titleBar.getElementsByClassName("nz-handle")[0];
+    act(() => {
+      fireEvent.touchStart(handle, {
+        touches: [{}],
+      });
+    });
+    dispatch.calledOnceWithExactly(sinon.match({
+      type: "FLOATING_WIDGET_BRING_TO_FRONT",
+      id: "w1",
     })).should.true;
   });
 });
@@ -165,13 +200,64 @@ describe("useDrag", () => {
 
   it("should start drag action after timeout", () => {
     const fakeTimers = sandbox.useFakeTimers();
-    const spy = sinon.stub<Parameters<typeof useDrag>[0]>();
+    const spy = sinon.stub<Required<Parameters<typeof useDrag>>[0]>();
     const { result } = renderHook(() => useDrag(spy));
     act(() => {
       const instance = document.createElement("div");
       result.current(instance);
-      fireEvent.pointerDown(instance);
+      fireEvent.mouseDown(instance);
       fakeTimers.tick(300);
+    });
+    spy.calledOnce.should.true;
+  });
+
+  it("should start drag on pointer move", () => {
+    const spy = sinon.stub<Required<Parameters<typeof useDrag>>[0]>();
+    const { result } = renderHook(() => useDrag(spy));
+    act(() => {
+      const instance = document.createElement("div");
+      result.current(instance);
+      fireEvent.mouseDown(instance);
+      fireEvent.mouseMove(document);
+    });
+    spy.calledOnce.should.true;
+  });
+
+  it("should not start drag on subsequent pointer move", () => {
+    const spy = sinon.stub<Required<Parameters<typeof useDrag>>[0]>();
+    const { result } = renderHook(() => useDrag(spy));
+    act(() => {
+      const instance = document.createElement("div");
+      result.current(instance);
+      fireEvent.mouseDown(instance);
+      fireEvent.mouseMove(document);
+      spy.resetHistory();
+      fireEvent.mouseMove(document);
+    });
+    spy.notCalled.should.true;
+  });
+
+  it("should report drag action", () => {
+    const spy = sinon.stub<Required<Parameters<typeof useDrag>>[1]>();
+    const { result } = renderHook(() => useDrag(undefined, spy));
+    act(() => {
+      const instance = document.createElement("div");
+      result.current(instance);
+      fireEvent.mouseDown(instance);
+      fireEvent.mouseMove(document);
+      fireEvent.mouseMove(document);
+    });
+    spy.calledOnce.should.true;
+  });
+
+  it("should report drag end action", () => {
+    const spy = sinon.stub<Required<Parameters<typeof useDrag>>[2]>();
+    const { result } = renderHook(() => useDrag(undefined, undefined, spy));
+    act(() => {
+      const instance = document.createElement("div");
+      result.current(instance);
+      fireEvent.mouseDown(instance);
+      fireEvent.mouseUp(document);
     });
     spy.calledOnce.should.true;
   });

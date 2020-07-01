@@ -80,13 +80,15 @@ export interface AutoSuggestData {
 export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
     // @internal (undocumented)
     alwaysRenderSuggestions?: boolean;
-    getSuggestions?: (value: string) => AutoSuggestData[];
+    getLabel?: (value: string | undefined) => string;
+    // @deprecated
+    getSuggestions?: GetAutoSuggestDataFunc;
     onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
     onPressEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressEscape?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onSuggestionSelected: (selected: AutoSuggestData) => void;
-    options: AutoSuggestData[];
+    options: AutoSuggestData[] | GetAutoSuggestDataFunc;
     setFocus?: boolean;
     value?: string;
 }
@@ -780,7 +782,15 @@ export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
 export function FlexWrapContainer(props: CommonDivProps): JSX.Element;
 
 // @internal
-export function FocusTrap(props: Props): JSX.Element | null;
+export function FocusTrap(props: FocusTrapProps): JSX.Element | null;
+
+// @internal
+export interface FocusTrapProps extends React.AllHTMLAttributes<any> {
+    active?: boolean;
+    children: React.ReactNode;
+    initialFocusElement?: React.RefObject<HTMLElement> | string;
+    returnFocusOnDeactivate: boolean;
+}
 
 // @beta
 export class Form extends React.Component<FormProps, FormState> {
@@ -804,6 +814,9 @@ export interface FormProps {
     handleFormSubmit: (values: FieldValues) => Promise<void>;
     submitButtonLabel?: string;
 }
+
+// @beta
+export type GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[];
 
 // @internal
 export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string;
@@ -857,6 +870,9 @@ export interface GlobalDialogProps extends DialogProps {
     // (undocumented)
     identifier?: string;
 }
+
+// @internal
+export function hasPointerEventsSupport(): boolean;
 
 // @public
 export function Headline(props: TextProps): JSX.Element;
@@ -1279,6 +1295,9 @@ export enum Orientation {
     // (undocumented)
     Vertical = 1
 }
+
+// @internal (undocumented)
+export type OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent;
 
 // @internal
 export class Point implements PointProps {
@@ -2190,7 +2209,7 @@ export function useEffectSkipFirst(callback: () => (void | (() => void | undefin
 
 // @internal
 export function useOnOutsideClick<T extends Element>(onOutsideClick?: () => void,
-outsideEventPredicate?: (e: PointerEvent) => boolean): React.MutableRefObject<T | null>;
+outsideEventPredicate?: (e: OutsideClickEvent) => boolean): React.RefObject<T>;
 
 // @public
 export function useOptionalDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable | undefined): TDisposable | undefined;

@@ -659,8 +659,8 @@ export function createNineZoneState(args?: Partial<NineZoneState>): NineZoneStat
       type: "docked",
     },
     size: {
-      height: Number.NaN,
-      width: Number.NaN,
+      height: 0,
+      width: 0,
     },
     ...args,
   };

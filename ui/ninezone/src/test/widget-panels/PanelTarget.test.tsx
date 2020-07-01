@@ -5,8 +5,8 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { createNineZoneState, CursorTypeContext, PanelStateContext, PanelTarget } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+import { createNineZoneState, CursorTypeContext, DragManager, PanelStateContext, PanelTarget } from "../../ui-ninezone";
+import { createDragStartArgs, NineZoneProvider } from "../Providers";
 
 describe("PanelTarget", () => {
   const sandbox = sinon.createSandbox();
@@ -16,9 +16,11 @@ describe("PanelTarget", () => {
   });
 
   it("should render targeted", () => {
+    const dragManager = React.createRef<DragManager>();
     const nineZone = createNineZoneState();
     const { container } = render(
       <NineZoneProvider
+        dragManagerRef={dragManager}
         state={nineZone}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
@@ -29,15 +31,18 @@ describe("PanelTarget", () => {
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
     sandbox.stub(document, "elementFromPoint").returns(target);
     act(() => {
-      fireEvent.pointerMove(target);
+      dragManager.current!.handleDragStart(createDragStartArgs());
+      fireEvent.mouseMove(target);
     });
     container.firstChild!.should.matchSnapshot();
   });
 
   it("should render cursor type", () => {
+    const dragManager = React.createRef<DragManager>();
     const nineZone = createNineZoneState();
     const { container } = render(
       <NineZoneProvider
+        dragManagerRef={dragManager}
         state={nineZone}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
@@ -50,7 +55,8 @@ describe("PanelTarget", () => {
     const target = container.getElementsByClassName("nz-widgetPanels-panelTarget")[0];
     sandbox.stub(document, "elementFromPoint").returns(target);
     act(() => {
-      fireEvent.pointerMove(target);
+      dragManager.current!.handleDragStart(createDragStartArgs());
+      fireEvent.mouseMove(target);
     });
     container.firstChild!.should.matchSnapshot();
   });

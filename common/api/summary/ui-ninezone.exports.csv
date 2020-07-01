@@ -64,7 +64,7 @@ internal;DraggedResizeHandleContext: React.Context
 internal;DraggedTabContext: React.Context
 internal;DraggedTabState
 internal;DraggedTabStateContext: React.Context
-internal;DraggedWidgetContext: React.Context
+internal;DraggedWidgetIdContext: React.Context
 internal;DraggedWidgetManager
 beta;DraggedWidgetManagerProps
 internal;DragHandle 
@@ -240,6 +240,8 @@ internal;PanelWidget: React.NamedExoticComponent
 internal;PanelWidgetDragStartAction
 internal;PanelWidgetProps
 internal;PointerCaptor 
+internal;PointerCaptorArgs
+internal;PointerCaptorEvent = MouseEvent | TouchEvent
 internal;PointerCaptorProps 
 beta;ProgressProps 
 internal;ResizeAction
@@ -359,7 +361,7 @@ beta;Tooltip
 beta;TooltipDefaultProps = Pick
 beta;TooltipProps 
 internal;TopPanelSide = "top"
-internal;useDoubleClick(onDoubleClick?: () => void): [() => void]
+internal;useDoubleClick(onDoubleClick?: () => void): () => void
 internal;useDrag
 internal;useDraggedItemId
 internal;useDragItem
@@ -378,18 +380,17 @@ internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
 internal;useIsDraggedType(type: DragItem["type"]): boolean
 internal;useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray
-internal;usePanelTarget(args: UsePanelTargetArgs): (isTargeted: boolean) => void
+internal;usePanelTarget
 internal;UsePanelTargetArgs
 internal;usePointerCaptor: 
 internal;useResizeGrip: 
 beta;UserProfile 
 beta;UserProfileProps 
-internal;useTabTarget(args: UseTabTargetArgs): (isTargeted: boolean) => void
+internal;useTabTarget
 internal;UseTabTargetArgs
-internal;useTarget
 internal;useToolSettingsEntry(): DockedToolSettingsEntryContextArgs
 internal;useTransientState(onSave?: () => void, onRestore?: () => void): void
-internal;useWidgetTarget(args: UseWidgetTargetArgs): (isTargeted: boolean) => void
+internal;useWidgetTarget
 internal;UseWidgetTargetArgs
 beta;VerticalAnchor
 internal;VerticalAnchorHelpers

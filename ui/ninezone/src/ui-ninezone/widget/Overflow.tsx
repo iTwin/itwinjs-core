@@ -9,7 +9,7 @@
 import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { OutsideClickEvent, useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { WidgetMenu } from "./Menu";
 
 /** @internal */
@@ -32,7 +32,7 @@ export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOve
   const onOutsideClick = React.useCallback(() => {
     setOpen(false);
   }, []);
-  const isOutsideEvent = React.useCallback((e: PointerEvent) => {
+  const isOutsideEvent = React.useCallback((e: OutsideClickEvent) => {
     return !!ref.current && (e.target instanceof Node) && !ref.current.contains(e.target);
   }, []);
   const menuRef = useOnOutsideClick<HTMLDivElement>(onOutsideClick, isOutsideEvent);

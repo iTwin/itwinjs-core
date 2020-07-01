@@ -9,7 +9,7 @@
 import "./Handle.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { CommonProps, Point, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { useDragToolSettings } from "../base/DragManager";
 import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
 import { useDrag } from "../widget/TabBar";
@@ -29,7 +29,7 @@ export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHa
   const resizeObserverRef = useResizeObserver<HTMLDivElement>(props.onResize);
   const newWidgetDragItemId = React.useMemo(() => getUniqueId(), []);
   const onDragStart = useDragToolSettings({ newWidgetDragItemId });
-  const handleDragStart = React.useCallback((initialPointerPosition) => {
+  const handleDragStart = React.useCallback((initialPointerPosition: Point) => {
     onDragStart({
       initialPointerPosition,
     });

@@ -14,17 +14,16 @@ import { assert } from "../base/assert";
 import { useDragPanelGrip, UseDragPanelGripArgs } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
 import { isHorizontalPanelSide, PanelSide, PanelStateContext } from "./Panel";
+import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 
 /** Resize grip of [[WidgetPanel]] component.
  * @internal
  */
 export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint:disable-line: variable-name no-shadowed-variable
-  const [active, setActive] = React.useState(false);
   const panel = React.useContext(PanelStateContext);
-  assert(panel);
   const dispatch = React.useContext(NineZoneDispatchContext);
+  assert(panel);
   const { side } = panel;
-  const initialPointerPosition = React.useRef<Point>();
   const handleResize = React.useCallback((resizeBy: number) => {
     dispatch({
       type: "PANEL_RESIZE",
@@ -32,44 +31,13 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint
       resizeBy,
     });
   }, [dispatch, side]);
-  const dragStartTimer = React.useRef(new Timer(300));
   const handleDoubleClick = React.useCallback(() => {
     dispatch({
       type: "PANEL_TOGGLE_COLLAPSED",
       side,
     });
   }, [dispatch, side]);
-  const [handleClick] = useDoubleClick(handleDoubleClick);
-  const [handleResizeStart, ref, resizing] = useResizeGrip<HTMLDivElement>(side, handleResize);
-  const handlePointerDown = React.useCallback((e: React.PointerEvent) => {
-    e.preventDefault();
-    initialPointerPosition.current = new Point(e.clientX, e.clientY);
-    dragStartTimer.current.start();
-    setActive(true);
-  }, []);
-  const handlePointerUp = React.useCallback(() => {
-    initialPointerPosition.current = undefined;
-    dragStartTimer.current.stop();
-    handleClick();
-    setActive(false);
-  }, [handleClick]);
-  const handlePointerMove = React.useCallback((e: React.PointerEvent) => {
-    if (!initialPointerPosition.current)
-      return;
-    handleResizeStart(new Point(e.clientX, e.clientY));
-    initialPointerPosition.current = undefined;
-    dragStartTimer.current.stop();
-  }, [handleResizeStart]);
-  React.useEffect(() => {
-    const timer = dragStartTimer.current;
-    timer.setOnExecute(() => {
-      initialPointerPosition.current && handleResizeStart(initialPointerPosition.current);
-      initialPointerPosition.current = undefined;
-    });
-    return () => {
-      timer.setOnExecute(undefined);
-    };
-  }, [handleResizeStart]);
+  const [ref, resizing, active] = useResizeGrip<HTMLDivElement>(side, handleResize, handleDoubleClick);
   const className = classnames(
     "nz-widgetPanels-grip",
     `nz-${side}`,
@@ -80,9 +48,6 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint
   return (
     <div
       className={className}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
       ref={ref}
     >
       <div className="nz-dot" />
@@ -97,53 +62,87 @@ export const WidgetPanelGrip = React.memo(function WidgetPanelGrip() { // tslint
 export const useResizeGrip = <T extends HTMLElement>(
   side: PanelSide,
   onResize?: (resizeBy: number) => void,
+  onDoubleClick?: () => void,
 ): [
-    (initialPointerPosition: Point) => void,
-    React.RefObject<T>,
+    (instance: T | null) => void,
+    boolean,
     boolean,
   ] => {
-  const ref = React.useRef<T>(null);
+  const initialPointerPosition = React.useRef<Point>();
+  const dragStartTimer = React.useRef(new Timer(300));
+  const handleClick = useDoubleClick(onDoubleClick);
+  const ref = React.useRef<T | null>(null);
   const relativePosition = React.useRef(new Point());
   const [resizing, setResizing] = React.useState(false);
-
+  const [active, setActive] = React.useState(false);
   const onDrag = React.useCallback<NonNullable<UseDragPanelGripArgs["onDrag"]>>((pointerPosition, lastPointerPosition) => {
-    const newRelativePosition = Rectangle.create(ref.current!.getBoundingClientRect()).topLeft().getOffsetTo(pointerPosition);
-
+    if (!ref.current)
+      return;
+    const newRelativePosition = Rectangle.create(ref.current.getBoundingClientRect()).topLeft().getOffsetTo(pointerPosition);
     const resizeOffset = relativePosition.current.getOffsetTo(newRelativePosition);
     const dragOffset = lastPointerPosition.getOffsetTo(pointerPosition);
-
     const dragBy = isHorizontalPanelSide(side) ? dragOffset.y : dragOffset.x;
     const resizeBy = isHorizontalPanelSide(side) ? resizeOffset.y : resizeOffset.x;
-
     const direction = side === "left" || side === "top" ? 1 : -1;
     dragBy * resizeBy > 0 && onResize && onResize(direction * resizeBy);
   }, [side, onResize]);
-
   const onDragEnd = React.useCallback(() => {
     setResizing(false);
   }, []);
-
-  const handleDragStart = useDragPanelGrip({
+  const handlePanelGripDragStart = useDragPanelGrip({
     side,
     onDrag,
     onDragEnd,
   });
-
-  const handlePointerDown = React.useCallback((initialPointerPosition: Point) => {
-    relativePosition.current = Rectangle.create(ref.current!.getBoundingClientRect()).topLeft().getOffsetTo(initialPointerPosition);
-    setResizing(true);
-    handleDragStart({
-      initialPointerPosition,
+  React.useEffect(() => {
+    const timer = dragStartTimer.current;
+    timer.setOnExecute(() => {
+      if (initialPointerPosition.current && ref.current) {
+        relativePosition.current = Rectangle.create(ref.current.getBoundingClientRect()).topLeft().getOffsetTo(initialPointerPosition.current);
+        setResizing(true);
+        handlePanelGripDragStart({
+          initialPointerPosition: initialPointerPosition.current,
+        });
+      }
+      initialPointerPosition.current = undefined;
     });
-  }, [handleDragStart]);
-
-  return [handlePointerDown, ref, resizing];
+    return () => {
+      timer.setOnExecute(undefined);
+    };
+  }, [handlePanelGripDragStart]);
+  const handleDragEnd = React.useCallback(() => {
+    initialPointerPosition.current = undefined;
+    dragStartTimer.current.stop();
+    handleClick();
+    setActive(false);
+  }, [handleClick]);
+  const handlePointerDown = React.useCallback((args: PointerCaptorArgs) => {
+    initialPointerPosition.current = new Point(args.clientX, args.clientY);
+    dragStartTimer.current.start();
+    setActive(true);
+  }, []);
+  const handlePointerMove = React.useCallback((args: PointerCaptorArgs) => {
+    if (!initialPointerPosition.current)
+      return;
+    const position = new Point(args.clientX, args.clientY);
+    setResizing(true);
+    handlePanelGripDragStart({
+      initialPointerPosition: position,
+    });
+    onDrag(position, initialPointerPosition.current);
+    initialPointerPosition.current = undefined;
+    dragStartTimer.current.stop();
+  }, [handlePanelGripDragStart, onDrag]);
+  const handlePointerCaptorRef = usePointerCaptor(handlePointerDown, handlePointerMove, handleDragEnd);
+  const handleRef = React.useCallback((instance: T | null) => {
+    ref.current = instance;
+    handlePointerCaptorRef(instance);
+  }, [handlePointerCaptorRef]);
+  return [handleRef, resizing, active];
 };
 
 /** @internal */
-export function useDoubleClick(onDoubleClick?: () => void): [
-  () => void
-] {
+export function useDoubleClick(onDoubleClick?: () => void): () => void {
   const timer = React.useRef(new Timer(300));
   const clickCount = React.useRef(0);
   timer.current.setOnExecute(() => {
@@ -158,7 +157,5 @@ export function useDoubleClick(onDoubleClick?: () => void): [
       timer.current.stop();
     }
   }, [onDoubleClick]);
-  return [
-    handleClick,
-  ];
+  return handleClick;
 }

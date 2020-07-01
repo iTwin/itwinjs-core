@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
+import { mount } from "enzyme";
 import { BadgeType } from "@bentley/ui-abstract";
 import { cleanup, render } from "@testing-library/react";
 import { ContextMenu, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core";
@@ -79,6 +80,27 @@ describe("ContextMenu", () => {
 
       spyMethod.should.not.have.been.called;
     });
+    it("should support selectedIndex", () => {
+      const component = render(
+        <ContextMenu selectedIndex={0}>
+          <ContextMenuItem> Test 1 </ContextMenuItem>
+          <ContextMenuItem> Test 2 </ContextMenuItem>
+        </ContextMenu>);
+
+      let items = component.getAllByTestId("core-context-menu-item");
+      let idx = items.findIndex((value) => value.className.indexOf("is-selected") !== -1);
+      expect(idx).to.equal(0);
+
+      component.rerender(
+        <ContextMenu selectedIndex={1}>
+          <ContextMenuItem> Test 1 </ContextMenuItem>
+          <ContextMenuItem> Test 2 </ContextMenuItem>
+        </ContextMenu>);
+
+      items = component.getAllByTestId("core-context-menu-item");
+      idx = items.findIndex((value) => value.className.indexOf("is-selected") !== -1);
+      expect(idx).to.equal(1);
+    });
 
     describe("Keyboard navigation", () => {
       it("should handle Escape press", () => {
@@ -136,7 +158,7 @@ describe("ContextMenu", () => {
         root.dispatchEvent(createBubbledEvent("keyup", { keyCode: 13 /* <Return> */ }));
         expect(handleSelect).to.be.calledOnce;
       });
-      it("should handle multi-level right arrow select", () => {
+      it("should handle multi-level right arrow then enter select", () => {
         const handleSelect = sinon.fake();
         const component = render(
           <ContextMenu opened={true} onSelect={handleSelect}>
@@ -307,6 +329,13 @@ describe("ContextMenu", () => {
         expect(component.container.querySelector(".core-context-menu-bottom")).not.to.be.null;
         expect(component.container.querySelector(".core-context-menu-right")).not.to.be.null;
       });
+      it("should support changing direction", () => {
+        const wrapper = mount<ContextMenu>(<ContextMenu opened={true} direction={ContextMenuDirection.Right} />);
+        expect(wrapper.state().direction === ContextMenuDirection.Right);
+        wrapper.setProps({ direction: ContextMenuDirection.Left });
+        expect(wrapper.state().direction === ContextMenuDirection.Left);
+        wrapper.unmount();
+      });
     });
   });
   // TODO: tests for hover/current active menu item
@@ -317,6 +346,10 @@ describe("ContextMenu", () => {
     });
     it("mounts and unmounts correctly", () => {
       const wrapper = render(<GlobalContextMenu opened={true} identifier="test" x="0" y="0" />);
+      wrapper.unmount();
+    });
+    it("mounts and unmounts without an identifier correctly", () => {
+      const wrapper = render(<GlobalContextMenu opened={true} x="0" y="0" />);
       wrapper.unmount();
     });
   });
@@ -330,6 +363,20 @@ describe("ContextMenu", () => {
     it("renders correctly", () => {
       const component = render(<ContextMenuItem>Test</ContextMenuItem>);
       expect(component.getByText("Test")).to.exist;
+    });
+
+    it("renders with icon correctly", () => {
+      const component = render(<ContextMenuItem icon="icon-placeholder">Test</ContextMenuItem>);
+      expect(component.container.querySelector(".icon-placeholder")).not.to.be.null;
+    });
+
+    it("handles props changes correctly", () => {
+      const component = render(<ContextMenuItem>Test ~A</ContextMenuItem>);
+      expect(component.getByText("Test")).to.exist;
+      expect(component.getByText("A")).to.exist;
+      component.rerender(<ContextMenuItem>Test ~B</ContextMenuItem>);
+      expect(component.getByText("Test")).to.exist;
+      expect(component.getByText("B")).to.exist;
     });
 
     it("focuses correctly", () => {
@@ -444,6 +491,31 @@ describe("ContextMenu", () => {
       item.dispatchEvent(createBubbledEvent("click"));
       handleClick.should.have.been.calledOnce;
     });
+    it("should support changing direction", () => {
+      const wrapper = mount<ContextSubMenu>(
+        <ContextSubMenu label="test" autoflip={true}>
+          <ContextMenuItem>Test</ContextMenuItem>
+        </ContextSubMenu>);
+      expect(wrapper.state().direction === ContextMenuDirection.Right);
+      wrapper.setProps({ direction: ContextMenuDirection.Left });
+      expect(wrapper.state().direction === ContextMenuDirection.Left);
+      wrapper.unmount();
+    });
+    it("handles label change correctly", () => {
+      const component = render(
+        <ContextSubMenu label="Test ~A">
+          <ContextMenuItem>Test Item</ContextMenuItem>
+        </ContextSubMenu>);
+      expect(component.getByText("Test")).to.exist;
+      expect(component.getByText("A")).to.exist;
+      component.rerender(
+        <ContextSubMenu label="Test ~B">
+          <ContextMenuItem>Test Item</ContextMenuItem>
+        </ContextSubMenu>);
+      expect(component.getByText("Test")).to.exist;
+      expect(component.getByText("B")).to.exist;
+    });
+
   });
   describe("ContextMenu.autoFlip", () => {
     it("should handle rect overflowing right side of window", () => {

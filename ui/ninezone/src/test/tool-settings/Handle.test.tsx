@@ -21,8 +21,8 @@ describe("DockedToolSettingsHandle", () => {
       </NineZoneDispatchContext.Provider>,
     );
     const handle = container.getElementsByClassName("nz-toolSettings-handle")[0];
-    fireEvent.pointerDown(handle);
-    fireEvent.pointerMove(document);
+    fireEvent.mouseDown(handle);
+    fireEvent.mouseMove(document);
 
     dispatch.calledOnceWithExactly(sinon.match({
       type: "TOOL_SETTINGS_DRAG_START",

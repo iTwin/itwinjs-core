@@ -290,7 +290,7 @@ export namespace Gradient {
         settings = ThematicGradientSettings.defaults;
       }
 
-      const dimension = (ThematicGradientMode.Smooth === settings.mode) ? maxDimension : settings.stepCount + 1;
+      const dimension = (ThematicGradientMode.Smooth === settings.mode) ? maxDimension : settings.stepCount;
       const hasAlpha = this.hasTranslucency;
       const image = new Uint8Array(1 * dimension * (hasAlpha ? 4 : 3));
       let currentIdx = image.length - 1;
@@ -306,12 +306,10 @@ export namespace Gradient {
 
       switch (settings.mode) {
         case ThematicGradientMode.Smooth: {
-          addColor(settings.marginColor);
-          for (let j = 0; j < dimension - 2; j++) {
-            const f = (1 - j / (dimension - 2));
+          for (let j = 0; j < dimension; j++) {
+            const f = (1 - j / (dimension));
             addColor(this.mapColor(f));
           }
-          addColor(settings.marginColor);
           break;
         }
 
@@ -321,14 +319,13 @@ export namespace Gradient {
         // Therefore, we just fall through here and use a regular stepped gradient.
         case ThematicGradientMode.Stepped: {
           assert(settings.stepCount > 1, "Step count must be at least two to generate renderer gradient for thematic display");
-          addColor(settings.marginColor);
-          for (let j = 0; j < dimension - 1; j++) {
+          for (let j = 0; j < dimension; j++) {
             // If we use smooth's approach to generate the gradient...
             // We would get these values for stepCount five: 0   .2   .4   .6   .8
             //                  We really want these values: 0   .25  .5   .75   1
             // This preserves an exact color mapping of a n-step gradient when stepCount also equals n.
             // stepCount must be at least two for this.  The thematic API enforces stepCount of at least 2.
-            const f = (1 - j / (dimension - 2));
+            const f = (1 - j / (dimension - 1));
             addColor(this.mapColor(f));
           }
           break;

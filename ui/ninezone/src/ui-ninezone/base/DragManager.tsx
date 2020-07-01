@@ -215,6 +215,25 @@ export function useDragToolSettings(args: UseDragToolSettingsArgs) {
   return handleDragStart;
 }
 
+function useTarget<T extends Element>(onTargeted: (targeted: boolean) => void) {
+  const dragManager = React.useContext(DragManagerContext);
+  const targeted = React.useRef(false);
+  const ref = React.useRef<T>(null);
+  React.useEffect(() => {
+    const listener = (_item: DragItem, info: DragItemInfo, _target: DragTarget | undefined) => {
+      const targetedElement = document.elementFromPoint(info.pointerPosition.x, info.pointerPosition.y);
+      const newTargeted = targetedElement === ref.current;
+      newTargeted !== targeted.current && onTargeted(newTargeted);
+      targeted.current = newTargeted;
+    };
+    dragManager.onDrag.add(listener);
+    return () => {
+      dragManager.onDrag.remove(listener);
+    };
+  }, [onTargeted, dragManager]);
+  return ref;
+}
+
 /** @internal */
 export interface UseTabTargetArgs {
   widgetId: WidgetState["id"];
@@ -222,17 +241,23 @@ export interface UseTabTargetArgs {
 }
 
 /** @internal */
-export function useTabTarget(args: UseTabTargetArgs) {
+export function useTabTarget<T extends Element>(args: UseTabTargetArgs): [
+  React.Ref<T>,
+  boolean,  // targeted
+] {
   const { tabIndex, widgetId } = args;
   const dragManager = React.useContext(DragManagerContext);
+  const [targeted, setTargeted] = React.useState(false);
   const onTargeted = React.useCallback((isTargeted: boolean) => {
     dragManager.handleTargetChanged(isTargeted ? {
       type: "tab",
       tabIndex,
       widgetId,
     } : undefined);
+    setTargeted(isTargeted);
   }, [dragManager, tabIndex, widgetId]);
-  return onTargeted;
+  const ref = useTarget<T>(onTargeted);
+  return [ref, targeted];
 }
 
 /** @internal */
@@ -241,16 +266,22 @@ export interface UsePanelTargetArgs {
 }
 
 /** @internal */
-export function usePanelTarget(args: UsePanelTargetArgs) {
+export function usePanelTarget<T extends Element>(args: UsePanelTargetArgs): [
+  React.Ref<T>,
+  boolean,  // targeted
+] {
   const { side } = args;
   const dragManager = React.useContext(DragManagerContext);
+  const [targeted, setTargeted] = React.useState(false);
   const onTargeted = React.useCallback((isTargeted: boolean) => {
     dragManager.handleTargetChanged(isTargeted ? {
       type: "panel",
       side,
     } : undefined);
+    setTargeted(isTargeted);
   }, [dragManager, side]);
-  return onTargeted;
+  const ref = useTarget<T>(onTargeted);
+  return [ref, targeted];
 }
 
 /** @internal */
@@ -260,17 +291,23 @@ export interface UseWidgetTargetArgs {
 }
 
 /** @internal */
-export function useWidgetTarget(args: UseWidgetTargetArgs) {
+export function useWidgetTarget<T extends Element>(args: UseWidgetTargetArgs): [
+  React.Ref<T>,
+  boolean,  // targeted
+] {
   const { side, widgetIndex } = args;
   const dragManager = React.useContext(DragManagerContext);
+  const [targeted, setTargeted] = React.useState(false);
   const onTargeted = React.useCallback((isTargeted: boolean) => {
     dragManager.handleTargetChanged(isTargeted ? {
       type: "widget",
       side,
       widgetIndex,
     } : undefined);
+    setTargeted(isTargeted);
   }, [dragManager, side, widgetIndex]);
-  return onTargeted;
+  const ref = useTarget<T>(onTargeted);
+  return [ref, targeted];
 }
 
 /** @internal */
@@ -338,9 +375,7 @@ export function useDragItem<T extends DragItem>(args: UseDragItemArgs<T>) {
 /** @internal */
 export function useIsDragged(callback: () => boolean) {
   const dragManager = React.useContext(DragManagerContext);
-  const [dragged, setDragged] = React.useState<boolean>(() => {
-    return callback();
-  });
+  const [dragged, setDragged] = React.useState<boolean>(() => callback());
   React.useEffect(() => {
     const handleOnDragChanged: DragEventHandler = () => {
       setDragged(callback());
@@ -402,42 +437,42 @@ export interface DragProviderProps {
 export const DragProvider = React.memo<DragProviderProps>(function DragProvider(props) { // tslint:disable-line: variable-name no-shadowed-variable
   const dragManager = React.useRef(new DragManager());
   React.useEffect(() => {
-    const handlePointerMove = (e: PointerEvent) => {
-      dragManager.current.handlePointerMove(e);
+    const mouseMove = (e: MouseEvent) => {
+      dragManager.current.handleDrag(e.clientX, e.clientY);
     };
-    document.addEventListener("pointermove", handlePointerMove);
+    document.addEventListener("mousemove", mouseMove);
     return () => {
-      document.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("mousemove", mouseMove);
     };
   }, []);
   React.useEffect(() => {
-    const handlePointerUp = (e: PointerEvent) => {
-      dragManager.current.handlePointerUp(e);
+    const mouseUp = () => {
+      dragManager.current.handleDragEnd();
     };
-    document.addEventListener("pointerup", handlePointerUp);
+    document.addEventListener("mouseup", mouseUp);
     return () => {
-      document.removeEventListener("pointerup", handlePointerUp);
+      document.removeEventListener("mouseup", mouseUp);
     };
   }, []);
   return (
     <DragManagerContext.Provider value={dragManager.current}>
-      <DraggedWidgetProvider>
+      <DraggedWidgetIdProvider>
         <DraggedPanelSideProvider>
           <DraggedResizeHandleProvider>
             {props.children}
           </DraggedResizeHandleProvider>
         </DraggedPanelSideProvider>
-      </DraggedWidgetProvider>
+      </DraggedWidgetIdProvider>
     </DragManagerContext.Provider>
   );
 });
 
-function DraggedWidgetProvider(props: { children?: React.ReactNode }) {
-  const draggedWidget = useIsDraggedType("widget");
+function DraggedWidgetIdProvider(props: { children?: React.ReactNode }) {
+  const dragged = useDraggedItemId<WidgetDragItem>("widget");
   return (
-    <DraggedWidgetContext.Provider value={draggedWidget}>
+    <DraggedWidgetIdContext.Provider value={dragged}>
       {props.children}
-    </DraggedWidgetContext.Provider>
+    </DraggedWidgetIdContext.Provider>
   );
 }
 
@@ -579,16 +614,16 @@ export class DragManager {
     this._onDragStartEmitter.emit(this._dragged.item, this._dragged.info, this._dragged.target);
   }
 
-  public handlePointerMove(e: PointerEvent) {
+  public handleDrag(x: number, y: number) {
     if (this._dragged) {
       this._dragged.info.lastPointerPosition = this._dragged.info.pointerPosition;
-      this._dragged.info.pointerPosition = new Point(e.clientX, e.clientY);
+      this._dragged.info.pointerPosition = new Point(x, y);
 
       this._onDragEmitter.emit(this._dragged.item, this._dragged.info, this._dragged.target);
     }
   }
 
-  public handlePointerUp(_e: PointerEvent) {
+  public handleDragEnd() {
     if (this._dragged) {
       const item = this._dragged.item;
       const info = this._dragged.info;
@@ -610,8 +645,8 @@ export const DragManagerContext = React.createContext<DragManager>(null!); // ts
 DragManagerContext.displayName = "nz:DragManagerContext";
 
 /** @internal */
-export const DraggedWidgetContext = React.createContext<boolean>(false); // tslint:disable-line: variable-name
-DraggedWidgetContext.displayName = "nz:DraggedWidgetContext";
+export const DraggedWidgetIdContext = React.createContext<WidgetState["id"] | undefined>(undefined); // tslint:disable-line: variable-name
+DraggedWidgetIdContext.displayName = "nz:DraggedWidgetIdContext";
 
 /** @internal */
 export const DraggedPanelSideContext = React.createContext<PanelSide | undefined>(undefined); // tslint:disable-line: variable-name

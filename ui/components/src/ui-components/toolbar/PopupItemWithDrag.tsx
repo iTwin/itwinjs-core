@@ -10,7 +10,7 @@ import "./PopupItem.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ActionButton, ConditionalStringValue, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
-import { BadgeUtilities, IconHelper, useOnOutsideClick } from "@bentley/ui-core";
+import { BadgeUtilities, IconHelper, OutsideClickEvent, useOnOutsideClick } from "@bentley/ui-core";
 import { ToolbarButtonItemProps } from "./Item";
 import { ToolbarPopupContext } from "./PopupItem";
 import { PopupItemsPanel } from "./PopupItemsPanel";
@@ -139,7 +139,7 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
     () => {
       processPanelOpenClose(false);
     }, [processPanelOpenClose]);
-  const isOutsideEvent = React.useCallback((e: PointerEvent) => {
+  const isOutsideEvent = React.useCallback((e: OutsideClickEvent) => {
     // if clicking on button that open panel - don't trigger outside click processing
     return !!ref.current && (e.target instanceof Node) && !ref.current.contains(e.target);
   }, []);

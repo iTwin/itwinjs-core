@@ -43,6 +43,8 @@ import { SubjectOwnsSubjects } from "./NavigationRelationship";
 export class Element extends Entity implements ElementProps {
   /** @internal */
   public static get className(): string { return "Element"; }
+  /** @internal */
+  public static get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
 
   /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
   public readonly model: Id64String;

@@ -9,7 +9,9 @@
 import "./AutoSuggest.scss";
 import * as React from "react";
 import * as ReactAutosuggest from "react-autosuggest";
+import { Logger } from "@bentley/bentleyjs-core";
 import { CommonProps } from "../utils/Props";
+import { UiCore } from "../UiCore";
 
 /** Data for the [[AutoSuggest]] options
  * @beta
@@ -19,6 +21,11 @@ export interface AutoSuggestData {
   label: string;
 }
 
+/** Prototype for function returning AutoSuggestData
+ * @beta
+ */
+export type GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[];
+
 /** Properties for the [[AutoSuggest]] component.
  * @beta
  */
@@ -26,7 +33,7 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
   /** Current value. */
   value?: string;
   /** Options for dropdown. */
-  options: AutoSuggestData[];
+  options: AutoSuggestData[] | GetAutoSuggestDataFunc;
   /** Handler for when suggested selected. */
   onSuggestionSelected: (selected: AutoSuggestData) => void;
   /** Indicates whether to set focus to the input element */
@@ -39,8 +46,12 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
   onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   /** Handler for input receiving focus. */
   onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
-  /** Calculate suggestions for any given input value. */
-  getSuggestions?: (value: string) => AutoSuggestData[];
+  /** Calculate suggestions for any given input value.
+   * @deprecated
+   */
+  getSuggestions?: GetAutoSuggestDataFunc;
+  /** Gets a label associated with a given value */
+  getLabel?: (value: string | undefined) => string;
 
   /** @internal */
   alwaysRenderSuggestions?: boolean;
@@ -117,13 +128,16 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
 
   /** Teach Autosuggest how to calculate suggestions for any given input value. */
   private _getSuggestions = (value: string): AutoSuggestData[] => {
-    if (this.props.getSuggestions)
-      return this.props.getSuggestions(value);
+    if (typeof this.props.options === "function")
+      return this.props.options(value);
+
+    if (this.props.getSuggestions)              // tslint:disable-line: deprecation
+      return this.props.getSuggestions(value);  // tslint:disable-line: deprecation
 
     const inputValue = value.trim().toLowerCase();
     const inputLength = inputValue.length;
 
-    return inputLength === 0 ? [] : this.props.options.filter((data: AutoSuggestData) => {
+    return inputLength === 0 ? /* istanbul ignore next */[] : this.props.options.filter((data: AutoSuggestData) => {
       return data.label.toLowerCase().includes(inputValue) || data.value.toLowerCase().includes(inputValue);
     });
   }
@@ -140,9 +154,17 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
 
   private getLabel(value: string | undefined): string {
     let label = "";
-    const entry = this.props.options.find((data: AutoSuggestData) => data.value === value);
-    if (entry)
-      label = entry.label;
+
+    if (this.props.getLabel) {
+      label = this.props.getLabel(value);
+    } else if (this.props.options instanceof Array) {
+      const entry = this.props.options.find((data: AutoSuggestData) => data.value === value);
+      if (entry)
+        label = entry.label;
+    } else {
+      Logger.logError(UiCore.loggerCategory(this), `props.getLabel should be provided when props.options is a function`);
+    }
+
     return label;
   }
 
@@ -186,7 +208,8 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
   public render(): JSX.Element {
     const { inputValue, suggestions } = this.state;
     const { value, onChange, placeholder, options, onSuggestionSelected, setFocus, alwaysRenderSuggestions,
-      onPressEnter, onPressEscape, onPressTab, onInputFocus, getSuggestions,
+      onPressEnter, onPressEscape, onPressTab, onInputFocus, getLabel,
+      getSuggestions, // tslint:disable-line: deprecation
       ...props } = this.props;
     const inputPlaceholder = (!inputValue) ? placeholder : undefined;
 

@@ -8,11 +8,18 @@ import { render } from "@testing-library/react";
 import { NineZone } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
 import { createNineZoneState } from "../../ui-ninezone/base/NineZoneState";
-import { MeasureContext } from "../../ui-ninezone/base/NineZone";
+import { MeasureContext, NineZoneDispatch } from "../../ui-ninezone/base/NineZone";
 import { Rectangle } from "@bentley/ui-core";
-import { createDOMRect } from "../Utils";
+import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill"; // tslint:disable-line: no-direct-imports
+import { createBoundingClientRect, createDOMRect, ResizeObserverMock } from "../Utils";
 
 describe("<NineZone />", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("renders correctly", () => {
     const { container } = render(<NineZone
       dispatch={sinon.stub()}
@@ -48,6 +55,65 @@ describe("<NineZone />", () => {
       top: 0,
       bottom: 0,
     });
+  });
+
+  it("should dispatch RESIZE", () => {
+    let resizeObserver: ResizeObserverMock | undefined;
+    let measurer: Element | undefined;
+    sandbox.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sandbox.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
+      resizeObserver = this;
+      measurer = element;
+    });
+
+    const spy = sinon.stub<NineZoneDispatch>();
+    render(<NineZone
+      dispatch={spy}
+      state={createNineZoneState()}
+    />);
+
+    spy.reset();
+
+    sandbox.stub(measurer!, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 10, 20));
+    resizeObserver!.callback([{
+      contentRect: createDOMRect(),
+      target: measurer!,
+    }], resizeObserver!);
+
+    spy.calledOnceWithExactly(sinon.match({
+      type: "RESIZE",
+      size: {
+        width: 10,
+        height: 20,
+      },
+    })).should.true;
+  });
+
+  it("should not dispatch RESIZE if size did not change", () => {
+    let resizeObserver: ResizeObserverMock | undefined;
+    let measurer: Element | undefined;
+    sandbox.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sandbox.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
+      resizeObserver = this;
+      measurer = element;
+    });
+
+    sandbox.stub(HTMLElement.prototype, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 10, 20));
+
+    const spy = sinon.stub<NineZoneDispatch>();
+    render(<NineZone
+      dispatch={spy}
+      state={createNineZoneState()}
+    />);
+
+    spy.reset();
+
+    resizeObserver!.callback([{
+      contentRect: createDOMRect(),
+      target: measurer!,
+    }], resizeObserver!);
+
+    spy.notCalled.should.true;
   });
 });
 

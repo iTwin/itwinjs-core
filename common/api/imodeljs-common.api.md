@@ -566,6 +566,12 @@ export function calculateSolarAngles(date: Date, location: Cartographic): {
 export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d;
 
 // @beta
+export function calculateSolarDirectionFromAngles(azimuthElevation: {
+    azimuth: number;
+    elevation: number;
+}): Vector3d;
+
+// @beta
 export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date;
 
 // @public (undocumented)
@@ -1404,8 +1410,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 655360,
-    Major = 10,
+    Combined = 720896,
+    Major = 11,
     Minor = 0
 }
 
@@ -1598,7 +1604,7 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
     subCategory?: Id64String;
 }
 
-// @internal
+// @beta
 export enum DomainOptions {
     CheckRecommendedUpgrades = 1,
     CheckRequiredUpgrades = 0,
@@ -4347,7 +4353,7 @@ export enum PrimitiveTypeCode {
     Uninitialized = 0
 }
 
-// @internal
+// @beta
 export enum ProfileOptions {
     None = 0,
     Upgrade = 1
@@ -6082,6 +6088,7 @@ export class ThematicDisplay {
     readonly range: Range1d;
     // @alpha
     readonly sensorSettings: ThematicDisplaySensorSettings;
+    readonly sunDirection: Vector3d;
     // (undocumented)
     toJSON(): ThematicDisplayProps;
 }
@@ -6089,8 +6096,10 @@ export class ThematicDisplay {
 // @beta
 export enum ThematicDisplayMode {
     Height = 0,
+    HillShade = 3,
     // @alpha
-    InverseDistanceWeightedSensors = 1
+    InverseDistanceWeightedSensors = 1,
+    Slope = 2
 }
 
 // @beta
@@ -6101,6 +6110,7 @@ export interface ThematicDisplayProps {
     range?: Range1dProps;
     // @alpha
     sensorSettings?: ThematicDisplaySensorSettingsProps;
+    sunDirection?: XYZProps;
 }
 
 // @alpha
@@ -6466,7 +6476,7 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
 // @beta (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
 
-// @internal
+// @beta
 export interface UpgradeOptions {
     domain?: DomainOptions;
     profile?: ProfileOptions;

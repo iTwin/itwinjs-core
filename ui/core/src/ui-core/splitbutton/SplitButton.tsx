@@ -100,9 +100,9 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
   }
 
   private _handleKeyUp = (event: React.KeyboardEvent) => {
-    if (event.keyCode === 13 /*<Return>*/) {
+    if (event.key === "Enter") {
       this.props.onExecute && this.props.onExecute();
-    } else if (event.keyCode === 40 /*<Down>*/ && !this.state.expanded) {
+    } else if (event.key === "ArrowDown" && !this.state.expanded) {
       this._closing = false;
       this._open();
     } else {
@@ -138,6 +138,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
   private _handleClose = (event: any) => {
     // istanbul ignore else
     if (this._arrowElement.current && this._buttonRef.current) {
+      // istanbul ignore next
       if (this.state.expanded && "target" in event && this._arrowElement.current.contains(event.target))
         this._closing = true;
       this.setState((_prevState) => ({ expanded: false }));

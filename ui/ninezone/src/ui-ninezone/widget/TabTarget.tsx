@@ -10,7 +10,7 @@ import "./TabTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { assert } from "../base/assert";
-import { DraggedWidgetContext, useTabTarget } from "../base/DragManager";
+import { DraggedWidgetIdContext, useTabTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { WidgetIdContext } from "./Widget";
@@ -29,19 +29,13 @@ export const WidgetTabTarget = React.memo<WidgetTabTargetProps>(function WidgetT
   const cursorType = React.useContext(CursorTypeContext);
   const widgetId = React.useContext(WidgetIdContext);
   const draggedTab = React.useContext(DraggedTabContext);
-  const draggedWidget = React.useContext(DraggedWidgetContext);
+  const draggedWidget = React.useContext(DraggedWidgetIdContext);
   assert(widgetId);
-  const onTargeted = useTabTarget({
+  const [ref, targeted] = useTabTarget<HTMLDivElement>({
     tabIndex: first ? tabIndex : tabIndex + 1,
     widgetId,
   });
-  const [targeted, setTargeted] = React.useState(false);
-  const handleTargeted = React.useCallback((t) => {
-    setTargeted(t);
-    onTargeted(t);
-  }, [onTargeted]);
-  const ref = useTarget<HTMLDivElement>(handleTargeted);
-  const hidden = !draggedTab && !draggedWidget;
+  const hidden = !draggedTab && !draggedWidget || draggedWidget === widgetId;
   const className = classnames(
     "nz-widget-tabTarget",
     hidden && "nz-hidden",
@@ -55,22 +49,3 @@ export const WidgetTabTarget = React.memo<WidgetTabTargetProps>(function WidgetT
     />
   );
 });
-
-/** @internal */
-export function useTarget<T extends Element>(onTargeted: (targeted: boolean) => void) {
-  const targeted = React.useRef(false);
-  const ref = React.useRef<T>(null);
-  React.useEffect(() => {
-    const handleDocumentPointerMove = (e: PointerEvent) => {
-      const targetedElement = document.elementFromPoint(e.clientX, e.clientY);
-      const newTargeted = targetedElement === ref.current;
-      newTargeted !== targeted.current && onTargeted(newTargeted);
-      targeted.current = newTargeted;
-    };
-    document.addEventListener("pointermove", handleDocumentPointerMove);
-    return () => {
-      document.removeEventListener("pointermove", handleDocumentPointerMove);
-    };
-  }, [onTargeted]);
-  return ref;
-}

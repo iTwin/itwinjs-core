@@ -25,7 +25,7 @@ import {
   TileTreeProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
+import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
@@ -46,7 +46,6 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { AdditionalFeatureData, UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { ChangesType } from "@bentley/imodelhub-client";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -2039,7 +2038,7 @@ export class BriefcaseDb extends IModelDb {
    * @param requestContext The client request context.
    * @param briefcaseKey Key that identifies the briefcase in the cache. See [[BriefcaseManager.download]]
    * @param options Optional parameter to affect the opening and upgrading the briefcase.
-   * @remarks If the briefcase is upgraded, the resulting changes are saved in the briefcase, but it's the caller's responsibility to push these changes
+   * @note If the briefcase is upgraded, the resulting changes are saved in the briefcase, but it's the caller's responsibility to push these changes
    * to the iModelHub.
    */
   public static async open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, options?: OpenBriefcaseOptions & UpgradeOptions): Promise<BriefcaseDb> {
@@ -2120,7 +2119,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Log usage when opening the iModel
-   * @remarks Failure to log usage is not considered a critical error - we simply log the error and move on
+   * @note Failure to log usage is not considered a critical error - we simply log the error and move on
    */
   private async logUsage(requestContext: ClientRequestContext | AuthorizedClientRequestContext) {
     requestContext.enter();

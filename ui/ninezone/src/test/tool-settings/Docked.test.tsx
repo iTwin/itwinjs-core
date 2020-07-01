@@ -7,18 +7,10 @@ import * as sinon from "sinon";
 import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill"; // tslint:disable-line: no-direct-imports
 import { act, fireEvent, queryByText, render } from "@testing-library/react";
 import {
-  DockedToolSetting, DockedToolSettings, DragManager, DragManagerContext, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize,
+  DockedToolSetting, DockedToolSettings, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize,
 } from "../../ui-ninezone";
 import { createDOMRect, ResizeObserverMock } from "../Utils";
-
-function DragManagerProvider(props: { children?: React.ReactNode }) {
-  const dragManager = React.useRef(new DragManager());
-  return (
-    <DragManagerContext.Provider value={dragManager.current}>
-      {props.children}
-    </DragManagerContext.Provider>
-  );
-}
+import { DragManagerProvider } from "../Providers";
 
 describe("DockedToolSettings", () => {
   const sandbox = sinon.createSandbox();
@@ -158,8 +150,8 @@ describe("DockedToolSettings", () => {
     document.getElementsByClassName("nz-toolSettings-panel").length.should.eq(1);
 
     act(() => {
-      fireEvent.pointerDown(document);
-      fireEvent.pointerUp(document);
+      fireEvent.mouseDown(document);
+      fireEvent.mouseUp(document);
     });
 
     document.getElementsByClassName("nz-toolSettings-panel").length.should.eq(0);

@@ -505,5 +505,27 @@ describe("ThematicDisplay", () => {
     td = ThematicDisplay.fromJSON(badThematicProps);
     expect(td.gradientSettings.mode).to.equal(ThematicGradientMode.Smooth); // should default to smooth because of incorrect combo
     verifyBackAndForth(td);
+
+    // check if incorrectly configuring gradient mode / thematic display mode combination is resolved as expected - Slope
+    badThematicProps = {
+      gradientSettings: {
+        mode: ThematicGradientMode.SteppedWithDelimiter,
+      },
+      displayMode: ThematicDisplayMode.Slope,
+    };
+    td = ThematicDisplay.fromJSON(badThematicProps);
+    expect(td.gradientSettings.mode).to.equal(ThematicGradientMode.Smooth); // should default to smooth because of incorrect combo
+    verifyBackAndForth(td);
+
+    // check if incorrectly configuring gradient mode / thematic display mode combination is resolved as expected - HillShade
+    badThematicProps = {
+      gradientSettings: {
+        mode: ThematicGradientMode.SteppedWithDelimiter,
+      },
+      displayMode: ThematicDisplayMode.HillShade,
+    };
+    td = ThematicDisplay.fromJSON(badThematicProps);
+    expect(td.gradientSettings.mode).to.equal(ThematicGradientMode.Smooth); // should default to smooth because of incorrect combo
+    verifyBackAndForth(td);
   });
 });

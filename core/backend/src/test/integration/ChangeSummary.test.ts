@@ -459,7 +459,7 @@ describe("ChangeSummary (#integration)", () => {
       });
     } catch (e) {
       assert.isDefined(e.errorNumber);
-      assert.equal(e.errorNumber, IModelStatus.BadRequest);
+      assert.equal(e.errorNumber, IModelStatus.NotOpen);
     }
   });
 

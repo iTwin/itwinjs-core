@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
+import { UiCore } from "../UiCore";
 
 // cSpell:ignore focusable
 
@@ -83,17 +84,17 @@ function findLastFocusableDescendant(focusContainer: HTMLDivElement): HTMLElemen
 }
 
 function getInitialFocusElement(focusContainer: HTMLDivElement | null, initialFocusSpec: React.RefObject<HTMLElement> | string | undefined): HTMLElement | null {
+  // istanbul ignore next
   if (!focusContainer)
     return null;
 
-  // istanbul ignore else
   if (initialFocusSpec) {
     if (typeof initialFocusSpec === "string") {
       const node = focusContainer.querySelector(initialFocusSpec as string);
       if (node) {
         return node as HTMLElement;
       } else {
-        Logger.logError("FocusTrap", `Unable to locate element via selector ${initialFocusSpec}`);
+        Logger.logError(`${UiCore.packageName}.FocusTrap`, `Unable to locate element via selector ${initialFocusSpec}`);
       }
     } else {
       return initialFocusSpec.current;
@@ -102,10 +103,26 @@ function getInitialFocusElement(focusContainer: HTMLDivElement | null, initialFo
   return findFirstFocusableDescendant(focusContainer);
 }
 
-/** Properties supported by FocusTrap component.
+function attemptFocus(element: HTMLElement, preventScroll: boolean): boolean {
+  // istanbul ignore next
+  if (!isFocusable(element))
+    return false;
+
+  try {
+    // istanbul ignore else
+    if (document.activeElement !== element)
+      element.focus({ preventScroll: preventScroll ? true : /* istanbul ignore next */ false });
+  } catch (e) {
+    // istanbul ignore next
+    return false;
+  }
+  return (document.activeElement === element);
+} // end attemptFocus
+
+/** Properties supported by [[FocusTrap]] component.
  * @internal
  */
-interface Props extends React.AllHTMLAttributes<any> {
+export interface FocusTrapProps extends React.AllHTMLAttributes<any> {
   /** child components */
   children: React.ReactNode;
   /** if active is not true then no trapping of focus is attempted. */
@@ -119,25 +136,10 @@ interface Props extends React.AllHTMLAttributes<any> {
   initialFocusElement?: React.RefObject<HTMLElement> | string;
 }
 
-function attemptFocus(element: HTMLElement, preventScroll: boolean): boolean {
-  if (!isFocusable(element)) {
-    return false;
-  }
-
-  try {
-    if (document.activeElement !== element)
-      element.focus({ preventScroll: preventScroll ? true : false });
-  } catch (e) {
-    // istanbul ignore next
-    return false;
-  }
-  return (document.activeElement === element);
-} // end attemptFocus
-
 /** Trap Focus in container while trap is active.
  * @internal
  */
-export function FocusTrap(props: Props) {
+export function FocusTrap(props: FocusTrapProps) {
   const restoreFocusElement = React.useRef<Element | null>(null);
   const initialFocusElement = React.useRef<Element | null>(null);
   const focusContainer = React.useRef<HTMLDivElement | null>(null);
@@ -168,6 +170,7 @@ export function FocusTrap(props: Props) {
 
   // this is hit if Shift tab is used.
   const cycleFocusToEnd = React.useCallback((event: React.FocusEvent<HTMLDivElement>) => {
+    // istanbul ignore next
     if (!props.active)
       return;
 
@@ -175,9 +178,10 @@ export function FocusTrap(props: Props) {
       event.stopPropagation();
       event.preventDefault();
       const focusable = findLastFocusableDescendant(focusContainer.current);
+
+      // istanbul ignore else
       if (focusable) {
         focusable.focus();
-
       } else {
         if (initialFocusElement.current && initialFocusElement.current !== document.activeElement)
           attemptFocus((initialFocusElement.current as HTMLElement), true);
@@ -187,10 +191,12 @@ export function FocusTrap(props: Props) {
 
   // this is hit if tab is used on last focusable item in child container.
   const cycleFocusToStart = React.useCallback((event: React.FocusEvent<HTMLDivElement>) => {
+    // istanbul ignore next
     if (!props.active)
       return;
 
     event.stopPropagation();
+    // istanbul ignore else
     if (initialFocusElement.current && initialFocusElement.current !== document.activeElement)
       (initialFocusElement.current as HTMLElement).focus();
   }, [props.active]);
@@ -200,7 +206,7 @@ export function FocusTrap(props: Props) {
   return (
     <>
       <div data-testid="focus-trap-div" onFocus={cycleFocusToEnd} ref={focusContainer} tabIndex={0}
-        style={{ outline: "none", WebkitTapHighlightColor: "rgba(0,0,0,0)" }}>
+        style={{ outline: "none", WebkitTapHighlightColor: "rgba(0,0,0,0)", pointerEvents: "none" }}>
         {props.children}
       </div>
       <div data-testid="focus-trap-limit-div" onFocus={cycleFocusToStart} tabIndex={0} />
