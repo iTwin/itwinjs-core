@@ -31,8 +31,8 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/icons-generic": "^1.0.12",
-    "@bentley/icons-generic-webfont": "^1.0.12",
+    "@bentley/icons-generic": "^1.0.15",
+    "@bentley/icons-generic-webfont": "^1.0.15",
     "@bentley/frontend-devtools": "2.3.0-dev.12",
     "@bentley/hypermodeling-frontend": "2.3.0-dev.12",
     "@bentley/bentleyjs-core": "2.3.0-dev.12",

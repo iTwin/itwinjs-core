@@ -28,7 +28,7 @@
     "typescript": "~3.7.4"
   },
   "dependencies": {
-    "@bentley/icons-generic-webfont": "^1.0.12",
+    "@bentley/icons-generic-webfont": "^1.0.15",
     "@bentley/ui-abstract": "2.3.0-dev.12",
     "@bentley/ui-components": "2.3.0-dev.12",
     "@bentley/ui-core": "2.3.0-dev.12",
