@@ -3,21 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as path from "path";
+import { BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using } from "@bentley/bentleyjs-core";
+import { GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
-} from "@bentley/bentleyjs-core";
-import {
-  GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, ElementProps,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, DomainOptions, ElementProps,
   EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
   IModel, IModelError, IModelStatus, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps,
   SubCategoryAppearance, TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import { assert, expect } from "chai";
+import * as path from "path";
+import * as semver from "semver";
 import {
   AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
   ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
@@ -1916,6 +1913,31 @@ describe("iModel", () => {
     snapshotDb3.close();
   });
 
+  it("upgrade the domain schema in a StandaloneDb", async () => {
+    const testFileName = IModelTestUtils.prepareOutputFile("UpgradeIModel", "testImodel.bim");
+    const seedFileName = IModelTestUtils.resolveAssetFile("testImodel.bim");
+    IModelJsFs.copySync(seedFileName, testFileName);
+
+    let iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    const beforeVersion = iModel.querySchemaVersion("BisCore");
+    assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
+    iModel.close();
+
+    let result: DbResult = DbResult.BE_SQLITE_OK;
+    try {
+      iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite, { domain: DomainOptions.CheckRecommendedUpgrades });
+    } catch (err) {
+      assert(err instanceof IModelError);
+      result = err.errorNumber;
+    }
+    assert.strictEqual(result, DbResult.BE_SQLITE_ERROR_SchemaUpgradeRecommended);
+
+    iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
+    const afterVersion = iModel.querySchemaVersion("BisCore");
+    assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
+    iModel.close();
+  });
+
   it("Run plain SQL", () => {
     imodel1.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
@@ -2064,7 +2086,7 @@ describe("computeProjectExtents", () => {
 
   it("should return requested information", () => {
     const projectExtents = imodel.projectExtents;
-    const args = [ undefined, false, true ];
+    const args = [undefined, false, true];
     for (const reportExtentsWithOutliers of args) {
       for (const reportOutliers of args) {
         const result = imodel.computeProjectExtents({ reportExtentsWithOutliers, reportOutliers });

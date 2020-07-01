@@ -141,7 +141,7 @@ export enum DbResult {
   BE_SQLITE_ERROR_ChangeTrackError = (BE_SQLITE_IOERR | (13 << 24)),
   /** invalid version of the revision file is being imported */
   BE_SQLITE_ERROR_InvalidChangeSetVersion = (BE_SQLITE_IOERR | (14 << 24)),
-  /** The schemas found in the database need to be upgraded. */
+  /** The schemas found in the database need to be upgraded */
   BE_SQLITE_ERROR_SchemaUpgradeRequired = (BE_SQLITE_IOERR | 15 << 24),
   /** The schemas found in the database are too new, and the application needs to be upgraded. */
   BE_SQLITE_ERROR_SchemaTooNew = (BE_SQLITE_IOERR | 16 << 24),
@@ -155,6 +155,8 @@ export enum DbResult {
   BE_SQLITE_ERROR_SchemaImportFailed = (BE_SQLITE_IOERR | 20 << 24),
   /** Error acquiring locks or codes */
   BE_SQLITE_ERROR_CouldNotAcquireLocksOrCodes = (BE_SQLITE_IOERR | 21 << 24),
+  /** Recommended that the schemas found in the database be upgraded */
+  BE_SQLITE_ERROR_SchemaUpgradeRecommended = (BE_SQLITE_IOERR | 22 << 24),
 
   BE_SQLITE_LOCKED_SHAREDCACHE = (BE_SQLITE_LOCKED | (1 << 8)),
   BE_SQLITE_BUSY_RECOVERY = (BE_SQLITE_BUSY | (1 << 8)),

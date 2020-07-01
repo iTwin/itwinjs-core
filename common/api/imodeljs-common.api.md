@@ -1410,8 +1410,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 655360,
-    Major = 10,
+    Combined = 720896,
+    Major = 11,
     Minor = 0
 }
 
@@ -1602,6 +1602,14 @@ export interface DisplayStyleSettingsProps {
 // @public
 export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Props {
     subCategory?: Id64String;
+}
+
+// @beta
+export enum DomainOptions {
+    CheckRecommendedUpgrades = 1,
+    CheckRequiredUpgrades = 0,
+    SkipCheck = 3,
+    Upgrade = 2
 }
 
 // @beta
@@ -4346,6 +4354,12 @@ export enum PrimitiveTypeCode {
 }
 
 // @beta
+export enum ProfileOptions {
+    None = 0,
+    Upgrade = 1
+}
+
+// @beta
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 // @beta
@@ -6461,6 +6475,12 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
 
 // @beta (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
+
+// @beta
+export interface UpgradeOptions {
+    domain?: DomainOptions;
+    profile?: ProfileOptions;
+}
 
 // @public
 export interface UrlLinkProps extends ElementProps {

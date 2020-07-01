@@ -59,3 +59,8 @@ Added these expressions and functions
     * [Lesson 11: Built-In functions](../learning/ECSQLTutorial/BuiltInFunctions.md)
 1. `ec_classid())` - Get ECClassId from a  qualified classname.
     * [Lesson 11: Built-In functions](../learning/ECSQLTutorial/BuiltInFunctions.md)
+
+## Schema upgrades
+
+Domain schemas can now be upgraded when opening BriefcaseDb-s and StandaloneDb-s. See new [UpgradeOptions]($common) options that can be passed in to the [IModelDb.open]($backend) call.
+

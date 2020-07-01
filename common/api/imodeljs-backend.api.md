@@ -169,6 +169,7 @@ import { TileTreeProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
+import { UpgradeOptions } from '@bentley/imodeljs-common';
 import { UrlLinkProps } from '@bentley/imodeljs-common';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentLabelProps } from '@bentley/imodeljs-common';
@@ -425,7 +426,7 @@ export class BriefcaseDb extends IModelDb {
     static readonly onCreated: BeEvent<(_imodelDb: BriefcaseDb) => void>;
     static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _briefcaseProps: BriefcaseProps) => void>;
     static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
-    static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<BriefcaseDb>;
+    static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, options?: OpenBriefcaseOptions & UpgradeOptions): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType?: ChangesType): Promise<void>;
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
@@ -452,6 +453,8 @@ export class BriefcaseEntry {
     fileId?: string;
     getBriefcaseProps(): BriefcaseProps;
     getDebugInfo(): any;
+    // (undocumented)
+    getIModelRpcProps(): IModelRpcProps;
     getKey(): BriefcaseKey;
     get hasReversedChanges(): boolean;
     // (undocumented)
@@ -477,7 +480,6 @@ export class BriefcaseEntry {
     syncMode: SyncMode;
     targetChangeSetId: string;
     targetChangeSetIndex?: number;
-    upgrade: IModelJsNative.UpgradeMode;
 }
 
 // @public
@@ -530,7 +532,7 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal
-    static openBriefcase(briefcase: BriefcaseEntry): void;
+    static openBriefcase(briefcase: BriefcaseEntry, upgradeOptions?: UpgradeOptions): void;
     // @internal
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
     // @internal
@@ -3769,7 +3771,7 @@ export class StandaloneDb extends IModelDb {
     close(): void;
     static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
     get filePath(): string;
-    static openFile(filePath: string, openMode?: OpenMode): StandaloneDb;
+    static openFile(filePath: string, openMode?: OpenMode, upgradeOptions?: UpgradeOptions): StandaloneDb;
     static tryFindByKey(key: string): StandaloneDb | undefined;
 }
 
