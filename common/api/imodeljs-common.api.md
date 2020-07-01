@@ -1604,7 +1604,7 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
     subCategory?: Id64String;
 }
 
-// @internal
+// @beta
 export enum DomainOptions {
     CheckRecommendedUpgrades = 1,
     CheckRequiredUpgrades = 0,
@@ -4353,7 +4353,7 @@ export enum PrimitiveTypeCode {
     Uninitialized = 0
 }
 
-// @internal
+// @beta
 export enum ProfileOptions {
     None = 0,
     Upgrade = 1
@@ -6476,7 +6476,7 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
 // @beta (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
 
-// @internal
+// @beta
 export interface UpgradeOptions {
     domain?: DomainOptions;
     profile?: ProfileOptions;
