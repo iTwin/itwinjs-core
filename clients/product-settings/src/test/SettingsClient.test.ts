@@ -827,8 +827,8 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
 
     // Clean up
     for (let iSetting = 0; iSetting < 42; ++iSetting) {
-      const deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(requestContext, "NamespaceTest", `ManySettings${iSetting}`, false, projectId, iModelId);
-      chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
+      const deleteResult: SettingsResult = await settingsClient.deleteSharedSetting(requestContext, "NamespaceTest", `ManySettings${guids[iSetting]}`, false, projectId, iModelId);
+      chai.assert(SettingsStatus.Success === deleteResult.status, "Delete should work or give SettingNotFound");
     }
   });
 

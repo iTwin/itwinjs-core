@@ -10,45 +10,6 @@ import { BentleyError, BentleyStatus, ClientRequestContext } from "@bentley/bent
 import { AuthorizedClientRequestContext, Client, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { SettingsAdmin, SettingsMapResult, SettingsResult, SettingsStatus } from "./SettingsAdmin";
 
-// this internal class is used to collect the settings when we are asking for them by namespace, because in that case there is a continuationToken when
-// there are more than 20, so we have to continue to call the Setting Service to get more.
-type resolveFunc = ((arg: SettingsMapResult) => void);
-type rejectFunc = ((arg: Error) => void);
-class SettingsFromNamespaceCollector {
-  private _resolve: resolveFunc | undefined;
-  private _settingsMap: Map<string, any>;
-  constructor(private _settingsClient: ConnectSettingsClient, private _requestContext: AuthorizedClientRequestContext, private _options: RequestOptions, private _url: string) {
-    this._settingsMap = new Map<string, any>();
-  }
-
-  public async executor(resolve: resolveFunc, _reject: rejectFunc) {
-    // NOTE: we always resolve with an answer, never reject.
-    this._resolve = resolve;
-
-    while (true) {
-      try {
-        // attempt to get the settings
-        const response: Response = await request(this._requestContext, this._url, this._options);
-        // body contains an array of settings.
-        for (const settingBody of response.body) {
-          this._settingsMap.set(settingBody.name, settingBody.properties);
-        }
-        if (response.header.continuationtoken) {
-          this._options.headers.continuationtoken = response.header.continuationtoken;
-        } else {
-          this._resolve(new SettingsMapResult(SettingsStatus.Success, undefined, this._settingsMap));
-          break;
-        }
-      } catch (errResponse) {
-        if ((errResponse.status < 200) || (errResponse.status > 299))
-          return this._resolve(this._settingsClient.formErrorResponse(errResponse));
-        else
-          return this._resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(errResponse)));
-      }
-    }
-  }
-}
-
 /** Client API for the iTwin Product Settings Service
  *
  * This class is not accessed directly from applications, they should use IModelApp.settingsAdmin.
@@ -263,8 +224,32 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     const queryString = `?$filter=namespace+eq+'${settingNamespace}'`;
     url = url.concat(queryString);
 
-    const collector = new SettingsFromNamespaceCollector(this, requestContext, options, url);
-    return new Promise(collector.executor.bind(collector));
+    const settingsMap: Map<string, any> = new Map<string, any>();
+    while (true) {
+      try {
+        // attempt to get the settings
+        const response: Response = await request(requestContext, url, options);
+        // body contains an array of settings.
+        for (const settingBody of response.body) {
+          settingsMap.set(settingBody.name, settingBody.properties);
+        }
+
+        // The absence of a continuation token indicates that there are no more settings to gather
+        // However, adding check anyway
+        if (undefined === response.header.continuationtoken || 0 === response.body.length)
+          break;
+
+        // Update the continuation token for the next iteration
+        options.headers.continuationtoken = response.header.continuationtoken;
+      } catch (errResponse) {
+        if ((errResponse.status < 200) || (errResponse.status > 299))
+          return this.formErrorResponse(errResponse);
+        else
+          return new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(errResponse));
+      }
+    }
+
+    return new SettingsMapResult(SettingsStatus.Success, undefined, settingsMap);
   }
 
   private async deleteAnySetting(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, settingName: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
