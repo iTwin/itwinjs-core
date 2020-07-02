@@ -8,6 +8,8 @@
 
 import "./SelectableContent.scss";
 import * as React from "react";
+import { ActionMeta, ValueType } from "react-select/src/types";
+import { OptionType, ThemedSelect } from "@bentley/ui-core";
 
 /**
  * A definition for content displayed in [[ControlledSelectableContent]] and
@@ -38,19 +40,20 @@ export interface ControlledSelectableContentProps {
  */
 export function ControlledSelectableContent(props: ControlledSelectableContentProps) {
   const { onSelectedContentIdChanged } = props;
-  const onContentIdSelected = React.useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
-    onSelectedContentIdChanged && onSelectedContentIdChanged(evt.target.value);
+  const onContentIdSelected = React.useCallback((value: ValueType<OptionType>, action: ActionMeta<OptionType>) => {
+    onSelectedContentIdChanged && action.action === "select-option" && value && onSelectedContentIdChanged((value as OptionType).value);
   }, [onSelectedContentIdChanged]);
   const selectedContent = props.children.find((contentDef) => contentDef.id === props.selectedContentId) ?? props.children[0];
   return (
     <div className="components-selectable-content">
       <div className="components-selectable-content-header">
-        <select className="components-selectable-content-selector" onChange={onContentIdSelected} value={selectedContent?.id}>
-          {
-            props.children.map((componentDef) =>
-              <option key={componentDef.id} value={componentDef.id}>{componentDef.label}</option>)
-          }
-        </select>
+        <ThemedSelect openMenuOnClick={true} openMenuOnFocus={true} isSearchable={false} onChange={onContentIdSelected}
+          value={{ label: selectedContent?.label, value: selectedContent?.id }}
+          options={props.children.map((componentDef) => ({
+            label: componentDef.label,
+            value: componentDef.id,
+          }))}
+        />
       </div>
       <div className="components-selectable-content-wrapper">
         {selectedContent?.render()}
