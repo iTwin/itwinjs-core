@@ -206,7 +206,7 @@ export function FocusTrap(props: FocusTrapProps) {
   return (
     <>
       <div data-testid="focus-trap-div" onFocus={cycleFocusToEnd} ref={focusContainer} tabIndex={0}
-        style={{ outline: "none", WebkitTapHighlightColor: "rgba(0,0,0,0)", pointerEvents: "none" }}>
+        style={{ outline: "none", WebkitTapHighlightColor: "rgba(0,0,0,0)" }}>
         {props.children}
       </div>
       <div data-testid="focus-trap-limit-div" onFocus={cycleFocusToStart} tabIndex={0} />

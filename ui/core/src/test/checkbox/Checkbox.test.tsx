@@ -26,7 +26,7 @@ describe("Checkbox", () => {
   it("renders with label", () => {
     const checkbox = render(<Checkbox label="Test checkbox" />);
 
-    expect(checkbox.container.querySelector(".core-checkbox-label")).not.to.be.null;
+    expect(checkbox.getByText("Test checkbox")).not.to.be.null;
   });
 
   it("renders input status when it's provided", () => {

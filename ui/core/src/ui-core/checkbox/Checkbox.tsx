@@ -77,16 +77,22 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
   }
 
   public render() {
-    const { status, label, indeterminate, className, inputClassName, inputStyle, labelClassName, labelStyle,
+    const { status, disabled, label, indeterminate, className, inputClassName, inputStyle, labelClassName, labelStyle,
       onClick, onBlur, setFocus, ...inputProps } = this.props;
-    const checkBoxClass = classnames("core-checkbox", status, className);
+    const checkBoxClass = classnames("core-checkbox",
+      disabled && "core-disabled",
+      status,
+      className);
+
     return (
       <label className={checkBoxClass} onClick={onClick} onBlur={onBlur}>
-        <input type="checkbox" ref={this._checkboxInput} {...inputProps} className={inputClassName} style={inputStyle}
+        {label &&
+          <span>{label}</span>
+        }
+        <input type="checkbox" ref={this._checkboxInput} {...inputProps}
+          disabled={disabled} className={inputClassName} style={inputStyle}
           onClick={this._onCheckboxClick} onBlur={this._onCheckboxBlur} />
-        <span className={classnames("core-checkbox-label", labelClassName)} style={labelStyle}>
-          {label && <span className="core-checkbox-label-text">{label}</span>}
-        </span>
+        <span className="core-checkbox-checkmark"></span>
       </label>
     );
   }

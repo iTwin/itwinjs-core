@@ -21,19 +21,20 @@ export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>,
  */
 export class Radio extends React.PureComponent<RadioProps> {
   public render(): JSX.Element {
-    const { label, disabled, status, className, style, inputStyle, inputClassName, ...props } = this.props;
+    const { label, disabled, status, className, style, inputStyle, inputClassName, type, ...props } = this.props;
 
     return (
       <label style={style} className={classnames(
         "uicore-inputs-radio",
-        disabled && "uicore-disabled",
+        disabled && "core-disabled",
         status,
         className,
       )}>
-        <input disabled={this.props.disabled} type={"radio"} className={inputClassName} style={inputStyle} {...props} />
         {label &&
-          <span className={"uicore-label"}> {this.props.label} </span>
+          <span>{label}</span>
         }
+        <input type={"radio"} className={inputClassName} style={inputStyle} disabled={disabled} {...props} />
+        <span className="core-radio-checkmark"></span>
       </label>
     );
   }

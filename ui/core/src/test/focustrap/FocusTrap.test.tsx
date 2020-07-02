@@ -9,11 +9,15 @@ import * as React from "react";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { FocusTrap } from "../../ui-core/focustrap/FocusTrap";
-import TestUtils from "../TestUtils";
 
 // cspell:ignore focustrap
 
 describe("<FocusTrap />", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
 
   it("renders correctly", () => {
     const component = render(<FocusTrap active={true} returnFocusOnDeactivate={false}>
@@ -23,33 +27,45 @@ describe("<FocusTrap />", () => {
   });
 
   it("sets focus to first element correctly", async () => {
+    const clock = sandbox.useFakeTimers();
+
     render(<FocusTrap active={true} returnFocusOnDeactivate={false}>
       <div id="test" tabIndex={0} />
     </FocusTrap>);
-    await TestUtils.tick(100);
+
+    clock.tick(1000);
+    await Promise.resolve();
+
     const activeElement = document.activeElement as HTMLElement;
     expect(activeElement.id).to.eq("test");
   });
 
   it("logs error when initialFocusElement incorrectly specifies element", async () => {
+    const clock = sandbox.useFakeTimers();
     const spyLogger = sinon.spy(Logger, "logError");
 
     render(<FocusTrap initialFocusElement=".test" active={true} returnFocusOnDeactivate={false}>
       <div id="test" tabIndex={0} />
     </FocusTrap>);
-    await TestUtils.tick(100);
+
+    clock.tick(1000);
+    await Promise.resolve();
 
     spyLogger.called.should.true;
     (Logger.logError as any).restore();
   });
 
   it("cycles to first item correctly", async () => {
+    const clock = sandbox.useFakeTimers();
+
     const component = render(<FocusTrap active={true} returnFocusOnDeactivate={false}>
       <div id="test1" tabIndex={0} />
       <div id="test2" tabIndex={0} />
       <div id="test3" tabIndex={0} />
     </FocusTrap>);
-    await TestUtils.tick(100);
+
+    clock.tick(1000);
+    await Promise.resolve();
 
     const limitDiv = component.getByTestId("focus-trap-limit-div");
     expect(limitDiv).to.exist;
@@ -60,12 +76,16 @@ describe("<FocusTrap />", () => {
   });
 
   it("cycles to last item correctly", async () => {
+    const clock = sandbox.useFakeTimers();
+
     const component = render(<FocusTrap active={true} returnFocusOnDeactivate={false}>
       <div id="test1" tabIndex={0} />
       <div id="test2" tabIndex={0} />
       <div id="test3" tabIndex={0} />
     </FocusTrap>);
-    await TestUtils.tick(100);
+
+    clock.tick(1000);
+    await Promise.resolve();
 
     const firstDiv = component.getByTestId("focus-trap-div");
     expect(firstDiv).to.exist;

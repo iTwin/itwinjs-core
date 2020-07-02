@@ -160,6 +160,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   }
 
   private _handleOnOutsideClick = (event: MouseEvent) => {
+    // istanbul ignore next
     if (this.props.opened && this.props.onOutsideClick)
       this.props.onOutsideClick(event);
   }

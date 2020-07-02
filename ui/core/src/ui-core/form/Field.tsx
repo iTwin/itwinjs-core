@@ -41,7 +41,6 @@ export class Field extends React.Component<FieldProps> {
             {this.props.editor!.toLowerCase() === "textbox" && (
               <Input
                 id={this.props.id}
-                type="text"
                 value={context!.values[this.props.id]}
                 onChange={(event) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
                 className="core-form-input"

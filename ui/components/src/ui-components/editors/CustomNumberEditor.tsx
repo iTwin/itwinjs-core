@@ -251,7 +251,6 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     const className = classnames("components-cell-editor", "components-customnumber-editor", this.props.className);
 
     const inputProps: InputProps = {
-      type: "text",
       className,
       style: this.props.style ? this.props.style : minWidthStyle,
       readOnly,

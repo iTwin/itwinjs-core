@@ -4,34 +4,32 @@ exports[`<Radio /> renders correctly 1`] = `
 <label
   className="uicore-inputs-radio"
 >
+  <span>
+    radio test
+  </span>
   <input
     type="radio"
   />
   <span
-    className="uicore-label"
-  >
-     
-    radio test
-     
-  </span>
+    className="core-radio-checkmark"
+  />
 </label>
 `;
 
 exports[`<Radio /> renders disabled correctly 1`] = `
 <label
-  className="uicore-inputs-radio uicore-disabled"
+  className="uicore-inputs-radio core-disabled"
 >
+  <span>
+    radio test
+  </span>
   <input
     disabled={true}
     type="radio"
   />
   <span
-    className="uicore-label"
-  >
-     
-    radio test
-     
-  </span>
+    className="core-radio-checkmark"
+  />
 </label>
 `;
 
@@ -39,15 +37,14 @@ exports[`<Radio /> renders status correctly 1`] = `
 <label
   className="uicore-inputs-radio success"
 >
+  <span>
+    radio test
+  </span>
   <input
     type="radio"
   />
   <span
-    className="uicore-label"
-  >
-     
-    radio test
-     
-  </span>
+    className="core-radio-checkmark"
+  />
 </label>
 `;
