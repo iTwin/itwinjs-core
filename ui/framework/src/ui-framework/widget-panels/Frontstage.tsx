@@ -98,11 +98,11 @@ export function useUpdateNineZoneSize(frontstageDef: FrontstageDef) {
 /** @internal */
 export function useNineZoneDispatch(frontstageDef: FrontstageDef) {
   const dispatch = React.useCallback<NineZoneDispatch>((action) => {
-    if (!frontstageDef.nineZoneState)
-      return;
     if (action.type === "RESIZE") {
       FrontstageManager.nineZoneSize = Size.create(action.size);
     }
+    if (!frontstageDef.nineZoneState)
+      return;
     frontstageDef.nineZoneState = NineZoneStateReducer(frontstageDef.nineZoneState, action);
   }, [frontstageDef]);
   return dispatch;
