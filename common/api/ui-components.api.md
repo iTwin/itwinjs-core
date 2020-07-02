@@ -2257,6 +2257,12 @@ export interface NextObserver<T> {
     next: (value: T) => void;
 }
 
+// @internal (undocumented)
+export interface Node {
+    // (undocumented)
+    readonly id: string;
+}
+
 // @public @deprecated
 export interface NodeCheckboxProps extends Omit<NodeCheckboxProps_2, "onClick"> {
     // (undocumented)
@@ -2853,6 +2859,9 @@ export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivEleme
 }
 
 // @internal
+export function scheduleSubscription<T>(scheduler: SubscriptionScheduler<T>): (source: Observable_2<T>) => Observable_2<T>;
+
+// @internal
 export class Scrubber extends React.Component<ScrubberProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -3172,6 +3181,43 @@ export interface SortComparer {
     sortCompare(valueA: Primitives.Value, valueB: Primitives.Value, ignoreCase?: boolean): number;
 }
 
+// @public
+export class SparseArray<T> implements Iterable<T | undefined> {
+    // (undocumented)
+    [immerable]: boolean;
+    [Symbol.iterator](): IterableIterator<T | undefined>;
+    get(index: number): T | undefined;
+    getIndex(lookupValue: T): number | undefined;
+    getLength(): number;
+    insert(index: number, value: T): void;
+    iterateValues(): IterableIterator<[T, number]>;
+    remove(index: number): void;
+    set(index: number, value: T): void;
+    setLength(length: number): void;
+}
+
+// @internal
+export class SparseTree<T extends Node> {
+    // (undocumented)
+    [immerable]: boolean;
+    // (undocumented)
+    deleteSubtree(parentId: string | undefined, deleteParent?: boolean): void;
+    // (undocumented)
+    getChildOffset(parentId: string | undefined, childId: string): number | undefined;
+    // (undocumented)
+    getChildren(parentId: string | undefined, createIfNotExist?: boolean): SparseArray<string> | undefined;
+    // (undocumented)
+    getNode(nodeId: string): T | undefined;
+    // (undocumented)
+    insertChild(parentId: string | undefined, child: T, offset: number): void;
+    // (undocumented)
+    removeChild(parentId: string | undefined, childId: string): void;
+    // (undocumented)
+    setChildren(parentId: string | undefined, children: T[], offset: number): void;
+    // (undocumented)
+    setNumChildren(parentId: string | undefined, numChildren: number): void;
+}
+
 // @beta @deprecated
 export enum StandardEditorNames {
     // (undocumented)
@@ -3354,6 +3400,12 @@ export interface Subscription extends Unsubscribable {
     readonly closed: boolean;
     // (undocumented)
     unsubscribe(): void;
+}
+
+// @internal
+export class SubscriptionScheduler<T> {
+    constructor();
+    scheduleSubscription(source: Observable_2<T>): Observable_2<T>;
 }
 
 // @public

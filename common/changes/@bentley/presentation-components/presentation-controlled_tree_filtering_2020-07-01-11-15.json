@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Fix useControlledTreeFiltering hook to react to dataProvider changes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "Saulius.Skliutas@bentley.com"
+}

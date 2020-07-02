@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { DisposeFunc } from "@bentley/bentleyjs-core";
-import { CommonProps, Orientation, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { CommonProps, Orientation } from "@bentley/ui-core";
 import { ArrayValue, PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { ResizeHandlingSelectablePropertyBlock } from "./ResizeHandlingSelectablePropertyBlock";
@@ -19,6 +19,7 @@ import { PropertyValueRendererManager } from "../../properties/ValueRendererMana
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { matchLinks } from "../../common/Links";
 import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
+import { DelayedSpinner } from "../../common/DelayedSpinner";
 
 /** Properties for [[PropertyGrid]] React component
  * @public
@@ -398,33 +399,3 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     );
   }
 }
-
-interface DelayedSpinnerProps {
-  loadStart?: Date;
-  delay?: number;
-}
-// tslint:disable-next-line: variable-name
-const DelayedSpinner = (props: DelayedSpinnerProps) => {
-  const delay = props.delay || 500;
-  const [loadStart] = React.useState(props.loadStart || new Date());
-
-  const currTime = new Date();
-  const diff = (currTime.getTime() - loadStart.getTime());
-
-  const update = useForceUpdate();
-  React.useEffect(() => {
-    if (diff >= delay)
-      return;
-    const timer = setTimeout(update, diff);
-    return () => clearTimeout(timer);
-  });
-
-  if (diff < delay)
-    return null;
-
-  return (<Spinner size={SpinnerSize.Large} />);
-};
-const useForceUpdate = () => {
-  const [value, set] = React.useState(true);
-  return () => set(!value);
-};

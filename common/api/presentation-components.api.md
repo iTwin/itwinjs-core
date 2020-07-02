@@ -414,7 +414,7 @@ export interface UnifiedSelectionTreeEventHandlerParams {
 // @beta
 export function useControlledTreeFiltering(props: ControlledTreeFilteringProps): {
     nodeHighlightingProps: HighlightableTreeProps | undefined;
-    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | AbstractTreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>;
+    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | PagedTreeNodeLoader<FilteredPresentationTreeDataProvider>;
     filteredModelSource: TreeModelSource;
     isFiltering: boolean;
     matchesCount: number | undefined;

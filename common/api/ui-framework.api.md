@@ -5888,7 +5888,7 @@ export function useUpdateNineZoneSize(frontstageDef: FrontstageDef): void;
 
 // @alpha
 export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
-    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | AbstractTreeNodeLoaderWithProvider<import("@bentley/presentation-components/lib/presentation-components/tree/FilteredDataProvider").FilteredPresentationTreeDataProvider>;
+    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | import("@bentley/ui-components").PagedTreeNodeLoader<import("@bentley/presentation-components/lib/presentation-components/tree/FilteredDataProvider").FilteredPresentationTreeDataProvider>;
     isFiltering: boolean;
     nodeHighlightingProps: import("@bentley/ui-components").HighlightableTreeProps | undefined;
 };

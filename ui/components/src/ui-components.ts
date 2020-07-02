@@ -156,6 +156,8 @@ export * from "./ui-components/tree/controlled/TreeHooks";
 export * from "./ui-components/tree/controlled/component/ControlledTree";
 export * from "./ui-components/tree/controlled/component/TreeNodeRenderer";
 export * from "./ui-components/tree/controlled/component/TreeRenderer";
+export * from "./ui-components/tree/controlled/internal/SparseTree";
+export * from "./ui-components/tree/controlled/internal/SubscriptionScheduler";
 
 export * from "./ui-components/viewport/ViewportComponent";
 export * from "./ui-components/viewport/ViewportComponentEvents";
