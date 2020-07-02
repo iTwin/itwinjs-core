@@ -391,6 +391,7 @@ public;ReducerActions
 public;ReducerMapActions
 beta;ReducerRegistry
 beta;ReducerRegistryInstance: ReducerRegistry
+alpha;RestoreFrontstageLayoutTool 
 internal;restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedNineZoneState): NineZoneState
 beta;ReviewToolWidget
 beta;ReviewToolWidgetProps

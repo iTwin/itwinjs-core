@@ -13,7 +13,7 @@ import {
   CommandItemDef, CustomItemDef, FrameworkVersion, FrontstageActivatedEventArgs, FrontstageDef, FrontstageManager, FrontstageProps, GroupItemDef,
   SyncUiEventDispatcher, ToolbarComposer, ToolbarHelper, ToolItemDef,
 } from "../../ui-framework";
-import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
+import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
 import TestUtils from "../TestUtils";
 
 class TestUiProvider implements UiItemsProvider {

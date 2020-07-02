@@ -32,6 +32,7 @@ import { UiShowHideManager } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
 import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "./selection/HideIsolateEmphasizeManager";
+import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 
 // cSpell:ignore Mobi
 
@@ -121,7 +122,12 @@ export class UiFramework {
     if (frameworkStateKey && store)
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
 
+    // set up namespace and register akk tools from package
     const frameworkNamespace = UiFramework._i18n.registerNamespace(UiFramework.i18nNamespace);
+    [
+      restoreLayoutTools,
+    ].forEach((tool) => IModelApp.tools.registerModule(tool, frameworkNamespace));
+
     const readFinishedPromise = frameworkNamespace.readFinished;
 
     UiFramework._projectServices = projectServices ? /* istanbul ignore next */ projectServices : new DefaultProjectServices();

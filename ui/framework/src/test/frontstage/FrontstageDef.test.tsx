@@ -86,4 +86,5 @@ describe("FrontstageDef", () => {
       })).should.true;
     });
   });
+
 });

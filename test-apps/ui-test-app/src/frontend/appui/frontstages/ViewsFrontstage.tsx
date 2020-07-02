@@ -718,7 +718,7 @@ class AdditionalTools {
       AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand,
       AppTools.toggleLengthFormatCommand,
     ]);
-    const item = ToolbarItemUtilities.createGroupButton("tool-formatting-setting", 135, "icon-placeholder", "set formatting units", children, { badgeType: BadgeType.New, groupPriority: 30 });
+    const item = ToolbarItemUtilities.createGroupButton("tool-formatting-setting", 135, "icon-placeholder", "set formatting units", children, { badgeType: BadgeType.New, groupPriority: 40 });
     return item;
   }
 
@@ -745,15 +745,7 @@ class AdditionalTools {
         widgetDef.show();
       },
     }), { groupPriority: 30 }),
-    ToolbarHelper.createToolbarItemFromItemDef(140, new CommandItemDef({
-      commandId: "Restore layout",
-      iconSpec: "icon-placeholder",
-      label: "Restore layout",
-      execute: () => {
-        const frontstageDef = FrontstageManager.findFrontstageDef("ViewsFrontstage");
-        frontstageDef && frontstageDef.restoreLayout();
-      },
-    }), { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(140, CoreTools.restoreFrontstageLayoutCommandItemDef, { groupPriority: 40 }),
     this.formatGroupItemsItem(),
   ];
 

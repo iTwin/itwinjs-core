@@ -16,17 +16,18 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { ConditionalBooleanValue, ConditionalStringValue } from "@bentley/ui-abstract";
 import { ToolbarPopupContext } from "@bentley/ui-components";
-import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../ui-framework";
-import { ContentViewManager } from "./content/ContentViewManager";
-import { KeyinBrowser } from "./keyinbrowser/KeyinBrowser";
-import { getIsHiddenIfSelectionNotActive, getSelectionContextSyncEventIds, selectionContextStateFunc } from "./selection/SelectionContextItemDef";
-import { CommandItemDef } from "./shared/CommandItemDef";
-import { CustomItemDef } from "./shared/CustomItemDef";
-import { BaseItemState } from "./shared/ItemDefBase";
-import { ToolItemDef } from "./shared/ToolItemDef";
-import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
-import { GroupItemDef } from "./toolbar/GroupItem";
-import { UiFramework } from "./UiFramework";
+import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../../ui-framework";
+import { ContentViewManager } from "../content/ContentViewManager";
+import { KeyinBrowser } from "../keyinbrowser/KeyinBrowser";
+import { getIsHiddenIfSelectionNotActive, getSelectionContextSyncEventIds, selectionContextStateFunc } from "../selection/SelectionContextItemDef";
+import { CommandItemDef } from "../shared/CommandItemDef";
+import { CustomItemDef } from "../shared/CustomItemDef";
+import { BaseItemState } from "../shared/ItemDefBase";
+import { ToolItemDef } from "../shared/ToolItemDef";
+import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { GroupItemDef } from "../toolbar/GroupItem";
+import { RestoreFrontstageLayoutTool } from "./RestoreLayoutTool";
+import { UiFramework } from "../UiFramework";
 
 // tslint:disable: deprecation
 
@@ -372,4 +373,15 @@ export class CoreTools {
     });
   }
 
+  public static get restoreFrontstageLayoutCommandItemDef() {
+    return new ToolItemDef({
+      toolId: RestoreFrontstageLayoutTool.toolId,
+      iconSpec: RestoreFrontstageLayoutTool.iconSpec,
+      label: RestoreFrontstageLayoutTool.flyover,
+      description: RestoreFrontstageLayoutTool.description,
+      execute: () => {
+        IModelApp.tools.run(RestoreFrontstageLayoutTool.toolId);
+      },
+    });
+  }
 }

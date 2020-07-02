@@ -13,7 +13,7 @@ import {
   BackstageItemState, ConfigurableUiManager, Frontstage, FrontstageActivatedEventArgs, FrontstageLaunchBackstageItem, FrontstageManager,
   FrontstageProps, FrontstageProvider,
 } from "../../ui-framework";
-import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
+import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 import TestUtils from "../TestUtils";
 

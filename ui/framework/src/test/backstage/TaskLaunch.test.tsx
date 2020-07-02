@@ -13,7 +13,7 @@ import {
   BackstageItemState, ConfigurableUiManager, Frontstage, FrontstageActivatedEventArgs, FrontstageManager, FrontstageProps, FrontstageProvider,
   TaskLaunchBackstageItem, TaskPropsList, WorkflowPropsList,
 } from "../../ui-framework";
-import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
+import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 import { WorkflowManager } from "../../ui-framework/workflow/Workflow";
 import TestUtils from "../TestUtils";

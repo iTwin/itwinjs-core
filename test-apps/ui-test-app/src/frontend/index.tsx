@@ -47,7 +47,6 @@ import { AppViewManager } from "./favorites/AppViewManager"; // Favorite Propert
 import { ElementSelectionListener } from "./favorites/ElementSelectionListener"; // Favorite Properties Support
 import "./index.scss";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
-import { LayoutManagerRestoreLayoutTool } from "./tools/LayoutManagerTool";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
@@ -235,7 +234,6 @@ export class SampleAppIModelApp {
     ToolWithSettings.register(this.sampleAppNamespace);
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     UiProviderTool.register(this.sampleAppNamespace);
-    LayoutManagerRestoreLayoutTool.register(this.sampleAppNamespace);
 
     // Register editing tools
     if (this.allowWrite) {

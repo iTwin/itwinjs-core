@@ -1171,6 +1171,8 @@ export class CoreTools {
     // (undocumented)
     static get panViewCommand(): ToolItemDef;
     // (undocumented)
+    static get restoreFrontstageLayoutCommandItemDef(): ToolItemDef;
+    // (undocumented)
     static get rotateViewCommand(): ToolItemDef;
     // (undocumented)
     static get sectionByElementCommandItemDef(): ToolItemDef;
@@ -3997,6 +3999,22 @@ export class ReducerRegistry {
 
 // @beta
 export const ReducerRegistryInstance: ReducerRegistry;
+
+// @alpha
+export class RestoreFrontstageLayoutTool extends Tool {
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(frontstageId?: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @internal
 export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedNineZoneState): NineZoneState;

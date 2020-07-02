@@ -15,6 +15,7 @@ import { WidgetState } from "@bentley/ui-abstract";
 import { ConfigurableUiContent, CoreTools, FrontstageManager } from "../../ui-framework";
 import TestUtils, { storageMock } from "../TestUtils";
 import { TestFrontstage, TestFrontstage2, TestFrontstage3 } from "./FrontstageTestUtils";
+import { RestoreFrontstageLayoutTool } from "../../ui-framework/tools/RestoreLayoutTool";
 import { Size } from "@bentley/ui-core";
 
 const mySessionStorage = storageMock();
@@ -67,6 +68,34 @@ describe("FrontstageManager", () => {
       await FrontstageManager.setActiveFrontstage(frontstageDef.id);
       expect(FrontstageManager.activeFrontstageId).to.eq(frontstageDef.id);
       expect(frontstageDef.applicationData).to.not.be.undefined;
+    }
+  });
+
+  it("should emit onFrontstageRestoreLayoutEvent", async () => {
+    const spy = sinon.spy(FrontstageManager.onFrontstageRestoreLayoutEvent, "emit");
+
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    expect(frontstageProvider.frontstageDef).to.not.be.undefined;
+    const frontstageDef = frontstageProvider.frontstageDef;
+    if (frontstageDef) {
+      await FrontstageManager.setActiveFrontstage(frontstageDef.id);
+      expect(FrontstageManager.activeFrontstageId).to.eq(frontstageDef.id);
+      expect(frontstageDef.applicationData).to.not.be.undefined;
+
+      const tool = new RestoreFrontstageLayoutTool();
+      tool.parseAndRun(frontstageDef.id);
+      spy.calledOnce.should.true;
+      spy.resetHistory();
+
+      // call without id to use active stage
+      tool.parseAndRun();
+      spy.calledOnce.should.true;
+      spy.resetHistory();
+
+      // call without invalid id
+      tool.parseAndRun("bad-id");
+      spy.calledOnce.should.false;
     }
   });
 
