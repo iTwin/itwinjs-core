@@ -414,6 +414,38 @@ describe("useFrontstageManager", () => {
       (frontstageDef1.nineZoneState === undefined).should.true;
     });
   });
+
+  describe("onWidgetLabelChangedEvent", () => {
+    it("should update tab label", () => {
+      const frontstageDef = new FrontstageDef();
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "w1");
+      state = addTab(state, "w1", "t1");
+      frontstageDef.nineZoneState = state;
+      const widgetDef = new WidgetDef({ id: "t1" });
+      renderHook(() => useFrontstageManager(frontstageDef));
+
+      sinon.stub(widgetDef, "label").get(() => "test");
+      FrontstageManager.onWidgetLabelChangedEvent.emit({
+        widgetDef,
+      });
+
+      frontstageDef.nineZoneState.tabs.t1.label.should.eq("test");
+    });
+
+    it("should not fail if tab doesn't exist", () => {
+      const frontstageDef = new FrontstageDef();
+      frontstageDef.nineZoneState = createNineZoneState();
+      const widgetDef = new WidgetDef({ id: "t1" });
+      renderHook(() => useFrontstageManager(frontstageDef));
+
+      sinon.stub(widgetDef, "label").get(() => "test");
+
+      (() => {
+        FrontstageManager.onWidgetLabelChangedEvent.emit({ widgetDef });
+      }).should.not.throw();
+    });
+  });
 });
 
 describe("useSyncDefinitions", () => {

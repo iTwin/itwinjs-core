@@ -2271,6 +2271,8 @@ export class FrontstageManager {
     // @internal (undocumented)
     static readonly onWidgetExpandEvent: UiEvent<WidgetEventArgs>;
     // @internal (undocumented)
+    static readonly onWidgetLabelChangedEvent: UiEvent<WidgetChangedEventArgs>;
+    // @internal (undocumented)
     static readonly onWidgetShowEvent: UiEvent<WidgetEventArgs>;
     static readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
     static openModalFrontstage(modalFrontstage: ModalFrontstageInfo): void;
@@ -4348,6 +4350,98 @@ export const setPanelSize: <Base extends {
 export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus;
 
 // @internal (undocumented)
+export const setWidgetLabel: <Base extends {
+    readonly draggedTab: {
+        readonly tabId: string;
+        readonly position: {
+            readonly x: number;
+            readonly y: number;
+        };
+    } | undefined;
+    readonly floatingWidgets: {
+        readonly byId: {
+            readonly [x: string]: {
+                readonly bounds: {
+                    readonly left: number;
+                    readonly top: number;
+                    readonly right: number;
+                    readonly bottom: number;
+                };
+                readonly id: string;
+            };
+        };
+        readonly allIds: readonly string[];
+    };
+    readonly panels: {
+        readonly bottom: {
+            readonly span: boolean;
+            readonly side: import("@bentley/ui-ninezone").HorizontalPanelSide;
+            readonly collapseOffset: number;
+            readonly collapsed: boolean;
+            readonly maxSize: number;
+            readonly minSize: number;
+            readonly pinned: boolean;
+            readonly size: number | undefined;
+            readonly widgets: readonly string[];
+        };
+        readonly left: {
+            readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
+            readonly collapseOffset: number;
+            readonly collapsed: boolean;
+            readonly maxSize: number;
+            readonly minSize: number;
+            readonly pinned: boolean;
+            readonly size: number | undefined;
+            readonly widgets: readonly string[];
+        };
+        readonly right: {
+            readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
+            readonly collapseOffset: number;
+            readonly collapsed: boolean;
+            readonly maxSize: number;
+            readonly minSize: number;
+            readonly pinned: boolean;
+            readonly size: number | undefined;
+            readonly widgets: readonly string[];
+        };
+        readonly top: {
+            readonly span: boolean;
+            readonly side: import("@bentley/ui-ninezone").HorizontalPanelSide;
+            readonly collapseOffset: number;
+            readonly collapsed: boolean;
+            readonly maxSize: number;
+            readonly minSize: number;
+            readonly pinned: boolean;
+            readonly size: number | undefined;
+            readonly widgets: readonly string[];
+        };
+    };
+    readonly tabs: {
+        readonly [x: string]: {
+            readonly id: string;
+            readonly label: string;
+        };
+    };
+    readonly toolSettings: {
+        readonly type: "docked";
+    } | {
+        readonly type: "widget";
+    };
+    readonly widgets: {
+        readonly [x: string]: {
+            readonly activeTabId: string | undefined;
+            readonly id: string;
+            readonly minimized: boolean;
+            readonly tabs: readonly string[];
+        };
+    };
+    readonly size: {
+        readonly width: number;
+        readonly height: number;
+    };
+}>(base: Base, id: string, label: string) => Base;
+
+// @internal (undocumented)
 export const setWidgetState: <Base extends {
     readonly draggedTab: {
         readonly tabId: string;
@@ -6173,6 +6267,12 @@ export class Widget extends React.Component<WidgetProps> {
 
 // @public
 export const WIDGET_OPACITY_DEFAULT = 0.9;
+
+// @internal (undocumented)
+export interface WidgetChangedEventArgs {
+    // (undocumented)
+    widgetDef: WidgetDef;
+}
 
 // @public
 export interface WidgetChangeHandler {

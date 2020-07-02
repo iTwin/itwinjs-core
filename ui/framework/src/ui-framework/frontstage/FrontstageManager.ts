@@ -19,7 +19,7 @@ import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidCont
 import { PanelSizeChangedEvent, PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef";
+import { WidgetChangedEventArgs, WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
@@ -268,6 +268,9 @@ export class FrontstageManager {
 
   /** Get Widget State Changed event. */
   public static readonly onWidgetStateChangedEvent = new WidgetStateChangedEvent();
+
+  /** @internal */
+  public static readonly onWidgetLabelChangedEvent = new UiEvent<WidgetChangedEventArgs>();
 
   /** @internal */
   public static readonly onWidgetShowEvent = new UiEvent<WidgetEventArgs>();

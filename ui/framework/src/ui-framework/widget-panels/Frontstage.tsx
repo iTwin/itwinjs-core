@@ -510,6 +510,15 @@ export const expandWidget = produce((nineZone: Draft<NineZoneState>, id: TabStat
   return;
 });
 
+/** @internal */
+export const setWidgetLabel = produce((nineZone: Draft<NineZoneState>, id: TabState["id"], label: string) => {
+  if (!(id in nineZone.tabs))
+    return;
+
+  const tab = nineZone.tabs[id];
+  tab.label = label;
+});
+
 const sides: PanelSide[] = ["bottom", "left", "right", "top"];
 
 type TabLocation =
@@ -699,6 +708,17 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
       FrontstageManager.onFrontstageRestoreLayoutEvent.removeListener(listener);
     };
   }, [uiSettings, frontstageDef]);
+  React.useEffect(() => {
+    const listener = createListener(frontstageDef, ({ widgetDef }: WidgetEventArgs) => {
+      assert(frontstageDef.nineZoneState);
+      const label = widgetDef.label;
+      frontstageDef.nineZoneState = setWidgetLabel(frontstageDef.nineZoneState, widgetDef.id, label);
+    });
+    FrontstageManager.onWidgetLabelChangedEvent.addListener(listener);
+    return () => {
+      FrontstageManager.onWidgetLabelChangedEvent.removeListener(listener);
+    };
+  }, [frontstageDef]);
 }
 
 /** @internal */
