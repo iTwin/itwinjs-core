@@ -94,8 +94,8 @@ describe("PromiseMemoizer", () => {
 
 describe("A wrapper around PromiseMemoizer", () => {
   const maxCacheSize = 10;
-  const resolveWaitTime = 1000; // Time before test resolves in ms
-  const pendingWaitTime = 100; // Time before memoizer issues a pending status in ms
+  const resolveWaitTime = 5000; // Time before test resolves in ms
+  const pendingWaitTime = 50; // Time before memoizer issues a pending status in ms
   const testMemoizer = new TestMemoizer(maxCacheSize, pendingWaitTime);
 
   beforeEach(() => {
