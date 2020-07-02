@@ -89,7 +89,7 @@ For incremental builds, the `rush build` command can be used to only build packa
 If using the command line, steps 5 through 7 above can be completed in one step by running `rushchange.bat` from the imodeljs-core root directory.
 > Note: The CI build will break if changes are pushed without running `rush change` and `rush extract-api` (if the API was changed). The fix will be to complete steps 5 through 10.
 
-Here is a sample [changelog](https://github.com/Microsoft/web-build-tools/blob/master/apps/rush/CHANGELOG.md) to demonstrate the level of detail expected.
+Here is a sample [changelog](https://github.com/microsoft/rushstack/blob/master/apps/rush/CHANGELOG.md) to demonstrate the level of detail expected.
 
 ## Updating dependencies/devDependencies on packages within the monorepo
 
