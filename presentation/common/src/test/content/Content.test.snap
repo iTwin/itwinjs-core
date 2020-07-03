@@ -47,7 +47,14 @@ Object {
     "displayType": "dolor odio et",
     "fields": Array [
       Object {
-        "category": "National",
+        "category": Object {
+          "description": "Et mollitia minima non rerum omnis odio sint neque sit.",
+          "expand": true,
+          "label": "Small",
+          "name": "National",
+          "parent": undefined,
+          "priority": 67093,
+        },
         "editor": undefined,
         "isReadonly": true,
         "label": "Senior Greece",
@@ -59,7 +66,14 @@ Object {
         },
       },
       Object {
-        "category": "National",
+        "category": Object {
+          "description": "Et mollitia minima non rerum omnis odio sint neque sit.",
+          "expand": true,
+          "label": "Small",
+          "name": "National",
+          "parent": undefined,
+          "priority": 67093,
+        },
         "editor": Object {
           "name": "solid state",
         },
@@ -73,7 +87,14 @@ Object {
         },
       },
       Object {
-        "category": "National",
+        "category": Object {
+          "description": "Et mollitia minima non rerum omnis odio sint neque sit.",
+          "expand": true,
+          "label": "Small",
+          "name": "National",
+          "parent": undefined,
+          "priority": 67093,
+        },
         "editor": undefined,
         "isReadonly": false,
         "label": "Jewelery digital",
@@ -407,7 +428,14 @@ Object {
     "displayType": "enim sunt neque",
     "fields": Array [
       Object {
-        "category": "Montana",
+        "category": Object {
+          "description": "Et ut ea reprehenderit et laborum quis.",
+          "expand": false,
+          "label": "synthesize",
+          "name": "Montana",
+          "parent": undefined,
+          "priority": 21406,
+        },
         "editor": undefined,
         "isReadonly": false,
         "label": "frictionless Cayman Islands Avon",
@@ -419,7 +447,14 @@ Object {
         },
       },
       Object {
-        "category": "Montana",
+        "category": Object {
+          "description": "Et ut ea reprehenderit et laborum quis.",
+          "expand": false,
+          "label": "synthesize",
+          "name": "Montana",
+          "parent": undefined,
+          "priority": 21406,
+        },
         "editor": undefined,
         "isReadonly": true,
         "label": "Berkshire",
@@ -431,7 +466,14 @@ Object {
         },
       },
       Object {
-        "category": "Montana",
+        "category": Object {
+          "description": "Et ut ea reprehenderit et laborum quis.",
+          "expand": false,
+          "label": "synthesize",
+          "name": "Montana",
+          "parent": undefined,
+          "priority": 21406,
+        },
         "editor": undefined,
         "isReadonly": true,
         "label": "International",

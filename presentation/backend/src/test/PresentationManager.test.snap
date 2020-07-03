@@ -121,7 +121,14 @@ Object {
     "displayType": "qui ut suscipit",
     "fields": Array [
       Object {
-        "category": "Visionary",
+        "category": Object {
+          "description": "Est aliquam veritatis et non laborum.",
+          "expand": true,
+          "label": "ivory compelling",
+          "name": "Visionary",
+          "parent": undefined,
+          "priority": 84294,
+        },
         "editor": undefined,
         "isReadonly": true,
         "label": "transmit Money Market Account Books",
@@ -210,7 +217,14 @@ Object {
     "displayType": "dolore aut laboriosam",
     "fields": Array [
       Object {
-        "category": "Jordanian Dinar",
+        "category": Object {
+          "description": "Totam unde id eum veritatis odio asperiores tempora soluta.",
+          "expand": true,
+          "label": "Applications",
+          "name": "Jordanian Dinar",
+          "parent": undefined,
+          "priority": 46057,
+        },
         "editor": undefined,
         "isReadonly": true,
         "label": "Accountability",
@@ -296,7 +310,14 @@ Object {
   "displayType": "1080p",
   "fields": Array [
     Object {
-      "category": "Computer",
+      "category": Object {
+        "description": "Aut eaque ut commodi atque quae voluptatem quos esse.",
+        "expand": true,
+        "label": "Virginia Fundamental",
+        "name": "Computer",
+        "parent": undefined,
+        "priority": 62349,
+      },
       "editor": Object {
         "name": "Tactics",
         "params": Object {
@@ -340,7 +361,14 @@ Object {
       },
     },
     Object {
-      "category": "impactful",
+      "category": Object {
+        "description": "Est rerum consequuntur perferendis sunt.",
+        "expand": false,
+        "label": "user-centric vortals",
+        "name": "impactful",
+        "parent": undefined,
+        "priority": 93330,
+      },
       "editor": undefined,
       "isReadonly": false,
       "label": "drive",
@@ -399,7 +427,14 @@ Object {
     },
     Object {
       "autoExpand": true,
-      "category": "synthesize",
+      "category": Object {
+        "description": "Tempore dolorum rerum ut earum corporis molestias quae officia.",
+        "expand": false,
+        "label": "Gorgeous Cotton Fish ubiquitous Nevada",
+        "name": "synthesize",
+        "parent": undefined,
+        "priority": 90947,
+      },
       "contentClassInfo": Object {
         "id": "0x123ad0000007c7b",
         "label": "Mountains Cloned Money Market Account",
@@ -411,7 +446,14 @@ Object {
       "name": "Nested content field",
       "nestedFields": Array [
         Object {
-          "category": "Web",
+          "category": Object {
+            "description": "Est alias quia odio magnam dolorem dolores dignissimos.",
+            "expand": false,
+            "label": "quantify",
+            "name": "Web",
+            "parent": undefined,
+            "priority": 10390,
+          },
           "editor": undefined,
           "isReadonly": false,
           "label": "infrastructures Bacon",
@@ -606,7 +648,14 @@ Object {
     "displayType": "quia quo sunt",
     "fields": Array [
       Object {
-        "category": "Soft",
+        "category": Object {
+          "description": "Maxime doloribus voluptas nostrum voluptatem qui quis.",
+          "expand": false,
+          "label": "Automotive",
+          "name": "Soft",
+          "parent": undefined,
+          "priority": 4374,
+        },
         "editor": undefined,
         "isReadonly": true,
         "label": "front-end",
@@ -695,7 +744,14 @@ Object {
     "displayType": "error soluta non",
     "fields": Array [
       Object {
-        "category": "Niue",
+        "category": Object {
+          "description": "Reiciendis a dolor et quis.",
+          "expand": false,
+          "label": "Borders navigate",
+          "name": "Niue",
+          "parent": undefined,
+          "priority": 57694,
+        },
         "editor": undefined,
         "isReadonly": true,
         "label": "Granite Engineer utilisation",
@@ -784,7 +840,14 @@ Object {
     "displayType": "magnam laudantium aut",
     "fields": Array [
       Object {
-        "category": "payment",
+        "category": Object {
+          "description": "Commodi error aperiam qui.",
+          "expand": true,
+          "label": "International",
+          "name": "payment",
+          "parent": undefined,
+          "priority": 462,
+        },
         "editor": undefined,
         "isReadonly": false,
         "label": "Ergonomic",

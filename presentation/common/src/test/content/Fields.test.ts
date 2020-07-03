@@ -8,6 +8,7 @@ import * as faker from "faker";
 import {
   Field, NestedContentField, PropertiesField, Property, PropertyValueFormat, RelationshipPath, StructTypeDescription,
 } from "../../presentation-common";
+import { CategoryDescription } from "../../presentation-common/content/Category";
 import { FieldDescriptor, FieldDescriptorType, PropertiesFieldJSON } from "../../presentation-common/content/Fields";
 import {
   createRandomCategory, createRandomECClassInfo, createRandomECClassInfoJSON, createRandomNestedContentField, createRandomNestedFieldJSON,
@@ -272,8 +273,9 @@ describe("NestedContentField", () => {
 
     it("creates valid NestedContentField from valid JSON with categories", () => {
       const categories = [createRandomCategory()];
-      const item = Field.fromJSON({ ...testData.nestedContentFieldJSON, category: categories[0].name }, categories);
-      expect(item).to.matchSnapshot();
+      const json = createRandomNestedFieldJSON(CategoryDescription.toJSON(categories[0]));
+      const field = Field.fromJSON(json, categories);
+      expect(field).to.matchSnapshot();
     });
 
     it("creates valid NestedContentField from valid serialized JSON", () => {

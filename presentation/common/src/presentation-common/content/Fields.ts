@@ -18,7 +18,7 @@ import { TypeDescription } from "./TypeDescription";
  * @public
  */
 export interface BaseFieldJSON {
-  category: CategoryDescriptionJSON | string;
+  category: CategoryDescriptionJSON | string; // TODO: make this a string _only_ in 3.0
   name: string;
   label: string;
   type: TypeDescription;
@@ -132,7 +132,7 @@ export class Field {
   /** Serialize this object to JSON */
   public toJSON(): FieldJSON {
     return {
-      category: this.category.name,
+      category: CategoryDescription.toJSON(this.category),
       name: this.name,
       label: this.label,
       type: this.type,
@@ -167,7 +167,8 @@ export class Field {
   }
 
   protected static getCategoryFromFieldJson(fieldJson: FieldJSON, categories?: CategoryDescription[]): CategoryDescription {
-    const category = (typeof fieldJson.category === "string") ? categories?.find((c) => c.name === fieldJson.category) : CategoryDescription.fromJSON(fieldJson.category);
+    const category = categories ? categories.find((c) => c.name === ((typeof fieldJson.category === "string") ? fieldJson.category : fieldJson.category.name))
+      : (typeof fieldJson.category === "object") ? CategoryDescription.fromJSON(fieldJson.category) : undefined;
     if (!category)
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid content field category`);
     return category;

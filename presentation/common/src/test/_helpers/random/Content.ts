@@ -97,14 +97,20 @@ export const createRandomNestedFieldJSON = (category?: CategoryDescriptionJSON |
   } as StructTypeDescription,
   contentClassInfo: createRandomECClassInfoJSON(),
   pathToPrimaryClass: createRandomRelationshipPathJSON(),
-  nestedFields: [createRandomPrimitiveFieldJSON()],
+  nestedFields: [createRandomPrimitiveFieldJSON(category)],
   autoExpand: faker.random.boolean(),
 });
+
+const deepAssignCategory = (field: Field, category: CategoryDescription) => {
+  field.category = category;
+  if (field.isNestedContentField())
+    field.nestedFields.forEach((f) => deepAssignCategory(f, category));
+};
 
 export const createRandomNestedContentField = (nestedFields?: Field[], category?: CategoryDescription): NestedContentField => {
   const nestedContentField = NestedContentField.fromJSON(createRandomNestedFieldJSON(undefined))!;
   if (category)
-    nestedContentField.category = category;
+    deepAssignCategory(nestedContentField, category);
   if (nestedFields)
     nestedContentField.nestedFields = nestedFields;
   nestedContentField.nestedFields.forEach((field) => field.rebuildParentship(nestedContentField));
@@ -114,7 +120,7 @@ export const createRandomNestedContentField = (nestedFields?: Field[], category?
 export const createRandomDescriptorJSON = (displayType?: string) => {
   const categories = [createRandomCategoryJSON()];
   const selectClasses = [createRandomSelectClassInfoJSON(), createRandomSelectClassInfoJSON()];
-  const fields = [createRandomPrimitiveFieldJSON(categories[0].name), createRandomPrimitiveFieldJSON(categories[0].name), createRandomPrimitiveFieldJSON(categories[0].name)];
+  const fields = [createRandomPrimitiveFieldJSON(categories[0]), createRandomPrimitiveFieldJSON(categories[0]), createRandomPrimitiveFieldJSON(categories[0])];
   return {
     connectionId: faker.random.uuid(),
     inputKeysHash: faker.random.uuid(),

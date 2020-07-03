@@ -55,7 +55,7 @@ describe("Descriptor", () => {
     let testDescriptorJSON!: DescriptorJSON;
     beforeEach(() => {
       testDescriptorJSON = createRandomDescriptorJSON();
-      testDescriptorJSON.fields.push(createRandomNestedFieldJSON());
+      testDescriptorJSON.fields.push(createRandomNestedFieldJSON(testDescriptorJSON.categories![0]));
     });
 
     const validateParentship = (fields: Field[], parent?: Field) => {
@@ -86,7 +86,7 @@ describe("Descriptor", () => {
     });
 
     it("skips fields that fail to deserialize", () => {
-      testDescriptorJSON.fields = [createRandomPrimitiveFieldJSON(), undefined as any];
+      testDescriptorJSON.fields = [createRandomPrimitiveFieldJSON(testDescriptorJSON.categories![0]), undefined as any];
       const descriptor = Descriptor.fromJSON(testDescriptorJSON);
       expect(descriptor!.fields.length).to.eq(1);
     });
