@@ -280,6 +280,41 @@ export class ViewFlags {
     return out;
   }
 
+  /** Like [[toJSON]], but no properties are omitted.
+   * @internal
+   */
+  public toFullyDefinedJSON(): Required<ViewFlagProps> {
+    return {
+      renderMode: this.renderMode,
+      noConstruct: !this.constructions,
+      noDim: !this.dimensions,
+      noPattern: !this.patterns,
+      noWeight: !this.weights,
+      noStyle: !this.styles,
+      noTransp: !this.transparency,
+      noFill: !this.fill,
+      grid: this.grid,
+      acs: this.acsTriad,
+      noTexture: !this.textures,
+      noMaterial: !this.materials,
+      noCameraLights: !this.cameraLights,
+      noSourceLights: !this.sourceLights,
+      noSolarLight: !this.solarLight,
+      visEdges: this.visibleEdges,
+      hidEdges: this.hiddenEdges,
+      shadows: this.shadows,
+      clipVol: this.clipVolume,
+      hlMatColors: this.hLineMaterialColors,
+      monochrome: this.monochrome,
+      backgroundMap: this.backgroundMap,
+      edgeMask: this.edgeMask,
+      ambientOcclusion: this.ambientOcclusion,
+      thematicDisplay: this.thematicDisplay,
+      forceSurfaceDiscard: this.forceSurfaceDiscard,
+      noWhiteOnWhiteReversal: !this.whiteOnWhiteReversal,
+    };
+  }
+
   public static fromJSON(json?: ViewFlagProps): ViewFlags {
     const val = new ViewFlags();
     if (!json)

@@ -75,6 +75,14 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt save view` - Copies to the clipboard a JSON representation of the view currently displayed in the active viewport.
 * `fdt apply view` - Accepts an unquoted JSON representation of a view, e.g., as obtained from `fdt save view`, and applies that view to the active viewport.
 * `fdt apply viewid` - Accepts the Id of a persistent ViewDefinition in hexadecimal format and applies that view to the active viewport.
+* `fdt save rendering style` - Outputs selected aspects of the active viewport's display style as JSON. See `DisplayStyleSettings.toOverrides`. Each argument is of the format "option=value" where `value` is 0 for false or 1 for true. All arguments default to false.
+  * `all`: include all settings.
+  * `imodel`: include iModel-specific settings.
+  * `project`: include project-specific settings.
+  * `map`: include background map settings.
+  * `drawingaids`: include drawing aid decoration settings.
+  * `copy`: copy result to system clipboarad.
+* `fdt apply rendering style` - Given a rendering style as a JSON string (see `fdt save rendering style`), applies it to the active viewport's display style. See `DisplayStyleSettings.applyOverrides`. Takes a single required argument: the JSON string.
 * `fdt change viewflags` - Changes any number of ViewFlags for the active viewport. Each argument is of the format "flag=value". For boolean flags, the value is `0` for `false` or `1` for `true`. Flag names are case-insensitive.
   * Boolean flags: "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges", "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard"
   * "renderMode": 0 = wireframe, 3 = hidden line, 4 = solid fill, 6 = smooth shade (numeric values of RenderMode enum).

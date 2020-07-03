@@ -8,9 +8,9 @@
 import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point3d, Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings,
-  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, GlobeMode, GroundPlane, LightSettings, RenderTexture, SkyBoxImageType, SkyBoxProps,
-  SkyCubeProps, SolarShadowSettings, SubCategoryOverride, ViewFlags,
+  BackgroundMapProps, BackgroundMapSettings, calculateSolarDirection, Cartographic, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EnvironmentProps, GlobeMode, GroundPlane, LightSettings, RenderTexture, SkyBoxImageType, SkyBoxProps,
+  SkyCubeProps, SolarShadowSettings, SubCategoryOverride, ThematicDisplay, ThematicDisplayMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
@@ -276,6 +276,21 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get wantShadows(): boolean {
     return this.is3d() && this.viewFlags.shadows && false !== IModelApp.renderSystem.options.displaySolarShadows;
   }
+
+  /** @internal */
+  protected onOverridesApplied(overrides: DisplayStyleSettingsProps): void {
+    if (overrides.backgroundMap)
+      this.backgroundMapSettings = BackgroundMapSettings.fromJSON(overrides.backgroundMap);
+
+    if (overrides.scheduleScript)
+      this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, overrides.scheduleScript);
+
+    if (overrides.contextRealityModels) {
+      this._contextRealityModels.length = 0;
+      for (const contextRealityModel of overrides.contextRealityModels)
+        this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
+    }
+  }
 }
 
 /** A display style that can be applied to 2d views.
@@ -291,6 +306,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._settings = new DisplayStyleSettings(this.jsonProperties);
+    this._settings.onOverridesApplied.addListener((_, overrides) => this.onOverridesApplied(overrides));
   }
 }
 
@@ -643,6 +659,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
+    this._settings.onOverridesApplied.addListener((_, overrides) => this.onOverridesApplied(overrides));
   }
 
   /** The [[SkyBox]] and [[GroundPlane]] settings for this style. */
@@ -653,8 +670,11 @@ export class DisplayStyle3dState extends DisplayStyleState {
     return this._environment;
   }
   public set environment(env: Environment) {
-    const prevEnv = this.settings.environment;
+    this.changeEnvironment(env);
     this.settings.environment = env.toJSON();
+  }
+  private changeEnvironment(env: Environment): void {
+    const prevEnv = this.settings.environment;
     this._environment = undefined;
 
     // Regenerate the skybox if the sky settings have changed
@@ -717,5 +737,22 @@ export class DisplayStyle3dState extends DisplayStyleState {
   }
   public set solarShadows(settings: SolarShadowSettings) {
     this.settings.solarShadows = settings;
+  }
+
+  /** @internal */
+  protected onOverridesApplied(overrides: DisplayStyle3dSettingsProps): void {
+    super.onOverridesApplied(overrides);
+
+    if (overrides.environment)
+      this.changeEnvironment(new Environment(overrides.environment));
+
+    if (overrides.thematic && this.settings.thematic.displayMode === ThematicDisplayMode.Height && undefined === overrides.thematic.range) {
+      // Use the project extents as reasonable default height range.
+      // NB: assumes using Z axis...
+      const extents = this.iModel.projectExtents;
+      const props = { ...overrides.thematic };
+      props.range = { low: extents.zLow, high: extents.zHigh };
+      this.settings.thematic = ThematicDisplay.fromJSON(props);
+    }
   }
 }

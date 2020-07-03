@@ -92,14 +92,19 @@ export class TerrainSettings {
   }
 
   public toJSON(): TerrainProps {
-    return {
-      providerName: this.providerName !== "CesiumWorldTerrain" ? this.providerName : undefined,
-      exaggeration: 1 !== this.exaggeration ? this.exaggeration : undefined,
-      nonLocatable: this.locatable ? undefined : true,
-      applyLighting: this.applyLighting ? true : undefined,
-      heightOrigin: 0 !== this.heightOrigin ? this.heightOrigin : undefined,
-      heightOriginMode: this.heightOriginMode,
-    };
+    const props: TerrainProps = { heightOriginMode: this.heightOriginMode };
+    if ("CesiumWorldTerrain" !== this.providerName)
+      props.providerName = this.providerName;
+    if (1 !== this.exaggeration)
+      props.exaggeration = this.exaggeration;
+    if (!this.locatable)
+      props.nonLocatable = true;
+    if (this.applyLighting)
+      props.applyLighting = true;
+    if (0 !== this.heightOrigin)
+      props.heightOrigin = this.heightOrigin;
+
+    return props;
   }
 
   public equals(other: TerrainSettings): boolean {

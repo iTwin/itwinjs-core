@@ -45,9 +45,21 @@ The hyper-modeling [Extension]($frontend) has been replaced by the `hypermodelin
 * Use [HyperModeling.startOrStop]($hypermodeling) to enable or disable hypermodeling for a [Viewport]($frontend).
 * Use [HyperModelingConfig]($hypermodeling) to customize the package's behavior.
 
+## Rendering styles
+
+A [DisplayStyle]($backend) defines how the contents of a [ViewDefinition]($backend) are rendered. However, the display style contains some data that is specific to the containing iModel, or to the project to which the iModel belongs. It can be very useful to be able to define various "rendering styles" that can be applied to any display style in any iModel or project to change the lighting, thematic display settings, and other visual aspects of the view. To facilitate this, three new methods have been introduced:
+
+* [DisplayStyleSettings.toOverrides]($common) to selectively capture a subset of the settings as a JSON object;
+* [DisplayStyleSettings.applyOverrides]($common) to selectively override a subset of the display style settings; and
+* [Viewport.overrideDisplayStyle]($frontend) to apply overrides to the viewport's display style and ensure the results become immediately visible.
+
+A "rendering style" is simply a partial [DisplayStyle3dSettingsProps]($common). When applied to a [DisplayStyleSettings]($common), any settings explicitly defined by the rendering style will be overridden; the remainder will retain their original values.
+
+Examples of some general-purpose rendering styles can be found in [display-test-app](https://github.com/imodeljs/imodeljs/blob/master/test-apps/display-test-app/src/frontend/ViewAttributes.ts).
+
 ## ECSql Enhancements
 
-Added these expressions and functions
+Added the following expressions and functions:
 
 1. `<type> IS [NOT] (type-list)` - Filter parent type by subtype
     * [Lesson 9: Type Filter](../learning/ECSQLTutorial/TypeFilter.md)

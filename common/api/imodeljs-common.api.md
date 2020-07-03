@@ -1486,6 +1486,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     });
     get ambientOcclusionSettings(): AmbientOcclusion.Settings;
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
+    // @beta
+    applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     // @internal (undocumented)
     get environment(): EnvironmentProps;
     set environment(environment: EnvironmentProps);
@@ -1507,6 +1509,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set thematic(thematic: ThematicDisplay);
     // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
+    // @beta
+    toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps;
 }
 
 // @public
@@ -1528,6 +1532,15 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     thematic?: ThematicDisplayProps;
 }
 
+// @beta
+export interface DisplayStyleOverridesOptions {
+    includeAll?: true;
+    includeBackgroundMap?: true;
+    includeDrawingAids?: true;
+    includeIModelSpecific?: true;
+    includeProjectSpecific?: true;
+}
+
 // @public
 export interface DisplayStyleProps extends DefinitionElementProps {
     jsonProperties?: {
@@ -1547,6 +1560,10 @@ export class DisplayStyleSettings {
     // @alpha
     get analysisStyle(): AnalysisStyle | undefined;
     set analysisStyle(style: AnalysisStyle | undefined);
+    // @beta
+    applyOverrides(overrides: DisplayStyleSettingsProps): void;
+    // @internal (undocumented)
+    protected _applyOverrides(overrides: DisplayStyleSettingsProps): void;
     get backgroundColor(): ColorDef;
     set backgroundColor(color: ColorDef);
     get backgroundMap(): BackgroundMapSettings;
@@ -1564,6 +1581,8 @@ export class DisplayStyleSettings {
     set monochromeColor(color: ColorDef);
     get monochromeMode(): MonochromeMode;
     set monochromeMode(mode: MonochromeMode);
+    // @internal (undocumented)
+    readonly onOverridesApplied: BeEvent<(settings: DisplayStyleSettings, overrides: DisplayStyleSettingsProps) => void>;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
@@ -1574,6 +1593,8 @@ export class DisplayStyleSettings {
     set timePoint(timePoint: number | undefined);
     // @internal (undocumented)
     toJSON(): DisplayStyleSettingsProps;
+    // @beta
+    toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyleSettingsProps;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
     }
@@ -4934,11 +4955,14 @@ export class RgbColor {
 }
 
 // @public
-export type RgbColorProps = {
-    r: number;
-    g: number;
+export interface RgbColorProps {
+    // (undocumented)
     b: number;
-} | RgbColor;
+    // (undocumented)
+    g: number;
+    // (undocumented)
+    r: number;
+}
 
 // @beta
 export type RgbFactorProps = number[];
@@ -6856,6 +6880,8 @@ export class ViewFlags {
     styles: boolean;
     textures: boolean;
     thematicDisplay: boolean;
+    // @internal
+    toFullyDefinedJSON(): Required<ViewFlagProps>;
     // (undocumented)
     toJSON(): ViewFlagProps;
     transparency: boolean;

@@ -92,6 +92,7 @@ internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
 public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
+beta;DisplayStyleOverridesOptions
 public;DisplayStyleProps 
 public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
@@ -349,7 +350,7 @@ public;RepositoryLinkProps
 internal;RequestBriefcaseProps
 public;ResponseLike 
 public;RgbColor
-public;RgbColorProps =
+public;RgbColorProps
 beta;RgbFactorProps = number[]
 public;RootSubjectProps
 public;class RpcConfiguration

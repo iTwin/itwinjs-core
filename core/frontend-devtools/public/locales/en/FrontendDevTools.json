@@ -164,6 +164,12 @@
     },
     "ToggleViewAttachmentClipShapes": {
       "keyin": "fdt attachment clip shapes"
+    },
+    "ApplyRenderingStyle": {
+      "keyin": "fdt apply rendering style"
+    },
+    "SaveRenderingStyle": {
+      "keyin": "fdt save rendering style"
     }
   }
 }

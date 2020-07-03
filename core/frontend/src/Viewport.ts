@@ -14,7 +14,7 @@ import {
   Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, Easing, EasingFunction, ElementProps, Frustum, GlobeMode,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, DisplayStyleSettingsProps, Easing, EasingFunction, ElementProps, Frustum, GlobeMode,
   GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d, Placement2dProps, Placement3d, Placement3dProps,
   PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -1068,6 +1068,16 @@ export abstract class Viewport implements IDisposable {
   public get displayStyle(): DisplayStyleState { return this.view.displayStyle; }
   public set displayStyle(style: DisplayStyleState) {
     this.view.displayStyle = style;
+    this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
+  }
+
+  /** Selectively override aspects of this viewport's display style.
+   * @see [DisplayStyleSettings.applyOverrides]($common)
+   * @beta
+   */
+  public overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void {
+    this.displayStyle.settings.applyOverrides(overrides);
     this._changeFlags.setDisplayStyle();
     this.invalidateRenderPlan();
   }

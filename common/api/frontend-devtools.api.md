@@ -49,6 +49,20 @@ export class AnimationIntervalTool extends Tool {
 export function appendDataListEntries(dl: DataList, entries: DataListEntry[]): void;
 
 // @beta
+export class ApplyRenderingStyleTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ApplyViewByIdTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
@@ -861,6 +875,20 @@ export class SaveRealityModelTool extends Tool {
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
     run(name: string | undefined): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SaveRenderingStyleTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(inputArgs: string[]): boolean;
     // (undocumented)
     static toolId: string;
 }

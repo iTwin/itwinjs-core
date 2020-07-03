@@ -416,9 +416,8 @@ export class ThematicDisplay {
       range: this.range.toJSON(),
     };
 
-    if (this.sensorSettings.sensors.length > 0) {
+    if (this.sensorSettings.sensors.length > 0)
       json.sensorSettings = this.sensorSettings.toJSON();
-    }
 
     return json;
   }

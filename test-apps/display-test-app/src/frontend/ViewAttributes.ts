@@ -8,12 +8,12 @@ import {
   CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
 } from "@bentley/frontend-devtools";
 import {
-  AmbientOcclusion, BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, ColorDefProps, EnvironmentProps, GlobeMode,
-  HiddenLine, LightSettings, LightSettingsProps, LinePixels, MonochromeMode, RenderMode, SolarShadowSettings, SolarShadowSettingsProps, TerrainProps,
-  ViewFlagProps, ViewFlags,
+  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, DisplayStyle3dSettingsProps, GlobeMode,
+  HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
+  ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
-  DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Environment, Viewport, ViewState, ViewState3d,
+  DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d,
 } from "@bentley/imodeljs-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
@@ -25,201 +25,196 @@ type UpdateAttribute = (view: ViewState) => void;
 
 type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visibleEdges" | "hiddenEdges" | "monochrome" | "constructions" | "transparency" | "weights" | "styles" | "clipVolume" | "forceSurfaceDiscard" | "whiteOnWhiteReversal";
 
-interface Style3dPreset {
+interface RenderingStyle extends DisplayStyle3dSettingsProps {
   name: string;
-  viewflags?: ViewFlagProps;
-  backgroundColor?: ColorDefProps;
-  monochromeColor?: ColorDefProps;
-  monochromeMode?: MonochromeMode;
-  environment?: EnvironmentProps;
-  hline?: HiddenLine.SettingsProps;
-  ao?: AmbientOcclusion.Props;
-  solarShadows?: SolarShadowSettingsProps;
-  lights?: LightSettingsProps;
 }
 
-const stylePresets: Style3dPreset[] = [
-  {
-    name: "None",
-  },
-  {
-    name: "Default",
-    environment: {
-      sky: {
-        display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303,
-      },
-      ground: {
-        display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987,
-      },
+const renderingStyleViewFlags = {
+  noCameraLights: false,
+  noSourceLights: false,
+  noSolarLight: false,
+  visEdges: false,
+  hidEdges: false,
+  shadows: false,
+  monochrome: false,
+  ambientOcclusion: false,
+  thematicDisplay: false,
+  renderMode: RenderMode.SmoothShade,
+};
+
+const renderingStyles: RenderingStyle[] = [{
+  name: "None",
+}, {
+  name: "Default",
+  environment: {
+    sky: {
+      display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303,
     },
-    viewflags: {
-      renderMode: 6,
-    },
-    lights: {
-      solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
-    },
-    hline: {},
-    ao: {},
-    solarShadows: {},
-  },
-  {
-    name: "Illustration",
-    environment: {},
-    backgroundColor: 10921638,
-    viewflags: { noCameraLights: true, noSourceLights: true, noSolarLight: true, visEdges: true, renderMode: 6 },
-    lights: {
-      solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
-    },
-    hline: {
-      visible: { ovrColor: true, color: 0, pattern: 0, width: 1 },
-      hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
-      transThreshold: 1,
-    },
-    ao: {},
-    solarShadows: {},
-  },
-  {
-    name: "Sun-dappled",
-    environment: {
-      sky: {
-        display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303,
-      },
-      ground: {
-        display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987,
-      },
-    },
-    viewflags: {
-      shadows: true, renderMode: 6,
-    },
-    lights: {
-      solar: { direction: [0.9391245716329828, 0.10165764029437066, -0.3281931795832247] },
-      hemisphere: { intensity: 0.2 },
-      portrait: { intensity: 0 },
-    },
-    hline: {},
-    ao: {},
-    solarShadows: {},
-  },
-  {
-    name: "Comic Book",
-    environment: {
-      sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
-      ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
-    },
-    viewflags: { renderMode: 6, noWeight: false, visEdges: true },
-    hline: {
-      visible: { ovrColor: true, color: 0, pattern: 0, width: 3 },
-      transThreshold: 1,
-    },
-    lights: {
-      solar: { direction: [0.7623, 0.0505, -0.6453], intensity: 1.95, alwaysEnabled: true },
-      ambient: { intensity: 0.2 },
-      portrait: { intensity: 0 },
-      specularIntensity: 0,
-      numCels: 2,
+    ground: {
+      display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987,
     },
   },
-  {
-    name: "Outdoorsy",
-    environment: {
-      sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
-      ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
-    },
-    viewflags: { renderMode: 6 },
-    lights: {
-      solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828], intensity: 1.05 },
-      ambient: { intensity: 0.25 },
-      hemisphere: {
-        upperColor: { r: 206, g: 233, b: 255 },
-        intensity: 0.5,
-      },
-      portrait: { intensity: 0 },
-    },
-    hline: {},
-    ao: {},
-    solarShadows: {},
+  viewflags: renderingStyleViewFlags,
+  lights: {
+    solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
   },
-  {
-    name: "Schematic",
-    environment: {},
-    backgroundColor: 16777215,
-    viewflags: { visEdges: true, renderMode: 6 },
-    lights: {
-      solar: { direction: [0, -0.6178171353958787, -0.7863218089378106], intensity: 1.95, alwaysEnabled: true },
-      ambient: { intensity: 0.65 },
-      portrait: { intensity: 0 },
-      specularIntensity: 0,
-    },
-    hline: {
-      visible: { ovrColor: true, color: 0, pattern: 0, width: 1 },
-      hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
-      transThreshold: 1,
-    },
-    ao: {},
-    solarShadows: {},
+}, {
+  name: "Illustration",
+  environment: {},
+  backgroundColor: 10921638,
+  viewflags: { ...renderingStyleViewFlags, noCameraLights: true, noSourceLights: true, noSolarLight: true, visEdges: true },
+  lights: {
+    solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
   },
-  {
-    name: "Soft",
-    environment: {
-      sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
-      ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
-    },
-    viewflags: { ambientOcclusion: true, renderMode: 6 },
-    lights: {
-      solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828], intensity: 0 },
-      ambient: { intensity: 0.75 },
-      hemisphere: { intensity: 0.3 },
-      portrait: { intensity: 0.5 },
-      specularIntensity: 0.4,
-    },
-    ao: { bias: 0.25, zLengthCap: 0.0025, maxDistance: 100, intensity: 1, texelStepSize: 1, blurDelta: 1.5, blurSigma: 2, blurTexelStepSize: 1 },
-    hline: {},
-    solarShadows: {},
+  hline: {
+    visible: { ovrColor: true, color: 0, pattern: 0, width: 1 },
+    hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
+    transThreshold: 1,
   },
-  {
-    name: "Moonlit",
-    environment: {
-      sky: { display: true, groundColor: 2435876, zenithColor: 0, nadirColor: 3880, skyColor: 3481088 },
-      ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
+}, {
+  name: "Sun-dappled",
+  environment: {
+    sky: {
+      display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303,
     },
-    viewflags: { visEdges: true, renderMode: 6 },
-    lights: {
-      solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828], intensity: 3, alwaysEnabled: true },
-      ambient: { intensity: 0.05 },
-      hemisphere: { lowerColor: { r: 83, g: 100, b: 87 } },
-      portrait: { intensity: 0 },
-      specularIntensity: 0,
+    ground: {
+      display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987,
     },
-    monochromeMode: 0,
-    hline: {
-      visible: { ovrColor: true, color: 0, pattern: -1, width: 0 },
-      hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
-      transThreshold: 1,
-    },
-    monochromeColor: 7897479,
-    ao: {},
-    solarShadows: {},
   },
-  {
-    name: "Gloss",
-    environment: {
-      sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
-      ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
-    },
-    viewflags: { visEdges: true, renderMode: 6 },
-    lights: {
-      solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
-      specularIntensity: 4.15,
-    },
-    hline: {
-      visible: { ovrColor: true, color: 8026756, pattern: 0, width: 1 },
-      hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
-      transThreshold: 1,
-    },
-    ao: {},
-    solarShadows: {},
+  viewflags: { ...renderingStyleViewFlags, shadows: true },
+  lights: {
+    solar: { direction: [0.9391245716329828, 0.10165764029437066, -0.3281931795832247] },
+    hemisphere: { intensity: 0.2 },
+    portrait: { intensity: 0 },
   },
-];
+}, {
+  name: "Comic Book",
+  environment: {
+    sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
+    ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
+  },
+  viewflags: { ...renderingStyleViewFlags, noWeight: false, visEdges: true },
+  hline: {
+    visible: { ovrColor: true, color: 0, pattern: 0, width: 3 },
+    transThreshold: 1,
+  },
+  lights: {
+    solar: { direction: [0.7623, 0.0505, -0.6453], intensity: 1.95, alwaysEnabled: true },
+    ambient: { intensity: 0.2 },
+    portrait: { intensity: 0 },
+    specularIntensity: 0,
+    numCels: 2,
+  },
+}, {
+  name: "Outdoorsy",
+  environment: {
+    sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
+    ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
+  },
+  viewflags: renderingStyleViewFlags,
+  lights: {
+    solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828], intensity: 1.05 },
+    ambient: { intensity: 0.25 },
+    hemisphere: {
+      upperColor: { r: 206, g: 233, b: 255 },
+      intensity: 0.5,
+    },
+    portrait: { intensity: 0 },
+  },
+}, {
+  name: "Schematic",
+  environment: {},
+  backgroundColor: 16777215,
+  viewflags: { ...renderingStyleViewFlags, visEdges: true },
+  lights: {
+    solar: { direction: [0, -0.6178171353958787, -0.7863218089378106], intensity: 1.95, alwaysEnabled: true },
+    ambient: { intensity: 0.65 },
+    portrait: { intensity: 0 },
+    specularIntensity: 0,
+  },
+  hline: {
+    visible: { ovrColor: true, color: 0, pattern: 0, width: 1 },
+    hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
+    transThreshold: 1,
+  },
+}, {
+  name: "Soft",
+  environment: {
+    sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
+    ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
+  },
+  viewflags: { ...renderingStyleViewFlags, ambientOcclusion: true },
+  lights: {
+    solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828], intensity: 0 },
+    ambient: { intensity: 0.75 },
+    hemisphere: { intensity: 0.3 },
+    portrait: { intensity: 0.5 },
+    specularIntensity: 0.4,
+  },
+  ao: { bias: 0.25, zLengthCap: 0.0025, maxDistance: 100, intensity: 1, texelStepSize: 1, blurDelta: 1.5, blurSigma: 2, blurTexelStepSize: 1 },
+}, {
+  name: "Moonlit",
+  environment: {
+    sky: { display: true, groundColor: 2435876, zenithColor: 0, nadirColor: 3880, skyColor: 3481088 },
+    ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
+  },
+  viewflags: { ...renderingStyleViewFlags, visEdges: true },
+  lights: {
+    solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828], intensity: 3, alwaysEnabled: true },
+    ambient: { intensity: 0.05 },
+    hemisphere: { lowerColor: { r: 83, g: 100, b: 87 } },
+    portrait: { intensity: 0 },
+    specularIntensity: 0,
+  },
+  monochromeMode: 0,
+  hline: {
+    visible: { ovrColor: true, color: 0, pattern: -1, width: 0 },
+    hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
+    transThreshold: 1,
+  },
+  monochromeColor: 7897479,
+}, {
+  name: "Thematic: Height",
+  viewflags: { ...renderingStyleViewFlags, thematicDisplay: true },
+  thematic: {
+    axis: [ 0, 0, 1 ],
+    gradientSettings: { mode: ThematicGradientMode.SteppedWithDelimiter },
+  },
+  lights: { },
+}, {
+  name: "Thematic: Slope",
+  viewflags: { ...renderingStyleViewFlags, thematicDisplay: true },
+  thematic: {
+    displayMode: ThematicDisplayMode.Slope,
+    range: [ 0, 90 ],
+    axis: [ 0, 0, 1 ],
+    gradientSettings: {
+      mode: ThematicGradientMode.Smooth,
+      colorScheme: ThematicGradientColorScheme.Custom,
+      customKeys: [
+        { value: 0, color: 0x404040 },
+        { value: 1, color: 0xffffff },
+      ],
+    },
+  },
+  lights: { },
+}, {
+  name: "Gloss",
+  environment: {
+    sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
+    ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
+  },
+  viewflags: { ...renderingStyleViewFlags, visEdges: true },
+  lights: {
+    solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
+    specularIntensity: 4.15,
+  },
+  hline: {
+    visible: { ovrColor: true, color: 8026756, pattern: 0, width: 1 },
+    hidden: { ovrColor: false, color: 16777215, pattern: 3435973836, width: 0 },
+    transThreshold: 1,
+  },
+}];
 
 export class ViewAttributes {
   private static _expandViewFlags = false;
@@ -251,7 +246,7 @@ export class ViewAttributes {
 
     this.addDisplayStylePicker();
     this.addRenderMode();
-    this.addPresets();
+    this.addRenderingStyles();
     this._element.appendChild(document.createElement("hr"));
 
     const flagsDiv = document.createElement("div");
@@ -417,17 +412,17 @@ export class ViewAttributes {
     this._element.appendChild(div);
   }
 
-  private addPresets(): void {
+  private addRenderingStyles(): void {
     const div = document.createElement("div");
-    const entries: ComboBoxEntry[] = stylePresets.map((preset, index) => ({ name: preset.name, value: index }));
+    const entries: ComboBoxEntry[] = renderingStyles.map((renderingStyle, index) => ({ name: renderingStyle.name, value: index }));
     createComboBox({
       parent: div,
-      name: "Preset: ",
+      name: "Rendering Style: ",
       entries,
-      id: "viewAttr_preset",
+      id: "viewAttr_renderingStyle",
       value: 0,
       handler: (cbx) => {
-        this.applyPreset(stylePresets[parseInt(cbx.value, 10)]);
+        this.applyRenderingStyle(renderingStyles[parseInt(cbx.value, 10)]);
       },
     });
 
@@ -438,60 +433,9 @@ export class ViewAttributes {
     this._element.appendChild(div);
   }
 
-  private applyPreset(preset: Style3dPreset): void {
-    if (preset.name === "None")
-      return;
-
-    const style = this._vp.view.is3d() ? this._vp.view.getDisplayStyle3d().clone(this._vp.iModel) : undefined;
-    if (!style)
-      return;
-
-    if (preset.environment)
-      style.environment = new Environment(preset.environment);
-
-    if (preset.backgroundColor)
-      style.backgroundColor = ColorDef.fromJSON(preset.backgroundColor);
-
-    if (preset.monochromeColor)
-      style.monochromeColor = ColorDef.fromJSON(preset.monochromeColor);
-
-    if (preset.monochromeMode)
-      style.settings.monochromeMode = preset.monochromeMode;
-
-    if (preset.viewflags) {
-      // Preserve flags we don't care about, like background map, grid, constructions, etc.
-      // Set any we do care about that are not overridden to default values.
-      // Override any explicitly specified.
-      const vf = {
-        ...style.viewFlags.toJSON(),
-        noCameraLights: false,
-        noSourceLights: false,
-        noSolarLight: false,
-        visEdges: false,
-        hidEdges: false,
-        shadows: false,
-        monochrome: false,
-        ambientOcclusion: false,
-        thematicDisplay: false,
-        ...preset.viewflags,
-      };
-
-      style.viewFlags = ViewFlags.fromJSON(vf);
-    }
-
-    if (preset.hline)
-      style.settings.hiddenLineSettings = HiddenLine.Settings.fromJSON(preset.hline);
-
-    if (preset.ao)
-      style.settings.ambientOcclusionSettings = AmbientOcclusion.Settings.fromJSON(preset.ao);
-
-    if (preset.solarShadows)
-      style.settings.solarShadows = SolarShadowSettings.fromJSON(preset.solarShadows);
-
-    if (preset.lights)
-      style.settings.lights = LightSettings.fromJSON(preset.lights);
-
-    this._vp.displayStyle = style;
+  private applyRenderingStyle(style: RenderingStyle): void {
+    if (style.name !== "None")
+      this._vp.overrideDisplayStyle(style);
   }
 
   private addAmbientOcclusion(): void {
@@ -936,7 +880,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
     await Promise.all(promises);
 
     this._displayStylePickerInput = createComboBox({
-      name: "Style: ",
+      name: "Display Style: ",
       id: "DisplayStyles",
       value: this._vp.view.displayStyle.id,
       handler: (select) => {
@@ -958,7 +902,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
   protected _open(): void {
     this._attributes = new ViewAttributes(this._vp, this._parent, this._disableEdges);
     const loadingComboBox = createComboBox({
-      name: "Style: ",
+      name: "Display Style: ",
       id: "DisplayStyles",
       entries: [{ name: "Now Loading...", value: undefined }],
     });

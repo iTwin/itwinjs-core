@@ -56,8 +56,10 @@ import { DialogPropertyItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { Dictionary } from '@bentley/bentleyjs-core';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
+import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
+import { DisplayStyleSettingsProps } from '@bentley/imodeljs-common';
 import { DownloadBriefcaseOptions } from '@bentley/imodeljs-common';
 import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
@@ -1994,6 +1996,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
     set lights(lights: LightSettings);
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
+    // @internal (undocumented)
+    protected onOverridesApplied(overrides: DisplayStyle3dSettingsProps): void;
     setSunTime(time: number): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
@@ -2048,6 +2052,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get monochromeColor(): ColorDef;
     set monochromeColor(val: ColorDef);
     get name(): string;
+    // @internal (undocumented)
+    protected onOverridesApplied(overrides: DisplayStyleSettingsProps): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     get scheduleScript(): RenderScheduleState.Script | undefined;
@@ -10355,6 +10361,8 @@ export abstract class Viewport implements IDisposable {
     // @beta
     get outsideClipColor(): ColorDef | undefined;
     set outsideClipColor(color: ColorDef | undefined);
+    // @beta
+    overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @beta
     get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides;

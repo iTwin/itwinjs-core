@@ -8,14 +8,14 @@
 
 import { ColorDef } from "./ColorDef";
 
-/** JSON representation of an [[RgbColor]]
+/** JSON representation of an [[RgbColor]], with each component an integer in the range [0, 255].
  * @public
  */
-export type RgbColorProps = {
+export interface RgbColorProps {
   r: number;
   g: number;
   b: number;
-} | RgbColor;
+}
 
 /** An immutable representation of a color with red, green, and blue components each in the integer range [0, 255].
  * @public

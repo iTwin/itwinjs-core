@@ -122,28 +122,31 @@ export class BackgroundMapSettings {
   }
 
   public toJSON(): BackgroundMapProps {
-    let terrainSettings: TerrainProps | undefined = this.terrainSettings.toJSON();
-    let haveTerrainSettings = false;
+    const props: BackgroundMapProps = { };
+    if (0 !== this.groundBias)
+      props.groundBias = this.groundBias;
+    if ("BingProvider" !== this.providerName)
+      props.providerName = this.providerName;
+    if (this.applyTerrain)
+      props.applyTerrain = true;
+    if (BackgroundMapType.Hybrid !== this.mapType)
+      props.providerData = { mapType: this.mapType };
+    if (false !== this.transparency)
+      props.transparency = this.transparency;
+    if (GlobeMode.Ellipsoid !== this.globeMode)
+      props.globeMode = this.globeMode;
+    if (this.useDepthBuffer)
+      props.useDepthBuffer = true;
+
+    const terrainSettings = this.terrainSettings.toJSON();
     for (const prop of Object.values(terrainSettings)) {
       if (undefined !== prop) {
-        haveTerrainSettings = true;
+        props.terrainSettings = terrainSettings;
         break;
       }
     }
 
-    if (!haveTerrainSettings)
-      terrainSettings = undefined;
-
-    return {
-      groundBias: 0 !== this.groundBias ? this.groundBias : undefined,
-      providerName: "BingProvider" !== this.providerName ? this.providerName : undefined,
-      applyTerrain: this.applyTerrain ? true : undefined,
-      providerData: BackgroundMapType.Hybrid !== this.mapType ? { mapType: this.mapType } : undefined,
-      transparency: false !== this.transparency ? this.transparency : undefined,
-      terrainSettings,
-      globeMode: GlobeMode.Ellipsoid !== this.globeMode ? this.globeMode : undefined,
-      useDepthBuffer: this.useDepthBuffer ? true : undefined,
-    };
+    return props;
   }
 
   /** Returns true if these settings are equivalent to the supplied JSON settings. */
