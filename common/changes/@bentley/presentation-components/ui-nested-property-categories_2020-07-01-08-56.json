@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Add support for nested property categories. Can be enabled by setting `PresentationPropertyDataProvider.isNestedPropertyCategoryGroupingEnabled = true`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}

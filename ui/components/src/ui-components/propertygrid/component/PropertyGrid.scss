@@ -13,18 +13,20 @@
 }
 
 .components-property-grid {
-  @include uicore-expandable-blocks-list;
+
+  .property-categories {
+    @include uicore-expandable-blocks-list;
+
+    display: grid;
+    grid-row-gap: 6px;
+    padding: 3px;
+  }
 
   padding-top: 6px;
   padding-bottom: 6px;
-  display: grid;
-  grid-row-gap: 6px;
+
   user-select: none;
   color: $buic-foreground-body;
-
-  > div {
-    min-width: 0;
-  }
 }
 
 .components-property-grid-wrapper {

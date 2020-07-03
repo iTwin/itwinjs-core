@@ -7,19 +7,37 @@ import * as faker from "faker";
 import { Descriptor, Field, NestedContentField, PropertyValueFormat, StructTypeDescription } from "../../presentation-common";
 import { DescriptorJSON, DescriptorSource } from "../../presentation-common/content/Descriptor";
 import {
-  createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfo, createRandomNestedFieldJSON,
-  createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomRelationshipPath,
+  createRandomCategory, createRandomCategoryJSON, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfo,
+  createRandomNestedFieldJSON, createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomRelationshipPath,
 } from "../_helpers/random";
 
 describe("Descriptor", () => {
 
   describe("constructor", () => {
 
-    it("creates Descriptor from DescriptorSource", () => {
+    it("creates Descriptor from DescriptorSource without categories", () => {
+      const category = createRandomCategory();
       const source: DescriptorSource = {
         contentFlags: 9,
         displayType: faker.random.word(),
-        fields: [],
+        fields: [createRandomPrimitiveField(category), createRandomPrimitiveField(category)],
+        filterExpression: faker.random.words(),
+        selectClasses: [],
+      };
+      const descriptor = new Descriptor(source);
+      for (const key in source) {
+        if (source.hasOwnProperty(key))
+          expect((descriptor as any)[key]).to.deep.eq((source as any)[key]);
+      }
+    });
+
+    it("creates Descriptor from DescriptorSource with categories", () => {
+      const category = createRandomCategory();
+      const source: DescriptorSource = {
+        contentFlags: 9,
+        displayType: faker.random.word(),
+        categories: [category],
+        fields: [createRandomPrimitiveField(category), createRandomPrimitiveField(category)],
         filterExpression: faker.random.words(),
         selectClasses: [],
       };
@@ -48,8 +66,15 @@ describe("Descriptor", () => {
       });
     };
 
-    it("creates valid Descriptor from valid JSON", () => {
+    it("creates valid Descriptor from valid JSON with categories", () => {
       const descriptor = Descriptor.fromJSON(testDescriptorJSON);
+      validateParentship(descriptor!.fields);
+      expect(descriptor).to.matchSnapshot();
+    });
+
+    it("creates valid Descriptor from valid JSON without categories", () => {
+      testDescriptorJSON.fields.forEach((field) => field.category = createRandomCategoryJSON());
+      const descriptor = Descriptor.fromJSON({ ...testDescriptorJSON, categories: undefined });
       validateParentship(descriptor!.fields);
       expect(descriptor).to.matchSnapshot();
     });

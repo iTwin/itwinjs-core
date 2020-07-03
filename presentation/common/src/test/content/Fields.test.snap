@@ -2,13 +2,7 @@
 
 exports[`Field fromJSON creates valid Field from valid JSON 1`] = `
 Object {
-  "category": Object {
-    "description": "Tenetur quo recusandae.",
-    "expand": true,
-    "label": "Oregon",
-    "name": "Designer",
-    "priority": 5601,
-  },
+  "category": "Designer",
   "editor": undefined,
   "isReadonly": true,
   "label": "Sleek SAS e-commerce",
@@ -21,15 +15,24 @@ Object {
 }
 `;
 
+exports[`Field fromJSON creates valid Field from valid JSON with categories 1`] = `
+Object {
+  "category": "virtual",
+  "editor": undefined,
+  "isReadonly": true,
+  "label": "New Jersey",
+  "name": "cultivate",
+  "priority": 7047,
+  "type": Object {
+    "typeName": "serial",
+    "valueFormat": "Primitive",
+  },
+}
+`;
+
 exports[`Field fromJSON creates valid Field from valid serialized JSON 1`] = `
 Object {
-  "category": Object {
-    "description": "Tempora eius eveniet vel.",
-    "expand": false,
-    "label": "Extension",
-    "name": "auxiliary",
-    "priority": 2776,
-  },
+  "category": "auxiliary",
   "editor": Object {
     "name": "JSON",
   },
@@ -47,13 +50,7 @@ Object {
 exports[`Field fromJSON creates valid NestedContentField from valid JSON 1`] = `
 Object {
   "autoExpand": false,
-  "category": Object {
-    "description": "Tempora consequuntur quam eveniet distinctio quos labore corporis neque distinctio.",
-    "expand": false,
-    "label": "multi-byte alarm content-based",
-    "name": "withdrawal",
-    "priority": 80265,
-  },
+  "category": "withdrawal",
   "contentClassInfo": Object {
     "id": "0x173a0000003faf",
     "label": "SSL",
@@ -65,13 +62,7 @@ Object {
   "name": "solid state",
   "nestedFields": Array [
     Object {
-      "category": Object {
-        "description": "Dolores natus qui accusamus velit similique et dicta rerum nisi.",
-        "expand": false,
-        "label": "whiteboard Plains",
-        "name": "Ferry",
-        "priority": 49022,
-      },
+      "category": "Ferry",
       "editor": undefined,
       "isReadonly": true,
       "label": "neural",
@@ -143,13 +134,7 @@ Object {
 
 exports[`Field fromJSON creates valid PropertiesField from valid JSON 1`] = `
 Object {
-  "category": Object {
-    "description": "Corporis occaecati explicabo voluptatum ipsam debitis.",
-    "expand": false,
-    "label": "Sausages",
-    "name": "structure",
-    "priority": 59710,
-  },
+  "category": "structure",
   "editor": Object {
     "name": "CSS",
   },
@@ -201,13 +186,7 @@ Object {
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid JSON 1`] = `
 Object {
   "autoExpand": true,
-  "category": Object {
-    "description": "Est fugit nisi occaecati ea eos maiores distinctio.",
-    "expand": true,
-    "label": "Borders",
-    "name": "clicks-and-mortar",
-    "priority": 65673,
-  },
+  "category": "clicks-and-mortar",
   "contentClassInfo": Object {
     "id": "0x1365a0000010344",
     "label": "Belize Dollar Bacon Cameroon",
@@ -221,13 +200,7 @@ Object {
   "name": "application",
   "nestedFields": Array [
     Object {
-      "category": Object {
-        "description": "Error delectus est ea omnis rerum perferendis optio voluptatibus.",
-        "expand": false,
-        "label": "Investor Designer",
-        "name": "Colombian Peso Unidad de Valor Real",
-        "priority": 98459,
-      },
+      "category": "Colombian Peso Unidad de Valor Real",
       "editor": undefined,
       "isReadonly": false,
       "label": "FTP",
@@ -297,16 +270,97 @@ Object {
 }
 `;
 
+exports[`NestedContentField fromJSON creates valid NestedContentField from valid JSON with categories 1`] = `
+Object {
+  "autoExpand": true,
+  "category": "Ergonomic",
+  "contentClassInfo": Object {
+    "id": "0x7d0000016d3f",
+    "label": "Sleek",
+    "name": "Future",
+  },
+  "editor": Object {
+    "name": "connecting",
+  },
+  "isReadonly": true,
+  "label": "payment Customer",
+  "name": "deploy",
+  "nestedFields": Array [
+    Object {
+      "category": "quantify",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Grocery",
+      "name": "Money Market Account",
+      "priority": 85640,
+      "type": Object {
+        "typeName": "datetime",
+        "valueFormat": "Primitive",
+      },
+    },
+  ],
+  "pathToPrimaryClass": Array [
+    Object {
+      "isForwardRelationship": false,
+      "isPolymorphicRelationship": false,
+      "relationshipInfo": Object {
+        "id": "0x1814f000000e183",
+        "label": "Ferry generating",
+        "name": "Nicaragua",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x117160000012b09",
+        "label": "mobile",
+        "name": "Assurance",
+      },
+      "targetClassInfo": Object {
+        "id": "0x11f250000003eef",
+        "label": "port Planner",
+        "name": "Michigan",
+      },
+    },
+    Object {
+      "isForwardRelationship": false,
+      "isPolymorphicRelationship": false,
+      "relationshipInfo": Object {
+        "id": "0x1b650000000a48",
+        "label": "Spur Ohio",
+        "name": "Web",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x2abe0000005e11",
+        "label": "Strategist New York",
+        "name": "Generic Plastic Chair",
+      },
+      "targetClassInfo": Object {
+        "id": "0xf82b0000011b0b",
+        "label": "Frozen",
+        "name": "throughput",
+      },
+    },
+  ],
+  "priority": 17345,
+  "type": Object {
+    "members": Array [
+      Object {
+        "label": "interface",
+        "name": "envisioneer",
+        "type": Object {
+          "typeName": "enum",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "typeName": "Frozen",
+    "valueFormat": "Struct",
+  },
+}
+`;
+
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid serialized JSON 1`] = `
 Object {
   "autoExpand": false,
-  "category": Object {
-    "description": "Et rerum saepe odio quidem incidunt blanditiis.",
-    "expand": true,
-    "label": "primary 1080p",
-    "name": "Diverse",
-    "priority": 34887,
-  },
+  "category": "Diverse",
   "contentClassInfo": Object {
     "id": "0x1010c0000004a68",
     "label": "Customer",
@@ -320,13 +374,7 @@ Object {
   "name": "salmon",
   "nestedFields": Array [
     Object {
-      "category": Object {
-        "description": "Omnis exercitationem ut rerum sunt quo iste.",
-        "expand": true,
-        "label": "Mews content",
-        "name": "seize",
-        "priority": 4186,
-      },
+      "category": "seize",
       "editor": undefined,
       "isReadonly": true,
       "label": "Chief Street",
@@ -398,13 +446,7 @@ Object {
 
 exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON 1`] = `
 Object {
-  "category": Object {
-    "description": "Sequi repudiandae velit atque voluptas.",
-    "expand": true,
-    "label": "Grocery West Virginia",
-    "name": "Incredible",
-    "priority": 39804,
-  },
+  "category": "Incredible",
   "editor": undefined,
   "isReadonly": false,
   "label": "Tanzanian Shilling front-end optical",
@@ -451,15 +493,60 @@ Object {
 }
 `;
 
+exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON with categories 1`] = `
+Object {
+  "category": "Mill",
+  "editor": Object {
+    "name": "Massachusetts",
+  },
+  "isReadonly": false,
+  "label": "port Small Granite Hat Crossing",
+  "name": "Factors",
+  "priority": 89061,
+  "properties": Array [
+    Object {
+      "property": Object {
+        "classInfo": Object {
+          "id": "0x1022b0000002e33",
+          "label": "interface bypassing",
+          "name": "bleeding-edge",
+        },
+        "name": "Rubber",
+        "type": "timestamp",
+      },
+      "relatedClassPath": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0x87d60000013379",
+            "label": "RAM",
+            "name": "input",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x6ca60000012eb1",
+            "label": "magenta Implementation",
+            "name": "calculating",
+          },
+          "targetClassInfo": Object {
+            "id": "0x2a2d000000f771",
+            "label": "Madagascar copying",
+            "name": "Investment Account",
+          },
+        },
+      ],
+    },
+  ],
+  "type": Object {
+    "typeName": "boolean",
+    "valueFormat": "Primitive",
+  },
+}
+`;
+
 exports[`PropertiesField fromJSON creates valid PropertiesField from valid serialized JSON 1`] = `
 Object {
-  "category": Object {
-    "description": "Vitae deleniti eum aperiam quo recusandae doloremque voluptatum alias ut.",
-    "expand": false,
-    "label": "Incredible Granite Towels wireless info-mediaries",
-    "name": "orange",
-    "priority": 59789,
-  },
+  "category": "orange",
   "editor": Object {
     "name": "Dynamic",
   },

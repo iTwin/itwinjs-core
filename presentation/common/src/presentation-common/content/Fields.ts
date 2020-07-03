@@ -7,7 +7,8 @@
  */
 
 import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
-import { CategoryDescription } from "./Category";
+import { PresentationError, PresentationStatus } from "../Error";
+import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { EditorDescription } from "./Editor";
 import { Property, PropertyJSON } from "./Property";
 import { TypeDescription } from "./TypeDescription";
@@ -17,7 +18,7 @@ import { TypeDescription } from "./TypeDescription";
  * @public
  */
 export interface BaseFieldJSON {
-  category: CategoryDescription;
+  category: CategoryDescriptionJSON | string;
   name: string;
   label: string;
   type: TypeDescription;
@@ -121,10 +122,17 @@ export class Field {
    */
   public get parent(): NestedContentField | undefined { return this._parent; }
 
+  /** @alpha */
+  public clone() {
+    const clone = new Field(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.editor);
+    clone.rebuildParentship(this.parent);
+    return clone;
+  }
+
   /** Serialize this object to JSON */
   public toJSON(): FieldJSON {
     return {
-      category: this.category,
+      category: this.category.name,
       name: this.name,
       label: this.label,
       type: this.type,
@@ -135,17 +143,34 @@ export class Field {
   }
 
   /** Deserialize [[Field]] from JSON */
-  public static fromJSON(json: FieldJSON | string | undefined): Field | undefined {
+  public static fromJSON(json: FieldJSON | undefined, categories: CategoryDescription[]): Field | undefined;
+  /**
+   * Deserialize [[Field]] from JSON
+   * @deprecated Use an overload that takes a list of categories
+   */
+  public static fromJSON(json: FieldJSON | string | undefined): Field | undefined;
+  public static fromJSON(json: FieldJSON | string | undefined, categories?: CategoryDescription[]): Field | undefined {
     if (!json)
       return undefined;
-    if (typeof json === "string")
+    if (typeof json === "string") {
+      // tslint:disable-next-line:deprecation
       return JSON.parse(json, Field.reviver);
+    }
     if (isPropertiesField(json))
-      return PropertiesField.fromJSON(json);
+      return PropertiesField.fromJSON(json, categories!);
     if (isNestedContentField(json))
-      return NestedContentField.fromJSON(json);
+      return NestedContentField.fromJSON(json, categories!);
     const field = Object.create(Field.prototype);
-    return Object.assign(field, json);
+    return Object.assign(field, json, {
+      category: Field.getCategoryFromFieldJson(json, categories),
+    });
+  }
+
+  protected static getCategoryFromFieldJson(fieldJson: FieldJSON, categories?: CategoryDescription[]): CategoryDescription {
+    const category = (typeof fieldJson.category === "string") ? categories?.find((c) => c.name === fieldJson.category) : CategoryDescription.fromJSON(fieldJson.category);
+    if (!category)
+      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid content field category`);
+    return category;
   }
 
   /**
@@ -153,8 +178,10 @@ export class Field {
    * `JSON.parse` method when parsing Field objects.
    *
    * @internal
+   * @deprecated Use [[fromJSON]]
    */
   public static reviver(key: string, value: any): any {
+    // tslint:disable-next-line:deprecation
     return key === "" ? Field.fromJSON(value) : value;
   }
 
@@ -208,6 +235,13 @@ export class PropertiesField extends Field {
     this.properties = properties;
   }
 
+  /** @alpha */
+  public clone() {
+    const clone = new PropertiesField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.properties, this.editor);
+    clone.rebuildParentship(this.parent);
+    return clone;
+  }
+
   /** Serialize this object to JSON */
   public toJSON(): PropertiesFieldJSON {
     return {
@@ -217,15 +251,24 @@ export class PropertiesField extends Field {
   }
 
   /** Deserialize [[PropertiesField]] from JSON */
-  public static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined {
+  public static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
+  /**
+   * Deserialize [[PropertiesField]] from JSON
+   * @deprecated Use an overload that takes a list of categories
+   */
+  public static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined;
+  public static fromJSON(json: PropertiesFieldJSON | string | undefined, categories?: CategoryDescription[]): PropertiesField | undefined {
     if (!json)
       return undefined;
-    if (typeof json === "string")
+    if (typeof json === "string") {
+      // tslint:disable-next-line:deprecation
       return JSON.parse(json, Field.reviver);
+    }
     const field = Object.create(PropertiesField.prototype);
     return Object.assign(field, json, {
-      properties: json.properties.map((p) => Property.fromJSON(p)),
-    } as Partial<PropertiesField>);
+      category: this.getCategoryFromFieldJson(json, categories),
+      properties: json.properties.map(Property.fromJSON),
+    });
   }
 
   private get propertySourceInfo() {
@@ -289,6 +332,14 @@ export class NestedContentField extends Field {
     this.autoExpand = autoExpand;
   }
 
+  /** @alpha */
+  public clone() {
+    const clone = new NestedContentField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority,
+      this.contentClassInfo, this.pathToPrimaryClass, this.nestedFields, this.editor, this.autoExpand);
+    clone.rebuildParentship(this.parent);
+    return clone;
+  }
+
   /**
    * Get field by its name
    * @param name Name of the field to find
@@ -310,18 +361,28 @@ export class NestedContentField extends Field {
   }
 
   /** Deserialize [[NestedContentField]] from JSON */
-  public static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined {
+  public static fromJSON(json: NestedContentFieldJSON | undefined, categories: CategoryDescription[]): NestedContentField | undefined;
+  /**
+   * Deserialize [[NestedContentField]] from JSON
+   * @deprecated Use an overload that takes a list of categories
+   */
+  public static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
+  public static fromJSON(json: NestedContentFieldJSON | string | undefined, categories?: CategoryDescription[]): NestedContentField | undefined {
     if (!json)
       return undefined;
-    if (typeof json === "string")
+    if (typeof json === "string") {
+      // tslint:disable-next-line:deprecation
       return JSON.parse(json, Field.reviver);
+    }
     const field = Object.create(NestedContentField.prototype);
     return Object.assign(field, json, {
-      nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson)).filter((nestedField) => (undefined !== nestedField)),
+      category: this.getCategoryFromFieldJson(json, categories),
+      nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson, categories!))
+        .filter((nestedField): nestedField is Field => !!nestedField),
       contentClassInfo: ClassInfo.fromJSON(json.contentClassInfo),
-      pathToPrimaryClass: json.pathToPrimaryClass.map((p) => RelatedClassInfo.fromJSON(p)),
+      pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
       autoExpand: json.autoExpand,
-    } as Partial<NestedContentField>);
+    });
   }
 
   /** @internal */

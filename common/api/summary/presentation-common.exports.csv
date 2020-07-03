@@ -7,6 +7,8 @@ public;BaseNodeKey
 public;BaseTypeDescription
 public;CalculatedPropertiesSpecification
 public;CategoryDescription
+public;CategoryDescription
+public;CategoryDescriptionJSON
 public;CheckBoxRule 
 public;ChildNodeRule 
 public;ChildNodeSpecificationBase

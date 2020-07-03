@@ -8,17 +8,20 @@
  */
 import "./PropertyGrid.scss";
 import classnames from "classnames";
+import { produce } from "immer";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { DisposeFunc } from "@bentley/bentleyjs-core";
-import { CommonProps, Orientation, Spinner, SpinnerSize } from "@bentley/ui-core";
 import { ArrayValue, PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
-import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
-import { ResizeHandlingSelectablePropertyBlock } from "./ResizeHandlingSelectablePropertyBlock";
-import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { CommonProps, Orientation, Spinner, SpinnerSize } from "@bentley/ui-core";
 import { matchLinks } from "../../common/Links";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
+import { ColumnResizeRelatedPropertyListProps, ColumnResizingPropertyListPropsSupplier } from "./ColumnResizingPropertyListPropsSupplier";
+import { PropertyCategoryBlock } from "./PropertyCategoryBlock";
+import { PropertyList, PropertyListProps } from "./PropertyList";
 
 /** Properties for [[PropertyGrid]] React component
  * @public
@@ -92,6 +95,7 @@ export interface PropertyGridContextMenuArgs {
 
 /** Property Category in the [[PropertyGrid]] state
  * @public
+ * @deprecated This was part of [[PropertyGrid]] internal state and should've never been public. The component is not using it anymore.
  */
 export interface PropertyGridCategory {
   propertyCategory: PropertyCategory;
@@ -99,12 +103,18 @@ export interface PropertyGridCategory {
   properties: PropertyRecord[];
 }
 
+interface CategorizedPropertyGridRecords {
+  category: PropertyCategory;
+  records: PropertyRecord[];
+  children: CategorizedPropertyGridRecords[];
+}
+
 /** State of [[PropertyGrid]] React component
  * @internal
  */
 interface PropertyGridState {
   /** List of PropertyGrid categories */
-  categories: PropertyGridCategory[];
+  categories: CategorizedPropertyGridRecords[];
   /** Unique key of currently selected property */
   selectedPropertyKey?: string;
   /** Unique key of currently edited property */
@@ -188,13 +198,6 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this.gatherData();
   }
 
-  private _shouldExpandCategory = (category: PropertyCategory): boolean => {
-    const stateCategory = this.state.categories.find((x) => x.propertyCategory.name === category.name);
-    if (stateCategory)
-      return stateCategory.propertyCategory.expand;
-    return category.expand;
-  }
-
   private async gatherData(): Promise<void> {
     if (this._isInDataRequest) {
       this._hasPendingDataRequest = true;
@@ -219,16 +222,20 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       return this.gatherData();
     }
 
-    const categories = new Array<PropertyGridCategory>();
-    propertyData.categories.forEach((category: PropertyCategory) => {
-      categories.push({
-        propertyCategory: { ...category, expand: this._shouldExpandCategory(category) },
-        propertyCount: propertyData.records[category.name].length,
-        properties: propertyData.records[category.name],
-      });
+    for (const categoryName in propertyData.records) {
+      // istanbul ignore else
+      if (propertyData.records.hasOwnProperty(categoryName))
+        this.assignRecordClickHandlers(propertyData.records[categoryName]);
+    }
 
-      this.assignRecordClickHandlers(propertyData.records[category.name]);
-    });
+    const buildCategoriesHierarchy = (categories: PropertyCategory[]) =>
+      categories.map((category): CategorizedPropertyGridRecords => ({
+        category,
+        records: propertyData.records[category.name] ?? [],
+        children: buildCategoriesHierarchy(category.childCategories ?? []),
+      }));
+    const categories = buildCategoriesHierarchy(propertyData.categories);
+
     this.setState({ categories, loadStart: undefined });
   }
 
@@ -241,25 +248,6 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       if (record.value.valueFormat === PropertyValueFormat.Struct)
         this.assignRecordClickHandlers(Object.values((record.value as StructValue).members));
     });
-  }
-
-  private _onExpansionToggled = (categoryName: string) => {
-    const index = this.state.categories.findIndex((c) => c.propertyCategory.name === categoryName);
-    if (-1 === index)
-      return;
-
-    const categories = [...this.state.categories];
-
-    const newCategory = {
-      ...categories[index],
-      propertyCategory: {
-        ...categories[index].propertyCategory,
-        expand: !categories[index].propertyCategory.expand,
-      },
-    };
-
-    categories[index] = newCategory;
-    this.setState({ categories });
   }
 
   private _isClickSupported() {
@@ -341,6 +329,18 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this.updateOrientation(width);
   }
 
+  private _onCategoryExpansionToggled = (categoryName: string) => {
+    this.setState((state) => {
+      return produce(state, (draft) => {
+        const category = findCategory(draft.categories, categoryName);
+        // istanbul ignore else
+        if (category) {
+          category.expand = !category.expand;
+        }
+      });
+    });
+  }
+
   private updateOrientation(width: number): void {
     const isOrientationFixed = !!this.props.isOrientationFixed;
     const horizontalOrientationMinWidth = (this.props.horizontalOrientationMinWidth !== undefined) ? this.props.horizontalOrientationMinWidth : 300;
@@ -369,34 +369,92 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     return (
       <div className={classnames("components-property-grid-wrapper", this.props.className)} style={this.props.style}>
         <div className="components-property-grid">
-          {
-            this.state.categories.map((gridCategory: PropertyGridCategory) => (
-              <ResizeHandlingSelectablePropertyBlock
-                key={gridCategory.propertyCategory.name}
-                category={gridCategory.propertyCategory}
-                properties={gridCategory.properties}
-                orientation={this.state.orientation}
-                selectedPropertyKey={this.state.selectedPropertyKey}
-                onExpansionToggled={this._onExpansionToggled}
-                onPropertyClicked={this._isClickSupported() ? this._onPropertyClicked : undefined}
-                onPropertyRightClicked={this._isRightClickSupported() ? this._onPropertyRightClicked : undefined}
-                onPropertyContextMenu={this._onPropertyContextMenu}
-                propertyValueRendererManager={this.props.propertyValueRendererManager}
-                editingPropertyKey={this.state.editingPropertyKey}
-                onEditCommit={this._onEditCommit}
-                onEditCancel={this._onEditCancel}
-                isPropertyHoverEnabled={this.props.isPropertyHoverEnabled}
-                isPropertySelectionEnabled={this.props.isPropertySelectionEnabled}
-                isPropertyRightClickSelectionEnabled={this.props.isPropertySelectionOnRightClickEnabled}
-                actionButtonRenderers={this.props.actionButtonRenderers}
-              />
-            ))
-          }
+          <div className="property-categories">
+            {
+              this.state.categories.map((categorizedRecords: CategorizedPropertyGridRecords) => (
+                <NestedCategoryBlock
+                  categorizedRecords={categorizedRecords}
+                  onCategoryExpansionToggled={this._onCategoryExpansionToggled}
+                  orientation={this.state.orientation}
+                  selectedPropertyKey={this.state.selectedPropertyKey}
+                  onPropertyClicked={this._isClickSupported() ? this._onPropertyClicked : undefined}
+                  onPropertyRightClicked={this._isRightClickSupported() ? this._onPropertyRightClicked : undefined}
+                  onPropertyContextMenu={this._onPropertyContextMenu}
+                  propertyValueRendererManager={this.props.propertyValueRendererManager}
+                  editingPropertyKey={this.state.editingPropertyKey}
+                  onEditCommit={this._onEditCommit}
+                  onEditCancel={this._onEditCancel}
+                  isPropertyHoverEnabled={this.props.isPropertyHoverEnabled}
+                  isPropertySelectionEnabled={this.props.isPropertySelectionEnabled}
+                  isPropertyRightClickSelectionEnabled={this.props.isPropertySelectionOnRightClickEnabled}
+                  actionButtonRenderers={this.props.actionButtonRenderers}
+                />
+              ))
+            }
+          </div>
         </div>
         <ReactResizeDetector handleWidth handleHeight onResize={this._onResize} />
       </div>
     );
   }
+}
+
+function findCategory(categories: CategorizedPropertyGridRecords[], lookupName: string): PropertyCategory | undefined {
+  for (const category of categories) {
+    if (category.category.name === lookupName)
+      return category.category;
+    const matchingChild = findCategory(category.children, lookupName);
+    if (matchingChild)
+      return matchingChild;
+  }
+  return undefined;
+}
+
+interface NestedCategoryBlockProps extends Omit<PropertyListProps, (keyof ColumnResizeRelatedPropertyListProps) | "properties"> {
+  categorizedRecords: CategorizedPropertyGridRecords;
+  onCategoryExpansionToggled: (categoryName: string) => void;
+  orientation: Orientation;
+}
+function NestedCategoryBlock(props: NestedCategoryBlockProps) {
+  return (
+    <PropertyCategoryBlock
+      key={props.categorizedRecords.category.name}
+      category={props.categorizedRecords.category}
+      onExpansionToggled={props.onCategoryExpansionToggled}
+    >
+      {props.categorizedRecords.records.length ? (
+        <ColumnResizingPropertyListPropsSupplier orientation={props.orientation}>
+          {(partialListProps: ColumnResizeRelatedPropertyListProps) => (
+            <PropertyList
+              {...partialListProps}
+              properties={props.categorizedRecords.records}
+              selectedPropertyKey={props.selectedPropertyKey}
+              onPropertyClicked={props.onPropertyClicked}
+              onPropertyRightClicked={props.onPropertyRightClicked}
+              onPropertyContextMenu={props.onPropertyContextMenu}
+              propertyValueRendererManager={props.propertyValueRendererManager}
+              editingPropertyKey={props.editingPropertyKey}
+              onEditCommit={props.onEditCommit}
+              onEditCancel={props.onEditCancel}
+              isPropertyHoverEnabled={props.isPropertyHoverEnabled}
+              isPropertySelectionEnabled={props.isPropertySelectionEnabled}
+              isPropertyRightClickSelectionEnabled={props.isPropertyRightClickSelectionEnabled}
+              actionButtonRenderers={props.actionButtonRenderers}
+            />
+          )}
+        </ColumnResizingPropertyListPropsSupplier>
+      ) : undefined}
+      {props.categorizedRecords.children.length ? (
+        <div className="property-categories">
+          {
+            props.categorizedRecords.children.map((categorizedChildRecords) => (
+              <NestedCategoryBlock {...props} categorizedRecords={categorizedChildRecords} />
+            ))
+          }
+        </div>
+      ) : undefined}
+    </PropertyCategoryBlock>
+  );
 }
 
 interface DelayedSpinnerProps {

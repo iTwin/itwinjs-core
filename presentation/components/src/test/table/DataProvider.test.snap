@@ -17,8 +17,8 @@ Array [
   Object {
     "editable": true,
     "filterable": false,
-    "key": "Engineer",
-    "label": "monitor",
+    "key": "Rustic",
+    "label": "Saint Pierre and Miquelon",
     "sortable": true,
   },
   Object {
@@ -29,10 +29,10 @@ Array [
     "sortable": true,
   },
   Object {
-    "editable": true,
+    "editable": false,
     "filterable": false,
-    "key": "executive",
-    "label": "Director Chicken",
+    "key": "Investment Account",
+    "label": "Handcrafted Frozen Soap",
     "sortable": true,
   },
 ]
@@ -42,60 +42,60 @@ exports[`TableDataProvider getRow returns valid row item 1`] = `
 Object {
   "cells": Array [
     Object {
-      "key": "Home Loan Account",
+      "key": "zero defect",
       "record": PropertyRecord {
-        "description": "Books XSS Fresh",
+        "description": "Investment Account",
         "property": Object {
-          "displayLabel": "Steel",
-          "name": "Home Loan Account",
-          "typename": "varchar",
+          "displayLabel": "SCSI Accountability Supervisor",
+          "name": "zero defect",
+          "typename": "double",
         },
         "value": Object {
-          "displayValue": "Books XSS Fresh",
-          "value": "Automotive",
+          "displayValue": "Investment Account",
+          "value": "Incredible",
           "valueFormat": 0,
         },
       },
     },
     Object {
-      "key": "Legacy",
+      "key": "Salad",
       "record": PropertyRecord {
-        "description": "synthesizing pixel Avon",
+        "description": "Tasty",
         "property": Object {
-          "displayLabel": "Indian Rupee International",
+          "displayLabel": "cyan HDD Avon",
           "editor": Object {
-            "name": "Tools",
+            "name": "incremental",
             "params": Array [],
           },
-          "name": "Legacy",
-          "typename": "datetime",
+          "name": "Salad",
+          "typename": "date",
         },
         "value": Object {
-          "displayValue": "synthesizing pixel Avon",
-          "value": "Metrics",
+          "displayValue": "Tasty",
+          "value": "transmitting",
           "valueFormat": 0,
         },
       },
     },
     Object {
-      "key": "Credit Card Account",
+      "key": "Pizza",
       "record": PropertyRecord {
-        "description": "back up",
+        "description": "Global",
         "isReadonly": true,
         "property": Object {
-          "displayLabel": "Awesome Wooden Salad regional payment",
-          "name": "Credit Card Account",
-          "typename": "binary",
+          "displayLabel": "IB digital aggregate",
+          "name": "Pizza",
+          "typename": "boolean",
         },
         "value": Object {
-          "displayValue": "back up",
-          "value": "Concrete",
+          "displayValue": "Global",
+          "value": "Bacon",
           "valueFormat": 0,
         },
       },
     },
   ],
-  "key": "{\\"className\\":\\"full-range\\",\\"id\\":\\"0x163900000001e5c\\"}",
+  "key": "{\\"className\\":\\"Streets\\",\\"id\\":\\"0x574a000000a4b6\\"}",
 }
 `;
 
@@ -111,13 +111,13 @@ Object {
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "workforce Frozen",
-          "value": "workforce Frozen",
+          "displayValue": "Towels envisioneer",
+          "value": "Towels envisioneer",
           "valueFormat": 0,
         },
       },
     },
   ],
-  "key": "{\\"className\\":\\"Home Loan Account\\",\\"id\\":\\"0xe2ed00000039f5\\"}",
+  "key": "{\\"className\\":\\"Rhode Island\\",\\"id\\":\\"0xf03800000112ad\\"}",
 }
 `;

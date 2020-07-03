@@ -165,7 +165,9 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
 }
 
 function createDataProvider(imodel: IModelConnection): PresentationPropertyDataProvider {
-  return new PresentationPropertyDataProvider({ imodel });
+  const provider = new PresentationPropertyDataProvider({ imodel });
+  provider.isNestedPropertyCategoryGroupingEnabled = true;
+  return provider;
 }
 
 ConfigurableUiManager.registerControl("UnifiedSelectionPropertyGridDemoWidget", UnifiedSelectionPropertyGridWidgetControl);

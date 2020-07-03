@@ -400,7 +400,7 @@ export class PresentationManager implements IDisposable {
 
   private createDescriptorParam(descriptorOrOverrides: Descriptor | DescriptorOverrides) {
     if (descriptorOrOverrides instanceof Descriptor)
-      return descriptorOrOverrides.createStrippedDescriptor().toJSON();
+      return descriptorOrOverrides.createStrippedDescriptor();
     return descriptorOrOverrides;
   }
 
@@ -417,7 +417,7 @@ export class PresentationManager implements IDisposable {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     return this._requestsHandler.getDistinctValues(this.toRpcTokenOptions(options),
-      descriptor.createStrippedDescriptor().toJSON(), keys.toJSON(), fieldName, maximumValueCount);
+      descriptor.createStrippedDescriptor(), keys.toJSON(), fieldName, maximumValueCount);
   }
 
   /**
@@ -430,7 +430,7 @@ export class PresentationManager implements IDisposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getPagedDistinctValues({
       ...this.toRpcTokenOptions(options),
-      descriptor: options.descriptor.createStrippedDescriptor().toJSON(),
+      descriptor: options.descriptor.createStrippedDescriptor(),
       keys: options.keys.toJSON(),
     });
     return {

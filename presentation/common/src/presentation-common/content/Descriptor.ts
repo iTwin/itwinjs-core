@@ -7,6 +7,7 @@
  */
 
 import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
+import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { Field, FieldJSON, getFieldByName } from "./Fields";
 
 /**
@@ -113,6 +114,7 @@ export interface DescriptorJSON {
   selectionInfo?: SelectionInfo;
   displayType: string;
   selectClasses: SelectClassInfoJSON[];
+  categories?: CategoryDescriptionJSON[]; // TODO: make required in 3.0
   fields: FieldJSON[];
   sortingFieldName?: string;
   sortDirection?: SortDirection;
@@ -152,6 +154,8 @@ export interface DescriptorSource {
   displayType: string;
   /** A list of classes that will be selected from when creating content with this descriptor */
   selectClasses: SelectClassInfo[];
+  /** A list of content field categories used in this descriptor */
+  categories?: CategoryDescription[]; // TODO: make required in 3.0
   /** A list of fields contained in the descriptor */
   fields: Field[];
   /** [[ContentFlags]] used to create the descriptor */
@@ -183,6 +187,8 @@ export class Descriptor implements DescriptorSource {
   public displayType!: string;
   /** A list of classes that will be selected from when creating content with this descriptor */
   public selectClasses!: SelectClassInfo[];
+  /** A list of content field categories used in this descriptor */
+  public categories!: CategoryDescription[];
   /** A list of fields contained in the descriptor */
   public fields!: Field[];
   /** [[ContentFlags]] used to create the descriptor */
@@ -196,9 +202,11 @@ export class Descriptor implements DescriptorSource {
 
   /** Construct a new Descriptor using a `DescriptorSource` */
   public constructor(source: DescriptorSource) {
+    const fields = [...source.fields];
     Object.assign(this, source, {
       selectClasses: [...source.selectClasses],
-      fields: [...source.fields],
+      categories: [...(source.categories ?? Descriptor.getCategoriesFromFields(fields))],
+      fields,
     });
   }
 
@@ -206,6 +214,7 @@ export class Descriptor implements DescriptorSource {
   public toJSON(): DescriptorJSON {
     return {
       ...this,
+      categories: this.categories.map(CategoryDescription.toJSON),
       fields: this.fields.map((field: Field) => field.toJSON()),
     };
   }
@@ -216,16 +225,58 @@ export class Descriptor implements DescriptorSource {
       return undefined;
     if (typeof json === "string")
       return JSON.parse(json, Descriptor.reviver);
+    return json.categories
+      ? this.fromJSONWithCategories(json as DescriptorJSON & { categories: CategoryDescriptionJSON[] })
+      : this.fromJSONWithoutCategories(json as DescriptorJSON & { categories: undefined });
+  }
+
+  private static fromJSONWithCategories(json: DescriptorJSON & { categories: CategoryDescriptionJSON[] }): Descriptor {
     const descriptor = Object.create(Descriptor.prototype);
+    const categories = CategoryDescription.listFromJSON(json.categories);
     return Object.assign(descriptor, json, {
-      fields: json.fields.map((fieldJson: FieldJSON) => {
-        const field = Field.fromJSON(fieldJson);
-        if (field)
-          field.rebuildParentship();
-        return field;
-      }).filter((field) => (undefined !== field)),
-      selectClasses: json.selectClasses.map((selectClass: SelectClassInfoJSON) => SelectClassInfo.fromJSON(selectClass)),
-    } as Partial<Descriptor>);
+      selectClasses: json.selectClasses.map(SelectClassInfo.fromJSON),
+      categories,
+      fields: this.getFieldsFromJSON(json.fields, (fieldJson) => Field.fromJSON(fieldJson, categories)),
+    });
+  }
+
+  private static fromJSONWithoutCategories(json: DescriptorJSON & { categories: undefined }): Descriptor {
+    const descriptor = Object.create(Descriptor.prototype);
+    const fields = this.getFieldsFromJSON(json.fields, /* tslint:disable-line:deprecation */ Field.fromJSON);
+    return Object.assign(descriptor, json, {
+      selectClasses: json.selectClasses.map(SelectClassInfo.fromJSON),
+      categories: this.getCategoriesFromFields(fields),
+      fields,
+    });
+  }
+
+  private static getFieldsFromJSON(json: FieldJSON[], factory: (json: FieldJSON) => Field | undefined): Field[] {
+    return json.map((fieldJson: FieldJSON) => {
+      const field = factory(fieldJson);
+      if (field)
+        field.rebuildParentship();
+      return field;
+    }).filter((field): field is Field => !!field);
+  }
+
+  private static getCategoriesFromFields(fields: Field[]): CategoryDescription[] {
+    const categories = new Map<string, CategoryDescription>();
+    const forEachField = (fieldsInternal: Field[], cb: (field: Field) => void) => {
+      fieldsInternal.forEach((field) => {
+        cb(field);
+        if (field.isNestedContentField())
+          forEachField(field.nestedFields, cb);
+      });
+    };
+    forEachField(fields, (field: Field) => {
+      const name = field.category.name;
+      const existingCategory = categories.get(name);
+      if (existingCategory)
+        field.category = existingCategory;
+      else
+        categories.set(name, field.category);
+    });
+    return [...categories.values()];
   }
 
   /**
@@ -260,11 +311,12 @@ export class Descriptor implements DescriptorSource {
   }
 
   /** @internal */
-  public createStrippedDescriptor(): Descriptor {
-    const stripped = Object.create(Descriptor.prototype);
-    return Object.assign(stripped, this, {
+  public createStrippedDescriptor(): DescriptorJSON {
+    return {
+      ...this.toJSON(),
+      categories: [],
       fields: [],
       selectClasses: [],
-    });
+    };
   }
 }

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// tslint:disable:deprecation
 import { expect } from "chai";
 import * as faker from "faker";
 import {
@@ -46,6 +47,12 @@ describe("Field", () => {
       expect(item).to.matchSnapshot();
     });
 
+    it("creates valid Field from valid JSON with categories", () => {
+      const categories = [createRandomCategory()];
+      const item = Field.fromJSON({ ...testData.baseFieldJSON, category: categories[0].name }, categories);
+      expect(item).to.matchSnapshot();
+    });
+
     it("creates valid PropertiesField from valid JSON", () => {
       const item = Field.fromJSON(testData.propertiesFieldJSON);
       expect(item).to.matchSnapshot();
@@ -64,6 +71,11 @@ describe("Field", () => {
     it("returns undefined for undefined JSON", () => {
       const item = Field.fromJSON(undefined);
       expect(item).to.be.undefined;
+    });
+
+    it("throws when creating field with category that doesn't exist in given list", () => {
+      expect(() => Field.fromJSON({ ...testData.baseFieldJSON, category: "does not exist" })).to.throw();
+      expect(() => Field.fromJSON({ ...testData.baseFieldJSON, category: "does not exist" }, [])).to.throw();
     });
 
   });
@@ -134,6 +146,17 @@ describe("Field", () => {
 
   });
 
+  describe("clone", () => {
+
+    it("returns exact copy of itself", () => {
+      const field = createRandomPrimitiveField();
+      const clone = field.clone();
+      expect(clone).to.be.instanceOf(Field);
+      expect(clone.toJSON()).to.deep.eq(field.toJSON());
+    });
+
+  });
+
 });
 
 describe("PropertiesField", () => {
@@ -147,6 +170,12 @@ describe("PropertiesField", () => {
 
     it("creates valid PropertiesField from valid JSON", () => {
       const item = PropertiesField.fromJSON(testData.propertiesFieldJSON);
+      expect(item).to.matchSnapshot();
+    });
+
+    it("creates valid PropertiesField from valid JSON with categories", () => {
+      const categories = [createRandomCategory()];
+      const item = Field.fromJSON({ ...testData.propertiesFieldJSON, category: categories[0].name }, categories);
       expect(item).to.matchSnapshot();
     });
 
@@ -193,6 +222,17 @@ describe("PropertiesField", () => {
 
   });
 
+  describe("clone", () => {
+
+    it("returns exact copy of itself", () => {
+      const field = createRandomPropertiesField();
+      const clone = field.clone();
+      expect(clone).to.be.instanceOf(PropertiesField);
+      expect(clone.toJSON()).to.deep.eq(field.toJSON());
+    });
+
+  });
+
 });
 
 describe("NestedContentField", () => {
@@ -227,6 +267,12 @@ describe("NestedContentField", () => {
 
     it("creates valid NestedContentField from valid JSON", () => {
       const item = NestedContentField.fromJSON(testData.nestedContentFieldJSON);
+      expect(item).to.matchSnapshot();
+    });
+
+    it("creates valid NestedContentField from valid JSON with categories", () => {
+      const categories = [createRandomCategory()];
+      const item = Field.fromJSON({ ...testData.nestedContentFieldJSON, category: categories[0].name }, categories);
       expect(item).to.matchSnapshot();
     });
 
@@ -304,6 +350,17 @@ describe("NestedContentField", () => {
         },
         pathFromContentToSelectClass: RelationshipPath.strip(field.pathToPrimaryClass),
       });
+    });
+
+  });
+
+  describe("clone", () => {
+
+    it("returns exact copy of itself", () => {
+      const field = createRandomNestedContentField();
+      const clone = field.clone();
+      expect(clone).to.be.instanceOf(NestedContentField);
+      expect(clone.toJSON()).to.deep.eq(field.toJSON());
     });
 
   });
