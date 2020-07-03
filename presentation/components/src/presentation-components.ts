@@ -58,7 +58,7 @@ export { tableWithUnifiedSelection, TableWithUnifiedSelectionProps } from "./pre
  * @docs-group-description Tree
  * Types related to `Tree` component in `@bentley/ui-components` package.
  */
-export { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "./presentation-components/tree/DataProvider";
+export { PresentationTreeDataProvider, PresentationTreeDataProviderProps, PresentationTreeDataProviderDataSourceEntryPoints } from "./presentation-components/tree/DataProvider";
 export { IPresentationTreeDataProvider } from "./presentation-components/tree/IPresentationTreeDataProvider";
 export { DEPRECATED_treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./presentation-components/tree/WithUnifiedSelection";
 export { DEPRECATED_treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./presentation-components/tree/WithFilteringSupport";

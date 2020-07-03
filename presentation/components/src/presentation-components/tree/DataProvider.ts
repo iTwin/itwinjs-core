@@ -9,7 +9,7 @@
 import memoize from "micro-memoize";
 import { IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { HierarchyRequestOptions, NodeKey, NodePathElement, Ruleset } from "@bentley/presentation-common";
+import { HierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@bentley/ui-components";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
@@ -49,10 +49,25 @@ export interface PresentationTreeDataProviderProps {
   pagingSize?: number;
 
   /**
-   *
+   * Should grouping nodes have a suffix with grouped nodes count. Defaults to `false`.
    * @beta
    */
   appendChildrenCountForGroupingNodes?: boolean;
+
+  /**
+   * By default the provider uses [[PresentationManager]] accessed through `Presentation.presentation` to request
+   * node counts, nodes and filter them. The overrides allow swapping some or all of the data source entry points thus
+   * making the provider request data from custom sources.
+   * @alpha
+   */
+  dataSourceOverrides?: Partial<PresentationTreeDataProviderDataSourceEntryPoints>;
+}
+
+/** @alpha */
+export interface PresentationTreeDataProviderDataSourceEntryPoints {
+  getNodes: (requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey) => Promise<Node[]>;
+  getNodesAndCount: (requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey) => Promise<{ nodes: Node[], count: number }>;
+  getFilteredNodePaths: (requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string) => Promise<NodePathElement[]>;
 }
 
 /**
@@ -65,6 +80,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   private _pagingSize?: number;
   private _appendChildrenCountForGroupingNodes?: boolean;
   private _disposeVariablesChangeListener: () => void;
+  private _dataSource: PresentationTreeDataProviderDataSourceEntryPoints;
 
   /** Constructor. */
   public constructor(props: PresentationTreeDataProviderProps) {
@@ -72,6 +88,12 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     this._imodel = props.imodel;
     this._pagingSize = props.pagingSize;
     this._appendChildrenCountForGroupingNodes = props.appendChildrenCountForGroupingNodes;
+    this._dataSource = {
+      getNodes: (requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey) => Presentation.presentation.getNodes(requestOptions, parentKey),
+      getNodesAndCount: (requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey) => Presentation.presentation.getNodesAndCount(requestOptions, parentKey),
+      getFilteredNodePaths: (requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string) => Presentation.presentation.getFilteredNodePaths(requestOptions, filterText),
+      ...props.dataSourceOverrides,
+    };
     this._disposeVariablesChangeListener = Presentation.presentation.vars(this._rulesetRegistration.rulesetId).onVariableChanged.addListener(() => {
       this._getNodesAndCount.cache.values.length = 0;
       this._getNodesAndCount.cache.keys.length = 0;
@@ -145,11 +167,11 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     };
 
     if (!requestCount) {
-      const allNodes = await Presentation.presentation.getNodes({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
+      const allNodes = await this._dataSource.getNodes({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
       return { nodes: createTreeNodeItems(allNodes, parentNode?.id, nodesCreateProps), count: allNodes.length };
     }
 
-    const nodesResponse = await Presentation.presentation.getNodesAndCount({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
+    const nodesResponse = await this._dataSource.getNodesAndCount({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
     return { nodes: createTreeNodeItems(nodesResponse.nodes, parentNode?.id, nodesCreateProps), count: nodesResponse.count };
   }, { isMatchingKey: MemoizationHelpers.areNodesRequestsEqual as any });
 
@@ -158,7 +180,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
    * @param filter Filter.
    */
   public getFilteredNodePaths = async (filter: string): Promise<NodePathElement[]> => {
-    return Presentation.presentation.getFilteredNodePaths(this.createRequestOptions(), filter);
+    return this._dataSource.getFilteredNodePaths(this.createRequestOptions(), filter);
   }
 
   /**

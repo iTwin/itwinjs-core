@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Add ability to swap data source used by `PresentationTreeDataProvider`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}
