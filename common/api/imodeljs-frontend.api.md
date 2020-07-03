@@ -8390,6 +8390,8 @@ export abstract class TileAdmin {
     addLoadListener(callback: (imodel: IModelConnection) => void): () => void;
     // @internal
     abstract addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void;
+    // @internal (undocumented)
+    abstract get alwaysRequestEdges(): boolean;
     // @internal
     abstract clearTilesForViewport(vp: Viewport): void;
     // @internal
@@ -8476,6 +8478,7 @@ export abstract class TileAdmin {
 // @alpha (undocumented)
 export namespace TileAdmin {
     export interface Props {
+        alwaysRequestEdges?: boolean;
         // @internal
         cancelBackendTileRequests?: boolean;
         contextPreloadParentDepth?: number;

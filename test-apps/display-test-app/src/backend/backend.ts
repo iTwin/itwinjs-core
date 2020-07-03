@@ -114,6 +114,7 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   configuration.useFakeCloudStorageTileCache = undefined !== process.env.SVT_FAKE_CLOUD_STORAGE;
 
   configuration.disableEdges = undefined !== process.env.SVT_DISABLE_EDGE_DISPLAY;
+  configuration.alwaysLoadEdges = undefined !== process.env.SVT_ALWAYS_LOAD_EDGES;
 
   const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
   try { fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8"); } catch { }
