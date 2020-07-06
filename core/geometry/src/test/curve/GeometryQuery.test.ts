@@ -128,7 +128,7 @@ describe("CylindricalRangeQuery", () => {
     const path = Path.create(stringA, stringB);
     CylindricalRangeQuery.buildRotationalNormalsInLineStrings(path, Ray3d.createYAxis(), Vector3d.unitZ());
 
-    const options = StrokeOptions.createForFacets ();
+    const options = StrokeOptions.createForFacets();
     options.needNormals = true;
     options.needParams = true;
     const section = StrokeCountSection.createForParityRegionOrChain(path, options);

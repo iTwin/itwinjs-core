@@ -24,7 +24,7 @@ class TestHeap extends PriorityQueue<number> {
         isSorted = isSorted && (this._compare(this._array[i], this._array[left]) <= 0);
 
       const right = 2 * (i + 1);
-      if (right  < this.length)
+      if (right < this.length)
         isSorted = isSorted && (this._compare(this._array[i], this._array[right]) <= 0);
     }
 
