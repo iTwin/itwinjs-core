@@ -7,6 +7,7 @@ Object {
     "expand": true,
     "label": "Oregon",
     "name": "Designer",
+    "parent": undefined,
     "priority": 5601,
   },
   "editor": undefined,
@@ -21,6 +22,28 @@ Object {
 }
 `;
 
+exports[`Field fromJSON creates valid Field from valid JSON with categories 1`] = `
+Object {
+  "category": Object {
+    "description": "Iusto repellat nihil ut soluta et dolores modi aliquam consequuntur.",
+    "expand": false,
+    "label": "info-mediaries Handmade",
+    "name": "virtual",
+    "parent": undefined,
+    "priority": 82519,
+  },
+  "editor": undefined,
+  "isReadonly": true,
+  "label": "New Jersey",
+  "name": "cultivate",
+  "priority": 7047,
+  "type": Object {
+    "typeName": "serial",
+    "valueFormat": "Primitive",
+  },
+}
+`;
+
 exports[`Field fromJSON creates valid Field from valid serialized JSON 1`] = `
 Object {
   "category": Object {
@@ -28,6 +51,7 @@ Object {
     "expand": false,
     "label": "Extension",
     "name": "auxiliary",
+    "parent": undefined,
     "priority": 2776,
   },
   "editor": Object {
@@ -52,6 +76,7 @@ Object {
     "expand": false,
     "label": "multi-byte alarm content-based",
     "name": "withdrawal",
+    "parent": undefined,
     "priority": 80265,
   },
   "contentClassInfo": Object {
@@ -70,6 +95,7 @@ Object {
         "expand": false,
         "label": "whiteboard Plains",
         "name": "Ferry",
+        "parent": undefined,
         "priority": 49022,
       },
       "editor": undefined,
@@ -148,6 +174,7 @@ Object {
     "expand": false,
     "label": "Sausages",
     "name": "structure",
+    "parent": undefined,
     "priority": 59710,
   },
   "editor": Object {
@@ -206,6 +233,7 @@ Object {
     "expand": true,
     "label": "Borders",
     "name": "clicks-and-mortar",
+    "parent": undefined,
     "priority": 65673,
   },
   "contentClassInfo": Object {
@@ -226,6 +254,7 @@ Object {
         "expand": false,
         "label": "Investor Designer",
         "name": "Colombian Peso Unidad de Valor Real",
+        "parent": undefined,
         "priority": 98459,
       },
       "editor": undefined,
@@ -297,6 +326,107 @@ Object {
 }
 `;
 
+exports[`NestedContentField fromJSON creates valid NestedContentField from valid JSON with categories 1`] = `
+Object {
+  "autoExpand": true,
+  "category": Object {
+    "description": "Ut molestiae voluptatum et.",
+    "expand": true,
+    "label": "Argentine Peso",
+    "name": "Ergonomic",
+    "parent": undefined,
+    "priority": 3546,
+  },
+  "contentClassInfo": Object {
+    "id": "0x10a8700000017ef",
+    "label": "1080p Towels",
+    "name": "Generic Granite Chair",
+  },
+  "editor": undefined,
+  "isReadonly": false,
+  "label": "Gloves wireless input",
+  "name": "Sleek Rubber Tuna",
+  "nestedFields": Array [
+    Object {
+      "category": Object {
+        "description": "Ut molestiae voluptatum et.",
+        "expand": true,
+        "label": "Argentine Peso",
+        "name": "Ergonomic",
+        "parent": undefined,
+        "priority": 3546,
+      },
+      "editor": Object {
+        "name": "connecting",
+      },
+      "isReadonly": false,
+      "label": "Future sensor",
+      "name": "Small Metal Mouse",
+      "priority": 78139,
+      "type": Object {
+        "typeName": "blob",
+        "valueFormat": "Primitive",
+      },
+    },
+  ],
+  "pathToPrimaryClass": Array [
+    Object {
+      "isForwardRelationship": true,
+      "isPolymorphicRelationship": false,
+      "relationshipInfo": Object {
+        "id": "0xa158000001455d",
+        "label": "Frozen Sao Tome and Principe Dynamic",
+        "name": "Colorado",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x357800000164ee",
+        "label": "Steel Buckinghamshire",
+        "name": "bypassing",
+      },
+      "targetClassInfo": Object {
+        "id": "0x1b6000000156b4",
+        "label": "Berkshire azure Colombian Peso Unidad de Valor Real",
+        "name": "Metal",
+      },
+    },
+    Object {
+      "isForwardRelationship": true,
+      "isPolymorphicRelationship": true,
+      "relationshipInfo": Object {
+        "id": "0x1569a00000052f4",
+        "label": "Metal parse",
+        "name": "Fresh",
+      },
+      "sourceClassInfo": Object {
+        "id": "0x16c82000000a1ea",
+        "label": "user-centric application Gorgeous",
+        "name": "Georgia",
+      },
+      "targetClassInfo": Object {
+        "id": "0x125d8000000910b",
+        "label": "incubate forecast",
+        "name": "Cambridgeshire",
+      },
+    },
+  ],
+  "priority": 55212,
+  "type": Object {
+    "members": Array [
+      Object {
+        "label": "Vision-oriented",
+        "name": "Frozen",
+        "type": Object {
+          "typeName": "boolean",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "typeName": "panel",
+    "valueFormat": "Struct",
+  },
+}
+`;
+
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid serialized JSON 1`] = `
 Object {
   "autoExpand": false,
@@ -305,6 +435,7 @@ Object {
     "expand": true,
     "label": "primary 1080p",
     "name": "Diverse",
+    "parent": undefined,
     "priority": 34887,
   },
   "contentClassInfo": Object {
@@ -325,6 +456,7 @@ Object {
         "expand": true,
         "label": "Mews content",
         "name": "seize",
+        "parent": undefined,
         "priority": 4186,
       },
       "editor": undefined,
@@ -403,6 +535,7 @@ Object {
     "expand": true,
     "label": "Grocery West Virginia",
     "name": "Incredible",
+    "parent": undefined,
     "priority": 39804,
   },
   "editor": undefined,
@@ -451,6 +584,64 @@ Object {
 }
 `;
 
+exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON with categories 1`] = `
+Object {
+  "category": Object {
+    "description": "Doloremque saepe assumenda debitis qui voluptas et ipsa et sint.",
+    "expand": true,
+    "label": "protocol Chicken",
+    "name": "Mill",
+    "parent": undefined,
+    "priority": 18828,
+  },
+  "editor": Object {
+    "name": "Massachusetts",
+  },
+  "isReadonly": false,
+  "label": "port Small Granite Hat Crossing",
+  "name": "Factors",
+  "priority": 89061,
+  "properties": Array [
+    Object {
+      "property": Object {
+        "classInfo": Object {
+          "id": "0x1022b0000002e33",
+          "label": "interface bypassing",
+          "name": "bleeding-edge",
+        },
+        "name": "Rubber",
+        "type": "timestamp",
+      },
+      "relatedClassPath": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0x87d60000013379",
+            "label": "RAM",
+            "name": "input",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x6ca60000012eb1",
+            "label": "magenta Implementation",
+            "name": "calculating",
+          },
+          "targetClassInfo": Object {
+            "id": "0x2a2d000000f771",
+            "label": "Madagascar copying",
+            "name": "Investment Account",
+          },
+        },
+      ],
+    },
+  ],
+  "type": Object {
+    "typeName": "boolean",
+    "valueFormat": "Primitive",
+  },
+}
+`;
+
 exports[`PropertiesField fromJSON creates valid PropertiesField from valid serialized JSON 1`] = `
 Object {
   "category": Object {
@@ -458,6 +649,7 @@ Object {
     "expand": false,
     "label": "Incredible Granite Towels wireless info-mediaries",
     "name": "orange",
+    "parent": undefined,
     "priority": 59789,
   },
   "editor": Object {

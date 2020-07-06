@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* tslint:disable:no-direct-imports */
+// tslint:disable:no-direct-imports
+// tslint:disable:deprecation
 
 import { expect } from "chai";
 import sinon from "sinon";
@@ -16,8 +17,6 @@ import {
   createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage,
 } from "../../presentation-frontend";
 import { PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
-
-// tslint:disable:deprecation
 
 describe("FavoritePropertiesManager", () => {
 
@@ -805,13 +804,13 @@ describe("FavoritePropertiesManager", () => {
        * F2 - a2, b2
        * F3 - a3, b3
        */
-      const f1 = createRandomPropertiesField(true, 2);
+      const f1 = createRandomPropertiesField(undefined, 2);
       const a1 = f1.properties[0].property; a1.classInfo.name = "S:A";
       const b1 = f1.properties[1].property; b1.classInfo.name = "S:B";
-      const f2 = createRandomPropertiesField(true, 2);
+      const f2 = createRandomPropertiesField(undefined, 2);
       const a2 = f2.properties[0].property; a2.classInfo.name = "S:A";
       const b2 = f2.properties[1].property; b2.classInfo.name = "S:B";
-      const f3 = createRandomPropertiesField(true, 2);
+      const f3 = createRandomPropertiesField(undefined, 2);
       const a3 = f3.properties[0].property; a3.classInfo.name = "S:A";
       const b3 = f3.properties[1].property; b3.classInfo.name = "S:B";
       const fields = [f1, f2, f3];

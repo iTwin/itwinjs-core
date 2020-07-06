@@ -802,7 +802,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup((x) => x.getDistinctValues(prepareOptions(options),
-          moq.deepEquals(descriptor.createStrippedDescriptor().toJSON()),
+          moq.deepEquals(descriptor.createStrippedDescriptor()),
           moq.deepEquals(keyset.toJSON()), fieldName, maximumValueCount))
         .returns(async () => result)
         .verifiable();
@@ -850,7 +850,7 @@ describe("PresentationManager", () => {
       };
       const rpcHandlerOptions = {
         ...prepareOptions(managerOptions),
-        descriptor: descriptor.createStrippedDescriptor().toJSON(),
+        descriptor: descriptor.createStrippedDescriptor(),
         keys: keys.toJSON(),
       };
       rpcRequestsHandlerMock

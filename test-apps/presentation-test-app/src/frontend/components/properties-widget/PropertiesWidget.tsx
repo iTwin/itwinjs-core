@@ -227,13 +227,20 @@ class CopyActionButton extends React.Component {
 class AutoExpandingPropertyDataProvider extends PresentationPropertyDataProvider {
   public async getData(): Promise<PropertyData> {
     const result = await super.getData();
-    result.categories.forEach((category: PropertyCategory) => {
-      category.expand = true;
-    });
+    this.expandCategories(result.categories);
     return result;
+  }
+  private expandCategories(categories: PropertyCategory[]) {
+    categories.forEach((category: PropertyCategory) => {
+      category.expand = true;
+      if (category.childCategories)
+        this.expandCategories(category.childCategories);
+    });
   }
 }
 
 function createDataProvider(imodel: IModelConnection, rulesetId: string): PresentationPropertyDataProvider {
-  return new AutoExpandingPropertyDataProvider({ imodel, ruleset: rulesetId });
+  const provider = new AutoExpandingPropertyDataProvider({ imodel, ruleset: rulesetId });
+  provider.isNestedPropertyCategoryGroupingEnabled = true;
+  return provider;
 }

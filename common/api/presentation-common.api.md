@@ -31,7 +31,7 @@ export class AsyncTasksTracker {
 // @public
 export interface BaseFieldJSON {
     // (undocumented)
-    category: CategoryDescription;
+    category: CategoryDescriptionJSON | string;
     // (undocumented)
     editor?: EditorDescription;
     // (undocumented)
@@ -71,6 +71,30 @@ export interface CategoryDescription {
     expand: boolean;
     label: string;
     name: string;
+    parent?: CategoryDescription;
+    priority: number;
+}
+
+// @public (undocumented)
+export namespace CategoryDescription {
+    export function fromJSON(json: CategoryDescriptionJSON): CategoryDescription;
+    export function listFromJSON(json: CategoryDescriptionJSON[]): CategoryDescription[];
+    export function toJSON(category: CategoryDescription): CategoryDescriptionJSON;
+}
+
+// @public
+export interface CategoryDescriptionJSON {
+    // (undocumented)
+    description: string;
+    // (undocumented)
+    expand: boolean;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    parent?: string;
+    // (undocumented)
     priority: number;
 }
 
@@ -388,13 +412,14 @@ export interface DEPRECATED_RelatedPropertiesSpecification {
 // @public
 export class Descriptor implements DescriptorSource {
     constructor(source: DescriptorSource);
+    categories: CategoryDescription[];
     connectionId: string;
     contentFlags: number;
     contentOptions: any;
     // @internal (undocumented)
     createDescriptorOverrides(): DescriptorOverrides;
     // @internal (undocumented)
-    createStrippedDescriptor(): Descriptor;
+    createStrippedDescriptor(): DescriptorJSON;
     displayType: string;
     fields: Field[];
     filterExpression?: string;
@@ -412,6 +437,8 @@ export class Descriptor implements DescriptorSource {
 
 // @public
 export interface DescriptorJSON {
+    // (undocumented)
+    categories?: CategoryDescriptionJSON[];
     // (undocumented)
     connectionId: string;
     // (undocumented)
@@ -448,6 +475,7 @@ export interface DescriptorOverrides {
 
 // @public
 export interface DescriptorSource {
+    categories?: CategoryDescription[];
     contentFlags: number;
     displayType: string;
     fields: Field[];
@@ -592,8 +620,14 @@ export interface ExtendedDataRule extends RuleBase, ConditionContainer {
 export class Field {
     constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, editor?: EditorDescription);
     category: CategoryDescription;
+    // @alpha (undocumented)
+    clone(): Field;
     editor?: EditorDescription;
+    static fromJSON(json: FieldJSON | undefined, categories: CategoryDescription[]): Field | undefined;
+    // @deprecated
     static fromJSON(json: FieldJSON | string | undefined): Field | undefined;
+    // (undocumented)
+    protected static getCategoryFromFieldJson(fieldJson: FieldJSON, categories?: CategoryDescription[]): CategoryDescription;
     // @alpha
     getFieldDescriptor(): FieldDescriptor;
     isNestedContentField(): this is NestedContentField;
@@ -607,7 +641,7 @@ export class Field {
     rebuildParentship(parentField?: NestedContentField): void;
     // @internal (undocumented)
     resetParentship(): void;
-    // @internal
+    // @internal @deprecated
     static reviver(key: string, value: any): any;
     toJSON(): FieldJSON;
     type: TypeDescription;
@@ -1067,7 +1101,11 @@ export interface NavigationRuleBase extends RuleBase {
 export class NestedContentField extends Field {
     constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean);
     autoExpand?: boolean;
+    // @alpha (undocumented)
+    clone(): NestedContentField;
     contentClassInfo: ClassInfo;
+    static fromJSON(json: NestedContentFieldJSON | undefined, categories: CategoryDescription[]): NestedContentField | undefined;
+    // @deprecated
     static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
     // @alpha
@@ -1487,6 +1525,10 @@ export interface PrimitiveTypeDescription extends BaseTypeDescription {
 // @public
 export class PropertiesField extends Field {
     constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription);
+    // @alpha (undocumented)
+    clone(): PropertiesField;
+    static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
+    // @deprecated
     static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined;
     // @alpha
     getFieldDescriptor(): FieldDescriptor;
