@@ -1,4 +1,4 @@
-# Getting started (offline quick start)
+# Getting started
 
 ## 1. Get the tools
 
@@ -17,30 +17,38 @@ Writing an iModel.js application requires the following software:
   - This is the recommended editor and debugger for iModel.js applications.
   - VS Code also supplies a GUI for working with Git.
 
-## 2. Get the code
-The starter application is located in the [desktop-starter](https://github.com/imodeljs/desktop-starter) repo on GitHub. It is an example of an Electron based application and comes with a sample snapshot iModel.
+## 2. Get a sample iModel
+[Click here and use the registration dashboard to create a new iModel](/getting-started/registration-dashboard?tab=1&create=bentleyExample)
 
-> `git clone https://github.com/imodeljs/desktop-starter.git`
+## 3. Get the sample code
+The samples are included in the [imodeljs-samples](https://github.com/imodeljs/imodeljs-samples) repo on GitHub. For a complete list of samples see the README.
 
-## 3. Build and run a sample app
+> `git clone https://github.com/imodeljs/imodeljs-samples.git`
+
+## 4. Configure
+Edit imodeljs-samples/interactive-app/basic-viewport-app/.env.local
+  > `imjs_test_imodel` =  The name of your iModel created in step 2<br/>
+
+## 5. Build and run a sample app
+> `cd interactive-app`
+
+> `cd basic-viewport-app`
+
 > `npm install`
 
 > `npm run build`
 
-> `npm start`
+> `npm run start:servers`
 
 &nbsp;
 &nbsp;
 ---
 ## Next Steps
-### [Create a snapshot iModel from your local data.]($docs/learning/tutorials/create-test-imodel-offline.md)
-> Open your snapshot iModel in the desktop-starter app by clicking the home button in the upper left and clicking "Select snapshot".
-
 ### [Follow tutorials to dive deeper into iModel.js]($docs/learning/tutorials/index.md)
 
 ### [iModel.js Blog](https://medium.com/imodeljs)
 
-
+### Read [imodeljs-samples](https://github.com/imodeljs/imodeljs-samples) READMEs, and review code
 
 
 <style>
