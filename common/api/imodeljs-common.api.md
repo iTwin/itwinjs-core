@@ -17,6 +17,7 @@ import { ByteStream } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
+import { ClipPlaneContainment } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbOpcode } from '@bentley/bentleyjs-core';
@@ -2347,6 +2348,34 @@ export enum GeometryClass {
     Primary = 0
 }
 
+// @beta
+export interface GeometryContainmentRequestProps {
+    // (undocumented)
+    allowOverlaps?: boolean;
+    // (undocumented)
+    candidates: Id64Array;
+    // (undocumented)
+    clip: any;
+    // (undocumented)
+    offSubCategories?: Id64Array;
+    // (undocumented)
+    viewFlags?: ViewFlagProps;
+}
+
+// @beta
+export interface GeometryContainmentResponseProps {
+    // (undocumented)
+    candidatesContainment?: ClipPlaneContainment[];
+    // (undocumented)
+    numInside?: number;
+    // (undocumented)
+    numOutside?: number;
+    // (undocumented)
+    numOverlap?: number;
+    // (undocumented)
+    status: BentleyStatus;
+}
+
 // @public
 export class GeometryParams {
     constructor(categoryId: Id64String, subCategoryId?: string);
@@ -3228,6 +3257,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
     // @beta (undocumented)
     getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps>;
+    // @beta (undocumented)
+    getGeometryContainment(_iModelToken: IModelRpcProps, _props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // @beta (undocumented)
     getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string>;
     // @beta (undocumented)
