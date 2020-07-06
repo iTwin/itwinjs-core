@@ -822,7 +822,7 @@ export class BriefcaseManager {
    */
   public static openBriefcase(briefcase: BriefcaseEntry, upgradeOptions?: UpgradeOptions) {
     Logger.logTrace(loggerCategory, "BriefcaseManager.openBriefcase: Opening a new NativeDb connection to a briefcase", () => briefcase.getDebugInfo());
-    const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openMode, upgradeOptions as any);
+    const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openMode, upgradeOptions);
     // NEEDS_WORK: Temporary cast to any to by pass circular dependency between iModelJs and addon - will remove after addon gets updated
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, `Unable to reopen briefcase at ${briefcase.pathname}`, Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
