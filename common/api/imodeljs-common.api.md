@@ -395,7 +395,7 @@ export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
 
 // @public
 export class BentleyCloudRpcManager extends RpcManager {
-    static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration;
+    static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[], routing?: RpcRoutingToken): BentleyCloudRpcConfiguration;
     static initializeImpl(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration;
     }
 
@@ -4975,7 +4975,18 @@ export interface RootSubjectProps {
 
 // @public
 export abstract class RpcConfiguration {
+    // @alpha (undocumented)
+    allowAttachedInterfaces: boolean;
     static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void;
+    static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: {
+        new (): RpcConfiguration;
+    }): void;
+    // @alpha (undocumented)
+    attach<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
+    // @internal (undocumented)
+    attached: RpcInterfaceDefinition[];
+    // @alpha (undocumented)
+    get attachedInterfaces(): ReadonlyArray<RpcInterfaceDefinition>;
     // @internal
     readonly controlChannel: RpcControlChannel;
     static developmentMode: boolean;
@@ -4996,6 +5007,8 @@ export abstract class RpcConfiguration {
     pendingOperationRetryInterval: number;
     abstract readonly protocol: RpcProtocol;
     static requestContext: RpcRequestContext;
+    // @alpha (undocumented)
+    readonly routing: RpcRoutingToken;
     static strictMode: boolean;
     // @internal (undocumented)
     static supply(definition: RpcInterface): RpcConfiguration;
@@ -5003,7 +5016,7 @@ export abstract class RpcConfiguration {
 }
 
 // @public (undocumented)
-export type RpcConfigurationSupplier = () => {
+export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => {
     new (): RpcConfiguration;
 };
 
@@ -5077,11 +5090,15 @@ export enum RpcEndpoint {
 
 // @public
 export abstract class RpcInterface {
+    // @alpha
+    constructor(routing?: RpcRoutingToken);
     readonly configuration: RpcConfiguration;
     // @internal (undocumented)
     configurationSupplier: RpcConfigurationSupplier | undefined;
     forward<T = any>(parameters: IArguments): Promise<T>;
     static isVersionCompatible(backend: string, frontend: string): boolean;
+    // @alpha (undocumented)
+    readonly routing: RpcRoutingToken;
 }
 
 // @public (undocumented)
@@ -5130,7 +5147,7 @@ export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
 // @public
 export class RpcManager {
     static describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]>;
-    static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T;
+    static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing?: RpcRoutingToken): T;
     static initializeInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
     static registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, implementation: RpcInterfaceImplementation<TImplementation>): void;
     static setIModel(props: IModelRpcProps): void;
@@ -5305,7 +5322,7 @@ export class RpcRegistry {
     // (undocumented)
     describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]>;
     // (undocumented)
-    getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T;
+    getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing?: RpcRoutingToken): T;
     // (undocumented)
     getImplForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T;
     // (undocumented)
@@ -5325,7 +5342,7 @@ export class RpcRegistry {
     // (undocumented)
     lookupInterfaceDefinition(name: string): RpcInterfaceDefinition;
     // (undocumented)
-    proxies: Map<string, RpcInterface>;
+    proxies: Map<string, Map<number, RpcInterface>>;
     // (undocumented)
     registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, implementation: RpcInterfaceImplementation<TImplementation>): void;
     // (undocumented)
@@ -5466,6 +5483,30 @@ export enum RpcResponseCacheControl {
 
 // @public
 export type RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl;
+
+// @alpha (undocumented)
+export interface RpcRoutingMap extends RpcConfigurationSupplier {
+    // (undocumented)
+    configurations: Map<number, RpcConfigurationSupplier>;
+}
+
+// @alpha (undocumented)
+export namespace RpcRoutingMap {
+    // (undocumented)
+    export function create(): RpcRoutingMap;
+}
+
+// @public (undocumented)
+export class RpcRoutingToken {
+    // (undocumented)
+    readonly debugLabel: string;
+    // (undocumented)
+    static readonly default: RpcRoutingToken;
+    // (undocumented)
+    static generate(debugLabel?: string): RpcRoutingToken;
+    // (undocumented)
+    readonly id: number;
+    }
 
 // @public (undocumented)
 export interface RpcSerializedValue {

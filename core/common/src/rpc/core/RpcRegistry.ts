@@ -8,7 +8,7 @@
 
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
-import { initializeRpcRequest, RpcConfiguration, RpcPendingQueue } from "../../imodeljs-common";
+import { initializeRpcRequest, RpcConfiguration, RpcPendingQueue, RpcRoutingToken } from "../../imodeljs-common";
 import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "../../RpcInterface";
 import { RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";
@@ -76,10 +76,16 @@ export class RpcRegistry {
     return endpoints;
   }
 
-  public getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T {
-    let instance = this.proxies.get(definition.interfaceName) as (T | undefined);
+  public getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken = RpcRoutingToken.default): T {
+    let instance: T | undefined;
+
+    const proxies = this.proxies.get(definition.interfaceName);
+    if (proxies) {
+      instance = proxies.get(routing.id) as (T | undefined);
+    }
+
     if (!instance)
-      instance = this.instantiateClient(definition);
+      instance = this.instantiateClient(definition, routing);
 
     return instance;
   }
@@ -121,8 +127,14 @@ export class RpcRegistry {
   }
 
   public initializeRpcInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void {
-    if (this.definitionClasses.has(definition.interfaceName))
+    if (this.definitionClasses.has(definition.interfaceName)) {
+      const existing = this.definitionClasses.get(definition.interfaceName);
+      if (existing && definition.interfaceVersion === "CONTROL" && existing !== definition) {
+        this.configureOperations(definition); // configs that differ only by routing still need the control ops initialized
+      }
+
       return;
+    }
 
     this.notifyInitialize();
     this.definitionClasses.set(definition.interfaceName, definition);
@@ -136,7 +148,7 @@ export class RpcRegistry {
   }
 
   public definitionClasses: Map<string, RpcInterfaceDefinition> = new Map();
-  public proxies: Map<string, RpcInterface> = new Map();
+  public proxies: Map<string, Map<number, RpcInterface>> = new Map();
   public implementations: Map<string, RpcInterface> = new Map();
   public suppliedImplementations: Map<string, RpcInterface> = new Map();
   public implementationClasses: Map<string, RpcInterfaceImplementation> = new Map();
@@ -170,11 +182,16 @@ export class RpcRegistry {
     return implementation;
   }
 
-  private instantiateClient<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T {
+  private instantiateClient<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken = RpcRoutingToken.default): T {
     this.checkInitialized(definition);
 
-    const proxy = new (definition as any)() as T;
-    this.proxies.set(definition.interfaceName, proxy);
+    const proxy = new (definition as any)(routing) as T;
+
+    if (!this.proxies.has(definition.interfaceName)) {
+      this.proxies.set(definition.interfaceName, new Map());
+    }
+
+    this.proxies.get(definition.interfaceName)?.set(routing.id, proxy);
 
     Object.getOwnPropertyNames(definition.prototype).forEach((operationName) => {
       if (operationName === "constructor" || operationName === "configurationSupplier")
@@ -219,9 +236,9 @@ export class RpcRegistry {
   }
 
   private purgeClient<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {
-    const proxy = this.proxies.get(definition.interfaceName);
-    if (proxy) {
-      proxy.configuration.onRpcClientTerminated(definition, proxy);
+    const proxies = this.proxies.get(definition.interfaceName);
+    if (proxies) {
+      proxies.forEach((proxy) => proxy.configuration.onRpcClientTerminated(definition, proxy));
       this.proxies.delete(definition.interfaceName);
     }
   }

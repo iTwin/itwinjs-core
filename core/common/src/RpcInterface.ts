@@ -10,6 +10,7 @@ import * as semver from "semver";
 import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
 import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { RpcRequest } from "./rpc/core/RpcRequest";
+import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
 
 /** @public */
 export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T; interfaceName: string; interfaceVersion: string; }
@@ -35,7 +36,16 @@ export abstract class RpcInterface {
   }
 
   /** The configuration for the RPC interface. */
-  public readonly configuration = RpcConfiguration.supply(this);
+  public readonly configuration: RpcConfiguration;
+
+  /** @alpha */
+  public readonly routing: RpcRoutingToken;
+
+  /** @alpha */
+  public constructor(routing: RpcRoutingToken = RpcRoutingToken.default) {
+    this.routing = routing;
+    this.configuration = RpcConfiguration.supply(this);
+  }
 
   /** Obtains the implementation result for an RPC operation. */
   public async forward<T = any>(parameters: IArguments): Promise<T> {

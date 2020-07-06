@@ -7,7 +7,7 @@ import {
   IModelRpcProps, RpcInterface, RpcInvocation, RpcManager, RpcOperationsProfile, RpcPendingResponse, RpcRequest,
 } from "@bentley/imodeljs-common";
 import {
-  RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3,
+  AttachedInterface, MultipleClientsInterface, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2, TestRpcInterface3,
   TokenValues, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 
@@ -184,7 +184,29 @@ export class TestRpcImpl3 extends RpcInterface implements TestRpcInterface3 {
   }
 }
 
+export class MultipleClientsImpl extends RpcInterface implements MultipleClientsInterface {
+  public static register() {
+    RpcManager.registerImpl(MultipleClientsInterface, MultipleClientsImpl);
+  }
+
+  public async check(id: number): Promise<boolean> {
+    const request = RpcInvocation.current(this).request;
+    return request.path.indexOf(`rpc-full-stack-test-config${id}`) !== -1;
+  }
+}
+
+export class AttachedInterfaceImpl extends RpcInterface implements AttachedInterface {
+  public static register() {
+    RpcManager.registerImpl(AttachedInterface, AttachedInterfaceImpl);
+  }
+
+  public async ping(): Promise<boolean> {
+    return true;
+  }
+}
+
 TestRpcImpl.register();
 TestRpcImpl3.register();
 TestZeroMajorRpcImpl.register();
 RpcTransportTestImpl.register();
+MultipleClientsImpl.register();

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/express-server",
+      "comment": "Support for attaching RPC interfaces after startup.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/express-server",
+  "email": "steve.wilson@bentley.com"
+}

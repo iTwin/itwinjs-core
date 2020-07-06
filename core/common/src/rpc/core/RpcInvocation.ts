@@ -204,7 +204,7 @@ export class RpcInvocation {
       rawResult,
       status: this.protocol.getCode(this.status),
       id: this.request.id,
-      interfaceName: this.operation.interfaceDefinition.interfaceName,
+      interfaceName: (typeof (this.operation) === "undefined") ? "" : this.operation.interfaceDefinition.interfaceName,
     };
 
     return fulfillment;

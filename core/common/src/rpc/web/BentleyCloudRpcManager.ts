@@ -13,6 +13,7 @@ import { RpcRequestEvent } from "../core/RpcConstants";
 import { RpcRequest, RpcRequestEventHandler } from "../core/RpcRequest";
 import { BentleyCloudRpcProtocol } from "./BentleyCloudRpcProtocol";
 import { OpenAPIInfo } from "./OpenAPI";
+import { RpcRoutingToken } from "../core/RpcRoutingToken";
 
 /** Initialization parameters for BentleyCloudRpcConfiguration.
  * @public
@@ -41,8 +42,8 @@ export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
  */
 export class BentleyCloudRpcManager extends RpcManager {
   /** Initializes BentleyCloudRpcManager for the frontend of an application. */
-  public static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration {
-    return BentleyCloudRpcManager.performInitialization(params, interfaces);
+  public static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[], routing: RpcRoutingToken = RpcRoutingToken.default): BentleyCloudRpcConfiguration {
+    return BentleyCloudRpcManager.performInitialization(params, interfaces, routing);
   }
 
   /** Initializes BentleyCloudRpcManager for the backend of an application. */
@@ -50,7 +51,7 @@ export class BentleyCloudRpcManager extends RpcManager {
     return BentleyCloudRpcManager.performInitialization(params, interfaces);
   }
 
-  private static performInitialization(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration {
+  private static performInitialization(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[], routing: RpcRoutingToken = RpcRoutingToken.default): BentleyCloudRpcConfiguration {
     const protocol = class extends (params.protocol || BentleyCloudRpcProtocol) {
       public pathPrefix = params.uriPrefix || "";
       public info = params.info;
@@ -59,10 +60,11 @@ export class BentleyCloudRpcManager extends RpcManager {
     const config = class extends BentleyCloudRpcConfiguration {
       public interfaces = () => interfaces;
       public protocol: BentleyCloudRpcProtocol = new protocol(this);
+      public routing = routing;
     };
 
     for (const def of interfaces) {
-      RpcConfiguration.assign(def, () => config);
+      RpcConfiguration.assignWithRouting(def, routing, config);
     }
 
     const instance = RpcConfiguration.obtain(config);

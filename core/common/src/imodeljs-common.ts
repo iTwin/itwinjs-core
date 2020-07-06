@@ -102,6 +102,7 @@ export * from "./rpc/core/RpcProtocol";
 export * from "./rpc/core/RpcRegistry";
 export * from "./rpc/core/RpcRequest";
 export * from "./rpc/core/RpcRequestContext";
+export * from "./rpc/core/RpcRoutingToken";
 export * from "./rpc/electron/ElectronRpcManager";
 export * from "./rpc/electron/ElectronRpcProtocol";
 export * from "./rpc/electron/ElectronRpcRequest";

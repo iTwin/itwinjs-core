@@ -5,7 +5,7 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import {
   IModelReadRpcInterface, IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcNotFoundResponse, RpcOperationsProfile,
-  WipRpcInterface,
+  RpcRoutingToken, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 
 export interface TestOp1Params {
@@ -201,6 +201,35 @@ export class RpcTransportTestImpl extends RpcInterface implements RpcTransportTe
   }
 }
 
+export abstract class MultipleClientsInterface extends RpcInterface {
+  public static readonly interfaceName = "MultipleClientsInterface";
+  public static interfaceVersion = "1.0.0";
+
+  public static config1 = RpcRoutingToken.generate();
+  public static config2 = RpcRoutingToken.generate();
+
+  public static getClientWithRouting(routing: RpcRoutingToken): MultipleClientsInterface {
+    return RpcManager.getClientForInterface(MultipleClientsInterface, routing);
+  }
+
+  public async check(_id: number): Promise<boolean> {
+    return this.forward(arguments);
+  }
+}
+
+export abstract class AttachedInterface extends RpcInterface {
+  public static readonly interfaceName = "AttachedInterface";
+  public static interfaceVersion = "1.0.0";
+
+  public static getClient(): AttachedInterface {
+    return RpcManager.getClientForInterface(AttachedInterface);
+  }
+
+  public async ping(): Promise<boolean> {
+    return this.forward(arguments);
+  }
+}
+
 export const rpcInterfaces: RpcInterfaceDefinition[] = [
   IModelReadRpcInterface,
   TestRpcInterface,
@@ -209,4 +238,5 @@ export const rpcInterfaces: RpcInterfaceDefinition[] = [
   RpcTransportTest,
   WipRpcInterface,
   ZeroMajorRpcInterface,
+  MultipleClientsInterface,
 ];
