@@ -35,7 +35,7 @@ export namespace CategoryDescription {
   }
 
   /**
-   * Deserialize [[CategoryDescription]] from JSON. The `parent` is not assigned - use [[listFromJSON]]
+   * Deserialize [[CategoryDescription]] from JSON. The `parent` is not assigned - use listFromJSON
    * to deserialize the whole categories list and set parents.
    */
   export function fromJSON(json: CategoryDescriptionJSON): CategoryDescription {
