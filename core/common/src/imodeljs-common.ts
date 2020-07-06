@@ -24,6 +24,7 @@ export * from "./FeatureTable";
 export * from "./Fonts";
 export * from "./Frustum";
 export * from "./GeoCoordinateServices";
+export * from "./GeometryContainment";
 export * from "./GeometryParams";
 export * from "./GeometrySummary";
 export * from "./Gradient";

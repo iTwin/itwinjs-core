@@ -18,11 +18,11 @@ import {
   AxisAlignedBox3d, BriefcaseKey, BriefcaseProps, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
   CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions,
   DownloadBriefcaseStatus, EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
-  FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, IModel, IModelCoordinatesResponseProps, IModelEncryptionProps,
-  IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus, IModelVersion, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota,
-  QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SpatialViewDefinitionProps, SyncMode, ThumbnailProps,
-  TileTreeProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
+  FilePropertyProps, FontMap, FontMapProps, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
+  IModelCoordinatesResponseProps, IModelEncryptionProps, IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps, IModelStatus,
+  IModelVersion, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, OpenBriefcaseOptions, ProfileOptions, PropertyCallback, QueryLimit,
+  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SheetProps, SnapRequestProps, SnapResponseProps, SpatialViewDefinitionProps,
+  SyncMode, ThumbnailProps, TileTreeProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ChangesType, Lock, LockLevel, LockType } from "@bentley/imodelhub-client";
@@ -917,6 +917,15 @@ export abstract class IModelDb extends IModel {
       request.cancelSnap();
       this._snaps.delete(sessionId);
     }
+  }
+
+  /** Get the clip containment status for the supplied elements
+   * @beta
+   */
+  public async getGeometryContainment(requestContext: ClientRequestContext, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
+    requestContext.enter();
+    const resultString: string = this.nativeDb.getGeometryContainment(JSON.stringify(props));
+    return JSON.parse(resultString) as GeometryContainmentResponseProps;
   }
 
   /** Get the mass properties for the supplied elements
