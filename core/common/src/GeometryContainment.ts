@@ -8,6 +8,7 @@
 
 import { BentleyStatus, Id64Array } from "@bentley/bentleyjs-core";
 import { ViewFlagProps } from "./ViewFlags";
+import { ClipPlaneContainment } from "@bentley/geometry-core";
 
 /** Information required to request clip containment status for elements from the front end to the back end.
  * @beta
@@ -25,7 +26,7 @@ export interface GeometryContainmentRequestProps {
  */
 export interface GeometryContainmentResponseProps {
   status: BentleyStatus;
-  candidatesContainment?: number[]; // ClipPlaneContainment status for candidate array entry at the same index.
+  candidatesContainment?: ClipPlaneContainment[]; // status for candidate array entry at the same index.
   numInside?: number;
   numOutside?: number;
   numOverlap?: number;
