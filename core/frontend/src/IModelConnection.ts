@@ -12,10 +12,10 @@ import {
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BriefcaseProps, Cartographic, CodeSpec, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap, FontMapProps,
-  GeoCoordStatus, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion,
-  IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit,
-  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent,
-  SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
+  GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcProps,
+  IModelStatus, IModelVersion, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams,
+  NativeAppRpcInterface, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation,
+  RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { EditingFunctions } from "./EditingFunctions";
 import { EntityState } from "./EntityState";
@@ -395,6 +395,11 @@ export abstract class IModelConnection extends IModel {
   public async getToolTipMessage(id: Id64String): Promise<string[]> {
     return this.isOpen ? this._toolTipRpc.request(id) : [];
   }
+
+  /** Request element clip containment status from the backend.
+   * @beta
+   */
+  public async getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> { return IModelReadRpcInterface.getClient().getGeometryContainment(this.getRpcProps(), requestProps); }
 
   /** Request element mass properties from the backend.
    * @beta
