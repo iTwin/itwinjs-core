@@ -61,7 +61,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
       const propertyBlockMount = mount(
         <ColumnResizingPropertyListPropsSupplier orientation={Orientation.Horizontal}>
           {(listProps) => <PropertyList {...listProps} properties={records} />}
-        </ColumnResizingPropertyListPropsSupplier>
+        </ColumnResizingPropertyListPropsSupplier>,
       );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
@@ -78,7 +78,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
       const propertyBlockMount = mount(
         <ColumnResizingPropertyListPropsSupplier orientation={Orientation.Horizontal}>
           {(listProps) => <PropertyList {...listProps} properties={records} />}
-        </ColumnResizingPropertyListPropsSupplier>
+        </ColumnResizingPropertyListPropsSupplier>,
       );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
@@ -95,7 +95,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
       const propertyBlockMount = mount(
         <ColumnResizingPropertyListPropsSupplier orientation={Orientation.Horizontal}>
           {(listProps) => <PropertyList {...listProps} properties={records} />}
-        </ColumnResizingPropertyListPropsSupplier>
+        </ColumnResizingPropertyListPropsSupplier>,
       );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
@@ -139,7 +139,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
           actionButtonWidth={100}
         >
           {(listProps) => <PropertyList {...listProps} properties={records} />}
-        </ColumnResizingPropertyListPropsSupplier>
+        </ColumnResizingPropertyListPropsSupplier>,
       );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
@@ -161,7 +161,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
           actionButtonWidth={100}
         >
           {(listProps) => <PropertyList {...listProps} properties={records} />}
-        </ColumnResizingPropertyListPropsSupplier>
+        </ColumnResizingPropertyListPropsSupplier>,
       );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
@@ -183,7 +183,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
           actionButtonWidth={100}
         >
           {(listProps) => <PropertyList {...listProps} properties={records} />}
-        </ColumnResizingPropertyListPropsSupplier>
+        </ColumnResizingPropertyListPropsSupplier>,
       );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
@@ -205,7 +205,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
           actionButtonWidth={100}
         >
           {(listProps) => <PropertyList {...listProps} properties={records} />}
-        </ColumnResizingPropertyListPropsSupplier>
+        </ColumnResizingPropertyListPropsSupplier>,
       );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
@@ -231,7 +231,7 @@ describe("ColumnResizingPropertyListPropsSupplier", () => {
           actionButtonWidth={100}
         >
           {(listProps) => <PropertyList {...listProps} properties={records} />}
-        </ColumnResizingPropertyListPropsSupplier>
+        </ColumnResizingPropertyListPropsSupplier>,
       );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);

@@ -228,8 +228,8 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
         this.assignRecordClickHandlers(propertyData.records[categoryName]);
     }
 
-    const buildCategoriesHierarchy = (categories: PropertyCategory[]) =>
-      categories.map((category): CategorizedPropertyGridRecords => ({
+    const buildCategoriesHierarchy = (categoriesIn: PropertyCategory[]) =>
+      categoriesIn.map((category): CategorizedPropertyGridRecords => ({
         category,
         records: propertyData.records[category.name] ?? [],
         children: buildCategoriesHierarchy(category.childCategories ?? []),

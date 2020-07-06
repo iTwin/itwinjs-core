@@ -19,6 +19,8 @@ import {
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 
+// tslint:disable:deprecation
+
 describe("PropertyGrid", () => {
 
   const categories: PropertyCategory[] = [

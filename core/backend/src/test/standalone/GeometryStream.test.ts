@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlaneContainment, ClipShape, ClipVector, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Sphere, TorusPipe, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlaneContainment, ClipShape, ClipVector, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, TorusPipe, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, TextString, TextStringProps, ViewFlags } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import { BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
