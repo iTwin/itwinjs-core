@@ -5,30 +5,28 @@
 import _ from "lodash";
 import * as React from "react";
 import { Geometry } from "@bentley/geometry-core";
-import { Omit, Orientation, RatioChangeResult } from "@bentley/ui-core";
-import { PropertyCategory } from "../PropertyDataProvider";
-import { PropertyCategoryBlock, PropertyCategoryBlockProps } from "./PropertyCategoryBlock";
-import { PropertyList, PropertyListProps } from "./PropertyList";
+import { Orientation, RatioChangeResult } from "@bentley/ui-core";
+import { PropertyListProps } from "./PropertyList";
 
 /** @internal */
-export interface ResizeHandlingSelectablePropertyBlockProps extends PropertyCategoryBlockProps, Omit<PropertyListProps, "onColumnChanged" | "columnRatio" |
-  "isResizeHandleHovered" | "onResizeHandleHoverChanged" | "isResizeHandleBeingDragged" | "onResizeHandleDragChanged" | "columnInfo"> {
-  /* The property category to display */
-  category: PropertyCategory;
-  /** Custom CSS class name for the property list */
-  listClassName?: string;
-  /** Custom CSS Style for the property list */
-  listStyle?: React.CSSProperties;
+export type ColumnResizeRelatedPropertyListProps = Pick<PropertyListProps, "onColumnChanged" | "columnRatio" | "isResizeHandleHovered" | "onResizeHandleHoverChanged" | "isResizeHandleBeingDragged" | "onResizeHandleDragChanged" | "columnInfo" | "onListWidthChanged" | "orientation">;
+
+/** @internal */
+export interface ColumnResizingPropertyListPropsSupplierProps {
+  /** Orientation of the properties */
+  orientation: Orientation;
   /** Minimum allowed label column width, after which resizing stops */
   minLabelWidth?: number;
   /** Minimum allowed value column width, after which resizing stops */
   minValueWidth?: number;
   /** Fixed action button column width */
   actionButtonWidth?: number;
+  /** A callback that receives the required column-resize-related props for the [[PropertyList]] component  */
+  children: (props: ColumnResizeRelatedPropertyListProps) => React.ReactNode;
 }
 
 /** @internal */
-export interface ResizeHandlingSelectablePropertyBlockState {
+export interface ColumnResizingPropertyListPropsSupplierState {
   columnRatio: number;
   isResizeHandleHovered: boolean;
   isResizeHandleBeingDragged: boolean;
@@ -39,22 +37,21 @@ export interface ResizeHandlingSelectablePropertyBlockState {
  * Wrapped PropertyCategoryBlock React component with list of properties and render optimization
  * @internal
  */
-export class ResizeHandlingSelectablePropertyBlock
-  extends React.Component<ResizeHandlingSelectablePropertyBlockProps, ResizeHandlingSelectablePropertyBlockState> {
+export class ColumnResizingPropertyListPropsSupplier extends React.Component<ColumnResizingPropertyListPropsSupplierProps, ColumnResizingPropertyListPropsSupplierState> {
   private readonly _initialRatio = 0.25;
   private readonly _defaultMinRatio = 0.15;
   private readonly _defaultMaxRatio = 0.6;
   private _minRatio = this._defaultMinRatio;
   private _maxRatio = this._defaultMaxRatio;
 
-  public state: ResizeHandlingSelectablePropertyBlockState = {
+  public state: ColumnResizingPropertyListPropsSupplierState = {
     columnRatio: this._initialRatio,
     isResizeHandleHovered: false,
     isResizeHandleBeingDragged: false,
     isMinimumColumnSizeEnabled: true,
   };
 
-  public static defaultProps: Partial<ResizeHandlingSelectablePropertyBlockProps> = {
+  public static defaultProps: Partial<ColumnResizingPropertyListPropsSupplierProps> = {
     minLabelWidth: 128,
     minValueWidth: 150,
     actionButtonWidth: 90,
@@ -102,12 +99,8 @@ export class ResizeHandlingSelectablePropertyBlock
   }
 
   public render() {
-    const { children, onExpansionToggled, className, style, listClassName, listStyle, ...props } = this.props;
-
-    const listProps: PropertyListProps = {
-      ...props,
-      className: listClassName,
-      style: listStyle,
+    const listProps: ColumnResizeRelatedPropertyListProps = {
+      orientation: this.props.orientation,
       onColumnChanged: this._onColumnRatioChanged,
       columnRatio: this.getValidColumnRatio(),
       isResizeHandleHovered: this.state.isResizeHandleHovered,
@@ -122,15 +115,6 @@ export class ResizeHandlingSelectablePropertyBlock
         isMinimumColumnSizeEnabled: this.state.isMinimumColumnSizeEnabled,
       },
     };
-
-    return (
-      <PropertyCategoryBlock category={this.props.category}
-        onExpansionToggled={onExpansionToggled}
-        className={className}
-        style={style}
-      >
-        <PropertyList {...listProps} />
-      </PropertyCategoryBlock>
-    );
+    return this.props.children(listProps);
   }
 }

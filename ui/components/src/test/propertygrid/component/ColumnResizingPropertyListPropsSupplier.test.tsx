@@ -6,13 +6,16 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { ResizeHandlingSelectablePropertyBlock, ResizeHandlingSelectablePropertyBlockProps } from "../../../ui-components/propertygrid/component/ResizeHandlingSelectablePropertyBlock";
+import { ColumnResizingPropertyListPropsSupplier } from "../../../ui-components/propertygrid/component/ColumnResizingPropertyListPropsSupplier";
+import { PropertyList } from "../../../ui-components/propertygrid/component/PropertyList";
 import TestUtils from "../../TestUtils";
 
-describe("ResizeHandlingSelectablePropertyBlock", () => {
+describe("ColumnResizingPropertyListPropsSupplier", () => {
+
   let clock: sinon.SinonFakeTimers;
-  let props: ResizeHandlingSelectablePropertyBlockProps;
+  let records: PropertyRecord[];
 
   const throttleMs = 16;
   before(async () => {
@@ -30,16 +33,7 @@ describe("ResizeHandlingSelectablePropertyBlock", () => {
   }
 
   beforeEach(() => {
-    props = {
-      orientation: Orientation.Horizontal,
-      properties: [TestUtils.createPrimitiveStringProperty("CADID", "0000 0005 00E0 02D8")],
-      category: {
-        name: "Category1",
-        label: "Category 1",
-        expand: false,
-      },
-      selectedPropertyKey: "",
-    };
+    records = [TestUtils.createPrimitiveStringProperty("CADID", "0000 0005 00E0 02D8")];
   });
 
   describe("ratio between label and value when width below minimum column size", () => {
@@ -64,9 +58,11 @@ describe("ResizeHandlingSelectablePropertyBlock", () => {
     });
 
     it("changes label-value ratio when it's modified within bounds", () => {
-      props.category.expand = true;
-
-      const propertyBlockMount = mount(<ResizeHandlingSelectablePropertyBlock {...props} />);
+      const propertyBlockMount = mount(
+        <ColumnResizingPropertyListPropsSupplier orientation={Orientation.Horizontal}>
+          {(listProps) => <PropertyList {...listProps} properties={records} />}
+        </ColumnResizingPropertyListPropsSupplier>,
+      );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
 
@@ -79,9 +75,11 @@ describe("ResizeHandlingSelectablePropertyBlock", () => {
     });
 
     it("changes label-value ratio to 0.15 when it's modified lower than allowed", () => {
-      props.category.expand = true;
-
-      const propertyBlockMount = mount(<ResizeHandlingSelectablePropertyBlock {...props} />);
+      const propertyBlockMount = mount(
+        <ColumnResizingPropertyListPropsSupplier orientation={Orientation.Horizontal}>
+          {(listProps) => <PropertyList {...listProps} properties={records} />}
+        </ColumnResizingPropertyListPropsSupplier>,
+      );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
 
@@ -94,9 +92,11 @@ describe("ResizeHandlingSelectablePropertyBlock", () => {
     });
 
     it("changes label-value ratio to 0.6 when it's modified higher than allowed", () => {
-      props.category.expand = true;
-
-      const propertyBlockMount = mount(<ResizeHandlingSelectablePropertyBlock {...props} />);
+      const propertyBlockMount = mount(
+        <ColumnResizingPropertyListPropsSupplier orientation={Orientation.Horizontal}>
+          {(listProps) => <PropertyList {...listProps} properties={records} />}
+        </ColumnResizingPropertyListPropsSupplier>,
+      );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
 
@@ -131,12 +131,16 @@ describe("ResizeHandlingSelectablePropertyBlock", () => {
     });
 
     it("changes label-value ratio when it's modified within bounds", () => {
-      props.category.expand = true;
-      props.minLabelWidth = 100;
-      props.minValueWidth = 100;
-      props.actionButtonWidth = 100;
-
-      const propertyBlockMount = mount(<ResizeHandlingSelectablePropertyBlock {...props} />);
+      const propertyBlockMount = mount(
+        <ColumnResizingPropertyListPropsSupplier
+          orientation={Orientation.Horizontal}
+          minLabelWidth={100}
+          minValueWidth={100}
+          actionButtonWidth={100}
+        >
+          {(listProps) => <PropertyList {...listProps} properties={records} />}
+        </ColumnResizingPropertyListPropsSupplier>,
+      );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
 
@@ -149,12 +153,16 @@ describe("ResizeHandlingSelectablePropertyBlock", () => {
     });
 
     it("changes label-value ratio to minimum label width when it's modified lower than allowed", () => {
-      props.category.expand = true;
-      props.minLabelWidth = 100;
-      props.minValueWidth = 100;
-      props.actionButtonWidth = 100;
-
-      const propertyBlockMount = mount(<ResizeHandlingSelectablePropertyBlock {...props} />);
+      const propertyBlockMount = mount(
+        <ColumnResizingPropertyListPropsSupplier
+          orientation={Orientation.Horizontal}
+          minLabelWidth={100}
+          minValueWidth={100}
+          actionButtonWidth={100}
+        >
+          {(listProps) => <PropertyList {...listProps} properties={records} />}
+        </ColumnResizingPropertyListPropsSupplier>,
+      );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
 
@@ -167,12 +175,16 @@ describe("ResizeHandlingSelectablePropertyBlock", () => {
     });
 
     it("changes label-value ratio to maximum label width when it's modified higher than allowed", () => {
-      props.category.expand = true;
-      props.minLabelWidth = 100;
-      props.minValueWidth = 100;
-      props.actionButtonWidth = 100;
-
-      const propertyBlockMount = mount(<ResizeHandlingSelectablePropertyBlock {...props} />);
+      const propertyBlockMount = mount(
+        <ColumnResizingPropertyListPropsSupplier
+          orientation={Orientation.Horizontal}
+          minLabelWidth={100}
+          minValueWidth={100}
+          actionButtonWidth={100}
+        >
+          {(listProps) => <PropertyList {...listProps} properties={records} />}
+        </ColumnResizingPropertyListPropsSupplier>,
+      );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
 
@@ -185,12 +197,16 @@ describe("ResizeHandlingSelectablePropertyBlock", () => {
     });
 
     it("stops changing label-value ratio after reaching max when element not hovered", () => {
-      props.category.expand = true;
-      props.minLabelWidth = 100;
-      props.minValueWidth = 100;
-      props.actionButtonWidth = 100;
-
-      const propertyBlockMount = mount(<ResizeHandlingSelectablePropertyBlock {...props} />);
+      const propertyBlockMount = mount(
+        <ColumnResizingPropertyListPropsSupplier
+          orientation={Orientation.Horizontal}
+          minLabelWidth={100}
+          minValueWidth={100}
+          actionButtonWidth={100}
+        >
+          {(listProps) => <PropertyList {...listProps} properties={records} />}
+        </ColumnResizingPropertyListPropsSupplier>,
+      );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
 
@@ -207,12 +223,16 @@ describe("ResizeHandlingSelectablePropertyBlock", () => {
     });
 
     it("stops changing label-value ratio after reaching min when element not hovered", () => {
-      props.category.expand = true;
-      props.minLabelWidth = 100;
-      props.minValueWidth = 100;
-      props.actionButtonWidth = 100;
-
-      const propertyBlockMount = mount(<ResizeHandlingSelectablePropertyBlock {...props} />);
+      const propertyBlockMount = mount(
+        <ColumnResizingPropertyListPropsSupplier
+          orientation={Orientation.Horizontal}
+          minLabelWidth={100}
+          minValueWidth={100}
+          actionButtonWidth={100}
+        >
+          {(listProps) => <PropertyList {...listProps} properties={records} />}
+        </ColumnResizingPropertyListPropsSupplier>,
+      );
 
       expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
 

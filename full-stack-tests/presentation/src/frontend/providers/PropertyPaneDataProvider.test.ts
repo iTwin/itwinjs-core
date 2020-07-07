@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
@@ -30,29 +31,46 @@ describe("PropertyDataProvider", async () => {
     await terminate();
   });
 
-  it("creates empty result when properties requested for 0 instances", async () => {
-    provider.keys = new KeySet();
-    const properties = await provider.getData();
-    expect(properties).to.matchSnapshot();
-  });
+  const runTests = (configName: string, setup: () => void) => {
 
-  it("creates property data when given key with concrete class", async () => {
-    provider.keys = new KeySet([physicalModelProps]);
-    const properties = await provider.getData();
-    expect(properties).to.matchSnapshot();
-  });
+    describe(configName, () => {
 
-  it("creates property data when given key with base class", async () => {
-    provider.keys = new KeySet([{ className: "BisCore:Element", id: "0x75" }]);
-    const properties = await provider.getData();
-    expect(properties).to.matchSnapshot();
-  });
+      beforeEach(setup);
 
-  it("favorites properties", async () => {
-    (provider as any).isFieldFavorite = () => true;
-    provider.keys = new KeySet([physicalModelProps]);
-    const properties = await provider.getData();
-    expect(properties).to.matchSnapshot();
-  });
+      afterEach(() => {
+        sinon.restore();
+      });
+
+      it("creates empty result when properties requested for 0 instances", async () => {
+        provider.keys = new KeySet();
+        const properties = await provider.getData();
+        expect(properties).to.matchSnapshot();
+      });
+
+      it("creates property data when given key with concrete class", async () => {
+        provider.keys = new KeySet([physicalModelProps]);
+        const properties = await provider.getData();
+        expect(properties).to.matchSnapshot();
+      });
+
+      it("creates property data when given key with base class", async () => {
+        provider.keys = new KeySet([{ className: "BisCore:Element", id: "0x75" }]);
+        const properties = await provider.getData();
+        expect(properties).to.matchSnapshot();
+      });
+
+      it("favorites properties", async () => {
+        sinon.stub(provider as any, "isFieldFavorite").returns(true);
+        provider.keys = new KeySet([physicalModelProps]);
+        const properties = await provider.getData();
+        expect(properties).to.matchSnapshot();
+      });
+
+    });
+
+  };
+
+  runTests("with flat property categories", () => provider.isNestedPropertyCategoryGroupingEnabled = false);
+  runTests("with nested property categories", () => provider.isNestedPropertyCategoryGroupingEnabled = true);
 
 });

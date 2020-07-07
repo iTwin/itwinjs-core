@@ -2531,12 +2531,16 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
 
 // @public
 export interface PropertyCategory {
+    // @alpha (undocumented)
+    childCategories?: PropertyCategory[];
     // (undocumented)
     expand: boolean;
     // (undocumented)
     label: string;
     // (undocumented)
     name: string;
+    // @alpha (undocumented)
+    parentCategory?: PropertyCategory;
 }
 
 // @public
@@ -2646,7 +2650,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     render(): JSX.Element;
     }
 
-// @public
+// @public @deprecated
 export interface PropertyGridCategory {
     // (undocumented)
     properties: PropertyRecord[];

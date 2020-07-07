@@ -1475,7 +1475,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     if (undefined === matrix)
       return undefined;
     const worldUp = matrix.getColumn(2);
-    const planePt = (viewport.isContextRotationRequired ? viewport.getAuxCoordOrigin() : (viewport.view.isSpatialView ? viewport.view.iModel.globalOrigin : Point3d.createZero()));
+    const planePt = (viewport.isContextRotationRequired ? viewport.getAuxCoordOrigin() : (viewport.view.isSpatialView() ? viewport.view.iModel.globalOrigin : Point3d.createZero()));
     return Plane3dByOriginAndUnitNormal.create(planePt, worldUp);
   }
 

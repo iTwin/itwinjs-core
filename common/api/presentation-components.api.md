@@ -262,6 +262,9 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     protected invalidateCache(props: CacheInvalidationProps): void;
     protected isFieldFavorite: (field: Field) => boolean;
     protected isFieldHidden(field: Field): boolean;
+    // @beta
+    get isNestedPropertyCategoryGroupingEnabled(): boolean;
+    set isNestedPropertyCategoryGroupingEnabled(value: boolean);
     // (undocumented)
     onDataChanged: PropertyDataChangeEvent;
     protected shouldConfigureContentDescriptor(): boolean;

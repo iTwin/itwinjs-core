@@ -157,6 +157,8 @@ public;GeometricModel3dProps
 public;GeometricModelProps 
 public;GeometryAppearanceProps
 public;GeometryClass
+beta;GeometryContainmentRequestProps
+beta;GeometryContainmentResponseProps
 public;GeometryParams
 public;GeometryPartInstanceProps
 public;GeometryPartProps 
@@ -354,7 +356,7 @@ public;RgbColorProps
 beta;RgbFactorProps = number[]
 public;RootSubjectProps
 public;class RpcConfiguration
-public;RpcConfigurationSupplier = () =>
+public;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
 public;RpcContentType
 internal;RpcControlChannel
 public;class RpcControlResponse
@@ -398,6 +400,9 @@ public;RpcRequestStatus
 public;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
 public;RpcResponseCacheControl
 public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
+alpha;RpcRoutingMap 
+alpha;RpcRoutingMap
+public;RpcRoutingToken
 public;RpcSerializedValue
 public;RpcSerializedValue
 beta;SectionDrawingLocationProps 

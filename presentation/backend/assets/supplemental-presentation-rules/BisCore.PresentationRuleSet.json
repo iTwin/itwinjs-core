@@ -220,7 +220,8 @@
             ]
           },
           "requiredDirection": "Forward",
-          "isPolymorphic": true
+          "isPolymorphic": true,
+          "relationshipMeaning": "SameInstance"
         },
         {
           "relationships": {
@@ -236,7 +237,8 @@
             ]
           },
           "requiredDirection": "Forward",
-          "isPolymorphic": true
+          "isPolymorphic": true,
+          "relationshipMeaning": "SameInstance"
         },
         {
           "relationships": {
@@ -252,7 +254,8 @@
             ]
           },
           "requiredDirection": "Forward",
-          "isPolymorphic": true
+          "isPolymorphic": true,
+          "relationshipMeaning": "RelatedInstance"
         },
         {
           "relationships": {
@@ -269,6 +272,7 @@
           },
           "requiredDirection": "Backward",
           "isPolymorphic": true,
+          "relationshipMeaning": "RelatedInstance",
           "nestedRelatedProperties": [
             {
               "relationships": {
@@ -285,7 +289,8 @@
               },
               "requiredDirection": "Forward",
               "isPolymorphic": true,
-              "autoExpand": true
+              "autoExpand": true,
+              "relationshipMeaning": "RelatedInstance"
             }
           ]
         },
@@ -311,7 +316,8 @@
               "categoryId": "source_file_information",
               "isDisplayed": true
             }
-          ]
+          ],
+          "relationshipMeaning": "SameInstance"
         },
         {
           "relationships": {
@@ -328,6 +334,7 @@
             ]
           },
           "properties": "_none_",
+          "relationshipMeaning": "SameInstance",
           "nestedRelatedProperties": [
             {
               "relationships": {
@@ -345,6 +352,7 @@
                 ]
               },
               "properties": "_none_",
+              "relationshipMeaning": "SameInstance",
               "nestedRelatedProperties": [
                 {
                   "relationships": {
@@ -375,7 +383,8 @@
                       "categoryId": "source_file_information",
                       "isDisplayed": true
                     }
-                  ]
+                  ],
+                  "relationshipMeaning": "SameInstance"
                 }
               ]
             }
@@ -405,6 +414,7 @@
           },
           "requiredDirection": "Forward",
           "isPolymorphic": true,
+          "relationshipMeaning": "RelatedInstance",
           "nestedRelatedProperties": [
             {
               "relationships": {
@@ -415,7 +425,8 @@
                 ]
               },
               "requiredDirection": "Forward",
-              "isPolymorphic": true
+              "isPolymorphic": true,
+              "relationshipMeaning": "SameInstance"
             }
           ]
         }
@@ -443,6 +454,7 @@
           },
           "requiredDirection": "Forward",
           "isPolymorphic": true,
+          "relationshipMeaning": "RelatedInstance",
           "nestedRelatedProperties": [
             {
               "relationships": {
@@ -453,7 +465,8 @@
                 ]
               },
               "requiredDirection": "Forward",
-              "isPolymorphic": true
+              "isPolymorphic": true,
+              "relationshipMeaning": "SameInstance"
             }
           ]
         }
@@ -480,7 +493,8 @@
             ]
           },
           "requiredDirection": "Forward",
-          "isPolymorphic": true
+          "isPolymorphic": true,
+          "relationshipMeaning": "RelatedInstance"
         }
       ]
     },
@@ -505,7 +519,8 @@
             ]
           },
           "requiredDirection": "Forward",
-          "isPolymorphic": true
+          "isPolymorphic": true,
+          "relationshipMeaning": "RelatedInstance"
         }
       ]
     },

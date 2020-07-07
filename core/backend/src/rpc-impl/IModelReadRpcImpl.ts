@@ -9,10 +9,10 @@
 import { assert, ClientRequestContext, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import {
-  ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel,
-  IModelConnectionProps, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelRpcProps, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, RpcInterface, RpcManager, SnapRequestProps,
-  SnapResponseProps, SyncMode, ViewStateProps,
+  ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps,
+  ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesResponseProps, IModelReadRpcInterface,
+  IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, QueryLimit, QueryPriority, QueryQuota, QueryResponse, RpcInterface,
+  RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -162,6 +162,11 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async cancelSnap(tokenProps: IModelRpcProps, sessionId: string): Promise<void> {
     return IModelDb.findByKey(tokenProps.key).cancelSnap(sessionId);
+  }
+
+  public async getGeometryContainment(tokenProps: IModelRpcProps, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
+    const requestContext = ClientRequestContext.current;
+    return IModelDb.findByKey(tokenProps.key).getGeometryContainment(requestContext, props);
   }
 
   public async getMassProperties(tokenProps: IModelRpcProps, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
