@@ -9,7 +9,7 @@
 import { Transform, XAndY } from "@bentley/geometry-core";
 import { AbstractToolbarProps } from "@bentley/ui-abstract";
 import {
-  DecorateContext, Decorator, IModelApp, ScreenViewport, TiledGraphicsProvider, ViewClipTool,
+  ChangeFlags, DecorateContext, Decorator, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, TiledGraphicsProvider, ViewClipTool,
 } from "@bentley/imodeljs-frontend";
 import { SectionMarker, SectionMarkerSet } from "./SectionMarkers";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
@@ -31,12 +31,14 @@ async function createMarkers(vp: ScreenViewport): Promise<SectionMarkerSet | und
 }
 
 class MarkerToolbarProvider implements PopupToolbarProvider {
+  private readonly _viewport: ScreenViewport;
   public readonly marker: SectionMarker;
   public readonly toolbarProps: AbstractToolbarProps;
   public readonly onToolbarItemExecuted: (id: string) => void;
 
   public constructor(marker: SectionMarker, decorator: HyperModelingDecorator) {
     this.marker = marker;
+    this._viewport = decorator.viewport;
     this.toolbarProps = HyperModeling.markerHandler.getToolbarProps(marker, decorator);
     this.onToolbarItemExecuted = (id) => HyperModeling.markerHandler.executeCommand(id, marker, decorator);
   }
@@ -47,6 +49,10 @@ class MarkerToolbarProvider implements PopupToolbarProvider {
 
   public get toolbarLocation(): XAndY {
     return IModelApp.uiAdmin.createXAndY(this.marker.rect.right, this.marker.rect.top);
+  }
+
+  public get htmlElement() {
+    return this._viewport.canvas;
   }
 }
 
@@ -62,10 +68,12 @@ export class HyperModelingDecorator implements Decorator {
   public readonly markers: SectionMarkerSet;
   private _config: SectionMarkerConfig;
   private readonly _removeEventListeners = new Array<() => void>();
+  private readonly _iModel: IModelConnection;
   private _needSync = false;
   private _toolbarProvider?: MarkerToolbarProvider;
   private _tiledGraphicsProvider?: TiledGraphicsProvider;
   private _activeMarker?: SectionMarker;
+  private _appliedSpatialView?: SpatialViewState;
   /** @internal */
   public syncImmediately = false;
 
@@ -158,20 +166,20 @@ export class HyperModelingDecorator implements Decorator {
 
   /** @internal */
   public decorate(context: DecorateContext): void {
-    this.markers.addDecoration(context);
+    if (this.viewport.view.is3d())
+      this.markers.addDecoration(context);
   }
 
   private constructor(markers: SectionMarkerSet, config: SectionMarkerConfig) {
     this.markers = markers;
     this._config = { ...config };
+    this._iModel = this.viewport.iModel;
 
     this.viewport.onChangeView.addOnce(() => {
       this.requestSync();
     });
 
-    // ###TODO per-model viewed categories not handled...
-    this._removeEventListeners.push(this.viewport.onViewedCategoriesChanged.addListener(() => this.requestSync()));
-    this._removeEventListeners.push(this.viewport.onViewedModelsChanged.addListener(() => this.requestSync()));
+    this._removeEventListeners.push(this.viewport.onViewportChanged.addListener((_, changeFlags) => this.onViewportChanged(changeFlags)));
     this._removeEventListeners.push(this.viewport.onDisposed.addListener(() => this.dispose()));
 
     for (const marker of markers.markers) {
@@ -181,6 +189,24 @@ export class HyperModelingDecorator implements Decorator {
 
     this.updateMarkerVisibility();
     IModelApp.viewManager.addDecorator(this);
+  }
+
+  private onViewportChanged(changeFlags: ChangeFlags): void {
+    if (this.viewport.iModel !== this._iModel) {
+      this.dispose();
+      return;
+    }
+
+    if (changeFlags.viewedCategories || changeFlags.viewedModels || changeFlags.viewedCategoriesPerModel)
+      this.requestSync();
+
+    if (changeFlags.viewState) {
+      // If we're looking at a different view now, and we did not initiate that, turn off the active marker.
+      if (this.viewport.view !== this._appliedSpatialView)
+        this.setActiveMarker(undefined); // tslint:disable-line:no-floating-promises
+      else
+        this._appliedSpatialView = undefined;
+    }
   }
 
   private async toggleMarker(marker: SectionMarker): Promise<void> {
@@ -220,15 +246,27 @@ export class HyperModelingDecorator implements Decorator {
   }
 
   /** Toggles the specified section marker.
-   * Enabling the section applies the marker's spatial view to the viewport, including its clip volume; and displays the 2d section graphics and sheet annotations.
+   * Enabling the section applies the frustum and clip volume of the marker's spatial view to the viewport, and displays the 2d section graphics and sheet annotations.
    * Disabling the section disables the clip volume and 2d graphics.
    * @see [[toggleClipVolume]] to toggle only the clip volume.
    * @see [[toggleAttachment]] to toggle only the attachment graphics.
    */
   public async toggleSection(marker: SectionMarker, enable: boolean): Promise<boolean> {
     if (enable) {
-      if (!await this.applySpatialView(marker))
+      if (this.viewport.view.is3d()) {
+        // Preserve the view settings; apply only the frustum and clip volume
+        const spatialView = await marker.state.tryLoadSpatialView();
+        if (!spatialView)
+          return false;
+
+        const aligned = await this.alignToSpatialView(marker);
+        if (!aligned)
+          return false;
+
+        this.toggleClipVolume(marker, true);
+      } else if (!await this.applySpatialView(marker)) {
         return false;
+      }
     } else {
       this.toggleClipVolume(marker, false);
     }
@@ -297,6 +335,28 @@ export class HyperModelingDecorator implements Decorator {
     return true;
   }
 
+  /** Aligns the view to match the frustum of the spatial view associated with the specified marker.
+   * @param marker The marker whose spatial view's frustum should be applied.
+   * @returns false if the frustum could not be applied, e.g. because the spatial view could not be loaded or the viewport is viewing a 2d model.
+   * @see [[alignView]] to align to the *section plane*, which may differ.
+   * @see [[toggleSection]] to also apply the clip volume.
+   */
+  public async alignToSpatialView(marker: SectionMarker): Promise<boolean> {
+    if (!this.viewport.view.is3d())
+      return false;
+
+    const spatialView = await marker.state.tryLoadSpatialView();
+    if (!spatialView)
+      return false;
+
+    this.viewport.view.setOrigin(spatialView.getOrigin());
+    this.viewport.view.setExtents(spatialView.getExtents());
+    this.viewport.view.setRotation(spatialView.getRotation());
+    this.viewport.synchWithView({ animateFrustumChange: true });
+
+    return true;
+  }
+
   /** Applies the marker's spatial view - including its clip volume - to the decorator's viewport.
    * Returns false if the spatial view could not be loaded.
    * @see [[toggleSection]].
@@ -304,8 +364,10 @@ export class HyperModelingDecorator implements Decorator {
    */
   public async applySpatialView(marker: SectionMarker): Promise<boolean> {
     const viewState = await marker.state.tryLoadSpatialView();
-    if (viewState)
+    if (viewState) {
+      this._appliedSpatialView = viewState;
       this.viewport.changeView(viewState);
+    }
 
     return undefined !== viewState;
   }
@@ -322,7 +384,7 @@ export class HyperModelingDecorator implements Decorator {
 
   private sync(): void {
     this._needSync = false;
-    if (this.updateMarkerVisibility()) {
+    if (this.viewport.view.is3d() && this.updateMarkerVisibility()) {
       this.markers.markDirty();
       this.viewport.invalidateDecorations();
     }

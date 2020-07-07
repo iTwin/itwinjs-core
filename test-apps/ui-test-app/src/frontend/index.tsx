@@ -54,6 +54,7 @@ import { UiProviderTool } from "./tools/UiProviderTool";
 
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
+import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { DeleteElementTool } from "./tools/editing/DeleteElementTool";
 import { MoveElementTool } from "./tools/editing/MoveElementTool";
 import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
@@ -258,6 +259,7 @@ export class SampleAppIModelApp {
     Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
 
     await FrontendDevTools.initialize();
+    await HyperModeling.initialize();
   }
 
   // cSpell:enable

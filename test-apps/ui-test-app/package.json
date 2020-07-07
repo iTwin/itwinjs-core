@@ -79,6 +79,7 @@
     "@bentley/imodeljs-i18n": "2.3.0-dev.16",
     "@bentley/imodeljs-frontend": "2.3.0-dev.16",
     "@bentley/frontend-devtools": "2.3.0-dev.16",
+    "@bentley/hypermodeling-frontend": "2.3.0-dev.16",
     "@bentley/imodeljs-markup": "2.3.0-dev.16",
     "@bentley/imodeljs-quantity": "2.3.0-dev.16",
     "@bentley/imodeljs-backend": "2.3.0-dev.16",

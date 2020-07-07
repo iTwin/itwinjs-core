@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { AbstractToolbarProps, BadgeType } from "@bentley/ui-abstract";
+import { AbstractToolbarProps } from "@bentley/ui-abstract";
 import { SectionMarker } from "./SectionMarkers";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
 
@@ -49,7 +49,6 @@ export class SectionMarkerHandler {
           itemPriority: 10,
           label: i18n.translate("HyperModeling:Message.ApplyView"),
           icon: "icon-spatial-view-apply",
-          badgeType: BadgeType.New,
           execute: () => { },
           isDisabled: false,
         },
@@ -58,7 +57,6 @@ export class SectionMarkerHandler {
           itemPriority: 20,
           label: i18n.translate("HyperModeling:Message.OpenSection"),
           icon: "icon-plan-drawing",
-          badgeType: BadgeType.None,
           execute: () => { },
           isDisabled: false,
         },
@@ -67,7 +65,6 @@ export class SectionMarkerHandler {
           itemPriority: 30,
           label: i18n.translate("HyperModeling:Message.OpenSheet"),
           icon: "icon-plan-floor",
-          badgeType: BadgeType.New,
           execute: () => { },
           isDisabled: undefined === marker.state.viewAttachment?.viewId,
         },

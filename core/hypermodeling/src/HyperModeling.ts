@@ -173,6 +173,13 @@ export class HyperModeling {
     return false;
   }
 
+  /** Returns whether hypermodeling is currently enabled for the specified viewport.
+   * @see [[startOrStop]] to enable or disable hypermodeling for a viewport.
+   */
+  public static isEnabledForViewport(vp: ScreenViewport): boolean {
+    return undefined !== HyperModelingDecorator.getForViewport(vp);
+  }
+
   /** Start or stop hypermodeling mode for the specified viewport.
    * Enabling hypermodeling registers and returns a [[HyperModelingDecorator]] to display [[SectionMarker]]s within the viewport.
    * Disabling hypermodeling removes that decorator.

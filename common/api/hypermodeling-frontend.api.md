@@ -38,6 +38,7 @@ export class HyperModeling {
     static getMarkerData(type: SectionType): MarkerData;
     static get graphicsConfig(): SectionGraphicsConfig;
     static initialize(config?: HyperModelingConfig): Promise<void>;
+    static isEnabledForViewport(vp: ScreenViewport): boolean;
     static isSupportedForIModel(imodel: IModelConnection): Promise<boolean>;
     static get markerConfig(): SectionMarkerConfig;
     static get markerHandler(): SectionMarkerHandler;
@@ -60,6 +61,7 @@ export interface HyperModelingConfig {
 // @beta
 export class HyperModelingDecorator implements Decorator {
     get activeMarker(): SectionMarker | undefined;
+    alignToSpatialView(marker: SectionMarker): Promise<boolean>;
     alignView(marker: SectionMarker): void;
     applySpatialView(marker: SectionMarker): Promise<boolean>;
     // @internal (undocumented)

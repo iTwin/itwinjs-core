@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/hypermodeling-frontend",
+      "comment": "Reset active section marker when a new view is applied to the viewport; add HyperModeling.isActive() and HyperModelingDecorator.alignToSpatialView(); HyperModelingDecorator.toggleSection() does not apply the spatial view, only its frustum and clip volume.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/hypermodeling-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

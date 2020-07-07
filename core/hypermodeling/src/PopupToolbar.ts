@@ -15,6 +15,7 @@ export interface PopupToolbarProvider {
   toolbarProps: AbstractToolbarProps;
   overToolbarHotspot: boolean;
   toolbarLocation: XAndY;
+  htmlElement: HTMLElement | undefined;
   onToolbarItemExecuted(id: string): void;
 }
 
@@ -29,7 +30,7 @@ export class PopupToolbarManager {
       return false;
 
     const admin = IModelApp.uiAdmin;
-    if (!admin.showToolbar(prov.toolbarProps, prov.toolbarLocation, admin.createXAndY(0, 0), this._itemExecuted, this._cancel))
+    if (!admin.showToolbar(prov.toolbarProps, prov.toolbarLocation, admin.createXAndY(0, 0), this._itemExecuted, this._cancel, undefined, prov.htmlElement))
       return false;
 
     this._current = this._provider;
