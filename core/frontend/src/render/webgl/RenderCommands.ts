@@ -16,7 +16,7 @@ import { BranchStack } from "./BranchStack";
 import { BatchState } from "./BatchState";
 import { BranchState } from "./BranchState";
 import {
-  DrawCommand, DrawCommands, getAnimationBranchState, PopBatchCommand, PopBranchCommand, PopCommand, PrimitiveCommand, PushBatchCommand,
+  DrawCommands, getAnimationBranchState, PopBatchCommand, PopBranchCommand, PopCommand, PrimitiveCommand, PushBatchCommand,
   PushBranchCommand, PushCommand, PushStateCommand,
 } from "./DrawCommand";
 import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";

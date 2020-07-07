@@ -100,7 +100,7 @@ export class TerrainMeshParams extends IndexedGeometryParams {
   public get bytesUsed(): number { return this.positions.bytesUsed + this.uvParams.bytesUsed + this.indices.bytesUsed; }
 
   public dispose() {
-    super.dispose;
+    super.dispose();
     dispose(this.uvParams);
   }
 }

@@ -188,7 +188,7 @@ const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibili
 
   return React.useMemo(() => {
     if (previous.current)
-      previous.current.dispose;
+      previous.current.dispose();
 
     const handler = visibilityHandler ?? createVisibilityHandler(rulesetId, activeView);
     previous.current = handler;

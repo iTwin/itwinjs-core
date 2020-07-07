@@ -630,7 +630,7 @@ export class MapTileTree extends RealityTileTree {
     }
     this._rootTile = new GlobeMapTile({ contentId: quadId.contentId, maximumSize: 0, range }, this, quadId, range.corners(), globalRectangle, rootPatch, undefined);
     this._gcsConverter = gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
-    this.globeMode = globeMode; this.yAxisUp;
+    this.globeMode = globeMode;
   }
 
   public get isDrape() { return this.mapLoader.isDrape; }

@@ -466,7 +466,8 @@ export class ShaderProgram implements WebGLDisposable {
           }
         } else { // fragment shader
           let tNdx = 0;
-          if ((tNdx = line.indexOf("static float4 gl_Color[")) >= 0) {
+          if (line.indexOf("static float4 gl_Color[") >= 0) {
+            //
           } else if (line.indexOf("gl_Color[0] =") >= 0) {
             if (numTargets < 1)
               numTargets = 1;

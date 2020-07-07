@@ -237,7 +237,7 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
     });
   }
 
-  addClassifierFlash(frag), false;
+  addClassifierFlash(frag);
 
   if (translucent)
     // We will never call the shaders for volume classifiers with translucency,

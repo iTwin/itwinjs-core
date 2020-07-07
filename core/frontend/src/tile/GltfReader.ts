@@ -449,8 +449,8 @@ export abstract class GltfReader {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
     switch (meshMode) {
       case GltfMeshMode.Lines:
-        primitiveType = Mesh.PrimitiveType.Polyline;
-        return undefined; // Needs work...
+        // primitiveType = Mesh.PrimitiveType.Polyline;
+        return undefined; // ###TODO support polylines from glTF.
         break;
       case GltfMeshMode.Triangles:
         primitiveType = Mesh.PrimitiveType.Mesh;
@@ -800,7 +800,7 @@ export abstract class GltfReader {
 
       let textureType = RenderTexture.Type.Normal;
       if (undefined !== samplerJson &&
-        (undefined !== samplerJson.wrapS || undefined !== samplerJson.wrapS))
+        (undefined !== samplerJson.wrapS || undefined !== samplerJson.wrapT))
         textureType = RenderTexture.Type.TileSection;
       const textureParams = new RenderTexture.Params(undefined, textureType);
       const offset = bufferView.byteOffset;

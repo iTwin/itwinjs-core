@@ -331,7 +331,7 @@ export class TerrainMapTile extends MapTile {
   }
 
   public setContent(content: TerrainTileContent): void {
-    this._geometry = dispose(this._geometry); // This should never happen but paranoia.
+    dispose(this._geometry); // This should never happen but paranoia.
     this._geometry = content.terrain?.geometry;
     this._mesh = content.terrain?.mesh;
     this.everLoaded = true;
