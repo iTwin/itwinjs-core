@@ -20,7 +20,7 @@ import {
 } from "../../ui-framework";
 import TestUtils, { UiSettingsStub } from "../TestUtils";
 import { Logger } from "@bentley/bentleyjs-core";
-import { useUpdateNineZoneSize } from "../../ui-framework/widget-panels/Frontstage";
+import { initializePanel, useUpdateNineZoneSize } from "../../ui-framework/widget-panels/Frontstage";
 
 function createSavedNineZoneState(args?: Partial<NineZoneState>) {
   return {
@@ -167,6 +167,62 @@ describe("useNineZoneDispatch", () => {
       },
     });
     spy.calledOnceWithExactly(sinon.match({ width: 5, height: 10 }));
+  });
+
+  it("should set vertical (left/right) panel max size from percentage spec", () => {
+    const frontstageDef = new FrontstageDef();
+    const panel = new StagePanelDef();
+    sinon.stub(panel, "maxSizeSpec").get(() => ({ percentage: 50 }));
+    sinon.stub(frontstageDef, "leftPanel").get(() => panel);
+    frontstageDef.nineZoneState = createNineZoneState();
+    const { result } = renderHook(() => useNineZoneDispatch(frontstageDef));
+    result.current({
+      type: "RESIZE",
+      size: {
+        height: 200,
+        width: 500,
+      },
+    });
+    frontstageDef.nineZoneState.panels.left.maxSize.should.eq(250);
+  });
+
+  it("should set horizontal (top/bottom) panel max size from percentage spec", () => {
+    const frontstageDef = new FrontstageDef();
+    const panel = new StagePanelDef();
+    sinon.stub(panel, "maxSizeSpec").get(() => ({ percentage: 50 }));
+    sinon.stub(frontstageDef, "topPanel").get(() => panel);
+    frontstageDef.nineZoneState = createNineZoneState();
+    const { result } = renderHook(() => useNineZoneDispatch(frontstageDef));
+    result.current({
+      type: "RESIZE",
+      size: {
+        height: 200,
+        width: 500,
+      },
+    });
+    frontstageDef.nineZoneState.panels.top.maxSize.should.eq(100);
+  });
+
+  it("should update panel size", () => {
+    const frontstageDef = new FrontstageDef();
+    const panel = new StagePanelDef();
+    sinon.stub(panel, "maxSizeSpec").get(() => 250);
+    sinon.stub(frontstageDef, "leftPanel").get(() => panel);
+
+    let state = createNineZoneState();
+    state = produce(state, (draft) => {
+      draft.panels.left.size = 300;
+    });
+    frontstageDef.nineZoneState = state;
+    const { result } = renderHook(() => useNineZoneDispatch(frontstageDef));
+    result.current({
+      type: "RESIZE",
+      size: {
+        height: 200,
+        width: 500,
+      },
+    });
+    frontstageDef.nineZoneState.panels.left.size!.should.eq(250);
   });
 });
 
@@ -587,6 +643,28 @@ describe("addPanelWidgets", () => {
     sinon.stub(panelZone, "widgetDefs").get(() => [widgetDef]);
     state = addPanelWidgets(state, frontstageDef, "left");
     state.panels.left.widgets[0].should.eq("leftStart");
+  });
+});
+
+describe("initializePanel", () => {
+  it("should initialize max size", () => {
+    const state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const leftPanel = new StagePanelDef();
+    sinon.stub(frontstageDef, "leftPanel").get(() => leftPanel);
+    sinon.stub(leftPanel, "maxSizeSpec").get(() => 100);
+    const sut = initializePanel(state, frontstageDef, "left");
+    sut.panels.left.maxSize.should.eq(100);
+  });
+
+  it("should initialize min size", () => {
+    const state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const leftPanel = new StagePanelDef();
+    sinon.stub(frontstageDef, "leftPanel").get(() => leftPanel);
+    sinon.stub(leftPanel, "minSize").get(() => 50);
+    const sut = initializePanel(state, frontstageDef, "left");
+    sut.panels.left.minSize.should.eq(50);
   });
 });
 

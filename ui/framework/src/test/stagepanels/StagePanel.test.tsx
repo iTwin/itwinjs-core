@@ -123,6 +123,15 @@ describe("StagePanel", () => {
     shallow(pane).should.matchSnapshot();
   });
 
+  it("should pass down maxSize number property", () => {
+    const runtimeProps = moq.Mock.ofType<StagePanelRuntimeProps>();
+    const sut = shallow<StagePanel>(<StagePanel
+      runtimeProps={runtimeProps.object}
+      maxSize={200}
+    />);
+    sut.should.matchSnapshot();
+  });
+
   it("Panels should render in a Frontstage", async () => {
     class Frontstage1 extends FrontstageProvider {
       public get frontstage(): React.ReactElement<FrontstageProps> {

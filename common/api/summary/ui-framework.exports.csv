@@ -256,6 +256,7 @@ beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
 beta;Indicator 
 internal;initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState
+internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panel: PanelSide): NineZoneState
 alpha;InputEditorCommitHandler
 alpha;InputEditorPopup 
 alpha;InputEditorPopupProps 
@@ -450,6 +451,7 @@ beta;StagePanelDefaultProps = Pick
 alpha;StagePanelHeader 
 alpha;StagePanelHeaderProps 
 alpha;StagePanelLocation
+beta;StagePanelMaxSizeSpec = number |
 beta;StagePanelProps
 internal;StagePanelRuntimeProps
 alpha;StagePanelSection

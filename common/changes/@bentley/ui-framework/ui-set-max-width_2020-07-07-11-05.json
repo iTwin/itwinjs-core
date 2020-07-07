@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Enable minSize and maxSize StagePanelProps in 2.0. Allow percentage units to be passed in to maxSize prop.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Gerardas.Butkevicius@bentley.com"
+}

@@ -203,7 +203,7 @@ export class ViewsFrontstage extends FrontstageProvider {
         usage={StageUsage.General}
         version={3.1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
         contentManipulationTools={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isFreeform={true} element={<BasicToolWidget additionalHorizontalItems={this._additionalTools.additionalHorizontalToolbarItems}
@@ -212,7 +212,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         toolSettings={
-          < Zone
+          <Zone
             allowsMerging
             widgets={
               [
@@ -224,7 +224,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         viewNavigationTools={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isFreeform={true} element={
@@ -234,7 +234,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         centerLeft={
-          < Zone
+          <Zone
             allowsMerging
             defaultState={ZoneState.Minimized}
             initialWidth={250}
@@ -249,7 +249,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         centerRight={
-          < Zone
+          <Zone
             allowsMerging
             defaultState={ZoneState.Minimized}
             initialWidth={350}
@@ -288,7 +288,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         bottomLeft={
-          < Zone
+          <Zone
             allowsMerging
             defaultState={ZoneState.Minimized}
             initialWidth={450}
@@ -302,7 +302,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         statusBar={
-          < Zone
+          <Zone
             widgets={
               [
                 <Widget isStatusBar={true} control={AppStatusBarWidgetControl} />,
@@ -310,7 +310,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         bottomRight={
-          < Zone defaultState={ZoneState.Minimized} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
+          <Zone defaultState={ZoneState.Minimized} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
             widgets={
               [
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
@@ -330,27 +330,28 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         leftPanel={
-          < StagePanel
-            header={< StagePanelHeader
+          <StagePanel
+            header={<StagePanelHeader
               collapseButton
               collapseButtonTitle="Collapse"
               location={StagePanelLocation.Left}
               title="Visibility tree"
             />}
             defaultState={StagePanelState.Minimized}
-            size={280}
-            minSize={300}
+            size={400}
+            minSize={150}
             maxSize={800}
             widgets={this._leftPanel.widgets}
           />
         }
         rightPanel={
-          < StagePanel
+          <StagePanel
             allowedZones={this._rightPanel.allowedZones}
+            maxSize={{ percentage: 50 }}
           />
         }
         bottomPanel={
-          < StagePanel
+          <StagePanel
             allowedZones={this._bottomPanel.allowedZones}
           />
         }

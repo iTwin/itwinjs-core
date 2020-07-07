@@ -64,6 +64,12 @@ export interface StagePanelZonesProps {
   end?: StagePanelZoneProps;
 }
 
+/** Available units of panel maximum size. Pixels or percentage of 9-Zone App size.
+ * @note Percentage of 9-Zone `height` is used for top/bottom panel and percentage of 9-Zone `width` is used for left/right panel.
+ * @beta
+ */
+export type StagePanelMaxSizeSpec = number | { percentage: number };
+
 /** Properties of a [[StagePanel]] component
  * @beta
  */
@@ -77,7 +83,7 @@ export interface StagePanelProps {
   /** Stage panel header. */
   header?: React.ReactNode;
   /** Maximum size of the panel. */
-  maxSize?: number;
+  maxSize?: StagePanelMaxSizeSpec;
   /** Minimum size of the panel. */
   minSize?: number;
   /** Indicates whether the panel is resizable. Defaults to true. */
@@ -152,7 +158,7 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
   }
 
   public render(): React.ReactNode {
-    const { applicationData, defaultState, runtimeProps, size, ...props } = this.props;
+    const { applicationData, defaultState, runtimeProps, maxSize, size, ...props } = this.props;
     if (!runtimeProps)
       return null;
 
@@ -165,6 +171,7 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
         renderPane={this._handleRenderPane}
         widgetCount={panelDef.widgetCount}
         panelState={this.state.panelState}
+        maxSize={typeof maxSize === "number" ? maxSize : undefined}
         {...props}
         {...otherRuntimeProps}
       />

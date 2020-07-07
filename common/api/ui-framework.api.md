@@ -2771,6 +2771,9 @@ export class Indicator extends React.Component<IndicatorProps, any> {
 // @internal (undocumented)
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState;
 
+// @internal (undocumented)
+export function initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panel: PanelSide): NineZoneState;
+
 // @alpha (undocumented)
 export class InputEditorCommitHandler {
     constructor(onCommit: OnValueCommitFunc);
@@ -4854,6 +4857,12 @@ export class StagePanelDef extends WidgetHost {
     // @internal (undocumented)
     initializePanelState(panelState: StagePanelState): void;
     get location(): StagePanelLocation_2;
+    // @internal (undocumented)
+    get maxSizeSpec(): number | {
+        percentage: number;
+    } | undefined;
+    // @internal (undocumented)
+    get minSize(): number | undefined;
     get panelState(): StagePanelState;
     set panelState(panelState: StagePanelState);
     // @internal
@@ -4897,12 +4906,17 @@ export enum StagePanelLocation {
 }
 
 // @beta
+export type StagePanelMaxSizeSpec = number | {
+    percentage: number;
+};
+
+// @beta
 export interface StagePanelProps {
     allowedZones?: ZoneLocation[];
     applicationData?: any;
     defaultState?: StagePanelState;
     header?: React.ReactNode;
-    maxSize?: number;
+    maxSize?: StagePanelMaxSizeSpec;
     minSize?: number;
     panelZones?: StagePanelZonesProps;
     resizable: boolean;

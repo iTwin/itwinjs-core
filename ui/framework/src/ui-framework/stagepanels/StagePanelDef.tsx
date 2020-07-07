@@ -11,7 +11,7 @@ import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { WidgetHost } from "../widgets/WidgetHost";
-import { StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./StagePanel";
+import { StagePanelMaxSizeSpec, StagePanelProps, StagePanelZoneProps, StagePanelZonesProps } from "./StagePanel";
 import { getStableWidgetProps } from "../zones/Zone";
 
 /** Enum for StagePanel state.
@@ -52,7 +52,9 @@ export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> { 
  */
 export class StagePanelDef extends WidgetHost {
   private _panelState = StagePanelState.Open;
-  private _size: number | undefined = undefined;
+  private _maxSizeSpec: StagePanelMaxSizeSpec | undefined;
+  private _minSize: number | undefined;
+  private _size: number | undefined;
   private _resizable: boolean = false;
   private _applicationData?: any;
   private _location: StagePanelLocation = StagePanelLocation.Left;
@@ -64,10 +66,16 @@ export class StagePanelDef extends WidgetHost {
     super();
   }
 
-  /** Default size of the panel */
-  public get size(): number | undefined { return this._size; }
+  /** @internal */
+  public get maxSizeSpec() { return this._maxSizeSpec; }
 
-  public set size(size: number | undefined) {
+  /** @internal */
+  public get minSize() { return this._minSize; }
+
+  /** Default size of the panel */
+  public get size() { return this._size; }
+
+  public set size(size) {
     // istanbul ignore if
     if (this._size === size)
       return;
@@ -77,6 +85,7 @@ export class StagePanelDef extends WidgetHost {
       size,
     });
   }
+
   /** Indicates whether the panel is resizable. */
   // istanbul ignore next
   public get resizable(): boolean { return this._resizable; }
@@ -85,7 +94,7 @@ export class StagePanelDef extends WidgetHost {
   /** Location of panel. */
   public get location(): StagePanelLocation { return this._location; }
 
-  /** Panel state.  Defaults to PanelState.Open. */
+  /** Panel state. Defaults to PanelState.Open. */
   public get panelState() {
     return this._panelState;
   }
@@ -115,6 +124,8 @@ export class StagePanelDef extends WidgetHost {
   /** @internal */
   public initializeFromProps(props: StagePanelProps, panelLocation?: StagePanelLocation): void {
     this._size = props.size;
+    this._maxSizeSpec = props.maxSize;
+    this._minSize = props.minSize;
     if (panelLocation !== undefined)
       this._location = panelLocation;
     if (props.defaultState !== undefined)
