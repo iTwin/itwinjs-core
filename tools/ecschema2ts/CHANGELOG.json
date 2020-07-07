@@ -2,6 +2,12 @@
   "name": "@bentley/ecschema2ts",
   "entries": [
     {
+      "version": "2.2.1",
+      "tag": "@bentley/ecschema2ts_v2.2.1",
+      "date": "Tue, 07 Jul 2020 14:44:52 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.2.0",
       "tag": "@bentley/ecschema2ts_v2.2.0",
       "date": "Fri, 19 Jun 2020 14:10:03 GMT",
