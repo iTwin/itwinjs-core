@@ -21,7 +21,7 @@ ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECC
 > ```sql
 > SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x20000000004
 > ```
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x20000000004"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x20000000004"></iframe>
 
 ## Primitive Data Types
 
@@ -39,7 +39,7 @@ For Boolean types ECSQL supports the literals `True` and `False`.
 > ```sql
 > SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model
 > ```
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, ECClassId, IsPrivate FROM bis.Model"></iframe>
 
 Boolean properties or expressions do not need to be compared to `True` and `False` as they return a
 boolean value already.
@@ -57,7 +57,7 @@ boolean value already.
 > SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate
 > ```
 > are equivalent.
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE IsPrivate"></iframe>
 
 And the same example with `False`:
 
@@ -73,7 +73,7 @@ And the same example with `False`:
 > ```sql
 > SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate
 > ```
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId,ECClassId FROM bis.Model WHERE NOT IsPrivate"></iframe>
 
 ## DateTime
 
@@ -85,13 +85,13 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 
 > **Try it yourself**
 >
-> *Goal:* Find all elements which were modified between 9am and 10am UTC on February, 25th 2020.
+> *Goal:* Find all elements which were modified between 12:30pm and 12:31pm UTC on March, 11th 2020.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE CodeValue LIKE '%Plant%' AND LastMod BETWEEN TIMESTAMP '2020-02-25T09:34:27.402Z' AND TIMESTAMP '2020-02-25T10:08:52.355Z'
+> SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2020-03-11T12:30:20.492Z' AND TIMESTAMP '2020-03-11T12:31:03.494Z'
 > ```
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE CodeValue LIKE '%Plant%' AND LastMod BETWEEN TIMESTAMP '2020-02-25T09:34:27.402Z' AND TIMESTAMP '2020-02-25T10:08:52.355Z'"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, CodeValue, LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2020-03-11T12:30:20.492Z' AND TIMESTAMP '2020-03-11T12:31:03.494Z'"></iframe>
 
 ## Points
 
@@ -109,16 +109,13 @@ Property | Description
 > **Try it yourself**
 >
 > *Goal:* Find all [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement) elements whose origin lies within the cube with the
-> lower corner point (50, 30, 10) and the upper corner point (70, 40, 20).
+> lower corner point (0, 0, 0) and the upper corner point (10, 10, 10).
 >
 > *ECSQL*
 > ```sql
-> SELECT ecinstanceid, Origin FROM bis.spatialelement
-> WHERE Origin.X BETWEEN 400 AND 450 AND
-> Origin.Y BETWEEN 115 AND 120 AND
-> Origin.Z BETWEEN 5 AND 10
+> SELECT ecinstanceid, Origin FROM bis.spatialelement WHERE Origin.X BETWEEN 0 AND 10 AND Origin.Y BETWEEN 0 AND 10 AND Origin.Z BETWEEN 0 AND 10
 > ```
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ecinstanceid, Origin FROM bis.spatialelement WHERE Origin.X BETWEEN 400 AND 450 AND Origin.Y BETWEEN 115 AND 120 AND Origin.Z BETWEEN 5 AND 10"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ecinstanceid, Origin FROM bis.spatialelement WHERE Origin.X BETWEEN 0 AND 10 AND Origin.Y BETWEEN 0 AND 10 AND Origin.Z BETWEEN 0 AND 10"></iframe>
 
 ## Navigation Properties
 
@@ -144,7 +141,7 @@ Property | Description
 > ```sql
 > SELECT ECInstanceId, CodeValue, LastMod, Parent FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECInstanceId, CodeValue, LastMod, Parent FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, CodeValue, LastMod, Parent FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
 
 
 > **Try it yourself**
@@ -155,7 +152,7 @@ Property | Description
 > ```sql
 > SELECT ECInstanceId, CodeValue, LastMod, Parent.Id FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT ECInstanceId, CodeValue, LastMod, Parent.Id FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, CodeValue, LastMod, Parent.Id FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
 
 ---
 
@@ -167,7 +164,7 @@ Property | Description
 > ```sql
 > SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId = 0x20000000007
 > ```
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT Parent.Id, Parent.RelECClassId FROM bis.Element WHERE ECInstanceId = 0x20000000007"></iframe>
 
 Find more examples in the lesson about [Joins and ECRelationshipClasses](./Joins.md#examples).
 
@@ -223,15 +220,15 @@ In ECSQL you can refer to Array ECProperties only as a whole.
 
 > **Try it yourself**
 >
-> *Goal:* Return the ECEnumeration values for the ECEnumeration IsmLoadCase_LoadCause. The ECEnumeration values are stored
+> *Goal:* Return the ECEnumeration values for the ECEnumeration SectionType. The ECEnumeration values are stored
 in the array property [ECEnumerationDef.EnumValues](../ECDbMeta.ecschema.md#ecenumerationdef).
 >
 > *ECSQL*
 > ```sql
-> SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='IsmLoadCase_LoadCause'
+> SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='SectionType'
 > ```
 >
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='IsmLoadCase_LoadCause'"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='SectionType'"></iframe>
 
 You can find more ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL.md#arrays).
 

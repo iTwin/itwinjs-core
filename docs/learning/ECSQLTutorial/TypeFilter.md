@@ -17,7 +17,7 @@ ECSQL allows filters by type
 > ```sql
 > SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d
 > ```
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT * FROM bis.Element WHERE ECClassId IS (bis.GeometricElement3d, bis.GeometricElement2d)"></iframe>
 
 ---
 
@@ -27,9 +27,9 @@ ECSQL allows filters by type
 >
 > *ECSQL*
 > ```sql
-> SELECT * FROM bis.Element WHERE ECClassId IS (ONLY ProcessFunctional.NOZZLE, ONLY ProcessFunctional.VESSEL)
+> SELECT * FROM bis.Element WHERE ECClassId IS (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)
 > ```
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT * FROM bis.Element WHERE ECClassId IS (ONLY ProcessFunctional.NOZZLE, ONLY ProcessFunctional.VESSEL)"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT * FROM bis.Element WHERE ECClassId IS (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)"></iframe>
 
 ---
 
@@ -39,8 +39,8 @@ ECSQL allows filters by type
 >
 > *ECSQL*
 > ```sql
-> SELECT * FROM bis.Element WHERE ECClassId IS NOT (ONLY ProcessFunctional.NOZZLE, ONLY ProcessFunctional.VESSEL)
+> SELECT * FROM bis.Element WHERE ECClassId IS NOT (ONLY Generic.PhysicalObject, ONLY BisCore.LightLocation)
 > ```
-<iframe style="height:40vh; width:60vw" src="/console/?imodel=Bay Town Process Plant&query=SELECT * FROM bis.Element WHERE ECClassId IS NOT (ONLY ProcessFunctional.NOZZLE, ONLY ProcessFunctional.VESSEL)"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=HouseSample&query=SELECT * FROM bis.Element WHERE ECClassId IS NOT (ONLY Generic.PhysicalObject, ONLY Biscore.LightLocation)"></iframe>
 
 ---

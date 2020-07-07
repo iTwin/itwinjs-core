@@ -19,7 +19,7 @@ The tutorial makes reference to the **iModelConsole** application.  Use the app 
 
 ### Sample iModel
 
-The ECSQL examples in the tutorial work with a sample iModel.
+The ECSQL examples in the tutorial work with the "House Sample" iModel. You can explore the imodels [here](https://imodeljs.org/sample-showcase/).
 
 ### BIS
 
@@ -60,7 +60,7 @@ Or simply use the provided sample below:
 > SELECT * FROM bis.Element
 > ```
 
-<iframe style="height:40vh; width:60vw" src="/console/?query=SELECT * FROM bis.Element"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT * FROM bis.Element"></iframe>
 
 ## Tutorial Overview
 
