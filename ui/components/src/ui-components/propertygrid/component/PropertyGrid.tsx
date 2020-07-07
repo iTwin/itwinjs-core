@@ -228,15 +228,21 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
         this.assignRecordClickHandlers(propertyData.records[categoryName]);
     }
 
-    const buildCategoriesHierarchy = (categoriesIn: PropertyCategory[]) =>
-      categoriesIn.map((category): CategorizedPropertyGridRecords => ({
-        category,
-        records: propertyData.records[category.name] ?? [],
-        children: buildCategoriesHierarchy(category.childCategories ?? []),
-      }));
-    const categories = buildCategoriesHierarchy(propertyData.categories);
-
-    this.setState({ categories, loadStart: undefined });
+    this.setState((prevState) => {
+      const buildCategoriesHierarchy = (newCategories: PropertyCategory[], stateCategories: CategorizedPropertyGridRecords[] | undefined) =>
+        newCategories.map((category): CategorizedPropertyGridRecords => {
+          const matchingStateCategory = findCategory(stateCategories ?? [], category.name, false);
+          return {
+            category: { ...category, expand: matchingStateCategory?.category?.expand ?? category.expand },
+            records: propertyData.records[category.name] ?? [],
+            children: buildCategoriesHierarchy(category.childCategories ?? [], matchingStateCategory?.children),
+          };
+        });
+      return {
+        categories: buildCategoriesHierarchy(propertyData.categories, prevState.categories),
+        loadStart: undefined,
+      };
+    });
   }
 
   private assignRecordClickHandlers(records: PropertyRecord[]) {
@@ -332,7 +338,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   private _onCategoryExpansionToggled = (categoryName: string) => {
     this.setState((state) => {
       return produce(state, (draft) => {
-        const category = findCategory(draft.categories, categoryName);
+        const category = findCategory(draft.categories, categoryName, true)?.category;
         // istanbul ignore else
         if (category) {
           category.expand = !category.expand;
@@ -373,6 +379,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
             {
               this.state.categories.map((categorizedRecords: CategorizedPropertyGridRecords) => (
                 <NestedCategoryBlock
+                  key={categorizedRecords.category.name}
                   categorizedRecords={categorizedRecords}
                   onCategoryExpansionToggled={this._onCategoryExpansionToggled}
                   orientation={this.state.orientation}
@@ -399,13 +406,15 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   }
 }
 
-function findCategory(categories: CategorizedPropertyGridRecords[], lookupName: string): PropertyCategory | undefined {
+function findCategory(categories: CategorizedPropertyGridRecords[], lookupName: string, recurseIntoChildren: boolean): CategorizedPropertyGridRecords | undefined {
   for (const category of categories) {
     if (category.category.name === lookupName)
-      return category.category;
-    const matchingChild = findCategory(category.children, lookupName);
-    if (matchingChild)
-      return matchingChild;
+      return category;
+    if (recurseIntoChildren) {
+      const matchingChild = findCategory(category.children, lookupName, recurseIntoChildren);
+      if (matchingChild)
+        return matchingChild;
+    }
   }
   return undefined;
 }
@@ -418,7 +427,6 @@ interface NestedCategoryBlockProps extends Omit<PropertyListProps, (keyof Column
 function NestedCategoryBlock(props: NestedCategoryBlockProps) {
   return (
     <PropertyCategoryBlock
-      key={props.categorizedRecords.category.name}
       category={props.categorizedRecords.category}
       onExpansionToggled={props.onCategoryExpansionToggled}
     >
@@ -427,6 +435,7 @@ function NestedCategoryBlock(props: NestedCategoryBlockProps) {
           {(partialListProps: ColumnResizeRelatedPropertyListProps) => (
             <PropertyList
               {...partialListProps}
+              category={props.categorizedRecords.category}
               properties={props.categorizedRecords.records}
               selectedPropertyKey={props.selectedPropertyKey}
               onPropertyClicked={props.onPropertyClicked}
@@ -448,7 +457,7 @@ function NestedCategoryBlock(props: NestedCategoryBlockProps) {
         <div className="property-categories">
           {
             props.categorizedRecords.children.map((categorizedChildRecords) => (
-              <NestedCategoryBlock {...props} categorizedRecords={categorizedChildRecords} />
+              <NestedCategoryBlock {...props} key={categorizedChildRecords.category.name} categorizedRecords={categorizedChildRecords} />
             ))
           }
         </div>

@@ -12,14 +12,12 @@ import * as moq from "typemoq";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyCategoryBlock } from "../../../ui-components";
-import { PropertyGrid, PropertyGridCategory } from "../../../ui-components/propertygrid/component/PropertyGrid";
+import { PropertyGrid } from "../../../ui-components/propertygrid/component/PropertyGrid";
 import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
 } from "../../../ui-components/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
-
-// tslint:disable:deprecation
 
 describe("PropertyGrid", () => {
 
@@ -87,6 +85,38 @@ describe("PropertyGrid", () => {
 
       categoryBlock = wrapper.find(PropertyCategoryBlock).at(1);
       expect(categoryBlock.exists(), "Second category block does not exist").to.be.true;
+    });
+
+    it("renders nested property categories", async () => {
+      const parentCategory: PropertyCategory = {
+        name: "ParentCategory",
+        label: "Parent",
+        expand: true,
+      };
+      const childCategory: PropertyCategory = {
+        name: "ChildCategory",
+        label: "Child",
+        expand: true,
+        parentCategory,
+      };
+      parentCategory.childCategories = [childCategory];
+      dataProvider = {
+        onDataChanged: new PropertyDataChangeEvent(),
+        getData: async (): Promise<PropertyData> => ({
+          label: PropertyRecord.fromString(faker.random.word()),
+          description: faker.random.words(),
+          categories: [parentCategory],
+          records: {
+            [childCategory.name]: [TestUtils.createPrimitiveStringProperty("test", "Test", "Test")],
+          },
+        }),
+      };
+      const wrapper = mount(<PropertyGrid dataProvider={dataProvider} />);
+      await TestUtils.flushAsyncOperations();
+      wrapper.update();
+
+      const categoryBlocks = wrapper.find(PropertyCategoryBlock);
+      expect(categoryBlocks.length).to.eq(2);
     });
 
     it("if property record has links property set and onClick is not set, sets onClick property, otherwise not", async () => {
@@ -316,36 +346,63 @@ describe("PropertyGrid", () => {
 
       categoryBlock.find(".header").simulate("click");
 
-      const isExpanded = (wrapper.state("categories") as PropertyGridCategory[])[0].propertyCategory.expand;
+      const isExpanded = (wrapper.state("categories") as any)[0].category.expand;
       expect(isExpanded, "Category did not get collapsed").to.be.false;
     });
 
     it("keeps the collapsed state of PropertyCategoryBlock when data is refreshed", async () => {
+      const rootCategory1: PropertyCategory = {
+        name: "RootCategory1",
+        label: "Root1",
+        expand: true,
+      };
+      const childCategory: PropertyCategory = {
+        name: "ChildCategory",
+        label: "Child",
+        expand: false,
+        parentCategory: rootCategory1,
+      };
+      rootCategory1.childCategories = [childCategory];
+      const rootCategory2: PropertyCategory = {
+        name: "RootCategory2",
+        label: "Root2",
+        expand: false,
+      };
+      dataProvider = {
+        onDataChanged: new PropertyDataChangeEvent(),
+        getData: async (): Promise<PropertyData> => ({
+          label: PropertyRecord.fromString(faker.random.word()),
+          description: faker.random.words(),
+          categories: [rootCategory1, rootCategory2],
+          records: {
+            [childCategory.name]: [TestUtils.createPrimitiveStringProperty("test", "Test", "Test")],
+          },
+        }),
+      };
+
       const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
       await TestUtils.flushAsyncOperations();
       wrapper.update();
 
-      const categoryBlock1 = wrapper.find(PropertyCategoryBlock).at(0);
-      const categoryBlock2 = wrapper.find(PropertyCategoryBlock).at(1);
-      expect(categoryBlock1.exists(), "First category block does not exist").to.be.true;
-      expect(categoryBlock2.exists(), "Second category block does not exist").to.be.true;
+      const rootCategoryBlock1 = wrapper.find(PropertyCategoryBlock).at(0);
+      const childCategoryBlock = wrapper.find(PropertyCategoryBlock).at(1);
+      const rootCategoryBlock2 = wrapper.find(PropertyCategoryBlock).at(2);
 
-      categoryBlock1.find(".header").simulate("click");
-      categoryBlock2.find(".header").simulate("click");
+      rootCategoryBlock1.find(".header").first().simulate("click");
+      childCategoryBlock.find(".header").simulate("click");
+      rootCategoryBlock2.find(".header").simulate("click");
 
-      let isExpanded1 = (wrapper.state("categories") as PropertyGridCategory[])[0].propertyCategory.expand;
-      let isExpanded2 = (wrapper.state("categories") as PropertyGridCategory[])[1].propertyCategory.expand;
-      expect(isExpanded1, "First category did not get collapsed").to.be.false;
-      expect(isExpanded2, "Second category did not get expanded").to.be.true;
+      expect((wrapper.state("categories") as any)[0].category.expand, "First root category did not get collapsed").to.be.false;
+      expect((wrapper.state("categories") as any)[0].children[0].category.expand, "Child category did not get expanded").to.be.true;
+      expect((wrapper.state("categories") as any)[1].category.expand, "Second root category did not get expanded").to.be.true;
 
       // Refresh PropertyGrid data.
       dataProvider.onDataChanged.raiseEvent();
       await TestUtils.flushAsyncOperations();
 
-      isExpanded1 = (wrapper.state("categories") as PropertyGridCategory[])[0].propertyCategory.expand;
-      isExpanded2 = (wrapper.state("categories") as PropertyGridCategory[])[1].propertyCategory.expand;
-      expect(isExpanded1, "First category did not stay collapsed").to.be.false;
-      expect(isExpanded2, "Second category did not stay expanded").to.be.true;
+      expect((wrapper.state("categories") as any)[0].category.expand, "First root category did not stay collapsed").to.be.false;
+      expect((wrapper.state("categories") as any)[0].children[0].category.expand, "Child category did not stay expanded").to.be.true;
+      expect((wrapper.state("categories") as any)[1].category.expand, "Second root category did not stay expanded").to.be.true;
     });
 
     it("rerenders if data in the provider changes", async () => {
@@ -683,7 +740,7 @@ describe("PropertyGrid", () => {
 
       inputNode.simulate("keyDown", { key: "Enter" });
       await TestUtils.flushAsyncOperations();
-      expect(spyMethod.calledOnce).to.be.true;
+      expect(spyMethod).to.be.calledOnce;
     });
 
     it("does not start editor on click if not selected yet", async () => {
