@@ -55,8 +55,11 @@ steps:
     displayName: rush audit
     continueOnError: true
     workingDirectory: ${{ parameters.workingDir }}
-  - script: node common/scripts/install-run-rush.js rebuild -v
-    displayName: rush build
+  - script: node common/scripts/install-run-rush.js rebuild -v --to-version-policy prerelease-monorepo-lockStep -p max
+    displayName: rush build packages
+    workingDirectory: ${{ parameters.workingDir }}
+  - script: node common/scripts/install-run-rush.js build -p max
+    displayName: rush build everything else (test-apps and example code)
     workingDirectory: ${{ parameters.workingDir }}
   # - script: node common/scripts/install-run-rush.js extract-api
   #   displayName: rush extract-api
