@@ -21,35 +21,38 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 /** Type of [[IModelHubEvent]]. Event type is used to define which events you wish to receive from your [[EventSubscription]]. See [[EventSubscriptionHandler.create]] and [[EventSubscriptionHandler.update]].
  * @beta
  */
-export type EventType =
+export enum IModelHubEventType {
   /** Sent when one or more [[Lock]]s are updated. See [[LockEvent]].
    * @alpha Hide Lock API while focused on readonly viewing scenarios
    */
-  "LockEvent" |
+  LockEvent = "LockEvent",
   /** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. See [[AllLocksDeletedEvent]].
    * @alpha Hide Lock API while focused on readonly viewing scenarios
    */
-  "AllLocksDeletedEvent" |
+  AllLocksDeletedEvent = "AllLocksDeletedEvent",
   /** Sent when a [[ChangeSet]] is successfully pushed. See [[ChangeSetPostPushEvent]]. */
-  "ChangeSetPostPushEvent" |
+  ChangeSetPostPushEvent = "ChangeSetPostPushEvent",
   /** Sent when a [[ChangeSet]] push has started. See [[ChangeSetPrePushEvent]]. */
-  "ChangeSetPrePushEvent" |
+  ChangeSetPrePushEvent = "ChangeSetPrePushEvent",
   /** Sent when one or more [Code]($common)s are updated. See [[CodeEvent]].
    * @alpha Hide Code API while focused on readonly viewing scenarios
    */
-  "CodeEvent" |
+  CodeEvent = "CodeEvent",
   /** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. See [[AllCodesDeletedEvent]].
    * @alpha Hide Code API while focused on readonly viewing scenarios
    */
-  "AllCodesDeletedEvent" |
+  AllCodesDeletedEvent = "AllCodesDeletedEvent",
   /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]].
    * @internal
    */
-  "BriefcaseDeletedEvent" |
+  BriefcaseDeletedEvent = "BriefcaseDeletedEvent",
   /** Sent when an iModel is deleted. See [[iModelDeletedEvent]]. */
-  "iModelDeletedEvent" |
+  iModelDeletedEvent = "iModelDeletedEvent",
   /** Sent when a new named [[Version]] is created. See [[VersionEvent]]. */
-  "VersionEvent";
+  VersionEvent = "VersionEvent",
+}
+/** @beta @deprecated Use [[IModelHubEventType]] instead */
+export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent";
 
 /** Base type for all iModelHub events.
  * @beta
@@ -73,7 +76,7 @@ export abstract class IModelHubEvent extends IModelHubBaseEvent {
  */
 export abstract class BriefcaseEvent extends IModelHubEvent {
   /** Id of the [[Briefcase]] involved in this event. */
-  public briefcaseId?: number;
+  public briefcaseId: number;
 
   /** Construct this event from object instance.
    * @param obj Object instance.
@@ -90,11 +93,11 @@ export abstract class BriefcaseEvent extends IModelHubEvent {
  */
 export class LockEvent extends BriefcaseEvent {
   /** [[LockType]] of the updated Locks. */
-  public lockType?: LockType;
+  public lockType: LockType;
   /** [[LockLevel]] of the updated Locks. */
-  public lockLevel?: LockLevel;
+  public lockLevel: LockLevel;
   /** Id's of the updated Locks. */
-  public objectIds?: Id64String[];
+  public objectIds: Id64String[];
   /** Id of the [[ChangeSet]] Locks were released with. */
   public releasedWithChangeSet?: string;
 
@@ -122,9 +125,9 @@ export class AllLocksDeletedEvent extends BriefcaseEvent {
  */
 export class ChangeSetPostPushEvent extends BriefcaseEvent {
   /** Id of the ChangeSet that was pushed. */
-  public changeSetId?: string;
+  public changeSetId: string;
   /** Index of the ChangeSet that was pushed. */
-  public changeSetIndex?: string;
+  public changeSetIndex: string;
 
   /** Construct this event from object instance.
    * @param obj Object instance.
@@ -148,13 +151,13 @@ export class ChangeSetPrePushEvent extends IModelHubEvent {
  */
 export class CodeEvent extends BriefcaseEvent {
   /** Id of the [CodeSpec]($common) for the updated Codes. */
-  public codeSpecId?: Id64String;
+  public codeSpecId: Id64String;
   /** Scope of the updated Codes. */
-  public codeScope?: string;
+  public codeScope: string;
   /** Array of the updated Code values. */
-  public values?: string[];
+  public values: string[];
   /** State Codes were updated to. */
-  public state?: CodeState = CodeState.Reserved;
+  public state: CodeState = CodeState.Reserved;
 
   /** Construct this event from object instance.
    * @param obj Object instance.
@@ -192,11 +195,11 @@ export class IModelDeletedEvent extends IModelHubEvent {
  */
 export class VersionEvent extends IModelHubEvent {
   /** Id of the created Version. */
-  public versionId?: GuidString;
+  public versionId: GuidString;
   /** Name of the created Version. */
-  public versionName?: string;
+  public versionName: string;
   /** Id of the [[ChangeSet]] that this Version was created for.  */
-  public changeSetId?: string;
+  public changeSetId: string;
 
   /** Construct this event from object instance.
    * @param obj Object instance.
@@ -212,25 +215,25 @@ export class VersionEvent extends IModelHubEvent {
 
 type EventConstructor = (new () => IModelHubEvent);
 /** Get constructor from EventType name. */
-function ConstructorFromEventType(type: EventType): EventConstructor {
+function ConstructorFromEventType(type: IModelHubEventType): EventConstructor {
   switch (type) {
-    case "LockEvent":
+    case IModelHubEventType.LockEvent:
       return LockEvent;
-    case "AllLocksDeletedEvent":
+    case IModelHubEventType.AllLocksDeletedEvent:
       return AllLocksDeletedEvent;
-    case "ChangeSetPostPushEvent":
+    case IModelHubEventType.ChangeSetPostPushEvent:
       return ChangeSetPostPushEvent;
-    case "ChangeSetPrePushEvent":
+    case IModelHubEventType.ChangeSetPrePushEvent:
       return ChangeSetPrePushEvent;
-    case "CodeEvent":
+    case IModelHubEventType.CodeEvent:
       return CodeEvent;
-    case "AllCodesDeletedEvent":
+    case IModelHubEventType.AllCodesDeletedEvent:
       return AllCodesDeletedEvent;
-    case "BriefcaseDeletedEvent":
+    case IModelHubEventType.BriefcaseDeletedEvent:
       return BriefcaseDeletedEvent;
-    case "iModelDeletedEvent":
+    case IModelHubEventType.iModelDeletedEvent:
       return IModelDeletedEvent;
-    case "VersionEvent":
+    case IModelHubEventType.VersionEvent:
       return VersionEvent;
   }
 }
@@ -254,7 +257,7 @@ export function ParseEvent(response: Response) {
 export class EventSubscription extends WsgInstance {
   /** Types of the [[IModelHubEvent]]s that this subscription listens to. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.EventTypes")
-  public eventTypes?: EventType[];
+  public eventTypes?: IModelHubEventType[];
 }
 
 /** Shared access signature token for getting [[IModelHubEvent]]s. It's used to authenticate for [[EventHandler.getEvent]]. To receive an instance call [[EventHandler.getSASToken]].
@@ -288,11 +291,22 @@ export class EventSubscriptionHandler {
   /** Create an [[EventSubscription]].
    * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @param events Array of EventTypes to subscribe to.
+   * @param events Array of IModelHubEventTypes to subscribe to.
    * @return Created EventSubscription instance.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]) {
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: IModelHubEventType[]): Promise<EventSubscription>;
+  /**
+   * Create an [[EventSubscription]].
+   * @param requestContext The client request context
+   * @param iModelId Id of the iModel. See [[HubIModel]].
+   * @param events Array of EventTypes to subscribe to.
+   * @return Created EventSubscription instance.
+   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+   * @deprecated Use IModelHubEventType enum for `events` instead.
+   */
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]): Promise<EventSubscription>; // tslint:disable-line:unified-signatures deprecation
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: IModelHubEventType[] | EventType[]) { // tslint:disable-line:deprecation
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Creating event subscription on iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
@@ -300,7 +314,7 @@ export class EventSubscriptionHandler {
     ArgumentCheck.nonEmptyArray("events", events);
 
     let subscription = new EventSubscription();
-    subscription.eventTypes = events;
+    subscription.eventTypes = events as IModelHubEventType[];
 
     subscription = await this._handler.postInstance<EventSubscription>(requestContext, EventSubscription, this.getRelativeUrl(iModelId), subscription);
     requestContext.enter();
@@ -455,7 +469,7 @@ export class EventHandler extends EventBaseHandler {
    * @returns Function that deletes the created listener.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    */
-  public createListener(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: IModelHubEvent) => void): () => void {
+  public createListener<T extends IModelHubEvent>(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: T) => void): () => void {
     requestContext.enter();
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.defined("authenticationCallback", authenticationCallback);
@@ -468,6 +482,6 @@ export class EventHandler extends EventBaseHandler {
       this.getEvent(requestContext, sasToken, baseAddress, id, timeout);
     subscription.getSASToken = async (requestContextArg: AuthorizedClientRequestContext) => this.getSASToken(requestContextArg, iModelId);
     subscription.id = subscriptionId;
-    return EventListener.create(subscription, listener);
+    return EventListener.create(subscription, listener as (e: IModelHubBaseEvent) => void);
   }
 }

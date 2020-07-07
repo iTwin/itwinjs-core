@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "comment": "Deprecated `EventType` type alias in favor of new `IModelHubEventType` enum.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client",
+  "email": "Bill.Goehrig@bentley.com"
+}
