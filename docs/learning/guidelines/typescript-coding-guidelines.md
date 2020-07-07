@@ -308,6 +308,12 @@ If a public method takes no parameters and its name begins with a keyword such a
 
 If the value being returned is expensive to compute, consider using a different name to reflect this. Possible prefixes are "compute" or "calculate", etc.
 
+## Don't export const enums
+
+Exported `const enum`s require a .d.ts file to be present when a file that consumes one is transpiled. This prevents the [--isolatedModules](https://www.typescriptlang.org/docs/handbook/compiler-options.html) option required by [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html) and are therefore forbidden. A TSLint rule enforces this.
+
+> Note: `const enum`s are slightly more efficient, so there may be reasons to use them in non-exported code. The TSLint rule must be disabled to allow them.
+
 ## Don't repeat type names unnecessarily
 
 TypeScript is all about adding types to JavaScript. However, the compiler automatically infers type by context, and it is therefore not necessary to decorate every member or variable declaration with its type, if it is obvious. That only adds clutter and obscures the real code. For example,
@@ -456,9 +462,8 @@ Every .ts file should have this notice as its **first lines**:
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-```
 
-verbatim, with the xx replaced with the current year.
+```
 
 ## Source Code Editor
 

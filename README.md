@@ -1,6 +1,6 @@
 ﻿# iModel.js
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](./LICENSE.md) for license terms and full copyright notice.
 
 [iModel.js](http://imodeljs.org) is an open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins.
 
@@ -10,41 +10,11 @@ If you have questions, or wish to contribute to iModel.js, see our [Contributing
 
 [![Build status](https://dev.azure.com/imodeljs/imodeljs/_apis/build/status/iModel.js)](https://dev.azure.com/imodeljs/imodeljs/_build/latest?definitionId=1)
 
-This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that holds the source code to several iModel.js npm packages. It is built using [Rush](http://rushjs.io/).
+This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that holds the source code to multiple iModel.js npm packages. It is built using [Rush](http://rushjs.io/).
 
-See [rush.json](./rush.json) for the list of packages:
+See [rush.json](./rush.json) for the complete list of packages.
 
-| Directory                        | npm package                              |
-| -------------------------------- | ---------------------------------------- |
-| `clients/context-registry`       | `@bentley/context-registry-client`       |
-| `clients/extension-client`       | `@bentley/extension-client`              |
-| `clients/forms-data-management`  | `@bentley/forms-data-management-client`  |
-| `clients/frontend-authorization` | `@bentley/frontend-authorization-client` |
-| `clients/imodelhub`              | `@bentley/imodelhub-client`              |
-| `clients/itwin`                  | `@bentley/itwin-client`                  |
-| `clients/product-settings`       | `@bentley/product-settings-client`       |
-| `clients/projectshare`           | `@bentley/projectshare-client`           |
-| `clients/rbac`                   | `@bentley/rbac-client`                   |
-| `clients/reality-data`           | `@bentley/reality-data-client`           |
-| `clients/usage-logging`          | `@bentley/usage-logging-client`          |
-| `core/backend`                   | `@bentley/imodeljs-backend`              |
-| `core/bentley`                   | `@bentley/bentleyjs-core`                |
-| `core/common`                    | `@bentley/imodeljs-common`               |
-| `core/frontend`                  | `@bentley/imodeljs-frontend`             |
-| `core/geometry`                  | `@bentley/geometry-core`                 |
-| `core/i18n`                      | `@bentley/imodeljs-i18n`                 |
-| `core/markup`                    | `@bentley/imodeljs-markup`               |
-| `core/quantity`                  | `@bentley/imodeljs-quantity`             |
-| `presentation/backend`           | `@bentley/presentation-backend`          |
-| `presentation/common`            | `@bentley/presentation-common`           |
-| `presentation/components`        | `@bentley/presentation-components`       |
-| `presentation/frontend`          | `@bentley/presentation-frontend`         |
-| `ui/components`                  | `@bentley/ui-components`                 |
-| `ui/core`                        | `@bentley/ui-core`                       |
-| `ui/framework`                   | `@bentley/ui-framework`                  |
-| `ui/ninezone`                    | `@bentley/ui-ninezone`                   |
-
-Each package creates its own **node_modules** directory that contains symbolic links to *common* dependencies managed by Rush.
+Each package has its own **node_modules** directory that contains symbolic links to *common* dependencies managed by Rush.
 
 ## Prerequisites
 
@@ -109,5 +79,3 @@ Use these instructions to update dependencies and devDependencies on external pa
 
 1. Build TypeDoc documentation for all packages: `rush docs`
 2. Build TypeDoc documentation for a single package: `cd core\backend` and then `npm run docs`
-
-The full list of npm scripts can be found in the root `package.json` file.
