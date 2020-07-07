@@ -108,10 +108,11 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       if (this.props.isOpen) {
         const position = this._toggleRelativePosition();
         const point = this._fitPopup(this._getPosition(position));
-        if ((Math.abs(this.state.left - point.x) < 2) &&
-          (Math.abs(this.state.top - point.y) < 2) &&
+        if ((Math.abs(this.state.left - point.x) < 3) &&
+          (Math.abs(this.state.top - point.y) < 3) &&
           this.state.position === position)
           return;
+
         this.setState({
           left: point.x,
           top: point.y,
