@@ -33,7 +33,6 @@ export class ThematicUniforms implements WebGLDisposable {
   private readonly _fragSettings = new Float32Array(3); // gradientMode, distanceCutoff, stepCount
   private _numSensors = 0;
   private _gradientDimension = _getGradientDimension();
-
   private _thematicDisplay?: ThematicDisplay;
 
   public syncKey = 0;
@@ -127,7 +126,7 @@ export class ThematicUniforms implements WebGLDisposable {
     const sensorSettings = this.thematicDisplay.sensorSettings;
     this._fragSettings[1] = (undefined === sensorSettings) ? 0 : this.thematicDisplay.sensorSettings.distanceCutoff;
 
-    this._fragSettings[2] = this.thematicDisplay.gradientSettings.stepCount;
+    this._fragSettings[2] = Math.min(this.thematicDisplay.gradientSettings.stepCount, this._gradientDimension);
 
     // If we want sensors and have no distance cutoff, then create a global shared sensor texture.
     if (target.wantThematicSensors && !(this._distanceCutoff > 0)) {

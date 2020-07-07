@@ -290,7 +290,8 @@ export namespace Gradient {
         settings = ThematicGradientSettings.defaults;
       }
 
-      const dimension = (ThematicGradientMode.Smooth === settings.mode) ? maxDimension : settings.stepCount;
+      const stepCount = Math.min(settings.stepCount, maxDimension);
+      const dimension = (ThematicGradientMode.Smooth === settings.mode) ? maxDimension : stepCount;
       const hasAlpha = this.hasTranslucency;
       const image = new Uint8Array(1 * dimension * (hasAlpha ? 4 : 3));
       let currentIdx = image.length - 1;

@@ -259,7 +259,7 @@ export class ThematicDisplayEditor {
         return props;
       }),
       min: 2,
-      max: 100,
+      max: 65536,
       step: 1,
       name: "Step Count: ",
     });
@@ -538,10 +538,13 @@ export class ThematicDisplayEditor {
       name: "Sensor Value: ",
     });
 
-    const addSensorButton = createButton({
-      parent: thematicControlsDiv,
+    const sensorsControlsDiv = document.createElement("div")!;
+
+    createButton({
+      parent: sensorsControlsDiv,
       id: "thematic_addSensor",
       value: "Add Sensor",
+      inline: true,
       handler: () => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
         if (props.sensorSettings!.sensors !== undefined) {
@@ -552,12 +555,12 @@ export class ThematicDisplayEditor {
         return props;
       }),
     });
-    addSensorButton.div.style.textAlign = "center";
 
-    const deleteSensorButton = createButton({
-      parent: thematicControlsDiv,
+    createButton({
+      parent: sensorsControlsDiv,
       id: "thematic_deleteSensor",
       value: "Delete Sensor",
+      inline: true,
       handler: () => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
         if (props.sensorSettings!.sensors !== undefined && props.sensorSettings!.sensors.length > 1) {
@@ -570,12 +573,12 @@ export class ThematicDisplayEditor {
         return props;
       }),
     });
-    deleteSensorButton.div.style.textAlign = "center";
 
-    const createSensorGridButton = createButton({
-      parent: thematicControlsDiv,
+    createButton({
+      parent: sensorsControlsDiv,
       id: "thematic_createSensorGrid",
       value: "Create Sensor Grid",
+      inline: true,
       handler: () => this.updateThematicDisplay((view): ThematicDisplayProps => {
         const props = this.getThematicSettingsProps(view);
         if (props.sensorSettings!.sensors !== undefined) {
@@ -587,7 +590,9 @@ export class ThematicDisplayEditor {
         return props;
       }),
     });
-    createSensorGridButton.div.style.textAlign = "center";
+
+    sensorsControlsDiv.style.textAlign = "center";
+    thematicControlsDiv.appendChild(sensorsControlsDiv);
 
     const resetButton = createButton({
       parent: thematicControlsDiv,
