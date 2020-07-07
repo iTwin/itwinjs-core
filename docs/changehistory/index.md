@@ -47,7 +47,7 @@ The `@bentley/linear-referencing-common` package is new and contains classes for
 These classes were previously contained within the `@bentley/imodeljs-common` package.
 There were no API changes, but imports and dependencies will need to be adjusted if these classes were previously used.
 
-> See: [LinearReferencingCommon]($linear-referencing-common)
+> See: ($linear-referencing-common)
 
 ### Physical Material
 
