@@ -546,12 +546,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "simple-editor-app",
-      "projectFolder": "test-apps/simple-editor-app",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@bentley/imodelhub-client-tests",
       "projectFolder": "full-stack-tests/imodelhub-client",
       "reviewCategory": "integration-testing",
