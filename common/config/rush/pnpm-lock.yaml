@@ -196,7 +196,6 @@ dependencies:
   dotenv: 8.2.0
   dotenv-expand: 5.1.0
   electron: 8.3.4
-  electron-chromedriver: 2.0.0
   enzyme: 3.11.0
   enzyme-adapter-react-16: 1.12.1_df2dc313d8031f8c2dbd009d86ca7fc7
   enzyme-to-json: 3.5.0_enzyme@3.11.0
@@ -4349,7 +4348,7 @@ packages:
   /browserslist/3.2.8:
     dependencies:
       caniuse-lite: 1.0.30001094
-      electron-to-chromium: 1.3.489
+      electron-to-chromium: 1.3.490
     dev: false
     hasBin: true
     resolution:
@@ -4357,7 +4356,7 @@ packages:
   /browserslist/4.10.0:
     dependencies:
       caniuse-lite: 1.0.30001094
-      electron-to-chromium: 1.3.489
+      electron-to-chromium: 1.3.490
       node-releases: 1.1.58
       pkg-up: 3.1.0
     dev: false
@@ -4367,7 +4366,7 @@ packages:
   /browserslist/4.11.1:
     dependencies:
       caniuse-lite: 1.0.30001094
-      electron-to-chromium: 1.3.489
+      electron-to-chromium: 1.3.490
       node-releases: 1.1.58
       pkg-up: 2.0.0
     dev: false
@@ -4377,7 +4376,7 @@ packages:
   /browserslist/4.13.0:
     dependencies:
       caniuse-lite: 1.0.30001094
-      electron-to-chromium: 1.3.489
+      electron-to-chromium: 1.3.490
       escalade: 3.0.1
       node-releases: 1.1.58
     dev: false
@@ -6349,36 +6348,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
-  /electron-chromedriver/2.0.0:
-    dependencies:
-      electron-download: 4.1.1
-      extract-zip: 1.7.0
-    dev: false
-    hasBin: true
-    requiresBuild: true
-    resolution:
-      integrity: sha512-kERk/Wzhc9RzW9jUKXA5kJc4m8BlL6c9p5QH+CrIlst0saeqZL1Up7vzD4ZOnuBDpAVBBYJ4jhkAKIssf8ZlXg==
-  /electron-download/4.1.1:
-    dependencies:
-      debug: 3.2.6
-      env-paths: 1.0.0
-      fs-extra: 4.0.3
-      minimist: 1.2.5
-      nugget: 2.0.1
-      path-exists: 3.0.0
-      rc: 1.2.8
-      semver: 5.7.1
-      sumchecker: 2.0.2
-    dev: false
-    engines:
-      node: '>= 4.0'
-    hasBin: true
-    resolution:
-      integrity: sha512-FjEWG9Jb/ppK/2zToP+U5dds114fM1ZOJqMAR4aXXL5CvyPE9fiqBK/9YcwC9poIFQTEJk/EM/zyRwziziRZrg==
-  /electron-to-chromium/1.3.489:
+  /electron-to-chromium/1.3.490:
     dev: false
     resolution:
-      integrity: sha512-1FfqjT+IXbs/H9bGJwRIyQQqOXIo7mOVUnv8s7nb2ff01fD0Z8dn1YjKovLDCFe4900Dal2uutR0YzXN5ldqEQ==
+      integrity: sha512-jKJF1mKXrQkT0ZiuJ/oV63Q02hAeWz0GGt/z6ryc518uCHtMyS9+wYAysZtBQ8rsjqFPAYXV4TIz5GQ8xyubPA==
   /electron/8.3.4:
     dependencies:
       '@electron/get': 1.12.2
@@ -6459,12 +6432,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-MyoZ0jgnLvB2X3Lg5HqpFmn1kybDiIfEQmKzTb5apr51Rb+T3KdmMiqa70T+bhGnyv7bQ6WMj2QMHpGMmlrUYQ==
-  /env-paths/1.0.0:
-    dev: false
-    engines:
-      node: '>=4'
-    resolution:
-      integrity: sha1-QWgTO0K7BcOKNbGuQ5fIKYqzaeA=
   /env-paths/2.2.0:
     dev: false
     engines:
@@ -11700,19 +11667,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-WeBOdju8SnzPN5vTUJYxYUxLeXpCaVP5i5e0LF8fg7WORF2Wd7wFX/pk0tYZk7s8T+J7VLy0Da6J1+wCT0AtHg==
-  /nugget/2.0.1:
-    dependencies:
-      debug: 2.6.9
-      minimist: 1.2.5
-      pretty-bytes: 1.0.4
-      progress-stream: 1.2.0
-      request: 2.88.2
-      single-line-log: 1.1.2
-      throttleit: 0.0.2
-    dev: false
-    hasBin: true
-    resolution:
-      integrity: sha1-IBCVpIfhrTYIGzQy+jytpPjQcbA=
   /null-loader/0.1.1:
     dev: false
     resolution:
@@ -11821,10 +11775,6 @@ packages:
       node: '>= 0.4'
     resolution:
       integrity: sha512-5lHCz+0uufF6wZ7CRFWJN3hp8Jqblpgve06U5CMQ3f//6iDjPr2PEo9MWCjEssDsa+UZEL4PkFpr+BMop6aKzQ==
-  /object-keys/0.4.0:
-    dev: false
-    resolution:
-      integrity: sha1-KKaq50KN0sOpLz2V8hM13SBOAzY=
   /object-keys/1.1.1:
     dev: false
     engines:
@@ -13481,16 +13431,6 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-gV7R9uvGWSb4ZbMQwHE7yzMVzks=
-  /pretty-bytes/1.0.4:
-    dependencies:
-      get-stdin: 4.0.1
-      meow: 3.7.0
-    dev: false
-    engines:
-      node: '>=0.10.0'
-    hasBin: true
-    resolution:
-      integrity: sha1-CiLoIQYJrTVUL4yNXSFZr/B1HIQ=
   /pretty-bytes/5.3.0:
     dev: false
     engines:
@@ -13532,13 +13472,6 @@ packages:
       node: '>= 0.6.0'
     resolution:
       integrity: sha1-czIwDoQBYb2j5podHZGn1LwW8YI=
-  /progress-stream/1.2.0:
-    dependencies:
-      speedometer: 0.1.4
-      through2: 0.2.3
-    dev: false
-    resolution:
-      integrity: sha1-LNPP6jO6OonJwSHsM0er6asSX3c=
   /progress/2.0.3:
     dev: false
     engines:
@@ -14269,15 +14202,6 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha1-nLxoaXj+5l0WwA4rGcI3/Pbjg4k=
-  /readable-stream/1.1.14:
-    dependencies:
-      core-util-is: 1.0.2
-      inherits: 2.0.4
-      isarray: 0.0.1
-      string_decoder: 0.10.31
-    dev: false
-    resolution:
-      integrity: sha1-fPTFTvZI44EwhMY23SB54WbAgdk=
   /readable-stream/2.3.7:
     dependencies:
       core-util-is: 1.0.2
@@ -15298,12 +15222,6 @@ packages:
     dev: false
     resolution:
       integrity: sha1-pNprY1/8zMoz9w0Xy5JZLeleVXo=
-  /single-line-log/1.1.2:
-    dependencies:
-      string-width: 1.0.2
-    dev: false
-    resolution:
-      integrity: sha1-wvg/Jzo+GhbtsJlWYdoO1e8DM2Q=
   /sinon-chai/3.5.0_chai@4.2.0+sinon@9.0.2:
     dependencies:
       chai: 4.2.0
@@ -15561,10 +15479,6 @@ packages:
       webpack: ^1 || ^2 || ^3 || ^4
     resolution:
       integrity: sha512-2ljD4Ch/rz2zG3HsLsnPfp23osuPBS0qPuz9sGpkNXTN1Ic4M+W9xB8l8rS8ob2cO4b1L+WTJw/0AJwWYVgcxQ==
-  /speedometer/0.1.4:
-    dev: false
-    resolution:
-      integrity: sha1-mHbb0qFp0xFUAtSObqYynIgWpQ0=
   /split-string/3.1.0:
     dependencies:
       extend-shallow: 3.0.2
@@ -15809,10 +15723,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-XxZn+QpvrBI1FOcg6dIpxUPgWCPuNXvMD72aaRaUQv1eD4e/Qy8i/hFTe0BUmD60p/QA6bh1avmuPTfNjqVWRw==
-  /string_decoder/0.10.31:
-    dev: false
-    resolution:
-      integrity: sha1-YuIDvEF2bGwoyfyEMB2rHFMQ+pQ=
   /string_decoder/1.1.1:
     dependencies:
       safe-buffer: 5.1.2
@@ -15954,14 +15864,6 @@ packages:
     dev: false
     resolution:
       integrity: sha1-9izxdYHplrSPyWVpn1TAauJouNI=
-  /sumchecker/2.0.2:
-    dependencies:
-      debug: 2.6.9
-    dev: false
-    engines:
-      node: '>= 4.0'
-    resolution:
-      integrity: sha1-D0LBDl0F2l1C7qPlbDOZo31sWz4=
   /sumchecker/3.0.1:
     dependencies:
       debug: 4.1.1
@@ -16281,21 +16183,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-iQN8vJLFarGJJua6TLsgDhVnKmo=
-  /throttleit/0.0.2:
-    dev: false
-    resolution:
-      integrity: sha1-z+34jmDADdlpe2H90qg0OptoDq8=
   /through/2.3.8:
     dev: false
     resolution:
       integrity: sha1-DdTJ/6q8NXlgsbckEV1+Doai4fU=
-  /through2/0.2.3:
-    dependencies:
-      readable-stream: 1.1.14
-      xtend: 2.1.2
-    dev: false
-    resolution:
-      integrity: sha1-6zKE2k6jEbbMis42U3SKUqvyWj8=
   /through2/2.0.5:
     dependencies:
       readable-stream: 2.3.7
@@ -17905,14 +17796,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-7jXDIFXh5yJ/orPn4SXjuVrWWoi4Cr8jfV1eHv9CixKSbU+jY4mxfrBwAuDvupPNKpMUY+FeIqsVw/JLT9+B8g==
-  /xtend/2.1.2:
-    dependencies:
-      object-keys: 0.4.0
-    dev: false
-    engines:
-      node: '>=0.4'
-    resolution:
-      integrity: sha1-bv7MKk2tjmlixJAbM3znuoe10os=
   /xtend/4.0.2:
     dev: false
     engines:
@@ -19626,7 +19509,6 @@ packages:
       cpx: 1.5.0
       cross-env: 5.2.1
       electron: 8.3.4
-      electron-chromedriver: 2.0.0
       npm-run-all: 4.1.5
       postcss-flexbugs-fixes: 3.3.1
       postcss-loader: 2.1.6
@@ -19646,7 +19528,7 @@ packages:
       node-sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-L4qLf/k57k6+mDeJ5FkYuM4siiynqXWaEuIyAKmWU7cxURy+om0JsSraG6ljk0WRxxTsHZ+1OxhrAvSEHtHbmQ==
+      integrity: sha512-p+ENaBhWU+O7ZDOon2wFbwebaadpetwhaZBvfbN06Lsfgf++ys/TLcw+093Ejtblnmls66ZbeqdkREu3wSukxg==
       tarball: 'file:projects/presentation-test-app.tgz'
     version: 0.0.0
   'file:projects/presentation-testing.tgz_jsdom@11.12.0':
@@ -20207,7 +20089,6 @@ packages:
       dotenv: 8.2.0
       dotenv-expand: 5.1.0
       electron: 8.3.4
-      electron-chromedriver: 2.0.0
       lorem-ipsum: 2.0.3
       mobx: 5.15.4
       mobx-react: 5.4.4_mobx@5.15.4+react@16.13.1
@@ -20230,7 +20111,7 @@ packages:
       node-sass: '*'
       webpack-cli: '*'
     resolution:
-      integrity: sha512-8HdVNBPZE5JcEHGqZElteh7n4evZD9sj8c7cRuZCGgH62V59yuzkqGrrt0ObZj5BpQ5uDGQWjYxeS0ab08muCw==
+      integrity: sha512-MFWHq4iJU5nqKDG4i3oWsPDpA3fj7Ac/zfh2SsFrfXSBpT3HjlfMGaxCSuHaoW1ICTRDSVqpQqdTvLFribF5jQ==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/usage-logging-client.tgz':
@@ -20507,7 +20388,6 @@ specifiers:
   dotenv: ^8.2.0
   dotenv-expand: ^5.1.0
   electron: ^8.2.1
-  electron-chromedriver: ^2.0.0
   enzyme: ^3.4.0
   enzyme-adapter-react-16: 1.12.1
   enzyme-to-json: ^3.3.4
