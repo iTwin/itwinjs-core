@@ -40,6 +40,8 @@ import { OffsetHelpers } from "./internalContexts/MultiChainCollector";
 import { GeometryQuery } from "./GeometryQuery";
 import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { UnionRegion } from "./UnionRegion";
+import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
+import { ParityRegion } from "./ParityRegion";
 /**
  * Possible return types from
  * @public
@@ -57,7 +59,7 @@ export type ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined;
 export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any;
 /**
  * Enumeration of the binary operation types for a booleans among regions
- * @alpha
+ * @public
  */
 export enum RegionBinaryOpType {
   Union = 0,
@@ -124,7 +126,17 @@ export class RegionOps {
    * @internal
    */
   public static addLoopsToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, announceIsolatedLoop: (graph: HalfEdgeGraph, seed: HalfEdge) => void) {
-    if (data instanceof IndexedXYZCollection) {
+    if (data instanceof Loop) {
+      const points = data.getPackedStrokes();
+      if (points)
+        this.addLoopsToGraph(graph, points, announceIsolatedLoop);
+    } else if (data instanceof ParityRegion) {
+      for (const child of data.children) {
+        const points = child.getPackedStrokes();
+        if (points)
+          this.addLoopsToGraph(graph, points, announceIsolatedLoop);
+      }
+    } else if (data instanceof IndexedXYZCollection) {
       const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(graph, data as IndexedXYZCollection);
       if (loopSeed !== undefined)
         announceIsolatedLoop(graph, loopSeed);
@@ -199,7 +211,7 @@ export class RegionOps {
   }
 
   /**
-   * return a polyface containing the area intersection of two XY regions.
+   * return a polyface containing the area union of two XY regions.
    * * Within each region, in and out is determined by parity rules.
    *   * Any face that is an odd number of crossings from the far outside is IN
    *   * Any face that is an even number of crossings from the far outside is OUT
@@ -241,7 +253,7 @@ export class RegionOps {
     const result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
-    context.createGraph();
+    context.annotateAndMergeCurvesInGraph();
     context.runClassificationSweep(operation, (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
       if (face.countEdgesAroundFace() < 3 && Geometry.isSameCoordinate(area, 0)) // NEED BETTER TOLERANCE
         return;
@@ -254,6 +266,57 @@ export class RegionOps {
     return result;
   }
 
+  /**
+   * return a polyface whose facets area a boolean operation between the input regions.
+   * * Each of the two inputs is an array of multiple loops or parity regions.
+   *   * Within each of these input arrays, the various entries (loop or set of loops) are interpreted as a union.
+   * * In each "array of loops and parity regions", each entry inputA[i] or inputB[i] is one of:
+   *    * A simple loop, e.g. array of Point3d.
+   *    * Several simple loops, each of which is an array of Point3d.
+   * @param loopsA first set of loops
+   * @param loopsB second set of loops
+   */
+  public static polygonBooleanXYToPolyface(inputA: MultiLineStringDataVariant[], operation: RegionBinaryOpType,
+    inputB: MultiLineStringDataVariant[], triangulate: boolean = false): Polyface | undefined {
+    const graph = RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
+      inputA, RegionGroupOpType.Union,
+      operation,
+      inputB, RegionGroupOpType.Union);
+    return this.finishGraphToPolyface(graph, triangulate);
+  }
+  /**
+   * return loops of linestrings around areas of a boolean operation between the input regions.
+   * * Each of the two inputs is an array of multiple loops or parity regions.
+   *   * Within each of these input arrays, the various entries (loop or set of loops) are interpreted as a union.
+   * * In each "array of loops and parity regions", each entry inputA[i] or inputB[i] is one of:
+   *    * A simple loop, e.g. array of Point3d.
+   *    * Several simple loops, each of which is an array of Point3d.
+   * @param loopsA first set of loops
+   * @param loopsB second set of loops
+   */
+  public static polygonBooleanXYToLoops(
+    inputA: MultiLineStringDataVariant[],
+    operation: RegionBinaryOpType,
+    inputB: MultiLineStringDataVariant[]): AnyRegion | undefined {
+    const graph = RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
+      inputA, RegionGroupOpType.Union,
+      operation,
+      inputB, RegionGroupOpType.Union);
+    if (!graph)
+      return undefined;
+    const loopEdges = HalfEdgeGraphSearch.collectExtendedBoundaryLoopsInGraph(graph, HalfEdgeMask.EXTERIOR);
+    const allLoops: Loop[] = [];
+    for (const graphLoop of loopEdges) {
+      const points = new GrowableXYZArray();
+      for (const edge of graphLoop)
+        points.pushXYZ(edge.x, edge.y, edge.z);
+      const loop = Loop.create();
+      loop.tryAddChild(LineString3d.createCapture(points));
+      allLoops.push(loop);
+    }
+    return RegionOps.sortOuterAndHoleLoopsXY(allLoops);
+  }
+
   /** Construct a wire (not area!!) that is offset from given polyline or polygon.
    * * This is a simple wire offset, not an area.
    * * The construction algorithm attempts to eliminate some self-intersections within the offsets, but does not guarantee a simple area offset.
@@ -261,7 +324,6 @@ export class RegionOps {
    * @param points a single loop or path
    * @param wrap true to include wraparound
    * @param offsetDistance distance of offset from wire.  Positive is left.
-   * @beta
    */
   public static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined {
     const context = new PolygonWireOffsetContext();
@@ -573,11 +635,21 @@ export class RegionOps {
    * Return the overall range of given curves.
    * @param curves candidate curves
    */
-  public static curveArrayRange(curves: AnyCurve[]): Range3d {
+  public static curveArrayRange(data: any): Range3d {
     const range = Range3d.create();
-    for (const c of curves) {
-      if (c)
-        range.extendRange(c.range());
+    if (data instanceof GeometryQuery)
+      data.extendRange(range);
+    else if (Array.isArray(data)) {
+      for (const c of data) {
+        if (c instanceof GeometryQuery)
+          range.extendRange(c.range());
+        else if (c instanceof Point3d)
+          range.extendPoint(c);
+        else if (c instanceof GrowableXYZArray)
+          range.extendRange(c.getRange());
+        else if (Array.isArray(c))
+          range.extendRange(this.curveArrayRange(c));
+      }
     }
     return range;
   }

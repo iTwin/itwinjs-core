@@ -34,6 +34,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /* tslint:disable:no-console */
+/* tslint:disable:deprecation */
 /**
  * Return the radius of a circle with area matching centroidData.a
  * @param centroidData result of centroid calculation, with "a" property.
@@ -960,6 +961,65 @@ describe("PolygonAreas", () => {
       ck.testTrue(lsB.isAlmostEqual(linestringsABC0[1]), "pointB");
       ck.testTrue(lsC.isAlmostEqual(linestringsABC0[2]), "pointC");
     }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("minMaxPoints", () => {
+    const ck = new Checker();
+    // const allGeometry: GeometryQuery[] = [];
+    const pointA = Sample.createStar(1, 2, 3, 4, 6, 5, true);
+    const minMaxPoints = Point3dArray.minMaxPoints(pointA);
+    if (ck.testDefined(minMaxPoints) && minMaxPoints) {
+      const rangeA = Point3dArray.createRange(pointA);  // DEPRECATED !!!!
+      const range = Range3d.createArray(pointA);
+      ck.testCoordinate(minMaxPoints.minXPoint.x, range.low.x);
+      ck.testCoordinate(minMaxPoints.minYPoint.y, range.low.y);
+      ck.testCoordinate(minMaxPoints.maxXPoint.x, range.high.x);
+      ck.testCoordinate(minMaxPoints.maxYPoint.y, range.high.y);
+      ck.testCoordinate(minMaxPoints.maxYPoint.y, rangeA.high.y);
+    }
+    ck.testUndefined(Point3dArray.minMaxPoints([]));
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("steppedArray", () => {
+    const ck = new Checker();
+    const a = 3.0;
+    const b = 17;
+    const singleton = NumberArray.createArrayWithMaxStepSize(a, a, 10);
+    ck.testExactNumber(1, singleton.length, "singleton");
+    ck.testExactNumber(a, singleton[0]);
+    const forward = NumberArray.createArrayWithMaxStepSize(a, b, 5);
+    const reverse = NumberArray.createArrayWithMaxStepSize(b, a, 5);
+    reverse.reverse();
+    ck.testNumberArray(forward, reverse, "spaced numbers with reversal");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("nestedArray", () => {
+    const ck = new Checker();
+    const data10 = new Float64Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    for (const numPerBlock of [1, 3, 4, 5]) {
+      const arrayA = Point3dArray.unpackNumbersToNestedArrays(data10, numPerBlock);
+      let k = 0;
+      for (const q of arrayA) {
+        ck.testTrue(Array.isArray(q));
+        ck.testTrue(q.length <= numPerBlock);
+        if (k + numPerBlock <= data10.length)
+          ck.testExactNumber(numPerBlock, q.length);
+        for (const x of q)
+          ck.testExactNumber(data10[k++], x);
+      }
+
+    }
+    const numPerRowB = 4;
+    const leafB = 3;
+    const numRowB = 5;
+    const dataB = [];
+    for (let i = 0; i < numPerRowB * leafB * numRowB; i++)
+      dataB.push(i);
+    const arrayAB = Point3dArray.unpackNumbersToNestedArraysIJK(new Float64Array(dataB), numPerRowB, leafB);
+    ck.testExactNumber(numRowB, arrayAB.length, "IJK column length");
     expect(ck.getNumErrors()).equals(0);
   });
 

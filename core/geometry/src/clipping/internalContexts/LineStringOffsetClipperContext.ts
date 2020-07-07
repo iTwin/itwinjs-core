@@ -23,7 +23,10 @@ export class LineStringOffsetClipperContext {
     this._turnDegrees = 60.0;
   }
   /**
-   *
+   * Create a unit vector from point i to point i+1.
+   * If closed, do point indexing with
+   *   * index less than 0 get final segment
+   *   * index at or beyond points.length-1 wraps to first segment
    * @param points
    * @param index0
    * @param closed indicates that first and last points are identical and need wrap logic.
@@ -36,7 +39,7 @@ export class LineStringOffsetClipperContext {
     let k1 = index0 + 1;
     const last = points.length - 1;
     if (closed) {
-      if (index0 === 0) {
+      if (index0 < 0) {
         k0 = last - 1; k1 = last;
       } else if (index0 >= last) {
         k0 = 0; k1 = 1;

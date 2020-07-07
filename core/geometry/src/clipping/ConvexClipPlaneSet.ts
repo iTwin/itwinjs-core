@@ -447,8 +447,8 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
       IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(plane, insidePart, newInside, newOutside, perpendicularRange);
       if (newOutside.length > 0) {
         // the newOutside fragment is definitely outside the ConvexClipPlaneSet
-        if (outsideFragments)
-          outsideFragments.push(newOutside);    // save the definitely outside part as return data.
+        if (outsideFragments)   // save the definitely outside part as return data.
+          ClipUtilities.captureOrDrop(newOutside, 3, outsideFragments, arrayCache);
         newOutside = arrayCache.grabFromCache();
         if (newInside.length === 0) {
           insidePart.length = 0;

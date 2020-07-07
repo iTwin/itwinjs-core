@@ -16,6 +16,12 @@ import { HalfEdgeGraphOps } from "./Merging";
  * @internal
  */
 export class RegularizationContext {
+  // For debugging use ... "almost always" undefined.
+  // If defined, it is called with each inserted node pair.
+  // scale will be either plus or minus one.
+  // when it is negative, the node coordinates (both x and y) have been negated.
+  // The call is made after full insertion into vertex loop.
+  public static announceEdge?: (graph: HalfEdgeGraph, nodeA: HalfEdge, nodeB: HalfEdge, scale: number) => void;
   public constructor(graph: HalfEdgeGraph) {
     this.graph = graph;
     this.upEdges = [];
@@ -255,13 +261,15 @@ export class RegularizationContext {
    * @param nodeA
    * @param nodeB
    */
-  private joinNodes(nodeA: HalfEdge, nodeB: HalfEdge): HalfEdge | undefined {
+  private joinNodes(nodeA: HalfEdge, nodeB: HalfEdge, direction: number): HalfEdge | undefined {
     const nodeC = this.graph.createEdgeXYZXYZ(nodeA.x, nodeA.y, nodeA.z, 0, nodeB.x, nodeB.y, nodeB.z, 0);
     const nodeA1 = this.findVisibleSector(nodeA, nodeB);
     const nodeB1 = this.findVisibleSector(nodeB, nodeA);
     if (nodeA1 !== undefined && nodeB1 !== undefined) {
       HalfEdge.pinch(nodeA1, nodeC);
       HalfEdge.pinch(nodeB1, nodeC.edgeMate);
+      if (RegularizationContext.announceEdge)
+        RegularizationContext.announceEdge(this.graph, nodeA, nodeB, direction);
       return nodeC;
     }
     return undefined;
@@ -287,7 +295,7 @@ export class RegularizationContext {
         const target = this.downwardConnectionFromBottomPeak(bottomPeak);
         if (target !== undefined) {
           // console.log("join", bottomPeak.id, [bottomPeak.x, bottomPeak.y], target.id, [target.x, target.y]);
-          this.joinNodes(bottomPeak, target);
+          this.joinNodes(bottomPeak, target, 1);
         }
       }
     }
@@ -302,7 +310,7 @@ export class RegularizationContext {
           continue;
         const target = this.downwardConnectionFromBottomPeak(bottomPeak);
         if (target !== undefined) {
-          this.joinNodes(bottomPeak, target);
+          this.joinNodes(bottomPeak, target, -1);
         }
       }
       this.negateXY();

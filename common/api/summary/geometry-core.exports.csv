@@ -212,7 +212,7 @@ public;Ray3d
 public;RecurseToCurvesGeometryHandler 
 public;class RecursiveCurveProcessor
 public;class RecursiveCurveProcessorWithStack 
-alpha;RegionBinaryOpType
+public;RegionBinaryOpType
 internal;RegionMomentsXY 
 beta;RegionOps
 public;RotationalSweep 

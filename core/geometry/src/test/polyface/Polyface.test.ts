@@ -38,6 +38,7 @@ import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
+import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
 
 /* tslint:disable:no-console */
 
@@ -684,6 +685,7 @@ describe("Polyface.Faces", () => {
   });
 
   it("Add grid w/ params, normals", () => {
+    const allGeometry: GeometryQuery[] = [];
     const ck = new Checker();
     const facetWidth = 5;
     const facetHeight = 6;
@@ -695,7 +697,7 @@ describe("Polyface.Faces", () => {
     const x1 = facetWidth;
     const x2 = 2.0 * facetWidth;
     const x3 = 3.0 * facetWidth;
-    const grid: Point3d[][] = [
+    const grid4: Point3d[][] = [
       [Point3d.create(x0, y0, 1), Point3d.create(x1, y0, 2), Point3d.create(x1, y1, 3), Point3d.create(x0, y1, 4)],
       [Point3d.create(x1, y0, 5), Point3d.create(x2, y0, 6), Point3d.create(x2, y1, 7), Point3d.create(x1, y1, 8)],
       [Point3d.create(x2, y0, 9), Point3d.create(x3, y0, 10), Point3d.create(x3, y1, 11), Point3d.create(x2, y1, 12)],
@@ -706,58 +708,76 @@ describe("Polyface.Faces", () => {
       [Point3d.create(x1, y2, 29), Point3d.create(x2, y2, 30), Point3d.create(x2, y3, 31), Point3d.create(x1, y3, 32)],
       [Point3d.create(x2, y2, 33), Point3d.create(x3, y2, 34), Point3d.create(x3, y3, 35), Point3d.create(x2, y3, 36)],
     ];
-
-    const options = new StrokeOptions();
-    options.needParams = true;
-    options.needNormals = true;
-    options.shouldTriangulate = false;
-    options.maxEdgeLength = 4;
-
-    const builder = PolyfaceBuilder.create(options);
-    builder.addCoordinateFacets(grid, undefined, undefined, true);
-    const polyface = builder.claimPolyface(false);
-
-    // ck.testExactNumber(polyface.pointCount, polyface.normalCount, "Number of normals match point count");
-    ck.testExactNumber(polyface.pointCount, polyface.paramCount, "Number of params matches point count");
-
-    // Check params
-    for (let idx = 0; idx < polyface.data.paramIndex!.length; idx++) {
-      const currentPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx);
-      const currentParam = polyface.data.param!.getPoint2dAtCheckedPointIndex(idx)!;
-      if (idx % 4 === 0) {
-        ck.testCoordinate(currentParam.x, 0);
-        ck.testCoordinate(currentParam.y, 0);
-      } else if (idx % 4 === 1) {
-        const oldPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx - 1);
-        ck.testCoordinate(currentParam.x, Geometry.hypotenuseXYZ(currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z));
-        ck.testCoordinate(polyface.data.param!.getYAtUncheckedPointIndex(idx), 0);
-      }
-      // else if (idx % 4 === 2)
-      // else
-    }
-    /*  EDL -- this test makes assumptions about normal indices.
-        With recent (Feb 2019) optimizations of normal constructions, the normals cannot be accessed this way.
-      // Check normals
-        for (let idx = 0; idx < polyface.data.normalIndex!.length - 1; idx++) {
-          if (idx % 4 === 0) {
-            const pointA = polyface.data.point.getPoint3dAt(idx);
-            const pointB = polyface.data.point.getPoint3dAt(idx + 1);
-            const pointC = polyface.data.point.getPoint3dAt(idx + 2);
-            const vecAB = pointA.vectorTo(pointB);
-            const vecAC = pointA.vectorTo(pointC);
-            const normalArray = polyface.data.normal!;
-            ck.testCoordinate(normalArray.atVector3dIndex(idx)!.dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
-            ck.testCoordinate(normalArray.atVector3dIndex(idx)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
-            ck.testCoordinate(normalArray.atVector3dIndex(idx + 1)!.dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
-            ck.testCoordinate(normalArray.atVector3dIndex(idx + 1)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
-            ck.testCoordinate(normalArray.atVector3dIndex(idx + 2)!.dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
-            ck.testCoordinate(normalArray.atVector3dIndex(idx + 2)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
-            ck.testCoordinate(normalArray.atVector3dIndex(idx + 3)!.dotProduct(vecAB), 0, "Normal is perpendicular to grid surface");
-            ck.testCoordinate(normalArray.atVector3dIndex(idx + 3)!.dotProduct(vecAC), 0, "Normal is perpendicular to grid surface");
+    const params4: Point2d[][] = [
+      [Point2d.create(x0, y0), Point2d.create(x1, y0), Point2d.create(x1, y1), Point2d.create(x0, y1)],
+      [Point2d.create(x1, y0), Point2d.create(x2, y0), Point2d.create(x2, y1), Point2d.create(x1, y1)],
+      [Point2d.create(x2, y0), Point2d.create(x3, y0), Point2d.create(x3, y1), Point2d.create(x2, y1)],
+      [Point2d.create(x0, y1), Point2d.create(x1, y1), Point2d.create(x1, y2), Point2d.create(x0, y2)],
+      [Point2d.create(x1, y1), Point2d.create(x2, y1), Point2d.create(x2, y2), Point2d.create(x1, y2)],
+      [Point2d.create(x2, y1), Point2d.create(x3, y1), Point2d.create(x3, y2), Point2d.create(x2, y2)],
+      [Point2d.create(x0, y2), Point2d.create(x1, y2), Point2d.create(x1, y3), Point2d.create(x0, y3)],
+      [Point2d.create(x1, y2), Point2d.create(x2, y2), Point2d.create(x2, y3), Point2d.create(x1, y3)],
+      [Point2d.create(x2, y2), Point2d.create(x3, y2), Point2d.create(x3, y3), Point2d.create(x2, y3)],
+    ];
+    let xOut = 0;
+    for (const compress of [true, false]) {
+      for (const numPerFacet of [3, 4]) {
+        let grid: Point3d[][];
+        let params: Point2d[][];
+        if (numPerFacet === 4) {
+          grid = grid4;
+          params = params4;
+        } else {
+          grid = [];
+          params = [];
+          for (const xyz of grid4) {
+            grid.push([xyz[0], xyz[1], xyz[2]]);
+            grid.push([xyz[2], xyz[3], xyz[0]]);
+          }
+          for (const uv of params4) {
+            params.push([uv[0], uv[1], uv[2]]);
+            params.push([uv[2], uv[3], uv[0]]);
           }
         }
-     */
+        for (const useParams of [true, false]) {
+          const options = new StrokeOptions();
+          options.needParams = true;
+          options.needNormals = true;
+          options.shouldTriangulate = false;
+          options.maxEdgeLength = 4;
+
+          const builder = PolyfaceBuilder.create(options);
+          builder.addCoordinateFacets(grid, useParams ? params : undefined, undefined, true);
+          const polyface = builder.claimPolyface(compress);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, xOut, 0);
+          // ck.testExactNumber(polyface.pointCount, polyface.normalCount, "Number of normals match point count");
+          if (!compress)
+            ck.testExactNumber(polyface.pointCount, polyface.paramCount, "Number of params matches point count");
+          if (useParams) {
+
+          } else {
+            if (numPerFacet === 4 && !compress) {
+              // Check params
+              for (let idx = 0; idx < polyface.data.paramIndex!.length; idx++) {
+                const currentPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx);
+                const currentParam = polyface.data.param!.getPoint2dAtCheckedPointIndex(idx)!;
+                if (idx % 4 === 0) {
+                  ck.testCoordinate(currentParam.x, 0);
+                  ck.testCoordinate(currentParam.y, 0);
+                } else if (idx % 4 === 1) {
+                  const oldPoint = polyface.data.point.getPoint3dAtUncheckedPointIndex(idx - 1);
+                  ck.testCoordinate(currentParam.x, Geometry.hypotenuseXYZ(currentPoint.x - oldPoint.x, currentPoint.y - oldPoint.y, currentPoint.z - oldPoint.z));
+                  ck.testCoordinate(polyface.data.param!.getYAtUncheckedPointIndex(idx), 0);
+                }
+              }
+            }
+          }
+          xOut += 40;
+        }
+      }
+    }
     expect(ck.getNumErrors()).equals(0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddCoordinateFacets");
   });
   // cspell:word dgnjs
   it.skip("Solid primitive param verification with native", () => {
@@ -1286,7 +1306,175 @@ it("IndexValidation", () => {
 
   expect(ck.getNumErrors()).equals(0);
 });
+
+it("VisitorQueryFailures", () => {
+  const ck = new Checker();
+  const options = new StrokeOptions();
+  options.needParams = false;
+  options.needNormals = true;
+  const builder = PolyfaceBuilder.create(options);
+  builder.toggleReversedFacetFlag();
+  const cone = Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 5), 1.0, 0.5, true)!;
+  builder.addCone(cone);
+  const polyface = builder.claimPolyface(true);
+  const visitor = polyface.createVisitor(0) as IndexedPolyfaceVisitor;
+  if (ck.testTrue(visitor.moveToNextFacet())) {
+    // exercise failure cases in parameter queries.
+    // edge index is tested first . .
+    ck.testUndefined(visitor.tryGetDistanceParameter(100));
+    ck.testUndefined(visitor.tryGetNormalizedParameter(100));
+    // then array presence ...
+    ck.testUndefined(visitor.tryGetDistanceParameter(0));
+    ck.testUndefined(visitor.tryGetNormalizedParameter(0));
+  }
+  // for coverage, this hits both (a) undefined result and (b) bad facetIndex.
+  ck.testUndefined(PolyfaceQuery.computeFacetUnitNormal(visitor, -1), "visitor.getNormal (-1) should return undefined");
+  expect(ck.getNumErrors()).equals(0);
+
+  const rangeLengths = PolyfaceQuery.collectRangeLengthData(polyface);
+  ck.testTrue(rangeLengths.xSums.count > 0, "rangeLengths sums exist");
+});
+
+/**
+ * Construct a SynchroMesh for an xy integer point grid with bilinear z
+ * Convert to polyfaces with and without normals and params.
+ * Save all 4 (in shifted positions)
+ */
+it("Synchro", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const synchroMesh: SynchroMesh = {
+    vertex_array: [],
+    index_array: [],
+  };
+  const numVertexX = 4;
+  const numVertexY = 3;
+  // build a regular point grid ...
+  const myUVArray: Point2d[] = [];
+  const myNormalArray: Vector3d[] = [];
+  const zScale = 0.1;
+  // build up normal and param arrays to reference later
+  for (let iy = 0; iy < numVertexY; iy++)
+    for (let ix = 0; ix < numVertexX; ix++) {
+      synchroMesh.vertex_array.push(Point3d.create(ix, iy, zScale * ix * iy));
+      myUVArray.push(Point2d.create(ix, iy));
+      const normal = Vector3d.createCrossProduct(1, 0, zScale * iy, 0, 1, zScale * ix);
+      normal.normalizeInPlace();
+      myNormalArray.push(normal);
+    }
+  // push indices for 2 triangles in each quad ...
+  for (let iy = 0; iy + 1 < numVertexY; iy++)
+    for (let ix = 0; ix + 1 < numVertexX; ix++) {
+      const i00 = iy * numVertexX + ix;
+      const i10 = i00 + 1;
+      const i01 = i00 + numVertexX;
+      const i11 = i01 + 1;
+      synchroMesh.index_array.push(i00, i10, i01);
+      synchroMesh.index_array.push(i10, i11, i01);
+    }
+  // create and output all 4 combinations of uv and normal content ..
+  const polyface = createPolyfaceFromSynchro(synchroMesh);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, 0);
+
+  synchroMesh.uv_array = myUVArray;
+  synchroMesh.normal_array = undefined;
+  const polyfaceWithParams = createPolyfaceFromSynchro(synchroMesh);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceWithParams, numVertexX, 0);
+
+  synchroMesh.uv_array = undefined;
+  synchroMesh.normal_array = myNormalArray;
+  const polyfaceWithNormals = createPolyfaceFromSynchro(synchroMesh);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceWithNormals, 0, numVertexY);
+
+  synchroMesh.uv_array = myUVArray;
+  synchroMesh.normal_array = myNormalArray;
+  const polyfaceWithParamsAndNormals = createPolyfaceFromSynchro(synchroMesh);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceWithParamsAndNormals, numVertexX, numVertexY);
+
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "Synchro");
+  expect(ck.getNumErrors()).equals(0);
+});
+
+/**
+ * This reads a big (35930 points) Synchro mesh and converts it to polyface using direct push to various arrays.
+ * It's a nice exercise but doesn't add to unit test needs, so it's marked skip.
+ */
+it.skip("BigSynchroMesh", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const synchroMesh = JSON.parse(fs.readFileSync("./src/test/testInputs/polyface/vg/synchroMesh.json", "utf8"));
+  const polyface = createPolyfaceFromSynchro(synchroMesh);
+  if (polyface)
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, 0, 0);
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "BigSynchroMesh");
+  expect(ck.getNumErrors()).equals(0);
+});
+/**
+ * This is the Synchro mesh structure, as deduced by looking at prior code to transfer to polyface.
+ */
+interface SynchroMesh {
+  vertex_array: XYAndZ[];
+  index_array: number[];
+  uv_array?: XAndY[];
+  normal_array?: XYAndZ[];
+}
+
 /*
 public static areIndicesValid(indices: number[] | undefined,
   indexPositionA: number, indexPositionB: number, data: any | undefined, dataLength: number): boolean {
  */
+function createPolyfaceFromSynchro(geom: any): Polyface {
+  // const options: StrokeOptions = StrokeOptions.createForFacets();
+  const hasUV: boolean = geom.uv_array != null && geom.uv_array.length !== 0;
+  const hasNormals: boolean = geom.normal_array != null && geom.normal_array.length !== 0;
+  const polyface = IndexedPolyface.create(hasNormals, hasUV);
+  // const numVertex = geom.vertex_array.length;
+  // Always load point data ...
+  for (const xyz of geom.vertex_array)
+    polyface.data.point.pushXYZ(xyz.x, xyz.y, xyz.z);
+
+  // OPTIONAL uv array
+  if (hasUV) {
+    for (const xy of geom.uv_array)
+      polyface.data.param!.pushXY(xy.x, xy.y);
+  }
+  // OPTIONAL normal array
+  if (hasNormals) {
+    for (const xyz of geom.normal_array)
+      polyface.data.normal!.pushXYZ(xyz.x, xyz.y, xyz.z);
+  }
+
+  // build up the index sets one facet at a time, let terminateFacet () get the facetStart table right . . .
+  // Note that polyface has separate index arrays for params and normals.
+  // (When there are sharp edges in the mesh, this allows smaller param, point, and normal arrays.
+  //    The single-index style of Synchro and other
+  //   browser software saves memory by sharing the index array but wastes it with redundant data arrays.
+  //   The polyface compress function can get this effect)
+  const indexArray = geom.index_array;
+  let i0, i1, i2;
+  for (let k = 0; k + 2 < indexArray.length; k += 3) {
+    i0 = indexArray[k];
+    i1 = indexArray[k + 1];
+    i2 = indexArray[k + 2];
+    polyface.data.pointIndex.push(i0, i1, i2);
+    polyface.data.edgeVisible.push(true, true, true);
+    if (polyface.data.paramIndex)
+      polyface.data.paramIndex.push(i0, i1, i2);
+    if (polyface.data.normalIndex)
+      polyface.data.normalIndex.push(i0, i1, i2);
+    polyface.terminateFacet();
+  }
+  if (polyface.data.paramIndex) {
+    const paramCount = polyface.data.paramCount;
+    // let bp = 0;
+    let lastJ = -1;
+    for (let j = 0; j < polyface.data.paramIndex.length; j++) {
+      if (polyface.data.paramIndex[j] > paramCount) {
+        lastJ = j;
+      }
+    }
+    if (lastJ !== -1)
+      console.log("lastJ error " + lastJ);
+  }
+  return polyface;
+}

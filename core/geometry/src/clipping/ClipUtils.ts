@@ -523,4 +523,12 @@ export class ClipUtilities {
     }
     return LineStringOffsetClipperContext.createClipBetweenOffsets(points, leftOffset, rightOffset, z0, z1);
   }
+  /** if data.length >= minLength threshold, push it to destination; if smaller drop it back to the cache.
+   */
+  public static captureOrDrop(data: GrowableXYZArray, minLength: number, destination: GrowableXYZArray[], cache: GrowableXYZArrayCache) {
+    if (data.length >= minLength)
+      destination.push(data);
+    else
+      cache.dropToCache(data);
+  }
 }

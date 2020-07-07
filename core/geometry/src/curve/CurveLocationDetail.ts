@@ -435,6 +435,23 @@ export class CurveLocationDetailPair {
     result.detailB = detailB;
     return result;
   }
+  /** Create a curve detail pair using references to two CurveLocationDetails.
+   * * optionally install in reversed positions
+   */
+  public static createCaptureOptionalReverse(detailA: CurveLocationDetail, detailB: CurveLocationDetail,
+    reversed: boolean,
+    result?: CurveLocationDetailPair): CurveLocationDetailPair {
+    result = result ? result : new CurveLocationDetailPair();
+    if (reversed) {
+      result.detailA = detailA;
+      result.detailB = detailB;
+
+    } else {
+      result.detailA = detailA;
+      result.detailB = detailB;
+    }
+    return result;
+  }
 
   /** Make a deep copy of this CurveLocationDetailPair */
   public clone(result?: CurveLocationDetailPair): CurveLocationDetailPair {

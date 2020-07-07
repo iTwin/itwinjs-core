@@ -534,15 +534,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
     const newInside = arrayCache.grabFromCache();
     const newOutside = arrayCache.grabFromCache();
     IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(this, xyz, newInside, newOutside, perpendicularRange);
-    captureOrDrop(newInside, 3, insideFragments, arrayCache);
-    captureOrDrop(newOutside, 3, outsideFragments, arrayCache);
+    ClipUtilities.captureOrDrop(newInside, 3, insideFragments, arrayCache);
+    ClipUtilities.captureOrDrop(newOutside, 3, outsideFragments, arrayCache);
   }
-
-}
-/** if data.length >= minLength threshold, push it to destination; if zero length drop it back to this cache. */
-function captureOrDrop(data: GrowableXYZArray, minLength: number, destination: GrowableXYZArray[], cache: GrowableXYZArrayCache) {
-  if (data.length >= minLength)
-    destination.push(data);
-  else
-    cache.dropToCache(data);
 }

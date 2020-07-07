@@ -7,11 +7,9 @@
  * @module Topology
  */
 
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeToNumberFunction } from "./Graph";
 import { SignedDataSummary } from "./SignedDataSummary";
 import { XYParitySearchContext } from "./XYParitySearchContext";
-
-type NodeToNumberFunction = (node: HalfEdge) => number;
 
 /**
  * Interface for an object that executes boolean tests on edges.
@@ -172,7 +170,8 @@ export class HalfEdgeGraphSearch {
    */
   private static correctParityInSingleComponent(_graph: HalfEdgeGraph, mask: HalfEdgeMask, faces: HalfEdge[]) {
     const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(faces);
-    if (exteriorHalfEdge.isMaskSet(mask)) {
+    if (!exteriorHalfEdge) {
+    } else if (exteriorHalfEdge.isMaskSet(mask)) {
       // all should be well .. nothing to do.
     } else {
       // TOGGLE around the face (assuming all are consistent with the seed)
@@ -245,5 +244,67 @@ export class HalfEdgeGraphSearch {
       node = node.faceSuccessor;
     }
     return context.classifyCounts();
+  }
+  /**
+   * Announce nodes that are "extended face boundary" by conditions (usually mask of node and mate) in test functions.
+   * * After each node, the next candidate in reached by looking "around the head vertex loop" for the next boundary.
+   *   * "Around the vertex" from nodeA means
+   *      * First look at nodeA.faceSuccessor;
+   *      * Then look at vertexPredecessor around that vertex loop.
+   * * Each accepted node is passed to announceNode, and marked with the visit mask.
+   * * The counter of the announceEdge function is zero for the first edge, then increases with each edge.
+   * @param seed start node.
+   * @param isBoundaryEdge
+   * @param announceEdge
+   */
+  public static collectExtendedBoundaryLoopFromSeed(seed: HalfEdge, visitMask: HalfEdgeMask, isBoundaryEdge: HalfEdgeToBooleanFunction,
+    announceEdge: (edge: HalfEdge, counter: number) => void) {
+    let counter = 0;
+    while (!seed.getMask(visitMask) && isBoundaryEdge(seed)) {
+      announceEdge(seed, counter++);
+      seed.setMask(visitMask);
+      const vertexBase = seed.faceSuccessor;
+      let candidateAroundVertex = vertexBase;
+      for (; ;) {
+        if (candidateAroundVertex.getMask(visitMask))
+          return;
+        if (isBoundaryEdge(candidateAroundVertex)) {
+          seed = candidateAroundVertex;
+          break;
+        }
+        candidateAroundVertex = candidateAroundVertex.vertexPredecessor;
+        if (candidateAroundVertex === vertexBase)
+          break;
+      }
+    }
+  }
+  /**
+   * Collect arrays of nodes "around the boundary" of a graph with extraneous (non-boundary) edges.
+   * * The "boundary" is nodes that do NOT have the exterior mask, but whose mates DO have the exterior mask.
+   * * After each node, the next candidate in reached by looking "around the head vertex loop" for the next boundary.
+   *   * "Around the vertex" from nodeA means
+   *      * First look at nodeA.faceSuccessor;
+   *      * Then look at vertexPredecessor around that vertex loop.
+   * * Each accepted node is passed to announceNode, and marked with the visit mask.
+   * @param seed start node.
+   * @param isBoundaryNode
+   * @param announceNode
+   */
+  public static collectExtendedBoundaryLoopsInGraph(graph: HalfEdgeGraph, exteriorMask: HalfEdgeMask): HalfEdge[][] {
+    const loops: HalfEdge[][] = [];
+    const visitMask = graph.grabMask(true);
+    const isBoundaryEdge = (edge: HalfEdge): boolean => {
+      return edge.getMask(exteriorMask) === 0 && edge.edgeMate.getMask(exteriorMask) !== 0;
+    };
+    const announceEdgeInBoundary = (edge: HalfEdge, counter: number) => {
+      if (counter === 0)
+        loops.push([]);
+      loops[loops.length - 1].push(edge);
+    };
+    for (const seed of graph.allHalfEdges) {
+      this.collectExtendedBoundaryLoopFromSeed(seed, visitMask, isBoundaryEdge, announceEdgeInBoundary);
+    }
+    graph.dropMask(visitMask);
+    return loops;
   }
 }
