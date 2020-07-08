@@ -205,7 +205,7 @@ export class RealityData extends WsgInstance {
     if (!this.id)
       throw new Error("id not set");
 
-    if (undefined === this._blobUrl || this._blobTimeStamp.valueOf() - Date.now() > 3000000) { // 3 million milliseconds or 50 minutes
+    if (undefined === this._blobUrl || (Date.now() - this._blobTimeStamp.getTime()) > 3000000) { // 3 million milliseconds or 50 minutes
       const fileAccess: FileAccessKey[] = await this.client.getFileAccessKey(requestContext, this.projectId as string, this.id, writeAccess);
       requestContext.enter();
       if (fileAccess.length !== 1)
