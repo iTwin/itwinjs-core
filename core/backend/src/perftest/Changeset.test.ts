@@ -5,17 +5,20 @@
 import { assert } from "chai";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, ChangeSetStatus, DbResult, Id64, Id64String, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangeSet, ChangeSetQuery, ChangesType, Checkpoint, CheckpointQuery, HubIModel, IModelHubClient, IModelHubError, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { IModel, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
+import { Code, ColorDef, GeometryStreamProps, IModel, IModelError, IModelVersion, SubCategoryAppearance, SyncMode } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
-import { BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory } from "../imodeljs-backend";
+import { BriefcaseManager, ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb } from "../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
 import { HubUtility } from "../test/integration/HubUtility";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { RevisionUtility } from "../test/RevisionUtility";
+import { PerfTestUtility } from "./PerfTestUtils";
+import { Arc3d, Point3d } from "@bentley/geometry-core";
+import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 
 async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string, client: IModelHubClient) {
   const changeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
@@ -586,5 +589,285 @@ describe("ImodelChangesetPerformance big datasets", () => {
       }
       reporter.exportCSV(csvPath);
     }
+  });
+});
+
+describe("ImodelChangesetPerformance own data", () => {
+  const seedVersionName: string = "Seed data";
+  let requestContext: AuthorizedClientRequestContext;
+  const outDir: string = path.join(KnownTestLocations.outputDir, "ChangesetPerfOwn");
+  const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSPerfOwnData.csv");
+  const reporter = new Reporter();
+  const configData = require(path.join(__dirname, "CSPerfConfig.json"));
+  const dbSize: number = configData.ownDataTest.dbSize;
+  const iModelNameBase: string = `CS_Lg3d_PElSub3_${dbSize}_`;
+  const opSizes: number[] = configData.ownDataTest.opSizes;
+  const baseNames: string[] = configData.ownDataTest.baseNames;
+  const projectId: string = configData.ownDataTest.projectId;
+  const schemaDetail = configData.ownDataTest.schema;
+  const schemaName: string = schemaDetail.name;
+  const baseClassName: string = schemaDetail.baseName;
+  const hier: number = schemaDetail.hierarchy;
+  const className: string = baseClassName + "Sub" + (hier - 1).toString();
+
+  async function setupLocalIModel(projId: string, modelId: string, localPath: string) {
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projId, modelId, SyncMode.FixedVersion, IModelVersion.named(seedVersionName));
+    iModelDb.close();
+    if (IModelJsFs.existsSync(localPath))
+      IModelJsFs.unlinkSync(localPath);
+    const bc = BriefcaseManager.findBriefcaseByKey(iModelDb.briefcaseKey);
+    IModelJsFs.copySync(bc!.pathname, localPath);
+
+    const nativeDb = new IModelHost.platform.DgnDb();
+    const status = nativeDb.openIModel(localPath, OpenMode.ReadWrite);
+    if (DbResult.BE_SQLITE_OK !== status)
+      throw new IModelError(status, "Could not open iModel as Standalone");
+    nativeDb.saveLocalValue("StandaloneEdit", "");
+    nativeDb.saveChanges();
+    nativeDb.closeIModel();
+  }
+  async function lastChangesetToken(modelId: string): Promise<ChangeSetToken> {
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, modelId);
+    const changeSet = changeSets[changeSets.length - 1];
+    const query = new ChangeSetQuery();
+    query.byId(changeSet.wsgId);
+    const downloadDir = path.join(BriefcaseManager.cacheDir, modelId, "csets");
+    await BriefcaseManager.imodelClient.changeSets.download(requestContext, modelId, query, downloadDir);
+    const changeSetPathname = path.join(downloadDir, changeSet.fileName!);
+    const csToken = new ChangeSetToken(changeSet.id!, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType!);
+    return csToken;
+  }
+  before(async () => {
+    Logger.initializeToConsole();
+    // Logger.setLevelDefault(LogLevel.Error);
+    Logger.setLevel("HubUtility", LogLevel.Info);
+    // Logger.setLevel("Performance", LogLevel.Info);
+
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
+      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    if (!IModelJsFs.existsSync(outDir))
+      IModelJsFs.mkdirSync(outDir);
+
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    for (const opSize of opSizes) {
+      for (const baseName of baseNames) {
+        const iModelName = iModelNameBase + baseName + "_" + opSize.toString();
+        const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
+        if (iModels.length === 0) {
+          // create iModel and push changesets 1) with schema 2) with 1M records of PerfElementSub3 3) insert of opSize for actual testing
+          // tslint:disable-next-line:no-console
+          console.log(`iModel ${iModelName} does not exist on iModelHub. Creating with changesets...`);
+          const imodelId = await BriefcaseManager.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+          const iModelDb = await IModelTestUtils.downloadAndOpenBriefcaseDb(requestContext, projectId, imodelId, SyncMode.PullAndPush, IModelVersion.latest());
+
+          const schemaPathname = path.join(outDir, `${schemaName}.01.00.00.ecschema.xml`);
+          const sxml: string = PerfTestUtility.genSchemaXML(schemaName, baseClassName, hier, true, true, []);
+          IModelJsFs.writeFileSync(schemaPathname, sxml);
+
+          iModelDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+          await iModelDb.importSchemas(requestContext, [schemaPathname]).catch();
+          assert.isDefined(iModelDb.getMetaData(`${schemaName}:${baseClassName}`), `${baseClassName} is not present in iModel.`);
+          await iModelDb.concurrencyControl.request(requestContext);
+          iModelDb.saveChanges("schema changes");
+          await iModelDb.pullAndMergeChanges(requestContext);
+          await iModelDb.pushChanges(requestContext, "perf schema import");
+
+          // seed with existing elements
+          iModelDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+          const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModelDb, Code.createEmpty(), true);
+          let spatialCategoryId = SpatialCategory.queryCategoryIdByName(iModelDb, IModel.dictionaryId, "MySpatialCategory");
+          if (undefined === spatialCategoryId)
+            spatialCategoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+          requestContext.enter();
+          for (let m = 0; m < dbSize; ++m) {
+            const elementProps = PerfTestUtility.initElemProps(`${schemaName}:${className}`, iModelDb, newModelId, spatialCategoryId!);
+            const geomElement = iModelDb.elements.createElement(elementProps);
+            const id = iModelDb.elements.insertElement(geomElement);
+            assert.isTrue(Id64.isValidId64(id), "insert failed");
+          }
+          requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+          await iModelDb.concurrencyControl.request(requestContext);
+          iModelDb.saveChanges();
+          await iModelDb.pushChanges(requestContext, `Seed data for ${className}`);
+
+          // create named version here
+          const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, imodelId);
+          const lastCSId = changeSets[changeSets.length - 1].wsgId;
+          const seedData: Version = await BriefcaseManager.imodelClient.versions.create(requestContext, imodelId, lastCSId, seedVersionName);
+          assert.equal(seedData.name, seedVersionName);
+
+          const stat = IModelTestUtils.executeQuery(iModelDb, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+          const elementIdIncrement = Math.floor(dbSize / opSize);
+          assert.equal((stat.maxId - stat.minId + 1), dbSize);
+
+          switch (baseName) {
+            case "I": // create changeset with insert operation
+              for (let m = 0; m < opSize; ++m) {
+                const elementProps = PerfTestUtility.initElemProps(`${schemaName}:${className}`, iModelDb, newModelId, spatialCategoryId!);
+                const geomElement = iModelDb.elements.createElement(elementProps);
+                const id = iModelDb.elements.insertElement(geomElement);
+                assert.isTrue(Id64.isValidId64(id), "insert failed");
+              }
+              requestContext.enter();
+              await iModelDb.concurrencyControl.request(requestContext);
+              iModelDb.saveChanges();
+              await iModelDb.pushChanges(requestContext, `${className} inserts: ${opSize}`);
+              break;
+            case "D": // create changeset with Delete operation
+              for (let i = 0; i < opSize; ++i) {
+                try {
+                  const elId = stat.minId + elementIdIncrement * i;
+                  iModelDb.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
+                } catch (err) {
+                  assert.isTrue(false);
+                }
+              }
+              requestContext.enter();
+              await iModelDb.concurrencyControl.request(requestContext);
+              iModelDb.saveChanges();
+              await iModelDb.pushChanges(requestContext, `${className} deletes: ${opSize}`);
+              break;
+            case "U": // create changeset with Update operation
+              const geomArray: Arc3d[] = [
+                Arc3d.createXY(Point3d.create(0, 0), 2),
+                Arc3d.createXY(Point3d.create(5, 5), 5),
+                Arc3d.createXY(Point3d.create(-5, -5), 10),
+              ];
+
+              const geometryStream: GeometryStreamProps = [];
+              for (const geom of geomArray) {
+                const arcData = GeomJson.Writer.toIModelJson(geom);
+                geometryStream.push(arcData);
+              }
+              for (let i = 0; i < opSize; ++i) {
+                const elId = stat.minId + elementIdIncrement * i;
+                const editElem: Element = iModelDb.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
+                (editElem as any).baseStr = "PerfElement - UpdatedValue";
+                editElem.setUserProperties("geom", geometryStream);
+                try {
+                  iModelDb.elements.updateElement(editElem);
+                } catch (_err) {
+                  assert.fail("Element.update failed");
+                }
+              }
+              requestContext.enter();
+              await iModelDb.concurrencyControl.request(requestContext);
+              iModelDb.saveChanges();
+              await iModelDb.pushChanges(requestContext, `${className} updates: ${opSize}`);
+              break;
+            default:
+              break;
+          }
+
+          iModelDb.close();
+        } else {
+          // tslint:disable-next-line:no-console
+          console.log(`iModel ${iModelName} exists on iModelHub`);
+        }
+      }
+    }
+  });
+  it("InsertChangeset", async () => {
+    for (const opSize of opSizes) {
+      const iModelName = iModelNameBase + "I_" + opSize.toString();
+      const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
+      const iModel = iModels.find((im) => im.name === iModelName);
+      if (iModel) {
+        // tslint:disable-next-line:no-console
+        console.log(`Downloading iModel ${iModelName} from iModelHub.`);
+        const iModelPathname = path.join(BriefcaseManager.cacheDir, iModel.id!, iModelName + "_insert.bim");
+        await setupLocalIModel(projectId, iModel.id!, iModelPathname);
+        const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
+        // download last changeset file
+        const csToken = await lastChangesetToken(iModel.id!);
+        const tempChangeSets = [csToken];
+        const applyOption = ChangeSetApplyOption.Merge;
+        // tslint:disable-next-line:no-console
+        console.log(`Applying Insert changeset to iModel ${iModelName}.`);
+        requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+        const startTime = new Date().getTime();
+        const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(saIModel.nativeDb, JSON.stringify(tempChangeSets), applyOption);
+        const endTime = new Date().getTime();
+        const elapsedTime = (endTime - startTime) / 1000.0;
+        if (status === ChangeSetStatus.Success) {
+          reporter.addEntry("ImodelChangesetPerformance", "ChangesetInsert", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });
+        } else {
+          Logger.logError(HubUtility.logCategory, "Error applying ChangeSet with token", () => ({ ...csToken, status, applyOption }));
+          assert.isTrue(false, "Apply changeset failed");
+        }
+        saIModel.saveChanges();
+        saIModel.close();
+      }
+    }
+    reporter.exportCSV(csvPath);
+  });
+  it("DeleteChangeset", async () => {
+    for (const opSize of opSizes) {
+      const iModelName = iModelNameBase + "D_" + opSize.toString();
+      const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
+      const iModel = iModels.find((im) => im.name === iModelName);
+      if (iModel) {
+        // tslint:disable-next-line:no-console
+        console.log(`Downloading iModel ${iModelName} from iModelHub.`);
+        const iModelPathname = path.join(BriefcaseManager.cacheDir, iModel.id!, iModelName + "_delete.bim");
+        await setupLocalIModel(projectId, iModel.id!, iModelPathname);
+        const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
+        // download last changeset file
+        const csToken = await lastChangesetToken(iModel.id!);
+        const tempChangeSets = [csToken];
+        const applyOption = ChangeSetApplyOption.Merge;
+        // tslint:disable-next-line:no-console
+        console.log(`Applying Delete changeset to iModel ${iModelName}.`);
+        const startTime = new Date().getTime();
+        const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(saIModel.nativeDb, JSON.stringify(tempChangeSets), applyOption);
+        const endTime = new Date().getTime();
+        const elapsedTime = (endTime - startTime) / 1000.0;
+        if (status === ChangeSetStatus.Success) {
+          reporter.addEntry("ImodelChangesetPerformance", "ChangesetDelete", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });
+        } else {
+          Logger.logError(HubUtility.logCategory, "Error applying ChangeSet with token", () => ({ ...csToken, status, applyOption }));
+          assert.isTrue(false, "Apply changeset failed");
+        }
+        saIModel.saveChanges();
+        saIModel.close();
+      }
+    }
+    reporter.exportCSV(csvPath);
+  });
+  it("UpdateChangeset", async () => {
+    for (const opSize of opSizes) {
+      const iModelName = iModelNameBase + "U_" + opSize.toString();
+      const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
+      const iModel = iModels.find((im) => im.name === iModelName);
+      if (iModel) {
+        // tslint:disable-next-line:no-console
+        console.log(`Downloading iModel ${iModelName} from iModelHub.`);
+        const iModelPathname = path.join(BriefcaseManager.cacheDir, iModel.id!, iModelName + "_update.bim");
+        await setupLocalIModel(projectId, iModel.id!, iModelPathname);
+        const saIModel: StandaloneDb = StandaloneDb.openFile(iModelPathname, OpenMode.ReadWrite);
+        // download last changeset file
+        const csToken = await lastChangesetToken(iModel.id!);
+        const tempChangeSets = [csToken];
+        const applyOption = ChangeSetApplyOption.Merge;
+        // tslint:disable-next-line:no-console
+        console.log(`Applying Update changeset to iModel ${iModelName}.`);
+        const startTime = new Date().getTime();
+        const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(saIModel.nativeDb, JSON.stringify(tempChangeSets), applyOption);
+        const endTime = new Date().getTime();
+        const elapsedTime = (endTime - startTime) / 1000.0;
+        if (status === ChangeSetStatus.Success) {
+          reporter.addEntry("ImodelChangesetPerformance", "ChangesetUpdate", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });
+        } else {
+          Logger.logError(HubUtility.logCategory, "Error applying ChangeSet with token", () => ({ ...csToken, status, applyOption }));
+          assert.isTrue(false, "Apply changeset failed");
+        }
+        saIModel.saveChanges();
+        saIModel.close();
+      }
+    }
+    reporter.exportCSV(csvPath);
   });
 });
