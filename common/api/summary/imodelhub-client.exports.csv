@@ -73,6 +73,7 @@ beta;IModelHubEventType
 internal;class IModelHubGlobalEvent 
 beta;IModelQuery 
 beta;IModelsHandler
+beta;IModelType
 beta;InitializationState
 beta;InstanceIdQuery 
 alpha;LargeThumbnail 

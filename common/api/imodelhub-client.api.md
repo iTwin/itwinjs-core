@@ -497,6 +497,7 @@ export class HubIModel extends WsgInstance {
     id?: GuidString;
     // @internal
     iModelTemplate?: string;
+    iModelType?: IModelType;
     initialized?: boolean;
     name?: string;
     userCreated?: string;
@@ -628,6 +629,7 @@ export class IModelCreatedEvent extends IModelHubGlobalEvent {
 export interface IModelCreateOptions {
     description?: string;
     extent?: number[];
+    iModelType?: IModelType;
     path?: string;
     progressCallback?: ProgressCallback;
     template?: CloneIModelTemplate | EmptyIModelTemplate;
@@ -745,6 +747,8 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
 
 // @beta
 export class IModelQuery extends InstanceIdQuery {
+    byiModelTemplate(iModelTemplate: string): this;
+    byiModelType(iModelType: IModelType): this;
     byName(name: string): this;
 }
 
@@ -759,6 +763,12 @@ export class IModelsHandler {
     getInitializationState(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<InitializationState>;
     update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
     }
+
+// @beta
+export enum IModelType {
+    Library = 1,
+    Undefined = 0
+}
 
 // @beta
 export enum InitializationState {

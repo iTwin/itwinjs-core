@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { Guid, GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
 import {
-  HubIModel, IModelClient, IModelHubClient, IModelHubClientError, IModelHubError, IModelQuery, InitializationState, SeedFile,
+  HubIModel, IModelClient, IModelHubClient, IModelHubClientError, IModelHubError, IModelQuery, IModelType, InitializationState, SeedFile,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext, RequestGlobalOptions, RequestTimeoutOptions, WsgError } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
@@ -15,13 +15,33 @@ import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
 
-function mockGetIModelByName(contextId: string, name: string, description = "", imodelId?: GuidString, initialized = true) {
+function mockGetIModelByName(contextId: string, name: string, description = "", imodelId?: GuidString, initialized = true, iModelType = IModelType.Undefined, returnsInstances = true) {
+  mockGetIModelWithFilter(`?$filter=Name+eq+%27${encodeURIComponent(name)}%27`, contextId, name, description, imodelId, initialized, "Empty", iModelType, returnsInstances);
+}
+
+function mockGetIModelByType(contextId: string, name: string, imodelId: GuidString | undefined, iModelType: IModelType, returnsInstances = true) {
+  mockGetIModelWithFilter(`?$filter=Type+eq+${iModelType}`, contextId, name, "", imodelId, true, "Empty", iModelType, returnsInstances);
+}
+
+function mockGetIModelByTemplate(contextId: string, name: string, imodelId: GuidString | undefined, template: string, returnsInstances = true) {
+  mockGetIModelWithFilter(`?$filter=iModelTemplate+eq+%27${encodeURIComponent(template)}%27`, contextId, name, "", imodelId, true, template, IModelType.Undefined, returnsInstances);
+}
+
+function mockGetIModelWithFilter(
+  query: string,
+  contextId: string,
+  name: string,
+  description: string,
+  imodelId: GuidString | undefined,
+  initialized: boolean,
+  template: string,
+  iModelType: IModelType,
+  returnsInstances: boolean) {
   if (!TestConfig.enableMocks)
     return;
 
   imodelId = imodelId || Guid.createValue();
-  const requestPath = utils.createRequestUrl(ScopeType.Context, contextId,
-    "iModel", `?$filter=Name+eq+%27${encodeURIComponent(name)}%27`);
+  const requestPath = utils.createRequestUrl(ScopeType.Context, contextId, "iModel", query);
   const requestResponse = ResponseBuilder.generateGetResponse<HubIModel>(ResponseBuilder.generateObject<HubIModel>(HubIModel,
     new Map<string, any>([
       ["name", name],
@@ -29,7 +49,9 @@ function mockGetIModelByName(contextId: string, name: string, description = "", 
       ["wsgId", imodelId.toString()],
       ["id", imodelId],
       ["initialized", initialized],
-    ])));
+      ["iModelTemplate", template],
+      ["iModelType", iModelType],
+    ])), returnsInstances ? 1 : 0);
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
@@ -46,14 +68,14 @@ function mockGetIModel(contextId: string, imodelName: string, imodelId: GuidStri
     ["wsgId", imodelId.toString()],
     ["id", imodelId],
   ]);
-  if (!!extent)
+  if (extent)
     responseProperties.set("extent", extent);
   const requestResponse = ResponseBuilder.generateGetResponse<HubIModel>(
     ResponseBuilder.generateObject<HubIModel>(HubIModel, responseProperties), imodelsCount);
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-function mockPostiModel(contextId: string, imodelId: GuidString, imodelName: string, description?: string, iModelTemplate?: string, extent?: number[]) {
+function mockPostiModel(contextId: string, imodelId: GuidString, imodelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -62,15 +84,19 @@ function mockPostiModel(contextId: string, imodelId: GuidString, imodelName: str
     ["name", imodelName],
   ]);
 
-  if (!!description) {
+  if (description) {
     postBodyProperties.set("description", description);
   }
 
-  if (!!iModelTemplate) {
+  if (iModelTemplate) {
     postBodyProperties.set("iModelTemplate", iModelTemplate);
   }
 
-  if (!!extent) {
+  if (iModelType) {
+    postBodyProperties.set("iModelType", iModelType);
+  }
+
+  if (extent) {
     postBodyProperties.set("extent", extent);
   }
 
@@ -82,15 +108,21 @@ function mockPostiModel(contextId: string, imodelId: GuidString, imodelName: str
     ["initialized", iModelTemplate === "Empty"],
   ]);
 
-  if (!!description) {
+  if (description) {
     responseProperties.set("description", description);
   }
 
-  if (!!iModelTemplate) {
+  if (iModelTemplate) {
     responseProperties.set("iModelTemplate", iModelTemplate);
   }
 
-  if (!!extent) {
+  if (iModelType) {
+    responseProperties.set("iModelType", iModelType);
+  } else {
+    responseProperties.set("iModelType", IModelType.Undefined);
+  }
+
+  if (extent) {
     responseProperties.set("extent", extent);
   }
 
@@ -166,18 +198,18 @@ function mockCreateiModel(contextId: string, imodelId: GuidString, imodelName: s
     return;
 
   const fileId = Guid.createValue();
-  mockPostiModel(contextId, imodelId, imodelName, description, undefined, extent);
+  mockPostiModel(contextId, imodelId, imodelName, description, undefined, undefined, extent);
   mockPostNewSeedFile(imodelId, fileId, filePath, description);
   utils.mockUploadFile(imodelId, chunks);
   mockPostUpdatedSeedFile(imodelId, fileId, filePath, description);
   mockGetSeedFile(imodelId);
 }
 
-function mockCreateEmptyiModel(contextId: string, imodelId: GuidString, imodelName: string, description: string, extent?: number[]) {
+function mockCreateEmptyiModel(contextId: string, imodelId: GuidString, imodelName: string, description: string, iModelType = IModelType.Undefined, extent?: number[]) {
   if (!TestConfig.enableMocks)
     return;
 
-  mockPostiModel(contextId, imodelId, imodelName, description, "Empty", extent);
+  mockPostiModel(contextId, imodelId, imodelName, description, "Empty", iModelType, extent);
 }
 
 function mockDeleteiModel(contextId: string, imodelId: GuidString) {
@@ -221,24 +253,27 @@ describe("iModelHub iModelsHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     (requestContext as any).activityId = "iModelHub iModelsHandler";
-
     projectId = await utils.getProjectId(requestContext, "iModelJsTest");
-    await utils.createIModel(requestContext, imodelName);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
-    iModelClient = utils.getDefaultClient();
-    await utils.deleteIModelByName(requestContext, projectId, createIModelName);
 
     if (!fs.existsSync(utils.workDir)) {
       fs.mkdirSync(utils.workDir);
     }
   });
 
-  afterEach(() => {
+  beforeEach(async () => {
+    await utils.createIModel(requestContext, imodelName);
+    imodelId = await utils.getIModelId(requestContext, imodelName);
+    iModelClient = utils.getDefaultClient();
+    await utils.deleteIModelByName(requestContext, projectId, createIModelName);
+  });
+
+  afterEach(async () => {
+    await utils.deleteIModelByName(requestContext, projectId, imodelName);
+    await utils.deleteIModelByName(requestContext, projectId, createIModelName);
     ResponseBuilder.clearMocks();
   });
 
   after(async () => {
-    await utils.deleteIModelByName(requestContext, projectId, createIModelName);
     RequestGlobalOptions.timeout = backupTimeout;
   });
 
@@ -536,6 +571,27 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(updatediModel.description).to.be.equal(newDescription);
   });
 
+  it("should set and update iModel type correctly", async () => {
+    const description = "Test iModel created by imodeljs-clients tests";
+    mockCreateEmptyiModel(projectId, Guid.createValue(), createIModelName, description);
+    const initialiModel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, { description });
+    chai.expect(initialiModel.iModelType).to.be.equal(IModelType.Undefined);
+
+    initialiModel.iModelType = IModelType.Library;
+    mockUpdateiModel(projectId, initialiModel);
+    const updatediModel = await iModelClient.iModels.update(requestContext, projectId, initialiModel);
+    chai.expect(updatediModel.iModelType).to.be.equal(IModelType.Library);
+
+    updatediModel.description = "New description for test iModel created by imodeljs-clients tests";
+    updatediModel.iModelType = undefined;
+    mockUpdateiModel(projectId, updatediModel);
+    await iModelClient.iModels.update(requestContext, projectId, updatediModel);
+
+    mockGetIModelByName(projectId, createIModelName, description, updatediModel.id, true, IModelType.Library);
+    const queriediModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(createIModelName)))[0];
+    chai.expect(queriediModel.iModelType).to.be.equal(IModelType.Library);
+  });
+
   it("should get oldest IModel (#iModelBank)", async () => {
     if (TestConfig.enableMocks) {
       mockGetIModel(projectId, imodelName, Guid.createValue(), 1);
@@ -728,7 +784,7 @@ describe("iModelHub iModelsHandler", () => {
 
     const description = "Test iModel created by imodeljs-clients tests";
     const extent = [1.1, 2.2, -3.3, -4.4];
-    mockCreateEmptyiModel(projectId, Guid.createValue(), createIModelName, description, extent);
+    mockCreateEmptyiModel(projectId, Guid.createValue(), createIModelName, description, undefined, extent);
     const progressTracker = new utils.ProgressTracker();
     const imodel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, { description, progressCallback: progressTracker.track(), extent });
 
@@ -741,5 +797,43 @@ describe("iModelHub iModelsHandler", () => {
     const getiModel = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(createIModelName)))[0];
     chai.assert(!!getiModel);
     chai.expect(getiModel.wsgId).to.be.equal(imodel.id!);
+  });
+
+  it("should filter iModels by type", async () => {
+    mockGetIModelByType(projectId, createIModelName, imodelId, IModelType.Undefined);
+    const iModelsWithUndefinedType = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byiModelType(IModelType.Undefined)));
+    chai.expect(iModelsWithUndefinedType.length).to.be.equal(1);
+    chai.expect(iModelsWithUndefinedType[0].id).to.be.equal(imodelId);
+
+    mockGetIModelByType(projectId, createIModelName, undefined, IModelType.Library, false);
+    let iModelsWithLibraryType = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byiModelType(IModelType.Library)));
+    chai.expect(iModelsWithLibraryType.length).to.be.equal(0);
+
+    const description = "Test iModel created by imodeljs-clients tests";
+    mockCreateEmptyiModel(projectId, imodelId, createIModelName, description, IModelType.Library);
+    const iModel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, { description, iModelType: IModelType.Library });
+
+    mockGetIModelByType(projectId, createIModelName, imodelId, IModelType.Library, undefined);
+    iModelsWithLibraryType = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byiModelType(IModelType.Library)));
+    chai.expect(iModelsWithLibraryType.length).to.be.equal(1);
+    chai.expect(iModelsWithLibraryType[0].id).to.be.equal(iModel.id);
+  });
+
+  it("should filter iModels by template", async () => {
+    const emptyTemplate = "Empty";
+    mockGetIModelByTemplate(projectId, createIModelName, imodelId, emptyTemplate);
+    const iModelsWithEmptyTemplate = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byiModelTemplate(emptyTemplate)));
+    chai.expect(iModelsWithEmptyTemplate.length).to.be.equal(1);
+    chai.expect(iModelsWithEmptyTemplate[0].id).to.be.equal(imodelId);
+
+    const customTemplate = `${imodelId}:`;
+    mockPostiModel(projectId, imodelId, createIModelName, "", customTemplate);
+    mockGetSeedFile(imodelId);
+    const clonediModel = await iModelClient.iModels.create(requestContext, projectId, createIModelName, { template: { imodelId } });
+
+    mockGetIModelByTemplate(projectId, createIModelName, imodelId, customTemplate);
+    const iModelsWithCustomTemplate = (await iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byiModelTemplate(customTemplate)));
+    chai.expect(iModelsWithCustomTemplate.length).to.be.equal(1);
+    chai.expect(iModelsWithCustomTemplate[0].id).to.be.equal(clonediModel.id);
   });
 });

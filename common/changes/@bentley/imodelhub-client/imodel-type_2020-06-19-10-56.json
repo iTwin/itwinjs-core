@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "comment": "Added support for iModel type, type filtering and template filtering",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client",
+  "email": "austeja.kalpakovaite@bentley.com"
+}
