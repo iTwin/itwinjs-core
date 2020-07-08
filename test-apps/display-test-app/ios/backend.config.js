@@ -42,67 +42,13 @@ function getConfig(env) {
     target: "node",
     devtool: "source-map",
     module: {
-      rules: [{
-        test: /growl\.js$/,
-        use: 'null-loader'
-      },
-      {
-        test: /xunit\.js$/,
-        use: 'null-loader'
-      },
-      {
-        test: /bunyan/,
-        use: 'null-loader'
-      },
-      {
-        test: /@azure/,
-        use: 'null-loader'
-      },
-      {
-        test: /IModelBankCloudEnv\.js$/,
-        use: 'null-loader'
-      },
-      {
-        test: /DevTools\.js$/,
-        use: 'null-loader'
-      },
-      {
-        test: /OidcDesktopClient\.js$/,
-        use: 'null-loader'
-      },
-      {
-        test: /oidc-signin-tool/,
-        use: 'null-loader'
-      },
-      {
-        test: /AzCopy\.js$/,
-        use: 'null-loader'
-      },
-      ]
-    },
-    externals: {
-      "@bentley/imodeljs-native/package.json": "@bentley/imodeljs-native/package.json",
-      "@bentley/imodeljs-native/loadNativePlatform.js": "@bentley/imodeljs-native/loadNativePlatform.js",
-      "electron": "electron",
-      "fs": "fs",
-      "fs-extra": "fs",
-      "express": "express",
-      "os": "os",
-      "child_process": "child_process"
     },
     stats: {
       warnings: false
     },
-    node: {
-      fs: false,
-      console: false,
-      process: false,
-      Buffer: true,
-    },
     plugins: [
       new plugins.CopyAppAssetsPlugin("./assets/"),
       new plugins.CopyBentleyStaticResourcesPlugin(["assets"]),
-      new webpack.DefinePlugin({ "global.location.search": "''" }),
       new webpack.ProvidePlugin({}),
       new webpack.EnvironmentPlugin({}),
       new webpack.DefinePlugin({ "global.GENTLY": false })

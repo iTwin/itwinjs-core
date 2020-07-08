@@ -24,10 +24,13 @@
     "start:webserver": "cross-env BROWSER=none USE_FULL_SOURCEMAP=true react-scripts start",
     "start:backend": "node --max-http-header-size=16000 lib/backend/WebMain.js",
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",
-    "build:mobile-backend": "tsc 1>&2 && webpack --config ./mobile-backend.config.js --env.outdir=./lib/mobile --env.entry=./lib/backend/MobileMain.js --env.bundlename=main ",
     "test": "",
     "cover": "",
-    "copyConfig": "internal-tools copy-config"
+    "copyConfig": "internal-tools copy-config",
+    "build:ios-backend": "npm run build:backend && webpack --config ./ios/backend.config --env.outdir=./lib/ios --env.entry=./lib/backend/MobileMain.js --env.bundlename=main",
+    "install-ios-lib": "node ./ios/scripts/installIosNativeLib.js",
+    "copy:ios-frontend": "mkdir -p ./lib/ios && rm -rf ./lib/ios/www && cp -R ./build ./lib/ios/www",
+    "build:ios": "npm run install-ios-lib && npm run build:frontend && npm run build:ios-backend && npm run copy:ios-frontend"
   },
   "repository": {},
   "dependencies": {
@@ -77,7 +80,8 @@
     "node-sass": "4.13.1",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
-    "webpack": "4.42.0"
+    "webpack": "4.42.0",
+    "semver": "^5.5.0"
   },
   "browserslist": [
     "electron 6.0.0",
