@@ -3358,6 +3358,8 @@ export abstract class GraphicBuilder {
     addRangeBox(range: Range3d): void;
     abstract addShape(points: Point3d[]): void;
     abstract addShape2d(points: Point2d[], zDepth: number): void;
+    // @alpha
+    applyAspectRatioSkew: boolean;
     abstract finish(): RenderGraphic;
     // @internal (undocumented)
     get iModel(): IModelConnection;

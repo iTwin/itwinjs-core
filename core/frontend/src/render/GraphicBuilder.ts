@@ -103,6 +103,10 @@ export abstract class GraphicBuilder {
    * @see [[IModelConnection.transientIds]].
    */
   public pickId?: string;
+  /** If true, [[ViewState.getAspectRatioSkew]] will be taken into account when computing the stroke tolerance for the produced graphics.
+   * @alpha
+   */
+  public applyAspectRatioSkew = false;
 
   /** The local coordinate system transform applied to this builder's geometry. */
   public get placement(): Transform { return this._placement; }

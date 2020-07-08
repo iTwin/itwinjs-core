@@ -24,6 +24,7 @@ import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } 
 import { AttachViewTool, DetachViewsTool } from "./AttachViewTool";
 import { VersionComparisonTool } from "./VersionComparison";
 import { TimePointComparisonTool } from "./TimePointComparison";
+import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -151,6 +152,7 @@ export class DisplayTestApp {
       SaveImageTool,
       ShutDownTool,
       SVTSelectionTool,
+      ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
       VersionComparisonTool,

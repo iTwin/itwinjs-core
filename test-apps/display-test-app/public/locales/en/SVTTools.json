@@ -91,6 +91,9 @@
     },
     "ToggleTimePointComparison": {
       "keyin": "dta timepoint comparison"
+    },
+    "ToggleAspectRatioSkewDecorator": {
+      "keyin": "dta aspect skew decorator"
     }
   }
 }

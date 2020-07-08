@@ -174,13 +174,23 @@ export class PrimitiveBuilder extends GeometryListBuilder {
   }
 
   public computeTolerance(accum: GeometryAccumulator): number {
+    let pixelSize = 1.0;
+    if (!this.isViewCoordinates) {
+      // Compute the horizontal distance in meters between two adjacent pixels at the center of the geometry.
+      const range = accum.geometries!.computeRange();
+      const pt = range.low.interpolate(0.5, range.high);
+      pixelSize = this.viewport.getPixelSizeAtPoint(pt);
+
+      if (this.applyAspectRatioSkew) {
+        // Aspect ratio skew > 1.0 stretches the view in Y. In that case use the smaller vertical pixel distance for our stroke tolerance.
+        const skew = this.viewport.view.getAspectRatioSkew();
+        if (skew > 1)
+          pixelSize /= skew;
+      }
+    }
+
     const toleranceMult = 0.25;
-    if (this.isViewCoordinates) return toleranceMult;
-    if (!this.viewport) return 20;
-    const range = accum.geometries!.computeRange(); // NB: Already multiplied by transform...
-    // NB: Geometry::CreateFacetOptions() will apply any scale factors from transform...no need to do it here.
-    const pt = range.low.interpolate(0.5, range.high);
-    return this.viewport!.getPixelSizeAtPoint(pt) * toleranceMult;
+    return pixelSize * toleranceMult;
   }
 
   public reset(): void { this.primitives = []; }

@@ -189,3 +189,4 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
   * `priority=`: Display priority of the attachment in [-500,500]. Defaults to zero.
   * `image=`: Display as a raster image, even if view is orthographic. Perspective views always draw as raster images.
   * `background=`: Preserve background color when drawing as a raster image.
+* **dta aspect skew decorator** *apply=0|1* - Toggle a decorator that draws a simple bspline curve based on the project extents, for testing the effect of aspect ratio skew on the curve stroke tolerance. Use in conjunction with `fdt aspect skew` to adjust the skew. If `apply` is 0, then the skew will have no effect on the curve's level of detail; otherwise a higher aspect ratio skew should produce higher-resolution curve graphics.

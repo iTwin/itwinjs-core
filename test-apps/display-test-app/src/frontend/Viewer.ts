@@ -78,9 +78,9 @@ export class ModelClipTool extends Tool {
 
     const createClip = (vector: Vector3d) => {
       const plane = ClipPlane.createNormalAndPoint(vector, view.iModel.projectExtents.center)!;
-      const planes = ConvexClipPlaneSet.createPlanes([ plane ]);
+      const planes = ConvexClipPlaneSet.createPlanes([plane]);
       const primitive = ClipPrimitive.createCapture(planes);
-      return ClipVector.createCapture([ primitive ]);
+      return ClipVector.createCapture([primitive]);
     };
 
     const leftModels: string[] = [];
