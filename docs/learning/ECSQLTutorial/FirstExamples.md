@@ -246,13 +246,13 @@ Any SQL function can be used in ECSQL. This includes functions built into SQLite
 
 > **Try it yourself**
 >
-> *Goal:* For all [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement)s whose code contains the string 'Plant' return a more descriptive form of the code by replacing 'Plant' by 'SmallPlant'.
+> *Goal:* For all [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement)s whose userlabel contains the string 'Fabric', return a more descriptive form of the label by replacing 'Fabric' with 'ExpensiveFabric'.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId, CodeValue, replace(CodeValue,'Plant','SmallPlant') ModifiedCode FROM bis.Element WHERE instr(CodeValue,'Plant') LIMIT 5
+> SELECT ECInstanceId, UserLabel, replace(UserLabel,'Fabric','ExpensiveFabric') ModifiedLabel FROM bis.Element WHERE instr(UserLabel,'Fabric')
 > ```
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, CodeValue, replace(CodeValue,'Plant','SmallPlant') ModifiedCode FROM bis.Element WHERE instr(CodeValue,'Plant') LIMIT 5"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, UserLabel, replace(UserLabel,'Fabric','ExpensiveFabric') ModifiedLabel FROM bis.Element WHERE instr(UserLabel,'Fabric')"></iframe>
 
 The example uses the SQLite functions [replace](https://www.sqlite.org/lang_corefunc.html#replace) to replace the substring 'Plant' in the code and
 [instr](https://www.sqlite.org/lang_corefunc.html#instr) to only do this on rows where the code contains the substring 'Plant' at all.
@@ -261,13 +261,13 @@ Note, that the `instr` function can be replaced by using the standard SQL `LIKE`
 
 > **Try it yourself**
 >
-> *Goal:* For all [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement)s whose code contains the string 'Plant' return a more descriptive form of the code by replacing 'Plant' by 'SmallPlant'.
+> *Goal:* For all [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement)s whose userlabel contains the string 'Fabric', return a more descriptive form of the label by replacing 'Fabric' with 'ExpensiveFabric'.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId, CodeValue, replace(CodeValue,'Plant','SmallPlant') ModifiedCode FROM bis.Element WHERE CodeValue LIKE '%Plant%' LIMIT 5
+> SELECT ECInstanceId, UserLabel, replace(UserLabel,'Fabric','ExpensiveFabric') ModifiedLabel FROM bis.Element WHERE UserLabel LIKE '%Fabric%'
 > ```
-<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, CodeValue, replace(CodeValue,'Plant','SmallPlant') ModifiedCode FROM bis.Element WHERE CodeValue LIKE '%Plant%' LIMIT 5"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT ECInstanceId, UserLabel, replace(UserLabel,'Fabric','ExpensiveFabric') ModifiedLabel FROM bis.Element WHERE UserLabel LIKE '%Fabric%'"></iframe>
 
 ---
 
