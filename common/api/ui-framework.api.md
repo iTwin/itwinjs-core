@@ -1495,7 +1495,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
 export class DefaultViewOverlay extends React.Component<Props, State> {
     constructor(props: any);
     // (undocumented)
-    componentDidMount(): Promise<void>;
+    componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)

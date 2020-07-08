@@ -619,9 +619,10 @@ export class SelectionTool extends PrimitiveTool {
       return undefined;
 
     // load latest values from session
-    IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperties(this.toolId, [
-      { propertyName: SelectionTool._modesName, value: this._selectionModeValue },
-    ]);
+    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [SelectionTool._modesName])?.forEach((value) => {
+      if (value.propertyName === SelectionTool._modesName)
+        this._selectionModeValue = value.value;
+    });
 
     // Make sure a mode of SelectionMode.Remove is valid
     if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {

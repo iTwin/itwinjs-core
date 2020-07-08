@@ -52,6 +52,7 @@ import { CurvePrimitive } from '@bentley/geometry-core';
 import { DesktopAuthorizationClientConfiguration } from '@bentley/imodeljs-common';
 import { DevToolsStatsOptions } from '@bentley/imodeljs-common';
 import { DialogItem } from '@bentley/ui-abstract';
+import { DialogItemValue } from '@bentley/ui-abstract';
 import { DialogPropertyItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { Dictionary } from '@bentley/bentleyjs-core';
@@ -9163,8 +9164,8 @@ export class ToolSettings {
 
 // @internal
 export class ToolSettingsState {
-    initializeToolSettingProperties(toolId: string, tsProps: DialogPropertyItem[]): void;
-    initializeToolSettingProperty(toolId: string, item: DialogPropertyItem): void;
+    getInitialToolSettingValue(toolId: string, propertyName: string): DialogItemValue | undefined;
+    getInitialToolSettingValues(toolId: string, propertyNames: string[]): DialogPropertyItem[] | undefined;
     saveToolSettingProperties(toolId: string, tsProps: DialogPropertyItem[]): void;
     saveToolSettingProperty(toolId: string, item: DialogPropertyItem): void;
 }

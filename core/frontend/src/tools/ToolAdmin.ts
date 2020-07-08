@@ -42,31 +42,38 @@ const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
  * @internal
  */
 export class ToolSettingsState {
-  /** Initialize single tool settings value */
-  public initializeToolSettingProperty(toolId: string, item: DialogPropertyItem): void {
-    const key = `${toolId}:${item.propertyName}`;
+  /** Retrieve saved tool settings DialogItemValue by property name. */
+  public getInitialToolSettingValue(toolId: string, propertyName: string): DialogItemValue | undefined {
+    const key = `${toolId}:${propertyName}`;
     const savedValue = window.sessionStorage.getItem(key);
     if (null !== savedValue) {
-      const readValue = JSON.parse(savedValue) as DialogItemValue;
-      // set the primitive value to the saved value - note: tool settings only support primitive values.
-      const newItem = { value: readValue, propertyName: item.propertyName };
-      item = newItem;
+      return JSON.parse(savedValue) as DialogItemValue;
     }
+    return undefined;
   }
 
-  /** Initialize an array of tool settings values */
-  public initializeToolSettingProperties(toolId: string, tsProps: DialogPropertyItem[]): void {
-    tsProps.forEach((item: DialogPropertyItem) => this.initializeToolSettingProperty(toolId, item));
+  /** Retrieve an array of DialogPropertyItem with the values latest values that were used in the session. */
+  public getInitialToolSettingValues(toolId: string, propertyNames: string[]): DialogPropertyItem[] | undefined {
+    const initializedProperties: DialogPropertyItem[] = [];
+    let propertyValue: DialogItemValue | undefined;
+
+    propertyNames.forEach((propertyName: string) => {
+      propertyValue = this.getInitialToolSettingValue(toolId, propertyName);
+      if (propertyValue)
+        initializedProperties.push({ value: propertyValue, propertyName });
+    });
+
+    return initializedProperties.length ? initializedProperties : undefined;
   }
 
-  /** Save single tool settings value */
+  /** Save single tool settings value to session storage. */
   public saveToolSettingProperty(toolId: string, item: DialogPropertyItem): void {
     const key = `${toolId}:${item.propertyName}`;
     const objectAsString = JSON.stringify(item.value);
     window.sessionStorage.setItem(key, objectAsString);
   }
 
-  /** Save an array of tool settings values */
+  /** Save an array of tool settings values to session storage */
   public saveToolSettingProperties(toolId: string, tsProps: DialogPropertyItem[]): void {
     tsProps.forEach((item: DialogPropertyItem) => this.saveToolSettingProperty(toolId, item));
   }

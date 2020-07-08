@@ -43,7 +43,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
     this.state = { dataProvider: undefined, showOverlay: false };
   }
 
-  private _handleDisplayStyleChange = async () => {
+  private _handleDisplayStyleChange = () => {
     setImmediate(() => {
       // reset to beginning of animation
       if (this.state.dataProvider) {
@@ -55,14 +55,19 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
           this.props.viewport.analysisFraction = 0;
         }
       }
+      // tslint:disable-next-line: no-floating-promises
       this._setTimelineDataProvider(this.props.viewport as ScreenViewport);
     });
   }
-  public async componentDidMount() {
-    this._setTimelineDataProvider(this.props.viewport);
+
+  public componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     this._removeListener = this.props.viewport.onDisplayStyleChanged.addListener(this._handleDisplayStyleChange, this);
     this._componentMounted = true;
+    setImmediate(() => {
+      // tslint:disable-next-line: no-floating-promises
+      this._setTimelineDataProvider(this.props.viewport);
+    });
   }
 
   private setShowOverlayState(): void {
@@ -80,6 +85,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
         : "";
     if (vp.view.id !== viewId) {
       setImmediate(() => {
+        // tslint:disable-next-line: no-floating-promises
         this._setTimelineDataProvider(vp as ScreenViewport);
       });
     } else {
@@ -132,12 +138,13 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
     }
   }
 
-  private _getTimelineDataProvider(viewport: ScreenViewport): TimelineDataProvider | undefined {
+  private async _getTimelineDataProvider(viewport: ScreenViewport): Promise<TimelineDataProvider | undefined> {
     let timelineDataProvider: TimelineDataProvider;
 
     timelineDataProvider = new ScheduleAnimationTimelineDataProvider(viewport.view, viewport);
     if (timelineDataProvider.supportsTimelineAnimation) {
-      if (timelineDataProvider.loadTimelineData()) {
+      const dataLoaded = await timelineDataProvider.loadTimelineData();
+      if (dataLoaded) {
         // double the default duration
         timelineDataProvider.updateSettings({ duration: 40 * 1000 });
         viewport.onViewChanged.removeListener(this._onHandleViewChanged);
@@ -147,7 +154,8 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
     } else {
       timelineDataProvider = new AnalysisAnimationTimelineDataProvider(viewport.view, viewport);
       if (timelineDataProvider.supportsTimelineAnimation) {
-        if (timelineDataProvider.loadTimelineData()) {
+        const dataLoaded = await timelineDataProvider.loadTimelineData();
+        if (dataLoaded) {
           viewport.onViewChanged.removeListener(this._onHandleViewChanged);
           viewport.onViewChanged.addListener(this._onHandleViewChanged);
           return timelineDataProvider as TimelineDataProvider;
@@ -172,30 +180,28 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
     return undefined;
   }
 
-  private _setTimelineDataProvider(viewport: ScreenViewport): boolean {
-    const dataProvider = this._getTimelineDataProvider(viewport);
+  private async _setTimelineDataProvider(viewport: ScreenViewport): Promise<void> {
+    const dataProvider = await this._getTimelineDataProvider(viewport);
     if (dataProvider && dataProvider.supportsTimelineAnimation) {
       this.setState({
         dataProvider,
         showOverlay: this.isInActiveContentControl(),
         solarDataProvider: undefined,
       });
-      return true;
+      return;
     }
     const solarDataProvider = this._getSolarDataProvider(viewport);
     if (solarDataProvider && solarDataProvider.supportsTimelineAnimation) {
       let showOverlay = this.isInActiveContentControl();
       if (showOverlay && !solarDataProvider.shouldShowTimeline) showOverlay = false;
       this.setState({ solarDataProvider, showOverlay, dataProvider: undefined });
-      return true;
+      return;
     }
     this.setState({
       dataProvider: undefined,
       showOverlay: false,
       solarDataProvider: undefined,
     });
-
-    return false;
   }
 
   public render(): React.ReactNode {

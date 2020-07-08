@@ -3741,12 +3741,19 @@ export class SetupCameraTool extends PrimitiveTool {
   }
 
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperties(this.toolId, [
-      { propertyName: SetupCameraTool._useCameraHeightName, value: this._useCameraHeightValue },
-      { propertyName: SetupCameraTool._cameraHeightName, value: this._cameraHeightValue },
-      { propertyName: SetupCameraTool._useTargetHeightName, value: this._useTargetHeightValue },
-      { propertyName: SetupCameraTool._targetHeightName, value: this._targetHeightValue },
-    ]);
+
+    // load latest values from session
+    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId,
+      [SetupCameraTool._useCameraHeightName, SetupCameraTool._cameraHeightName, SetupCameraTool._useTargetHeightName, SetupCameraTool._targetHeightName])?.forEach((value) => {
+        if (value.propertyName === SetupCameraTool._useCameraHeightName)
+          this._useCameraHeightValue = value.value;
+        else if (value.propertyName === SetupCameraTool._cameraHeightName)
+          this._cameraHeightValue = value.value;
+        else if (value.propertyName === SetupCameraTool._useTargetHeightName)
+          this._useTargetHeightValue = value.value;
+        else if (value.propertyName === SetupCameraTool._targetHeightName)
+          this._targetHeightValue = value.value;
+      });
 
     const useCameraHeight = { value: this._useCameraHeightValue, property: SetupCameraTool._getUseCameraHeightDescription() };
     const useTargetHeight = { value: this._useTargetHeightValue, property: SetupCameraTool._getUseTargetHeightDescription() };

@@ -304,7 +304,6 @@ export function addPanelWidgets(
 
   for (const [key, panelZone] of panelZones) {
     const widgetId = getWidgetId(side, key);
-    panelZone.widgetDefs;
     state = addWidgets(state, panelZone.widgetDefs, side, widgetId);
   }
   return state;

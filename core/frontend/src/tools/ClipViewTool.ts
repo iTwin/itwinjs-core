@@ -442,7 +442,8 @@ export class ViewClipByPlaneTool extends ViewClipTool {
   public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
+    const initialValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, ViewClipTool._orientationName);
+    initialValue && (this._orientationValue = initialValue);
     const toolSettings = new Array<DialogItem>();
     const settingsItem: DialogItem = { value: this._orientationValue, property: ViewClipTool._getEnumAsOrientationDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } };
     toolSettings.push(settingsItem);
@@ -515,7 +516,8 @@ export class ViewClipByShapeTool extends ViewClipTool {
   public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
+    const initialValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, ViewClipTool._orientationName);
+    initialValue && (this._orientationValue = initialValue);
     const toolSettings = new Array<DialogItem>();
     toolSettings.push({ value: this._orientationValue, property: ViewClipTool._getEnumAsOrientationDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
     return toolSettings;
