@@ -1778,6 +1778,10 @@ export const expandWidget: <Base extends {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly preferredFloatingWidgetSize: {
+                readonly width: number;
+                readonly height: number;
+            } | undefined;
         };
     };
     readonly toolSettings: {
@@ -4346,6 +4350,10 @@ export const setPanelSize: <Base extends {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly preferredFloatingWidgetSize: {
+                readonly width: number;
+                readonly height: number;
+            } | undefined;
         };
     };
     readonly toolSettings: {
@@ -4441,6 +4449,10 @@ export const setWidgetLabel: <Base extends {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly preferredFloatingWidgetSize: {
+                readonly width: number;
+                readonly height: number;
+            } | undefined;
         };
     };
     readonly toolSettings: {
@@ -4533,6 +4545,10 @@ export const setWidgetState: <Base extends {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly preferredFloatingWidgetSize: {
+                readonly width: number;
+                readonly height: number;
+            } | undefined;
         };
     };
     readonly toolSettings: {
@@ -4689,6 +4705,10 @@ export const showWidget: <Base extends {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly preferredFloatingWidgetSize: {
+                readonly width: number;
+                readonly height: number;
+            } | undefined;
         };
     };
     readonly toolSettings: {

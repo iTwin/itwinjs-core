@@ -2612,6 +2612,7 @@ export class IModelExporter {
     registerHandler(handler: IModelExportHandler): void;
     readonly sourceDb: IModelDb;
     wantGeometry: boolean;
+    wantTemplateModels: boolean;
 }
 
 // @beta

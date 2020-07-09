@@ -248,7 +248,7 @@ export class IModelQuery extends InstanceIdQuery {
    */
   public byName(name: string) {
     ArgumentCheck.defined("name", name);
-    this.addFilter(`Name+eq+'${name}'`);
+    this.addFilter(`Name+eq+'${encodeURIComponent(name)}'`);
     return this;
   }
 

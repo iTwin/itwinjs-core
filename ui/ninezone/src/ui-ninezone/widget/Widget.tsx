@@ -12,8 +12,8 @@ import * as React from "react";
 import { CommonProps, Rectangle, SizeProps } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
-import { getUniqueId, MeasureContext, NineZoneDispatchContext } from "../base/NineZone";
-import { WidgetState } from "../base/NineZoneState";
+import { getUniqueId, MeasureContext, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
+import { TabState, WidgetState } from "../base/NineZoneState";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 
@@ -46,29 +46,34 @@ export const Widget = React.memo<WidgetProps>(function Widget(props) { // tslint
   const dispatch = React.useContext(NineZoneDispatchContext);
   const side = React.useContext(PanelSideContext);
   const id = React.useContext(WidgetIdContext);
-  assert(id !== undefined);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   const measureNz = React.useContext(MeasureContext);
+  const activeTab = useActiveTab();
   const ref = React.useRef<HTMLDivElement>(null);
+  assert(id !== undefined);
   const widgetId = floatingWidgetId === undefined ? id : floatingWidgetId;
   const onDragStart = React.useCallback<NonNullable<UseDragWidgetArgs["onDragStart"]>>((updateId, initialPointerPosition) => {
     assert(ref.current);
     if (floatingWidgetId !== undefined)
       return;
     const nzBounds = measureNz();
-    const bounds = Rectangle.create(ref.current.getBoundingClientRect());
+    let bounds = Rectangle.create(ref.current.getBoundingClientRect());
 
     const size = restrainInitialWidgetSize(bounds.getSize(), nzBounds.getSize());
-    let adjustedBounds = bounds.setSize(size);
+    bounds = bounds.setSize(size);
+
+    if (activeTab && activeTab.preferredFloatingWidgetSize) {
+      bounds = bounds.setSize(activeTab.preferredFloatingWidgetSize);
+    }
 
     // Pointer is outside of tab area. Need to re-adjust widget bounds so that tab is behind pointer
-    if (initialPointerPosition.x > adjustedBounds.right) {
-      const offset = initialPointerPosition.x - adjustedBounds.right + 20;
-      adjustedBounds = adjustedBounds.offsetX(offset);
+    if (initialPointerPosition.x > bounds.right) {
+      const offset = initialPointerPosition.x - bounds.right + 20;
+      bounds = bounds.offsetX(offset);
     }
 
     // Adjust bounds to be relative to 9z origin
-    adjustedBounds = adjustedBounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
+    bounds = bounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
 
     const newFloatingWidgetId = getUniqueId();
     updateId(newFloatingWidgetId);
@@ -76,10 +81,10 @@ export const Widget = React.memo<WidgetProps>(function Widget(props) { // tslint
       type: "PANEL_WIDGET_DRAG_START",
       newFloatingWidgetId,
       id,
-      bounds: adjustedBounds.toProps(),
+      bounds,
       side,
     });
-  }, [dispatch, floatingWidgetId, id, side, measureNz]);
+  }, [activeTab, dispatch, floatingWidgetId, id, side, measureNz]);
   useDragWidget({
     widgetId,
     onDragStart,
@@ -153,4 +158,12 @@ export function restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): S
     width,
     height,
   };
+}
+
+function useActiveTab(): TabState | undefined {
+  const widget = React.useContext(WidgetStateContext);
+  const tabs = React.useContext(TabsStateContext);
+  assert(widget);
+  const tabId = widget.activeTabId;
+  return tabId ? tabs[tabId] : undefined;
 }

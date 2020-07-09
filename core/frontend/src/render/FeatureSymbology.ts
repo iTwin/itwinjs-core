@@ -329,8 +329,8 @@ export namespace FeatureSymbology {
 
     /** Returns a feature's Appearance overrides, or undefined if the feature is not visible.
      * Takes Id64s as pairs of unsigned 32-bit integers, because that is how they are stored by the PackedFeatureTable associated with each batch of graphics.
-     * This API is much uglier but also much more efficient.
-     * @internal
+     * This API is invoked by [[getFeatureAppearance]]. It is much uglier, but much more efficient.
+     * @alpha
      */
     public getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined {
 
@@ -640,5 +640,30 @@ export namespace FeatureSymbology {
 
       return this.isClassVisible(geometryClass);
     }
+  }
+
+  /** Interface adopted by an object that can supply a [[FeatureSymbology.Appearance]] given a [[Feature]] and a [[FeatureSymbology.Overrides]].
+   * This is useful for selectively overriding or agumenting the view's symbology overrides.
+   * @see [[FeatureSymbology.Overrides.getAppearance]].
+   * @alpha
+   */
+  export interface AppearanceProvider {
+    /** Given the view's symbology overrides, supply the desired appearance overrides for the specified [[Feature]], or `undefined` if the feature should not be drawn.
+     * The feature is described by its components for efficiency reasons.
+     * @param overrides The symbology overrides defined by the [[ViewState]].
+     * @param elemLo The lower 32 bits of the feature's element Id.
+     * @param elemHi The upper 32 bits of the feature's element Id.
+     * @param subcatLo The lower 32 bits of the feature's subcategory Id.
+     * @param subcatHi The upper 32 bits of the feature's subcategory Id.
+     * @param geomClass The geometry class of the feature.
+     * @param modelLo The lower 32 bits of the feature's model Id.
+     * @param modelHi The upper 32 bits of the feature's model Id.
+     * @param type The type of batch to which the feature belongs.
+     * @param animationNodeId The Id of the corresponding node in the view's [[RenderScheduleState]], or `0` if none.
+     * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
+     * @see [[FeatureSymbology.Overrides.getAppearance]] to forward the request to the symbology overrides.
+     * @see [Id64.isValidUint32Pair]($bentleyjs-core) to determine if the components of an [Id64String]($bentleyjs-core) represent a valid Id.
+     */
+    getFeatureAppearance(overrides: Overrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined;
   }
 }

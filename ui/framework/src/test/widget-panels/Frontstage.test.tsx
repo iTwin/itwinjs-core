@@ -898,6 +898,7 @@ describe("restoreNineZoneState", () => {
       tabs: {
         t1: {
           id: "t1",
+          preferredFloatingWidgetSize: undefined,
         },
       },
     };
@@ -915,6 +916,7 @@ describe("restoreNineZoneState", () => {
       tabs: {
         t1: {
           id: "t1",
+          preferredFloatingWidgetSize: undefined,
         },
       },
     };
@@ -935,6 +937,7 @@ describe("restoreNineZoneState", () => {
       tabs: {
         t1: {
           id: "t1",
+          preferredFloatingWidgetSize: undefined,
         },
       },
     };
@@ -955,6 +958,7 @@ describe("restoreNineZoneState", () => {
       tabs: {
         t1: {
           id: "t1",
+          preferredFloatingWidgetSize: undefined,
         },
       },
     };

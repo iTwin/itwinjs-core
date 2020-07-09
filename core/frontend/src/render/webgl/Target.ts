@@ -222,17 +222,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this._worldDecorations;
   }
 
-  public get currentViewFlags(): ViewFlags { return this.uniforms.branch.top.viewFlags; }
-  public get currentTransform(): Transform { return this.uniforms.branch.top.transform; }
+  public get currentBranch(): BranchState { return this.uniforms.branch.top; }
+  public get currentViewFlags(): ViewFlags { return this.currentBranch.viewFlags; }
+  public get currentTransform(): Transform { return this.currentBranch.transform; }
   public get currentClipVolume(): ClipVolume | undefined { return this.uniforms.branch.clipVolume; }
   public get currentTransparencyThreshold(): number { return this.currentEdgeSettings.transparencyThreshold; }
-  public get currentEdgeSettings(): EdgeSettings { return this.uniforms.branch.top.edgeSettings; }
+  public get currentEdgeSettings(): EdgeSettings { return this.currentBranch.edgeSettings; }
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.monochrome ? ShaderFlags.Monochrome : ShaderFlags.None; }
-  public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this.uniforms.branch.top.symbologyOverrides; }
-  public get currentPlanarClassifier(): PlanarClassifier | undefined { return this.uniforms.branch.top.planarClassifier; }
+  public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this.currentBranch.symbologyOverrides; }
+  public get currentPlanarClassifier(): PlanarClassifier | undefined { return this.currentBranch.planarClassifier; }
   public get currentlyDrawingClassifier(): PlanarClassifier | undefined { return this._currentlyDrawingClassifier; }
   public get currentTextureDrape(): TextureDrape | undefined {
-    const drape = this.uniforms.branch.top.textureDrape;
+    const drape = this.currentBranch.textureDrape;
     return undefined !== drape && drape.isReady ? drape : undefined;
   }
   public get currentPlanarClassifierOrDrape(): PlanarClassifier | TextureDrape | undefined {
@@ -631,7 +632,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._readPixelsSelector = Pixel.Selector.Feature;
 
       const vf = this.getViewFlagsForReadPixels();
-      const top = this.uniforms.branch.top;
+      const top = this.currentBranch;
       const state = new BranchState({
         viewFlags: vf,
         symbologyOverrides: top.symbologyOverrides,
@@ -788,7 +789,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
     const vf = this.getViewFlagsForReadPixels();
-    const top = this.uniforms.branch.top;
+    const top = this.currentBranch;
     const state = new BranchState({
       viewFlags: vf,
       symbologyOverrides: top.symbologyOverrides,
@@ -830,7 +831,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
     // ###TODO: This was never right, was it? Some branches in the scene ignore the clip volume...
-    // if (undefined !== this._activeClipVolume && this.uniforms.branch.top.showClipVolume && this.clips.isValid)
+    // if (undefined !== this._activeClipVolume && this.currentBranch.showClipVolume && this.clips.isValid)
     //   if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
     //     return undefined;
 
