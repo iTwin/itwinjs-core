@@ -238,7 +238,6 @@ describe("SavedViewLayout", () => {
   it("should create and parse Drawing saved view layout", async () => {
     const emphasizeElements = new EmphasizeElements();
     emphasizeElements.wantEmphasis = true;
-    viewportMock.setup((x) => x.featureOverrideProvider).returns(() => emphasizeElements);
     viewportMock.setup((x) => x.neverDrawn).returns(() => undefined);
     viewportMock.setup((x) => x.alwaysDrawn).returns(() => undefined);
 
@@ -256,13 +255,17 @@ describe("SavedViewLayout", () => {
 
     if (frontstageProvider.frontstageDef) {
       if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
+        const getEmphasizeElements = EmphasizeElements.get;
+        EmphasizeElements.get = () => emphasizeElements;
+
         const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
           (contentProps: ContentProps) => {
             if (contentProps.applicationData)
               delete contentProps.applicationData;
           });
-        const serialized = JSON.stringify(savedViewLayoutProps);
 
+        EmphasizeElements.get = getEmphasizeElements;
+        const serialized = JSON.stringify(savedViewLayoutProps);
         serializedSavedViewLayoutProps = serialized;
       }
     }
@@ -294,7 +297,6 @@ describe("SavedViewLayout", () => {
       // emphasize the elements
       expect(SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps)).to.be.true;
     }
-
   });
 
   it("should create and parse Sheet saved view layout", async () => {

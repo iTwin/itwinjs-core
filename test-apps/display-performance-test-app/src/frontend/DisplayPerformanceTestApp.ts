@@ -742,7 +742,7 @@ class FOProvider implements FeatureOverrideProvider {
   private _defaultOvrs: FeatureSymbology.Appearance | undefined;
   private readonly _vp: Viewport;
 
-  private constructor(vp: Viewport) { this._vp = vp; }
+  public constructor(vp: Viewport) { this._vp = vp; }
 
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _vp: Viewport): void {
     this._elementOvrs.forEach((value, key) => ovrs.overrideElement(key, value));
@@ -775,20 +775,22 @@ class FOProvider implements FeatureOverrideProvider {
   private sync(): void { this._vp.setFeatureOverrideProviderChanged(); }
 
   public static get(vp: Viewport): FOProvider | undefined {
-    return vp.featureOverrideProvider instanceof FOProvider ? vp.featureOverrideProvider : undefined;
+    return vp.findFeatureOverrideProviderOfType<FOProvider>(FOProvider);
   }
 
   public static remove(vp: Viewport): void {
-    if (undefined !== this.get(vp))
-      vp.featureOverrideProvider = undefined;
+    const provider = this.get(vp);
+    if (provider)
+      vp.dropFeatureOverrideProvider(provider);
   }
 
   public static getOrCreate(vp: Viewport): FOProvider {
     let provider = this.get(vp);
     if (undefined === provider) {
       provider = new FOProvider(vp);
-      vp.featureOverrideProvider = provider;
+      vp.addFeatureOverrideProvider(provider);
     }
+
     return provider;
   }
 }

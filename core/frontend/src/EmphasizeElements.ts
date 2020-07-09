@@ -61,7 +61,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   public wantEmphasis = false;
 
   /** Establish active feature overrides to emphasize elements and apply color/transparency overrides.
-   * @see [[Viewport.featureOverrideProvider]]
+   * @see [[Viewport.addFeatureOverrideProvider]]
    */
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, vp: Viewport): void {
     const emphasizedElements = this.getEmphasizedElements(vp);
@@ -408,7 +408,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @param override Whether to use color and alpha, only color, or only alpha from the supplied ColorDef.
    * @param replace true to replace currently overridden elements (if any) or false to add to the existing set.
    * @return true if overrides were changed.
-   * @see [[Viewport.featureOverrideProvider]]
+   * @see [[Viewport.addFeatureOverrideProvider]]
    */
   public overrideElements(ids: Id64Arg, vp: Viewport, color: ColorDef, override: FeatureOverrideType = FeatureOverrideType.ColorOnly, replace: boolean = false): boolean {
     const ovrKey = this.createOverrideKey(color, override);
@@ -457,7 +457,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
    * @param replace true to replace currently overridden elements (if any) or false to add to the existing set.
    * @param clearSelection true to clear current selection after setting appearance override, false to leave selected.
    * @return true if overrides were changed.
-   * @see [[Viewport.featureOverrideProvider]]
+   * @see [[Viewport.addFeatureOverrideProvider]]
    */
   public overrideSelectedElements(vp: Viewport, color: ColorDef, override: FeatureOverrideType = FeatureOverrideType.ColorOnly, replace: boolean = false, clearSelection: boolean = true): boolean {
     const selection = vp.view.iModel.selectionSet;
@@ -548,28 +548,31 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return changed;
   }
 
-  /** Get current [[Viewport.featureOverrideProvider]] if it's an instance of EmphasizeElements. */
+  /** Return the EmphasizeElements provider currently registered with the specified Viewport, if one is already registered. */
   public static get(vp: Viewport): EmphasizeElements | undefined {
-    return (vp.featureOverrideProvider instanceof EmphasizeElements ? vp.featureOverrideProvider : undefined);
+    return vp.findFeatureOverrideProviderOfType<EmphasizeElements>(EmphasizeElements);
   }
 
-  /** Get or replace current [[Viewport.featureOverrideProvider]] with an instance of EmphasizeElements. */
+  /** Return the EmphasizeElements provider currently registered with the specified Viewport, or register a new one and return it. */
   public static getOrCreate(vp: Viewport): EmphasizeElements {
-    let provider = vp.featureOverrideProvider instanceof EmphasizeElements ? vp.featureOverrideProvider : undefined;
-    if (undefined === provider) {
+    let provider = this.get(vp);
+    if (!provider) {
       provider = new EmphasizeElements();
-      vp.featureOverrideProvider = provider;
+      vp.addFeatureOverrideProvider(provider);
     }
+
     return provider;
   }
 
-  /** Clear current [[Viewport.featureOverrideProvider]] if it's an instance of EmphasizeElements. */
+  /** Drop the EmphasizeElements provider currently registered with the specified Viewport, if any is registered. */
   public static clear(vp: Viewport, inactiveOnly: boolean = false) {
-    const provider = vp.featureOverrideProvider instanceof EmphasizeElements ? vp.featureOverrideProvider : undefined;
+    const provider = this.get(vp);
+
     if (undefined === provider || (inactiveOnly && provider.isActive))
       return;
+
     vp.clearNeverDrawn();
     vp.clearAlwaysDrawn();
-    vp.featureOverrideProvider = undefined;
+    vp.dropFeatureOverrideProvider(provider);
   }
 }

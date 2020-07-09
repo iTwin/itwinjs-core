@@ -45,6 +45,7 @@ import { CodeSpec } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { ColorDefProps } from '@bentley/imodeljs-common';
 import { ColorIndex } from '@bentley/imodeljs-common';
+import { Constructor } from '@bentley/bentleyjs-core';
 import { ContentIdProvider } from '@bentley/imodeljs-common';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
@@ -10208,6 +10209,9 @@ export abstract class Viewport implements IDisposable {
     protected constructor(target: RenderTarget);
     // @internal (undocumented)
     protected addDecorations(_decorations: Decorations): void;
+    addFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
+    // @internal (undocumented)
+    addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void;
     // @internal
     addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
     // @beta
@@ -10266,13 +10270,17 @@ export abstract class Viewport implements IDisposable {
     set displayStyle(style: DisplayStyleState);
     // (undocumented)
     dispose(): void;
+    dropFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
     dropSubCategoryOverride(id: Id64String): void;
     // @beta
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     get emphasisSettings(): Hilite.Settings;
     set emphasisSettings(settings: Hilite.Settings);
+    // @deprecated
     get featureOverrideProvider(): FeatureOverrideProvider | undefined;
     set featureOverrideProvider(provider: FeatureOverrideProvider | undefined);
+    findFeatureOverrideProvider(predicate: (provider: FeatureOverrideProvider) => boolean): FeatureOverrideProvider | undefined;
+    findFeatureOverrideProviderOfType<T>(type: Constructor<T>): T | undefined;
     // @internal
     flashDuration: number;
     // @internal
