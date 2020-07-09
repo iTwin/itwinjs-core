@@ -306,13 +306,31 @@ export class ViewManager {
   public forEachViewport(func: (vp: ScreenViewport) => void) { this._viewports.forEach((vp) => func(vp)); }
 
   /** Force each registered [[Viewport]] to regenerate its [[Decorations]] on the next frame. */
-  public invalidateDecorationsAllViews(): void { this.forEachViewport((vp) => vp.invalidateDecorations()); }
+  public invalidateDecorationsAllViews(): void {
+    this.forEachViewport((vp) => vp.invalidateDecorations());
+  }
+
+  /** Force each registered [[Viewport]] to regenerate its [[FeatureSymbology.Overrides]] on the next frame.
+   * @alpha
+   */
+  public invalidateSymbologyOverridesAllViews(): void {
+    this.forEachViewport((vp) => vp.setFeatureOverrideProviderChanged());
+  }
+
   /** @internal */
-  public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.markSelectionSetDirty()); }
+  public onSelectionSetChanged(_iModel: IModelConnection) {
+    this.forEachViewport((vp) => vp.markSelectionSetDirty());
+  }
+
   /** @internal */
-  public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.invalidateScene()); }
+  public invalidateViewportScenes(): void {
+    this.forEachViewport((vp) => vp.invalidateScene());
+  }
+
   /** @internal */
-  public validateViewportScenes(): void { this.forEachViewport((vp) => vp.setValidScene()); }
+  public validateViewportScenes(): void {
+    this.forEachViewport((vp) => vp.setValidScene());
+  }
 
   /** @internal */
   public invalidateScenes(): void {

@@ -142,6 +142,7 @@ alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
 public;FeatureOverrideType
 public;FeatureSymbology
+alpha;AppearanceProvider
 alpha;FeatureTrackingManager
 alpha;FeatureTrackingProps
 alpha;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise

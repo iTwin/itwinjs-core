@@ -2724,6 +2724,10 @@ export namespace FeatureSymbology {
         transparency?: number;
         weight?: number;
     }
+    // @alpha
+    export interface AppearanceProvider {
+        getFeatureAppearance(overrides: Overrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined;
+    }
     export class Overrides {
         constructor(view?: ViewState | Viewport);
         // @internal (undocumented)
@@ -2743,7 +2747,7 @@ export namespace FeatureSymbology {
         protected _dimensions: boolean;
         // @internal
         protected readonly _elementOverrides: Id64.Uint32Map<Appearance>;
-        // @internal
+        // @alpha
         getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined;
         // @internal
         protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): Appearance | undefined;
@@ -3329,6 +3333,8 @@ export interface GraphicBranchFrustum {
 
 // @internal
 export interface GraphicBranchOptions {
+    // (undocumented)
+    appearanceProvider?: FeatureSymbology.AppearanceProvider;
     // (undocumented)
     classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
     // (undocumented)
@@ -7955,6 +7961,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect;
     // (undocumented)
+    get currentBranch(): BranchState;
+    // (undocumented)
     get currentClipVolume(): ClipVolume | undefined;
     // (undocumented)
     get currentEdgeSettings(): EdgeSettings;
@@ -10030,6 +10038,8 @@ export class ViewManager {
     invalidateDecorationsAllViews(): void;
     // @internal (undocumented)
     invalidateScenes(): void;
+    // @alpha
+    invalidateSymbologyOverridesAllViews(): void;
     // @internal (undocumented)
     invalidateViewportScenes(): void;
     // (undocumented)

@@ -89,6 +89,7 @@ export interface GraphicBranchOptions {
   hline?: HiddenLine.Settings;
   iModel?: IModelConnection;
   frustum?: GraphicBranchFrustum;
+  appearanceProvider?: FeatureSymbology.AppearanceProvider;
 }
 
 /** Clip/Transform for a branch that are varied over time.
