@@ -836,4 +836,17 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(iModelsWithCustomTemplate.length).to.be.equal(1);
     chai.expect(iModelsWithCustomTemplate[0].id).to.be.equal(clonediModel.id);
   });
+
+  it("should handle special characters in get by name query", async () => {
+    const name = "Д";
+    const description = "Test iModel created by imodeljs-clients tests";
+    mockCreateEmptyiModel(projectId, Guid.createValue(), name, description);
+    await imodelClient.iModels.create(requestContext, projectId, name, { description });
+
+    mockGetIModelByName(projectId, name);
+    const iModels = await imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(name));
+    chai.expect(iModels.length).to.be.equal(1);
+
+    await utils.deleteIModelByName(requestContext, projectId, name);
+  });
 });
