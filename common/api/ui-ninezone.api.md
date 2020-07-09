@@ -1988,6 +1988,8 @@ export interface TabState {
     readonly id: string;
     // (undocumented)
     readonly label: string;
+    // (undocumented)
+    readonly preferredFloatingWidgetSize: SizeProps | undefined;
 }
 
 // @internal

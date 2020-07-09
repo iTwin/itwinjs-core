@@ -40,7 +40,7 @@ export function useDragTab(args: UseDragTabArgs) {
   }, [tabId]);
   const handleDrag = React.useCallback<DragEventHandler>((_, info) => {
     const dragBy = info.lastPointerPosition.getOffsetTo(info.pointerPosition);
-    onDrag && onDrag(dragBy.toProps());
+    onDrag && onDrag(dragBy);
   }, [onDrag]);
   const handleDragEnd = React.useCallback<DragEventHandler>((_, info, target) => {
     const tabInfo = info as TabDragItemInfo;
@@ -88,7 +88,7 @@ export function useDragWidget(args: UseDragWidgetArgs) {
   }, [onDragStart]);
   const handleDrag = React.useCallback<DragEventHandler>((_, info) => {
     const dragBy = info.lastPointerPosition.getOffsetTo(info.pointerPosition);
-    onDrag && onDrag(dragBy.toProps());
+    onDrag && onDrag(dragBy);
   }, [onDrag]);
   const handleDragEnd = React.useCallback<DragEventHandler>((_, __, target) => {
     onDragEnd && onDragEnd(target);

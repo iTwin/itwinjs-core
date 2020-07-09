@@ -8,6 +8,7 @@ import {
   addFloatingWidget, addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createVerticalPanelState,
   isHorizontalPanelState, NineZoneStateReducer,
 } from "../../ui-ninezone";
+import { createTabState, toolSettingsTabId } from "../../ui-ninezone/base/NineZoneState";
 
 describe("isHorizontalPanelState", () => {
   it("returns true based on side property", () => {
@@ -221,6 +222,26 @@ describe("NineZoneStateReducer", () => {
       newState.widgets.w3.minimized.should.true;
     });
 
+    it("should not expand clicked tab is not active", () => {
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "w1", { activeTabId: "t1" });
+      state = addPanelWidget(state, "left", "w2");
+      state = addPanelWidget(state, "left", "w3");
+      state = addTab(state, "w1", "t1");
+      state = addTab(state, "w1", "t2");
+      state = addTab(state, "w2", "t2");
+      state = addTab(state, "w3", "t3");
+      const newState = NineZoneStateReducer(state, {
+        type: "WIDGET_TAB_CLICK",
+        side: "left",
+        widgetId: "w1",
+        id: "t2",
+      });
+      newState.widgets.w1.minimized.should.false;
+      newState.widgets.w2.minimized.should.false;
+      newState.widgets.w3.minimized.should.false;
+    });
+
     it("should maximize minimized floating widget", () => {
       let state = createNineZoneState();
       state = addFloatingWidget(state, "w1", undefined, { activeTabId: "t1", minimized: true });
@@ -234,7 +255,7 @@ describe("NineZoneStateReducer", () => {
       newState.widgets.w1.minimized.should.false;
     });
 
-    it("should not update state in floating widget", () => {
+    it("should update preferredFloatingWidgetSize of a tab", () => {
       let state = createNineZoneState();
       state = addFloatingWidget(state, "w1", undefined, { activeTabId: "t1" });
       state = addTab(state, "w1", "t1");
@@ -244,7 +265,7 @@ describe("NineZoneStateReducer", () => {
         widgetId: "w1",
         id: "t1",
       });
-      newState.should.eq(state);
+      newState.tabs.t1.preferredFloatingWidgetSize!.should.eql({ height: 300, width: 200 });
     });
   });
 
@@ -501,6 +522,21 @@ describe("NineZoneStateReducer", () => {
         bottom: 440,
       });
     });
+
+    it("should set preferredFloatingWidgetSize of active tab", () => {
+      let state = createNineZoneState();
+      state = addFloatingWidget(state, "fw1", undefined, { activeTabId: "t1" });
+      state = addTab(state, "fw1", "t1");
+      const newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_RESIZE",
+        id: "fw1",
+        resizeBy: new Rectangle(0, 10, 20, 40).toProps(),
+      });
+      newState.tabs.t1.preferredFloatingWidgetSize!.should.eql({
+        width: 220,
+        height: 350,
+      });
+    });
   });
 
   describe("FLOATING_WIDGET_BRING_TO_FRONT", () => {
@@ -710,6 +746,9 @@ describe("NineZoneStateReducer", () => {
       it("should add floating widget", () => {
         let state = createNineZoneState();
         state = produce(state, (draft) => {
+          draft.tabs.dt = createTabState("dt");
+        });
+        state = produce(state, (draft) => {
           draft.draggedTab = {
             position: new Point(100, 200).toProps(),
             tabId: "dt",
@@ -788,6 +827,24 @@ describe("NineZoneStateReducer", () => {
         newFloatingWidgetId: "new-fw1",
       });
       newState.should.eq(state);
+    });
+
+    it("should use preferredFloatingWidgetSize", () => {
+      let state = createNineZoneState();
+      state = produce(state, (draft) => {
+        draft.tabs[toolSettingsTabId].preferredFloatingWidgetSize = { height: 400, width: 500 };
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: "TOOL_SETTINGS_DRAG_START",
+        newFloatingWidgetId: "new-fw1",
+      });
+
+      newState.floatingWidgets.byId["new-fw1"].bounds.should.eql({
+        left: 0,
+        top: 0,
+        bottom: 400,
+        right: 500,
+      });
     });
   });
 });

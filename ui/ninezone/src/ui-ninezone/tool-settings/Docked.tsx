@@ -185,7 +185,7 @@ export function getChildKey(child: React.ReactNode, index: number) {
  */
 export function getOverflown(width: number, docked: ReadonlyArray<readonly [string, number]>, overflowWidth: number, activeIndex?: number) {
   let settingsWidth = 0;
-  if (activeIndex !== undefined) {
+  if (activeIndex !== undefined && docked.length > activeIndex) {
     const activeWidth = docked[activeIndex];
     settingsWidth += activeWidth[1];
   }
