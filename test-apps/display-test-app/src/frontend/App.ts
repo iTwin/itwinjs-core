@@ -24,6 +24,7 @@ import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } 
 import { AttachViewTool, DetachViewsTool } from "./AttachViewTool";
 import { VersionComparisonTool } from "./VersionComparison";
 import { TimePointComparisonTool } from "./TimePointComparison";
+import { FenceClassifySelectedTool } from "./Fence";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
@@ -135,6 +136,7 @@ export class DisplayTestApp {
       DetachViewsTool,
       DockWindowTool,
       DrawingAidTestTool,
+      FenceClassifySelectedTool,
       FocusWindowTool,
       IncidentMarkerDemoTool,
       MarkupSelectTestTool,

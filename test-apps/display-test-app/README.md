@@ -190,3 +190,6 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
   * `image=`: Display as a raster image, even if view is orthographic. Perspective views always draw as raster images.
   * `background=`: Preserve background color when drawing as a raster image.
 * **dta aspect skew decorator** *apply=0|1* - Toggle a decorator that draws a simple bspline curve based on the project extents, for testing the effect of aspect ratio skew on the curve stroke tolerance. Use in conjunction with `fdt aspect skew` to adjust the skew. If `apply` is 0, then the skew will have no effect on the curve's level of detail; otherwise a higher aspect ratio skew should produce higher-resolution curve graphics.
+* **dta classifyclip selected** *inside* - Color code elements from the current selection set based on their containment with the current view clip. Inside - Green, Outside - Red, Overlap - Blue. Specify optional inside arg to only determine inside or outside, not overlap. Disable clip in the view settings to select elements outside clip, use clip tool panel EDIT button to redisplay clip decoration after processing selection. Use key-in again without a clip or selection set to clear the color override.
+
+
