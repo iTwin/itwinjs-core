@@ -9,7 +9,7 @@
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
-import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
@@ -478,6 +478,33 @@ export class IModelHost {
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.configuration = undefined;
     IModelHost._nativeAppBackend = false;
+  }
+
+  /**
+   * Add or update a property that should be included in a crash report.
+   * @param name The name of the property
+   * @param value The value of the propert
+   */
+  public static setCrashReportProperty(name: string, value: string): void {
+    assert(undefined !== this._platform);
+    this._platform.setCrashReportProperty(name, value);
+  }
+
+  /**
+   * Remove a previously defined property so that will not be included in a crash report.
+   * @param name The name of the property
+   */
+  public static removeCrashReportProperty(name: string): void {
+    assert(undefined !== this._platform);
+    this._platform.setCrashReportProperty(name, undefined);
+  }
+
+  /**
+   * Get all properties that will be included in a crash report.
+   */
+  public static getCrashReportProperties(): CrashReportingConfigNameValuePair[] {
+    assert(undefined !== this._platform);
+    return this._platform.getCrashReportProperties();
   }
 
   /** The directory where application assets may be found */
