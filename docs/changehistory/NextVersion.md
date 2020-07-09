@@ -25,3 +25,6 @@ This change necessitates the deprecation of [Viewport.featureOverrideProvider]($
   provider = viewport.findFeatureOverrideProvider((x) => x instanceof MyProvider && x.id === "my provider");
 ```
 
+## Hypermodeling marker filtering
+
+Some iModels contain thousands of [SectionDrawingLocation]($backend)s. When hypermodeling is used with such iModels, this may result in display of thousands of [SectionMarker]($hypermodeling)s. While markers located close together will automatically cluster, and [SectionMarkerConfig]($hypermodeling) supports filtering markers based on model, category, or section type, some applications may want to apply their own filtering logic. They can now do so by implementing [SectionMarkerHandler]($hypermodeling) to customize the visibility of the markers.

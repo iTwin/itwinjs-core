@@ -372,7 +372,9 @@ export class HyperModelingDecorator implements Decorator {
     return undefined !== viewState;
   }
 
-  /** @internal */
+  /** Request that the visibility of the section markers be recomputed. It is only necessary to call this if you have overridden [[SectionMarkerHandler.isMarkerVisible]]; if so, you should invoke
+   * this method when the criteria governing your `isMarkerVisible` method have changed.
+   */
   public requestSync(): void {
     if (this.syncImmediately) {
       this.sync();
@@ -394,16 +396,7 @@ export class HyperModelingDecorator implements Decorator {
     if (undefined !== this.activeMarker)
       return marker === this.activeMarker;
 
-    if (undefined !== this._config.hiddenSectionTypes && this._config.hiddenSectionTypes.includes(marker.state.sectionType))
-      return false;
-
-    if (!this._config.ignoreCategorySelector && !this.viewport.view.viewsCategory(marker.state.category))
-      return false;
-
-    if (!this._config.ignoreModelSelector && !this.viewport.view.viewsModel(marker.state.model))
-      return false;
-
-    return true;
+    return HyperModeling.markerHandler.isMarkerVisible(marker, this, this._config);
   }
 
   private updateMarkerVisibility(): boolean {

@@ -77,7 +77,6 @@ export class HyperModelingDecorator implements Decorator {
     openSection(marker: SectionMarker): Promise<boolean>;
     openSheet(marker: SectionMarker): Promise<boolean>;
     replaceConfiguration(config?: SectionMarkerConfig): void;
-    // @internal (undocumented)
     requestSync(): void;
     setActiveMarker(marker: SectionMarker | undefined): Promise<boolean>;
     // @internal (undocumented)
@@ -216,6 +215,7 @@ export class SectionMarkerHandler {
     deactivateMarker(marker: SectionMarker, decorator: HyperModelingDecorator): Promise<void>;
     executeCommand(commandId: string, marker: SectionMarker, decorator: HyperModelingDecorator): Promise<void>;
     getToolbarProps(marker: SectionMarker, _decorator: HyperModelingDecorator): AbstractToolbarProps;
+    isMarkerVisible(marker: SectionMarker, decorator: HyperModelingDecorator, config: SectionMarkerConfig): boolean;
 }
 
 // @beta
