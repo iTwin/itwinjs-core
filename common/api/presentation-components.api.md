@@ -14,6 +14,7 @@ import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
+import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { HighlightableTreeProps } from '@bentley/ui-components';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
@@ -24,9 +25,11 @@ import { Item } from '@bentley/presentation-common';
 import { ITreeDataProvider } from '@bentley/ui-components';
 import { Keys } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
+import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Omit } from '@bentley/presentation-common';
+import { Paged } from '@bentley/presentation-common';
 import { PagedTreeNodeLoader } from '@bentley/ui-components';
 import { PageOptions } from '@bentley/presentation-common';
 import { PageOptions as PageOptions_2 } from '@bentley/ui-components';
@@ -223,6 +226,14 @@ export interface IUnifiedSelectionComponent {
     readonly selectionHandler?: SelectionHandler;
 }
 
+// @beta
+export enum PresentationComponentsLoggerCategory {
+    Content = "presentation-components.Content",
+    Hierarchy = "presentation-components.Hierarchy",
+    // (undocumented)
+    Package = "presentation-components"
+}
+
 // @public
 export class PresentationLabelsProvider implements IPresentationLabelsProvider {
     constructor(props: PresentationLabelsProviderProps);
@@ -251,6 +262,9 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     protected invalidateCache(props: CacheInvalidationProps): void;
     protected isFieldFavorite: (field: Field) => boolean;
     protected isFieldHidden(field: Field): boolean;
+    // @beta
+    get isNestedPropertyCategoryGroupingEnabled(): boolean;
+    set isNestedPropertyCategoryGroupingEnabled(value: boolean);
     // (undocumented)
     onDataChanged: PropertyDataChangeEvent;
     protected shouldConfigureContentDescriptor(): boolean;
@@ -314,10 +328,25 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     get rulesetId(): string;
     }
 
+// @alpha (undocumented)
+export interface PresentationTreeDataProviderDataSourceEntryPoints {
+    // (undocumented)
+    getFilteredNodePaths: (requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string) => Promise<NodePathElement[]>;
+    // (undocumented)
+    getNodes: (requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey) => Promise<Node[]>;
+    // (undocumented)
+    getNodesAndCount: (requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey) => Promise<{
+        nodes: Node[];
+        count: number;
+    }>;
+}
+
 // @public
 export interface PresentationTreeDataProviderProps {
-    // @beta (undocumented)
+    // @beta
     appendChildrenCountForGroupingNodes?: boolean;
+    // @alpha
+    dataSourceOverrides?: Partial<PresentationTreeDataProviderDataSourceEntryPoints>;
     imodel: IModelConnection;
     pagingSize?: number;
     ruleset: string | Ruleset;
@@ -406,7 +435,7 @@ export interface UnifiedSelectionTreeEventHandlerParams {
 // @beta
 export function useControlledTreeFiltering(props: ControlledTreeFilteringProps): {
     nodeHighlightingProps: HighlightableTreeProps | undefined;
-    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | AbstractTreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>;
+    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | PagedTreeNodeLoader<FilteredPresentationTreeDataProvider>;
     filteredModelSource: TreeModelSource;
     isFiltering: boolean;
     matchesCount: number | undefined;

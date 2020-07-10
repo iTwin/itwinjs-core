@@ -5,8 +5,8 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, CursorTypeContext, PanelSideContext, WidgetTarget } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+import { addPanelWidget, createNineZoneState, CursorTypeContext, DragManager, PanelSideContext, WidgetTarget } from "../../ui-ninezone";
+import { createDragStartArgs, NineZoneProvider } from "../Providers";
 
 describe("WidgetTarget", () => {
   const sandbox = sinon.createSandbox();
@@ -36,12 +36,14 @@ describe("WidgetTarget", () => {
   });
 
   it("should render targeted", () => {
+    const dragManager = React.createRef<DragManager>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1");
     const { container } = render(
       <NineZoneProvider
         state={nineZone}
         dispatch={sinon.spy()}
+        dragManagerRef={dragManager}
       >
         <PanelSideContext.Provider value="left">
           <WidgetTarget
@@ -53,7 +55,8 @@ describe("WidgetTarget", () => {
     const target = container.getElementsByClassName("nz-widget-widgetTarget")[0];
     sandbox.stub(document, "elementFromPoint").returns(target);
     act(() => {
-      fireEvent.pointerMove(target);
+      dragManager.current!.handleDragStart(createDragStartArgs());
+      fireEvent.mouseMove(target);
     });
     container.firstChild!.should.matchSnapshot();
   });

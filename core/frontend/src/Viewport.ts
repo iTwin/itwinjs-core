@@ -7,14 +7,14 @@
  */
 
 import {
-  assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf, SortedArray, StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
   Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, Easing, EasingFunction, ElementProps, Frustum, GlobeMode,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, Cartographic, ColorDef, DisplayStyleSettingsProps, Easing, EasingFunction, ElementProps, Frustum, GlobeMode,
   GridOrientationType, Hilite, ImageBuffer, Interpolation, LightSettings, NpcCenter, Placement2d, Placement2dProps, Placement3d, Placement3dProps,
   PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, Tweens, ViewFlags,
 } from "@bentley/imodeljs-common";
@@ -53,7 +53,8 @@ import { SheetViewState } from "./Sheet";
  *
  * If the provider's internal state changes such that the Viewport should recompute the symbology overrides, the provider should notify the viewport by
  * calling [[Viewport.setFeatureOverrideProviderChanged]].
- * @see [[Viewport.featureOverrideProvider]]
+ * @see [[Viewport.addFeatureOverrideProvider]]
+ * @see [[Viewport.dropFeatureOverrideProvider]]
  * @public
  */
 export interface FeatureOverrideProvider {
@@ -68,6 +69,8 @@ export interface FeatureOverrideProvider {
 export interface TiledGraphicsProvider {
   /** Apply the supplied function to each [[TileTreeReference]] to be drawn in the specified [[Viewport]]. */
   forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
+  /** If defined, overrides the logic for adding this provider's graphics into the scene. Otherwise, [[TileTreeReference.addToScene]] is invoked for each reference. */
+  addToScene?: (context: SceneContext) => void;
 }
 
 /** @see [[ChangeFlags]]
@@ -926,7 +929,7 @@ export abstract class Viewport implements IDisposable {
   private _neverDrawn?: Id64Set;
   private _alwaysDrawn?: Id64Set;
   private _alwaysDrawnExclusive: boolean = false;
-  private _featureOverrideProvider?: FeatureOverrideProvider;
+  private readonly _featureOverrideProviders: FeatureOverrideProvider[] = [];
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
@@ -1066,6 +1069,16 @@ export abstract class Viewport implements IDisposable {
   public get displayStyle(): DisplayStyleState { return this.view.displayStyle; }
   public set displayStyle(style: DisplayStyleState) {
     this.view.displayStyle = style;
+    this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
+  }
+
+  /** Selectively override aspects of this viewport's display style.
+   * @see [DisplayStyleSettings.applyOverrides]($common)
+   * @beta
+   */
+  public overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void {
+    this.displayStyle.settings.applyOverrides(overrides);
     this._changeFlags.setDisplayStyle();
     this.invalidateRenderPlan();
   }
@@ -1257,10 +1270,7 @@ export abstract class Viewport implements IDisposable {
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.displayStyle.changeBackgroundMapProps(props);
-    if (undefined !== props.transparency)
-      this.invalidateRenderPlan(); // terrain transparency is part of render plan.
-    else
-      this.invalidateScene(); // just need to reselect tiles based on new map settings.
+    this.invalidateRenderPlan();
   }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
@@ -1555,20 +1565,98 @@ export abstract class Viewport implements IDisposable {
     this._perModelCategoryVisibility.addOverrides(fs, ovrs);
   }
 
+  /** Add a [[FeatureOverrideProvider]] to customize the appearance of [[Feature]]s within the viewport.
+   * The provider will be invoked whenever the overrides are determined to need updating.
+   * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
+   * the internal state of the provider changes such that the computed overrides must also change.
+   * @note A Viewport can have any number of FeatureOverrideProviders. No attempt is made to resolve conflicts between two different providers overriding the same Feature.
+   * @param provider The provider to register.
+   * @returns true if the provider was registered, or false if the provider was already registered.
+   * @see [[dropFeatureOverrideProvider]] to remove the provider.
+   * @see [[findFeatureOverrideProvider]] to find an existing provider.
+   * @see [[FeatureSymbology.Overrides]].
+   */
+  public addFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean {
+    if (this._featureOverrideProviders.includes(provider))
+      return false;
+
+    this._featureOverrideProviders.push(provider);
+    this.setFeatureOverrideProviderChanged();
+    return true;
+  }
+
+  /** Removes the specified FeatureOverrideProvider from the viewport.
+   * @param provider The provider to drop.
+   * @returns true if the provider was dropped, or false if it was not registered.
+   * @see [[addFeatureOverrideProvider]].
+   */
+  public dropFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean {
+    const index = this._featureOverrideProviders.indexOf(provider);
+    if (-1 === index)
+      return false;
+
+    this._featureOverrideProviders.splice(index, 1);
+    this.setFeatureOverrideProviderChanged();
+    return true;
+  }
+
+  /** Locate the first registered FeatureOverrideProvider matching the supplied criterion.
+   * @param predicate A function that will be invoked for each provider currently registered with the viewport, returning true to accept the provider.
+   * @returns The first registered provider that matches the predicate, or undefined if no providers match the predicate.
+   * @see [[findFeatureOverrideProviderOfType]] to locate a provider of a specific class.
+   * @see [[addFeatureOverrideProvider]] to register a provider.
+   */
+  public findFeatureOverrideProvider(predicate: (provider: FeatureOverrideProvider) => boolean): FeatureOverrideProvider | undefined {
+    for (const provider of this._featureOverrideProviders)
+      if (predicate(provider))
+        return provider;
+
+    return undefined;
+  }
+
+  /** Locate the first registered FeatureOverrideProvider of the specified class. For example, to locate a registered [[EmphasizeElements]] provider:
+   * ```ts
+   * const provider: EmphasizeElements = viewport.findFeatureOverrideProviderOfType<EmphasizeElements>(EmphasizeElements);
+   * ```
+   * @see [[findFeatureOverrideProvider]] to locate a registered provider matching any arbitrary criterion.
+   */
+  public findFeatureOverrideProviderOfType<T>(type: Constructor<T>): T | undefined {
+    const provider = this.findFeatureOverrideProvider((x) => isInstanceOf<T>(x, type));
+    return asInstanceOf<T>(provider, type);
+  }
+
+  /** @internal */
+  public addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void {
+    for (const provider of this._featureOverrideProviders)
+      provider.addFeatureOverrides(ovrs, this);
+  }
+
   /** An object which can customize the appearance of [[Feature]]s within a viewport.
    * If defined, the provider will be invoked whenever the overrides are determined to need updating.
    * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
    * the internal state of the provider changes such that the computed overrides must also change.
    * @see [[FeatureSymbology.Overrides]]
+   * @see [[findFeatureOverrideProvider]] as a replacement for the deprecated getter.
+   * @see [[addFeatureOverrideProvider]] as the replacement for the deprecated setter.
+   * @note A viewport can now have any number of FeatureOverrideProviders, therefore this property is deprecated. The getter will return undefined unless exactly one provider is registered; the setter will remove any other providers and register only the new provider.
+   * @deprecated Use [[addFeatureOverrideProvider]].
    */
   public get featureOverrideProvider(): FeatureOverrideProvider | undefined {
-    return this._featureOverrideProvider;
+    return 1 === this._featureOverrideProviders.length ? this._featureOverrideProviders[0] : undefined;
   }
+
   public set featureOverrideProvider(provider: FeatureOverrideProvider | undefined) {
-    if (provider !== this._featureOverrideProvider) {
-      this._featureOverrideProvider = provider;
+    if (this.featureOverrideProvider === provider) // tslint:disable-line:deprecation
+      return;
+
+    if (undefined === provider) {
+      this._featureOverrideProviders.length = 0;
       this.setFeatureOverrideProviderChanged();
+      return;
     }
+
+    this._featureOverrideProviders.length = 0;
+    this.addFeatureOverrideProvider(provider);
   }
 
   /** Notifies this viewport that the internal state of its [[FeatureOverrideProvider]] has changed such that its
@@ -1577,6 +1665,12 @@ export abstract class Viewport implements IDisposable {
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
     this.maybeInvalidateScene();
+  }
+
+  /** @alpha */
+  public forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void {
+    for (const provider of this._tiledGraphicsProviders)
+      func(provider);
   }
 
   /** @internal */
@@ -2393,7 +2487,13 @@ export abstract class Viewport implements IDisposable {
         IModelApp.tileAdmin.clearUsageForViewport(this);
         const context = this.createSceneContext();
         view.createScene(context);
-        this.forEachTiledGraphicsProviderTree((ref) => ref.addToScene(context));
+
+        for (const provider of this._tiledGraphicsProviders) {
+          if (undefined !== provider.addToScene)
+            provider.addToScene(context);
+          else
+            provider.forEachTileTreeRef(this, (ref) => ref.addToScene(context));
+        }
 
         context.requestMissingTiles();
         target.changeScene(context.scene);

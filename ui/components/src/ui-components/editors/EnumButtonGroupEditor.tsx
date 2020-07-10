@@ -11,13 +11,11 @@ import classnames from "classnames";
 import * as React from "react";
 import {
   ButtonGroupEditorParams, EnumerationChoice, IconDefinition, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord,
-  PropertyValue, PropertyValueFormat,
+  PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
-import { StandardEditorNames } from "./StandardEditorNames";
 
 // cspell:ignore buttongroup enumbuttongroup
 

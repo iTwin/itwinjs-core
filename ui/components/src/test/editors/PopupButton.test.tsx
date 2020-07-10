@@ -54,6 +54,24 @@ describe("<PopupButton />", () => {
     cleanup();
   });
 
+  it("shows the popup on down arrow", async () => {
+    const component = render(
+      <PopupButton label="Hello">
+        <div data-testid="popup-test-div">Hello World</div>
+      </PopupButton>);
+
+    const button = component.getByTestId("components-popup-button");
+    expect(button).to.exist;
+
+    button.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "ArrowDown" }));
+    await TestUtils.flushAsyncOperations();
+
+    const popupDiv = component.getByTestId("popup-test-div");
+    expect(popupDiv).to.exist;
+
+    cleanup();
+  });
+
   it("calls onClose", async () => {
     const spyOnClose = sinon.spy();
 

@@ -12,11 +12,12 @@ import * as moq from "typemoq";
 import { ClientRequestContext, DbResult, using } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ECSqlStatement, ECSqlValue, EventSink, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import {
-  ArrayTypeDescription, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes, DescriptorJSON, FieldJSON, getLocalesDirectory,
-  HierarchyRequestOptions, InstanceKey, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON,
-  NodeKey, Paged, PageOptions, PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions, PresentationError,
-  PresentationUnitSystem, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RequestPriority, SelectClassInfoJSON,
-  SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  ArrayTypeDescription, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON,
+  DistinctValuesRequestOptions, FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory, HierarchyRequestOptions, InstanceKey, ItemJSON,
+  KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions,
+  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions, PresentationError, PresentationUnitSystem,
+  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RequestPriority, SelectClassInfoJSON, SelectionInfo, SelectionScope,
+  StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@bentley/presentation-common";
 import {
   createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKey,
@@ -1500,6 +1501,85 @@ describe("PresentationManager", () => {
           rulesetOrId: testData.rulesetOrId,
         };
         const result = await manager.getDistinctValues(ClientRequestContext.current, options, descriptor, new KeySet(), "");
+        verifyWithExpectedResult(result, addonResponse, expectedParams);
+      });
+
+    });
+
+    describe("getPagedDistinctValues", () => {
+
+      it("returns empty result for nested content request", async () => {
+        nativePlatformMock.reset();
+        // what the addon receives
+        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
+        const descriptor = createRandomDescriptor();
+        const fieldDescriptor: FieldDescriptor = {
+          type: FieldDescriptorType.Name,
+          fieldName: faker.random.word(),
+          parent: {
+            type: FieldDescriptorType.Name,
+            fieldName: faker.random.word(),
+          },
+        };
+        // test
+        const options: DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          descriptor,
+          keys,
+          fieldDescriptor,
+        };
+        const result = await manager.getPagedDistinctValues(ClientRequestContext.current, options);
+        nativePlatformMock.verify(async (x) => x.handleRequest(ClientRequestContext.current, moq.It.isAny(), moq.It.isAnyString()), moq.Times.never());
+        expect(result).to.deep.eq({
+          total: 0,
+          items: [],
+        });
+      });
+
+      it("returns distinct values", async () => {
+        // what the addon receives
+        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
+        const descriptor = createRandomDescriptor();
+        const fieldDescriptor: FieldDescriptor = {
+          type: FieldDescriptorType.Name,
+          fieldName: faker.random.word(),
+        };
+        const pageOpts: PageOptions = {
+          start: 1,
+          size: 2,
+        };
+        const expectedParams = {
+          requestId: NativePlatformRequestTypes.GetPagedDistinctValues,
+          params: {
+            descriptorOverrides: descriptor.createDescriptorOverrides(),
+            keys: keys.toJSON(),
+            fieldDescriptor,
+            rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            paging: pageOpts,
+          },
+        };
+
+        // what the addon returns
+        const addonResponse = {
+          total: 1,
+          items: [{
+            displayValue: "test",
+            groupedRawValues: ["test"],
+          }],
+        };
+        setup(addonResponse);
+
+        // test
+        const options: DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          descriptor,
+          keys,
+          fieldDescriptor,
+          paging: pageOpts,
+        };
+        const result = await manager.getPagedDistinctValues(ClientRequestContext.current, options);
         verifyWithExpectedResult(result, addonResponse, expectedParams);
       });
 

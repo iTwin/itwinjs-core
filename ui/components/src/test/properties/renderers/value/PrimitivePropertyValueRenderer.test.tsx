@@ -5,12 +5,31 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { render } from "@testing-library/react";
+import { Primitives } from "@bentley/ui-abstract";
+import { render, waitForElement } from "@testing-library/react";
 import { PrimitivePropertyValueRenderer } from "../../../../ui-components";
+import { TypeConverter } from "../../../../ui-components/converters/TypeConverter";
+import { TypeConverterManager } from "../../../../ui-components/converters/TypeConverterManager";
+import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
 
+class AsyncValuesTypeConverter extends TypeConverter {
+  public sortCompare(_lhs: Primitives.Value, _rhs: Primitives.Value, _ignoreCase?: boolean) {
+    return 0;
+  }
+  public async convertToString(value?: Primitives.Value) {
+    return value ? value.toString() : "";
+  }
+}
+
 describe("PrimitivePropertyValueRenderer", () => {
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
   describe("render", () => {
+
     it("renders primitive property", () => {
       const renderer = new PrimitivePropertyValueRenderer();
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
@@ -33,14 +52,43 @@ describe("PrimitivePropertyValueRenderer", () => {
       expect(renderedElement.container.getElementsByClassName("core-underlined-button")).to.not.be.empty;
     });
 
+    it("renders async value with default value in context", async () => {
+      sinon.replace(TypeConverterManager, "getConverter", () => new AsyncValuesTypeConverter());
+      const renderer = new PrimitivePropertyValueRenderer();
+
+      const value = "some value";
+      const propertyRecord = TestUtils.createPropertyRecord(value, { key: "test", label: "test" }, "async");
+
+      const context: PropertyValueRendererContext = {
+        defaultValue: "in progress",
+      };
+
+      const renderedElement = render(<>{renderer.render(propertyRecord, context)}</>);
+      renderedElement.getByText("in progress");
+      await waitForElement(() => renderedElement.getByText(value));
+    });
+
+    it("renders async value without default value in context", async () => {
+      sinon.replace(TypeConverterManager, "getConverter", () => new AsyncValuesTypeConverter());
+      const renderer = new PrimitivePropertyValueRenderer();
+
+      const value = "some value";
+      const propertyRecord = TestUtils.createPropertyRecord(value, { key: "test", label: "test" }, "async");
+
+      const renderedElement = render(<>{renderer.render(propertyRecord)}</>);
+      await waitForElement(() => renderedElement.getByText(value));
+    });
+
     it("throws when trying to render array property", () => {
       const renderer = new PrimitivePropertyValueRenderer();
       const arrayProperty = TestUtils.createArrayProperty("LabelArray");
       expect(() => renderer.render(arrayProperty)).to.throw;
     });
+
   });
 
   describe("canRender", () => {
+
     it("returns true for a primitive property", () => {
       const renderer = new PrimitivePropertyValueRenderer();
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
@@ -54,5 +102,7 @@ describe("PrimitivePropertyValueRenderer", () => {
       expect(renderer.canRender(arrayProperty)).to.be.false;
       expect(renderer.canRender(structProperty)).to.be.false;
     });
+
   });
+
 });

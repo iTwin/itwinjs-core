@@ -1,6 +1,14 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Tue, 07 Jul 2020 14:44:52 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2020 17:23:14 GMT and should not be manually modified.
+
+## 2.3.0
+Fri, 10 Jul 2020 17:23:14 GMT
+
+### Updates
+
+- Fix tool settings styling on FireFox. Floating Toolsettings was missing z-index.
+- Replace PointerEvents with touch and mouse events.
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

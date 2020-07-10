@@ -27,11 +27,14 @@ export const createBoundingClientRect = (left: number, top: number, right: numbe
   toJSON: () => "",
 });
 
-export const createSizedRect = (args?: { width?: number }): ClientRect => {
+export const createSizedRect = (args?: { width?: number, height?: number }): ClientRect => {
   const left = 0;
-  const width = args && args.width !== undefined ? args.width : 0;
+  const width = args && args.width ? args.width : 0;
   const right = left + width;
-  return createRect(left, 0, right, 0);
+  const top = 0;
+  const height = args && args.height ? args.height : 0;
+  const bottom = top + height;
+  return createRect(left, top, right, bottom);
 };
 
 export const createPointerEvent = (props?: Partial<PointerEvent>): PointerEvent => ({
@@ -41,7 +44,7 @@ export const createPointerEvent = (props?: Partial<PointerEvent>): PointerEvent 
   ...props,
 } as PointerEvent);
 
-export const createDOMRect = (args?: { width?: number }): DOMRect => {
+export const createDOMRect = (args?: { width?: number, height?: number }): DOMRect => {
   const rect = createSizedRect(args);
   return {
     ...rect,

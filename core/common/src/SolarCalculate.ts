@@ -182,12 +182,17 @@ export function calculateSolarAngles(date: Date, location: Cartographic): { azim
  * calculate solar direction based at a given date/time and location.
  */
 export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d {
-  const azimuthElevation = calculateSolarAngles(date, location);
+  return calculateSolarDirectionFromAngles(calculateSolarAngles(date, location));
+}
+
+/** @beta
+ * calculate solar direction corresponding to the given azimuth and elevation (altitude) angles in degrees.
+ */
+export function calculateSolarDirectionFromAngles(azimuthElevation: { azimuth: number, elevation: number }): Vector3d {
   const azimuth = Angle.degreesToRadians(azimuthElevation.azimuth);
   const elevation = Angle.degreesToRadians(azimuthElevation.elevation);
   const cosElevation = Math.cos(elevation);
   const sinElevation = Math.sin(elevation);
-
   return Vector3d.create(-Math.sin(azimuth) * cosElevation, -Math.cos(azimuth) * cosElevation, -sinElevation);
 }
 

@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { assert, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
@@ -23,7 +23,7 @@ import { SolarShadowSettings, SolarShadowSettingsProps } from "./SolarShadows";
 import { SpatialClassificationProps } from "./SpatialClassificationProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 import { SubCategoryOverride } from "./SubCategoryOverride";
-import { ThematicDisplay, ThematicDisplayProps } from "./ThematicDisplay";
+import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
 import { ViewFlagProps, ViewFlags } from "./ViewFlags";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
@@ -170,6 +170,39 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
   };
 }
 
+/** Controls which settings are serialized by [[DisplayStyleSettings.toOverrides]]. A display style includes some settings that are specific to a given iModel - for example,
+ * the subcategory overrides are indexed by subcategory Ids. Other settings are specific to a given project, like the set of displayed context reality models. Such settings can be useful
+ * when creating display style overrides intended for use with a specific iModel or project, but should be omitted when creating general-purpose display style overrides intended
+ * for use with any iModel or project. This is the default behavior if no more specific options are provided.
+ * @beta
+ */
+export interface DisplayStyleOverridesOptions {
+  /** Serialize all settings. Applying the resultant [[DisplayStyleSettingsProps]] will produce a [[DisplayStyleSettings]] identical to the original settings. */
+  includeAll?: true;
+  /** Serialize iModel-specific settings. These settings are only meaningful within the context of a specific iModel. Setting this to `true` implies all project-specific settings will be serialized too.
+   * The following are iModel-specific settings:
+   *  * Subcategory overrides.
+   *  * Classifiers associated with context reality models.
+   *  * Analysis style.
+   *  * Schedule script.
+   *  * Excluded elements.
+   *  * Plan projection settings.
+   *  * Thematic sensor settings and height range. If iModel-specific settings are *not* serialized, sensors will be omitted and, for thematic height mode, the range will be omitted.
+   *    * If the display style settings are associated with a [DisplayStyleState]($frontend), then overriding thematic settings will compute a default height range based on the iModel's project extents.
+   */
+  includeIModelSpecific?: true;
+  /** Serialize project-specific settings. These settings are only meaningful within the context of a specific project. These settings are always included if `includeIModelSpecific` is `true`.
+   * The following are project-specific settings:
+   *  * Context reality models. If iModel-specific settings are *not* serialized, the classifiers will be omitted.
+   *  * Time point.
+   */
+  includeProjectSpecific?: true;
+  /** Serialize settings related to drawing aid decorations (the ACS triad and the grid). */
+  includeDrawingAids?: true;
+  /** Serialize the background map settings. */
+  includeBackgroundMap?: true;
+}
+
 /** Provides access to the settings defined by a [[DisplayStyle]] or [[DisplayStyleState]], and ensures that
  * the style's JSON properties are kept in sync.
  * @public
@@ -207,6 +240,12 @@ export class DisplayStyleSettings {
     if (this._json.analysisStyle)
       this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
 
+    this.populateSubCategoryOverridesFromJSON();
+    this.populateExcludedElementsFromJSON();
+  }
+
+  private populateSubCategoryOverridesFromJSON(): void {
+    this._subCategoryOverrides.clear();
     const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
     if (undefined !== ovrsArray) {
       for (const ovrJson of ovrsArray) {
@@ -218,7 +257,10 @@ export class DisplayStyleSettings {
         }
       }
     }
+  }
 
+  private populateExcludedElementsFromJSON(): void {
+    this._excludedElements.clear();
     const exElemArray = JsonUtils.asArray(this._json.excludedElements);
     if (undefined !== exElemArray) {
       for (const exElemStr of exElemArray) {
@@ -384,6 +426,133 @@ export class DisplayStyleSettings {
   /** @internal */
   public toJSON(): DisplayStyleSettingsProps { return this._json; }
 
+  /** Serialize a subset of these settings to JSON, such that they can be applied to another DisplayStyleSettings to selectively override those settings.
+   * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or project (e.g., context reality models)
+   * are omitted, as are drawing aids (e.g., ACS triad and grid).
+   * @returns a JSON representation of the selected settings suitable for passing to [[applyOverrides]].
+   * @see [[applyOverrides]] to apply the overrides to another DisplayStyleSettings..
+   * @beta
+   */
+  public toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyleSettingsProps {
+    if (options?.includeAll) {
+      return {
+        ...this.toJSON(),
+        viewflags: this.viewFlags.toFullyDefinedJSON(),
+      };
+    }
+
+    const viewflags = this.viewFlags.toFullyDefinedJSON();
+    const props: DisplayStyleSettingsProps = {
+      viewflags,
+      backgroundColor: this.backgroundColor.toJSON(),
+      monochromeColor: this.monochromeColor.toJSON(),
+      monochromeMode: this.monochromeMode,
+    };
+
+    if (options?.includeBackgroundMap)
+      props.backgroundMap = this.backgroundMap.toJSON();
+    else
+      delete viewflags.backgroundMap;
+
+    if (!options?.includeDrawingAids) {
+      delete viewflags.acs;
+      delete viewflags.grid;
+    }
+
+    if (options?.includeProjectSpecific || options?.includeIModelSpecific) {
+      props.timePoint = this.timePoint;
+      if (this._json.contextRealityModels) {
+        props.contextRealityModels = this._json.contextRealityModels;
+        if (!options?.includeIModelSpecific)
+          for (const model of this._json.contextRealityModels)
+            delete model.classifiers;
+      }
+    }
+
+    if (options?.includeIModelSpecific) {
+      if (this.analysisStyle) {
+        props.analysisStyle = this.analysisStyle.toJSON();
+        props.analysisFraction = this.analysisFraction;
+      }
+
+      if (this.scheduleScriptProps)
+        props.scheduleScript = [ ...this.scheduleScriptProps ];
+
+      props.subCategoryOvr = this._json.subCategoryOvr ? [ ...this._json.subCategoryOvr ] : [ ];
+      props.excludedElements = this._json.excludedElements ? [ ...this._json.excludedElements ] : [ ];
+    }
+
+    return props;
+  }
+
+  /** Selectively override some of these settings. Any field that is explicitly defined by the input will be overridden in these settings; any fields left undefined in the input
+   * will retain their current values in these settings. The input's [[ViewFlags]] are applied individually - only those flags that are explicitly defined will be overridden.
+   * For example, the following overrides will set the render mode to "smooth", change the background color to white, turn shadows off, and leave all other settings intact:
+   * ```ts
+   *  {
+   *    viewflags: {
+   *      renderMode: RenderMode.SmoothShade,
+   *      shadows: false,
+   *    },
+   *    backgroundColor: ColorByName.white,
+   *  }
+   * ```
+   * @see [[toOverrides]] to produce overrides from an existing DisplayStyleSettings.
+   * @note If these settings are associated with a [Viewport]($frontend), prefer to use [Viewport.overrideDisplayStyle]($frontend) to ensure the viewport's contents are automatically updated.
+   * @beta
+   */
+  public applyOverrides(overrides: DisplayStyleSettingsProps): void {
+    this._applyOverrides(overrides);
+    this.onOverridesApplied.raiseEvent(this, overrides);
+  }
+
+  /** @internal */
+  protected _applyOverrides(overrides: DisplayStyleSettingsProps): void {
+    if (overrides.viewflags) {
+      this.viewFlags = ViewFlags.fromJSON({
+        ...this.viewFlags.toJSON(),
+        ...overrides.viewflags,
+      });
+    }
+
+    if (undefined !== overrides.backgroundColor)
+      this.backgroundColor = ColorDef.fromJSON(overrides.backgroundColor);
+
+    if (undefined !== overrides.monochromeColor)
+      this.monochromeColor = ColorDef.fromJSON(overrides.monochromeColor);
+
+    if (undefined !== overrides.monochromeMode)
+      this.monochromeMode = overrides.monochromeMode;
+
+    if (overrides.backgroundMap)
+      this.backgroundMap = BackgroundMapSettings.fromJSON(overrides.backgroundMap);
+
+    if (undefined !== overrides.timePoint)
+      this.timePoint = overrides.timePoint;
+
+    if (overrides.contextRealityModels)
+      this._json.contextRealityModels = [ ...overrides.contextRealityModels ];
+
+    if (overrides.analysisStyle)
+      this.analysisStyle = AnalysisStyle.fromJSON(overrides.analysisStyle);
+
+    if (undefined !== overrides.analysisFraction)
+      this.analysisFraction = overrides.analysisFraction;
+
+    if (overrides.scheduleScript)
+      this.scheduleScriptProps = [ ...overrides.scheduleScript ];
+
+    if (overrides.subCategoryOvr) {
+      this._json.subCategoryOvr = [ ...overrides.subCategoryOvr ];
+      this.populateSubCategoryOverridesFromJSON();
+    }
+
+    if (overrides.excludedElements) {
+      this._json.excludedElements = [ ...overrides.excludedElements ];
+      this.populateExcludedElementsFromJSON();
+    }
+  }
+
   private findIndexOfSubCategoryOverrideInJSON(id: Id64String, allowAppend: boolean): number {
     const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
     if (undefined === ovrsArray) {
@@ -436,6 +605,9 @@ export class DisplayStyleSettings {
 
     return true;
   }
+
+  /** @internal */
+  public readonly onOverridesApplied = new BeEvent<(settings: DisplayStyleSettings, overrides: DisplayStyleSettingsProps) => void>();
 }
 
 /** Provides access to the settings defined by a [[DisplayStyle3d]] or [[DisplayStyle3dState]], and ensures that
@@ -468,6 +640,11 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this._lights = LightSettings.fromJSON(sunDir ? { solar: { direction: sunDir } } : undefined);
     }
 
+    this.populatePlanProjectionsFromJSON();
+  }
+
+  private populatePlanProjectionsFromJSON(): void {
+    this._planProjections = undefined;
     const projections = this._json3d.planProjections;
     if (undefined !== projections) {
       for (const key of Object.keys(projections)) {
@@ -493,6 +670,90 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
   /** @internal */
   public toJSON(): DisplayStyle3dSettingsProps { return this._json3d; }
+
+  /** Serialize a subset of these settings to JSON, such that they can be applied to another DisplayStyleSettings to selectively override those settings.
+   * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or project (e.g., context reality models)
+   * are omitted, as are drawing aids (e.g., ACS triad and grid).
+   * @returns a JSON representation of the selected settings suitable for passing to [[applyOverrides]].
+   * @see [[applyOverrides]] to apply the overrides to another DisplayStyleSettings..
+   * @beta
+   */
+  public toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps {
+    const props = super.toOverrides(options) as DisplayStyle3dSettingsProps;
+    if (options?.includeAll)
+      return props;
+
+    assert(undefined !== props.viewflags);
+
+    props.environment = { ...this.environment };
+    props.hline = this.hiddenLineSettings.toJSON();
+    props.ao = this.ambientOcclusionSettings.toJSON();
+    props.solarShadows = this.solarShadows.toJSON();
+    props.lights = this.lights.toJSON();
+
+    if (options?.includeIModelSpecific) {
+      props.thematic = this.thematic.toJSON();
+      if (this._json3d.planProjections)
+        props.planProjections = { ...this._json3d.planProjections };
+    } else if (ThematicDisplayMode.InverseDistanceWeightedSensors !== this.thematic.displayMode) {
+      props.thematic = {
+        ...this.thematic.toJSON(),
+        sensorSettings: undefined,
+      };
+
+      if (ThematicDisplayMode.Height === props.thematic.displayMode) {
+        // DisplayStyle3dState will compute range based on project extents.
+        props.thematic.range = undefined;
+      }
+    }
+
+    return props;
+  }
+
+  /** Selectively override some of these settings. Any field that is explicitly defined by the input will be overridden in these settings; any fields left undefined in the input
+   * will retain their current values in these settings. The input's [[ViewFlags]] are applied individually - only those flags that are explicitly defined will be overridden.
+   * For example, the following overrides will set the render mode to "smooth", change the background color to white, turn shadows off, and leave all other settings intact:
+   * ```ts
+   *  {
+   *    viewflags: {
+   *      renderMode: RenderMode.SmoothShade,
+   *      shadows: false,
+   *    },
+   *    backgroundColor: ColorByName.white,
+   *  }
+   * ```
+   * @see [[toOverrides]] to produce overrides from an existing DisplayStyleSettings.
+   * @note If these settings are associated with a [Viewport]($frontend), prefer to use [Viewport.overrideDisplayStyle]($frontend) to ensure the viewport's contents are automatically updated.
+   * @beta
+   */
+  public applyOverrides(overrides: DisplayStyle3dSettingsProps): void {
+    super._applyOverrides(overrides);
+
+    if (overrides.environment)
+      this.environment = { ...overrides.environment };
+
+    if (overrides.hline)
+      this.hiddenLineSettings = HiddenLine.Settings.fromJSON(overrides.hline);
+
+    if (overrides.ao)
+      this.ambientOcclusionSettings = AmbientOcclusion.Settings.fromJSON(overrides.ao);
+
+    if (overrides.solarShadows)
+      this.solarShadows = SolarShadowSettings.fromJSON(overrides.solarShadows);
+
+    if (overrides.lights)
+      this.lights = LightSettings.fromJSON(overrides.lights);
+
+    if (overrides.planProjections) {
+      this._json3d.planProjections = { ...overrides.planProjections };
+      this.populatePlanProjectionsFromJSON();
+    }
+
+    if (overrides.thematic)
+      this.thematic = ThematicDisplay.fromJSON(overrides.thematic);
+
+    this.onOverridesApplied.raiseEvent(this, overrides);
+  }
 
   /** The settings that control thematic display.
    * @beta

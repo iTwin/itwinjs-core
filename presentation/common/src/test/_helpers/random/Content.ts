@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// tslint:disable:deprecation
 import * as faker from "faker";
 import {
-  CategoryDescription, Content, Descriptor, EditorDescription, Field, NestedContentField, PrimitiveTypeDescription, PropertiesField,
-  PropertyValueFormat, StructTypeDescription, TypeDescription,
+  CategoryDescription, CategoryDescriptionJSON, Content, Descriptor, EditorDescription, Field, NestedContentField, PrimitiveTypeDescription,
+  PropertiesField, PropertyValueFormat, StructTypeDescription, TypeDescription,
 } from "../../../presentation-common";
 import { SelectClassInfoJSON } from "../../../presentation-common/content/Descriptor";
 import { BaseFieldJSON, NestedContentFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
@@ -24,21 +25,17 @@ const createRandomSelectClassInfoJSON = (): SelectClassInfoJSON => {
   };
 };
 
-export const createRandomCategory = (): CategoryDescription => ({
-  name: faker.random.word(),
-  label: faker.random.words(),
+export const createRandomCategory = (id?: string): CategoryDescription => ({
+  name: id ?? faker.random.word(),
+  label: id ?? faker.random.words(),
   description: faker.lorem.sentence(),
   priority: faker.random.number(),
   expand: faker.random.boolean(),
 });
 
-const createInvalidCategory = (): CategoryDescription => ({
-  name: "",
-  label: "",
-  description: "",
-  priority: 0,
-  expand: false,
-});
+export const createRandomCategoryJSON = (): CategoryDescriptionJSON => {
+  return CategoryDescription.toJSON(createRandomCategory());
+};
 
 export const createRandomPrimitiveTypeDescription = (): TypeDescription => {
   return {
@@ -53,18 +50,21 @@ export const createRandomEditorDescription = (): EditorDescription => {
   } as EditorDescription;
 };
 
-export const createRandomPrimitiveFieldJSON = (category: CategoryDescription | boolean = true): BaseFieldJSON => ({
-  category: (typeof category === "object") ? category : (category ? createRandomCategory() : createInvalidCategory()),
-  name: faker.random.word(),
-  label: faker.random.words(),
+export const createRandomPrimitiveFieldJSON = (category?: CategoryDescriptionJSON | string, id?: string): BaseFieldJSON => ({
+  category: category ?? createRandomCategoryJSON(),
+  name: id ?? faker.random.word(),
+  label: id ?? faker.random.words(),
   type: createRandomPrimitiveTypeDescription(),
   isReadonly: faker.random.boolean(),
   priority: faker.random.number(),
   editor: nullable(createRandomEditorDescription),
 });
 
-export const createRandomPrimitiveField = (category: CategoryDescription | boolean = true): Field => {
-  return Field.fromJSON(createRandomPrimitiveFieldJSON(category))!;
+export const createRandomPrimitiveField = (category?: CategoryDescription, id?: string): Field => {
+  const field = Field.fromJSON(createRandomPrimitiveFieldJSON(undefined, id))!;
+  if (category)
+    field.category = category;
+  return field;
 };
 
 export const createRandomPropertyJSON = (): PropertyJSON => ({
@@ -72,16 +72,19 @@ export const createRandomPropertyJSON = (): PropertyJSON => ({
   relatedClassPath: createRandomRelationshipPathJSON(1),
 });
 
-export const createRandomPropertiesFieldJSON = (category: CategoryDescription | boolean = true, propertiesCount: number = 1): PropertiesFieldJSON => ({
+export const createRandomPropertiesFieldJSON = (category: CategoryDescriptionJSON | string | undefined, propertiesCount: number = 1): PropertiesFieldJSON => ({
   ...createRandomPrimitiveFieldJSON(category),
   properties: [...Array(propertiesCount).keys()].map(() => createRandomPropertyJSON()),
 });
 
-export const createRandomPropertiesField = (category: CategoryDescription | boolean = true, propertiesCount: number = 1): PropertiesField => {
-  return PropertiesField.fromJSON(createRandomPropertiesFieldJSON(category, propertiesCount))!;
+export const createRandomPropertiesField = (category?: CategoryDescription, propertiesCount: number = 1): PropertiesField => {
+  const field = PropertiesField.fromJSON(createRandomPropertiesFieldJSON(undefined, propertiesCount))!;
+  if (category)
+    field.category = category;
+  return field;
 };
 
-export const createRandomNestedFieldJSON = (category: CategoryDescription | boolean = true): NestedContentFieldJSON => ({
+export const createRandomNestedFieldJSON = (category?: CategoryDescriptionJSON | string): NestedContentFieldJSON => ({
   ...createRandomPrimitiveFieldJSON(category),
   type: {
     valueFormat: PropertyValueFormat.Struct,
@@ -94,12 +97,20 @@ export const createRandomNestedFieldJSON = (category: CategoryDescription | bool
   } as StructTypeDescription,
   contentClassInfo: createRandomECClassInfoJSON(),
   pathToPrimaryClass: createRandomRelationshipPathJSON(),
-  nestedFields: [createRandomPrimitiveFieldJSON()],
+  nestedFields: [createRandomPrimitiveFieldJSON(category)],
   autoExpand: faker.random.boolean(),
 });
 
-export const createRandomNestedContentField = (nestedFields?: Field[], category: CategoryDescription | boolean = true): NestedContentField => {
-  const nestedContentField = NestedContentField.fromJSON(createRandomNestedFieldJSON(category))!;
+const deepAssignCategory = (field: Field, category: CategoryDescription) => {
+  field.category = category;
+  if (field.isNestedContentField())
+    field.nestedFields.forEach((f) => deepAssignCategory(f, category));
+};
+
+export const createRandomNestedContentField = (nestedFields?: Field[], category?: CategoryDescription): NestedContentField => {
+  const nestedContentField = NestedContentField.fromJSON(createRandomNestedFieldJSON(undefined))!;
+  if (category)
+    deepAssignCategory(nestedContentField, category);
   if (nestedFields)
     nestedContentField.nestedFields = nestedFields;
   nestedContentField.nestedFields.forEach((field) => field.rebuildParentship(nestedContentField));
@@ -107,14 +118,16 @@ export const createRandomNestedContentField = (nestedFields?: Field[], category:
 };
 
 export const createRandomDescriptorJSON = (displayType?: string) => {
+  const categories = [createRandomCategoryJSON()];
   const selectClasses = [createRandomSelectClassInfoJSON(), createRandomSelectClassInfoJSON()];
-  const fields = [createRandomPrimitiveFieldJSON(), createRandomPrimitiveFieldJSON(), createRandomPrimitiveFieldJSON()];
+  const fields = [createRandomPrimitiveFieldJSON(categories[0]), createRandomPrimitiveFieldJSON(categories[0]), createRandomPrimitiveFieldJSON(categories[0])];
   return {
     connectionId: faker.random.uuid(),
     inputKeysHash: faker.random.uuid(),
     contentOptions: faker.random.objectElement(),
     displayType: displayType || faker.lorem.words(),
     selectClasses,
+    categories,
     fields,
     contentFlags: 0,
   };

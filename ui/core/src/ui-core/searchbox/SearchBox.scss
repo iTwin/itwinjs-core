@@ -27,7 +27,7 @@
     box-sizing: border-box;
   }
 
-  div {
+  .core-searchbox-button {
     position: absolute;
     height: 100%;
     right: 0;
@@ -37,9 +37,10 @@
     justify-content: center;
     overflow: hidden;
     cursor: pointer;
-  }
 
-  div:hover span {
-    color: $buic-foreground-primary;
+    &:hover span {
+      color: $buic-foreground-primary;
+    }
+
   }
 }

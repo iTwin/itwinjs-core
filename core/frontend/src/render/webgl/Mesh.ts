@@ -477,6 +477,10 @@ export class SurfaceGeometry extends MeshGeometry {
 
     const vf = target.currentViewFlags;
 
+    // When rendering thematic isolines, we need translucency because they have anti-aliasing.
+    if (target.wantThematicDisplay && this.supportsThematicDisplay && target.uniforms.thematic.wantIsoLines)
+      return RenderPass.Translucent;
+
     // In wireframe, unless fill is explicitly enabled for planar region, surface does not draw
     if (RenderMode.Wireframe === vf.renderMode && !this.mesh.isTextureAlwaysDisplayed) {
       const fillFlags = this.fillFlags;

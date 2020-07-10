@@ -39,7 +39,7 @@ describe("DevTools", () => {
     assert.isTrue((formattedStats.os.cpus[0].times.user as string).endsWith("%"));
   });
 
-  it("can ping backend", async () => {
+  it.skip("can ping backend", async () => {
     const pingSummary: PingTestResult = await devTools.ping(10);
     assert.isDefined(pingSummary);
     assert.isDefined(pingSummary.min);

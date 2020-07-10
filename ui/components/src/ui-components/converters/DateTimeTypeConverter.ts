@@ -6,11 +6,10 @@
  * @module TypeConverters
  */
 
-import { Primitives } from "@bentley/ui-abstract";
+import { Primitives, StandardTypeNames } from "@bentley/ui-abstract";
 import { TimeFormat } from "@bentley/ui-core";
 import { LessGreaterOperatorProcessor, TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /**
  * DateTime Type Converter.

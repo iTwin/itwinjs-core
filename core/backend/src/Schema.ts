@@ -22,6 +22,12 @@ export class Schema {
    */
   public static get schemaName(): string { throw new Error("you must override static schemaName in " + this.name); }
 
+  /** if true, this Schema is a proxy for a missing Domain marked with the `BisCore.SchemaHasBehavior` customAttribute.
+   * Classes generated for this Schema will disallow protected operations.
+   * @internal
+   */
+  public static get missingRequiredBehavior(): boolean { return false; }
+
   /** Schemas may not be instantiated. The method is not private only because that precludes subclassing. It throws an
    * error if it is ever called.
    * @internal
@@ -42,7 +48,7 @@ export class Schemas {
   public static registerSchema(schema: typeof Schema) {
     const key = schema.schemaName.toLowerCase();
     if (this.getRegisteredSchema(key))
-      throw new IModelError(IModelStatus.DuplicateName, "Schema \"" + schema.schemaName + "\" is already registered", Logger.logWarning, BackendLoggerCategory.Schemas);
+      throw new IModelError(IModelStatus.DuplicateName, `Schema "${schema.schemaName}" is already registered`, Logger.logWarning, BackendLoggerCategory.Schemas);
     this._registeredSchemas.set(key, schema);
   }
 

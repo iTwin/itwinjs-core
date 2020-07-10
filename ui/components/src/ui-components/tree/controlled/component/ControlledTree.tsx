@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { from } from "rxjs/internal/observable/from";
-import { CommonProps, FillCentered, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { CommonProps, FillCentered, SpinnerSize } from "@bentley/ui-core";
 import { SelectionMode } from "../../../common/selection/SelectionModes";
 import { UiComponents } from "../../../UiComponents";
 import { HighlightableTreeProps } from "../../HighlightingEngine";
@@ -19,6 +19,7 @@ import { isTreeModelNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNo
 import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
 import { TreeRenderer, TreeRendererProps } from "./TreeRenderer";
+import { DelayedSpinner } from "../../../common/DelayedSpinner";
 
 /**
  * Properties for [[ControlledTree]]
@@ -127,7 +128,7 @@ function Loader(props: LoaderProps) {
       ? props.spinnerRenderer()
       : (
         <div className="components-controlledTree-loader">
-          <Spinner size={SpinnerSize.Large} />
+          <DelayedSpinner size={SpinnerSize.Large} />
         </div>
       );
   }

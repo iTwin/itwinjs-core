@@ -11,6 +11,7 @@ import {
 } from "./demodataproviders/demoTableDataProvider";
 import { TreeDragTypes } from "./demodataproviders/demoTreeDataProvider";
 import { RowDragLayer } from "./draglayers/RowDragLayer";
+import { Checkbox } from "@bentley/ui-core";
 
 export class TableDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -59,7 +60,7 @@ export class TableDemoWidget extends React.Component<Props, State> {
     return (
       <div style={{ height: "100%" }}>
         <label htmlFor="receives_tree">Can accept tree nodes: </label>
-        <input id="receives_tree" type="checkbox" onChange={(event) => {
+        <Checkbox id="receives_tree" onChange={(event) => {
           this.setState({ checked: event.target.checked });
         }} />
         <div style={{ height: "calc(100% - 20px)" }}>

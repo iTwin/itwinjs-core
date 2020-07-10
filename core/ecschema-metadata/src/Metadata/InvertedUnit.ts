@@ -89,4 +89,30 @@ export class InvertedUnit extends SchemaItem {
   public async fromJSON(invertedUnitProps: InvertedUnitProps) {
     this.fromJSONSync(invertedUnitProps);
   }
+
+  /**
+   * @alpha
+   * Used for schema editing
+   */
+  protected setInvertsUnit(invertsUnit: LazyLoadedUnit) {
+    this._invertsUnit = invertsUnit;
+  }
+
+  /**
+   * @alpha
+   * Used for schema editing
+   */
+  protected setUnitSystem(unitSystem: LazyLoadedUnitSystem) {
+    this._unitSystem = unitSystem;
+  }
+}
+
+/**
+ * @internal
+ * An abstract class used for schema editing.
+ */
+export abstract class MutableInvertedUnit extends InvertedUnit {
+  public abstract setInvertsUnit(invertsUnit: LazyLoadedUnit): void;
+  public abstract setUnitSystem(unitSystem: LazyLoadedUnitSystem): void;
+  public abstract setDisplayLabel(displayLabel: string): void;
 }

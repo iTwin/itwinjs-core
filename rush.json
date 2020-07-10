@@ -358,6 +358,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/hypermodeling-frontend",
+      "projectFolder": "core/hypermodeling",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/electron-manager",
       "projectFolder": "core/electron-manager",
       "reviewCategory": "backend",
@@ -395,13 +402,6 @@
     {
       "packageName": "@bentley/geonames-extension",
       "projectFolder": "extensions/geonames",
-      "reviewCategory": "extensions",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/hypermodeling-extension",
-      "projectFolder": "extensions/hypermodeling",
       "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -544,12 +544,6 @@
       "reviewCategory": "integration-testing",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "simple-editor-app",
-      "projectFolder": "test-apps/simple-editor-app",
-      "reviewCategory": "internal",
-      "shouldPublish": false
     },
     {
       "packageName": "@bentley/imodelhub-client-tests",

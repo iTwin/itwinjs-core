@@ -24,7 +24,7 @@
     },
     {
       "name": "@bentley/certa",
-      "allowedCategories": [ "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/config-loader",
@@ -69,6 +69,10 @@
     {
       "name": "@bentley/geometry-core",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@bentley/hypermodeling-frontend",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -172,7 +176,7 @@
     },
     {
       "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/ui-components",
@@ -280,7 +284,7 @@
     },
     {
       "name": "chai",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "chai-as-promised",
@@ -659,10 +663,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "react-async-hook",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "react-autosuggest",
       "allowedCategories": [ "frontend" ]
     },
@@ -788,7 +788,7 @@
     },
     {
       "name": "serve-handler",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "sinon",
@@ -825,6 +825,10 @@
     {
       "name": "svg-sprite-loader",
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "symlink-dir",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "tar",

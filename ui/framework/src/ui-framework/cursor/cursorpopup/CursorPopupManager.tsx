@@ -175,6 +175,7 @@ export class CursorPopupManager {
 
   private static removePopup(id: string): void {
     const index = CursorPopupManager._popups.findIndex((popupInfo: CursorPopupInfo) => id === popupInfo.id);
+    // istanbul ignore else
     if (index >= 0) {
       CursorPopupManager._popups.splice(index, 1);
       CursorPopupManager._emitPopupsChangedEvent();

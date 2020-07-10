@@ -4,6 +4,7 @@
 
 ```ts
 
+import { RpcConfiguration } from '@bentley/imodeljs-common';
 import { Server } from 'http';
 import { WebAppRpcProtocol } from '@bentley/imodeljs-common';
 
@@ -19,7 +20,9 @@ export class IModelJsExpressServer {
     // (undocumented)
     protected _configureRoutes(): void;
     initialize(port: number | string): Promise<Server>;
-    }
+    // @alpha (undocumented)
+    get rpcConfiguration(): RpcConfiguration;
+}
 
 
 // (No @packageDocumentation comment for this package)

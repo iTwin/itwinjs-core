@@ -65,6 +65,15 @@ describe("<WeightEditor />", () => {
     }
   });
 
+  it("should render as disabled", () => {
+    const weight1 = 1;
+    const propertyRecord = TestUtils.createWeightProperty("Test", weight1);
+    propertyRecord.isDisabled = true;
+    const renderedComponent = render(<WeightEditor setFocus={true} propertyRecord={propertyRecord} />);
+    expect(renderedComponent).not.to.be.undefined;
+    expect(renderedComponent.container.querySelector("[disabled]")).to.not.be.null;
+  });
+
   it("renders editor for 'number' type and 'weight-picker' editor using WeightEditor", () => {
     const weight1 = 1;
     const propertyRecord = TestUtils.createWeightProperty("Test", weight1);

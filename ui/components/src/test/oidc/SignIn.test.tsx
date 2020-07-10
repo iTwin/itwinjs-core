@@ -24,11 +24,26 @@ describe("SignIn", () => {
 
   it("should handle signIn button click", () => {
     const spyMethod = sinon.spy();
-    const wrapper = mount(<SignIn onSignIn={spyMethod} />);
+    const wrapper = mount(<SignIn onSignIn={spyMethod} signingInMessage="Signing in ..." />);
     expect(wrapper).not.to.be.undefined;
 
     wrapper.find("button.components-signin-button").simulate("click");
     expect(spyMethod.calledOnce).to.be.true;
+
+    wrapper.unmount();
+  });
+
+  it("should not handle signIn button click if disabled", () => {
+    const spyMethod = sinon.spy();
+    const wrapper = mount(<SignIn onSignIn={spyMethod} disableSignInOnClick />);
+    expect(wrapper).not.to.be.undefined;
+
+    wrapper.find("button.components-signin-button").simulate("click");
+    expect(spyMethod.calledOnce).to.be.true;
+    wrapper.update();
+
+    wrapper.find("button.components-signin-button").simulate("click");
+    expect(spyMethod.calledTwice).to.be.false;
 
     wrapper.unmount();
   });

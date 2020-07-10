@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { mount, ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { ThemedSelect } from "../../ui-core";
@@ -22,8 +22,16 @@ describe("<ThemedSelect />", () => {
     { label: "Yellow", value: ColorOptions.Yellow },
   ];
 
-  it("should render", () => {
-    mount(<ThemedSelect options={[]} />);
+  describe("mounted", () => {
+    let sut: ReactWrapper;
+
+    afterEach(() => {
+      sut.unmount();
+    });
+
+    it("should render", () => {
+      sut = mount(<ThemedSelect options={[]} />);
+    });
   });
 
   it("renders correctly", () => {
@@ -68,6 +76,10 @@ describe("<ThemedSelect />", () => {
 
   it("renders with fixed menu correctly", () => {
     shallow(<ThemedSelect options={colorChoices} value={colorChoices[0]} isMenuFixed={true} />).should.matchSnapshot();
+  });
+
+  it("renders with no options correctly", () => {
+    shallow(<ThemedSelect options={colorChoices} value={colorChoices[0]} noOptionsMessage={() => "No options"} />).should.matchSnapshot();
   });
 
 });

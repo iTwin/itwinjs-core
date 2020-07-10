@@ -44,6 +44,8 @@ beta;CloudStorageServiceCredentials
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
+beta;ComputedProjectExtents
+beta;ComputeProjectExtentsOptions
 beta;ConcurrencyControl
 beta;ConcurrencyControl
 alpha;Channel

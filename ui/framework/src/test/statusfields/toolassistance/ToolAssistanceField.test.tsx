@@ -503,7 +503,7 @@ describe("ToolAssistanceField", () => {
 
     const tabIndex = wrapper.find(ToolAssistanceField).state("mouseTouchTabIndex");
     expect(tabIndex).to.satisfy((index: number) => index === 0 || index === 1);
-    const nonActive = tabList.find("li:not(.active)");
+    const nonActive = tabList.find("li:not(.core-active)");
     expect(nonActive.length).to.eq(1);
 
     const anchor = nonActive.find("a");

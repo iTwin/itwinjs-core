@@ -9,10 +9,11 @@
 import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { EventSource, EventSourceManager, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey,
-  KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationDataCompareOptions,
-  PresentationError, PresentationRpcEvents, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationStatus, PresentationUnitSystem,
-  RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo,
+  Content, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayValueGroup, DistinctValuesRequestOptions,
+  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged,
+  PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface,
+  PresentationRpcRequestOptions, PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset,
+  RulesetVariable, SelectionInfo, UpdateInfo,
 } from "@bentley/presentation-common";
 import { LocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
@@ -399,7 +400,7 @@ export class PresentationManager implements IDisposable {
 
   private createDescriptorParam(descriptorOrOverrides: Descriptor | DescriptorOverrides) {
     if (descriptorOrOverrides instanceof Descriptor)
-      return descriptorOrOverrides.createStrippedDescriptor().toJSON();
+      return descriptorOrOverrides.createStrippedDescriptor();
     return descriptorOrOverrides;
   }
 
@@ -416,7 +417,26 @@ export class PresentationManager implements IDisposable {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     return this._requestsHandler.getDistinctValues(this.toRpcTokenOptions(options),
-      descriptor.createStrippedDescriptor().toJSON(), keys.toJSON(), fieldName, maximumValueCount);
+      descriptor.createStrippedDescriptor(), keys.toJSON(), fieldName, maximumValueCount);
+  }
+
+  /**
+   * Retrieves distinct values of specific field from the content based on the supplied content descriptor override.
+   * @param requestOptions Options for the request
+   * @alpha
+   */
+  public async getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<PagedResponse<DisplayValueGroup>> {
+    await this.onConnection(requestOptions.imodel);
+    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+    const result = await this._requestsHandler.getPagedDistinctValues({
+      ...this.toRpcTokenOptions(options),
+      descriptor: options.descriptor.createStrippedDescriptor(),
+      keys: options.keys.toJSON(),
+    });
+    return {
+      total: result.total,
+      items: result.items.map(DisplayValueGroup.fromJSON),
+    };
   }
 
   /**

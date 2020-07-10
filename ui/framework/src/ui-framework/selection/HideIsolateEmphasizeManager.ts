@@ -293,7 +293,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     const defaultAppearance = EmphasizeElements.getOrCreate(vp).createDefaultAppearance();
     EmphasizeElements.clear(vp);
     const subcats = await HideIsolateEmphasizeManager._getSubCategories(vp.iModel, ids);
-    vp.featureOverrideProvider = new SubCategoryOverrideProvider(subcats, defaultAppearance);
+    vp.addFeatureOverrideProvider(new SubCategoryOverrideProvider(subcats, defaultAppearance));
   }
 
   /**
@@ -329,7 +329,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     const modelIds = await HideIsolateEmphasizeManager._getModelIds(ids[0]);
     const defaultAppearance = EmphasizeElements.getOrCreate(vp).createDefaultAppearance();
     EmphasizeElements.clear(vp);
-    vp.featureOverrideProvider = new ModelOverrideProvider(modelIds, defaultAppearance);
+    vp.addFeatureOverrideProvider(new ModelOverrideProvider(modelIds, defaultAppearance));
   }
 
   /**
@@ -355,7 +355,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
 
     const defaultAppearance = EmphasizeElements.getOrCreate(vp).createDefaultAppearance();
     EmphasizeElements.clear(vp);
-    vp.featureOverrideProvider = new ModelOverrideProvider(ids, defaultAppearance);
+    vp.addFeatureOverrideProvider(new ModelOverrideProvider(ids, defaultAppearance));
   }
 
   /**
@@ -542,19 +542,17 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
 
   /** Checks to see if any featureOverrideProviders are active */
   public areFeatureOverridesActive(vp: Viewport): boolean {
-    if (vp.featureOverrideProvider) {
-      const emphasizeElementsProvider = vp.featureOverrideProvider instanceof EmphasizeElements ? vp.featureOverrideProvider : undefined;
-      if (undefined !== emphasizeElementsProvider && emphasizeElementsProvider.isActive)
-        return true;
+    const emphasizeElementsProvider = vp.findFeatureOverrideProviderOfType<EmphasizeElements>(EmphasizeElements);
+    if (undefined !== emphasizeElementsProvider && emphasizeElementsProvider.isActive)
+      return true;
 
-      const modelOverrideProvider = vp.featureOverrideProvider instanceof ModelOverrideProvider ? vp.featureOverrideProvider : undefined;
-      if (undefined !== modelOverrideProvider && modelOverrideProvider.modelIds.length > 0)
-        return true;
+    const modelOverrideProvider = vp.findFeatureOverrideProviderOfType<ModelOverrideProvider>(ModelOverrideProvider);
+    if (undefined !== modelOverrideProvider && modelOverrideProvider.modelIds.length > 0)
+      return true;
 
-      const subCategoryOverrideProvider = vp.featureOverrideProvider instanceof SubCategoryOverrideProvider ? vp.featureOverrideProvider : undefined;
-      if (undefined !== subCategoryOverrideProvider && subCategoryOverrideProvider.subCategoryIds.length > 0)
-        return true;
-    }
+    const subCategoryOverrideProvider = vp.findFeatureOverrideProviderOfType<SubCategoryOverrideProvider>(SubCategoryOverrideProvider);
+    if (undefined !== subCategoryOverrideProvider && subCategoryOverrideProvider.subCategoryIds.length > 0)
+      return true;
 
     return false;
   }

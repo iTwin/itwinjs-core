@@ -666,6 +666,14 @@ export class StructClass extends ECClass {
 }
 
 /**
+ * @internal
+ * An abstract class used for schema editing.
+ */
+export abstract class MutableStructClass extends StructClass {
+  public abstract setDisplayLabel(displayLabel: string): void;
+}
+
+/**
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
  * @internal
  */

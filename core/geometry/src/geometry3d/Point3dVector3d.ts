@@ -1072,6 +1072,11 @@ export class Vector3d extends XYZ {
       + this.y * (y - pointA.y)
       + this.z * (z - pointA.z);
   }
+  /** Dot product with vector from pointA to pointB, using only xy parts */
+  public dotProductStartEndXY(pointA: Point3d, pointB: Point3d): number {
+    return this.x * (pointB.x - pointA.x)
+      + this.y * (pointB.y - pointA.y);
+  }
   /** Dot product with vector from pointA to pointB, with pointB given as (weighted) x,y,z,w
    * * pointB is a homogeneous point that has to be unweighted
    * * if the weight is near zero metric, the return is zero.

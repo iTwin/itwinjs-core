@@ -2,14 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// tslint:disable:deprecation
 import { expect } from "chai";
 import * as faker from "faker";
-import { Field, NestedContentField, PropertiesField, Property, PropertyValueFormat, StructTypeDescription } from "../../presentation-common";
-import { PropertiesFieldJSON } from "../../presentation-common/content/Fields";
+import {
+  Field, NestedContentField, PropertiesField, Property, PropertyValueFormat, RelationshipPath, StructTypeDescription,
+} from "../../presentation-common";
+import { CategoryDescription } from "../../presentation-common/content/Category";
+import { FieldDescriptor, FieldDescriptorType, PropertiesFieldJSON } from "../../presentation-common/content/Fields";
 import {
   createRandomCategory, createRandomECClassInfo, createRandomECClassInfoJSON, createRandomNestedContentField, createRandomNestedFieldJSON,
-  createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomPrimitiveTypeDescription, createRandomRelationshipPath,
-  createRandomRelationshipPathJSON,
+  createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomPrimitiveTypeDescription, createRandomPropertiesField,
+  createRandomRelationshipPath, createRandomRelationshipPathJSON,
 } from "../_helpers/random";
 
 const generateTestData = () => {
@@ -44,6 +48,12 @@ describe("Field", () => {
       expect(item).to.matchSnapshot();
     });
 
+    it("creates valid Field from valid JSON with categories", () => {
+      const categories = [createRandomCategory()];
+      const item = Field.fromJSON({ ...testData.baseFieldJSON, category: categories[0].name }, categories);
+      expect(item).to.matchSnapshot();
+    });
+
     it("creates valid PropertiesField from valid JSON", () => {
       const item = Field.fromJSON(testData.propertiesFieldJSON);
       expect(item).to.matchSnapshot();
@@ -62,6 +72,11 @@ describe("Field", () => {
     it("returns undefined for undefined JSON", () => {
       const item = Field.fromJSON(undefined);
       expect(item).to.be.undefined;
+    });
+
+    it("throws when creating field with category that doesn't exist in given list", () => {
+      expect(() => Field.fromJSON({ ...testData.baseFieldJSON, category: "does not exist" })).to.throw();
+      expect(() => Field.fromJSON({ ...testData.baseFieldJSON, category: "does not exist" }, [])).to.throw();
     });
 
   });
@@ -105,6 +120,44 @@ describe("Field", () => {
 
   });
 
+  describe("getFieldDescriptor", () => {
+
+    it("creates `NamedFieldDescriptor`", () => {
+      const field = createRandomPrimitiveField();
+      expect(field.getFieldDescriptor()).to.deep.eq({
+        type: FieldDescriptorType.Name,
+        parent: undefined,
+        fieldName: field.name,
+      });
+    });
+
+    it("creates nested `NamedFieldDescriptor`", () => {
+      const field = createRandomPrimitiveField();
+      const nestingField = createRandomNestedContentField([field]);
+      expect(field.getFieldDescriptor()).to.deep.eq({
+        type: FieldDescriptorType.Name,
+        parent: {
+          type: FieldDescriptorType.RelatedContent,
+          parent: undefined,
+          pathFromContentToSelectClass: RelationshipPath.strip(nestingField.pathToPrimaryClass),
+        },
+        fieldName: field.name,
+      });
+    });
+
+  });
+
+  describe("clone", () => {
+
+    it("returns exact copy of itself", () => {
+      const field = createRandomPrimitiveField();
+      const clone = field.clone();
+      expect(clone).to.be.instanceOf(Field);
+      expect(clone.toJSON()).to.deep.eq(field.toJSON());
+    });
+
+  });
+
 });
 
 describe("PropertiesField", () => {
@@ -121,6 +174,12 @@ describe("PropertiesField", () => {
       expect(item).to.matchSnapshot();
     });
 
+    it("creates valid PropertiesField from valid JSON with categories", () => {
+      const categories = [createRandomCategory()];
+      const item = Field.fromJSON({ ...testData.propertiesFieldJSON, category: categories[0].name }, categories);
+      expect(item).to.matchSnapshot();
+    });
+
     it("creates valid PropertiesField from valid serialized JSON", () => {
       const item = PropertiesField.fromJSON(JSON.stringify(testData.propertiesFieldJSON));
       expect(item).to.matchSnapshot();
@@ -129,6 +188,48 @@ describe("PropertiesField", () => {
     it("returns undefined for undefined JSON", () => {
       const item = PropertiesField.fromJSON(undefined);
       expect(item).to.be.undefined;
+    });
+
+  });
+
+  describe("getFieldDescriptor", () => {
+
+    it("creates `PropertiesFieldDescriptor`", () => {
+      const field = createRandomPropertiesField();
+      expect(field.getFieldDescriptor()).to.deep.eq({
+        type: FieldDescriptorType.Properties,
+        parent: undefined,
+        propertyClass: field.properties[0].property.classInfo.name,
+        propertyName: field.properties[0].property.name,
+        pathFromSelectToPropertyClass: RelationshipPath.strip(field.properties[0].relatedClassPath),
+      });
+    });
+
+    it("creates nested `PropertiesFieldDescriptor`", () => {
+      const field = createRandomPropertiesField();
+      const nestingField = createRandomNestedContentField([field]);
+      expect(field.getFieldDescriptor()).to.deep.eq({
+        type: FieldDescriptorType.Properties,
+        parent: {
+          type: FieldDescriptorType.RelatedContent,
+          parent: undefined,
+          pathFromContentToSelectClass: RelationshipPath.strip(nestingField.pathToPrimaryClass),
+        },
+        propertyClass: field.properties[0].property.classInfo.name,
+        propertyName: field.properties[0].property.name,
+        pathFromSelectToPropertyClass: RelationshipPath.strip(field.properties[0].relatedClassPath),
+      });
+    });
+
+  });
+
+  describe("clone", () => {
+
+    it("returns exact copy of itself", () => {
+      const field = createRandomPropertiesField();
+      const clone = field.clone();
+      expect(clone).to.be.instanceOf(PropertiesField);
+      expect(clone.toJSON()).to.deep.eq(field.toJSON());
     });
 
   });
@@ -168,6 +269,13 @@ describe("NestedContentField", () => {
     it("creates valid NestedContentField from valid JSON", () => {
       const item = NestedContentField.fromJSON(testData.nestedContentFieldJSON);
       expect(item).to.matchSnapshot();
+    });
+
+    it("creates valid NestedContentField from valid JSON with categories", () => {
+      const categories = [createRandomCategory()];
+      const json = createRandomNestedFieldJSON(CategoryDescription.toJSON(categories[0]));
+      const field = Field.fromJSON(json, categories);
+      expect(field).to.matchSnapshot();
     });
 
     it("creates valid NestedContentField from valid serialized JSON", () => {
@@ -217,6 +325,103 @@ describe("NestedContentField", () => {
       expect(field3.parent).to.be.undefined;
       expect(field2.parent).to.be.undefined;
       expect(field1.parent).to.be.undefined;
+    });
+
+  });
+
+  describe("getFieldDescriptor", () => {
+
+    it("creates `RelatedContentFieldDescriptor`", () => {
+      const field = createRandomNestedContentField();
+      expect(field.getFieldDescriptor()).to.deep.eq({
+        type: FieldDescriptorType.RelatedContent,
+        parent: undefined,
+        pathFromContentToSelectClass: RelationshipPath.strip(field.pathToPrimaryClass),
+      });
+    });
+
+    it("creates nested `RelatedContentFieldDescriptor`", () => {
+      const field = createRandomNestedContentField();
+      const nestingField = createRandomNestedContentField([field]);
+      expect(field.getFieldDescriptor()).to.deep.eq({
+        type: FieldDescriptorType.RelatedContent,
+        parent: {
+          type: FieldDescriptorType.RelatedContent,
+          parent: undefined,
+          pathFromContentToSelectClass: RelationshipPath.strip(nestingField.pathToPrimaryClass),
+        },
+        pathFromContentToSelectClass: RelationshipPath.strip(field.pathToPrimaryClass),
+      });
+    });
+
+  });
+
+  describe("clone", () => {
+
+    it("returns exact copy of itself", () => {
+      const field = createRandomNestedContentField();
+      const clone = field.clone();
+      expect(clone).to.be.instanceOf(NestedContentField);
+      expect(clone.toJSON()).to.deep.eq(field.toJSON());
+    });
+
+  });
+
+});
+
+describe("FieldDescriptor", () => {
+
+  describe("type guards", () => {
+
+    it("correctly checks 'Name' descriptor", () => {
+      expect(FieldDescriptor.isNamed({
+        type: FieldDescriptorType.Name,
+        fieldName: "test",
+      })).to.be.true;
+      expect(FieldDescriptor.isNamed({
+        type: FieldDescriptorType.Properties,
+        propertyClass: "test",
+        propertyName: "test",
+        pathFromSelectToPropertyClass: [],
+      })).to.be.false;
+      expect(FieldDescriptor.isNamed({
+        type: FieldDescriptorType.RelatedContent,
+        pathFromContentToSelectClass: [],
+      })).to.be.false;
+    });
+
+    it("correctly checks 'Properties' descriptor", () => {
+      expect(FieldDescriptor.isProperties({
+        type: FieldDescriptorType.Name,
+        fieldName: "test",
+      })).to.be.false;
+      expect(FieldDescriptor.isProperties({
+        type: FieldDescriptorType.Properties,
+        propertyClass: "test",
+        propertyName: "test",
+        pathFromSelectToPropertyClass: [],
+      })).to.be.true;
+      expect(FieldDescriptor.isProperties({
+        type: FieldDescriptorType.RelatedContent,
+        pathFromContentToSelectClass: [],
+      })).to.be.false;
+    });
+
+    it("correctly checks 'RelatedContent' descriptor", () => {
+      expect(FieldDescriptor.isRelatedContent({
+        type: FieldDescriptorType.Name,
+        fieldName: "test",
+      })).to.be.false;
+      expect(FieldDescriptor.isRelatedContent({
+        type: FieldDescriptorType.Properties,
+        propertyClass: "test",
+        propertyName: "test",
+        pathFromSelectToPropertyClass: [],
+      })).to.be.false;
+      expect(FieldDescriptor.isRelatedContent({
+        type: FieldDescriptorType.RelatedContent,
+        pathFromContentToSelectClass: [],
+      })).to.be.true;
     });
 
   });

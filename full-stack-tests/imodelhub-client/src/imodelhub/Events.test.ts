@@ -6,7 +6,7 @@ import * as chai from "chai";
 import { Guid, GuidString, Id64, IModelHubStatus } from "@bentley/bentleyjs-core";
 import {
   AllCodesDeletedEvent, AllLocksDeletedEvent, BriefcaseDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent, CodeEvent, EventSAS,
-  EventSubscription, EventType, IModelClient, IModelDeletedEvent, IModelHubEvent, LockEvent, LockLevel, LockType, VersionEvent,
+  EventSubscription, EventType, IModelClient, IModelDeletedEvent, IModelHubEvent, IModelHubEventType, LockEvent, LockLevel, LockType, VersionEvent,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
@@ -241,7 +241,7 @@ describe("iModelHub EventHandler", () => {
   it("should update event subscription", async () => {
     const eventTypes: EventType[] = ["iModelDeletedEvent", "BriefcaseDeletedEvent"];
     mockUpdateEventSubscription(imodelId, subscription.wsgId, eventTypes);
-    subscription.eventTypes = eventTypes;
+    subscription.eventTypes = eventTypes as IModelHubEventType[];
 
     subscription = await imodelHubClient.events.subscriptions.update(requestContext, imodelId, subscription);
     chai.assert(subscription);

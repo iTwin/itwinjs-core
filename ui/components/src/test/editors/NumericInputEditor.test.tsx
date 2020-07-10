@@ -8,11 +8,10 @@ import { mount, shallow } from "enzyme";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
-import { BasePropertyEditorParams, InputEditorSizeParams, PropertyEditorParamTypes, RangeEditorParams } from "@bentley/ui-abstract";
+import { BasePropertyEditorParams, InputEditorSizeParams, PropertyEditorParamTypes, RangeEditorParams, StandardEditorNames } from "@bentley/ui-abstract";
 import { NumericInputEditor } from "../../ui-components/editors/NumericInputEditor";
 import TestUtils from "../TestUtils";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { StandardEditorNames } from "../../ui-components/editors/StandardEditorNames";
 
 describe("<NumericInputEditor />", () => {
   it("should render", () => {

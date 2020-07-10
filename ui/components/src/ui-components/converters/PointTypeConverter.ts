@@ -6,11 +6,10 @@
  * @module TypeConverters
  */
 
-import { Primitives } from "@bentley/ui-abstract";
+import { Primitives, StandardTypeNames } from "@bentley/ui-abstract";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
-import { StandardTypeNames } from "../common/StandardTypeNames";
 
 // cSpell:ignore valuetypes
 

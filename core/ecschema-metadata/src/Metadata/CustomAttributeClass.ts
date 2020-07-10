@@ -69,8 +69,9 @@ export class CustomAttributeClass extends ECClass {
 }
 /**
  * @internal
- * Used for Schema editing.
+ * An abstract class used for Schema editing.
  */
 export abstract class MutableCAClass extends CustomAttributeClass {
   public abstract setContainerType(containerType: CustomAttributeContainerType): void;
+  public abstract setDisplayLabel(displayLabel: string): void;
 }

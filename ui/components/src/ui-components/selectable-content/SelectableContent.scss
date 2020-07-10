@@ -10,7 +10,6 @@
 
   .components-selectable-content-header {
     .components-selectable-content-selector {
-      @include uicore-inputs-select;
       width: 100%;
     }
   }

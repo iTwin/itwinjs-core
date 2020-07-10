@@ -184,18 +184,27 @@ function addMaterial(builder: ProgramBuilder): void {
   builder.addFunctionComputedVarying("v_materialParams", VariableType.Vec4, "computeMaterialParams", computeMaterialParams);
 }
 
-const computePosition = `
+const computePositionPrelude = `
   vec4 pos = MAT_MV * rawPos;
+`;
 
+// We used to use gl.polygonOffset() for blanking regions, but that doesn't work with logarithmic depth buffer which overwrites the
+// computed Z. Instead we must manually offset in vertex shader. We do this even if log depth is not enabled/supported.
+// NOTE: If log depth is *not* supported, then the hilite surface vertex shaders previously would still include this logic, but the
+// fragment shaders would not use v_eyeSpace. Some Ubuntu 20.04 graphics drivers cleverly and correctly optimized out the varying and the uniform,
+// causing an exception when gl.getProgramLocation() failed. So, omit this bit in that case.
+const adjustEyeSpace = `
   v_eyeSpace = pos.xyz;
   const float blankingRegionOffset = 2.0 / 65536.0;
   if (kRenderOrder_BlankingRegion == u_renderOrder)
     v_eyeSpace.z -= blankingRegionOffset * (u_frustum.y - u_frustum.x);
+`;
 
+const computePositionPostlude = `
   return u_proj * pos;
 `;
 
-function createCommon(instanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isThematic: IsThematic): ProgramBuilder {
+function createCommon(instanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isThematic: IsThematic, isHiliter: boolean): ProgramBuilder {
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, IsInstanced.Yes === instanced);
   const builder = new ProgramBuilder(attrMap, instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   const vert = builder.vert;
@@ -209,10 +218,16 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated, shadowable: 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
 
-  addRenderOrder(builder.vert);
-  addRenderOrderConstants(builder.vert);
-  addFrustum(builder);
-  builder.addVarying("v_eyeSpace", VariableType.Vec3);
+  let computePosition;
+  if (isHiliter && !System.instance.supportsLogZBuffer) {
+    computePosition = computePositionPrelude + computePositionPostlude;
+  } else {
+    addFrustum(builder);
+    addRenderOrder(builder.vert);
+    addRenderOrderConstants(builder.vert);
+    builder.addVarying("v_eyeSpace", VariableType.Vec3);
+    computePosition = computePositionPrelude + adjustEyeSpace + computePositionPostlude;
+  }
 
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
 
@@ -221,7 +236,7 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated, shadowable: 
 
 /** @internal */
 export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified): ProgramBuilder {
-  const builder = createCommon(instanced, IsAnimated.No, IsShadowable.No, IsThematic.No);
+  const builder = createCommon(instanced, IsAnimated.No, IsShadowable.No, IsThematic.No, true);
 
   addSurfaceFlags(builder, true, false);
   addTexture(builder, IsAnimated.No, IsThematic.No);
@@ -512,7 +527,7 @@ const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) 
 
 /** @internal */
 export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
-  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isShadowable, flags.isThematic);
+  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isShadowable, flags.isThematic, false);
   addShaderFlags(builder);
 
   const feat = flags.featureMode;

@@ -63,7 +63,7 @@ export interface SeqConfig {
 
 // @beta
 export class SeqLoggerConfig {
-    static createBunyanSeqLogger(seqConfig: SeqConfig, loggerName: string): any;
+    static createBunyanSeqLogger(seqConfig: SeqConfig, loggerName: string, logToStdout?: boolean): any;
     static validateProps(seqConfig: any): void;
 }
 

@@ -1741,24 +1741,18 @@ describe("ModelsTree", () => {
     let imodel: IModelConnection;
     const testIModelPath = "src/test/test-data/JoesHouse.bim";
 
-    before(async () => {
+    beforeEach(async () => {
       await initializePresentationTesting({
         backendProps: {
           cacheDirectory: path.join("lib", "test", "cache"),
         },
       });
-    });
-
-    after(async () => {
-      await terminatePresentationTesting();
-    });
-
-    beforeEach(async () => {
       imodel = await SnapshotConnection.openFile(testIModelPath);
     });
 
     afterEach(async () => {
       await imodel.close();
+      await terminatePresentationTesting();
     });
 
     it("shows correct hierarchy", async () => {

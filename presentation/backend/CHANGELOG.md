@@ -1,6 +1,16 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Tue, 07 Jul 2020 14:44:52 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2020 17:23:14 GMT and should not be manually modified.
+
+## 2.3.0
+Fri, 10 Jul 2020 17:23:14 GMT
+
+### Updates
+
+- geometry clip containment
+- Add ability to request distinct values in pages using field descriptors.
+- Expose logger categories similar to how it's done in core
+- Log RPC requests and their parameters
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

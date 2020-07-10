@@ -7,38 +7,53 @@
 
 @mixin uicore-tabs-vertical {
 
-    @include uicore-tabs;
+  @include uicore-tabs;
 
-    > li {
+  > li {
 
-        display:        block;
-        margin:         0;
-        padding:        0;
-        width:          100%;
+    display:        block;
+    margin:         0;
+    padding:        0;
+    width:          100%;
 
-        > a {
+    > a {
 
-            line-height:            $uicore-line-height;
-            padding:                14px 20px;
-            background:             $buic-background-tab-inactive;
-            border-width:           0;
+      line-height:            $uicore-line-height;
+      padding:                14px 20px;
+      background:             $buic-background-tab-inactive;
+      border-width:           0;
 
-            $bar-size: 2px;
+      $bar-size: 2px;
 
-            &::after {
+      &::after {
 
-                height:             100%;
-                width:              $bar-size;
-                left:               $bar-size;
-            }
-        }
-
-        &.active {
-            > a {
-
-              color:              $buic-foreground-primary;
-              background:         $buic-background-tab-active;
-            }
-        }
+        height:             100%;
+        width:              $bar-size;
+        left:               $bar-size;
+        padding-top:        $bar-size;
+        padding-bottom:     $bar-size;
+        background-clip:    content-box;
+        box-sizing:         border-box;
+      }
     }
+
+    &.core-active {
+      > a {
+
+        color:              $buic-foreground-primary;
+        background-color:   $buic-background-tab-active;
+      }
+    }
+  }
+
+  &:focus {
+    > li {
+      &.core-active {
+        > a {
+          background-color: $buic-background-focus-overlay;
+        }
+      }
+    }
+  }
+
 }

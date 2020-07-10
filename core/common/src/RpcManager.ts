@@ -10,6 +10,7 @@ import { IModelRpcProps } from "./IModel";
 import { RpcOperation } from "./rpc/core/RpcOperation";
 import { RpcRegistry } from "./rpc/core/RpcRegistry";
 import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface";
+import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
 
 /** Describes the endpoints of an RPC interface.
  * @public
@@ -38,8 +39,8 @@ export class RpcManager {
   }
 
   /** Returns the RPC client instance for the frontend. */
-  public static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T {
-    return RpcRegistry.instance.getClientForInterface(definition);
+  public static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken = RpcRoutingToken.default): T {
+    return RpcRegistry.instance.getClientForInterface(definition, routing);
   }
 
   /** Register the RPC implementation class for the backend. */

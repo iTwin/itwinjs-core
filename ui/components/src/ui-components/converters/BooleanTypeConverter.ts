@@ -6,11 +6,10 @@
  * @module TypeConverters
  */
 
-import { Primitives } from "@bentley/ui-abstract";
+import { Primitives, StandardTypeNames } from "@bentley/ui-abstract";
 import { UiComponents } from "../UiComponents";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /** Boolean Type Converter.
  * @public

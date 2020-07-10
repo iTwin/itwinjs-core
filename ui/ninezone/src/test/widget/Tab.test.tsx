@@ -6,7 +6,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, addTab, createNineZoneState, NineZoneDispatch, PanelSideContext, WidgetContext, WidgetStateContext, WidgetTab, WidgetTabsEntryContext,
+  addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, WidgetContext, WidgetStateContext, WidgetTab,
+  WidgetTabsEntryContext,
 } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
 
@@ -141,8 +142,8 @@ describe("WidgetTab", () => {
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
-      fireEvent.pointerDown(tab);
-      fireEvent.pointerUp(tab);
+      fireEvent.mouseDown(tab);
+      fireEvent.mouseUp(tab);
       fakeTimers.tick(300);
     });
     dispatch.calledOnceWithExactly(sinon.match({
@@ -177,10 +178,10 @@ describe("WidgetTab", () => {
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
-      fireEvent.pointerDown(tab);
-      fireEvent.pointerUp(tab);
-      fireEvent.pointerDown(tab);
-      fireEvent.pointerUp(tab);
+      fireEvent.mouseDown(tab);
+      fireEvent.mouseUp(tab);
+      fireEvent.mouseDown(tab);
+      fireEvent.mouseUp(tab);
       fakeTimers.tick(300);
     });
     dispatch.calledOnceWithExactly(sinon.match({
@@ -210,13 +211,8 @@ describe("WidgetTab", () => {
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
-      fireEvent.pointerDown(tab);
-
-      const moveEvent = document.createEvent("MouseEvent");
-      moveEvent.initEvent("pointermove");
-      sinon.stub(moveEvent, "clientX").get(() => 10);
-      sinon.stub(moveEvent, "clientY").get(() => 10);
-      fireEvent(document, moveEvent);
+      fireEvent.mouseDown(tab);
+      fireEvent.mouseMove(document, { clientX: 10, clientY: 10 });
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: "WIDGET_TAB_DRAG_START",
@@ -242,14 +238,66 @@ describe("WidgetTab", () => {
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
-      fireEvent.pointerDown(tab);
-
-      const moveEvent = document.createEvent("MouseEvent");
-      moveEvent.initEvent("pointermove");
-      sinon.stub(moveEvent, "clientX").get(() => 5);
-      sinon.stub(moveEvent, "clientY").get(() => 0);
-      fireEvent(document, moveEvent);
+      fireEvent.mouseDown(tab);
+      fireEvent.mouseMove(document, { clientX: 5, clientY: 0 });
     });
     dispatch.notCalled.should.true;
+  });
+
+  it("should not dispatch WIDGET_TAB_DRAG_START w/o initial pointer position", () => {
+    const fakeTimers = sandbox.useFakeTimers();
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = addTab(nineZone, "w1", "t1");
+    render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <WidgetContext.Provider value={{ measure: () => ({ height: 0, width: 0 }) }}>
+          <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+            <WidgetTab tab={nineZone.tabs.t1} />
+          </WidgetStateContext.Provider>
+        </WidgetContext.Provider>
+      </NineZoneProvider>,
+    );
+    const tab = document.getElementsByClassName("nz-widget-tab")[0];
+    act(() => {
+      fireEvent.mouseDown(tab);
+      fakeTimers.tick(300);
+      dispatch.resetHistory();
+      fireEvent.mouseMove(document, { clientX: 20 });
+    });
+    dispatch.notCalled.should.true;
+  });
+
+  it("should dispatch FLOATING_WIDGET_BRING_TO_FRONT", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = addTab(nineZone, "w1", "t1");
+    render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <FloatingWidgetIdContext.Provider value="fw1">
+          <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+            <WidgetTab tab={nineZone.tabs.t1} />
+          </WidgetStateContext.Provider>
+        </FloatingWidgetIdContext.Provider>
+      </NineZoneProvider>,
+    );
+    const tab = document.getElementsByClassName("nz-widget-tab")[0];
+    act(() => {
+      fireEvent.touchStart(tab, {
+        touches: [{}],
+      });
+    });
+    dispatch.calledOnceWithExactly(sinon.match({
+      type: "FLOATING_WIDGET_BRING_TO_FRONT",
+      id: "fw1",
+    })).should.true;
   });
 });

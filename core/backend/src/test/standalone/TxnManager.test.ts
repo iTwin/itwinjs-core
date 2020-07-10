@@ -6,8 +6,7 @@
 import { assert, expect } from "chai";
 import { BeDuration, DbResult, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorByName, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { Code, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, UpgradeOptions } from "@bentley/imodeljs-common";
 import {
   BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, TxnAction, UpdateModelOptions,
 } from "../../imodeljs-backend";
@@ -21,7 +20,10 @@ describe("TxnManager", () => {
 
   const performUpgrade = (pathname: string): DbResult => {
     const nativeDb = new IModelHost.platform.DgnDb();
-    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeMode.Domain);
+    const upgradeOptions: UpgradeOptions = {
+      domain: DomainOptions.Upgrade,
+    };
+    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
     if (DbResult.BE_SQLITE_OK === res) {
       nativeDb.deleteAllTxns();
       nativeDb.closeIModel();

@@ -36,6 +36,7 @@ internal;BriefcaseKey = string
 internal;BriefcaseProps 
 beta;calculateSolarAngles(date: Date, location: Cartographic):
 beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
+beta;calculateSolarDirectionFromAngles(azimuthElevation:
 beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
 public;CalloutProps 
 public;Camera 
@@ -91,10 +92,12 @@ internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
 public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
+beta;DisplayStyleOverridesOptions
 public;DisplayStyleProps 
 public;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
+beta;DomainOptions
 beta;DownloadBriefcaseOptions
 internal;DownloadBriefcaseStatus
 beta;DPoint2dProps = number[]
@@ -154,6 +157,8 @@ public;GeometricModel3dProps
 public;GeometricModelProps 
 public;GeometryAppearanceProps
 public;GeometryClass
+beta;GeometryContainmentRequestProps
+beta;GeometryContainmentResponseProps
 public;GeometryParams
 public;GeometryPartInstanceProps
 public;GeometryPartProps 
@@ -313,6 +318,7 @@ internal;PolylineFlags
 internal;PolylineTypeFlags
 internal;PrimaryTileTreeId
 beta;PrimitiveTypeCode
+beta;ProfileOptions
 beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
 beta;PropertyMetaData 
 beta;PropertyMetaDataProps
@@ -346,11 +352,11 @@ public;RepositoryLinkProps
 internal;RequestBriefcaseProps
 public;ResponseLike 
 public;RgbColor
-public;RgbColorProps =
+public;RgbColorProps
 beta;RgbFactorProps = number[]
 public;RootSubjectProps
 public;class RpcConfiguration
-public;RpcConfigurationSupplier = () =>
+public;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
 public;RpcContentType
 internal;RpcControlChannel
 public;class RpcControlResponse
@@ -394,6 +400,9 @@ public;RpcRequestStatus
 public;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
 public;RpcResponseCacheControl
 public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
+alpha;RpcRoutingMap 
+alpha;RpcRoutingMap
+public;RpcRoutingToken
 public;RpcSerializedValue
 public;RpcSerializedValue
 beta;SectionDrawingLocationProps 
@@ -476,6 +485,7 @@ beta;Tweens
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
 beta;UpdateCallback = (obj: any, t: number) => void
+beta;UpgradeOptions
 public;UrlLinkProps 
 public;ViewAttachmentLabelProps 
 public;ViewAttachmentProps 

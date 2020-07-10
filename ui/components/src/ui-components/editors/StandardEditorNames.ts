@@ -10,6 +10,7 @@
 
 /**
  * Standard Editor Names for property editors.
+ * @deprecated Use [[StandardEditorNames]] in ui-abstract instead
  * @beta
  */
 export enum StandardEditorNames {

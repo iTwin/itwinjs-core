@@ -216,6 +216,7 @@ internal;NavCubeFaceProps
 public;NavigationPropertyTypeConverter 
 public;NavigationPropertyValueRenderer 
 public;NextObserver
+internal;Node
 public;NodeCheckboxProps 
 internal;NodeRenderer = (item: BeInspireTreeNode
 internal;NodesDeselectedCallback = OnItemsDeselectedCallback
@@ -255,6 +256,7 @@ public;PrimitivePropertyLabelRenderer
 public;PrimitivePropertyLabelRendererProps 
 public;PrimitivePropertyRenderer 
 public;PrimitivePropertyValueRenderer 
+internal;PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps): JSX.Element
 public;PrimitiveRendererProps 
 public;PropertyCategory
 public;PropertyCategoryBlock 
@@ -289,6 +291,7 @@ public;RowItem
 public;RowProps
 beta;SaturationPicker 
 beta;SaturationPickerProps 
+internal;scheduleSubscription
 internal;Scrubber 
 internal;ScrubberProps 
 beta;SelectableContent(props: SelectableContentProps): JSX.Element
@@ -320,6 +323,8 @@ alpha;SolarDataProvider
 alpha;SolarPlaybackProgressHandler = (time: Date) => void
 alpha;SolarTimeline 
 public;SortComparer
+public;SparseArray
+internal;SparseTree
 beta;StandardEditorNames
 public;StandardRotationChangeEvent 
 public;StandardRotationChangeEventArgs
@@ -330,6 +335,7 @@ public;StringTypeConverter
 public;StructPropertyValueRenderer 
 public;Subscribable
 public;Subscription 
+internal;SubscriptionScheduler
 public;Table 
 public;TableArrayValueRenderer 
 beta;TableCellContextMenuArgs

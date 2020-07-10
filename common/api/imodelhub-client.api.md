@@ -109,7 +109,7 @@ export class BriefcaseDeletedEvent extends BriefcaseEvent {
 
 // @beta
 export abstract class BriefcaseEvent extends IModelHubEvent {
-    briefcaseId?: number;
+    briefcaseId: number;
     // @internal
     fromJson(obj: any): void;
 }
@@ -180,8 +180,8 @@ export class ChangeSetHandler {
 
 // @beta
 export class ChangeSetPostPushEvent extends BriefcaseEvent {
-    changeSetId?: string;
-    changeSetIndex?: string;
+    changeSetId: string;
+    changeSetIndex: string;
     // @internal
     fromJson(obj: any): void;
 }
@@ -268,12 +268,12 @@ export class CodeBase extends WsgInstance {
 
 // @alpha
 export class CodeEvent extends BriefcaseEvent {
-    codeScope?: string;
-    codeSpecId?: Id64String;
+    codeScope: string;
+    codeSpecId: Id64String;
     // @internal
     fromJson(obj: any): void;
-    state?: CodeState;
-    values?: string[];
+    state: CodeState;
+    values: string[];
 }
 
 // @alpha
@@ -398,7 +398,7 @@ export type EmptyIModelTemplate = "Empty";
 export class EventHandler extends EventBaseHandler {
     // @internal
     constructor(handler: IModelBaseHandler);
-    createListener(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: IModelHubEvent) => void): () => void;
+    createListener<T extends IModelHubEvent>(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: T) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined>;
     getSASToken(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<EventSAS>;
     get subscriptions(): EventSubscriptionHandler;
@@ -410,47 +410,21 @@ export class EventSAS extends BaseEventSAS {
 
 // @beta
 export class EventSubscription extends WsgInstance {
-    eventTypes?: EventType[];
+    eventTypes?: IModelHubEventType[];
 }
 
 // @beta
 export class EventSubscriptionHandler {
     constructor(handler: IModelBaseHandler);
+    create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: IModelHubEventType[]): Promise<EventSubscription>;
+    // @deprecated
     create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]): Promise<EventSubscription>;
     delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, eventSubscriptionId: string): Promise<void>;
     update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, subscription: EventSubscription): Promise<EventSubscription>;
 }
 
-// @beta
-export type EventType =
-/** Sent when one or more [[Lock]]s are updated. See [[LockEvent]].
- * @alpha Hide Lock API while focused on readonly viewing scenarios
- */
-"LockEvent" |
-/** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. See [[AllLocksDeletedEvent]].
- * @alpha Hide Lock API while focused on readonly viewing scenarios
- */
-"AllLocksDeletedEvent" |
-/** Sent when a [[ChangeSet]] is successfully pushed. See [[ChangeSetPostPushEvent]]. */
-"ChangeSetPostPushEvent" |
-/** Sent when a [[ChangeSet]] push has started. See [[ChangeSetPrePushEvent]]. */
-"ChangeSetPrePushEvent" |
-/** Sent when one or more [Code]($common)s are updated. See [[CodeEvent]].
- * @alpha Hide Code API while focused on readonly viewing scenarios
- */
-"CodeEvent" |
-/** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. See [[AllCodesDeletedEvent]].
- * @alpha Hide Code API while focused on readonly viewing scenarios
- */
-"AllCodesDeletedEvent" |
-/** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]].
- * @internal
- */
-"BriefcaseDeletedEvent" |
-/** Sent when an iModel is deleted. See [[iModelDeletedEvent]]. */
-"iModelDeletedEvent" |
-/** Sent when a new named [[Version]] is created. See [[VersionEvent]]. */
-"VersionEvent";
+// @beta @deprecated (undocumented)
+export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent";
 
 // @internal
 export enum GetEventOperationType {
@@ -742,6 +716,24 @@ export abstract class IModelHubEvent extends IModelHubBaseEvent {
     iModelId?: GuidString;
 }
 
+// @beta
+export enum IModelHubEventType {
+    // @alpha
+    AllCodesDeletedEvent = "AllCodesDeletedEvent",
+    // @alpha
+    AllLocksDeletedEvent = "AllLocksDeletedEvent",
+    // @internal
+    BriefcaseDeletedEvent = "BriefcaseDeletedEvent",
+    ChangeSetPostPushEvent = "ChangeSetPostPushEvent",
+    ChangeSetPrePushEvent = "ChangeSetPrePushEvent",
+    // @alpha
+    CodeEvent = "CodeEvent",
+    iModelDeletedEvent = "iModelDeletedEvent",
+    // @alpha
+    LockEvent = "LockEvent",
+    VersionEvent = "VersionEvent"
+}
+
 // @internal
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
     contextId?: string;
@@ -811,9 +803,9 @@ export class LockBase extends WsgInstance {
 export class LockEvent extends BriefcaseEvent {
     // @internal
     fromJson(obj: any): void;
-    lockLevel?: LockLevel;
-    lockType?: LockType;
-    objectIds?: Id64String[];
+    lockLevel: LockLevel;
+    lockType: LockType;
+    objectIds: Id64String[];
     releasedWithChangeSet?: string;
 }
 
@@ -1043,11 +1035,11 @@ export class Version extends WsgInstance {
 
 // @beta
 export class VersionEvent extends IModelHubEvent {
-    changeSetId?: string;
+    changeSetId: string;
     // @internal
     fromJson(obj: any): void;
-    versionId?: GuidString;
-    versionName?: string;
+    versionId: GuidString;
+    versionName: string;
 }
 
 // @beta

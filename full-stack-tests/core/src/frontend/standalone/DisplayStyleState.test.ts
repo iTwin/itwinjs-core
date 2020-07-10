@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Vector3d } from "@bentley/geometry-core";
-import { DisplayStyle3dProps } from "@bentley/imodeljs-common";
-import { DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import {
+  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, SpatialClassificationProps, ThematicDisplayMode,
+} from "@bentley/imodeljs-common";
+import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;
@@ -61,5 +63,158 @@ describe("DisplayStyle", () => {
     expect(style.sunDirection!.x).to.equal(sunDir.x);
     expect(style.sunDirection!.y).to.equal(sunDir.y);
     expect(style.sunDirection!.z).to.equal(sunDir.z);
+  });
+
+  it("should use iModel extents for thematic height range if unspecified", () => {
+    const style = new DisplayStyle3dState(styleProps, imodel);
+    style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Height, range: [ 1, 100 ]  } });
+    expect(style.settings.thematic.range.low).to.equal(1);
+    expect(style.settings.thematic.range.high).to.equal(100);
+
+    style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Height } });
+    expect(style.settings.thematic.range.low).to.equal(imodel.projectExtents.zLow);
+    expect(style.settings.thematic.range.high).to.equal(imodel.projectExtents.zHigh);
+
+    style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Slope } });
+    expect(style.settings.thematic.range.isNull).to.be.true;
+  });
+
+  it("should override selected settings", () => {
+    const style = new DisplayStyle3dState(styleProps, imodel);
+    const test = (overrides: DisplayStyle3dSettingsProps, changed?: DisplayStyle3dSettingsProps) => {
+      const originalSettings = { ...style.settings.toJSON() };
+      style.settings.applyOverrides(overrides);
+      const output = style.settings.toJSON();
+
+      const expected = { ...overrides, changed };
+      for (const key of Object.keys(expected) as Array<keyof DisplayStyle3dSettingsProps>)
+        expect(output[key]).to.deep.equal(expected[key]);
+
+      for (const key of Object.keys(output) as Array<keyof DisplayStyle3dSettingsProps>)
+        if (undefined === expected[key])
+          expect(output[key]).to.deep.equal(originalSettings[key]);
+
+      if (undefined === expected.contextRealityModels)
+        return;
+
+      const models: ContextRealityModelState[] = [];
+      style.forEachRealityModel((model) => models.push(model));
+      expect(models.length).to.equal(expected.contextRealityModels.length);
+      for (let i = 0; i < models.length; i++) {
+        const a = models[i];
+        const e = expected.contextRealityModels[i];
+        expect(a.name).to.equal(e.name);
+        expect(a.url).to.equal(e.tilesetUrl);
+        expect(a.orbitGtBlob).to.equal(e.orbitGtBlob);
+        expect(a.description).to.equal(e.description);
+        expect(a.treeRef).not.to.be.undefined;
+
+        expect(undefined === a.classifiers).to.equal(undefined === e.classifiers);
+        if (undefined !== a.classifiers && undefined !== e.classifiers)
+          expect(a.classifiers.length).to.equal(e.classifiers.length);
+      }
+    };
+
+    // Note that each test adds some new settings to our display style. This allows us to test that settings not specified in overrides retain their previous values.
+    test({
+      backgroundMap: {
+        groundBias: 84,
+        providerData: { mapType: BackgroundMapType.Street },
+        applyTerrain: true,
+        terrainSettings: { exaggeration: 0.5, heightOriginMode: 1 },
+      },
+    });
+
+    test({ planProjections: { "0x8": { elevation: 2, transparency: 0.25, overlay: true, enforceDisplayPriority: true } } });
+    test({ environment: { sky: { display: false, twoColor: true }, ground: { display: true } } });
+
+    test({
+      contextRealityModels: [{
+        tilesetUrl: "bing.com",
+        name: "bing",
+        description: "an unpopular search engine",
+        classifiers: [{
+          modelId: "0x321",
+          expand: 1.5,
+          flags: {
+            inside: SpatialClassificationProps.Display.Dimmed,
+            outside: SpatialClassificationProps.Display.On,
+            isVolumeClassifier: false,
+            type: 0,
+          },
+          name: "bing",
+          isActive: true,
+        }],
+      }],
+    });
+
+    test({
+      scheduleScript: [{
+        modelId: "0xadf",
+        realityModelUrl: "askjeeves.com",
+        elementTimelines: [{
+          batchId: 54,
+          elementIds: [ "0x1", "0x2", "0x3", "0x4" ],
+        }],
+      }],
+    });
+
+    test({
+      thematic: {
+        displayMode: ThematicDisplayMode.Slope,
+        axis: [ 0, 0.5, 1 ],
+        range: [ 12, 24 ],
+        sunDirection: [ 0, 1, 0 ],
+        gradientSettings: {
+          mode: 1,
+          colorScheme: 1,
+          customKeys: [],
+          stepCount: 3,
+          marginColor: ColorByName.pink,
+        },
+      },
+    });
+
+    test({
+      backgroundMap: {
+        groundBias: 42,
+        providerData: { mapType: BackgroundMapType.Aerial },
+        terrainSettings: { exaggeration: 0.2, heightOriginMode: 0 },
+      },
+    });
+
+    test({ planProjections: { "0x9": { elevation: 3, transparency: 0.75, overlay: true, enforceDisplayPriority: true } } });
+    test({ environment: { sky: { display: true, twoColor: true }, ground: { display: false } } });
+
+    test({
+      contextRealityModels: [{
+        tilesetUrl: "google.com",
+        name: "google",
+        description: "a popular search engine",
+        classifiers: [{
+          modelId: "0x123",
+          expand: 0.5,
+          flags: {
+            inside: SpatialClassificationProps.Display.Off,
+            outside: SpatialClassificationProps.Display.Dimmed,
+            isVolumeClassifier: true,
+            type: 0,
+          },
+          name: "google",
+          isActive: false,
+        }],
+      }],
+    });
+
+    test({
+      scheduleScript: [{
+        modelId: "0xfda",
+        realityModelUrl: "altavista.com",
+        elementTimelines: [{
+          batchId: 45,
+          elementIds: [ "0xa", "0xb" ],
+        }],
+      }],
+    });
   });
 });

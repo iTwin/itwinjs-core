@@ -12,6 +12,8 @@
 @import "../z-index";
 @import "../scrollbar";
 
+// cspell:ignore titlebar outoffocus nwse
+
 .core-dialog {
   @include uicore-font-family;
 
@@ -109,7 +111,7 @@
       > .core-dialog-head {
         flex-shrink: 0;
         align-items: center;
-        background-color: $buic-background-titlebar;
+        background-color: $buic-background-titlebar-outoffocus;
         color: $buic-text-color;
         display: flex;
         padding: 4px;
@@ -136,9 +138,14 @@
           flex: 0 0 $uicore-icons-medium;
           text-align: center;
           color: $buic-text-color-muted;
+          border: none;
+          background-color: transparent;
 
-          &:hover {
+          &:hover, &:focus {
             color: $buic-foreground-activehover;
+          }
+          &:focus {
+            outline: 1px solid $buic-foreground-focus;
           }
         }
       }
@@ -177,6 +184,13 @@
           }
         }
       }
+
+      &:focus-within {
+        .core-dialog-head {
+          background-color: $buic-background-titlebar;
+        }
+      }
+
     }
 
     $dialog-resize-bar-width: 8px;

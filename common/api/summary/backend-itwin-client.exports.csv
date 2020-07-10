@@ -9,7 +9,6 @@ public;BackendITwinClientLoggerCategory
 internal;BufferedStream 
 beta;DelegationAuthorizationClient 
 beta;DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration
-internal;IOSAzureFileHandler 
 internal;LocalhostHandler 
 beta;OidcAgentClient = AgentAuthorizationClient
 beta;OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration

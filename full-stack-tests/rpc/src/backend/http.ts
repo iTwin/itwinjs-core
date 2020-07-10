@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { IModelJsExpressServer } from "@bentley/express-server";
-import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
-import { rpcInterfaces } from "../common/TestRpcInterface";
+import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
+import { AttachedInterfaceImpl } from "./TestRpcImpl";
 
 async function init() {
   await commonSetup();
@@ -19,8 +20,16 @@ async function init() {
   const port = Number(process.env.CERTA_PORT || 3021) + 2000;
   const server = new IModelJsExpressServer(rpcConfig.protocol);
   await server.initialize(port);
+
+  initializeAttachedInterfacesTest(rpcConfig);
+
   // tslint:disable-next-line:no-console
   console.log("Web backend for full-stack-tests listening on port " + port);
+}
+
+function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) {
+  AttachedInterfaceImpl.register();
+  config.attach(AttachedInterface);
 }
 
 module.exports = init();

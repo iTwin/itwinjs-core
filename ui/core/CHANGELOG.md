@@ -1,6 +1,19 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Tue, 07 Jul 2020 14:44:52 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2020 17:23:14 GMT and should not be manually modified.
+
+## 2.3.0
+Fri, 10 Jul 2020 17:23:14 GMT
+
+### Updates
+
+- Improved ui-core unit test coverage to 100%
+- Support for CSS units in Dialog min/max sizes
+- Accessibility: Improved focus borders & indicators
+- Increase popup position tolerance to 3 pixels to avoid endless set state calls.
+- Styled RadioButton. Restyled Checkbox. Fixed FocusTrap pointer events.
+- Fixed default size of Toggle button
+- Support for indeterminate state in Checkbox component
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

@@ -35,10 +35,7 @@
       background-color: $buic-background-control;
       color: $buic-foreground-body;
       border: 1px solid $buic-inputs-border;
-
-      &:hover {
-        border: 1px solid $buic-inputs-border;
-      }
+      cursor: pointer;
 
       &[disabled] {
         background-color: $buic-foreground-disabled;
@@ -50,9 +47,13 @@
       }
 
       &--is-focused {
-        border-color: $buic-inputs-border;
         outline: 0px;
-        box-shadow: $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, $buic-inputs-focus-boxshadow-gradient2 0px 0px 0px 2px;
+        border-color: $buic-foreground-focus-border;
+        box-shadow: $uicore-inputs-focus-gradient;
+
+        &:hover {
+          border-color: $buic-foreground-focus;
+        }
       }
 
       .react-select__placeholder {

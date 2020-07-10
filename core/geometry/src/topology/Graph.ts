@@ -15,6 +15,68 @@ import { Transform } from "../geometry3d/Transform";
 import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
 import { SmallSystem } from "../numerics/Polynomials";
 import { MaskManager } from "./MaskManager";
+// import { GraphChecker } from "../test/topology/Graph.test";
+
+// cspell:word CONSTU
+// cspell:word CONSTV
+// cspell:word USEAM
+// cspell:word VSEAM
+/**
+ * * Each node of the graph has a mask member.
+ * * The mask member is a number which is used as set of single bit boolean values.
+ * * Particular meanings of the various bits are HIGHLY application dependent.
+ *   * The EXTERIOR mask bit is widely used to mark nodes that are "outside" the active areas
+ *   * The PRIMARY_EDGE bit is widely used to indicate linework created directly from input data, hence protected from triangle edge flipping.
+ *   * The BOUNDARY bit is widely used to indicate that crossing this edge is a transition from outside to inside.
+ *   * VISITED is used locally in many searches.
+ *      * Never use VISITED unless the search logic is highly self contained.
+ * @internal
+ */
+export enum HalfEdgeMask {
+  /**  Mask commonly set consistently around exterior faces.
+   * * A boundary edge with interior to one side, exterior to the other will have EXTERIOR only on the outside.
+   * * An an edge inserted "within a purely exterior face" can have EXTERIOR on both MediaStreamAudioDestinationNode[Symbol]
+   * * An interior edges (such as added during triangulation) will have no EXTERIOR bits.
+   */
+  EXTERIOR = 0x00000001,
+  /** Mask commonly set (on both sides) of original geometry edges that are transition from outside from to inside.
+   * * At the moment of creating an edge from primary user boundary loop coordinates, the fact that an edge is BOUNDARY is often clear even though
+   *  there is uncertainty about which side should be EXTERIOR.
+   */
+  BOUNDARY_EDGE = 0x00000002,
+  // REMARK: Various mask names are COMMENTED here for reference to native legacy code.
+  // CONSTU_MASK = 0x00000004,
+  // CONSTV_MASK = 0x00000008,
+  // USEAM_MASK = 0x00000010,
+  // VSEAM_MASK = 0x00000020,
+  // BOUNDARY_VERTEX_MASK = 0x00000040,
+  // PRIMARY_VERTEX_MASK = 0x00000080,
+  // DIRECTED_EDGE_MASK = 0x00000100,
+  /** Mask commonly set (on both sides) of original geometry edges, but NOT indicating that the edge is certainly a boundary between outside and inside.
+   * * For instance, if geometry is provided as stray sticks (not loops), it can be marked PRIMARY_EDGE but neither BOUNDARY_EDGE nor EXTERIOR_EDGE
+   */
+  PRIMARY_EDGE = 0x00000004,
+
+  /** Mask used for low level searches to identify previously-visited nodes */
+  VISITED = 0x0000010,
+
+  /** Mask applied to triangles by earcut triangulator */
+  TRIANGULATED_FACE = 0x00000100,
+  /** mask applied in a face with 2 edges. */
+  NULL_FACE = 0x00000200,
+
+  /** no mask bits */
+  NULL_MASK = 0x00000000,
+  /** The "upper 12 " bits of 32 bit integer. */
+  ALL_GRAB_DROP_MASKS = 0xffF00000,  // 12 masks reserved for grab/drop.
+  /** all mask bits */
+  ALL_MASK = 0xFFFFFFFF,
+  // informal convention on preassigned mask bit numbers:
+  // byte0 (EXTERIOR, BOUNDARY_EDGE, PRIMARY_EDGE) -- edge properties
+  // byte1 (VISITED, VISIT_A, WORK_MASK0, WORK_MASK1) -- temp masks for algorithms.
+  // byte2 (TRIANGULATED_FACE, NULL_FACE) -- face properties.
+
+}
 
 /** function signature for function of one node with no return type restrictions
  * @internal
@@ -190,12 +252,28 @@ export class HalfEdge {
       HalfEdge.setFaceLinks(newB, vPredA);
       HalfEdge.setEdgeMates(newA, mateA);
       HalfEdge.setEdgeMates(newB, baseA);
-      newA.edgeTag = baseA.edgeTag;
-      newB.edgeTag = mateA.edgeTag;
+      this.transferEdgeProperties(baseA, newA);
+      this.transferEdgeProperties(mateA, newB);
     }
     return newA;
   }
-
+  private static _edgePropertyMasks: HalfEdgeMask[] = [HalfEdgeMask.BOUNDARY_EDGE, HalfEdgeMask.EXTERIOR, HalfEdgeMask.PRIMARY_EDGE, HalfEdgeMask.NULL_FACE];
+  /**
+   * Copy "edge based" content of fromNode to toNode
+   * * edgeTag
+   * * masks in _edgePropertyMasks: EXTERIOR, BOUNDARY_EDGE, NULL_FACE, PRIMARY_EDGE
+   * @param fromNode
+   * @param toNode
+   */
+  public static transferEdgeProperties(fromNode: HalfEdge, toNode: HalfEdge) {
+    toNode.edgeTag = fromNode.edgeTag;
+    for (const mask of this._edgePropertyMasks) {
+      if (fromNode.getMask(mask))
+        toNode.setMask(mask);
+      else
+        toNode.clearMask(mask);
+    }
+  }
   private static _totalNodesCreated = 0;
   public constructor(x: number = 0, y: number = 0, z: number = 0, i: number = 0) {
     this._id = HalfEdge._totalNodesCreated++;
@@ -443,6 +521,18 @@ export class HalfEdge {
       predB._faceSuccessor = nodeA;
       predA._faceSuccessor = nodeB;
     }
+  }
+
+  /**
+   * Pinch this half edge out of its base vertex loop.
+   * * if this  the half edge (possibly undefined)
+   */
+  public yankFromVertexLoop(): HalfEdge | undefined {
+    const other = this.edgeMate.faceSuccessor;
+    if (other === this)
+      return undefined;
+    HalfEdge.pinch(this, other);
+    return other;
   }
 
   /** Turn all pointers to undefined so garbage collector can reuse the object.
@@ -1147,64 +1237,27 @@ export class HalfEdgeGraph {
       transform.multiplyXYAndZInPlace(node);
     }
   }
-}
-// cspell:word CONSTU
-// cspell:word CONSTV
-// cspell:word USEAM
-// cspell:word VSEAM
-/**
- * * Each node of the graph has a mask member.
- * * The mask member is a number which is used as set of single bit boolean values.
- * * Particular meanings of the various bits are HIGHLY application dependent.
- *   * The EXTERIOR mask bit is widely used to mark nodes that are "outside" the active areas
- *   * The PRIMARY_EDGE bit is widely used to indicate linework created directly from input data, hence protected from triangle edge flipping.
- *   * The BOUNDARY bit is widely used to indicate that crossing this edge is a transition from outside to inside.
- *   * VISITED is used locally in many searches.
- *      * Never use VISITED unless the search logic is highly self contained.
- * @internal
- */
-export enum HalfEdgeMask {
-  /**  Mask commonly set consistently around exterior faces.
-   * * A boundary edge with interior to one side, exterior to the other will have EXTERIOR only on the outside.
-   * * An an edge inserted "within a purely exterior face" can have EXTERIOR on both MediaStreamAudioDestinationNode[Symbol]
-   * * An interior edges (such as added during triangulation) will have no EXTERIOR bits.
+  /**
+   * disconnect and delete all nodes that satisfy a filter condition.
+   * @param deleteThisNode returns true to delete the node given.
+   * @returns the number of nodes deleted.
    */
-  EXTERIOR = 0x00000001,
-  /** Mask commonly set (on both sides) of original geometry edges that are transition from outside from to inside.
-   * * At the moment of creating an edge from primary user boundary loop coordinates, the fact that an edge is BOUNDARY is often clear even though
-   *  there is uncertainty about which side should be EXTERIOR.
-   */
-  BOUNDARY_EDGE = 0x00000002,
-  // REMARK: Various mask names are COMMENTED here for reference to native legacy code.
-  // CONSTU_MASK = 0x00000004,
-  // CONSTV_MASK = 0x00000008,
-  // USEAM_MASK = 0x00000010,
-  // VSEAM_MASK = 0x00000020,
-  // BOUNDARY_VERTEX_MASK = 0x00000040,
-  // PRIMARY_VERTEX_MASK = 0x00000080,
-  // DIRECTED_EDGE_MASK = 0x00000100,
-  /** Mask commonly set (on both sides) of original geometry edges, but NOT indicating that the edge is certainly a boundary between outside and inside.
-   * * For instance, if geometry is provided as stray sticks (not loops), it can be marked PRIMARY_EDGE but neither BOUNDARY_EDGE nor EXTERIOR_EDGE
-   */
-  PRIMARY_EDGE = 0x00000004,
-
-  /** Mask used for low level searches to identify previously-visited nodes */
-  VISITED = 0x0000010,
-
-  /** Mask applied to triangles by earcut triangulator */
-  TRIANGULATED_FACE = 0x00000100,
-  /** mask applied in a face with 2 edges. */
-  NULL_FACE = 0x00000200,
-
-  /** no mask bits */
-  NULL_MASK = 0x00000000,
-  /** The "upper 12 " bits of 32 bit integer. */
-  ALL_GRAB_DROP_MASKS = 0xffF00000,  // 12 masks reserved for grab/drop.
-  /** all mask bits */
-  ALL_MASK = 0xFFFFFFFF,
-  // informal convention on preassigned mask bit numbers:
-  // byte0 (EXTERIOR, BOUNDARY_EDGE, PRIMARY_EDGE) -- edge properties
-  // byte1 (VISITED, VISIT_A, WORK_MASK0, WORK_MASK1) -- temp masks for algorithms.
-  // byte2 (TRIANGULATED_FACE, NULL_FACE) -- face properties.
+  public yankAndDeleteEdges(deleteThisNode: NodeFunction): number {
+    const numTotal = this.allHalfEdges.length;
+    let numAccepted = 0;
+    for (let i = 0; i < numTotal; i++) {
+      const candidate = this.allHalfEdges[i];
+      if (!deleteThisNode(candidate)) {
+        this.allHalfEdges[numAccepted++] = candidate;
+      } else {
+        const mate = candidate.edgeMate;
+        candidate.yankFromVertexLoop();
+        mate.yankFromVertexLoop();
+      }
+    }
+    const numDeleted = numTotal - numAccepted;
+    this.allHalfEdges.length = numAccepted;
+    return numDeleted;
+  }
 
 }

@@ -256,6 +256,7 @@ beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
 beta;Indicator 
 internal;initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState
+internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panel: PanelSide): NineZoneState
 alpha;InputEditorCommitHandler
 alpha;InputEditorPopup 
 alpha;InputEditorPopupProps 
@@ -391,6 +392,7 @@ public;ReducerActions
 public;ReducerMapActions
 beta;ReducerRegistry
 beta;ReducerRegistryInstance: ReducerRegistry
+alpha;RestoreFrontstageLayoutTool 
 internal;restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedNineZoneState): NineZoneState
 beta;ReviewToolWidget 
 beta;ReviewToolWidgetProps
@@ -422,6 +424,7 @@ beta;sessionStateMapDispatchToProps:
 beta;SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly
 internal;setPanelSize: 
 internal;settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus
+internal;setWidgetLabel: 
 internal;setWidgetState: 
 alpha;SheetCard 
 alpha;SheetCardProps
@@ -448,6 +451,7 @@ beta;StagePanelDefaultProps = Pick
 alpha;StagePanelHeader 
 alpha;StagePanelHeaderProps 
 alpha;StagePanelLocation
+beta;StagePanelMaxSizeSpec = number |
 beta;StagePanelProps
 internal;StagePanelRuntimeProps
 alpha;StagePanelSection
@@ -587,6 +591,7 @@ beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => rea
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
 internal;useUiSettingsContext(): UiSettings
 internal;useUiVisibility(): boolean
+internal;useUpdateNineZoneSize(frontstageDef: FrontstageDef): void
 alpha;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider
 alpha;useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element
 internal;useWidgetDef(): WidgetDef | undefined
@@ -619,6 +624,7 @@ alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => b
 beta;VisibilityWidget 
 public;Widget 
 public;WIDGET_OPACITY_DEFAULT = 0.9
+internal;WidgetChangedEventArgs
 public;WidgetChangeHandler
 internal;WidgetContent(): JSX.Element
 public;WidgetControl 

@@ -10,7 +10,7 @@ import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, InteractiveTool, SelectedViewportChangedArgs, StartOrResume, Tool } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
-import { UiEvent } from "@bentley/ui-core";
+import { Size, UiEvent } from "@bentley/ui-core";
 import { NineZoneManager } from "@bentley/ui-ninezone";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
 import { ContentGroup } from "../content/ContentGroup";
@@ -19,7 +19,7 @@ import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidCont
 import { PanelSizeChangedEvent, PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef";
+import { WidgetChangedEventArgs, WidgetDef, WidgetEventArgs, WidgetStateChangedEvent } from "../widgets/WidgetDef";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
@@ -166,6 +166,7 @@ export class FrontstageManager {
   private static _frontstageDefs = new Map<string, FrontstageDef>();
   private static _modalFrontstages: ModalFrontstageItem[] = new Array<ModalFrontstageItem>();
   private static _nineZoneManagers = new Map<string, NineZoneManager>();
+  private static _nineZoneSize: Size | undefined = undefined;
 
   private static _nestedFrontstages: FrontstageDef[] = new Array<FrontstageDef>();
   private static _activePrimaryFrontstageDef: FrontstageDef | undefined;
@@ -223,6 +224,13 @@ export class FrontstageManager {
   /** Returns true if Frontstage is loading its controls. If false the Frontstage content and controls have been created. */
   public static get isLoading(): boolean { return FrontstageManager._isLoading; }
 
+  /** @internal */
+  public static get nineZoneSize() { return FrontstageManager._nineZoneSize; }
+
+  public static set nineZoneSize(size) {
+    FrontstageManager._nineZoneSize = size;
+  }
+
   /** Get Frontstage Deactivated event. */
   public static readonly onFrontstageDeactivatedEvent = new FrontstageDeactivatedEvent();
 
@@ -260,6 +268,9 @@ export class FrontstageManager {
 
   /** Get Widget State Changed event. */
   public static readonly onWidgetStateChangedEvent = new WidgetStateChangedEvent();
+
+  /** @internal */
+  public static readonly onWidgetLabelChangedEvent = new UiEvent<WidgetChangedEventArgs>();
 
   /** @internal */
   public static readonly onWidgetShowEvent = new UiEvent<WidgetEventArgs>();

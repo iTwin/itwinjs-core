@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CoreTools } from "../CoreToolDefinitions";
+import { CoreTools } from "../tools/CoreToolDefinitions";
 import { connectIModelConnection } from "../redux/connectIModel";
 import { ItemList } from "../shared/ItemMap";
 import { UiFramework } from "../UiFramework";

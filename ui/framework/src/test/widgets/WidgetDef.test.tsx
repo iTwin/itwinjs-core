@@ -11,6 +11,7 @@ import {
 } from "../../ui-framework";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 import TestUtils from "../TestUtils";
+import { WidgetChangedEventArgs } from "../../ui-framework/widgets/WidgetDef";
 
 // cSpell:ignore widgetstate
 
@@ -184,6 +185,35 @@ describe("WidgetDef", () => {
       spy.calledOnceWithExactly(sinon.match({
         widgetDef,
       })).should.true;
+    });
+  });
+
+  describe("label", () => {
+    it("should set label", () => {
+      const sut = new WidgetDef({});
+      sut.setLabel("test");
+
+      sut.label.should.eq("test");
+    });
+
+    it("should emit onWidgetLabelChangedEvent", () => {
+      const spy = sinon.stub<(args: WidgetChangedEventArgs) => void>();
+      FrontstageManager.onWidgetLabelChangedEvent.addListener(spy);
+      const sut = new WidgetDef({});
+      sut.setLabel("test");
+
+      spy.calledOnceWithExactly(sinon.match({ widgetDef: sut })).should.true;
+    });
+
+    it("should not emit onWidgetLabelChangedEvent for same label", () => {
+      const spy = sinon.stub<(args: WidgetChangedEventArgs) => void>();
+      const sut = new WidgetDef({});
+      sut.setLabel("test");
+
+      FrontstageManager.onWidgetLabelChangedEvent.addListener(spy);
+      sut.setLabel("test");
+
+      spy.notCalled.should.true;
     });
   });
 });

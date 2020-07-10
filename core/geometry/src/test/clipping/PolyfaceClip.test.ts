@@ -21,7 +21,7 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../../geometry3d/PolygonOps";
-import { Range3d } from "../../geometry3d/Range";
+import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
@@ -574,44 +574,112 @@ describe("PolyfaceClip", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("CutFill", () => {
+  it("CutFillUndulating", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const x0 = 0;
+    let x0 = 0;
     let y0 = 0;
     const numXA = 6;
     const numYA = 5;
-    const numXB = 8;
-    const numYB = 8;
-    const meshA = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), numXA, numYA);
-    const amplitudeA = 0.2;
+    const numXB = 12;
+    const numYB = 12;
+    const meshA = Sample.createTriangularUnitGridPolyface(Point3d.create(2, 2, 0), Vector3d.unitX(), Vector3d.unitY(), numXA, numYA, false, false, false, true);
+    const amplitudeA = 0.45;
     const amplitudeB = -0.35;
     meshA.data.point.mapComponent(2,
       (x: number, y: number, _z: number) => {
         return amplitudeA * RFunctions.cosineOfMappedAngle(x, 0.0, numXA) * RFunctions.cosineOfMappedAngle(y, 0, numYA);
       });
 
-    const meshB = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.unitX(0.4), Vector3d.unitY(0.3), numXB, numYB);
+    const meshB = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.unitX(0.7), Vector3d.unitY(0.8), numXB, numYB, false, false, false, true);
     meshB.data.point.mapComponent(2,
       (x: number, y: number, _z: number) => {
         return amplitudeB * RFunctions.cosineOfMappedAngle(x, 0.0, 3.0) * RFunctions.cosineOfMappedAngle(y, 1, 5.0);
       });
     // spin meshB so its grids do not align with mesh A
-    const transform = Transform.createFixedPointAndMatrix(Point3d.create(0, numYB / 2, 0), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(30)));
+    const rangeB = meshB.range();
+    const centerB = rangeB.localXYZToWorld(0.5, 0.5, 0);
+    const transform = Transform.createFixedPointAndMatrix(centerB, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(30)));
+    const rangeB1 = meshB.range();
     meshB.tryTransformInPlace(transform);
+    for (const zShift of [0, 0.10, 0.10, 0.10, 0.10, 0.10]) {
+      y0 = 0;
+      meshB.tryTranslateInPlace(0, 0, zShift);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0);
+      const cutFill = PolyfaceClip.computeCutFill(meshA, meshB);
+
+      y0 -= rangeB1.yLength();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAUnderB, x0, y0);
+      y0 -= rangeB1.yLength();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAOverB, x0, y0);
+      x0 += 2 * rangeB1.xLength();
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "CutFillUndulating");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+  it("CutFillCoincident", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+    const numXA = 14;
+    const numYA = 9;
+    const meshA = Sample.createTriangularUnitGridPolyface(Point3d.create(2, 2, 0), Vector3d.unitX(), Vector3d.unitY(), numXA, numYA, false, false, false, true);
+    const meshB = Sample.createTriangularUnitGridPolyface(Point3d.create(2, 2, 0), Vector3d.unitX(), Vector3d.unitY(), numXA, numYA, false, false, false, true);
+    const rangeB1 = meshB.range();
+    shiftZInXYFractionRange(meshA, 0.1, 0.1, 0.5, 0.3, 0.5);
+    shiftZInXYFractionRange(meshB, 0.3, 0.2, 0.6, 0.6, -0.5);
+    shiftZInXYFractionRange(meshB, 0.4, 0.5, 0.8, 0.9, 0.25);
+    shiftZInXYFractionRange(meshA, 0.7, 0.1, 1.8, 0.9, 0.20);
+    y0 = 0;
+    const dy = 1.1 * rangeB1.yLength();
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, x0, y0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0);
     const cutFill = PolyfaceClip.computeCutFill(meshA, meshB);
 
-    y0 -= numYA;
+    y0 -= dy;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAUnderB, x0, y0);
-    y0 -= numYA;
+    y0 -= dy;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAOverB, x0, y0);
+    x0 += 2 * rangeB1.xLength();
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "CutFill");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "CutFillCoincident");
     expect(ck.getNumErrors()).equals(0);
 
   });
+
+  it("CutFillJonas", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const meshA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/CutFill/JonasJune2020A/existingPoly1.50.imjs", "utf8")));
+    const meshB = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/testInputs/CutFill/JonasJune2020A/proposedPoly1.50.imjs", "utf8")));
+    if (meshA instanceof IndexedPolyface && meshB instanceof IndexedPolyface) {
+      // meshA.triangulate();
+      // meshB.triangulate();
+      const rangeA = meshB.range();
+      const rangeB = meshB.range();
+      const rangeAB = rangeA.union(rangeB);
+      const x0 = -rangeAB.low.x;
+      let y0 = -rangeA.low.y;
+      const dy = 1.1 * rangeAB.yLength();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, rangeAB, x0, y0);
+      const cutFill = PolyfaceClip.computeCutFill(meshA, meshB);
+      y0 += dy;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAUnderB, x0, y0);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, rangeAB, x0, y0);
+      y0 += dy;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAOverB, x0, y0);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, rangeAB, x0, y0);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "CutFillJonas");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   // cspell:word Arnoldas
   it("ArnoldasBox", () => {
     const ck = new Checker();
@@ -936,4 +1004,20 @@ function raggedVolume(mesh: Polyface): { volume: number, volumeDifferenceRelativ
   const volume1 = PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(mesh, xyPlane1);
   const volumeDifference = Math.abs(volume1.volume - volume0.volume);
   return { volume: volume0.volume, volumeDifferenceRelativeError: Geometry.safeDivideFraction(volumeDifference, Math.abs(volume0.volume), 1000.0) };
+}
+
+function shiftZInXYFractionRange(mesh: Polyface, lowXFraction: number, lowYFraction: number, highXFraction: number, highYFraction: number, deltaZ: number) {
+  const points = mesh.data.point;
+  const rangeA = mesh.range();
+  const lowPoint = rangeA.localXYZToWorld(lowXFraction, lowYFraction, 0)!;
+  const highPoint = rangeA.localXYZToWorld(highXFraction, highYFraction, 0)!;
+  const rangeXY = Range2d.createXYXY(lowPoint?.x, lowPoint?.y, highPoint?.x, highPoint.y);
+  const p = Point3d.create();
+  for (let i = 0; i < points.length; i++) {
+    points.getPoint3dAtUncheckedPointIndex(i, p);
+    if (rangeXY.containsXY(p.x, p.y)) {
+      p.z += deltaZ;
+      points.setAtCheckedPointIndex(i, p);
+    }
+  }
 }

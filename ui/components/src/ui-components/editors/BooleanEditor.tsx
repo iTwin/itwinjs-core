@@ -9,11 +9,10 @@
 import "./BooleanEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PrimitiveValue, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyValue, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
 import { Checkbox } from "@bentley/ui-core";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
 
 /** @internal */
 interface BooleanEditorState {

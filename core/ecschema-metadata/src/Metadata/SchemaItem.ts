@@ -36,7 +36,7 @@ export abstract class SchemaItem {
   get label() { return this._label; }
 
   get description() { return this._description; }
-
+  // Proposal: Create protected setter methods for description and label? For UnitSystems as an example, where using createFromProps isn't that necessary and can just use basic create().
   /**
    * Save this SchemaItem's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -136,5 +136,21 @@ export abstract class SchemaItem {
 
     const key = thatSchemaItemOrKey instanceof SchemaItem ? thatSchemaItemOrKey.key : thatSchemaItemOrKey;
     return thisSchemaItem.key.matches(key);
+  }
+
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
+  protected setDisplayLabel(displayLabel: string) {
+    this._label = displayLabel;
+  }
+
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
+  protected setDescription(description: string) {
+    this._description = description;
   }
 }

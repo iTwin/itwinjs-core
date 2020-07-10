@@ -10,11 +10,13 @@ import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-cor
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import {
-  ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON,
-  KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement,
-  NodePathElementJSON, Paged, PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareRpcOptions, PresentationError,
-  PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
+  ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, DisplayValueGroup, DisplayValueGroupJSON,
+  DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
+  LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse,
+  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareRpcOptions, PresentationError, PresentationRpcInterface,
+  PresentationRpcResponse, PresentationStatus, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
 } from "@bentley/presentation-common";
+import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
 
@@ -77,7 +79,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return imodel;
   }
 
-  private async makeRequest<TOptions extends { rulesetOrId?: Ruleset | string, clientId?: string }, TResult>(token: IModelRpcProps, requestOptions: TOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
+  private async makeRequest<TOptions extends { rulesetOrId?: Ruleset | string, clientId?: string }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
+    Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${JSON.stringify(requestOptions)}`);
     const requestContext = ClientRequestContext.current;
     let imodel: IModelDb;
     try {
@@ -107,7 +110,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getNodesAndCount(token: IModelRpcProps, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: NodeKeyJSON) {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+    return this.makeRequest(token, "getNodesAndCount", requestOptions, async (requestContext, options) => {
       const result = await this.getManager(requestOptions.clientId).getNodesAndCount(requestContext, options, nodeKeyFromJson(parentKey));
       requestContext.enter();
       return { ...result, nodes: result.nodes.map(Node.toJSON) };
@@ -115,7 +118,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getNodes(token: IModelRpcProps, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: NodeKeyJSON): PresentationRpcResponse<NodeJSON[]> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+    return this.makeRequest(token, "getNodes", requestOptions, async (requestContext, options) => {
       const nodes = await this.getManager(requestOptions.clientId).getNodes(requestContext, options, nodeKeyFromJson(parentKey));
       requestContext.enter();
       return nodes.map(Node.toJSON);
@@ -123,13 +126,13 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getNodesCount(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions, parentKey?: NodeKeyJSON): PresentationRpcResponse<number> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) =>
+    return this.makeRequest(token, "getNodesCount", requestOptions, async (requestContext, options) =>
       this.getManager(requestOptions.clientId).getNodesCount(requestContext, options, nodeKeyFromJson(parentKey)),
     );
   }
 
   public async getNodePaths(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions, paths: InstanceKeyJSON[][], markedIndex: number): PresentationRpcResponse<NodePathElementJSON[]> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+    return this.makeRequest(token, "getNodePaths", requestOptions, async (requestContext, options) => {
       const result = await this.getManager(requestOptions.clientId).getNodePaths(requestContext, options, paths, markedIndex);
       requestContext.enter();
       return result.map(NodePathElement.toJSON);
@@ -137,7 +140,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getFilteredNodePaths(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions, filterText: string): PresentationRpcResponse<NodePathElementJSON[]> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+    return this.makeRequest(token, "getFilteredNodePaths", requestOptions, async (requestContext, options) => {
       const result = await this.getManager(requestOptions.clientId).getFilteredNodePaths(requestContext, options, filterText);
       requestContext.enter();
       return result.map(NodePathElement.toJSON);
@@ -145,17 +148,17 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async loadHierarchy(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+    return this.makeRequest(token, "loadHierarchy", requestOptions, async (requestContext, options) => {
       const manager = this.getManager(requestOptions.clientId);
       // note: we intentionally don't await here - don't want frontend waiting for this task to complete
       // tslint:disable-next-line:no-floating-promises
       manager.loadHierarchy(requestContext, options)
-        .catch((e) => Logger.logWarning("Presentation", `Error loading '${manager.getRulesetId(requestOptions.rulesetOrId)}' hierarchy: ${e}`));
+        .catch((e) => Logger.logWarning(PresentationBackendLoggerCategory.PresentationManager, `Error loading '${manager.getRulesetId(requestOptions.rulesetOrId)}' hierarchy: ${e}`));
     });
   }
 
   public async getContentDescriptor(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+    return this.makeRequest(token, "getContentDescriptor", requestOptions, async (requestContext, options) => {
       const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(requestContext, options, displayType, KeySet.fromJSON(keys), selection);
       requestContext.enter();
       if (descriptor)
@@ -165,13 +168,13 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getContentSetSize(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): PresentationRpcResponse<number> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) =>
+    return this.makeRequest(token, "getContentSetSize", requestOptions, async (requestContext, options) =>
       this.getManager(requestOptions.clientId).getContentSetSize(requestContext, options, descriptorFromJson(descriptorOrOverrides), KeySet.fromJSON(keys)),
     );
   }
 
   public async getContentAndSize(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON) {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+    return this.makeRequest(token, "getContentAndSize", requestOptions, async (requestContext, options) => {
       const result = await this.getManager(requestOptions.clientId).getContentAndSize(requestContext, options, descriptorFromJson(descriptorOrOverrides), KeySet.fromJSON(keys));
       requestContext.enter();
       if (result.content)
@@ -181,7 +184,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getContent(token: IModelRpcProps, requestOptions: Paged<ContentRpcRequestOptions>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): PresentationRpcResponse<ContentJSON | undefined> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+    return this.makeRequest(token, "getContent", requestOptions, async (requestContext, options) => {
       const content = await this.getManager(requestOptions.clientId).getContent(requestContext, options, descriptorFromJson(descriptorOrOverrides), KeySet.fromJSON(keys));
       requestContext.enter();
       if (content)
@@ -191,13 +194,29 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getDistinctValues(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): PresentationRpcResponse<string[]> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) =>
+    return this.makeRequest(token, "getDistinctValues", requestOptions, async (requestContext, options) =>
       this.getManager(requestOptions.clientId).getDistinctValues(requestContext, options, Descriptor.fromJSON(descriptor)!, KeySet.fromJSON(keys), fieldName, maximumValueCount),
     );
   }
 
+  public async getPagedDistinctValues(token: IModelRpcProps, requestOptions: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> {
+    return this.makeRequest(token, "getPagedDistanctValues", requestOptions, async (requestContext, options) => {
+      options = {
+        ...options,
+        descriptor: Descriptor.fromJSON(options.descriptor),
+        keys: KeySet.fromJSON(options.keys),
+      };
+      const response = await this.getManager(requestOptions.clientId).getPagedDistinctValues(requestContext, options);
+      requestContext.enter();
+      return {
+        total: response.total,
+        items: response.items.map(DisplayValueGroup.toJSON),
+      };
+    });
+  }
+
   public async getDisplayLabelDefinition(token: IModelRpcProps, requestOptions: LabelRpcRequestOptions, key: InstanceKeyJSON): PresentationRpcResponse<LabelDefinitionJSON> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+    return this.makeRequest(token, "getDisplayLabelDefinition", requestOptions, async (requestContext, options) => {
       const label = await this.getManager(requestOptions.clientId).getDisplayLabelDefinition(requestContext, options, InstanceKey.fromJSON(key));
       requestContext.enter();
       return LabelDefinition.toJSON(label);
@@ -205,7 +224,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getDisplayLabelDefinitions(token: IModelRpcProps, requestOptions: LabelRpcRequestOptions, keys: InstanceKeyJSON[]): PresentationRpcResponse<LabelDefinitionJSON[]> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+    return this.makeRequest(token, "getDisplayLabelDefinitions", requestOptions, async (requestContext, options) => {
       const labels = await this.getManager(requestOptions.clientId).getDisplayLabelDefinitions(requestContext, options, keys.map(InstanceKey.fromJSON));
       requestContext.enter();
       return labels.map(LabelDefinition.toJSON);
@@ -213,13 +232,13 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getSelectionScopes(token: IModelRpcProps, requestOptions: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) =>
+    return this.makeRequest(token, "getSelectionScopes", requestOptions, async (requestContext, options) =>
       this.getManager(requestOptions.clientId).getSelectionScopes(requestContext, options),
     );
   }
 
   public async computeSelection(token: IModelRpcProps, requestOptions: SelectionScopeRpcRequestOptions, ids: Id64String[], scopeId: string): PresentationRpcResponse<KeySetJSON> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+    return this.makeRequest(token, "computeSelection", requestOptions, async (requestContext, options) => {
       const keys = await this.getManager(requestOptions.clientId).computeSelection(requestContext, options, ids, scopeId);
       requestContext.enter();
       return keys.toJSON();
@@ -227,7 +246,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async compareHierarchies(token: IModelRpcProps, requestOptions: PresentationDataCompareRpcOptions): PresentationRpcResponse<PartialHierarchyModificationJSON[]> {
-    return this.makeRequest(token, requestOptions, async (requestContext, options) =>
+    return this.makeRequest(token, "compareHierarchies", requestOptions, async (requestContext, options) =>
       (await this.getManager(requestOptions.clientId).compareHierarchies(requestContext, options))
         .map(PartialHierarchyModification.toJSON),
     );

@@ -53,7 +53,7 @@ export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
   const nodeLoader = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     dataProvider: props.dataProvider,
-    ruleset: (!props.enableElementsClassGrouping) ? RULESET_SPATIAL_BREAKDOWN : RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS,
+    ruleset: (!props.enableElementsClassGrouping) ? RULESET_SPATIAL_BREAKDOWN : /* istanbul ignore next */ RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS,
     appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
     pagingSize: PAGING_SIZE,
     preloadingEnabled: props.enablePreloading,

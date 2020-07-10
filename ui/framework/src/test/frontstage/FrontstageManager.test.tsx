@@ -15,12 +15,15 @@ import { WidgetState } from "@bentley/ui-abstract";
 import { ConfigurableUiContent, CoreTools, FrontstageManager } from "../../ui-framework";
 import TestUtils, { storageMock } from "../TestUtils";
 import { TestFrontstage, TestFrontstage2, TestFrontstage3 } from "./FrontstageTestUtils";
+import { RestoreFrontstageLayoutTool } from "../../ui-framework/tools/RestoreLayoutTool";
+import { Size } from "@bentley/ui-core";
 
 const mySessionStorage = storageMock();
 
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;
 
 describe("FrontstageManager", () => {
+  const sandbox = sinon.createSandbox();
 
   before(async () => {
     Object.defineProperty(window, "sessionStorage", {
@@ -43,6 +46,10 @@ describe("FrontstageManager", () => {
     Object.defineProperty(window, "sessionStorage", propertyDescriptorToRestore);
   });
 
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("initialized should return true", () => {
     expect(FrontstageManager.isInitialized).to.be.true;
   });
@@ -61,6 +68,34 @@ describe("FrontstageManager", () => {
       await FrontstageManager.setActiveFrontstage(frontstageDef.id);
       expect(FrontstageManager.activeFrontstageId).to.eq(frontstageDef.id);
       expect(frontstageDef.applicationData).to.not.be.undefined;
+    }
+  });
+
+  it("should emit onFrontstageRestoreLayoutEvent", async () => {
+    const spy = sinon.spy(FrontstageManager.onFrontstageRestoreLayoutEvent, "emit");
+
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    expect(frontstageProvider.frontstageDef).to.not.be.undefined;
+    const frontstageDef = frontstageProvider.frontstageDef;
+    if (frontstageDef) {
+      await FrontstageManager.setActiveFrontstage(frontstageDef.id);
+      expect(FrontstageManager.activeFrontstageId).to.eq(frontstageDef.id);
+      expect(frontstageDef.applicationData).to.not.be.undefined;
+
+      const tool = new RestoreFrontstageLayoutTool();
+      tool.parseAndRun(frontstageDef.id);
+      spy.calledOnce.should.true;
+      spy.resetHistory();
+
+      // call without id to use active stage
+      tool.parseAndRun();
+      spy.calledOnce.should.true;
+      spy.resetHistory();
+
+      // call without invalid id
+      tool.parseAndRun("bad-id");
+      spy.calledOnce.should.false;
     }
   });
 
@@ -179,4 +214,21 @@ describe("FrontstageManager", () => {
 
   });
 
+  describe("nineZoneSize", () => {
+    let nineZoneSize: typeof FrontstageManager.nineZoneSize;
+
+    before(() => {
+      nineZoneSize = FrontstageManager.nineZoneSize;
+    });
+
+    afterEach(() => {
+      FrontstageManager.nineZoneSize = nineZoneSize;
+    });
+
+    it("should set nineZoneSize", () => {
+      FrontstageManager.nineZoneSize = new Size(10, 20);
+      FrontstageManager.nineZoneSize.width.should.eq(10);
+      FrontstageManager.nineZoneSize.height.should.eq(20);
+    });
+  });
 });

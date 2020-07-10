@@ -3,25 +3,44 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as React from "react";
-import { fireEvent, render } from "@testing-library/react";
+import React from "react";
+import { fireEvent, render, waitForElement } from "@testing-library/react";
 import { SelectableContent } from "../../ui-components/selectable-content/SelectableContent";
 
 describe("<SelectableContent />", () => {
 
-  it("lists all given content components in select box", () => {
-    const { getByText } = render(
-      <SelectableContent defaultSelectedContentId={""}>
-        {[
-          { id: "a", label: "A", render: () => (<div />) },
-          { id: "b", label: "B", render: () => (<div />) },
-          { id: "c", label: "C", render: () => (<div />) },
-        ]}
-      </SelectableContent>,
+  it("lists all given content components in select box", async () => {
+    const { getByText, getByTestId, queryAllByText } = render(
+      <div data-testid="selectable-content">
+        <SelectableContent defaultSelectedContentId={""}>
+          {[
+            { id: "a", label: "A", render: () => (<div />) },
+            { id: "b", label: "B", render: () => (<div />) },
+            { id: "c", label: "C", render: () => (<div />) },
+          ]}
+        </SelectableContent>
+      </div>,
     );
-    expect(getByText("A")).to.not.be.undefined;
-    expect(getByText("B")).to.not.be.undefined;
+
+    const selectComponent = getByTestId("selectable-content");
+
+    expect(selectComponent).to.not.be.undefined;
+    expect(selectComponent).to.not.be.null;
+
+    const componentsSelectableContent = selectComponent.firstElementChild;
+    expect(componentsSelectableContent).to.not.be.null;
+
+    const componentsSelectableContentHeader = componentsSelectableContent?.firstElementChild;
+    expect(componentsSelectableContentHeader).to.not.be.null.and.to.not.be.undefined;
+
+    const uiCoreReactSelectTop = componentsSelectableContentHeader?.firstElementChild;
+    expect(uiCoreReactSelectTop).to.not.be.null.and.to.not.be.undefined;
+    expect(uiCoreReactSelectTop?.firstElementChild).to.not.be.null.and.to.not.be.undefined;
+
+    fireEvent.keyDown(uiCoreReactSelectTop!.firstElementChild!, { key: "ArrowDown" });
+    await waitForElement(() => getByText("B"));
     expect(getByText("C")).to.not.be.undefined;
+    expect(queryAllByText("A")).to.have.length(2);
   });
 
   it("renders with default selected content", () => {
@@ -57,22 +76,44 @@ describe("<SelectableContent />", () => {
     expect(container.getElementsByClassName("components-selectable-content-wrapper")[0].innerHTML).to.be.empty;
   });
 
-  it("changes displayed content based on selected item in select box", () => {
-    const { getByDisplayValue } = render(
-      <SelectableContent defaultSelectedContentId={"a"}>
-        {[
-          { id: "a", label: "A", render: () => (<div data-testid="a" />) },
-          { id: "b", label: "B", render: () => (<div data-testid="b" />) },
-          { id: "c", label: "C", render: () => (<div data-testid="c" />) },
-        ]}
-      </SelectableContent>,
+  it("changes displayed content based on selected item in select box", async () => {
+    const { getByTestId, getByText } = render(
+      <div data-testid="selectable-content">
+        <SelectableContent defaultSelectedContentId={"a"}>
+          {[
+            { id: "a", label: "A", render: () => (<div data-testid="a" />) },
+            { id: "b", label: "B", render: () => (<div data-testid="b" />) },
+            { id: "c", label: "C", render: () => (<div data-testid="c" />) },
+          ]}
+        </SelectableContent>
+      </div>,
     );
-    const selectBox = getByDisplayValue("A");
-    fireEvent.change(selectBox, {
-      target: { value: "c" },
-    });
-    expect(() => getByDisplayValue("A")).to.throw;
-    expect(getByDisplayValue("C")).to.not.be.undefined;
+    const selectComponent = getByTestId("selectable-content");
+
+    expect(selectComponent).to.not.be.undefined;
+    expect(selectComponent).to.not.be.null;
+
+    expect(getByText("A")).not.be.undefined;
+    expect(getByTestId("a")).not.be.undefined;
+
+    const componentsSelectableContent = selectComponent.firstElementChild;
+    expect(componentsSelectableContent).to.not.be.null;
+
+    const componentsSelectableContentHeader = componentsSelectableContent?.firstElementChild;
+    expect(componentsSelectableContentHeader).to.not.be.null.and.to.not.be.undefined;
+
+    const uiCoreReactSelectTop = componentsSelectableContentHeader?.firstElementChild;
+    expect(uiCoreReactSelectTop).to.not.be.null.and.to.not.be.undefined;
+    expect(uiCoreReactSelectTop?.firstElementChild).to.not.be.null.and.to.not.be.undefined;
+
+    fireEvent.keyDown(uiCoreReactSelectTop!.firstElementChild!, { key: "ArrowDown" });
+    await waitForElement(() => getByText("B"));
+    fireEvent.click(getByText("B"));
+
+    expect(() => getByText("A")).to.throw;
+    expect(() => getByTestId("a")).to.throw;
+    expect(getByText("B")).to.not.be.undefined;
+    expect(getByTestId("b")).to.not.be.undefined;
   });
 
 });

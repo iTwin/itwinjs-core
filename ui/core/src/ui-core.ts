@@ -16,8 +16,9 @@ export * from "./ui-core/base/Div";
 export * from "./ui-core/base/DivWithOutsideClick";
 export * from "./ui-core/base/Centered";
 export * from "./ui-core/base/FillCentered";
-export * from "./ui-core/base/ScrollView";
 export * from "./ui-core/base/FlexWrapContainer";
+export * from "./ui-core/base/PointerEvents";
+export * from "./ui-core/base/ScrollView";
 
 export * from "./ui-core/button/Button";
 export * from "./ui-core/button/UnderlinedButton";

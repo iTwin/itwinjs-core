@@ -157,6 +157,12 @@
         "description": "Turn on/off use of camera in active view",
         "flyover": "Toggle Camera"
       }
+    },
+    "RestoreFrontstageLayout": {
+      "keyin": "restore frontstage layout",
+      "description": "Restore Frontstage to Default Layout",
+      "flyover": "Restore Stage to Default Layout",
+      "noStageFound": "Specified stage not found."
     }
   },
   "iModelIndex": {

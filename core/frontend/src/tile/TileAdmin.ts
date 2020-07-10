@@ -94,6 +94,8 @@ export abstract class TileAdmin {
   public abstract get useProjectExtents(): boolean;
   /** @internal */
   public abstract get disableMagnification(): boolean;
+  /** @internal */
+  public abstract get alwaysRequestEdges(): boolean;
 
   /** @internal */
   public abstract get tileExpirationTime(): BeDuration;
@@ -450,6 +452,15 @@ export namespace TileAdmin {
      * @alpha
      */
     maximumLevelsToSkip?: number;
+
+    /** If true, when requesting tile content, edges will always be requested, even if they are not required for the view.
+     * This can improve user experience in cases in which the user or application is expected to frequently switch between views of the same models with
+     * different edge settings, because otherwise, toggling edge display may require loading completely new tiles.
+     * However, edges require additional memory and bandwidth that may be wasted if they are never displayed.
+     * Defalt value: false
+     * @alpha
+     */
+    alwaysRequestEdges?: boolean;
   }
 }
 
@@ -568,6 +579,7 @@ class Admin extends TileAdmin {
   private readonly _enableImprovedElision: boolean;
   private readonly _ignoreAreaPatterns: boolean;
   private readonly _disableMagnification: boolean;
+  private readonly _alwaysRequestEdges: boolean;
   private readonly _maxMajorVersion: number;
   private readonly _useProjectExtents: boolean;
   private readonly _maximumLevelsToSkip: number;
@@ -644,6 +656,7 @@ class Admin extends TileAdmin {
     this._enableImprovedElision = false !== options.enableImprovedElision;
     this._ignoreAreaPatterns = true === options.ignoreAreaPatterns;
     this._disableMagnification = true === options.disableMagnification;
+    this._alwaysRequestEdges = true === options.alwaysRequestEdges;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : CurrentImdlVersion.Major;
     this._useProjectExtents = false !== options.useProjectExtents;
 
@@ -688,6 +701,7 @@ class Admin extends TileAdmin {
   public get useProjectExtents() { return this._useProjectExtents; }
   public get maximumLevelsToSkip() { return this._maximumLevelsToSkip; }
   public get disableMagnification() { return this._disableMagnification; }
+  public get alwaysRequestEdges() { return this._alwaysRequestEdges; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
   public get tileTreeExpirationTime() { return this._treeExpirationTime; }
   public get contextPreloadParentDepth() { return this._contextPreloadParentDepth; }

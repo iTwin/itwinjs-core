@@ -132,7 +132,7 @@ export abstract class Tile {
    */
   public get children(): Tile[] | undefined { return this._children; }
   /** The [[IModelConnection]] to which this tile belongs. */
-  public get iModel() { return this.tree.iModel; }
+  public get iModel(): IModelConnection { return this.tree.iModel; }
   /** Uniquely identifies this tile's content. */
   public get contentId(): string { return this._contentId; }
 

@@ -79,7 +79,7 @@ export class Numbers {
         if (value == null) return defaultValue;
         if (value.length == 0) return defaultValue;
         let parsed: int32 = parseInt(value);
-        return (parsed === NaN) ? defaultValue : parsed;
+        return (Number.isNaN(parsed)) ? defaultValue : parsed;
     }
 
     public static getDouble(value: string, defaultValue: float64): float64 {
@@ -87,7 +87,7 @@ export class Numbers {
         if (value == null) return defaultValue;
         if (value.length == 0) return defaultValue;
         let parsed: float64 = parseFloat(value);
-        return (parsed === NaN) ? defaultValue : parsed;
+        return (Number.isNaN(parsed)) ? defaultValue : parsed;
     }
 
     public static rgbToString(color: int32): string {

@@ -178,8 +178,11 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
         assert(false);
         return {};
       }
+
       this._accessToken = accessTokenAndEndpointUrl.token;
       this._tokenTimeOut = BeTimePoint.now().plus(CesiumWorldTerrainTileLoader._tokenTimeoutInterval);
+      if (isCanceled())
+        return {};
     }
 
     assert(data instanceof Uint8Array);

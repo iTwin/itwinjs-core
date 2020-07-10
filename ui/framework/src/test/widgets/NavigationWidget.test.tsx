@@ -14,7 +14,7 @@ import {
   ToolButton,
 } from "../../ui-framework";
 import { ConfigurableUiManager } from "../../ui-framework/configurableui/ConfigurableUiManager";
-import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
+import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
 import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
 import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
 import TestUtils from "../TestUtils";

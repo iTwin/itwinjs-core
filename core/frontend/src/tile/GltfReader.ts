@@ -123,6 +123,7 @@ export abstract class GltfReader {
   protected readonly _images: any;
   protected readonly _samplers: any;
   protected readonly _techniques: any;
+  protected readonly _extensions: any;
   protected readonly _binaryData: Uint8Array;
   protected readonly _iModel: IModelConnection;
   protected readonly _is3d: boolean;
@@ -345,6 +346,7 @@ export abstract class GltfReader {
     this._materialValues = props.materials;
     this._samplers = props.samplers;
     this._techniques = props.techniques;
+    this._extensions = props.extensions;
     this._yAxisUp = props.yAxisUp;
     this._returnToCenter = this.extractReturnToCenter(props.extensions);
     this._textures = props.scene.textures;
@@ -383,20 +385,47 @@ export abstract class GltfReader {
     return ColorDef.white;
   }
 
-  protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
-    let textureMapping: TextureMapping | undefined;
+  private extractTextureId(materialJson: any): string | undefined {
+    if (typeof materialJson !== "object")
+      return undefined;
 
-    if (undefined !== materialJson) {
-      if (materialJson.values && materialJson.values.tex)
-        textureMapping = this.findTextureMapping(materialJson.values.tex);    // Bimiums shader value.
-      else if (materialJson.extensions && materialJson.extensions.KHR_techniques_webgl && materialJson.extensions.KHR_techniques_webgl.values && materialJson.extensions.KHR_techniques_webgl.values.u_tex)
-        textureMapping = this.findTextureMapping(materialJson.extensions.KHR_techniques_webgl.values.u_tex.index);    // Bimiums colorIndex.
-      else if (materialJson.diffuseTexture)
-        textureMapping = this.findTextureMapping(materialJson.diffuseTexture.index);        // TBD -- real map support with PBR
-      else if (materialJson.emissiveTexture)
-        textureMapping = this.findTextureMapping(materialJson.emissiveTexture.index);      // TBD -- real map support with PBR
+    const extractId = (value: any) => {
+      switch (typeof value) {
+        case "string":
+          return value;
+        case "number":
+          return value.toString();
+        default:
+          return undefined;
+      }
+    };
+
+    // Bimium's shader value...almost certainly obsolete at this point.
+    let id = extractId(materialJson.values?.tex);
+    if (undefined !== id)
+      return id;
+
+    // KHR_techniques_webgl extension
+    const techniques = this._extensions?.KHR_techniques_webgl?.techniques;
+    const ext = Array.isArray(techniques) ? materialJson.extensions?.KHR_techniques_webgl : undefined;
+    if (undefined !== ext && typeof ext.values === "object") {
+      const uniforms = typeof ext.technique === "number" ? techniques[ext.technique].uniforms : undefined;
+      if (typeof uniforms === "object") {
+        for (const uniformName of Object.keys(uniforms)) {
+          const uniform = uniforms[uniformName];
+          if (typeof uniform === "object" && uniform.type === GltfDataType.Sampler2d)
+            return extractId(ext.values[uniformName]?.index);
+        }
+      }
     }
 
+    id = extractId(materialJson.diffuseTexture?.index);
+    return id ?? extractId(materialJson.emissiveTexture.index);
+  }
+
+  protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
+    const textureId = this.extractTextureId(materialJson);
+    const textureMapping = undefined !== textureId ? this.findTextureMapping(textureId) : undefined;
     const color = this.colorFromMaterial(materialJson);
     return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
   }
@@ -420,8 +449,8 @@ export abstract class GltfReader {
     const meshMode = JsonUtils.asInt(primitive.mode, GltfMeshMode.Triangles);
     switch (meshMode) {
       case GltfMeshMode.Lines:
-        primitiveType = Mesh.PrimitiveType.Polyline;
-        return undefined; // Needs work...
+        // primitiveType = Mesh.PrimitiveType.Polyline;
+        return undefined; // ###TODO support polylines from glTF.
         break;
       case GltfMeshMode.Triangles:
         primitiveType = Mesh.PrimitiveType.Mesh;
@@ -771,7 +800,7 @@ export abstract class GltfReader {
 
       let textureType = RenderTexture.Type.Normal;
       if (undefined !== samplerJson &&
-        (undefined !== samplerJson.wrapS || undefined !== samplerJson.wrapS))
+        (undefined !== samplerJson.wrapS || undefined !== samplerJson.wrapT))
         textureType = RenderTexture.Type.TileSection;
       const textureParams = new RenderTexture.Params(undefined, textureType);
       const offset = bufferView.byteOffset;

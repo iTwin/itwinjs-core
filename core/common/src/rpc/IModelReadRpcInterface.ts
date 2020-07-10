@@ -21,6 +21,7 @@ import { RpcManager } from "../RpcManager";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
 import { ViewStateProps } from "../ViewProps";
 import { RpcNotFoundResponse } from "./core/RpcControl";
+import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)
@@ -43,7 +44,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelReadRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.0.0";
+  public static interfaceVersion = "2.1.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -69,6 +70,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
   /** @beta */
   public async cancelSnap(_iModelToken: IModelRpcProps, _sessionId: string): Promise<void> { return this.forward(arguments); }
+  /** @beta */
+  public async getGeometryContainment(_iModelToken: IModelRpcProps, _props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> { return this.forward(arguments); }
   /** @beta */
   public async getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return this.forward(arguments); }
   /** @beta */

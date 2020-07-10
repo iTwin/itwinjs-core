@@ -11,7 +11,6 @@ import { ColorDef, RgbColor } from "@bentley/imodeljs-common";
 import { FloatRgba } from "./FloatRGBA";
 import { UniformHandle } from "./Handle";
 import { Matrix4 } from "./Matrix";
-import { SolarShadowMap } from "./SolarShadowMap";
 import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";
 

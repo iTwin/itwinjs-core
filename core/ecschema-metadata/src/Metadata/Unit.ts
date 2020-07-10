@@ -137,4 +137,38 @@ export class Unit extends SchemaItem {
   public async fromJSON(unitProps: UnitProps) {
     this.fromJSONSync(unitProps);
   }
+
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
+  protected async setPhenomenon(phenomenon: LazyLoadedPhenomenon) {
+    this._phenomenon = phenomenon;
+  }
+
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
+  protected async setUnitSystem(unitSystem: LazyLoadedUnitSystem) {
+    this._unitSystem = unitSystem;
+  }
+
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
+  protected async setDefinition(definition: string) {
+    this._definition = definition;
+  }
+}
+/**
+ * @internal
+ * An abstract class used for schema editing.
+ */
+export abstract class MutableUnit extends Unit {
+  public abstract async setPhenomenon(phenomenon: LazyLoadedPhenomenon): Promise<void>;
+  public abstract async setUnitSystem(unitSystem: LazyLoadedUnitSystem): Promise<void>;
+  public abstract async setDefinition(definition: string): Promise<void>;
+  public abstract setDisplayLabel(displayLabel: string): void;
 }

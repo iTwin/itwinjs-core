@@ -154,7 +154,11 @@ export class FeatureOverrides implements WebGLDisposable {
         feature.geometryClass,
         modelIdParts.lower, modelIdParts.upper, map.type, feature.animationNodeId);
 
-      if (undefined === app || app.isFullyTransparent) {
+      // NB: If the appearance is fully transparent, then:
+      //  - For normal ("primary") models, getAppearance() returns undefined.
+      //  - For classifier models, getAppearance() returns the appearance, and classification shader will discard fully-transparent classified pixels.
+      // (The latter is how we clip the classified model using the classifiers).
+      if (undefined === app) {
         // The feature is not visible. We don't care about any of the other overrides, because we're not going to render it.
         data.setOvrFlagsAtIndex(dataIndex, OvrFlags.Visibility);
         nHidden++;

@@ -27,7 +27,7 @@ export class NativeAppBackend {
 
   private static _appSettingsCacheDir?: string;
 
-  /** Get the local cache folder for application settingss */
+  /** Get the local cache folder for application settings */
   public static get appSettingsCacheDir(): string {
     if (this._appSettingsCacheDir === undefined) {
       if (!IModelHost.isNativeAppBackend)

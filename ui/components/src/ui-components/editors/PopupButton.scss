@@ -36,16 +36,6 @@
     width:            $uicore-line-height;
     height:           $uicore-line-height;
 
-    &:focus {
-      border: none;
-      box-shadow: none;
-      outline: 0px;
-
-      > .components-popup-button-arrow-icon {
-        color: $buic-foreground-primary;
-      }
-    }
-
     > .components-popup-button-arrow-icon {
       transition: transform .2s;
 
@@ -56,6 +46,22 @@
       text-align: center;
       font-size: $uicore-icons-x-small;
       line-height: $uicore-line-height;
+    }
+  }
+
+  &:focus, &.components-popup-expanded {
+    border-color: $buic-foreground-focus;
+    outline: 0px;
+    box-shadow: $uicore-inputs-focus-gradient;
+
+    > .components-popup-button-arrow {
+      border: none;
+      box-shadow: none;
+      outline: 0px;
+
+      > .components-popup-button-arrow-icon {
+        color: $buic-foreground-primary;
+      }
     }
   }
 

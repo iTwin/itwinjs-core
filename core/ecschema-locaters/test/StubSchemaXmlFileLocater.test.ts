@@ -24,7 +24,7 @@ describe("StubSchemaXmlFileLocater tests:", () => {
   });
 
   it("loadSchema, schema text not provided, schema loaded successfully", async () => {
-    const schemaPath = path.join(__dirname, "assets",  "SchemaA.02.00.02.ecschema.xml");
+    const schemaPath = path.join(__dirname, "assets", "SchemaA.02.00.02.ecschema.xml");
     const schemaKey = new FileSchemaKey(new EC.SchemaKey("SchemaA", 2, 0, 2), schemaPath);
     schemaKey.schemaText = locater.readUtf8FileToStringSync(schemaPath);
     const schema = locater.loadSchema(schemaPath);
@@ -33,7 +33,7 @@ describe("StubSchemaXmlFileLocater tests:", () => {
   });
 
   it("loadSchema, schema text provided, schema loaded successfully", async () => {
-    const schemaPath = path.join(__dirname, "assets",  "SchemaA.02.00.02.ecschema.xml");
+    const schemaPath = path.join(__dirname, "assets", "SchemaA.02.00.02.ecschema.xml");
     const schemaText = locater.readUtf8FileToStringSync(schemaPath);
     const schemaKey = new FileSchemaKey(new EC.SchemaKey("SchemaA", 2, 0, 2), schemaPath);
     schemaKey.schemaText = schemaText;

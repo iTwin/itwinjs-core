@@ -80,6 +80,8 @@ import { GeometricElementProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
 import { GeometricModel3dProps } from '@bentley/imodeljs-common';
 import { GeometricModelProps } from '@bentley/imodeljs-common';
+import { GeometryContainmentRequestProps } from '@bentley/imodeljs-common';
+import { GeometryContainmentResponseProps } from '@bentley/imodeljs-common';
 import { GeometryPartProps } from '@bentley/imodeljs-common';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
 import { GuidString } from '@bentley/bentleyjs-core';
@@ -169,6 +171,7 @@ import { TileTreeProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
+import { UpgradeOptions } from '@bentley/imodeljs-common';
 import { UrlLinkProps } from '@bentley/imodeljs-common';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentLabelProps } from '@bentley/imodeljs-common';
@@ -425,9 +428,9 @@ export class BriefcaseDb extends IModelDb {
     static readonly onCreated: BeEvent<(_imodelDb: BriefcaseDb) => void>;
     static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _briefcaseProps: BriefcaseProps) => void>;
     static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
-    static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, openOptions?: OpenBriefcaseOptions): Promise<BriefcaseDb>;
+    static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, options?: OpenBriefcaseOptions & UpgradeOptions): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void>;
+    pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType?: ChangesType): Promise<void>;
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     saveChanges(description?: string): void;
@@ -452,6 +455,8 @@ export class BriefcaseEntry {
     fileId?: string;
     getBriefcaseProps(): BriefcaseProps;
     getDebugInfo(): any;
+    // (undocumented)
+    getIModelRpcProps(): IModelRpcProps;
     getKey(): BriefcaseKey;
     get hasReversedChanges(): boolean;
     // (undocumented)
@@ -477,7 +482,6 @@ export class BriefcaseEntry {
     syncMode: SyncMode;
     targetChangeSetId: string;
     targetChangeSetIndex?: number;
-    upgrade: IModelJsNative.UpgradeMode;
 }
 
 // @public
@@ -530,7 +534,7 @@ export class BriefcaseManager {
     // @internal (undocumented)
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal
-    static openBriefcase(briefcase: BriefcaseEntry): void;
+    static openBriefcase(briefcase: BriefcaseEntry, upgradeOptions?: UpgradeOptions): void;
     // @internal
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
     // @internal
@@ -787,6 +791,19 @@ export class CodeSpecs {
 }
 
 // @beta
+export interface ComputedProjectExtents {
+    extents: Range3d;
+    extentsWithOutliers?: Range3d;
+    outliers?: Id64Array;
+}
+
+// @beta
+export interface ComputeProjectExtentsOptions {
+    reportExtentsWithOutliers?: boolean;
+    reportOutliers?: boolean;
+}
+
+// @beta
 export class ConcurrencyControl {
     constructor(_iModel: BriefcaseDb);
     abandonRequest(): void;
@@ -910,6 +927,8 @@ export namespace ConcurrencyControl {
         getChannelRootInfo0(props: ElementProps): any;
         // (undocumented)
         isChannelRoot(props: ElementProps): any | undefined;
+        // (undocumented)
+        get isChannelRootLocked(): boolean;
         // (undocumented)
         get isRepositoryChannel(): boolean;
         // (undocumented)
@@ -1634,6 +1653,8 @@ export class Element extends Entity implements ElementProps {
     parent?: RelatedElement;
     // @beta
     static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined): void;
+    // @internal (undocumented)
+    static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
     // (undocumented)
     setJsonProperty(nameSpace: string, value: any): void;
@@ -1806,6 +1827,8 @@ export class Entity implements EntityProps {
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
     iModel: IModelDb;
+    // @internal (undocumented)
+    static get protectedOperations(): string[];
     static schema: typeof Schema;
     get schemaName(): string;
     // @internal (undocumented)
@@ -2393,6 +2416,8 @@ export abstract class IModelDb extends IModel {
     clearSqliteStatementCache(): void;
     clearStatementCache(): void;
     get codeSpecs(): CodeSpecs;
+    // @beta
+    computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
     // (undocumented)
@@ -2414,6 +2439,8 @@ export abstract class IModelDb extends IModel {
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     getBriefcaseId(): BriefcaseId;
     getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps>;
+    // @beta
+    getGeometryContainment(requestContext: ClientRequestContext, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getGuid(): GuidString;
     getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps>;
     getJsClass<T extends typeof Entity>(classFullName: string): T;
@@ -3148,6 +3175,8 @@ export class Model extends Entity implements ModelProps {
     readonly parentModel: Id64String;
     // @beta
     static populateRequest(req: ConcurrencyControl.Request, props: ModelProps, iModel: IModelDb, opcode: DbOpcode): void;
+    // @internal (undocumented)
+    static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
     // (undocumented)
     setJsonProperty(name: string, value: any): void;
@@ -3439,6 +3468,8 @@ export class RoleModel extends Model {
 export class Schema {
     // @internal
     protected constructor();
+    // @internal
+    static get missingRequiredBehavior(): boolean;
     static get schemaName(): string;
 }
 
@@ -3744,7 +3775,7 @@ export class StandaloneDb extends IModelDb {
     close(): void;
     static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
     get filePath(): string;
-    static openFile(filePath: string, openMode?: OpenMode): StandaloneDb;
+    static openFile(filePath: string, openMode?: OpenMode, upgradeOptions?: UpgradeOptions): StandaloneDb;
     static tryFindByKey(key: string): StandaloneDb | undefined;
 }
 

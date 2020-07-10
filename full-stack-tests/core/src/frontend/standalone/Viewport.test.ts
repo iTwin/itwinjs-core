@@ -741,7 +741,7 @@ describe("Viewport changed events", async () => {
 
     ViewportChangedHandler.test(vp, (mon) => {
       // Changing the provider => event
-      mon.expect(ChangeFlag.FeatureOverrideProvider, () => vp.featureOverrideProvider = provider);
+      mon.expect(ChangeFlag.FeatureOverrideProvider, () => vp.addFeatureOverrideProvider(provider));
       expect(overridesAdded).to.be.true;
       overridesAdded = false;
 
@@ -751,11 +751,16 @@ describe("Viewport changed events", async () => {
       overridesAdded = false;
 
       // Setting provider to same value => no event
-      mon.expect(ChangeFlag.None, () => vp.featureOverrideProvider = provider);
+      mon.expect(ChangeFlag.None, () => vp.addFeatureOverrideProvider(provider));
       expect(overridesAdded).to.be.false;
 
       // Actually changing the provider => event
-      mon.expect(ChangeFlag.FeatureOverrideProvider, () => vp.featureOverrideProvider = undefined);
+      mon.expect(ChangeFlag.FeatureOverrideProvider, () => {
+        const prov = vp.findFeatureOverrideProvider((_) => true);
+        expect(prov).not.to.be.undefined;
+        if (prov)
+          vp.dropFeatureOverrideProvider(prov);
+      });
       expect(overridesAdded).to.be.false;
     });
   });

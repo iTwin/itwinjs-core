@@ -26,7 +26,7 @@ describe("Checkbox", () => {
   it("renders with label", () => {
     const checkbox = render(<Checkbox label="Test checkbox" />);
 
-    expect(checkbox.container.querySelector(".core-checkbox-label")).not.to.be.null;
+    expect(checkbox.getByText("Test checkbox")).not.to.be.null;
   });
 
   it("renders input status when it's provided", () => {
@@ -39,6 +39,21 @@ describe("Checkbox", () => {
     const checkbox = render(<Checkbox label="Test checkbox" disabled={true} />);
 
     expect((checkbox.container.childNodes[0] as HTMLElement).querySelector("[disabled]"), "Checkbox tag did not get set to 'disabled'").to.not.be.null;
+
+    checkbox.rerender(<Checkbox label="Test checkbox" disabled={false} />);
+    expect((checkbox.container.childNodes[0] as HTMLElement).querySelector("[disabled]"), "Checkbox tag did get set to 'disabled'").to.be.null;
+  });
+
+  it("renders properly as indeterminate", () => {
+    const component = render(<Checkbox label="Test checkbox" indeterminate={false} />);
+    let checkbox = component.container.querySelector("input[type='checkbox']");
+    expect(checkbox).not.to.be.null;
+    expect((checkbox as HTMLInputElement).indeterminate).to.be.false;
+
+    component.rerender(<Checkbox label="Test checkbox" indeterminate={true} />);
+    checkbox = component.container.querySelector("input[type='checkbox']");
+    expect(checkbox).not.to.be.null;
+    expect((checkbox as HTMLInputElement).indeterminate).to.be.true;
   });
 
   it("allows stopping click propagation", () => {

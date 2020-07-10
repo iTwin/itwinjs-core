@@ -7,9 +7,6 @@
 
 export * from "./ui-framework/UiFramework";  // Please ensure that this line comes before all other exports.
 
-export * from "./ui-framework/CoreToolDefinitions";
-export * from "./ui-framework/MarkupToolDefinitions";
-
 export * from "./ui-framework/accudraw/AccuDrawPopupManager";
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
@@ -199,6 +196,10 @@ export * from "./ui-framework/toolbar/ToolbarHelper";
 export * from "./ui-framework/toolbar/ToolButton";
 export * from "./ui-framework/toolbar/useUiItemsProviderToolbarItems";
 export * from "./ui-framework/toolbar/useDefaultToolbarItems";
+
+export * from "./ui-framework/tools/CoreToolDefinitions";
+export * from "./ui-framework/tools/MarkupToolDefinitions";
+export * from "./ui-framework/tools/RestoreLayoutTool";
 
 export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 

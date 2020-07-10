@@ -3,21 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as path from "path";
+import { BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using } from "@bentley/bentleyjs-core";
+import { GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
-} from "@bentley/bentleyjs-core";
-import {
-  GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, ElementProps,
-  EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
-  IModel, IModelError, IModelStatus, ModelProps, PhysicalElementProps, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, DomainOptions, ElementProps,
+  EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat,
+  IModel, IModelError, IModelStatus, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SpatialViewDefinitionProps,
   SubCategoryAppearance, TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import { assert, expect } from "chai";
+import * as path from "path";
+import * as semver from "semver";
 import {
   AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
   ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
@@ -1916,6 +1913,31 @@ describe("iModel", () => {
     snapshotDb3.close();
   });
 
+  it("upgrade the domain schema in a StandaloneDb", async () => {
+    const testFileName = IModelTestUtils.prepareOutputFile("UpgradeIModel", "testImodel.bim");
+    const seedFileName = IModelTestUtils.resolveAssetFile("testImodel.bim");
+    IModelJsFs.copySync(seedFileName, testFileName);
+
+    let iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+    const beforeVersion = iModel.querySchemaVersion("BisCore");
+    assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
+    iModel.close();
+
+    let result: DbResult = DbResult.BE_SQLITE_OK;
+    try {
+      iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite, { domain: DomainOptions.CheckRecommendedUpgrades });
+    } catch (err) {
+      assert(err instanceof IModelError);
+      result = err.errorNumber;
+    }
+    assert.strictEqual(result, DbResult.BE_SQLITE_ERROR_SchemaUpgradeRecommended);
+
+    iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
+    const afterVersion = iModel.querySchemaVersion("BisCore");
+    assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
+    iModel.close();
+  });
+
   it("Run plain SQL", () => {
     imodel1.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
@@ -2048,5 +2070,71 @@ describe("iModel", () => {
     assert.isFalse(imodel1.containsClass(":Element"));
     assert.isFalse(imodel1.containsClass("BisCore:InvalidClassName"));
     assert.isFalse(imodel1.containsClass("InvalidSchemaName:Element"));
+  });
+});
+
+describe("computeProjectExtents", () => {
+  let imodel: SnapshotDb;
+
+  before(() => {
+    imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+  });
+
+  after(() => {
+    imodel.close();
+  });
+
+  it("should return requested information", () => {
+    const projectExtents = imodel.projectExtents;
+    const args = [undefined, false, true];
+    for (const reportExtentsWithOutliers of args) {
+      for (const reportOutliers of args) {
+        const result = imodel.computeProjectExtents({ reportExtentsWithOutliers, reportOutliers });
+        expect(result.extents.isAlmostEqual(projectExtents)).to.be.true;
+
+        expect(undefined !== result.extentsWithOutliers).to.equal(true === reportExtentsWithOutliers);
+        if (undefined !== result.extentsWithOutliers)
+          expect(result.extentsWithOutliers.isAlmostEqual(projectExtents)).to.be.true;
+
+        expect(undefined !== result.outliers).to.equal(true === reportOutliers);
+        if (undefined !== result.outliers)
+          expect(result.outliers.length).to.equal(0);
+      }
+    }
+  });
+
+  it("should report outliers", () => {
+    const elemProps = imodel.elements.getElementProps({ id: "0x38", wantGeometry: true }) as GeometricElement3dProps;
+    elemProps.id = Id64.invalid;
+    const placement = Placement3d.fromJSON(elemProps.placement);
+    const originalOrigin = placement.origin.clone();
+    const mult = 1000000;
+    placement.origin.x *= mult;
+    placement.origin.y *= mult;
+    placement.origin.z *= mult;
+    elemProps.placement = placement;
+    elemProps.geom![2].sphere!.radius = 0.000001;
+    const newId = imodel.elements.insertElement(elemProps);
+    expect(Id64.isValid(newId)).to.be.true;
+    imodel.saveChanges();
+
+    const newElem = imodel.elements.getElement(newId) as GeometricElement3d;
+    expect(newElem).instanceof(GeometricElement3d);
+    expect(newElem.placement.origin.x).to.equal(originalOrigin.x * mult);
+    expect(newElem.placement.origin.y).to.equal(originalOrigin.y * mult);
+    expect(newElem.placement.origin.z).to.equal(originalOrigin.z * mult);
+
+    const outlierRange = placement.calculateRange();
+    const originalExtents = imodel.projectExtents;
+    const extentsWithOutlier = originalExtents.clone();
+    extentsWithOutlier.extendRange(outlierRange);
+
+    const result = imodel.computeProjectExtents({ reportExtentsWithOutliers: true, reportOutliers: true });
+    expect(result.outliers!.length).to.equal(1);
+    expect(result.outliers![0]).to.equal(newId);
+    expect(result.extents.isAlmostEqual(originalExtents)).to.be.true;
+    expect(result.extentsWithOutliers!.isAlmostEqual(originalExtents)).to.be.false;
+    expect(result.extentsWithOutliers!.low.isAlmostEqual(extentsWithOutlier.low)).to.be.true;
+    expect(result.extentsWithOutliers!.high.isAlmostEqual(extentsWithOutlier.high, 20)).to.be.true;
   });
 });

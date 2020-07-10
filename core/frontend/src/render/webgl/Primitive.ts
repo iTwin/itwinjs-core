@@ -49,7 +49,7 @@ export class Primitive extends Graphic {
       geom.computeRange();
     }
 
-    return undefined !== geom ? new this(geom) : undefined;
+    return new this(geom);
   }
 
   public get isDisposed(): boolean { return this.cachedGeometry.isDisposed; }

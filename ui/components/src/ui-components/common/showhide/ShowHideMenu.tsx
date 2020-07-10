@@ -59,7 +59,7 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
   /** @internal */
   public componentDidUpdate(oldProps: ShowHideMenuProps<T>) {
     if (this.props.initialHidden && oldProps.initialHidden !== this.props.initialHidden) {
-      this.setState((_, props) => ({ hiddenColumns: props.initialHidden || [] }));
+      this.setState((_, props) => ({ hiddenColumns: props.initialHidden || /* istanbul ignore next */[] }));
     }
   }
 
@@ -160,3 +160,5 @@ export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<Show
     );
   }
 }
+
+// cspell:ignore showall

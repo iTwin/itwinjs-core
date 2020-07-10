@@ -6,101 +6,11 @@
  * @module RpcInterface
  */
 
-import { GuidString, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { LogLevel } from "@bentley/bentleyjs-core";
+import { BriefcaseKey, BriefcaseProps, DownloadBriefcaseOptions, OpenBriefcaseOptions, RequestBriefcaseProps } from "../BriefcaseTypes";
 import { IModelProps, IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-
-/**
- * Status of downloading a briefcase
- * @internal
- */
-export enum DownloadBriefcaseStatus {
-  NotStarted,
-  Initializing,
-  DownloadingCheckpoint,
-  DownloadingChangeSets,
-  ApplyingChangeSets,
-  Complete,
-  Error,
-}
-
-/** Operations allowed when synchronizing changes between the Briefcase and iModelHub
- * @public
- */
-export enum SyncMode { FixedVersion = 1, PullAndPush = 2, PullOnly = 3 }
-
-/**
- * Key to locate a briefcase
- * @internal
- */
-export type BriefcaseKey = string;
-
-/**
- * Options to download the briefcase
- * @beta
- */
-export interface DownloadBriefcaseOptions {
-  /** This setting defines the operations allowed when synchronizing changes between the briefcase and iModelHub */
-  syncMode: SyncMode;
-}
-
-/**
- * Options to open the briefcase
- * @beta
- */
-export interface OpenBriefcaseOptions {
-  /** Limit the opened briefcase for Readonly operations by establishing a Readonly connection with the Db */
-  openAsReadOnly?: boolean;
-}
-
-/**
- * Properties required to request download of a briefcase
- * @internal
- */
-export interface RequestBriefcaseProps {
-  /** Context (Project or Asset) that the iModel belongs to */
-  readonly contextId: GuidString;
-
-  /** Id of the iModel */
-  readonly iModelId: GuidString;
-
-  /** Id of the change set */
-  readonly changeSetId: GuidString;
-}
-
-/**
- * Properties of a briefcase
- * @internal
- */
-export interface BriefcaseProps extends RequestBriefcaseProps, DownloadBriefcaseOptions {
-  /** Key to locate the briefcase in the disk cache */
-  readonly key: BriefcaseKey;
-
-  /** Mode used to open the briefcase */
-  openMode: OpenMode;
-
-  /** Status of downloading a briefcase */
-  downloadStatus: DownloadBriefcaseStatus;
-
-  /** File size of the briefcase on disk - only set for briefcases that are completely downloaded */
-  fileSize?: number;
-}
-
-/**
- * Manages the download of a briefcase
- * @internal
- */
-export interface BriefcaseDownloader {
-  /** Properties of the briefcase that's being downloaded */
-  briefcaseProps: BriefcaseProps;
-
-  /** Promise that resolves when the download completes. await this to complete the download */
-  downloadPromise: Promise<void>;
-
-  /** Request cancellation of the download */
-  requestCancel: () => Promise<boolean>;
-}
 
 /**
  * Type of value for storage values

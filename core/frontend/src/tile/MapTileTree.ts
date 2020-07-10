@@ -603,7 +603,7 @@ export class MapTileTree extends RealityTileTree {
     super(params);
 
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
-    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(ecefToDb, bimElevationBias, params.iModel);
+    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(ecefToDb, bimElevationBias, params.iModel, includeTerrain);
     const quadId = new QuadId(0, 0, 0);
     this.cartesianRange = BackgroundMapGeometry.getCartesianRange(this.iModel);
     this.globeOrigin = this.ecefToDb.getOrigin().clone();
@@ -630,7 +630,7 @@ export class MapTileTree extends RealityTileTree {
     }
     this._rootTile = new GlobeMapTile({ contentId: quadId.contentId, maximumSize: 0, range }, this, quadId, range.corners(), globalRectangle, rootPatch, undefined);
     this._gcsConverter = gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
-    this.globeMode = globeMode; this.yAxisUp;
+    this.globeMode = globeMode;
   }
 
   public get isDrape() { return this.mapLoader.isDrape; }

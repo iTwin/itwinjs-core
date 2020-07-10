@@ -367,6 +367,22 @@ describe("TreeDataProvider", () => {
 
     });
 
+    it("uses `getNodes` data source override if supplied", async () => {
+      const override = sinon.mock().resolves([]);
+      provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getNodes: override } });
+      await provider.getNodes();
+      presentationManagerMock.verify((x) => x.getNodes(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      expect(override).to.be.calledOnce;
+    });
+
+    it("uses `getNodesAndCount` data source override if supplied", async () => {
+      const override = sinon.mock().resolves({ count: 0, nodes: [] });
+      provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getNodesAndCount: override } });
+      await provider.getNodes(undefined, { start: 0, size: 5 });
+      presentationManagerMock.verify((x) => x.getNodesAndCount(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      expect(override).to.be.calledOnce;
+    });
+
     it("Logs warning when requesting nodes and pagingSize is not the same as passed pageOptions", async () => {
       const pageOptions: PageOptions = { start: 0, size: 10 };
       const loggerSpy = sinon.spy(Logger, "logWarning");
@@ -410,6 +426,14 @@ describe("TreeDataProvider", () => {
       const actualResult = await provider.getFilteredNodePaths(filter);
       expect(actualResult).to.matchSnapshot();
       presentationManagerMock.verifyAll();
+    });
+
+    it("uses `getFilteredNodePaths` data source override if supplied", async () => {
+      const override = sinon.mock().resolves([]);
+      provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getFilteredNodePaths: override } });
+      await provider.getFilteredNodePaths("test");
+      presentationManagerMock.verify((x) => x.getFilteredNodePaths(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      expect(override).to.be.calledOnce;
     });
 
   });

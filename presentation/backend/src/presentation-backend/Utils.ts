@@ -10,6 +10,7 @@ import { DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { Element, IModelDb } from "@bentley/imodeljs-backend";
 import { InstanceKey } from "@bentley/presentation-common";
 
+/** @internal */
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
   let key: InstanceKey | undefined;
   const query = `SELECT ECClassId FROM ${Element.classFullName} e WHERE ECInstanceId = ?`;

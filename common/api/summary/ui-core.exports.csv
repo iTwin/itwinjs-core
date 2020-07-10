@@ -77,11 +77,13 @@ beta;FieldValues
 public;FillCentered(props: CommonDivProps): JSX.Element
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer(props: CommonDivProps): JSX.Element
-internal;FocusTrap(props: Props): JSX.Element | null
+internal;FocusTrap(props: FocusTrapProps): JSX.Element | null
+internal;FocusTrapProps 
 beta;Form 
 beta;FormContext: React.Context
 beta;FormContextState 
 beta;FormProps
+beta;GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[]
 internal;getCssVariable(variableName: string, htmlElement?: HTMLElement): string
 internal;getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number
 internal;getDisplayName: (component: React.ComponentType
@@ -93,6 +95,7 @@ public;GlobalContextMenu
 public;GlobalContextMenuProps 
 public;GlobalDialog 
 public;GlobalDialogProps 
+internal;hasPointerEventsSupport(): boolean
 public;Headline(props: TextProps): JSX.Element
 public;HorizontalAlignment
 public;HorizontalTabs 
@@ -159,6 +162,7 @@ public;OmitChildrenProp
 beta;OptionsType = Array
 beta;OptionType
 public;Orientation
+internal;OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent
 internal;Point 
 public;PointProps
 public;Popup 
@@ -179,7 +183,7 @@ internal;Rectangle
 public;RectangleProps
 internal;ResizeObserver: ResizeObserverType
 internal;ResizeObserverType = typeof import("resize-observer-polyfill").default
-alpha;ScrollPositionMaintainer 
+beta;ScrollPositionMaintainer 
 public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 
 public;SearchBoxProps 

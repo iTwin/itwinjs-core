@@ -9,7 +9,7 @@
 import * as React from "react";
 import { IconSpec } from "@bentley/ui-core";
 import { Backstage } from "../backstage/Backstage";
-import { CoreTools } from "../CoreToolDefinitions";
+import { CoreTools } from "../tools/CoreToolDefinitions";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
 import { ItemList } from "../shared/ItemMap";
 import { ToolWidget } from "./ToolWidget";

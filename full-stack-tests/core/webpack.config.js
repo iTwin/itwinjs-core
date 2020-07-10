@@ -7,7 +7,8 @@ const path = require("path");
 const glob = require("glob");
 const webpack = require("webpack");
 const raw = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig.init(true /*suppress error*/, true);
-const { IModeljsLibraryExportsPlugin } = require('@bentley/webpack-tools-core');
+
+// const { IModeljsLibraryExportsPlugin } = require('@bentley/webpack-tools-core');
 
 function createConfig(shouldInstrument) {
   const config = {
@@ -28,11 +29,13 @@ function createConfig(shouldInstrument) {
         /draco_encoder_nodejs.js$/
       ],
       rules: [
+        /* Commented out per Caleb until OOM errors on Linux are resolved.
         {
           test: /\.js$/,
           use: "source-map-loader",
           enforce: "pre"
         },
+        */
         {
           test: /azure-storage|AzureFileHandler|UrlFileHandler/,
           use: "null-loader"
@@ -65,7 +68,7 @@ function createConfig(shouldInstrument) {
             IMODELJS_CORE_DIRNAME: JSON.stringify(path.join(__dirname, "../..")),
           }),
       }),
-      new IModeljsLibraryExportsPlugin(),
+      // new IModeljsLibraryExportsPlugin(),
     ]
   };
 

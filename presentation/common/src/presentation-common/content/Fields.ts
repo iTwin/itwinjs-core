@@ -6,8 +6,9 @@
  * @module Content
  */
 
-import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON } from "../EC";
-import { CategoryDescription } from "./Category";
+import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
+import { PresentationError, PresentationStatus } from "../Error";
+import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { EditorDescription } from "./Editor";
 import { Property, PropertyJSON } from "./Property";
 import { TypeDescription } from "./TypeDescription";
@@ -17,7 +18,7 @@ import { TypeDescription } from "./TypeDescription";
  * @public
  */
 export interface BaseFieldJSON {
-  category: CategoryDescription;
+  category: CategoryDescriptionJSON | string; // TODO: make this a string _only_ in 3.0
   name: string;
   label: string;
   type: TypeDescription;
@@ -121,10 +122,17 @@ export class Field {
    */
   public get parent(): NestedContentField | undefined { return this._parent; }
 
+  /** @alpha */
+  public clone() {
+    const clone = new Field(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.editor);
+    clone.rebuildParentship(this.parent);
+    return clone;
+  }
+
   /** Serialize this object to JSON */
   public toJSON(): FieldJSON {
     return {
-      category: this.category,
+      category: CategoryDescription.toJSON(this.category),
       name: this.name,
       label: this.label,
       type: this.type,
@@ -135,17 +143,35 @@ export class Field {
   }
 
   /** Deserialize [[Field]] from JSON */
-  public static fromJSON(json: FieldJSON | string | undefined): Field | undefined {
+  public static fromJSON(json: FieldJSON | undefined, categories: CategoryDescription[]): Field | undefined;
+  /**
+   * Deserialize [[Field]] from JSON
+   * @deprecated Use an overload that takes a list of categories
+   */
+  public static fromJSON(json: FieldJSON | string | undefined): Field | undefined;
+  public static fromJSON(json: FieldJSON | string | undefined, categories?: CategoryDescription[]): Field | undefined {
     if (!json)
       return undefined;
-    if (typeof json === "string")
+    if (typeof json === "string") {
+      // tslint:disable-next-line:deprecation
       return JSON.parse(json, Field.reviver);
+    }
     if (isPropertiesField(json))
-      return PropertiesField.fromJSON(json);
+      return PropertiesField.fromJSON(json, categories!);
     if (isNestedContentField(json))
-      return NestedContentField.fromJSON(json);
+      return NestedContentField.fromJSON(json, categories!);
     const field = Object.create(Field.prototype);
-    return Object.assign(field, json);
+    return Object.assign(field, json, {
+      category: Field.getCategoryFromFieldJson(json, categories),
+    });
+  }
+
+  protected static getCategoryFromFieldJson(fieldJson: FieldJSON, categories?: CategoryDescription[]): CategoryDescription {
+    const category = categories ? categories.find((c) => c.name === ((typeof fieldJson.category === "string") ? fieldJson.category : fieldJson.category.name))
+      : (typeof fieldJson.category === "object") ? CategoryDescription.fromJSON(fieldJson.category) : undefined;
+    if (!category)
+      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid content field category`);
+    return category;
   }
 
   /**
@@ -153,8 +179,10 @@ export class Field {
    * `JSON.parse` method when parsing Field objects.
    *
    * @internal
+   * @deprecated Use [[fromJSON]]
    */
   public static reviver(key: string, value: any): any {
+    // tslint:disable-next-line:deprecation
     return key === "" ? Field.fromJSON(value) : value;
   }
 
@@ -166,6 +194,18 @@ export class Field {
   /** @internal */
   public rebuildParentship(parentField?: NestedContentField): void {
     this._parent = parentField;
+  }
+
+  /**
+   * Get descriptor for this field.
+   * @alpha
+   */
+  public getFieldDescriptor(): FieldDescriptor {
+    return {
+      type: FieldDescriptorType.Name,
+      parent: this.parent ? this.parent.getFieldDescriptor() : undefined,
+      fieldName: this.name,
+    } as NamedFieldDescriptor;
   }
 }
 
@@ -196,6 +236,13 @@ export class PropertiesField extends Field {
     this.properties = properties;
   }
 
+  /** @alpha */
+  public clone() {
+    const clone = new PropertiesField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.properties, this.editor);
+    clone.rebuildParentship(this.parent);
+    return clone;
+  }
+
   /** Serialize this object to JSON */
   public toJSON(): PropertiesFieldJSON {
     return {
@@ -205,15 +252,45 @@ export class PropertiesField extends Field {
   }
 
   /** Deserialize [[PropertiesField]] from JSON */
-  public static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined {
+  public static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
+  /**
+   * Deserialize [[PropertiesField]] from JSON
+   * @deprecated Use an overload that takes a list of categories
+   */
+  public static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined;
+  public static fromJSON(json: PropertiesFieldJSON | string | undefined, categories?: CategoryDescription[]): PropertiesField | undefined {
     if (!json)
       return undefined;
-    if (typeof json === "string")
+    if (typeof json === "string") {
+      // tslint:disable-next-line:deprecation
       return JSON.parse(json, Field.reviver);
+    }
     const field = Object.create(PropertiesField.prototype);
     return Object.assign(field, json, {
-      properties: json.properties.map((p) => Property.fromJSON(p)),
-    } as Partial<PropertiesField>);
+      category: this.getCategoryFromFieldJson(json, categories),
+      properties: json.properties.map(Property.fromJSON),
+    });
+  }
+
+  private get propertySourceInfo() {
+    // note: properties fields should always have at least one property
+    return {
+      propertyClass: this.properties[0].property.classInfo.name,
+      propertyName: this.properties[0].property.name,
+      pathFromSelectToPropertyClass: RelationshipPath.strip(this.properties[0].relatedClassPath),
+    };
+  }
+
+  /**
+   * Get descriptor for this field.
+   * @alpha
+   */
+  public getFieldDescriptor(): FieldDescriptor {
+    return {
+      type: FieldDescriptorType.Properties,
+      parent: this.parent ? this.parent.getFieldDescriptor() : undefined,
+      ...this.propertySourceInfo,
+    } as PropertiesFieldDescriptor;
   }
 }
 
@@ -256,6 +333,14 @@ export class NestedContentField extends Field {
     this.autoExpand = autoExpand;
   }
 
+  /** @alpha */
+  public clone() {
+    const clone = new NestedContentField(this.category, this.name, this.label, this.type, this.isReadonly, this.priority,
+      this.contentClassInfo, this.pathToPrimaryClass, this.nestedFields, this.editor, this.autoExpand);
+    clone.rebuildParentship(this.parent);
+    return clone;
+  }
+
   /**
    * Get field by its name
    * @param name Name of the field to find
@@ -277,18 +362,28 @@ export class NestedContentField extends Field {
   }
 
   /** Deserialize [[NestedContentField]] from JSON */
-  public static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined {
+  public static fromJSON(json: NestedContentFieldJSON | undefined, categories: CategoryDescription[]): NestedContentField | undefined;
+  /**
+   * Deserialize [[NestedContentField]] from JSON
+   * @deprecated Use an overload that takes a list of categories
+   */
+  public static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
+  public static fromJSON(json: NestedContentFieldJSON | string | undefined, categories?: CategoryDescription[]): NestedContentField | undefined {
     if (!json)
       return undefined;
-    if (typeof json === "string")
+    if (typeof json === "string") {
+      // tslint:disable-next-line:deprecation
       return JSON.parse(json, Field.reviver);
+    }
     const field = Object.create(NestedContentField.prototype);
     return Object.assign(field, json, {
-      nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson)).filter((nestedField) => (undefined !== nestedField)),
+      category: this.getCategoryFromFieldJson(json, categories),
+      nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson, categories!))
+        .filter((nestedField): nestedField is Field => !!nestedField),
       contentClassInfo: ClassInfo.fromJSON(json.contentClassInfo),
-      pathToPrimaryClass: json.pathToPrimaryClass.map((p) => RelatedClassInfo.fromJSON(p)),
+      pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
       autoExpand: json.autoExpand,
-    } as Partial<NestedContentField>);
+    });
   }
 
   /** @internal */
@@ -303,6 +398,18 @@ export class NestedContentField extends Field {
     super.rebuildParentship(parentField);
     for (const nestedField of this.nestedFields)
       nestedField.rebuildParentship(this);
+  }
+
+  /**
+   * Get descriptor for this field.
+   * @alpha
+   */
+  public getFieldDescriptor(): FieldDescriptor {
+    return {
+      type: FieldDescriptorType.RelatedContent,
+      parent: this.parent ? this.parent.getFieldDescriptor() : undefined,
+      pathFromContentToSelectClass: RelationshipPath.strip(this.pathToPrimaryClass),
+    } as RelatedContentFieldDescriptor;
   }
 }
 
@@ -320,3 +427,73 @@ export const getFieldByName = (fields: Field[], name: string, recurse?: boolean)
   }
   return undefined;
 };
+
+/**
+ * Types of different field descriptors.
+ * @alpha
+ */
+export enum FieldDescriptorType {
+  Name = "name",
+  Properties = "properties",
+  RelatedContent = "related-content",
+}
+
+/**
+ * Base for a field descriptor
+ * @alpha
+ */
+export interface FieldDescriptorBase {
+  type: FieldDescriptorType;
+  parent?: FieldDescriptor;
+}
+
+/**
+ * A union of all possible field descriptor types
+ * @alpha
+ */
+export type FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor | RelatedContentFieldDescriptor;
+/** @alpha */
+export namespace FieldDescriptor {
+  /** Is this a named field descriptor */
+  export function isNamed(d: FieldDescriptor): d is NamedFieldDescriptor {
+    return d.type === FieldDescriptorType.Name;
+  }
+  /** Is this a properties field descriptor */
+  export function isProperties(d: FieldDescriptor): d is PropertiesFieldDescriptor {
+    return d.type === FieldDescriptorType.Properties;
+  }
+  /** Is this a related content field descriptor */
+  export function isRelatedContent(d: FieldDescriptor): d is RelatedContentFieldDescriptor {
+    return d.type === FieldDescriptorType.RelatedContent;
+  }
+}
+
+/**
+ * Field descriptor that identifies a content field by its unique name.
+ * @alpha
+ */
+export interface NamedFieldDescriptor extends FieldDescriptorBase {
+  type: FieldDescriptorType.Name;
+  fieldName: string;
+}
+
+/**
+ * Field descriptor that identifies a properties field using a property that it contains.
+ * @alpha
+ */
+export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
+  type: FieldDescriptorType.Properties;
+  propertyClass: string;
+  propertyName: string;
+  pathFromSelectToPropertyClass: StrippedRelationshipPath;
+}
+
+/**
+ * Field descriptor that identifies a related content field using its relationship path
+ * from content class to select class.
+ * @alpha
+ */
+export interface RelatedContentFieldDescriptor extends FieldDescriptorBase {
+  type: FieldDescriptorType.RelatedContent;
+  pathFromContentToSelectClass: StrippedRelationshipPath;
+}

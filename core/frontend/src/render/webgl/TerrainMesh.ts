@@ -100,7 +100,7 @@ export class TerrainMeshParams extends IndexedGeometryParams {
   public get bytesUsed(): number { return this.positions.bytesUsed + this.uvParams.bytesUsed + this.indices.bytesUsed; }
 
   public dispose() {
-    super.dispose;
+    super.dispose();
     dispose(this.uvParams);
   }
 }
@@ -161,6 +161,9 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
   public get techniqueId(): TechniqueId { return TechniqueId.TerrainMesh; }
   public getRenderPass(target: Target): RenderPass {
     if (target.isDrawingShadowMap)
+      return RenderPass.None;
+
+    if (target.nonLocatableTerrain && !target.drawNonLocatable)
       return RenderPass.None;
 
     if (target.terrainTransparency > 0.0)

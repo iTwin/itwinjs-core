@@ -8,39 +8,10 @@ import * as sinon from "sinon";
 import { Point } from "@bentley/ui-core";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, addTab, createNineZoneState, DragManagerContext, DragTarget, FloatingTab, NineZoneDispatch, TabState,
+  addPanelWidget, addTab, createNineZoneState, FloatingTab, NineZoneDispatch,
 } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
-
-interface DragStarterProps {
-  tabId: TabState["id"];
-  target?: DragTarget;
-}
-
-function DragStarter(props: DragStarterProps) {
-  const dragManager = React.useContext(DragManagerContext);
-  React.useEffect(() => {
-    dragManager.handleDragStart({
-      info: {
-        initialPointerPosition: new Point(),
-        lastPointerPosition: new Point(),
-        pointerPosition: new Point(),
-        widgetSize: {
-          height: 0,
-          width: 0,
-        },
-      },
-      item: {
-        type: "tab",
-        id: props.tabId,
-      },
-    });
-  }, [dragManager, props.tabId]);
-  React.useEffect(() => {
-    dragManager.handleTargetChanged(props.target);
-  }, [dragManager, props.tabId, props.target]);
-  return null;
-}
+import { createDragItemInfo, NineZoneProvider } from "../Providers";
+import { DragManager } from "../../ui-ninezone/base/DragManager";
 
 describe("FloatingTab", () => {
   const sandbox = sinon.createSandbox();
@@ -70,6 +41,7 @@ describe("FloatingTab", () => {
   });
 
   it("should dispatch WIDGET_TAB_DRAG", () => {
+    const dragManager = React.createRef<DragManager>();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1");
@@ -84,13 +56,20 @@ describe("FloatingTab", () => {
       <NineZoneProvider
         state={nineZone}
         dispatch={dispatch}
+        dragManagerRef={dragManager}
       >
-        <DragStarter tabId="t1" />
         <FloatingTab />
       </NineZoneProvider>,
     );
     act(() => {
-      fireEvent.pointerMove(document);
+      dragManager.current!.handleDragStart({
+        info: createDragItemInfo(),
+        item: {
+          type: "tab",
+          id: "t1",
+        },
+      });
+      fireEvent.mouseMove(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: "WIDGET_TAB_DRAG",
@@ -98,6 +77,7 @@ describe("FloatingTab", () => {
   });
 
   it("should dispatch WIDGET_TAB_DRAG_END with tab target", () => {
+    const dragManager = React.createRef<DragManager>();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1");
@@ -112,13 +92,20 @@ describe("FloatingTab", () => {
       <NineZoneProvider
         state={nineZone}
         dispatch={dispatch}
+        dragManagerRef={dragManager}
       >
-        <DragStarter tabId="t1" />
         <FloatingTab />
       </NineZoneProvider>,
     );
     act(() => {
-      fireEvent.pointerUp(document);
+      dragManager.current!.handleDragStart({
+        info: createDragItemInfo(),
+        item: {
+          type: "tab",
+          id: "t1",
+        },
+      });
+      fireEvent.mouseUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: "WIDGET_TAB_DRAG_END",
@@ -130,6 +117,7 @@ describe("FloatingTab", () => {
   });
 
   it("should dispatch WIDGET_TAB_DRAG_END with floatingWidget target", () => {
+    const dragManager = React.createRef<DragManager>();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1");
@@ -144,17 +132,25 @@ describe("FloatingTab", () => {
       <NineZoneProvider
         state={nineZone}
         dispatch={dispatch}
+        dragManagerRef={dragManager}
       >
-        <DragStarter tabId="t1" target={{
-          type: "tab",
-          tabIndex: 0,
-          widgetId: "w1",
-        }} />
         <FloatingTab />
       </NineZoneProvider>,
     );
     act(() => {
-      fireEvent.pointerUp(document);
+      dragManager.current!.handleDragStart({
+        info: createDragItemInfo(),
+        item: {
+          type: "tab",
+          id: "t1",
+        },
+      });
+      dragManager.current!.handleTargetChanged({
+        type: "tab",
+        tabIndex: 0,
+        widgetId: "w1",
+      });
+      fireEvent.mouseUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: "WIDGET_TAB_DRAG_END",
@@ -166,6 +162,7 @@ describe("FloatingTab", () => {
   });
 
   it("should dispatch WIDGET_TAB_DRAG_END with panel target", () => {
+    const dragManager = React.createRef<DragManager>();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1");
@@ -180,16 +177,24 @@ describe("FloatingTab", () => {
       <NineZoneProvider
         state={nineZone}
         dispatch={dispatch}
+        dragManagerRef={dragManager}
       >
-        <DragStarter tabId="t1" target={{
-          type: "panel",
-          side: "left",
-        }} />
         <FloatingTab />
       </NineZoneProvider>,
     );
     act(() => {
-      fireEvent.pointerUp(document);
+      dragManager.current!.handleDragStart({
+        info: createDragItemInfo(),
+        item: {
+          type: "tab",
+          id: "t1",
+        },
+      });
+      dragManager.current!.handleTargetChanged({
+        type: "panel",
+        side: "left",
+      });
+      fireEvent.mouseUp(document);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: "WIDGET_TAB_DRAG_END",

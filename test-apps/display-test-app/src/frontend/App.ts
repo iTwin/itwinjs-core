@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { FrontendDevTools } from "@bentley/frontend-devtools";
+import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
   AccuSnap, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, SelectionTool, SnapMode, TileAdmin, Tool,
 } from "@bentley/imodeljs-frontend";
@@ -22,6 +23,7 @@ import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { AttachViewTool, DetachViewsTool } from "./AttachViewTool";
 import { VersionComparisonTool } from "./VersionComparison";
+import { TimePointComparisonTool } from "./TimePointComparison";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -98,15 +100,6 @@ class ShutDownTool extends Tool {
   }
 }
 
-class LoadHypermodelingTool extends Tool {
-  public static toolId = "LoadHypermodeling";
-
-  public run(_args: any[]): boolean {
-    IModelApp.tools.parseAndRun("load extension localhost:3000/hypermodeling on");
-    return true;
-  }
-}
-
 export class DisplayTestApp {
   public static tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
@@ -143,7 +136,6 @@ export class DisplayTestApp {
       DrawingAidTestTool,
       FocusWindowTool,
       IncidentMarkerDemoTool,
-      LoadHypermodelingTool,
       MarkupSelectTestTool,
       MarkupTool,
       MaximizeWindowTool,
@@ -159,13 +151,15 @@ export class DisplayTestApp {
       SaveImageTool,
       ShutDownTool,
       SVTSelectionTool,
+      TimePointComparisonTool,
       ToggleShadowMapTilesTool,
       VersionComparisonTool,
       ZoomToSelectedElementsTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
-    return FrontendDevTools.initialize();
+    await FrontendDevTools.initialize();
+    await HyperModeling.initialize();
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

@@ -6,7 +6,7 @@
  * @module Authentication
  */
 
-import { Client as OpenIdClient, ClientConfiguration, Issuer } from "openid-client";
+import { Client as OpenIdClient, ClientMetadata, Issuer } from "openid-client";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ImsAuthorizationClient } from "@bentley/itwin-client";
 
@@ -38,8 +38,8 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     this._configuration = configuration;
   }
 
-  private _issuer: Issuer;
-  private async getIssuer(requestContext: ClientRequestContext): Promise<Issuer> {
+  private _issuer: Issuer<OpenIdClient>;
+  private async getIssuer(requestContext: ClientRequestContext): Promise<Issuer<OpenIdClient>> {
     requestContext.enter();
 
     if (this._issuer)
@@ -53,7 +53,7 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
   /**
    * Discover the endpoints of the service
    */
-  public async discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer> {
+  public async discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer<OpenIdClient>> {
     requestContext.enter();
     return this.getIssuer(requestContext);
   }
@@ -65,7 +65,7 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     if (this._client)
       return this._client;
 
-    const clientConfiguration: ClientConfiguration = {
+    const clientConfiguration: ClientMetadata = {
       client_id: this._configuration.clientId,
       client_secret: this._configuration.clientSecret,
     };

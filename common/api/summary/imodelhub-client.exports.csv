@@ -43,6 +43,7 @@ beta;EventHandler
 beta;EventSAS 
 beta;EventSubscription 
 beta;EventSubscriptionHandler
+beta;EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent"
 internal;GetEventOperationType
 internal;GlobalEventHandler 
 internal;GlobalEventSAS 
@@ -68,6 +69,7 @@ beta;IModelHubClientError
 beta;IModelHubClientLoggerCategory
 beta;IModelHubError 
 beta;class IModelHubEvent 
+beta;IModelHubEventType
 internal;class IModelHubGlobalEvent 
 beta;IModelQuery 
 beta;IModelsHandler

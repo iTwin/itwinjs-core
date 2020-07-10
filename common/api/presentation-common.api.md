@@ -31,7 +31,7 @@ export class AsyncTasksTracker {
 // @public
 export interface BaseFieldJSON {
     // (undocumented)
-    category: CategoryDescription;
+    category: CategoryDescriptionJSON | string;
     // (undocumented)
     editor?: EditorDescription;
     // (undocumented)
@@ -71,6 +71,30 @@ export interface CategoryDescription {
     expand: boolean;
     label: string;
     name: string;
+    parent?: CategoryDescription;
+    priority: number;
+}
+
+// @public (undocumented)
+export namespace CategoryDescription {
+    export function fromJSON(json: CategoryDescriptionJSON): CategoryDescription;
+    export function listFromJSON(json: CategoryDescriptionJSON[]): CategoryDescription[];
+    export function toJSON(category: CategoryDescription): CategoryDescriptionJSON;
+}
+
+// @public
+export interface CategoryDescriptionJSON {
+    // (undocumented)
+    description: string;
+    // (undocumented)
+    expand: boolean;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    parent?: string;
+    // (undocumented)
     priority: number;
 }
 
@@ -388,13 +412,14 @@ export interface DEPRECATED_RelatedPropertiesSpecification {
 // @public
 export class Descriptor implements DescriptorSource {
     constructor(source: DescriptorSource);
+    categories: CategoryDescription[];
     connectionId: string;
     contentFlags: number;
     contentOptions: any;
     // @internal (undocumented)
     createDescriptorOverrides(): DescriptorOverrides;
     // @internal (undocumented)
-    createStrippedDescriptor(): Descriptor;
+    createStrippedDescriptor(): DescriptorJSON;
     displayType: string;
     fields: Field[];
     filterExpression?: string;
@@ -412,6 +437,8 @@ export class Descriptor implements DescriptorSource {
 
 // @public
 export interface DescriptorJSON {
+    // (undocumented)
+    categories?: CategoryDescriptionJSON[];
     // (undocumented)
     connectionId: string;
     // (undocumented)
@@ -448,6 +475,7 @@ export interface DescriptorOverrides {
 
 // @public
 export interface DescriptorSource {
+    categories?: CategoryDescription[];
     contentFlags: number;
     displayType: string;
     fields: Field[];
@@ -475,6 +503,26 @@ export namespace DisplayValue {
     export function toJSON(value: DisplayValue): DisplayValueJSON;
 }
 
+// @alpha
+export interface DisplayValueGroup {
+    displayValue: DisplayValue;
+    groupedRawValues: Value[];
+}
+
+// @alpha (undocumented)
+export namespace DisplayValueGroup {
+    export function fromJSON(json: DisplayValueGroupJSON): DisplayValueGroup;
+    export function toJSON(group: DisplayValueGroup): DisplayValueGroupJSON;
+}
+
+// @alpha
+export interface DisplayValueGroupJSON {
+    // (undocumented)
+    displayValue: DisplayValueJSON;
+    // (undocumented)
+    groupedRawValues: ValueJSON[];
+}
+
 // @public
 export type DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayValuesArrayJSON;
 
@@ -493,6 +541,16 @@ export interface DisplayValuesMap extends ValuesDictionary<DisplayValue> {
 // @public
 export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON> {
 }
+
+// @alpha
+export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet> extends Paged<ContentRequestOptions<TIModel>> {
+    descriptor: TDescriptor;
+    fieldDescriptor: FieldDescriptor;
+    keys: TKeySet;
+}
+
+// @alpha
+export type DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions<DistinctValuesRequestOptions<any, DescriptorJSON, KeySetJSON>>;
 
 // @public
 export interface ECClassGroupingNodeKey extends GroupingNodeKey {
@@ -562,8 +620,16 @@ export interface ExtendedDataRule extends RuleBase, ConditionContainer {
 export class Field {
     constructor(category: CategoryDescription, name: string, label: string, type: TypeDescription, isReadonly: boolean, priority: number, editor?: EditorDescription);
     category: CategoryDescription;
+    // @alpha (undocumented)
+    clone(): Field;
     editor?: EditorDescription;
+    static fromJSON(json: FieldJSON | undefined, categories: CategoryDescription[]): Field | undefined;
+    // @deprecated
     static fromJSON(json: FieldJSON | string | undefined): Field | undefined;
+    // (undocumented)
+    protected static getCategoryFromFieldJson(fieldJson: FieldJSON, categories?: CategoryDescription[]): CategoryDescription;
+    // @alpha
+    getFieldDescriptor(): FieldDescriptor;
     isNestedContentField(): this is NestedContentField;
     isPropertiesField(): this is PropertiesField;
     isReadonly: boolean;
@@ -575,10 +641,38 @@ export class Field {
     rebuildParentship(parentField?: NestedContentField): void;
     // @internal (undocumented)
     resetParentship(): void;
-    // @internal
+    // @internal @deprecated
     static reviver(key: string, value: any): any;
     toJSON(): FieldJSON;
     type: TypeDescription;
+}
+
+// @alpha
+export type FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor | RelatedContentFieldDescriptor;
+
+// @alpha (undocumented)
+export namespace FieldDescriptor {
+    export function isNamed(d: FieldDescriptor): d is NamedFieldDescriptor;
+    export function isProperties(d: FieldDescriptor): d is PropertiesFieldDescriptor;
+    export function isRelatedContent(d: FieldDescriptor): d is RelatedContentFieldDescriptor;
+}
+
+// @alpha
+export interface FieldDescriptorBase {
+    // (undocumented)
+    parent?: FieldDescriptor;
+    // (undocumented)
+    type: FieldDescriptorType;
+}
+
+// @alpha
+export enum FieldDescriptorType {
+    // (undocumented)
+    Name = "name",
+    // (undocumented)
+    Properties = "properties",
+    // (undocumented)
+    RelatedContent = "related-content"
 }
 
 // @public
@@ -946,7 +1040,7 @@ export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> {
 // @public
 export type LabelRpcRequestOptions = PresentationRpcRequestOptions<LabelRequestOptions<any>>;
 
-// @public
+// @public @deprecated
 export enum LoggingNamespaces {
     // (undocumented)
     ECObjects = "ECObjects",
@@ -984,6 +1078,14 @@ export interface MultiSchemaClassesSpecification {
     schemaName: string;
 }
 
+// @alpha
+export interface NamedFieldDescriptor extends FieldDescriptorBase {
+    // (undocumented)
+    fieldName: string;
+    // (undocumented)
+    type: FieldDescriptorType.Name;
+}
+
 // @public
 export type NavigationRule = RootNodeRule | ChildNodeRule;
 
@@ -999,9 +1101,15 @@ export interface NavigationRuleBase extends RuleBase {
 export class NestedContentField extends Field {
     constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean);
     autoExpand?: boolean;
+    // @alpha (undocumented)
+    clone(): NestedContentField;
     contentClassInfo: ClassInfo;
+    static fromJSON(json: NestedContentFieldJSON | undefined, categories: CategoryDescription[]): NestedContentField | undefined;
+    // @deprecated
     static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
+    // @alpha
+    getFieldDescriptor(): FieldDescriptor;
     nestedFields: Field[];
     pathToPrimaryClass: RelationshipPath;
     // @internal (undocumented)
@@ -1274,6 +1382,12 @@ export type Paged<TOptions extends {}> = TOptions & {
     paging?: PageOptions;
 };
 
+// @alpha
+export interface PagedResponse<T> {
+    items: T[];
+    total: number;
+}
+
 // @public
 export interface PageOptions {
     size?: number;
@@ -1355,6 +1469,8 @@ export class PresentationRpcInterface extends RpcInterface {
     }>;
     // (undocumented)
     getNodesCount(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions, _parentKey?: NodeKeyJSON): PresentationRpcResponse<number>;
+    // @alpha (undocumented)
+    getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>>;
     // (undocumented)
     getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
     static readonly interfaceName = "PresentationRpcInterface";
@@ -1409,9 +1525,27 @@ export interface PrimitiveTypeDescription extends BaseTypeDescription {
 // @public
 export class PropertiesField extends Field {
     constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription);
+    // @alpha (undocumented)
+    clone(): PropertiesField;
+    static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
+    // @deprecated
     static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined;
+    // @alpha
+    getFieldDescriptor(): FieldDescriptor;
     properties: Property[];
     toJSON(): PropertiesFieldJSON;
+}
+
+// @alpha
+export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
+    // (undocumented)
+    pathFromSelectToPropertyClass: StrippedRelationshipPath;
+    // (undocumented)
+    propertyClass: string;
+    // (undocumented)
+    propertyName: string;
+    // (undocumented)
+    type: FieldDescriptorType.Properties;
 }
 
 // @public
@@ -1645,7 +1779,9 @@ export interface RelatedClassInfo {
 
 // @public (undocumented)
 export namespace RelatedClassInfo {
+    export function equals(lhs: RelatedClassInfo | StrippedRelatedClassInfo, rhs: RelatedClassInfo | StrippedRelatedClassInfo): boolean;
     export function fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo;
+    export function strip(full: RelatedClassInfo): StrippedRelatedClassInfo;
     export function toJSON(info: RelatedClassInfo): RelatedClassInfoJSON;
 }
 
@@ -1661,6 +1797,14 @@ export interface RelatedClassInfoJSON {
     sourceClassInfo: ClassInfoJSON;
     // (undocumented)
     targetClassInfo: ClassInfoJSON;
+}
+
+// @alpha
+export interface RelatedContentFieldDescriptor extends FieldDescriptorBase {
+    // (undocumented)
+    pathFromContentToSelectClass: StrippedRelationshipPath;
+    // (undocumented)
+    type: FieldDescriptorType.RelatedContent;
 }
 
 // @public
@@ -1719,7 +1863,9 @@ export type RelationshipPath = RelatedClassInfo[];
 
 // @public (undocumented)
 export namespace RelationshipPath {
+    export function equals(lhs: Array<RelatedClassInfo | StrippedRelatedClassInfo>, rhs: Array<RelatedClassInfo | StrippedRelatedClassInfo>): boolean;
     export function reverse(path: RelationshipPath): RelationshipPath;
+    export function strip(full: RelationshipPath): StrippedRelationshipPath;
 }
 
 // @public
@@ -1809,6 +1955,8 @@ export class RpcRequestsHandler implements IDisposable {
     }>;
     // (undocumented)
     getNodesCount(options: HierarchyRequestOptions<IModelRpcProps>, parentKey?: NodeKeyJSON): Promise<number>;
+    // (undocumented)
+    getPagedDistinctValues(options: DistinctValuesRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>): Promise<PagedResponse<DisplayValueGroupJSON>>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps>): Promise<SelectionScope[]>;
     // (undocumented)
@@ -2016,6 +2164,21 @@ export interface StringQuerySpecification extends QuerySpecificationBase {
     query: string;
     specType: QuerySpecificationTypes.String;
 }
+
+// @public
+export interface StrippedRelatedClassInfo {
+    // (undocumented)
+    isForwardRelationship: boolean;
+    // (undocumented)
+    relationshipName: string;
+    // (undocumented)
+    sourceClassName: string;
+    // (undocumented)
+    targetClassName: string;
+}
+
+// @public
+export type StrippedRelationshipPath = StrippedRelatedClassInfo[];
 
 // @public
 export interface StructFieldMemberDescription {

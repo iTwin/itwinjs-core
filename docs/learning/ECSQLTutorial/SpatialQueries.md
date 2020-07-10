@@ -6,27 +6,13 @@ The index is exposed to ECSQL via the ECClass [BisCore.SpatialIndex](../../bis/d
 
 > **Try it yourself**
 >
-> *Goal:* Return all [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement)s that are contained or overlap a cube defined by the minimum coordinate (0|0|0) and maximum coordinate (10|10|10).
+> *Goal:* Return all [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement)s that are contained or overlap a cube defined by the minimum coordinate (0, 0, 0) and maximum coordinate (415|120|15).
 >
 > *ECSQL*
 > ```sql
-> SELECT e.ECInstanceId, e.CodeValue FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE i.MinX<=10 AND i.MinY<=10 AND i.MinZ<=10 AND i.MaxX>=0 AND i.MaxY>=0 AND i.MaxZ>=0
+> SELECT e.ECInstanceId, e.UserLabel, i.MinX, i.MinY, i.MinZ, i.MaxX, i.MaxY, i.MaxZ FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE i.MinX<=415 AND i.MinY<=120 AND i.MinZ<=15 AND i.MaxX >= 0 AND i.MaxY >= 0 AND i.MaxZ >= 0
 > ```
->
-> *Result*
->
-> ECInstanceId | CodeValue
-> --- | ---
-> 0x1000000001d | Building A
-> 0x10000000020 | DEV-A-G-1
-> 0x10000000022 | DEV-A-G-2
-> 0x10000000025 | DEV-A-1-1
-> 0x20000000002 | DEV-A-G-4
-> 0x1000000001f | A-G-1
-> 0x10000000021 | A-G-2
-> 0x10000000024 | A-1-1
-> 0x1000000001e | A-G
-> 0x10000000023 | A-1
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT e.ECInstanceId, e.UserLabel, i.MinX, i.MinY, i.MinZ, i.MaxX, i.MaxY, i.MaxZ FROM bis.SpatialElement e JOIN bis.SpatialIndex i ON e.ECInstanceId=i.ECInstanceId WHERE i.MinX<=415 AND i.MinY<=120 AND i.MinZ<=15 AND i.MaxX >= 0 AND i.MaxY >= 0 AND i.MaxZ >= 0"></iframe>
 
 For more complex spatial criteria the `MATCH` keyword together with the special built-in spatial index matching function `iModel_spatial_overlap_aabb` is used. The MATCH clause acts like a sub-selection that generates a set of ECInstanceIds, which it gathers from the spatial index rows that match the specified criteria.
 The function `iModel_spatial_overlap_aabb` selects all nodes that overlap a specified axis-aligned [bounding box](../GeometrySqlFuncs.md#imodel_bbox).

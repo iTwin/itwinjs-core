@@ -3,28 +3,31 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECClass, MutableClass, StructClass } from "../Metadata/Class";
+import { ECClass, MutableClass, MutableStructClass, StructClass } from "../Metadata/Class";
 import { MutableSchema, Schema } from "../Metadata/Schema";
 import { EntityClass, MutableEntityClass } from "../Metadata/EntityClass";
 import { CustomAttributeContainerType, ECClassModifier, PrimitiveType, SchemaItemType, SchemaMatchType, StrengthDirection } from "../ECObjects";
 import { CustomAttributeClass, MutableCAClass } from "../Metadata/CustomAttributeClass";
 import { MutableRelationshipClass, RelationshipClass } from "../Metadata/RelationshipClass";
 import { AnyEnumerator, Enumeration, MutableEnumeration } from "../Metadata/Enumeration";
-import { Unit } from "../Metadata/Unit";
+import { MutableUnit, Unit } from "../Metadata/Unit";
 import { MutableConstant } from "../Metadata/Constant";
-import { InvertedUnit } from "../Metadata/InvertedUnit";
-import { Phenomenon } from "../Metadata/Phenomenon";
-import { MutableFormat } from "../Metadata/Format";
+import { InvertedUnit, MutableInvertedUnit } from "../Metadata/InvertedUnit";
+import { MutablePhenomenon, Phenomenon } from "../Metadata/Phenomenon";
+import { Format, MutableFormat } from "../Metadata/Format";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaContext } from "../Context";
 import { Mixin, MutableMixin } from "../Metadata/Mixin";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, FormatProps, MixinProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, RelationshipClassProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps } from "../Deserialization/JsonProps";
+import { ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps, MixinProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, RelationshipClassProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitProps, UnitSystemProps } from "../Deserialization/JsonProps";
 import { FormatType } from "../utils/FormatEnums";
+import { MutableKindOfQuantity } from "../Metadata/KindOfQuantity";
+import { OverrideFormat } from "../Metadata/OverrideFormat";
+import { MutableUnitSystem, UnitSystem } from "../Metadata/UnitSystem";
+import { MutablePropertyCategory } from "../Metadata/PropertyCategory";
 
 // We can either add validation in Editor, or in the protected methods of Schema.
-
 // TODO: Add an error code so we can do something programmatic with the error.
 /**
  * @alpha
@@ -51,6 +54,7 @@ export interface PropertyEditResults {
   errorMessage?: string;
 }
 
+// TODO: Put class SchemaContextEditor into separate file.
 /**
  * A class that allows you to edit and create schemas, classes, and items from the SchemaContext level.
  * @alpha
@@ -65,6 +69,12 @@ export class SchemaContextEditor {
   public readonly constants = new Editors.Constants(this);
   public readonly enumerations = new Editors.Enumerations(this);
   public readonly formats = new Editors.Formats(this);
+  public readonly kindOfQuantities = new Editors.KindOfQuantities(this);
+  public readonly units = new Editors.Units(this);
+  public readonly phenomenons = new Editors.Phenomenons(this);
+  public readonly unitSystems = new Editors.UnitSystems(this);
+  public readonly propertyCategories = new Editors.PropertyCategories(this);
+  public readonly invertedUnits = new Editors.InvertedUnits(this);
 
   /**
    *
@@ -92,6 +102,7 @@ export class SchemaContextEditor {
 
 }
 
+// TODO: Move Editors into a separate file.
 /**
  * @alpha
  */
@@ -346,7 +357,7 @@ export namespace Editors {
     public constructor(_schemaEditor: SchemaContextEditor) {
       super(_schemaEditor);
     }
-    public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClass?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+    public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClass?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
       const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
       if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
@@ -358,12 +369,15 @@ export namespace Editors {
       // Add a deserializing method.
       if (baseClass !== undefined) {
         const baseClassItem = await schema.lookupItem(baseClass) as EntityClass;
-        newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem);
+        if (baseClassItem === undefined) return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
+        if (baseClassItem.schemaItemType !== SchemaItemType.EntityClass) return { errorMessage: `${baseClassItem.fullName} is not of type Entity Class.` };
+        newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClass, async () => baseClassItem);
       }
 
       if (mixins !== undefined) {
         mixins.forEach((m) => newClass.addMixin(m));
       }
+      if (displayLabel) { newClass.setDisplayLabel(displayLabel); }
 
       return { itemKey: newClass.key };
     }
@@ -380,7 +394,7 @@ export namespace Editors {
       if (entityProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
       const newClass = (await schema.createEntityClass(entityProps.name)) as MutableEntityClass;
       if (newClass === undefined) {
-        return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+        return { errorMessage: `Failed to create class ${entityProps.name} in schema ${schemaKey.toString(true)}.` };
       }
 
       await newClass.fromJSON(entityProps);
@@ -419,7 +433,7 @@ export namespace Editors {
       super(_schemaEditor);
     }
 
-    public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
+    public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
       const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
       if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
@@ -430,13 +444,16 @@ export namespace Editors {
 
       if (baseClass !== undefined) {
         const baseClassItem = await schema.lookupItem(baseClass) as Mixin;
-        newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem);
+        if (baseClassItem === undefined) return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
+        if (baseClassItem.schemaItemType !== SchemaItemType.Mixin) return { errorMessage: `${baseClassItem.fullName} is not of type Mixin.` };
+        newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, Mixin>(baseClass, async () => baseClassItem);
       }
 
       const newAppliesTo = (await this._schemaEditor.schemaContext.getSchemaItem(appliesTo)) as EntityClass;
-      // Check if entity class's enum (0) will cause this to return false, maybe check undefined and SchemaItemType separately?
       if (newAppliesTo === undefined || newAppliesTo.schemaItemType !== SchemaItemType.EntityClass) { return { errorMessage: `Failed to locate the appliedTo entity class ${appliesTo.name}.` }; }
       newClass.setAppliesTo(new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(newAppliesTo.key, async () => newAppliesTo));
+
+      if (displayLabel) { newClass.setDisplayLabel(displayLabel); }
 
       return { itemKey: newClass.key };
     }
@@ -453,7 +470,7 @@ export namespace Editors {
       if (mixinProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
       const newClass = (await schema.createMixinClass(mixinProps.name)) as MutableMixin;
       if (newClass === undefined) {
-        return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+        return { errorMessage: `Failed to create class ${mixinProps.name} in schema ${schemaKey.toString(true)}.` };
       }
 
       await newClass.fromJSON(mixinProps);
@@ -491,11 +508,11 @@ export namespace Editors {
       super(_schemaEditor);
     }
 
-    public async create(schemaKey: SchemaKey, name: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
+    public async create(schemaKey: SchemaKey, name: string, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
       const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
       if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
-      const newClass = (await schema.createStructClass(name)) as MutableClass;
+      const newClass = (await schema.createStructClass(name)) as MutableStructClass;
       if (newClass === undefined) {
         return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
       }
@@ -504,6 +521,8 @@ export namespace Editors {
         const baseClassItem = await schema.lookupItem(baseClass) as StructClass;
         newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem);
       }
+
+      if (displayLabel) { newClass.setDisplayLabel(displayLabel); }
 
       return { itemKey: newClass.key };
     }
@@ -520,7 +539,7 @@ export namespace Editors {
       if (structProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
       const newClass = (await schema.createStructClass(structProps.name)) as MutableClass;
       if (newClass === undefined) {
-        return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+        return { errorMessage: `Failed to create class ${structProps.name} in schema ${schemaKey.toString(true)}.` };
       }
 
       await newClass.fromJSON(structProps);
@@ -537,7 +556,7 @@ export namespace Editors {
       super(_schemaEditor);
     }
 
-    public async create(schemaKey: SchemaKey, name: string, containerType: CustomAttributeContainerType, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
+    public async create(schemaKey: SchemaKey, name: string, containerType: CustomAttributeContainerType, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
       const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
       if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
@@ -550,6 +569,7 @@ export namespace Editors {
         const baseClassItem = await schema.lookupItem(baseClass) as CustomAttributeClass;
         newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(baseClass, async () => baseClassItem);
       }
+      if (displayLabel) { newClass.setDisplayLabel(displayLabel); }
 
       newClass.setContainerType(containerType);
 
@@ -568,7 +588,7 @@ export namespace Editors {
       if (caProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
       const newClass = (await schema.createCustomAttributeClass(caProps.name)) as MutableCAClass;
       if (newClass === undefined) {
-        return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+        return { errorMessage: `Failed to create class ${caProps.name} in schema ${schemaKey.toString(true)}.` };
       }
       await newClass.fromJSON(caProps);
 
@@ -618,7 +638,7 @@ export namespace Editors {
       if (relationshipProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
       const newClass = (await schema.createRelationshipClass(relationshipProps.name)) as MutableRelationshipClass;
       if (newClass === undefined) {
-        return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+        return { errorMessage: `Failed to create class ${relationshipProps.name} in schema ${schemaKey.toString(true)}.` };
       }
 
       await newClass.fromJSON(relationshipProps);
@@ -646,12 +666,12 @@ export namespace Editors {
   export class Constants {
     public constructor(protected _schemaEditor: SchemaContextEditor) { }
 
-    public async create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, numerator?: number, denominator?: number): Promise<SchemaItemEditResults> {
+    public async create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, displayLabel?: string, numerator?: number, denominator?: number): Promise<SchemaItemEditResults> {
       const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Exact)) as MutableSchema;
       if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
-      const newClass = (await schema.createConstant(name)) as MutableConstant;
-      if (newClass === undefined) {
+      const newConstant = (await schema.createConstant(name)) as MutableConstant;
+      if (newConstant === undefined) {
         return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
       }
 
@@ -659,13 +679,13 @@ export namespace Editors {
       if (newPhenomenon === undefined || newPhenomenon.schemaItemType !== SchemaItemType.Phenomenon) {
         return { errorMessage: `Unable to locate phenomenon ${phenomenon.name}` };
       }
-      newClass.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
-      newClass.setDefinition(definition);
+      newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
+      newConstant.setDefinition(definition);
 
-      if (numerator) { newClass.setNumerator(numerator); }
-      if (denominator) { newClass.setDenominator(denominator); }
-
-      return { itemKey: newClass.key };
+      if (numerator) { newConstant.setNumerator(numerator); }
+      if (denominator) { newConstant.setDenominator(denominator); }
+      if (displayLabel) { newConstant.setDisplayLabel(displayLabel); }
+      return { itemKey: newConstant.key };
     }
 
     /**
@@ -678,41 +698,42 @@ export namespace Editors {
       if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
       if (constantProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
-      const newClass = (await schema.createConstant(constantProps.name)) as MutableConstant;
-      if (newClass === undefined) {
-        return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+      const newConstant = (await schema.createConstant(constantProps.name)) as MutableConstant;
+      if (newConstant === undefined) {
+        return { errorMessage: `Failed to create class ${constantProps.name} in schema ${schemaKey.toString(true)}.` };
       }
 
-      await newClass.fromJSON(constantProps);
-      return { itemKey: newClass.key };
+      await newConstant.fromJSON(constantProps);
+      return { itemKey: newConstant.key };
     }
   }
   /**
    * @alpha
-   * A class extending ECClasses allowing you to create schema items of type Enumeration.
+   * A class allowing you to create schema items of type Enumeration.
    */
   export class Enumerations {
     public constructor(protected _schemaEditor: SchemaContextEditor) { }
 
-    public async create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemEditResults> {
+    public async create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, displayLabel?: string, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemEditResults> {
       const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Exact)) as MutableSchema;
       if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
-      const newClass = (await schema.createEnumeration(name, type)) as MutableEnumeration;
-      if (newClass === undefined) {
+      const newEnum = (await schema.createEnumeration(name, type)) as MutableEnumeration;
+      if (newEnum === undefined) {
         return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
       }
 
       if (undefined !== isStrict) {
-        newClass.setIsStrict(isStrict);
+        newEnum.setIsStrict(isStrict);
       }
       if (undefined !== enumerators) {
         for (const enumerator of enumerators) {
-          await this.addEnumerator(newClass.key, enumerator);
+          await this.addEnumerator(newEnum.key, enumerator);
         }
       }
+      if (displayLabel) { newEnum.setDisplayLabel(displayLabel); }
 
-      return { itemKey: newClass.key };
+      return { itemKey: newEnum.key };
     }
 
     /**
@@ -725,13 +746,13 @@ export namespace Editors {
       if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
       if (enumProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
-      const newClass = (await schema.createEnumeration(enumProps.name)) as MutableEnumeration;
-      if (newClass === undefined) {
-        return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+      const newEnum = (await schema.createEnumeration(enumProps.name)) as MutableEnumeration;
+      if (newEnum === undefined) {
+        return { errorMessage: `Failed to create class ${enumProps.name} in schema ${schemaKey.toString(true)}.` };
       }
 
-      await newClass.fromJSON(enumProps);
-      return { itemKey: newClass.key };
+      await newEnum.fromJSON(enumProps);
+      return { itemKey: newEnum.key };
     }
     public async addEnumerator(enumerationKey: SchemaItemKey, enumerator: AnyEnumerator): Promise<void> {
       const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem(enumerationKey)) as MutableEnumeration;
@@ -749,14 +770,14 @@ export namespace Editors {
   }
   /**
    * @alpha
-   * A class extending ECClasses allowing you to create schema items of type Format.
+   * A class allowing you to create schema items of type Format.
    */
   export class Formats {
     public constructor(protected _schemaEditor: SchemaContextEditor) { }
-    public async create(schemaKey: SchemaKey, name: string, formatType: FormatType, units?: SchemaItemKey[]): Promise<SchemaItemEditResults> {
+    public async create(schemaKey: SchemaKey, name: string, formatType: FormatType, displayLabel?: string, units?: SchemaItemKey[]): Promise<SchemaItemEditResults> {
       const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
-      const newClass = (await schema.createFormat(name)) as MutableFormat;
-      if (newClass === undefined) {
+      const newFormat = (await schema.createFormat(name)) as MutableFormat;
+      if (newFormat === undefined) {
         return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
       }
 
@@ -766,12 +787,13 @@ export namespace Editors {
           if (unitItem === undefined) {
             return { errorMessage: `Failed to locate unit ${unit.name} in Schema Context.` };
           }
-          newClass.addUnit(unitItem);
+          newFormat.addUnit(unitItem);
         }
       }
+      if (displayLabel) { newFormat.setDisplayLabel(displayLabel); }
       // TODO: Handle the setting of format traits, separators, etc....
-      newClass.setFormatType(formatType);
-      return { itemKey: newClass.key };
+      newFormat.setFormatType(formatType);
+      return { itemKey: newFormat.key };
     }
 
     /**
@@ -784,13 +806,307 @@ export namespace Editors {
       if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
       if (formatProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
-      const newClass = (await schema.createFormat(formatProps.name)) as MutableFormat;
-      if (newClass === undefined) {
+      const newFormat = (await schema.createFormat(formatProps.name)) as MutableFormat;
+      if (newFormat === undefined) {
+        return { errorMessage: `Failed to create class ${formatProps.name} in schema ${schemaKey.toString(true)}.` };
+      }
+
+      await newFormat.fromJSON(formatProps);
+      return { itemKey: newFormat.key };
+    }
+  }
+  /**
+   * @alpha
+   * A class allowing you to create schema items of type KindOfQuantity.
+   */
+  export class KindOfQuantities {
+    public constructor(protected _schemaEditor: SchemaContextEditor) { }
+    public async createFromProps(schemaKey: SchemaKey, koqProps: KindOfQuantityProps): Promise<SchemaItemEditResults> {
+      const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+      if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+      if (koqProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+      const newKoQ = (await schema.createKindOfQuantity(koqProps.name)) as MutableKindOfQuantity;
+      if (newKoQ === undefined) {
         return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
       }
 
-      await newClass.fromJSON(formatProps);
-      return { itemKey: newClass.key };
+      await newKoQ.fromJSON(koqProps);
+      return { itemKey: newKoQ.key };
+    }
+
+    /**
+     *
+     * @param koqKey A schemaItemKey of the editing KindOfQuantity.
+     * @param format A schemaItemKey of a Format.
+     * @param isDefault .is set to false when not explicitly passed.
+     */
+    public async addPresentationFormat(koqKey: SchemaItemKey, format: SchemaItemKey, isDefault: boolean = false): Promise<void> {
+      const kindOfQuantity = (await this._schemaEditor.schemaContext.getSchemaItem(koqKey)) as MutableKindOfQuantity;
+
+      if (kindOfQuantity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
+      if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
+
+      const presentationFormat = await (this._schemaEditor.schemaContext.getSchemaItem(format)) as Format;
+      if (undefined === presentationFormat)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${format.fullName}' for the presentation unit on KindOfQuantity ${koqKey.fullName}.`);
+      if (presentationFormat.schemaItemType !== SchemaItemType.Format) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${presentationFormat.fullName} to be of type Format.`);
+
+      kindOfQuantity.addPresentationFormat(presentationFormat, isDefault);
+    }
+
+    public async addPresentationOverrideFormat(koqKey: SchemaItemKey, overrideFormat: OverrideFormat, isDefault: boolean = false): Promise<void> {
+      const kindOfQuantity = (await this._schemaEditor.schemaContext.getSchemaItem(koqKey)) as MutableKindOfQuantity;
+
+      if (kindOfQuantity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
+      if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
+
+      kindOfQuantity.addPresentationFormat(overrideFormat, isDefault);
+    }
+
+    /**
+     * @param koqKey A schemaItemKey of the editing KindOfQuantity.
+     * @param parent A SchemaItemKey of the parent Format.
+     * @param unitLabelOverrides The list of Unit (or InvertedUnit) and label overrides. The length of list should be equal to the number of units in the parent Format.
+     */
+    public async createFormatOverride(koqKey: SchemaItemKey, parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): Promise<OverrideFormat> {
+      const kindOfQuantity = (await this._schemaEditor.schemaContext.getSchemaItem(koqKey)) as MutableKindOfQuantity;
+
+      if (kindOfQuantity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
+      if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
+
+      const parentFormat = await (this._schemaEditor.schemaContext.getSchemaItem(parent)) as Format;
+      if (undefined === parentFormat)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${parent.fullName}' for the presentation unit on KindOfQuantity ${koqKey.fullName}.`);
+      if (parentFormat.schemaItemType !== SchemaItemType.Format) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${parentFormat.fullName} to be of type Format.`);
+
+      return new OverrideFormat(parentFormat, precision, unitLabelOverrides);
+    }
+  }
+
+  /**
+   * @alpha
+   * A class allowing you to create schema items of type Unit.
+   */
+  export class Units {
+    // TODO: Add more setters for all attributes.
+    public constructor(protected _schemaEditor: SchemaContextEditor) { }
+
+    public async create(schemaKey: SchemaKey, name: string, definition: string, phenomenon: SchemaItemKey, unitSystem: SchemaItemKey, displayLabel?: string): Promise<SchemaItemEditResults> {
+      const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+      if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+      const newUnit = (await schema.createUnit(name)) as MutableUnit;
+      if (newUnit === undefined) {
+        return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+      }
+
+      const phenomenonItem = await schema.lookupItem(phenomenon) as Phenomenon;
+      if (phenomenonItem === undefined) return { errorMessage: `Unable to locate phenomenon ${phenomenon.fullName} in schema ${schema.fullName}.` };
+      if (phenomenonItem.schemaItemType !== SchemaItemType.Phenomenon) return { errorMessage: `${phenomenon.fullName} is not of type Phenomenon.` };
+      await newUnit.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenon, async () => phenomenonItem));
+
+      const unitSystemItem = await schema.lookupItem(unitSystem) as UnitSystem;
+      if (unitSystemItem === undefined) return { errorMessage: `Unable to locate unit system ${unitSystem.fullName} in schema ${schema.fullName}.` };
+      if (unitSystemItem.schemaItemType !== SchemaItemType.UnitSystem) return { errorMessage: `${unitSystem.fullName} is not of type UnitSystem.` };
+      await newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystem, async () => unitSystemItem));
+
+      await newUnit.setDefinition(definition);
+
+      if (displayLabel) { newUnit.setDisplayLabel(displayLabel); }
+
+      return { itemKey: newUnit.key };
+    }
+
+    public async createFromProps(schemaKey: SchemaKey, unitProps: UnitProps): Promise<SchemaItemEditResults> {
+      const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+      if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+      if (unitProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+      const newUnit = (await schema.createUnit(unitProps.name)) as Unit;
+      if (newUnit === undefined) {
+        return { errorMessage: `Failed to create class ${unitProps.name} in schema ${schemaKey.toString(true)}.` };
+      }
+
+      await newUnit.fromJSON(unitProps);
+      return { itemKey: newUnit.key };
+    }
+  }
+
+  /**
+   * @alpha
+   * A class allowing you to create schema items of type Phenomenon.
+   */
+  export class Phenomenons {
+    public constructor(protected _schemaEditor: SchemaContextEditor) { }
+
+    public async create(schemaKey: SchemaKey, name: string, definition: string, displayLabel?: string): Promise<SchemaItemEditResults> {
+      const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+      if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+      const newPhenomenon = (await schema.createPhenomenon(name)) as MutablePhenomenon;
+      if (newPhenomenon === undefined) {
+        return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+      }
+      if (displayLabel) { newPhenomenon.setDisplayLabel(displayLabel); }
+
+      await newPhenomenon.setDefinition(definition);
+
+      return { itemKey: newPhenomenon.key };
+    }
+
+    public async createFromProps(schemaKey: SchemaKey, phenomenonProps: PhenomenonProps): Promise<SchemaItemEditResults> {
+      const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+      if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+      if (phenomenonProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+      const newPhenomenon = (await schema.createPhenomenon(phenomenonProps.name)) as Phenomenon;
+      if (newPhenomenon === undefined) {
+        return { errorMessage: `Failed to create class ${phenomenonProps.name} in schema ${schemaKey.toString(true)}.` };
+      }
+
+      await newPhenomenon.fromJSON(phenomenonProps);
+      return { itemKey: newPhenomenon.key };
+    }
+  }
+
+  /**
+   * @alpha
+   * A class allowing you to create schema items of type UnitSystems.
+   */
+  export class UnitSystems {
+    public constructor(protected _schemaEditor: SchemaContextEditor) { }
+    public async create(schemaKey: SchemaKey, name: string, displayLabel?: string): Promise<SchemaItemEditResults> {
+      const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+      if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+      const newUnitSystem = (await schema.createUnitSystem(name)) as MutableUnitSystem;
+      if (displayLabel) { newUnitSystem.setDisplayLabel(displayLabel); }
+      return { itemKey: newUnitSystem.key };
+    }
+
+    public async createFromProps(schemaKey: SchemaKey, unitSystemProps: UnitSystemProps): Promise<SchemaItemEditResults> {
+      const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+      if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+      if (unitSystemProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+      const newUnitSystem = (await schema.createUnitSystem(unitSystemProps.name)) as MutableUnitSystem;
+      if (newUnitSystem === undefined) {
+        return { errorMessage: `Failed to create class ${unitSystemProps.name} in schema ${schemaKey.toString(true)}.` };
+      }
+      await newUnitSystem.fromJSON(unitSystemProps);
+      return { itemKey: newUnitSystem.key };
+    }
+  }
+  /**
+   * @alpha
+   * A class allowing you to create schema items of type Property Category.
+   */
+  export class PropertyCategories {
+    public constructor(protected _schemaEditor: SchemaContextEditor) { }
+    public async create(schemaKey: SchemaKey, name: string, priority: number, displayLabel?: string): Promise<SchemaItemEditResults> {
+      const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+      if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+      const newPropCategory = (await schema.createPropertyCategory(name)) as MutablePropertyCategory;
+      newPropCategory.setPriority(priority);
+      if (displayLabel) { newPropCategory.setDisplayLabel(displayLabel); }
+      return { itemKey: newPropCategory.key };
+    }
+
+    public async createFromProps(schemaKey: SchemaKey, propertyCategoryProps: PropertyCategoryProps): Promise<SchemaItemEditResults> {
+      const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+      if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+      if (propertyCategoryProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+      const newPropCategory = (await schema.createPropertyCategory(propertyCategoryProps.name)) as MutablePropertyCategory;
+      if (newPropCategory === undefined) {
+        return { errorMessage: `Failed to create class ${propertyCategoryProps.name} in schema ${schemaKey.toString(true)}.` };
+      }
+
+      await newPropCategory.fromJSON(propertyCategoryProps);
+      return { itemKey: newPropCategory.key };
+    }
+
+    public async setPriority(propCategoryKey: SchemaItemKey, priority: number): Promise<void> {
+      const propertyCategory = (await this._schemaEditor.schemaContext.getSchemaItem(propCategoryKey)) as MutablePropertyCategory;
+
+      if (propertyCategory === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Property Category ${propCategoryKey.fullName} not found in schema context.`);
+      if (propertyCategory.schemaItemType !== SchemaItemType.PropertyCategory) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${propCategoryKey.fullName} to be of type Property Category.`);
+
+      propertyCategory.setPriority(priority);
+    }
+  }
+  /**
+   * @alpha
+   * A class allowing you to create schema items of type Property Category.
+   */
+  export class InvertedUnits {
+    public constructor(protected _schemaEditor: SchemaContextEditor) { }
+    public async create(schemaKey: SchemaKey, name: string, invertsUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemEditResults> {
+      const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+      if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+      const newUnit = (await schema.createInvertedUnit(name)) as MutableInvertedUnit;
+      if (newUnit === undefined) {
+        return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
+      }
+
+      const invertsUnit = await schema.lookupItem(invertsUnitKey) as Unit;
+      if (invertsUnit === undefined) return { errorMessage: `Unable to locate unit ${invertsUnitKey.fullName} in schema ${schema.fullName}.` };
+      if (invertsUnit.schemaItemType !== SchemaItemType.Unit) return { errorMessage: `${invertsUnit.fullName} is not of type Unit.` };
+
+      newUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
+
+      const unitSystem = await schema.lookupItem(unitSystemKey) as UnitSystem;
+      if (unitSystem === undefined) return { errorMessage: `Unable to locate unit system ${unitSystemKey.fullName} in schema ${schema.fullName}.` };
+      if (unitSystem.schemaItemType !== SchemaItemType.UnitSystem) return { errorMessage: `${unitSystemKey.fullName} is not of type Unit System.` };
+
+      newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
+
+      if (displayLabel) { newUnit.setDisplayLabel(displayLabel); }
+
+      return { itemKey: newUnit.key };
+    }
+
+    public async createFromProps(schemaKey: SchemaKey, invertedUnitProps: InvertedUnitProps): Promise<SchemaItemEditResults> {
+      const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+      if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+      if (invertedUnitProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+      const newUnit = (await schema.createInvertedUnit(invertedUnitProps.name)) as MutableInvertedUnit;
+      if (newUnit === undefined) {
+        return { errorMessage: `Failed to create class ${invertedUnitProps.name} in schema ${schemaKey.toString(true)}.` };
+      }
+
+      await newUnit.fromJSON(invertedUnitProps);
+      return { itemKey: newUnit.key };
+    }
+
+    public async setInvertsUnit(invertedUnitKey: SchemaItemKey, invertsUnitKey: SchemaItemKey): Promise<void> {
+      const invertedUnit = await this._schemaEditor.schemaContext.getSchemaItem(invertedUnitKey) as MutableInvertedUnit;
+
+      if (invertedUnit === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Inverted Unit ${invertedUnitKey.fullName} not found in schema context.`);
+      if (invertedUnit.schemaItemType !== SchemaItemType.InvertedUnit) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${invertedUnitKey.fullName} to be of type Inverted Unit.`);
+
+      const invertsUnit = await this._schemaEditor.schemaContext.getSchemaItem(invertsUnitKey) as Unit;
+      if (invertsUnit === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Unit ${invertsUnitKey.fullName} not found in schema context.`);
+      if (invertsUnit.schemaItemType !== SchemaItemType.Unit) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${invertsUnitKey.fullName} to be of type Unit.`);
+
+      invertedUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
+    }
+
+    public async setUnitSystem(invertedUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey): Promise<void> {
+      const invertedUnit = await this._schemaEditor.schemaContext.getSchemaItem(invertedUnitKey) as MutableInvertedUnit;
+
+      if (invertedUnit === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Inverted Unit ${invertedUnitKey.fullName} not found in schema context.`);
+      if (invertedUnit.schemaItemType !== SchemaItemType.InvertedUnit) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${invertedUnitKey.fullName} to be of type Inverted Unit.`);
+
+      const unitSystem = await this._schemaEditor.schemaContext.getSchemaItem(unitSystemKey) as UnitSystem;
+      if (unitSystem === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Unit ${unitSystemKey.fullName} not found in schema context.`);
+      if (unitSystem.schemaItemType !== SchemaItemType.UnitSystem) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${unitSystemKey.fullName} to be of type Unit System.`);
+
+      invertedUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
     }
   }
 }

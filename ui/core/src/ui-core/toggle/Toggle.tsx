@@ -52,8 +52,9 @@ export interface ToggleProps extends CommonProps {
 export function Toggle(props: ToggleProps) {
   const inputElement = React.useRef<HTMLInputElement>(null);
   const padding = 2;
-  const [height, setHeight] = React.useState(0);
-  const [width, setWidth] = React.useState(0);
+  const defaultHeight = props.large ? 32 : 21;
+  const [height, setHeight] = React.useState(defaultHeight);
+  const [width, setWidth] = React.useState(defaultHeight * 2);
   const [checked, setChecked] = React.useState(props.isOn ? true : false);
   const [toggling, setToggling] = React.useState(false);
 
@@ -116,7 +117,7 @@ export function Toggle(props: ToggleProps) {
   const checkmarkClassName = classnames(
     "core-toggle-checkmark",
     "icon", "icon-checkmark",
-    showCheckmark && "visible",
+    showCheckmark && "core-visible",
     toggling && "core-toggling",
   );
   const toggleStyle: React.CSSProperties = { borderRadius: rounded ? halfHeight : 3, fontSize: halfHeight, ...props.style };
@@ -124,7 +125,7 @@ export function Toggle(props: ToggleProps) {
     "core-toggle",
     buttonType === ToggleButtonType.Primary && "core-toggle-primary",
     props.large && "core-toggle-large",
-    rounded && "rounded",
+    rounded && "core-toggle-rounded",
     props.disabled && "uicore-disabled",
     props.className);
   const toggleHandleStyle: React.CSSProperties = {

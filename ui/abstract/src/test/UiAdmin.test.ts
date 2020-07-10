@@ -10,6 +10,7 @@ import { RelativePosition } from "../ui-abstract/items/RelativePosition";
 import { PropertyDescription } from "../ui-abstract/properties/Description";
 import { UiAdmin } from "../ui-abstract/UiAdmin";
 import { UiDataProvider } from "../ui-abstract/dialogs/UiDataProvider";
+import { StandardTypeNames } from "../ui-abstract/properties/StandardTypeNames";
 
 describe("UiAdmin", () => {
 
@@ -117,7 +118,7 @@ describe("UiAdmin", () => {
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
     const spyCommit = sinon.fake();
     const spyCancel = sinon.fake();
-    const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: "number" };
+    const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: StandardTypeNames.Number };
 
     expect(uiAdmin.showInputEditor(100, propertyDescription, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel, doc.documentElement)).to.be.false;
     expect(uiAdmin.showInputEditor(100, propertyDescription, uiAdmin.createXAndY(150, 250), spyCommit, spyCancel)).to.be.false;

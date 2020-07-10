@@ -80,13 +80,15 @@ export interface AutoSuggestData {
 export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
     // @internal (undocumented)
     alwaysRenderSuggestions?: boolean;
-    getSuggestions?: (value: string) => AutoSuggestData[];
+    getLabel?: (value: string | undefined) => string;
+    // @deprecated
+    getSuggestions?: GetAutoSuggestDataFunc;
     onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
     onPressEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressEscape?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     onSuggestionSelected: (selected: AutoSuggestData) => void;
-    options: AutoSuggestData[];
+    options: AutoSuggestData[] | GetAutoSuggestDataFunc;
     setFocus?: boolean;
     value?: string;
 }
@@ -173,9 +175,11 @@ export function Centered(props: CommonDivProps): JSX.Element;
 export class Checkbox extends React.PureComponent<CheckboxProps> {
     // (undocumented)
     componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(_prevProps: CheckboxProps): void;
     // (undocumented)
     render(): JSX.Element;
-}
+    }
 
 // @public
 export interface CheckBoxInfo {
@@ -191,6 +195,7 @@ export interface CheckBoxInfo {
 
 // @public
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
+    indeterminate?: boolean;
     inputClassName?: string;
     inputStyle?: React.CSSProperties;
     label?: string;
@@ -539,10 +544,10 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     height?: string | number;
     hideHeader?: boolean;
     inset?: boolean;
-    maxHeight?: number;
-    maxWidth?: number;
-    minHeight?: number;
-    minWidth?: number;
+    maxHeight?: string | number;
+    maxWidth?: string | number;
+    minHeight?: string | number;
+    minWidth?: string | number;
     modal?: boolean;
     modelessId?: string;
     movable?: boolean;
@@ -554,6 +559,7 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     resizable?: boolean;
     title?: string | JSX.Element;
     titleStyle?: React.CSSProperties;
+    trapFocus?: boolean;
     width?: string | number;
     x?: number;
     y?: number;
@@ -667,6 +673,7 @@ export interface ExpandableBlockProps extends CommonProps {
     caption?: string;
     isExpanded: boolean;
     onClick: React.MouseEventHandler<HTMLDivElement>;
+    onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
     onKeyPress?: React.KeyboardEventHandler<HTMLDivElement>;
     title: string;
 }
@@ -775,7 +782,15 @@ export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
 export function FlexWrapContainer(props: CommonDivProps): JSX.Element;
 
 // @internal
-export function FocusTrap(props: Props): JSX.Element | null;
+export function FocusTrap(props: FocusTrapProps): JSX.Element | null;
+
+// @internal
+export interface FocusTrapProps extends React.AllHTMLAttributes<any> {
+    active?: boolean;
+    children: React.ReactNode;
+    initialFocusElement?: React.RefObject<HTMLElement> | string;
+    returnFocusOnDeactivate: boolean;
+}
 
 // @beta
 export class Form extends React.Component<FormProps, FormState> {
@@ -799,6 +814,9 @@ export interface FormProps {
     handleFormSubmit: (values: FieldValues) => Promise<void>;
     submitButtonLabel?: string;
 }
+
+// @beta
+export type GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[];
 
 // @internal
 export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string;
@@ -852,6 +870,9 @@ export interface GlobalDialogProps extends DialogProps {
     // (undocumented)
     identifier?: string;
 }
+
+// @internal
+export function hasPointerEventsSupport(): boolean;
 
 // @public
 export function Headline(props: TextProps): JSX.Element;
@@ -1275,6 +1296,9 @@ export enum Orientation {
     Vertical = 1
 }
 
+// @internal (undocumented)
+export type OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent;
+
 // @internal
 export class Point implements PointProps {
     constructor(x?: number, y?: number);
@@ -1575,7 +1599,7 @@ export const ResizeObserver: ResizeObserverType;
 // @internal (undocumented)
 export type ResizeObserverType = typeof import("resize-observer-polyfill").default;
 
-// @alpha
+// @beta
 export class ScrollPositionMaintainer implements IDisposable {
     constructor(el: Element);
     // (undocumented)
@@ -1749,6 +1773,7 @@ export interface SplitButtonProps extends CommonProps {
     icon?: IconSpec;
     label: string | React.ReactNode;
     onClick?: (event: any) => any;
+    onExecute?: () => any;
 }
 
 // @beta
@@ -2184,7 +2209,7 @@ export function useEffectSkipFirst(callback: () => (void | (() => void | undefin
 
 // @internal
 export function useOnOutsideClick<T extends Element>(onOutsideClick?: () => void,
-outsideEventPredicate?: (e: PointerEvent) => boolean): React.MutableRefObject<T | null>;
+outsideEventPredicate?: (e: OutsideClickEvent) => boolean): React.RefObject<T>;
 
 // @public
 export function useOptionalDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable | undefined): TDisposable | undefined;

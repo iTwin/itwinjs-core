@@ -7,7 +7,7 @@
  */
 
 import { decode } from "jsonwebtoken";
-import { GrantParams, TokenSet } from "openid-client";
+import { GrantBody, TokenSet } from "openid-client";
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
@@ -60,7 +60,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     if (scope.includes("openid") || scope.includes("email") || scope.includes("profile") || scope.includes("organization"))
       throw new BentleyError(AuthStatus.Error, "Scopes for an Agent cannot include 'openid email profile organization'");
 
-    const grantParams: GrantParams = {
+    const grantParams: GrantBody = {
       grant_type: "client_credentials",
       scope,
     };
@@ -73,7 +73,9 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
       throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", Logger.logError, loggerCategory, () => ({ error: error.error, message: error.message }));
     }
 
-    const userProfile: any = decode(tokenSet.access_token, { json: true, complete: false });
+    const userProfile = tokenSet.access_token
+      ? decode(tokenSet.access_token, { json: true, complete: false })
+      : undefined;
     this._accessToken = AccessToken.fromTokenResponseJson(tokenSet, userProfile);
     return this._accessToken!;
   }

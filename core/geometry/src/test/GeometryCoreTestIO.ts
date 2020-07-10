@@ -64,7 +64,11 @@ export class GeometryCoreTestIO {
     }
     this.captureGeometry(collection, Loop.createPolygon(points), dx, dy, dz);
   }
-  public static createAndCaptureLoops(collection: GeometryQuery[], points: IndexedXYZCollection[] | Point3d[][] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static createAndCaptureLoops(collection: GeometryQuery[], points: IndexedXYZCollection | IndexedXYZCollection[] | Point3d[][] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (points instanceof IndexedXYZCollection) {
+      this.createAndCaptureLoop(collection, points, dx, dy, dz);
+      return;
+    }
     if (!points || points.length === 0)
       return;
     for (const loop of points)

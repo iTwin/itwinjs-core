@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@bentley/bentleyjs-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { FeatureOverrideProvider, FeatureSymbology, HitDetail, IModelApp, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 import { AnimationType, IoTDeviceType } from "./IoTDefinitions";
@@ -15,7 +15,6 @@ export class IoTMonitor implements FeatureOverrideProvider {
   private _intervalHandle: NodeJS.Timer | any | undefined;
   private _overrideMap: Map<Id64String, ColorValue> | undefined;
   private _expectedTypes: IoTDeviceType[] | undefined;
-  private _oldFeatureOverrideProvider: FeatureOverrideProvider | undefined;
   private _latestReadingTime: number;
 
   constructor(public extension: IoTDemoExtension) {
@@ -53,12 +52,11 @@ export class IoTMonitor implements FeatureOverrideProvider {
     this._latestReadingTime = 0;
     this._showLatestReadings().catch((_err) => { });
     this._intervalHandle = setInterval(this._showLatestReadings.bind(this), 2 * 1000);
-    this._oldFeatureOverrideProvider = this._animationView.featureOverrideProvider;
   }
 
   public stopMonitor() {
     if (this._animationView)
-      this._animationView.featureOverrideProvider = this._oldFeatureOverrideProvider;
+      this._animationView.dropFeatureOverrideProvider(this);
 
     // throw away current animation.
     this._latestReadingTime = 0.0;
@@ -86,7 +84,7 @@ export class IoTMonitor implements FeatureOverrideProvider {
       return;
 
     // wait for current readings.
-    const currentReading: { readingTime: number, readings: any[] } = await this._animation!.getLatestTimeAndReading();
+    const currentReading: { readingTime: number, readings: any[] } = await this._animation.getLatestTimeAndReading();
     if (this._latestReadingTime >= currentReading.readingTime)
       return;
     this._latestReadingTime = currentReading.readingTime;
@@ -95,7 +93,7 @@ export class IoTMonitor implements FeatureOverrideProvider {
     this._overrideMap = new Map<Id64String, ColorValue>();
     // we expect the readings to be either of the type we requested, or alarms.
     for (const thisReading of currentReading.readings) {
-      const idString: Id64String | undefined = await this._animation!.getElementIdFromDeviceId(thisReading.id);
+      const idString: Id64String | undefined = await this._animation.getElementIdFromDeviceId(thisReading.id);
       if (undefined === idString)
         continue;
 
@@ -116,10 +114,13 @@ export class IoTMonitor implements FeatureOverrideProvider {
     }
 
     // set the feature overrides.
-    if (this !== this._animationView!.featureOverrideProvider)
-      this._animationView!.featureOverrideProvider = this;
+    assert(undefined !== this._animationView);
+    const provider = this._animationView.findFeatureOverrideProvider((x) => x === this);
+    if (!provider)
+      this._animationView.addFeatureOverrideProvider(this);
     else
-      this._animationView!.setFeatureOverrideProviderChanged();
+      this._animationView.setFeatureOverrideProviderChanged();
+
     this.extension.iotUiProvider!.syncCurrentDateInUi(new Date(this._latestReadingTime));
   }
 

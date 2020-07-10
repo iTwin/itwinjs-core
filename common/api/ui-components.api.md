@@ -1222,7 +1222,7 @@ export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
 // @public
 export class DoublePropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
 }
 
 // @internal (undocumented)
@@ -2242,7 +2242,7 @@ export class NavigationPropertyTypeConverter extends TypeConverter {
 // @public
 export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): JSX.Element;
 }
 
 // @public
@@ -2255,6 +2255,12 @@ export interface NextObserver<T> {
     error?: (err: any) => void;
     // (undocumented)
     next: (value: T) => void;
+}
+
+// @internal (undocumented)
+export interface Node {
+    // (undocumented)
+    readonly id: string;
 }
 
 // @public @deprecated
@@ -2514,6 +2520,9 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
     render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
 }
 
+// @internal (undocumented)
+export function PrimitivePropertyValueRendererImpl(props: PrimitivePropertyValueRendererImplProps): JSX.Element;
+
 // @public
 export interface PrimitiveRendererProps extends SharedRendererProps {
     indentation?: number;
@@ -2522,12 +2531,16 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
 
 // @public
 export interface PropertyCategory {
+    // @alpha (undocumented)
+    childCategories?: PropertyCategory[];
     // (undocumented)
     expand: boolean;
     // (undocumented)
     label: string;
     // (undocumented)
     name: string;
+    // @alpha (undocumented)
+    parentCategory?: PropertyCategory;
 }
 
 // @public
@@ -2637,7 +2650,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     render(): JSX.Element;
     }
 
-// @public
+// @public @deprecated
 export interface PropertyGridCategory {
     // (undocumented)
     properties: PropertyRecord[];
@@ -2848,6 +2861,9 @@ export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivEleme
     hsv: HSVColor;
     onSaturationChange?: ((saturation: HSVColor) => void) | undefined;
 }
+
+// @internal
+export function scheduleSubscription<T>(scheduler: SubscriptionScheduler<T>): (source: Observable_2<T>) => Observable_2<T>;
 
 // @internal
 export class Scrubber extends React.Component<ScrubberProps> {
@@ -3169,7 +3185,44 @@ export interface SortComparer {
     sortCompare(valueA: Primitives.Value, valueB: Primitives.Value, ignoreCase?: boolean): number;
 }
 
-// @beta
+// @public
+export class SparseArray<T> implements Iterable<T | undefined> {
+    // (undocumented)
+    [immerable]: boolean;
+    [Symbol.iterator](): IterableIterator<T | undefined>;
+    get(index: number): T | undefined;
+    getIndex(lookupValue: T): number | undefined;
+    getLength(): number;
+    insert(index: number, value: T): void;
+    iterateValues(): IterableIterator<[T, number]>;
+    remove(index: number): void;
+    set(index: number, value: T): void;
+    setLength(length: number): void;
+}
+
+// @internal
+export class SparseTree<T extends Node> {
+    // (undocumented)
+    [immerable]: boolean;
+    // (undocumented)
+    deleteSubtree(parentId: string | undefined, deleteParent?: boolean): void;
+    // (undocumented)
+    getChildOffset(parentId: string | undefined, childId: string): number | undefined;
+    // (undocumented)
+    getChildren(parentId: string | undefined, createIfNotExist?: boolean): SparseArray<string> | undefined;
+    // (undocumented)
+    getNode(nodeId: string): T | undefined;
+    // (undocumented)
+    insertChild(parentId: string | undefined, child: T, offset: number): void;
+    // (undocumented)
+    removeChild(parentId: string | undefined, childId: string): void;
+    // (undocumented)
+    setChildren(parentId: string | undefined, children: T[], offset: number): void;
+    // (undocumented)
+    setNumChildren(parentId: string | undefined, numChildren: number): void;
+}
+
+// @beta @deprecated
 export enum StandardEditorNames {
     // (undocumented)
     ColorPicker = "color-picker",
@@ -3239,7 +3292,7 @@ export enum StandardTypeConverterTypeNames {
     Text = "text"
 }
 
-// @beta
+// @beta @deprecated
 export enum StandardTypeNames {
     // (undocumented)
     Array = "array",
@@ -3351,6 +3404,12 @@ export interface Subscription extends Unsubscribable {
     readonly closed: boolean;
     // (undocumented)
     unsubscribe(): void;
+}
+
+// @internal
+export class SubscriptionScheduler<T> {
+    constructor();
+    scheduleSubscription(source: Observable_2<T>): Observable_2<T>;
 }
 
 // @public

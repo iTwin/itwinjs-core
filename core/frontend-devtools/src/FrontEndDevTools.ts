@@ -10,7 +10,7 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ClipColorTool } from "./tools/ClipColorTool";
-import { ChangeViewFlagsTool, ToggleSkyboxTool } from "./tools/DisplayStyleTools";
+import { ApplyRenderingStyleTool, ChangeViewFlagsTool, SaveRenderingStyleTool, ToggleSkyboxTool } from "./tools/DisplayStyleTools";
 import { ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, IsolateSelectedElementsTool } from "./tools/EmphasizeElementsTool";
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
@@ -60,6 +60,7 @@ export class FrontendDevTools {
     const i18n = IModelApp.i18n.registerNamespace("FrontendDevTools");
     const tools = [
       AnimationIntervalTool,
+      ApplyRenderingStyleTool,
       ApplyViewByIdTool,
       ApplyViewTool,
       ChangeEmphasisSettingsTool,
@@ -84,6 +85,7 @@ export class FrontendDevTools {
       OverrideSubCategoryPriorityTool,
       RealityTransitionTool,
       ReportWebGLCompatibilityTool,
+      SaveRenderingStyleTool,
       SaveViewTool,
       SelectElementsByIdTool,
       SetAspectRatioSkewTool,

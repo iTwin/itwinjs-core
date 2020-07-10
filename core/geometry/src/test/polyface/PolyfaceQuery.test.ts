@@ -21,6 +21,7 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { ChainMergeContext } from "../../topology/ChainMerge";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 
 /* tslint:disable:no-console */
 /** Functions useful for modifying test data. */
@@ -545,8 +546,46 @@ describe("ReOrientFacets", () => {
     testDuplicateFacetCounts(ck, "Additional Triangle Duplicate", meshDataA, 3, 2, 1, 1);
     expect(ck.getNumErrors()).equals(0);
   });
+  it("XYBoundaryHoles", () => {
+    const ck = new Checker();
+    const y0 = 0;
+    let x0 = 0.0;
+    // const xStep = 15.0;
+    // const yStep = 10.0;
+    const allGeometry: GeometryQuery[] = [];
+    const rectangleA = Sample.createRectangle(0, 0, 10, 8, 0, true);
+    const rectangleC = Sample.createRectangle(3, -1, 5, 5, 0, true);
+    const rectangleD = Sample.createRectangle(10, 3, 12, 5, 0, true);
+    const rectangleZ = Sample.createRectangle(2, 2, 6, 6, 0, true);
+
+    exerciseMultiUnionDiff(ck, allGeometry, [rectangleA, rectangleC], [], x0 += 20, y0);
+    exerciseMultiUnionDiff(ck, allGeometry, [[rectangleA, rectangleZ]], [], x0 += 20, y0);
+    exerciseMultiUnionDiff(ck, allGeometry, [[rectangleA, rectangleZ], rectangleC], [], x0 += 20, y0);
+    exerciseMultiUnionDiff(ck, allGeometry, [[rectangleA, rectangleZ], rectangleD], [], x0 += 20, y0);
+
+    exerciseMultiUnionDiff(ck, allGeometry, [[rectangleA, rectangleZ]], [rectangleC], x0 += 20, y0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "MarkVisibility", "XYBoundaryHoles");
+    expect(ck.getNumErrors()).equals(0);
+  });
 
 });
+
+type LoopOrParityLoops = Point3d[] | Point3d[][];
+function exerciseMultiUnionDiff(ck: Checker, allGeometry: GeometryQuery[], data: LoopOrParityLoops[], dataB: LoopOrParityLoops[], x0: number, y0: number) {
+  for (const g of data) {
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, g as Point3d[], x0, y0);
+  }
+  const meshB = RegionOps.polygonBooleanXYToPolyface(data, RegionBinaryOpType.AMinusB, dataB, true);
+  if (ck.testDefined(meshB) && meshB) {
+    const range = meshB.range();
+    const yStep = range.yLength() * 1.2;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0 += yStep);
+    const boundaryB = PolyfaceQuery.boundaryEdges(meshB);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB, x0, y0 += yStep);
+    const boundaryC = RegionOps.polygonBooleanXYToLoops(data, RegionBinaryOpType.AMinusB, dataB);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryC, x0, y0 += yStep);
+  }
+}
 /**
  * * Restructure mesh data as a polyface.
  * * collectDuplicateFacetIndices

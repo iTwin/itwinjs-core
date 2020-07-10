@@ -36,6 +36,7 @@ import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { LinearSweep } from "../../solid/LinearSweep";
 import { Cone } from "../../solid/Cone";
+import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 
 /* tslint:disable:no-console no-trailing-whitespace */
 
@@ -1164,4 +1165,42 @@ describe("CurveClips", () => {
 
   });
 
+});
+
+/* Tests for various levels of appendPolygonClip implementation */
+describe("PolygonClipper", () => {
+  it("Singletons", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    // L-shaped polygon ...
+    const polygon = GrowableXYZArray.create([[0, 0], [4, 0], [4, 2], [2, 2], [2, 3], [0, 3], [0, 0]]);
+    const pointA = Point3d.create(2, -1);
+    const pointB = Point3d.create(1, 4);
+    // make a plane, wrap it as a singleton in a ConvexClipPlaneSet, and wrap that as a singleton UnionOfConvexClipPlaneSets
+    const planeAB = ClipPlane.createEdgeXY(pointA, pointB)!;
+    const planeBA = ClipPlane.createEdgeXY(pointB, pointA)!;
+    const convexSetAB = ConvexClipPlaneSet.createPlanes([planeAB]);
+    const convexSetBA = ConvexClipPlaneSet.createPlanes([planeBA]);
+    const unionAB = UnionOfConvexClipPlaneSets.createConvexSets([convexSetAB]);
+    const unionBoth = UnionOfConvexClipPlaneSets.createConvexSets([convexSetAB, convexSetBA]);
+    let x0 = 0;
+    const y0 = 0;
+    const dx = 10.0;
+    const dy = 10.0;
+    GeometryCoreTestIO.createAndCaptureLoops(allGeometry, polygon, x0, y0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointA, pointB));
+    x0 += dx;
+    for (const clipper of [unionBoth, planeAB, planeBA, convexSetAB, convexSetBA, unionAB, unionBoth]) {
+
+      const insideFragments: GrowableXYZArray[] = [];
+      const outsideFragments: GrowableXYZArray[] = [];
+      const cache = new GrowableXYZArrayCache();
+      clipper.appendPolygonClip(polygon, insideFragments, outsideFragments, cache);
+      GeometryCoreTestIO.createAndCaptureLoops(allGeometry, insideFragments, x0, y0);
+      GeometryCoreTestIO.createAndCaptureLoops(allGeometry, outsideFragments, x0, y0 + dy);
+      x0 += dx;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonClipper", "Singletons");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

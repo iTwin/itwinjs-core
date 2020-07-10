@@ -985,7 +985,12 @@ export class XmlParser extends AbstractParser<Element> {
   private getCustomAttributeProvider(xmlCustomAttribute: Element): CAProviderTuple {
     assert(this._ecXmlVersion !== undefined);
 
-    const ns = xmlCustomAttribute.namespaceURI;
+    let ns = xmlCustomAttribute.getAttribute("xmlns");
+    if (!ns) {
+      assert(this._schemaName !== undefined);
+      assert(this._schemaVersion !== undefined);
+      ns = this._schemaName + "." + this._schemaVersion;
+    }
 
     if (null === ns || !this.isSchemaFullNameValidForVersion(ns, this._ecXmlVersion!))
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.`);

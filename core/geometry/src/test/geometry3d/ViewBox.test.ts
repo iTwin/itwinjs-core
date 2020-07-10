@@ -294,7 +294,7 @@ it("StandardViewsByXYZ", () => {
 describe("RaggedMatrix", () => {
   it("FromCSS", () => {
     const ck = new Checker();
-    // a supposedly rigid matrix received in .css . . .   but plainly it only has 6 digits.
+    // a supposedly rigid matrix received in .css . . .   but plainly it has only 6 digits.
     const raggedMatrix = Matrix3d.createRowValues(
       0.707421, -0.415747, -0.571585,
       0, 0.808703, -0.588217,

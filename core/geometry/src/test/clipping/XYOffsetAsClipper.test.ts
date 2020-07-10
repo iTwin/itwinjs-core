@@ -33,9 +33,20 @@ describe("OffsetByClip", () => {
     pointsA.push(Point3d.create(3, -0.5));
     pointsA.push(Point3d.create(3, 0));
     pointsA.push(Point3d.create(2, -0.5));
-    const pointsB = [Point3d.create(0, 0), Point3d.create(4, 0)];
+    const pointsC = [Point3d.create(0, 0), Point3d.create(4, 0)];
+    const pointsB = [];
+    pointsB.push(Point3d.create(-53.94490516785141, 46.9407384215234, -3.8955028593080985));
+    pointsB.push(Point3d.create(-53.94490516785141, 6.495277504543655, -3.8955028593080985));
+    pointsB.push(Point3d.create(-53.94490516785141, -37.759261578476604, -3.8955028593080985));
+    pointsB.push(Point3d.create(7.83254294135434, -37.759261578476604, -3.8955028593080985));
+    pointsB.push(Point3d.create(75.4280760324446, -37.759261578476604, -3.8955028593080985));
+    pointsB.push(Point3d.create(75.4280760324446, 2.6861993385031404, -3.8955028593080985));
+    pointsB.push(Point3d.create(75.4280760324446, 46.9407384215234, -3.8955028593080985));
+    pointsB.push(Point3d.create(13.650627923238844, 46.9407384215234, -3.8955028593080985));
+    pointsB.push(Point3d.create(-53.94490516785141, 46.9407384215234, -3.8955028593080985));
+
     let y00 = 0.0;
-    for (const points of [pointsB, pointsA]) {
+    for (const points of [pointsC, pointsB, pointsA]) {
       let x0 = 0.0;
       for (const leftSign of [1, 0.25, 0, -0.50, -2.0]) {
         let y0 = y00;
@@ -58,6 +69,63 @@ describe("OffsetByClip", () => {
     }
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "LongLineString");
+  });
+
+  it("LongLineStringB", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const range = Range3d.createXYZXYZ(-100, -100, -10, 100, 100, 10);
+    const pointsB = [];
+    pointsB.push(Point3d.create(-53.94490516785141, 46.9407384215234, -3.8955028593080985));
+    pointsB.push(Point3d.create(-53.94490516785141, 6.495277504543655, -3.8955028593080985));
+    pointsB.push(Point3d.create(-53.94490516785141, -37.759261578476604, -3.8955028593080985));
+    pointsB.push(Point3d.create(7.83254294135434, -37.759261578476604, -3.8955028593080985));
+    pointsB.push(Point3d.create(75.4280760324446, -37.759261578476604, -3.8955028593080985));
+    pointsB.push(Point3d.create(75.4280760324446, 2.6861993385031404, -3.8955028593080985));
+    pointsB.push(Point3d.create(75.4280760324446, 46.9407384215234, -3.8955028593080985));
+    pointsB.push(Point3d.create(13.650627923238844, 46.9407384215234, -3.8955028593080985));
+    pointsB.push(Point3d.create(-53.94490516785141, 46.9407384215234, -3.8955028593080985));
+    // make another one with no midpoints.
+    const pointsA = [];
+    pointsA.push(pointsB[0]);
+    pointsA.push(pointsB[2]);
+    pointsA.push(pointsB[4]);
+    pointsA.push(pointsB[6]);
+    pointsA.push(pointsB[8]);
+
+    const pointsC = [];
+    pointsC.push(pointsB[0]);
+    pointsC.push(pointsB[2]);
+    pointsC.push(pointsB[4]);
+    let y00 = 0.0;
+    for (const points of [pointsC, pointsA, pointsB]) {
+      let x0 = 0.0;
+      let y0 = y00;
+      for (const leftOffset of [10]) {
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
+        const offsetClipper = ClipUtilities.createXYOffsetClipFromLineString(points, leftOffset, 0, -9999, 9999);
+        if (ck.testType<UnionOfConvexClipPlaneSets>(offsetClipper)) {
+          for (const c of offsetClipper.convexSets) {
+            ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(c, range,
+              (loopPoints: GrowableXYZArray) => {
+                GeometryCoreTestIO.createAndCaptureLoop(allGeometry, loopPoints, x0, y0);
+              });
+          }
+          y0 += 30.0;
+        }
+        x0 += 200.0;
+      }
+      y00 += 100.0;
+    }
+
+    const zClipper = ClipUtilities.createXYOffsetClipFromLineString([], 1, 1, -1, -1);
+    ck.testExactNumber(1, zClipper.convexSets.length);
+
+    expect(ck.getNumErrors()).equals(0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "LongLineStringB");
+  });
+
+  it("Coverage", () => {
   });
 
   it("DiegoProblemCases", () => {

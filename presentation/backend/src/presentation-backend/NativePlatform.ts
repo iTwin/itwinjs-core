@@ -26,6 +26,7 @@ export enum NativePlatformRequestTypes {
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",
   GetDistinctValues = "GetDistinctValues",
+  GetPagedDistinctValues = "GetPagedDistinctValues",
   GetDisplayLabel = "GetDisplayLabel",
 }
 

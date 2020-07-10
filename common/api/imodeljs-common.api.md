@@ -17,6 +17,7 @@ import { ByteStream } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
+import { ClipPlaneContainment } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbOpcode } from '@bentley/bentleyjs-core';
@@ -395,7 +396,7 @@ export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
 
 // @public
 export class BentleyCloudRpcManager extends RpcManager {
-    static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration;
+    static initializeClient(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[], routing?: RpcRoutingToken): BentleyCloudRpcConfiguration;
     static initializeImpl(params: BentleyCloudRpcParams, interfaces: RpcInterfaceDefinition[]): BentleyCloudRpcConfiguration;
     }
 
@@ -564,6 +565,12 @@ export function calculateSolarAngles(date: Date, location: Cartographic): {
 
 // @beta
 export function calculateSolarDirection(date: Date, location: Cartographic): Vector3d;
+
+// @beta
+export function calculateSolarDirectionFromAngles(azimuthElevation: {
+    azimuth: number;
+    elevation: number;
+}): Vector3d;
 
 // @beta
 export function calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date;
@@ -1404,8 +1411,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 655360,
-    Major = 10,
+    Combined = 720896,
+    Major = 11,
     Minor = 0
 }
 
@@ -1480,6 +1487,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     });
     get ambientOcclusionSettings(): AmbientOcclusion.Settings;
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
+    // @beta
+    applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     // @internal (undocumented)
     get environment(): EnvironmentProps;
     set environment(environment: EnvironmentProps);
@@ -1501,6 +1510,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set thematic(thematic: ThematicDisplay);
     // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
+    // @beta
+    toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps;
 }
 
 // @public
@@ -1522,6 +1533,15 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     thematic?: ThematicDisplayProps;
 }
 
+// @beta
+export interface DisplayStyleOverridesOptions {
+    includeAll?: true;
+    includeBackgroundMap?: true;
+    includeDrawingAids?: true;
+    includeIModelSpecific?: true;
+    includeProjectSpecific?: true;
+}
+
 // @public
 export interface DisplayStyleProps extends DefinitionElementProps {
     jsonProperties?: {
@@ -1541,6 +1561,10 @@ export class DisplayStyleSettings {
     // @alpha
     get analysisStyle(): AnalysisStyle | undefined;
     set analysisStyle(style: AnalysisStyle | undefined);
+    // @beta
+    applyOverrides(overrides: DisplayStyleSettingsProps): void;
+    // @internal (undocumented)
+    protected _applyOverrides(overrides: DisplayStyleSettingsProps): void;
     get backgroundColor(): ColorDef;
     set backgroundColor(color: ColorDef);
     get backgroundMap(): BackgroundMapSettings;
@@ -1558,6 +1582,8 @@ export class DisplayStyleSettings {
     set monochromeColor(color: ColorDef);
     get monochromeMode(): MonochromeMode;
     set monochromeMode(mode: MonochromeMode);
+    // @internal (undocumented)
+    readonly onOverridesApplied: BeEvent<(settings: DisplayStyleSettings, overrides: DisplayStyleSettingsProps) => void>;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
@@ -1568,6 +1594,8 @@ export class DisplayStyleSettings {
     set timePoint(timePoint: number | undefined);
     // @internal (undocumented)
     toJSON(): DisplayStyleSettingsProps;
+    // @beta
+    toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyleSettingsProps;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
     }
@@ -1596,6 +1624,14 @@ export interface DisplayStyleSettingsProps {
 // @public
 export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Props {
     subCategory?: Id64String;
+}
+
+// @beta
+export enum DomainOptions {
+    CheckRecommendedUpgrades = 1,
+    CheckRequiredUpgrades = 0,
+    SkipCheck = 3,
+    Upgrade = 2
 }
 
 // @beta
@@ -2312,6 +2348,34 @@ export enum GeometryClass {
     Primary = 0
 }
 
+// @beta
+export interface GeometryContainmentRequestProps {
+    // (undocumented)
+    allowOverlaps?: boolean;
+    // (undocumented)
+    candidates: Id64Array;
+    // (undocumented)
+    clip: any;
+    // (undocumented)
+    offSubCategories?: Id64Array;
+    // (undocumented)
+    viewFlags?: ViewFlagProps;
+}
+
+// @beta
+export interface GeometryContainmentResponseProps {
+    // (undocumented)
+    candidatesContainment?: ClipPlaneContainment[];
+    // (undocumented)
+    numInside?: number;
+    // (undocumented)
+    numOutside?: number;
+    // (undocumented)
+    numOverlap?: number;
+    // (undocumented)
+    status: BentleyStatus;
+}
+
 // @public
 export class GeometryParams {
     constructor(categoryId: Id64String, subCategoryId?: string);
@@ -2547,6 +2611,30 @@ export enum GltfDataType {
     // (undocumented)
     Float = 5126,
     // (undocumented)
+    FloatMat3 = 35675,
+    // (undocumented)
+    FloatMat4 = 35676,
+    // (undocumented)
+    FloatVec2 = 35664,
+    // (undocumented)
+    FloatVec3 = 35665,
+    // (undocumented)
+    FloatVec4 = 35666,
+    // (undocumented)
+    IntVec2 = 35667,
+    // (undocumented)
+    IntVec3 = 35668,
+    // (undocumented)
+    Rgb = 6407,
+    // (undocumented)
+    Rgba = 6408,
+    // (undocumented)
+    Sampler2d = 35678,
+    // (undocumented)
+    SignedByte = 5120,
+    // (undocumented)
+    SignedShort = 5122,
+    // (undocumented)
     UInt32 = 5125,
     // (undocumented)
     UnsignedByte = 5121,
@@ -2649,6 +2737,8 @@ export namespace Gradient {
         static fromJSON(json?: SymbProps): Symb;
         // @beta
         getImage(width: number, height: number): ImageBuffer;
+        // @internal
+        getThematicImageForRenderer(maxDimension: number): ImageBuffer;
         // (undocumented)
         get hasTranslucency(): boolean;
         get isOutlined(): boolean;
@@ -3167,6 +3257,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
     // @beta (undocumented)
     getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps>;
+    // @beta (undocumented)
+    getGeometryContainment(_iModelToken: IModelRpcProps, _props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // @beta (undocumented)
     getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string>;
     // @beta (undocumented)
@@ -4314,6 +4406,12 @@ export enum PrimitiveTypeCode {
 }
 
 // @beta
+export enum ProfileOptions {
+    None = 0,
+    Upgrade = 1
+}
+
+// @beta
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
 // @beta
@@ -4888,11 +4986,14 @@ export class RgbColor {
 }
 
 // @public
-export type RgbColorProps = {
-    r: number;
-    g: number;
+export interface RgbColorProps {
+    // (undocumented)
     b: number;
-} | RgbColor;
+    // (undocumented)
+    g: number;
+    // (undocumented)
+    r: number;
+}
 
 // @beta
 export type RgbFactorProps = number[];
@@ -4905,7 +5006,18 @@ export interface RootSubjectProps {
 
 // @public
 export abstract class RpcConfiguration {
+    // @alpha (undocumented)
+    allowAttachedInterfaces: boolean;
     static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void;
+    static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: {
+        new (): RpcConfiguration;
+    }): void;
+    // @alpha (undocumented)
+    attach<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
+    // @internal (undocumented)
+    attached: RpcInterfaceDefinition[];
+    // @alpha (undocumented)
+    get attachedInterfaces(): ReadonlyArray<RpcInterfaceDefinition>;
     // @internal
     readonly controlChannel: RpcControlChannel;
     static developmentMode: boolean;
@@ -4926,6 +5038,8 @@ export abstract class RpcConfiguration {
     pendingOperationRetryInterval: number;
     abstract readonly protocol: RpcProtocol;
     static requestContext: RpcRequestContext;
+    // @alpha (undocumented)
+    readonly routing: RpcRoutingToken;
     static strictMode: boolean;
     // @internal (undocumented)
     static supply(definition: RpcInterface): RpcConfiguration;
@@ -4933,7 +5047,7 @@ export abstract class RpcConfiguration {
 }
 
 // @public (undocumented)
-export type RpcConfigurationSupplier = () => {
+export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => {
     new (): RpcConfiguration;
 };
 
@@ -5007,11 +5121,15 @@ export enum RpcEndpoint {
 
 // @public
 export abstract class RpcInterface {
+    // @alpha
+    constructor(routing?: RpcRoutingToken);
     readonly configuration: RpcConfiguration;
     // @internal (undocumented)
     configurationSupplier: RpcConfigurationSupplier | undefined;
     forward<T = any>(parameters: IArguments): Promise<T>;
     static isVersionCompatible(backend: string, frontend: string): boolean;
+    // @alpha (undocumented)
+    readonly routing: RpcRoutingToken;
 }
 
 // @public (undocumented)
@@ -5060,7 +5178,7 @@ export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
 // @public
 export class RpcManager {
     static describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]>;
-    static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T;
+    static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing?: RpcRoutingToken): T;
     static initializeInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
     static registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, implementation: RpcInterfaceImplementation<TImplementation>): void;
     static setIModel(props: IModelRpcProps): void;
@@ -5235,7 +5353,7 @@ export class RpcRegistry {
     // (undocumented)
     describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]>;
     // (undocumented)
-    getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T;
+    getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing?: RpcRoutingToken): T;
     // (undocumented)
     getImplForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): T;
     // (undocumented)
@@ -5255,7 +5373,7 @@ export class RpcRegistry {
     // (undocumented)
     lookupInterfaceDefinition(name: string): RpcInterfaceDefinition;
     // (undocumented)
-    proxies: Map<string, RpcInterface>;
+    proxies: Map<string, Map<number, RpcInterface>>;
     // (undocumented)
     registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, implementation: RpcInterfaceImplementation<TImplementation>): void;
     // (undocumented)
@@ -5396,6 +5514,30 @@ export enum RpcResponseCacheControl {
 
 // @public
 export type RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl;
+
+// @alpha (undocumented)
+export interface RpcRoutingMap extends RpcConfigurationSupplier {
+    // (undocumented)
+    configurations: Map<number, RpcConfigurationSupplier>;
+}
+
+// @alpha (undocumented)
+export namespace RpcRoutingMap {
+    // (undocumented)
+    export function create(): RpcRoutingMap;
+}
+
+// @public (undocumented)
+export class RpcRoutingToken {
+    // (undocumented)
+    readonly debugLabel: string;
+    // (undocumented)
+    static readonly default: RpcRoutingToken;
+    // (undocumented)
+    static generate(debugLabel?: string): RpcRoutingToken;
+    // (undocumented)
+    readonly id: number;
+    }
 
 // @public (undocumented)
 export interface RpcSerializedValue {
@@ -5851,6 +5993,7 @@ export interface TerrainProps {
     exaggeration?: number;
     heightOrigin?: number;
     heightOriginMode?: TerrainHeightOriginMode;
+    nonLocatable?: boolean;
     providerName?: string;
 }
 
@@ -5859,7 +6002,7 @@ export type TerrainProviderName = "CesiumWorldTerrain";
 
 // @public
 export class TerrainSettings {
-    constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
+    constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode, locatable?: boolean);
     readonly applyLighting: boolean;
     clone(changedProps?: TerrainProps): TerrainSettings;
     // (undocumented)
@@ -5870,6 +6013,7 @@ export class TerrainSettings {
     static fromJSON(json?: TerrainProps): TerrainSettings;
     readonly heightOrigin: number;
     readonly heightOriginMode: TerrainHeightOriginMode;
+    readonly locatable: boolean;
     readonly providerName: TerrainProviderName;
     // (undocumented)
     toJSON(): TerrainProps;
@@ -6040,6 +6184,7 @@ export class ThematicDisplay {
     readonly range: Range1d;
     // @alpha
     readonly sensorSettings: ThematicDisplaySensorSettings;
+    readonly sunDirection: Vector3d;
     // (undocumented)
     toJSON(): ThematicDisplayProps;
 }
@@ -6047,8 +6192,10 @@ export class ThematicDisplay {
 // @beta
 export enum ThematicDisplayMode {
     Height = 0,
+    HillShade = 3,
     // @alpha
-    InverseDistanceWeightedSensors = 1
+    InverseDistanceWeightedSensors = 1,
+    Slope = 2
 }
 
 // @beta
@@ -6059,6 +6206,7 @@ export interface ThematicDisplayProps {
     range?: Range1dProps;
     // @alpha
     sensorSettings?: ThematicDisplaySensorSettingsProps;
+    sunDirection?: XYZProps;
 }
 
 // @alpha
@@ -6115,13 +6263,9 @@ export enum ThematicGradientColorScheme {
 
 // @beta (undocumented)
 export enum ThematicGradientMode {
-    // (undocumented)
     IsoLines = 3,
-    // (undocumented)
     Smooth = 0,
-    // (undocumented)
     Stepped = 1,
-    // (undocumented)
     SteppedWithDelimiter = 2
 }
 
@@ -6427,6 +6571,12 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
 
 // @beta (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;
+
+// @beta
+export interface UpgradeOptions {
+    domain?: DomainOptions;
+    profile?: ProfileOptions;
+}
 
 // @public
 export interface UrlLinkProps extends ElementProps {
@@ -6802,6 +6952,8 @@ export class ViewFlags {
     styles: boolean;
     textures: boolean;
     thematicDisplay: boolean;
+    // @internal
+    toFullyDefinedJSON(): Required<ViewFlagProps>;
     // (undocumented)
     toJSON(): ViewFlagProps;
     transparency: boolean;

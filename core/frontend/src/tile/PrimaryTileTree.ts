@@ -148,7 +148,7 @@ class PrimaryTreeReference extends TileTreeReference {
   protected createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
     const script = view.scheduleScript;
     const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
-    const edgesRequired = this._viewFlagOverrides.edgesRequired(view.viewFlags);
+    const edgesRequired = true === IModelApp.tileAdmin.alwaysRequestEdges || this._viewFlagOverrides.edgesRequired(view.viewFlags);
     return { type: BatchType.Primary, edgesRequired, animationId };
   }
 }

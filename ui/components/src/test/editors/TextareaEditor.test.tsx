@@ -8,11 +8,10 @@ import { mount, shallow } from "enzyme";
 import { cleanup, render } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
-import { InputEditorSizeParams, MultilineTextEditorParams, PropertyEditorInfo, PropertyEditorParamTypes } from "@bentley/ui-abstract";
+import { InputEditorSizeParams, MultilineTextEditorParams, PropertyEditorInfo, PropertyEditorParamTypes, StandardEditorNames } from "@bentley/ui-abstract";
 import { TextareaEditor } from "../../ui-components/editors/TextareaEditor";
 import TestUtils from "../TestUtils";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { StandardEditorNames } from "../../ui-components/editors/StandardEditorNames";
 
 describe("<TextareaEditor />", () => {
   before(async () => {

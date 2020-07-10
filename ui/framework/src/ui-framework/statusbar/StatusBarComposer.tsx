@@ -12,7 +12,7 @@ import {
   AbstractStatusBarActionItem, AbstractStatusBarLabelItem, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue,
   isAbstractStatusBarActionItem, isAbstractStatusBarLabelItem, StatusBarItemsManager, StatusBarLabelSide, StatusBarSection,
 } from "@bentley/ui-abstract";
-import { CommonProps, Icon, useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { CommonProps, Icon, OutsideClickEvent, useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { eqlOverflown, FooterIndicator } from "@bentley/ui-ninezone";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../ui-framework";
 import { Indicator } from "../statusfields/Indicator";
@@ -337,7 +337,7 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
     // istanbul ignore next
     setIsOverflowPanelOpen(false);
   }, []);
-  const isOutsideEvent = React.useCallback(/* istanbul ignore next */(e: PointerEvent) => {
+  const isOutsideEvent = React.useCallback(/* istanbul ignore next */(e: OutsideClickEvent) => {
     // istanbul ignore next
     return !!containerRef.current && (e.target instanceof Node) && !containerRef.current.contains(e.target);
   }, []);

@@ -35,6 +35,11 @@ export interface WidgetStateChangedEventArgs {
 export class WidgetStateChangedEvent extends UiEvent<WidgetStateChangedEventArgs> { }
 
 /** @internal */
+export interface WidgetChangedEventArgs {
+  widgetDef: WidgetDef;
+}
+
+/** @internal */
 export interface WidgetEventArgs {
   widgetDef: WidgetDef;
 }
@@ -244,7 +249,10 @@ export class WidgetDef {
    * @param v A string or a function to get the string.
    */
   public setLabel(v: string | ConditionalStringValue | StringGetter) {
+    if (this._label === v)
+      return;
     this._label = v;
+    FrontstageManager.onWidgetLabelChangedEvent.emit({ widgetDef: this });
   }
 
   /** Get the tooltip string */

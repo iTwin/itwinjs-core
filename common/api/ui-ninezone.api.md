@@ -367,7 +367,7 @@ export interface DraggedTabState {
 export const DraggedTabStateContext: React.Context<DraggedTabState | undefined>;
 
 // @internal (undocumented)
-export const DraggedWidgetContext: React.Context<boolean>;
+export const DraggedWidgetIdContext: React.Context<string | undefined>;
 
 // @internal
 export class DraggedWidgetManager {
@@ -415,11 +415,11 @@ export class DragManager {
     // (undocumented)
     getDraggedIdOfType<T extends DragItem>(type: T["type"]): T["id"] | undefined;
     // (undocumented)
+    handleDrag(x: number, y: number): void;
+    // (undocumented)
+    handleDragEnd(): void;
+    // (undocumented)
     handleDragStart({ item, info }: HandleDragStartArgs): void;
-    // (undocumented)
-    handlePointerMove(e: PointerEvent): void;
-    // (undocumented)
-    handlePointerUp(_e: PointerEvent): void;
     // (undocumented)
     handleTargetChanged(target: DragTarget | undefined): void;
     // (undocumented)
@@ -477,7 +477,7 @@ export class EventEmitter<T extends EventHandler> implements Event<T> {
     emit(...args: Parameters<T>): void;
     // (undocumented)
     remove(handler: T): void;
-}
+    }
 
 // @internal
 export type EventHandler = (...args: any[]) => void;
@@ -1478,6 +1478,17 @@ export class PointerCaptor extends React.PureComponent<PointerCaptorProps> {
     render(): JSX.Element;
 }
 
+// @internal (undocumented)
+export interface PointerCaptorArgs {
+    // (undocumented)
+    readonly clientX: number;
+    // (undocumented)
+    readonly clientY: number;
+}
+
+// @internal (undocumented)
+export type PointerCaptorEvent = MouseEvent | TouchEvent;
+
 // @internal
 export interface PointerCaptorProps extends CommonProps {
     isPointerDown: boolean;
@@ -2389,10 +2400,10 @@ export interface TooltipProps extends CommonProps {
 export type TopPanelSide = "top";
 
 // @internal (undocumented)
-export function useDoubleClick(onDoubleClick?: () => void): [() => void];
+export function useDoubleClick(onDoubleClick?: () => void): () => void;
 
 // @internal
-export function useDrag<T extends HTMLElement>(onDragStart: (initialPointerPosition: Point) => void): (instance: T | null) => void;
+export function useDrag<T extends HTMLElement>(onDragStart?: (initialPointerPosition: Point) => void, onDrag?: (position: Point) => void, onDragEnd?: () => void, onTouchStart?: () => void): (instance: T | null) => void;
 
 // @internal (undocumented)
 export function useDraggedItemId<T extends DragItem>(type: T["type"]): T["id"] | undefined;
@@ -2490,7 +2501,7 @@ export function useIsDraggedType(type: DragItem["type"]): boolean;
 export function useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray<string> | undefined, (size: number) => void, (size: number) => void, (key: string) => (size: number) => void];
 
 // @internal (undocumented)
-export function usePanelTarget(args: UsePanelTargetArgs): (isTargeted: boolean) => void;
+export function usePanelTarget<T extends Element>(args: UsePanelTargetArgs): [React.Ref<T>, boolean];
 
 // @internal (undocumented)
 export interface UsePanelTargetArgs {
@@ -2499,10 +2510,10 @@ export interface UsePanelTargetArgs {
 }
 
 // @internal
-export const usePointerCaptor: <T extends HTMLElement>(onPointerDown?: ((e: PointerEvent) => void) | undefined, onPointerMove?: ((e: PointerEvent) => void) | undefined, onPointerUp?: ((e: PointerEvent) => void) | undefined, captured?: boolean | undefined) => (instance: T | null) => void;
+export const usePointerCaptor: <T extends HTMLElement>(onPointerDown?: ((args: PointerCaptorArgs, e: PointerCaptorEvent) => void) | undefined, onPointerMove?: ((args: PointerCaptorArgs, e: PointerCaptorEvent) => void) | undefined, onPointerUp?: ((e: PointerCaptorEvent) => void) | undefined) => (instance: T | null) => void;
 
 // @internal (undocumented)
-export const useResizeGrip: <T extends HTMLElement>(side: PanelSide, onResize?: ((resizeBy: number) => void) | undefined) => [(initialPointerPosition: Point) => void, React.RefObject<T>, boolean];
+export const useResizeGrip: <T extends HTMLElement>(side: PanelSide, onResize?: ((resizeBy: number) => void) | undefined, onDoubleClick?: (() => void) | undefined) => [(instance: T | null) => void, boolean, boolean];
 
 // @beta
 export class UserProfile extends React.PureComponent<UserProfileProps> {
@@ -2520,7 +2531,7 @@ export interface UserProfileProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function useTabTarget(args: UseTabTargetArgs): (isTargeted: boolean) => void;
+export function useTabTarget<T extends Element>(args: UseTabTargetArgs): [React.Ref<T>, boolean];
 
 // @internal (undocumented)
 export interface UseTabTargetArgs {
@@ -2531,16 +2542,13 @@ export interface UseTabTargetArgs {
 }
 
 // @internal (undocumented)
-export function useTarget<T extends Element>(onTargeted: (targeted: boolean) => void): React.RefObject<T>;
-
-// @internal (undocumented)
 export function useToolSettingsEntry(): DockedToolSettingsEntryContextArgs;
 
 // @internal (undocumented)
 export function useTransientState(onSave?: () => void, onRestore?: () => void): void;
 
 // @internal (undocumented)
-export function useWidgetTarget(args: UseWidgetTargetArgs): (isTargeted: boolean) => void;
+export function useWidgetTarget<T extends Element>(args: UseWidgetTargetArgs): [React.Ref<T>, boolean];
 
 // @internal (undocumented)
 export interface UseWidgetTargetArgs {

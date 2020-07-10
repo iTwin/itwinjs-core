@@ -93,19 +93,38 @@ describe("<Node />", () => {
     expect(callback).to.not.be.called;
   });
 
-  it("should call checkboxProps.onClick callback when checkbox state changes", () => {
+  it("should call checkboxProps.onClick callback when checkbox state changes with On", () => {
     const callback = sinon.spy();
-    const wrapper = mount(<Node label="a" level={0} checkboxProps={{ onClick: callback }} />);
+    const wrapper = mount(<Node label="a" level={0} checkboxProps={{ onClick: callback, state: CheckBoxState.On }} />);
     const checkbox = wrapper.find(Checkbox).find("input");
     checkbox.simulate("change");
-    expect(callback).to.be.calledOnce;
+    expect(callback).to.be.calledOnceWith(CheckBoxState.On);
+  });
+
+  it("should call checkboxProps.onClick callback when checkbox state changes with Off", () => {
+    const callback = sinon.spy();
+    const wrapper = mount(<Node label="a" level={0} checkboxProps={{ onClick: callback, state: CheckBoxState.Off }} />);
+    const checkbox = wrapper.find(Checkbox).find("input");
+    checkbox.simulate("change");
+    expect(callback).to.be.calledOnceWith(CheckBoxState.Off);
+  });
+
+  it("should not call checkboxProps.onClick callback when checkbox is disabled", () => {
+    const callback = sinon.spy();
+    const wrapper = mount(<Node label="a" level={0} checkboxProps={{ onClick: callback, isDisabled: true }} />);
+    const checkbox = wrapper.find(Checkbox).find("input");
+    checkbox.simulate("change");
+    expect(callback).to.not.be.called;
   });
 
   it("should not call checkboxProps.onClick callback when checkbox is clicked", () => {
     const callback = sinon.spy();
     const wrapper = mount(<Node label="a" level={0} checkboxProps={{ onClick: callback }} />);
-    const checkbox = wrapper.find(Checkbox).find("input");
-    checkbox.simulate("click");
+    const checkboxLabel = wrapper.find(Checkbox).find("label");
+    checkboxLabel.simulate("click");
+    expect(callback).to.not.be.called;
+    const checkboxInput = wrapper.find(Checkbox).find("input");
+    checkboxInput.simulate("click");
     expect(callback).to.not.be.called;
   });
 

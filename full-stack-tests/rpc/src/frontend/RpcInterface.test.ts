@@ -12,9 +12,10 @@ import {
 } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import {
-  RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2,
+  AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params, TestRpcInterface, TestRpcInterface2,
   TokenValues, ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
+import { currentEnvironment } from "./_Setup.test";
 
 const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
@@ -561,5 +562,28 @@ describe("RpcInterface", () => {
     assert.equal(frontend.size, 0);
     assert.equal(backend.size, 0);
     assert.equal(completed, 3);
+  });
+
+  it("should support multiple clients per interface", async () => {
+    if (currentEnvironment !== "http") {
+      return;
+    }
+
+    const config1 = MultipleClientsInterface.config1;
+    const client1 = MultipleClientsInterface.getClientWithRouting(config1);
+    assert.isTrue(await client1.check(config1.id));
+
+    const config2 = MultipleClientsInterface.config2;
+    const client2 = MultipleClientsInterface.getClientWithRouting(config2);
+    assert.isTrue(await client2.check(config2.id));
+  });
+
+  it("should support attaching interfaces to existing configurations", async () => {
+    if (currentEnvironment !== "http") {
+      return;
+    }
+
+    const ping = await AttachedInterface.getClient().ping();
+    assert.isTrue(ping);
   });
 });

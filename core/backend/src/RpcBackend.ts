@@ -183,7 +183,7 @@ function setupMobileRpc() {
     server = null;
   });
 
-  Device.currentDevice.onEnterForground.addListener(() => {
+  Device.currentDevice.onEnterForeground.addListener(() => {
     server = new MobileRpcServer();
   });
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
 import { Server as HttpServer } from "http";
-import { WebAppRpcProtocol } from "@bentley/imodeljs-common";
+import { RpcConfiguration, WebAppRpcProtocol } from "@bentley/imodeljs-common";
 
 /**
  * An express web server with some reasonable defaults for web applications built with @bentley/webpack-tools.
@@ -16,6 +16,9 @@ import { WebAppRpcProtocol } from "@bentley/imodeljs-common";
 export class IModelJsExpressServer {
   private _protocol: WebAppRpcProtocol;
   protected _app: import("express").Application = express();
+
+  /** @alpha */
+  public get rpcConfiguration(): RpcConfiguration { return this._protocol.configuration; }
 
   constructor(protocol: WebAppRpcProtocol) {
     this._protocol = protocol;

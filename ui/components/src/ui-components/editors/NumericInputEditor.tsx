@@ -11,12 +11,11 @@ import classnames from "classnames";
 import * as React from "react";
 import {
   InputEditorSizeParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, RangeEditorParams,
+  StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { NumericInput } from "@bentley/ui-core";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
-import { StandardEditorNames } from "./StandardEditorNames";
 
 /** @internal */
 interface NumericInputEditorState {

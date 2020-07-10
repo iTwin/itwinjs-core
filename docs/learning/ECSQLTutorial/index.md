@@ -19,9 +19,7 @@ The tutorial makes reference to the **iModelConsole** application.  Use the app 
 
 ### Sample iModel
 
-The ECSQL examples in the tutorial work with a sample iModel.
-
-[!alert text="<img src="./media/wip.svg" style="width:2%;height:2%;">  We are working to make the sample iModel publicly available, but it is not ready yet." kind="warning"]
+The ECSQL examples in the tutorial work with the "House Sample" iModel. You can explore the imodels [here](https://imodeljs.org/sample-showcase/).
 
 ### BIS
 
@@ -39,31 +37,30 @@ This also enables you to experiment more with ECSQL by modifying the tutorial's 
 
 ### Step 1 - Start the iModelConsole
 
-1. Launch the console
-1. Authenticate with your iTwin credentials.
+If you want to follow along with your own iModel:
+
+1. Launch the console at https://imodelconsole.bentley.com
+2. Authenticate with your iTwin credentials.
+3. Open your iModel by clicking on the iModels in the table
 
 ### Step 2 - Open the sample iModel
 
-Run this command:
-
-> `.open -project:ECSQL`
+For this ECSQL tutorial, the embedded console will attach to the sample iModel we provide.
 
 ### Step 3 - Run an ECSQL in the iModelConsole
 
-Once you opened the iModel just type in the ECSQL (without a leading .) and hit *Enter* to execute it.
+Once you have opened your iModel, just type in the ECSQL and hit *Enter* to execute it.
+
+Or simply use the provided sample below:
 
 > **Try it yourself**
 >
 > *ECSQL*
 > ```sql
-> SELECT count(*) ElementCount FROM bis.Element
+> SELECT * FROM bis.Element
 > ```
->
-> *Result*
->
-> ElementCount |
-> --- |
-> 81 |
+
+<iframe class="embedded-console" src="/console/?imodel=House Sample&query=SELECT * FROM bis.Element"></iframe>
 
 ## Tutorial Overview
 
@@ -75,6 +72,9 @@ Once you opened the iModel just type in the ECSQL (without a leading .) and hit 
 * [Lesson 6: Spatial Queries](./SpatialQueries.md)
 * [Lesson 7: Meta Queries - Querying ECSchemas](./MetaQueries.md)
 * [Lesson 8: Querying Change Summaries](./ChangeSummaryQueries.md)
+* [Lesson 9: Type Filter](./TypeFilter.md)
+* [Lesson 10: Conditional Expressions](./ConditionalExpr.md)
+* [Lesson 11: Built-In functions](./BuiltInFunctions.md)
 
 ---
 

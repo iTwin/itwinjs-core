@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+
+import { assert, expect } from "chai";
 import * as path from "path";
-import { DbResult, Guid, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Code, CodeScopeSpec, CodeSpec, FunctionalElementProps, IModel } from "@bentley/imodeljs-common";
-import { BackendRequestContext, ECSqlStatement, FunctionalModel, FunctionalSchema, SqliteStatement, StandaloneDb } from "../../imodeljs-backend";
+import { BackendRequestContext, FunctionalModel, FunctionalSchema, Schemas, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {
@@ -23,8 +24,11 @@ describe("Functional Domain", () => {
 
     iModelDb.nativeDb.resetBriefcaseId(100);
 
+    const testSchema = class extends FunctionalSchema { public static get schemaName(): string { return "TestFunctional"; } };
+
     // Import the Functional schema
     FunctionalSchema.registerSchema();
+    Schemas.registerSchema(testSchema);
     await FunctionalSchema.importSchema(requestContext, iModelDb); // tslint:disable-line:deprecation
 
     let commits = 0;
@@ -71,27 +75,13 @@ describe("Functional Domain", () => {
 
     iModelDb.saveChanges("Insert Functional elements");
 
-    iModelDb.withPreparedStatement("SELECT ECInstanceId AS id FROM ECDbMeta.ECSchemaDef WHERE Name='TestFunctional' LIMIT 1", (schemaStatement: ECSqlStatement) => {
-      while (DbResult.BE_SQLITE_ROW === schemaStatement.step()) {
-        const schemaRow: any = schemaStatement.getRow();
-        Logger.logInfo("FunctionalDomain.test", `${schemaRow.id}`);
-        iModelDb.withPreparedStatement("SELECT ECInstanceId AS id FROM ECDbMeta.ECClassDef WHERE ECClassDef.Schema.Id=? AND Name='PlaceholderForSchemaHasBehavior' LIMIT 1", (classStatement: ECSqlStatement) => {
-          classStatement.bindId(1, schemaRow.id);
-          while (DbResult.BE_SQLITE_ROW === classStatement.step()) {
-            const classRow: any = classStatement.getRow();
-            Logger.logInfo("FunctionalDomain.test", `${classRow.id}`);
-            iModelDb.withPreparedSqliteStatement("SELECT Id AS id, Instance AS xml FROM ec_CustomAttribute WHERE ClassId=? AND ContainerId=?", (customAttributeStatement: SqliteStatement) => {
-              customAttributeStatement.bindValue(1, { id: classRow.id });
-              customAttributeStatement.bindValue(2, { id: schemaRow.id });
-              while (DbResult.BE_SQLITE_ROW === customAttributeStatement.step()) {
-                const customAttributeRow: any = customAttributeStatement.getRow();
-                Logger.logInfo("FunctionalDomain.test", `${customAttributeRow.id}, ${customAttributeRow.xml}`);
-              }
-            });
-          }
-        });
-      }
-    });
+    // unregister test schema to make sure it will throw exceptions if it is not present (since it has the "SchemaHasBehavior" custom attribute)
+    Schemas.unregisterSchema(testSchema.schemaName);
+    const errMsg = "Schema [TestFunctional] not registered, but is marked with SchemaHasBehavior";
+    expect(() => iModelDb.elements.deleteElement(breakdownId)).to.throw(errMsg);
+    expect(() => iModelDb.elements.updateElement(breakdownProps)).to.throw(errMsg);
+    breakdownProps.code.value = "Breakdown 2";
+    expect(() => iModelDb.elements.insertElement(breakdownProps)).to.throw(errMsg);
 
     iModelDb.close();
   });

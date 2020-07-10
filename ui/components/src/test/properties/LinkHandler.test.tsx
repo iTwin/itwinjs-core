@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { LinkElementsInfo, PropertyRecord } from "@bentley/ui-abstract";
-import { fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { hasLinks, LinksRenderer, renderLinks, withLinks } from "../../ui-components/properties/LinkHandler";
 import TestUtils from "../TestUtils";
 
@@ -146,28 +146,6 @@ describe("LinkHandler", () => {
       const propertyRecord = TestUtils.createPrimitiveStringProperty("link_property", value);
       const { getByText } = render(<LinksRenderer value={value} record={propertyRecord} />);
       getByText(value);
-    });
-
-    it("renders async string", async () => {
-      const value = "some value";
-      const propertyRecord = TestUtils.createPrimitiveStringProperty("link_property", value);
-      const valuePromise = Promise.resolve(value);
-      const { getByText } = render(<LinksRenderer value={valuePromise} record={propertyRecord} />);
-      await waitForElement(() => getByText(value));
-    });
-
-    it("rerenders async string", async () => {
-      const value = "some value";
-      const propertyRecord = TestUtils.createPrimitiveStringProperty("link_property", value);
-      const valuePromise = Promise.resolve(value);
-      const { getByText, rerender } = render(<LinksRenderer value={valuePromise} record={propertyRecord} />);
-      await waitForElement(() => getByText(value));
-
-      const newValue = "some new value";
-      const newPropertyRecord = TestUtils.createPrimitiveStringProperty("link_property", newValue);
-      const newValuePromise = Promise.resolve(newValue);
-      rerender(<LinksRenderer value={newValuePromise} record={newPropertyRecord} />);
-      await waitForElement(() => getByText(newValue));
     });
 
   });

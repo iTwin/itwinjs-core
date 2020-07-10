@@ -81,7 +81,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
   public readonly viewport: Viewport;
   private readonly _removals: Array<() => void> = [];
 
-  private constructor(vp: Viewport, iModel: IModelConnection, elems: ChangedElems) {
+  public constructor(vp: Viewport, iModel: IModelConnection, elems: ChangedElems) {
     this.iModel = iModel;
     this.changedElems = elems;
     this.viewport = vp;
@@ -92,7 +92,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
     this._removals.push(vp.onViewportChanged.addListener((_vp, flags) => this.handleViewportChanged(flags)));
 
     vp.addTiledGraphicsProvider(this);
-    vp.featureOverrideProvider = this;
+    vp.addFeatureOverrideProvider(this);
     vp.isFadeOutActive = true;
   }
 
@@ -102,7 +102,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
 
     this._removals.length = 0;
 
-    this.viewport.featureOverrideProvider = undefined;
+    this.viewport.dropFeatureOverrideProvider(this);
     this.viewport.isFadeOutActive = false;
     this.viewport.dropTiledGraphicsProvider(this);
 
@@ -252,13 +252,13 @@ export async function emulateVersionComparison(vp: Viewport): Promise<void> {
 
 /** Returns true if version comparison is currently activated for the specified viewport. */
 export function isVersionComparisonEnabled(vp: Viewport): boolean {
-  return undefined !== vp.featureOverrideProvider && vp.featureOverrideProvider instanceof Provider;
+  return undefined !== vp.findFeatureOverrideProviderOfType<Provider>(Provider);
 }
 
 /** Turn off version comparison if it is enabled. */
 export async function disableVersionComparison(vp: Viewport): Promise<void> {
-  const existing = vp.featureOverrideProvider;
-  if (undefined !== existing && existing instanceof Provider) {
+  const existing = vp.findFeatureOverrideProviderOfType<Provider>(Provider);
+  if (undefined !== existing) {
     existing.dispose();
     await existing.iModel.close();
   }

@@ -65,7 +65,7 @@ export class BackgroundMapGeometry {
     this.cartesianPlane = this.getPlane();
     this.geometry = (globeMode === GlobeMode.Ellipsoid) ? this.getEarthEllipsoid() : this.cartesianPlane;
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
-    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(_ecefToDb, _bimElevationBias, iModel);
+    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(_ecefToDb, _bimElevationBias, iModel, false);
   }
   public static getCartesianRange(iModel: IModelConnection, result?: Range3d): Range3d {
     const cartesianRange = Range3d.createFrom(iModel.projectExtents, result);

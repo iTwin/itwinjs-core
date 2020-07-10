@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
+import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
 import { ItemList, ItemMap } from "../../ui-framework/shared/ItemMap";
 import TestUtils from "../TestUtils";
 

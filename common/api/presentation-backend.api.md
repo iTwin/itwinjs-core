@@ -9,6 +9,8 @@ import { Content } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
+import { DisplayValueGroup } from '@bentley/presentation-common';
+import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
 import { EventSink } from '@bentley/imodeljs-backend';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { Id64String } from '@bentley/bentleyjs-core';
@@ -22,6 +24,7 @@ import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
+import { PagedResponse } from '@bentley/presentation-common';
 import { PartialHierarchyModification } from '@bentley/presentation-common';
 import { PartialHierarchyModificationJSON } from '@bentley/presentation-common';
 import { PresentationDataCompareOptions } from '@bentley/presentation-common';
@@ -53,6 +56,46 @@ export class Presentation {
     static terminate(): void;
 }
 
+// @beta
+export enum PresentationBackendLoggerCategory {
+    // (undocumented)
+    Package = "presentation-backend",
+    PresentationManager = "presentation-backend.PresentationManager",
+    Rpc = "presentation-backend.Rpc"
+}
+
+// @beta
+export enum PresentationBackendNativeLoggerCategory {
+    // (undocumented)
+    ECObjects = "ECObjects",
+    // (undocumented)
+    ECObjects_ECExpressions = "ECObjects.ECExpressions",
+    // (undocumented)
+    ECObjects_ECExpressions_Evaluate = "ECObjects.ECExpressions.Evaluate",
+    // (undocumented)
+    ECObjects_ECExpressions_Parse = "ECObjects.ECExpressions.Parse",
+    // (undocumented)
+    ECPresentation = "ECPresentation",
+    // (undocumented)
+    ECPresentation_Connections = "ECPresentation.Connections",
+    // (undocumented)
+    ECPresentation_RulesEngine = "ECPresentation.RulesEngine",
+    // (undocumented)
+    ECPresentation_RulesEngine_Content = "ECPresentation.RulesEngine.Content",
+    // (undocumented)
+    ECPresentation_RulesEngine_Localization = "ECPresentation.RulesEngine.Localization",
+    // (undocumented)
+    ECPresentation_RulesEngine_Navigation = "ECPresentation.RulesEngine.Navigation",
+    // (undocumented)
+    ECPresentation_RulesEngine_Navigation_Cache = "ECPresentation.RulesEngine.Navigation.Cache",
+    // (undocumented)
+    ECPresentation_RulesEngine_RulesetVariables = "ECPresentation.RulesEngine.RulesetVariables",
+    // (undocumented)
+    ECPresentation_RulesEngine_Threads = "ECPresentation.RulesEngine.Threads",
+    // (undocumented)
+    ECPresentation_RulesEngine_Update = "ECPresentation.RulesEngine.Update"
+}
+
 // @public
 export class PresentationManager {
     constructor(props?: PresentationManagerProps);
@@ -82,6 +125,8 @@ export class PresentationManager {
         count: number;
     }>;
     getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number>;
+    // @alpha
+    getPagedDistinctValues(requestContext: ClientRequestContext, requestOptions: DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet>): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     getRulesetId(rulesetOrId: Ruleset | string): string;
     getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;

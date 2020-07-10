@@ -115,7 +115,7 @@ export function ModelsTree(props: ModelsTreeProps) {
   const nodeLoader = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     dataProvider: props.dataProvider,
-    ruleset: (!props.enableElementsClassGrouping) ? RULESET_MODELS : RULESET_MODELS_GROUPED_BY_CLASS,
+    ruleset: (!props.enableElementsClassGrouping) ? RULESET_MODELS : /* istanbul ignore next */ RULESET_MODELS_GROUPED_BY_CLASS,
     appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
     pagingSize: PAGING_SIZE,
   });
@@ -188,7 +188,7 @@ const useVisibilityHandler = (rulesetId: string, activeView?: Viewport, visibili
 
   return React.useMemo(() => {
     if (previous.current)
-      previous.current.dispose;
+      previous.current.dispose();
 
     const handler = visibilityHandler ?? createVisibilityHandler(rulesetId, activeView);
     previous.current = handler;
@@ -614,6 +614,7 @@ class AssemblyElementIdsProvider extends RulesetDrivenIdsProvider {
   }
 }
 
+// istanbul ignore next
 class GroupedElementIdsProvider extends RulesetDrivenIdsProvider {
   constructor(imodel: IModelConnection, rulesetId: string, groupingNodeKey: GroupingNodeKey) {
     super(imodel, rulesetId, "AssemblyElementsRequest", [groupingNodeKey]);

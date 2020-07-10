@@ -12,9 +12,13 @@ import { Gradient } from "./Gradient";
 
 /** @beta */
 export enum ThematicGradientMode {
+  /** Apply a smooth color gradient to the scene. */
   Smooth = 0,
+  /** Apply a stepped color gradient to the scene. */
   Stepped = 1,
+  /** Apply a stepped color gradient to the scene with delimiters (lines between the color steps). Can only be used with [[ThematicDisplayMode.Height]]. */
   SteppedWithDelimiter = 2,
+  /** Apply isolines to the scene to achieve an effect similar to a contour map. Can only be used with [[ThematicDisplayMode.Height]]. */
   IsoLines = 3,
 }
 
@@ -30,9 +34,9 @@ export enum ThematicGradientColorScheme {
 
 /** @beta */
 export interface ThematicGradientSettingsProps {
-  /** The thematic image mode used to generate the gradient. Defaults to [[ThematicGradientMode.Smooth]]. */
+  /** The thematic image mode used to generate and apply the thematic gradient. Defaults to [[ThematicGradientMode.Smooth]]. */
   mode?: ThematicGradientMode;
-  /** The step count value used for [[ThematicGradientMode.Stepped]]. Defaults to 10. */
+  /** The step count value used for [[ThematicGradientMode.Stepped]], [[ThematicGradientMode.SteppedWithDelimiter]], and [[ThematicGradientMode.IsoLines]]. Defaults to 10. Cannot be less than 2. */
   stepCount?: number;
   /** The margin color used at the extremes of the gradient, when outside the applied range. Defaults to a black color using [[ColorDef.fromJSON]] with no arguments. */
   marginColor?: ColorDefProps;
@@ -51,7 +55,7 @@ export interface ThematicGradientSettingsProps {
 export class ThematicGradientSettings {
   /** The thematic image mode used to generate the gradient. Defaults to [[ThematicGradientMode.Smooth]]. */
   public readonly mode: ThematicGradientMode;
-  /** The step count value used for [[ThematicGradientMode.Stepped]]. Defaults to 10. */
+  /** The step count value used for [[ThematicGradientMode.Stepped]], [[ThematicGradientMode.SteppedWithDelimiter]], and [[ThematicGradientMode.IsoLines]]. Defaults to 10. Cannot be less than 2. */
   public readonly stepCount: number;
   /** The margin color used at the extremes of the gradient, when outside the applied range. Defaults to a black color using [[ColorDef.fromJSON]] with no arguments. */
   public readonly marginColor: ColorDef;
@@ -104,6 +108,9 @@ export class ThematicGradientSettings {
         this.mode = ThematicGradientMode.Smooth;
 
       this.stepCount = (typeof json.stepCount === "number") ? json.stepCount : 10;
+      if (this.stepCount < 2)
+        this.stepCount = 2;
+
       this.marginColor = ColorDef.fromJSON(json.marginColor);
 
       this.colorScheme = (json.colorScheme !== undefined && json.colorScheme !== null) ? json.colorScheme : ThematicGradientColorScheme.BlueRed;
@@ -292,6 +299,10 @@ export enum ThematicDisplayMode {
    * @alpha
    */
   InverseDistanceWeightedSensors = 1,
+  /** The color gradient will be mapped to surface geometry based on the slope of the surface. The slope value is calculated based on the angle between the surface and the axis specified in the associated [[ThematicDisplay]] object. */
+  Slope = 2,
+  /** The color gradient will be mapped to surface geometry based on the direction of a sun shining on the surface. */
+  HillShade = 3,
 }
 
 /** JSON representation of the thematic display setup of a [[DisplayStyle3d]].
@@ -300,12 +311,18 @@ export enum ThematicDisplayMode {
 export interface ThematicDisplayProps {
   /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry. Defaults to [[ThematicDisplayMode.Height]]. */
   displayMode?: ThematicDisplayMode;
-  /** The settings used to create a color gradient applied to the geometry. The mode currently must be [[Gradient.ThematicMode.Smooth]]. Defaults to an instantiation using [[ThematicGradientSettings.fromJSON]] with no arguments. */
+  /** The settings used to create a color gradient applied to the geometry. Defaults to an instantiation using [[ThematicGradientSettings.fromJSON]] with no arguments. */
   gradientSettings?: ThematicGradientSettingsProps;
-  /** The range in which to apply the thematic gradient. For [[ThematicDisplayMode.Height]], this is world space in meters. Defaults to a null range. */
+  /** The range to use when applying the thematic gradient for height and slope mode.
+   * For [[ThematicDisplayMode.Height]], this is world space in meters and represents the range in which to apply the gradient along the specified axis.
+   * For [[ThematicDisplayMode.Slope]], this is a range in degrees with a minimum low value of 0 degrees and a maximum high value of 90 degrees.
+   * Defaults to a null range.
+   */
   range?: Range1dProps;
-  /** For [[ThematicDisplayMode.Height]], this is the axis along which to apply the thematic gradient in the scene. Defaults to {0,0,0}. */
+  /** For [[ThematicDisplayMode.Height]], this is the axis along which to apply the thematic gradient in the scene. For [[ThematicDisplayMode.Slope]], calculating the slope of a surface is done in relation to the axis. Defaults to {0,0,0}. */
   axis?: XYZProps;
+  /** For [[ThematicDisplayMode.HillShade]], this is the direction of the sun in world space. Defaults to {0,0,0}. */
+  sunDirection?: XYZProps;
   /** For [[ThematicDisplayMode.InverseDistanceWeightedSensors]], these are the settings that control the sensors. Defaults to an instantiation using [[ThematicDisplaySensorSettings.fromJSON]] with no arguments.
    * @alpha
    */
@@ -318,12 +335,18 @@ export interface ThematicDisplayProps {
 export class ThematicDisplay {
   /** The thematic display mode. This determines how to apply the thematic color gradient to the geometry. Defaults to [[ThematicDisplayMode.Height]]. */
   public readonly displayMode: ThematicDisplayMode;
-  /** The settings used to create a color gradient applied to the geometry. The mode currently must be [[Gradient.ThematicMode.Smooth]]. Defaults to an instantiation using [[ThematicGradientSettings.fromJSON]] with no arguments. */
+  /** The settings used to create a color gradient applied to the geometry. Defaults to an instantiation using [[ThematicGradientSettings.fromJSON]] with no arguments. */
   public readonly gradientSettings: ThematicGradientSettings;
-  /** The range in which to apply the thematic gradient. For [[ThematicDisplayMode.Height]], this is world space in meters. Defaults to a null range. */
+  /** The range to use when applying the thematic gradient for height and slope mode.
+   * For [[ThematicDisplayMode.Height]], this is world space in meters and represents the range in which to apply the gradient along the specified axis.
+   * For [[ThematicDisplayMode.Slope]], this is a range in radians with a minimum low value of 0 degrees and a maximum high value of 90 degrees.
+   * Defaults to a null range.
+   */
   public readonly range: Range1d;
-  /** For [[ThematicDisplayMode.Height]], this is the axis along which to apply the thematic gradient in the scene. Defaults to {0,0,0}. */
+  /** For [[ThematicDisplayMode.Height]], this is the axis along which to apply the thematic gradient in the scene. For [[ThematicDisplayMode.Slope]], the slope of a surface is calculated in relation to this axis. Defaults to {0,0,0}. */
   public readonly axis: Vector3d;
+  /** For [[ThematicDisplayMode.HillShade]], this is the direction of the sun in world space. Defaults to {0,0,0}. */
+  public readonly sunDirection: Vector3d;
   /** For [[ThematicDisplayMode.InverseDistanceWeightedSensors]], these are the settings that control the sensors. Defaults to an instantiation using [[ThematicDisplaySensorSettings.fromJSON]] with no arguments.
    * @alpha
    */
@@ -338,6 +361,8 @@ export class ThematicDisplay {
       return false;
     if (!this.axis.isAlmostEqual(other.axis))
       return false;
+    if (!this.sunDirection.isAlmostEqual(other.sunDirection))
+      return false;
     if (!this.sensorSettings.equals(other.sensorSettings))
       return false;
 
@@ -350,15 +375,31 @@ export class ThematicDisplay {
       this.gradientSettings = ThematicGradientSettings.fromJSON();
       this.axis = Vector3d.fromJSON();
       this.range = Range1d.fromJSON();
+      this.sunDirection = Vector3d.fromJSON();
       this.sensorSettings = ThematicDisplaySensorSettings.fromJSON();
     } else {
       this.displayMode = (json.displayMode !== undefined && json.displayMode !== null) ? json.displayMode : ThematicDisplayMode.Height;
-      if (this.displayMode < ThematicDisplayMode.Height || this.displayMode > ThematicDisplayMode.InverseDistanceWeightedSensors)
+      if (this.displayMode < ThematicDisplayMode.Height || this.displayMode > ThematicDisplayMode.HillShade)
         this.displayMode = ThematicDisplayMode.Height;
       this.gradientSettings = ThematicGradientSettings.fromJSON(json.gradientSettings);
       this.axis = Vector3d.fromJSON(json.axis);
       this.range = Range1d.fromJSON(json.range);
+      this.sunDirection = Vector3d.fromJSON(json.sunDirection);
       this.sensorSettings = ThematicDisplaySensorSettings.fromJSON(json.sensorSettings);
+    }
+    if (ThematicDisplayMode.Height !== this.displayMode) {
+      // Disallow isoline and stepped-with-delimiter gradient modes in any mode other than height.
+      if (ThematicGradientMode.IsoLines === this.gradientSettings.mode || ThematicGradientMode.SteppedWithDelimiter === this.gradientSettings.mode) {
+        const gradientSettingsJSON = this.gradientSettings.toJSON();
+        gradientSettingsJSON.mode = ThematicGradientMode.Smooth;
+        this.gradientSettings = ThematicGradientSettings.fromJSON(gradientSettingsJSON);
+      }
+      if (ThematicDisplayMode.Slope === this.displayMode) {
+        if (this.range.low < 0.0)
+          this.range.low = 0.0;
+        if (this.range.high > 90.0)
+          this.range.high = 90.0;
+      }
     }
   }
 
@@ -371,12 +412,12 @@ export class ThematicDisplay {
       displayMode: this.displayMode,
       gradientSettings: this.gradientSettings.toJSON(),
       axis: this.axis.toJSON(),
+      sunDirection: this.sunDirection.toJSON(),
       range: this.range.toJSON(),
     };
 
-    if (this.sensorSettings.sensors.length > 0) {
+    if (this.sensorSettings.sensors.length > 0)
       json.sensorSettings = this.sensorSettings.toJSON();
-    }
 
     return json;
   }

@@ -122,7 +122,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  case of other binding errors.
    */
   public bindValue(parameter: number | string, value: any): void {
-    let stat: DbResult = DbResult.BE_SQLITE_OK;
+    let stat: DbResult;
     if (value === undefined || value === null) {
       stat = this._stmt!.bindNull(parameter);
     } else if (typeof (value) === "number") {

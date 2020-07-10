@@ -182,6 +182,37 @@
     },
     {
       "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"ISubModeledElement\", \"BisCore\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ModelModelsElement"
+              },
+              "direction": "Backward"
+            }
+          ],
+          "instanceFilter": "NOT this.IsPrivate AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "hasChildren": "Always",
+          "hideNodesInHierarchy": true,
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "isModel": "true"
+          }
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
       "condition": "ParentNode.IsOfClass(\"GeometricModel3d\", \"BisCore\")",
       "specifications": [
         {

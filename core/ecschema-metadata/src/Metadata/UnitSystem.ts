@@ -18,3 +18,11 @@ export class UnitSystem extends SchemaItem {
     this.schemaItemType = SchemaItemType.UnitSystem;
   }
 }
+
+/**
+ * @internal
+ * Used for schema editing.
+ */
+export abstract class MutableUnitSystem extends UnitSystem {
+  public abstract setDisplayLabel(displayLabel: string): void;
+}

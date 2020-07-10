@@ -5,16 +5,12 @@ Welcome, and thank you for your interest in contributing to iModel.js!
 There are many ways to contribute.
 The goal of this document is to provide a high-level overview of how you can get involved.
 
-## Asking Questions
+## Asking Questions and Providing Feedback
 
-Have a question?
-Rather than opening an issue, please ask away on [Stack Overflow](https://stackoverflow.com/tags/imodeljs) using the tag `imodeljs`.
+Have a question or feedback?
+Rather than opening an issue, please ask away on the [GitHub Discussions](https://github.com/imodeljs/imodeljs/discussions) for iModel.js.
 
 The community will be eager to assist you. Your well-worded question will serve as a resource to others searching for help.
-
-## Providing Feedback
-
-Your comments and feedback are welcome. For general comments or discussion please [click here](https://github.com/imodeljs/imodeljs/labels/discussion) to contribute via GitHub issues using the `discussion` label.
 
 ## Reporting Issues
 

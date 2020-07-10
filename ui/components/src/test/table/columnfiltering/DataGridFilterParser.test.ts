@@ -487,6 +487,30 @@ describe("DataGridFilterParser", () => {
     expect(await dataProvider.getRowsCount()).to.eq(numTestRows / loremIpsum.length);
   });
 
+  it("Text filterRenderer with no filter term", async () => {
+    const columnDescription = columnDescriptions[3];
+    const reactDataGridColumn: ReactDataGridColumn = {
+      key: columnDescription.key,
+      name: columnDescription.label,
+    };
+    const filterableColumn = new TableColumn(testTable, columnDescription, reactDataGridColumn);
+    const columnFilterDescriptor = filterableColumn.columnFilterDescriptor;
+
+    DataGridFilterParser.timerTimeout = 10;
+
+    const dataGridFilter: ReactDataGridFilter = {
+      columnKey: columnDescription.key,
+      filterTerm: "",
+      column: filterableColumn,
+    };
+
+    expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
+    await DataGridFilterParser.handleFilterChange(dataGridFilter, columnFilterDescriptor, columnDescription, applyFilter);
+
+    await TestUtils.tick(100);
+    expect(await dataProvider.getRowsCount()).to.eq(numTestRows);
+  });
+
   it("columnDescriptor with no filterRenderer should filter on text", async () => {
     const columnDescription = columnDescriptions[4];
     const reactDataGridColumn: ReactDataGridColumn = {

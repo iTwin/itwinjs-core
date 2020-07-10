@@ -27,6 +27,7 @@ import { Arc3d } from "./Arc3d";
 import { Range2d, Range3d } from "../geometry3d/Range";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
+import { GeometryQuery } from "./GeometryQuery";
 
 /**
  * base class for callbacks during region sweeps.
@@ -85,7 +86,7 @@ type AnnounceClassifiedFace = (graph: HalfEdgeGraph, faceSeed: HalfEdge, faceTyp
  * * `finishComponent` is not reimplemented.
  * @internal
  */
-class RegionOpsBooleanSweepCallbacks extends RegionOpsFaceToFaceSearchCallbacks {
+class RegionOpsBinaryBooleanSweepCallbacks extends RegionOpsFaceToFaceSearchCallbacks {
   private _faceSelectFunction: BinaryBooleanAcceptFunction;
   private _inComponent: boolean[];
   private _exteriorMask: HalfEdgeMask;
@@ -228,7 +229,7 @@ export class RegionOpsFaceToFaceSearch {
       const nodeVisitedMask = graph.grabMask();
       const allMasksToClear = exteriorMask | faceVisitedMask | nodeVisitedMask;
       graph.clearMask(allMasksToClear);
-      const callbacks = new RegionOpsBooleanSweepCallbacks(faceSelectFunction, exteriorMask);
+      const callbacks = new RegionOpsBinaryBooleanSweepCallbacks(faceSelectFunction, exteriorMask);
       this.faceToFaceSearchFromOuterLoop(graph, exteriorHalfEdge, faceVisitedMask, nodeVisitedMask, callbacks);
       if (graphCheckPoint)
         graphCheckPoint("After faceToFaceSearchFromOuterLoop", graph, "MRX");
@@ -237,6 +238,55 @@ export class RegionOpsFaceToFaceSearch {
       return graph;
     }
     return undefined;
+  }
+
+  /** Complete multi-step process for polygon binary booleans starting with arrays of coordinates.
+   * * the manyLoopsAndParitySets input is an array.
+   * * Each entry is one or more loops.
+   * * An entry that is "just points" is a simple loop.
+   * * An entry that is itself an array of arrays of points is a set of loops with "parity" -- relation:
+   *    * typically the first is an outer loop an others are holes.
+   *    * but if there is self intersection or multiple outer loops, parity rules are applied to decide inner and outer.
+   * * Processing steps are
+   *   * Build the loops for each set.
+   *      * Each edge labeled with index to the outer array.
+   *   * find crossings among the edges.
+   *      * Edges are split as needed, but split preserves the edgeTag
+   *   * sort edges around vertices
+   *   * add regularization edges so holes are connected to their parent.
+   *   * assign inside/outside by parity within each set and overall union.
+   */
+  public static doBinaryBooleanBetweenMultiLoopInputs(
+    dataA: MultiLineStringDataVariant[],
+    opA: RegionGroupOpType,
+    binaryOp: RegionBinaryOpType,
+    dataB: MultiLineStringDataVariant[],
+    opB: RegionGroupOpType,
+  ): HalfEdgeGraph | undefined {
+    const graph = new HalfEdgeGraph();
+    const baseMask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
+    const callbacks = RegionBooleanContext.create(opA, opB);
+    callbacks.graph = graph;
+    callbacks.faceAreaFunction = HalfEdgeGraphSearch.signedFaceArea;
+
+    // Add all the members in groupA ..
+    for (const data of dataA) {
+      const member = new RegionGroupMember(data, callbacks.groupA);
+      RegionOps.addLoopsWithEdgeTagToGraph(graph, data, baseMask, member);
+    }
+    for (const data of dataB) {
+      const member = new RegionGroupMember(data, callbacks.groupB);
+      RegionOps.addLoopsWithEdgeTagToGraph(graph, data, baseMask, member);
+    }
+    // split edges where they cross . . .
+    HalfEdgeGraphMerge.splitIntersectingEdges(graph);
+    // sort radially around vertices.
+    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
+    // add edges to connect various components  (e.g. holes!!!)
+    const context = new RegularizationContext(graph);
+    context.regularizeGraph(true, true);
+    callbacks.runClassificationSweep(binaryOp);
+    return graph;
   }
 }
 
@@ -258,10 +308,10 @@ export enum RegionGroupOpType {
  * @internal
  */
 class RegionGroupMember {
-  public region: Loop | ParityRegion | CurvePrimitive;
+  public region: Loop | ParityRegion | CurvePrimitive | MultiLineStringDataVariant;
   public sweepState: number;
   public parentGroup: RegionGroup;
-  public constructor(region: Loop | ParityRegion | CurvePrimitive, parentGroup: RegionGroup) {
+  public constructor(region: Loop | ParityRegion | CurvePrimitive | MultiLineStringDataVariant, parentGroup: RegionGroup) {
     this.region = region;
     this.parentGroup = parentGroup;
     this.sweepState = 0;
@@ -295,8 +345,14 @@ export class RegionGroup {
   }
   public range(): Range3d {
     const range = Range3d.createNull();
-    for (const m of this.members)
-      m.region.extendRange(range);
+    for (const m of this.members) {
+      if (m.region instanceof GeometryQuery)
+        m.region.extendRange(range);
+      else {
+        const range1 = Range3d.createFromVariantData(m.region);
+        range.extendRange(range1);
+      }
+    }
     return range;
   }
   /** Ask if the current _numIn count qualifies as an "in" for this operation type.
@@ -369,6 +425,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   public groupB!: RegionGroup;
   public extraGeometry!: RegionGroup;
   public graph!: HalfEdgeGraph;
+  public faceAreaFunction!: NodeToNumberFunction;
   public binaryOp: RegionBinaryOpType;
 
   private constructor(groupTypeA: RegionGroupOpType, groupTypeB: RegionGroupOpType) {
@@ -436,24 +493,30 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   }
 
   /**
-   * Using the currently defined group geometry, create a half edge graph structure with
-   * all crossings among the inputs are detected and introduced to the edges.
+   * Markup and assembly steps for geometry in the RegionGroups.
+   * * Annotate connection from group to curves.
+   *    * groups with point data but no curves get no further annotation.
+   * * compute intersections.
+   * * assemble and merge the HalfEdgeGraph.
    */
-  public createGraph() {
+  public annotateAndMergeCurvesInGraph() {
     const allPrimitives: CurvePrimitive[] = [];
     // ASSUME loops have fine-grained types -- no linestrings !!
     for (const group of [this.groupA, this.groupB, this.extraGeometry]) {
       for (const member of group.members) {
         let k = allPrimitives.length;
-        RegionOps.collectCurvePrimitives(member.region, allPrimitives, true, true);
-        for (; k < allPrimitives.length; k++)
-          allPrimitives[k].parent = member;
+        if (member.region instanceof GeometryQuery) {
+          RegionOps.collectCurvePrimitives(member.region, allPrimitives, true, true);
+          for (; k < allPrimitives.length; k++)
+            allPrimitives[k].parent = member;
+        }
       }
     }
     //    const range = RegionOps.curveArrayRange(allPrimitives);
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(allPrimitives);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections);
     this.graph = graph;
+    this.faceAreaFunction = faceAreaFromCurvedEdgeData;
   }
   private _announceFaceFunction?: AnnounceClassifiedFace;
   /**
@@ -464,7 +527,9 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
    * @param binaryOp
    * @param announceFaceFunction
    */
-  public runClassificationSweep(binaryOp: RegionBinaryOpType, announceFaceFunction?: AnnounceClassifiedFace) {
+  public runClassificationSweep(
+    binaryOp: RegionBinaryOpType,
+    announceFaceFunction?: AnnounceClassifiedFace) {
     this._announceFaceFunction = announceFaceFunction;
     this.binaryOp = binaryOp;
     this.graph.clearMask(HalfEdgeMask.EXTERIOR);
@@ -475,7 +540,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const nodeHasBeenVisitedMask = this.graph.grabMask();
     const componentArray = GraphComponentArray.create(this.graph);
     for (const component of componentArray.components) {
-      const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(component.faces, faceAreaFromCurvedEdgeData);
+      const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(component.faces, this.faceAreaFunction);
       const exteriorMask = HalfEdgeMask.EXTERIOR;
       const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
       this.graph.clearMask(allMasksToClear);
@@ -498,10 +563,29 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       return this.groupA.getInOut() !== this.groupB.getInOut();
     return false;
   }
+  /**
+   * Record transition across an edge as entry or exit from a RegionGroup.
+   * * Work backward from the node to a RegionGroup.  This path can be:
+   *   * If the node points to a CurveLocationDetail of a (possibly partial) curve, the path is (take a deep breath)
+   *      * node points to CurveLocation Detail
+   *      * CurveLocationDetail points to curve
+   *      * curve points to RegionGroupMember
+   *  * If the node points directly to a RegionGroup, it's ready to go!!!
+   * @param node
+   * @param delta
+   */
   private recordTransitionAcrossEdge(node: HalfEdge, delta: number): RegionGroupMember | undefined {
-    const detail = node.edgeTag;
-    if (detail !== undefined) {
-      const member = detail.curve.parent;
+    const data = node.edgeTag;
+    if (data instanceof RegionGroupMember) {
+      if (delta !== 0) {
+        const oldSweepState = data.sweepState;
+        data.sweepState += delta;
+        data.parentGroup.recordMemberStateChange(oldSweepState, data.sweepState);
+      }
+      return data;
+    } else if (data instanceof CurveLocationDetail) {
+      // We trust that the caller has linked from the graph node to a curve which has a RegionGroupMember as its parent.
+      const member = data.curve!.parent;
       if (member instanceof RegionGroupMember) {
         if (delta !== 0) {
           const oldSweepState = member.sweepState;

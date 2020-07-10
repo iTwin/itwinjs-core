@@ -23,7 +23,7 @@ interface ThematicSensorsTexture {
   readonly data: Texture2DData;
 }
 
-/** Maintains a texture representing a list of thematic sensors. ###TODO: Update when view matrix changes? See ClipVolume.ts
+/** Maintains a texture representing a list of thematic sensors.
  * @internal
  */
 export abstract class ThematicSensors implements WebGLDisposable {

@@ -12,12 +12,11 @@ import * as React from "react";
 import { ColorDef } from "@bentley/imodeljs-common";
 import {
   ColorEditorParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
-} from "@bentley/ui-abstract"; //
+  StandardEditorNames, StandardTypeNames,
+} from "@bentley/ui-abstract";
 import { ColorPickerButton } from "../color/ColorPickerButton";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
-import { StandardEditorNames } from "./StandardEditorNames";
 
 /** @internal */
 interface ColorEditorState {

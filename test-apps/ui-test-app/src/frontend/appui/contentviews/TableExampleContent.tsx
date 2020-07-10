@@ -7,10 +7,11 @@ import * as React from "react";
 import {
   BasePropertyEditorParams, InputEditorSizeParams, PropertyDescription, PropertyEditorInfo,
   PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat, RangeEditorParams, SliderEditorParams,
+  StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import {
-  ColumnDescription, FilterRenderer, PropertyUpdatedArgs, RowItem, SelectionMode, SimpleTableDataProvider, StandardEditorNames,
-  StandardTypeNames, Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget,
+  ColumnDescription, FilterRenderer, PropertyUpdatedArgs, RowItem, SelectionMode, SimpleTableDataProvider,
+  Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget,
 } from "@bentley/ui-components";
 import { BodyText, Toggle } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";

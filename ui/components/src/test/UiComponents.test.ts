@@ -52,4 +52,9 @@ describe("UiComponents", () => {
     await MockRender.App.shutdown();
   });
 
+  it("calling loggerCategory without an obj should return packageName", () => {
+    const category = UiComponents.loggerCategory(undefined);
+    expect(category).to.eq(UiComponents.packageName);
+  });
+
 });

@@ -877,7 +877,7 @@ export namespace Editors {
     export class Constants {
         constructor(_schemaEditor: SchemaContextEditor);
         // (undocumented)
-        create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, numerator?: number, denominator?: number): Promise<SchemaItemEditResults>;
+        create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, displayLabel?: string, numerator?: number, denominator?: number): Promise<SchemaItemEditResults>;
         createFromProps(schemaKey: SchemaKey, constantProps: ConstantProps): Promise<SchemaItemEditResults>;
         // (undocumented)
         protected _schemaEditor: SchemaContextEditor;
@@ -885,7 +885,7 @@ export namespace Editors {
     export class CustomAttributes extends ECClasses {
         constructor(_schemaEditor: SchemaContextEditor);
         // (undocumented)
-        create(schemaKey: SchemaKey, name: string, containerType: CustomAttributeContainerType, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults>;
+        create(schemaKey: SchemaKey, name: string, containerType: CustomAttributeContainerType, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults>;
         createFromProps(schemaKey: SchemaKey, caProps: CustomAttributeClassProps): Promise<SchemaItemEditResults>;
     }
     export class ECClasses {
@@ -918,7 +918,7 @@ export namespace Editors {
         // (undocumented)
         addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void>;
         // (undocumented)
-        create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, baseClass?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults>;
+        create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClass?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults>;
         createFromProps(schemaKey: SchemaKey, entityProps: EntityClassProps): Promise<SchemaItemEditResults>;
         // (undocumented)
         createNavigationProperty(entityKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults>;
@@ -928,7 +928,7 @@ export namespace Editors {
         // (undocumented)
         addEnumerator(enumerationKey: SchemaItemKey, enumerator: AnyEnumerator): Promise<void>;
         // (undocumented)
-        create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemEditResults>;
+        create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, displayLabel?: string, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemEditResults>;
         createFromProps(schemaKey: SchemaKey, enumProps: EnumerationProps): Promise<SchemaItemEditResults>;
         // (undocumented)
         protected _schemaEditor: SchemaContextEditor;
@@ -936,8 +936,34 @@ export namespace Editors {
     export class Formats {
         constructor(_schemaEditor: SchemaContextEditor);
         // (undocumented)
-        create(schemaKey: SchemaKey, name: string, formatType: FormatType, units?: SchemaItemKey[]): Promise<SchemaItemEditResults>;
+        create(schemaKey: SchemaKey, name: string, formatType: FormatType, displayLabel?: string, units?: SchemaItemKey[]): Promise<SchemaItemEditResults>;
         createFromProps(schemaKey: SchemaKey, formatProps: FormatProps): Promise<SchemaItemEditResults>;
+        // (undocumented)
+        protected _schemaEditor: SchemaContextEditor;
+    }
+    export class InvertedUnits {
+        constructor(_schemaEditor: SchemaContextEditor);
+        // (undocumented)
+        create(schemaKey: SchemaKey, name: string, invertsUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemEditResults>;
+        // (undocumented)
+        createFromProps(schemaKey: SchemaKey, invertedUnitProps: InvertedUnitProps): Promise<SchemaItemEditResults>;
+        // (undocumented)
+        protected _schemaEditor: SchemaContextEditor;
+        // (undocumented)
+        setInvertsUnit(invertedUnitKey: SchemaItemKey, invertsUnitKey: SchemaItemKey): Promise<void>;
+        // (undocumented)
+        setUnitSystem(invertedUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey): Promise<void>;
+    }
+    export class KindOfQuantities {
+        constructor(_schemaEditor: SchemaContextEditor);
+        // (undocumented)
+        addPresentationFormat(koqKey: SchemaItemKey, format: SchemaItemKey, isDefault?: boolean): Promise<void>;
+        // (undocumented)
+        addPresentationOverrideFormat(koqKey: SchemaItemKey, overrideFormat: OverrideFormat, isDefault?: boolean): Promise<void>;
+        // (undocumented)
+        createFormatOverride(koqKey: SchemaItemKey, parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): Promise<OverrideFormat>;
+        // (undocumented)
+        createFromProps(schemaKey: SchemaKey, koqProps: KindOfQuantityProps): Promise<SchemaItemEditResults>;
         // (undocumented)
         protected _schemaEditor: SchemaContextEditor;
     }
@@ -946,10 +972,30 @@ export namespace Editors {
         // (undocumented)
         addMixin(entityKey: SchemaItemKey, mixinKey: SchemaItemKey): Promise<void>;
         // (undocumented)
-        create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults>;
+        create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults>;
         createFromProps(schemaKey: SchemaKey, mixinProps: MixinProps): Promise<SchemaItemEditResults>;
         // (undocumented)
         createNavigationProperty(mixinKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults>;
+    }
+    export class Phenomenons {
+        constructor(_schemaEditor: SchemaContextEditor);
+        // (undocumented)
+        create(schemaKey: SchemaKey, name: string, definition: string, displayLabel?: string): Promise<SchemaItemEditResults>;
+        // (undocumented)
+        createFromProps(schemaKey: SchemaKey, phenomenonProps: PhenomenonProps): Promise<SchemaItemEditResults>;
+        // (undocumented)
+        protected _schemaEditor: SchemaContextEditor;
+    }
+    export class PropertyCategories {
+        constructor(_schemaEditor: SchemaContextEditor);
+        // (undocumented)
+        create(schemaKey: SchemaKey, name: string, priority: number, displayLabel?: string): Promise<SchemaItemEditResults>;
+        // (undocumented)
+        createFromProps(schemaKey: SchemaKey, propertyCategoryProps: PropertyCategoryProps): Promise<SchemaItemEditResults>;
+        // (undocumented)
+        protected _schemaEditor: SchemaContextEditor;
+        // (undocumented)
+        setPriority(propCategoryKey: SchemaItemKey, priority: number): Promise<void>;
     }
     export class RelationshipClasses extends ECClasses {
         constructor(_schemaEditor: SchemaContextEditor);
@@ -960,8 +1006,26 @@ export namespace Editors {
     export class Structs extends ECClasses {
         constructor(_schemaEditor: SchemaContextEditor);
         // (undocumented)
-        create(schemaKey: SchemaKey, name: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults>;
+        create(schemaKey: SchemaKey, name: string, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults>;
         createFromProps(schemaKey: SchemaKey, structProps: StructClassProps): Promise<SchemaItemEditResults>;
+    }
+    export class Units {
+        constructor(_schemaEditor: SchemaContextEditor);
+        // (undocumented)
+        create(schemaKey: SchemaKey, name: string, definition: string, phenomenon: SchemaItemKey, unitSystem: SchemaItemKey, displayLabel?: string): Promise<SchemaItemEditResults>;
+        // (undocumented)
+        createFromProps(schemaKey: SchemaKey, unitProps: UnitProps): Promise<SchemaItemEditResults>;
+        // (undocumented)
+        protected _schemaEditor: SchemaContextEditor;
+    }
+    export class UnitSystems {
+        constructor(_schemaEditor: SchemaContextEditor);
+        // (undocumented)
+        create(schemaKey: SchemaKey, name: string, displayLabel?: string): Promise<SchemaItemEditResults>;
+        // (undocumented)
+        createFromProps(schemaKey: SchemaKey, unitSystemProps: UnitSystemProps): Promise<SchemaItemEditResults>;
+        // (undocumented)
+        protected _schemaEditor: SchemaContextEditor;
     }
 }
 
@@ -1406,6 +1470,10 @@ export class InvertedUnit extends SchemaItem {
     protected _invertsUnit?: LazyLoadedUnit;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.InvertedUnit;
+    // @alpha
+    protected setInvertsUnit(invertsUnit: LazyLoadedUnit): void;
+    // @alpha
+    protected setUnitSystem(unitSystem: LazyLoadedUnitSystem): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): InvertedUnitProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -1910,6 +1978,8 @@ export class Phenomenon extends SchemaItem {
     fromJSONSync(phenomenonProps: PhenomenonProps): void;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.Phenomenon;
+    // (undocumented)
+    protected setDefinition(definition: string): Promise<void>;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): PhenomenonProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -2125,6 +2195,8 @@ export class PropertyCategory extends SchemaItem {
     protected _priority: number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.PropertyCategory;
+    // @alpha
+    protected setPriority(priority: number): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): PropertyCategoryProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -3059,12 +3131,24 @@ export class SchemaContextEditor {
     // (undocumented)
     readonly formats: Editors.Formats;
     // (undocumented)
+    readonly invertedUnits: Editors.InvertedUnits;
+    // (undocumented)
+    readonly kindOfQuantities: Editors.KindOfQuantities;
+    // (undocumented)
     readonly mixins: Editors.Mixins;
+    // (undocumented)
+    readonly phenomenons: Editors.Phenomenons;
+    // (undocumented)
+    readonly propertyCategories: Editors.PropertyCategories;
     // (undocumented)
     readonly relationships: Editors.RelationshipClasses;
     get schemaContext(): SchemaContext;
     // (undocumented)
     readonly structs: Editors.Structs;
+    // (undocumented)
+    readonly units: Editors.Units;
+    // (undocumented)
+    readonly unitSystems: Editors.UnitSystems;
 }
 
 // @beta
@@ -3118,6 +3202,10 @@ export abstract class SchemaItem {
     readonly schema: Schema;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
+    // @alpha
+    protected setDescription(description: string): void;
+    // @alpha
+    protected setDisplayLabel(displayLabel: string): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): SchemaItemProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -3562,6 +3650,12 @@ export class Unit extends SchemaItem {
     protected _phenomenon?: LazyLoadedPhenomenon;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.Unit;
+    // @alpha
+    protected setDefinition(definition: string): Promise<void>;
+    // @alpha
+    protected setPhenomenon(phenomenon: LazyLoadedPhenomenon): Promise<void>;
+    // @alpha
+    protected setUnitSystem(unitSystem: LazyLoadedUnitSystem): Promise<void>;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): UnitProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;

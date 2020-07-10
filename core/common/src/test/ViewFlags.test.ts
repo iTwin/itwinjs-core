@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { RenderMode, ViewFlagOverrides, ViewFlagOverridesProps, ViewFlags } from "../ViewFlags";
+import {
+  RenderMode, ViewFlagOverrides, ViewFlagOverridesProps, ViewFlagProps, ViewFlags,
+} from "../ViewFlags";
 
 describe("ViewFlags", () => {
   it("should initialize to expected defaults", () => {
@@ -15,14 +17,71 @@ describe("ViewFlags", () => {
   });
 
   it("should round-trip through JSON", () => {
-    const flags = new ViewFlags();
-    flags.renderMode = RenderMode.SmoothShade;
-    flags.monochrome = true;
-    const jsonstr = JSON.stringify(flags);
-    const flags2 = ViewFlags.fromJSON(JSON.parse(jsonstr));
-    assert(flags.acsTriad === flags2.acsTriad);
-    assert(flags.renderMode === flags2.renderMode);
-    assert(flags.monochrome === flags2.monochrome);
+    const roundTrip = (input: ViewFlagProps | undefined, expected: ViewFlagProps | "input") => {
+      if ("input" === expected)
+        expected = input ?? { };
+
+      const vf = ViewFlags.fromJSON(input);
+      const output = vf.toJSON();
+      expect(output).to.deep.equal(expected);
+
+      const fullOutput = vf.toFullyDefinedJSON();
+      for (const key of Object.keys(output) as Array<keyof ViewFlagProps>)
+        expect(fullOutput[key]).to.equal(output[key]);
+    };
+
+    roundTrip({ }, { renderMode: RenderMode.Wireframe });
+    roundTrip({ acs: true, monochrome: true, renderMode: RenderMode.Wireframe }, "input");
+    roundTrip({ acs: false, monochrome: false, renderMode: RenderMode.SmoothShade }, { renderMode: RenderMode.SmoothShade });
+
+    const makeViewFlags = (on: boolean) => {
+      const vfProps: Required<ViewFlagProps> = {
+        noConstruct: on,
+        noDim: on,
+        noPattern: on,
+        noWeight: on,
+        noStyle: on,
+        noTransp: on,
+        noFill: on,
+        grid: on,
+        acs: on,
+        noTexture: on,
+        noMaterial: on,
+        noCameraLights: on,
+        noSourceLights: on,
+        noSolarLight: on,
+        visEdges: on,
+        hidEdges: on,
+        shadows: on,
+        clipVol: on,
+        hlMatColors: on,
+        monochrome: on,
+        backgroundMap: on,
+        edgeMask: 1,
+        ambientOcclusion: on,
+        thematicDisplay: on,
+        forceSurfaceDiscard: on,
+        noWhiteOnWhiteReversal: on,
+        renderMode: RenderMode.SolidFill,
+      };
+
+      return vfProps;
+    };
+
+    roundTrip(makeViewFlags(true), "input");
+    roundTrip(makeViewFlags(false), { renderMode: RenderMode.SolidFill, edgeMask: 1 });
+
+    const defaults = {
+      clipVol: true,
+      noCameraLights: true,
+      noConstruct: true,
+      noSolarLight: true,
+      noSourceLights: true,
+      renderMode: RenderMode.Wireframe,
+    };
+
+    roundTrip(undefined, defaults);
+    roundTrip(new ViewFlags().toJSON(), defaults);
   });
 
   it("should compute whether edges are required", () => {

@@ -112,6 +112,11 @@ describe("Techniques", () => {
     }
   }).timeout(compileTimeout);
 
+  it("should compile all shader programs without logarithmic depth", async () => {
+    if (System.instance.supportsLogZBuffer)
+      await compileAllShaders({ logarithmicDepthBuffer: false, useWebGL2: false });
+  }).timeout(compileTimeout);
+
   it("should successfully compile surface shader with clipping planes", () => {
     const flags = new TechniqueFlags(true);
     flags.numClipPlanes = 6;

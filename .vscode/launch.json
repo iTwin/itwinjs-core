@@ -742,28 +742,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "simple-editor-app Electron (backend)",
-      "cwd": "${workspaceFolder}/test-apps/simple-editor-app/",
-      "env": {
-        "SVT_LOG_LEVEL": "TRACE",
-        "BROWSER": "none",
-        "imjs_buddi_resolve_url_using_region": "102"
-      },
-      "runtimeExecutable": "${workspaceFolder}/test-apps/simple-editor-app/node_modules/.bin/electron",
-      "runtimeArgs": [
-        "${workspaceFolder}/test-apps/simple-editor-app/lib/backend/main.js",
-        "--remote-debugging-port=9223"
-      ],
-      "protocol": "inspector",
-      "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/test-apps/simple-editor-app/lib/{backend}/**/*.js",
-        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
-      ]
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "Debug imodel-from-geojson",
       "program": "${workspaceRoot}/test-apps/imodel-from-geojson/lib/Main.js",
       "cwd": "${workspaceRoot}/test-apps/imodel-from-geojson",
@@ -959,6 +937,32 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "⚠︝HyperModeling Tests (certa/backend)",
+      "cwd": "${workspaceRoot}/core/hypermodeling/",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "test:debug"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858
+    },
+    {
+      "name": "⚠︝HyperModeling Tests (chrome)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223,
+      "sourceMaps": true,
+      "timeout": 20000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "webRoot": "${workspaceFolder}",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "⚠︝Markup Tests (certa/backend)",
       "cwd": "${workspaceRoot}/core/markup/",
       "runtimeExecutable": "npm",
@@ -1091,6 +1095,13 @@
       "configurations": [
         "⚠︝Frontend Tests (chrome)",
         "⚠︝Frontend Tests (certa/backend)"
+      ]
+    },
+    {
+      "name": "✔HyperModeling Tests",
+      "configurations": [
+        "⚠︝HyperModeling Tests (chrome)",
+        "⚠︝HyperModeling Tests (certa/backend)"
       ]
     },
     {

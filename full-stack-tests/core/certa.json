@@ -12,6 +12,9 @@
     "args": [
       "--disable-web-security",
       "--no-sandbox"
+    ],
+    "publicDirs": [
+      "./node_modules/@bentley/hypermodeling-frontend/lib/public/"
     ]
   },
   "mochaOptions": {

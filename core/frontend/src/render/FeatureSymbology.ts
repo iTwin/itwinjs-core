@@ -402,10 +402,8 @@ export namespace FeatureSymbology {
       if (undefined === elemApp && undefined === modelApp)
         app = this._defaultOverrides.extendAppearance(app);
 
-      if (app.isFullyTransparent)
-        return undefined;
-      else
-        return app;
+      // NB: A fully-transparent classifier means the classifier is a clip mask - classified pixels will be discarded.
+      return app;
     }
 
     /** @internal */
@@ -510,9 +508,7 @@ export namespace FeatureSymbology {
       if (undefined !== viewport.alwaysDrawn)
         this.setAlwaysDrawnSet(viewport.alwaysDrawn, viewport.isAlwaysDrawnExclusive);
 
-      if (undefined !== viewport.featureOverrideProvider)
-        viewport.featureOverrideProvider.addFeatureOverrides(this, viewport);
-
+      viewport.addFeatureOverrides(this);
       viewport.addModelSubCategoryVisibilityOverrides(this, this._modelSubCategoryOverrides);
 
       // This will include any per-model subcategory visibility overrides added above.

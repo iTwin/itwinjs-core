@@ -1,0 +1,16 @@
+sep=;
+Release Tag;API Item
+beta;createSectionGraphicsProvider(state: SectionDrawingLocationState): Promise
+beta;HyperModeling
+beta;HyperModelingConfig
+beta;HyperModelingDecorator 
+internal;MarkerData
+beta;SectionDrawingLocationState
+internal;SectionDrawingLocationStateData
+beta;SectionGraphicsConfig
+beta;SectionMarker 
+internal;SectionMarkerCluster 
+beta;SectionMarkerConfig
+beta;SectionMarkerHandler
+beta;SectionMarkerSet 
+beta;SectionViewAttachment

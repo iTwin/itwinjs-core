@@ -5,11 +5,11 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
+import { StandardTypeNames } from "@bentley/ui-abstract";
 import { ReactDataGridColumn, TableColumn } from "../../../ui-components/table/component/TableColumn";
 import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
 import { ColumnDescription, RowItem } from "../../../ui-components/table/TableDataProvider";
 import { TestFilterableTable, TestUtils } from "../../TestUtils";
-import { StandardTypeNames } from "../../../ui-components/common/StandardTypeNames";
 
 const columns: ColumnDescription[] = [
   {

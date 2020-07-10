@@ -340,7 +340,7 @@ describe("BriefcaseManager (#integration)", () => {
     await IModelHost.shutdown();
     config.briefcaseCacheDir = undefined; // tslint:disable-line:deprecation
     await IModelHost.startup(config);
-    expectedDir = path.join((IModelHost as any).getDefaultCacheDir(), "bc", cacheSubDir);
+    expectedDir = path.join(IModelHost.cacheDir, "bc", cacheSubDir);
     assert.strictEqual(expectedDir, (BriefcaseManager as any).cacheDir);
 
     // Test 2.0 custom cache location

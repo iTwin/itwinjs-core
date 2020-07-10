@@ -7,9 +7,7 @@
  */
 
 import { GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import {
-  Angle, AxisIndex, AxisOrder, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps,
-} from "@bentley/geometry-core";
+import { Angle, AxisIndex, AxisOrder, Constant, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@bentley/geometry-core";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
@@ -160,9 +158,14 @@ export class EcefLocation implements EcefLocationProps {
   /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
   public static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle) {
     const ecefOrigin = origin.toEcef();
-    const zVector = Vector3d.createFrom(ecefOrigin).normalize();
-    const xVector = Vector3d.create(-Math.sin(origin.longitude), Math.cos(origin.longitude), 0.0);
-    const matrix = Matrix3d.createRigidFromColumns(zVector!, xVector, AxisOrder.ZXY)!;
+    const deltaRadians = 10 / Constant.earthRadiusWGS84.polar;
+    const northCarto = Cartographic.fromRadians(origin.longitude, origin.latitude + deltaRadians, origin.height);
+    const eastCarto = Cartographic.fromRadians(origin.longitude + deltaRadians, origin.latitude, origin.height);
+    const ecefNorth = northCarto.toEcef();
+    const ecefEast = eastCarto.toEcef();
+    const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast).normalize();
+    const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth).normalize();
+    const matrix = Matrix3d.createRigidFromColumns(xVector!, yVector!, AxisOrder.XYZ)!;
     if (angle !== undefined) {
       const north = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle);
       matrix.multiplyMatrixMatrix(north, matrix);
@@ -317,7 +320,6 @@ export abstract class IModel implements IModelProps {
   public getEcefTransform(): Transform {
     if (undefined === this._ecefLocation)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
-
     if (this._ecefTrans === undefined) {
       this._ecefTrans = this._ecefLocation.getTransform();
       this._ecefTrans.freeze();

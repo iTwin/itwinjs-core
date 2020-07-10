@@ -37,6 +37,17 @@ export interface ValuesDictionary<T> {
 }
 
 /**
+ * A structure for paged responses
+ * @alpha
+ */
+export interface PagedResponse<T> {
+  /** Total number of items */
+  total: number;
+  /** Items for the requested page  */
+  items: T[];
+}
+
+/**
  * Get total number of instances included in the supplied key set. The
  * count is calculated by adding all of the following:
  * - `keys.instanceKeysCount`

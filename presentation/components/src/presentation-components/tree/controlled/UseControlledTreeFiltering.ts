@@ -6,13 +6,13 @@
  * @module Tree
  */
 
-import { isEqual } from "lodash";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { AsyncTasksTracker } from "@bentley/presentation-common";
+import { useEffect, useMemo, useState } from "react";
+import { defer } from "rxjs/internal/observable/defer";
+import { refCount } from "rxjs/internal/operators/refCount";
+import { publish } from "rxjs/internal/operators/publish";
+import { NodePathElement } from "@bentley/presentation-common";
 import {
-  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, PagedTreeNodeLoader, TreeModelSource,
+  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, PagedTreeNodeLoader, scheduleSubscription, SubscriptionScheduler, TreeModelSource,
 } from "@bentley/ui-components";
 import { FilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
@@ -56,83 +56,67 @@ export function useFilteredNodeLoader(
 ) {
   const normalizedFilter = normalizeFilter(filter);
   const dataProvider = normalizeDataProvider(nodeLoader.dataProvider);
-  const lastFilter = useRef(normalizedFilter);
-  if (lastFilter.current !== normalizedFilter) {
-    lastFilter.current = normalizedFilter;
-  }
-  const asyncsTracker = useRef(new AsyncTasksTracker());
-  const [{ inProgress, filteredNodeLoader, matchesCount }, setState] = useReducer(
-    (state: FilterState, newState: FilterState) => ({ ...state, ...newState }),
-    {});
+  const { nodePaths, inProgress } = useNodePaths(dataProvider, normalizedFilter);
 
-  const loadDataProvider = useCallback(async (usedFilter: string) => {
-    if (asyncsTracker.current.pendingAsyncs.size > 0) {
-      // avoid excessive filtering requests while previous request is still in progress
-      return;
+  const { filteredProvider, matchesCount } = useMemo(() => {
+    if (nodePaths !== undefined) {
+      const provider = new FilteredPresentationTreeDataProvider({
+        parentDataProvider: dataProvider,
+        filter: normalizedFilter,
+        paths: nodePaths,
+      });
+
+      return { filteredProvider: provider, matchesCount: provider.countFilteringResults(nodePaths) };
     }
 
-    const filterBeingApplied = createFilterKey(dataProvider, usedFilter);
-    const nodePaths = await using(asyncsTracker.current.trackAsyncTask(), async (_r) => {
-      return dataProvider.getFilteredNodePaths(usedFilter);
-    });
+    return { filteredProvider: undefined, matchesCount: undefined };
+  }, [dataProvider, nodePaths, normalizedFilter]);
 
-    const currFilter = createFilterKey(dataProvider, lastFilter.current);
-    if (!isEqual(currFilter, filterBeingApplied)) {
-      if (currFilter.filter) {
-        // the filter has changed while we were waiting for `getFilteredNodePaths` result - need
-        // to restart the load
-        setState({ inProgress: currFilter });
-      } else {
-        // the filter has been cleared while we were waiting for `getFilteredNodePaths` result - the
-        // state should already be cleared so we can just return
-      }
-      return;
-    }
-
-    const filteredProvider = new FilteredPresentationTreeDataProvider({
-      parentDataProvider: dataProvider,
-      filter: usedFilter,
-      paths: nodePaths,
-    });
-    const modelSource = new TreeModelSource();
-    const pagedTreeNodeLoader = new PagedTreeNodeLoader(filteredProvider, modelSource, FILTERED_DATA_PAGE_SIZE);
-
-    setState({
-      inProgress: undefined,
-      filteredNodeLoader: pagedTreeNodeLoader,
-      matchesCount: filteredProvider.countFilteringResults(nodePaths),
-    });
-  }, [dataProvider]);
-
-  useEffect(() => {
-    if (!normalizedFilter) {
-      if (inProgress || filteredNodeLoader) {
-        setState({ inProgress: undefined, filteredNodeLoader: undefined, matchesCount: undefined });
-      }
-      return;
-    }
-
-    const candidateFilter = createFilterKey(dataProvider, normalizedFilter);
-    const currFilter = getActiveFilterKey(inProgress, filteredNodeLoader);
-    if (!isEqual(currFilter, candidateFilter)) {
-      setState({ inProgress: candidateFilter });
-    }
-  }, [normalizedFilter, dataProvider, inProgress, filteredNodeLoader]);
-
-  useEffect(() => {
-    if (inProgress) {
-      // tslint:disable-next-line:no-floating-promises
-      loadDataProvider(inProgress.filter);
-    }
-  }, [loadDataProvider, inProgress]);
+  const filteredNodeLoader = useMemo(() => {
+    return filteredProvider ? new PagedTreeNodeLoader(filteredProvider, new TreeModelSource(), FILTERED_DATA_PAGE_SIZE) : undefined;
+  }, [filteredProvider]);
 
   return {
     filteredNodeLoader,
-    isFiltering: !!inProgress,
+    isFiltering: inProgress,
     filterApplied: filteredNodeLoader ? filteredNodeLoader.dataProvider.filter : undefined,
     matchesCount,
   };
 }
+
+const useNodePaths = (dataProvider: IPresentationTreeDataProvider, filter: string) => {
+  const scheduler = useMemo(() => new SubscriptionScheduler<NodePathElement[]>(), []);
+
+  const [nodePaths, setNodePaths] = useState<NodePathElement[]>();
+  const [inProgress, setInProgress] = useState(false);
+
+  useEffect(() => {
+    if (!filter) {
+      setNodePaths(undefined);
+      setInProgress(false);
+      return;
+    }
+
+    setInProgress(true);
+    // schedule and subscribe to the observable emitting filteredNodePaths
+    const subscription = defer(async () => dataProvider.getFilteredNodePaths(filter))
+      .pipe(
+        publish(),
+        refCount(),
+        scheduleSubscription(scheduler),
+      )
+      .subscribe({
+        next: (paths) => {
+          setNodePaths(paths);
+          setInProgress(false);
+        },
+      });
+
+    return () => { subscription.unsubscribe(); };
+  }, [dataProvider, filter, scheduler]);
+
+  return { nodePaths, inProgress };
+};
 
 /** @internal */
 export function useNodeHighlightingProps(
@@ -161,28 +145,8 @@ export function useNodeHighlightingProps(
   return nodeHighlightingProps;
 }
 
-interface FilterKey {
-  imodel: IModelConnection;
-  rulesetId: string;
-  filter: string;
-}
-
-interface FilterState {
-  inProgress?: FilterKey;
-  filteredNodeLoader?: AbstractTreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>;
-  matchesCount?: number;
-}
-
 const normalizeFilter = (filter: string | undefined) => (filter ? filter : "");
-const createFilterKey = (provider: IPresentationTreeDataProvider, filter: string | undefined): FilterKey => ({
-  imodel: provider.imodel,
-  rulesetId: provider.rulesetId,
-  filter: normalizeFilter(filter),
-});
-const createFilterKeyFromProvider = (provider: FilteredPresentationTreeDataProvider) => createFilterKey(provider, provider.filter);
-const getActiveFilterKey = (inProgress?: FilterKey, filteredNodeLoader?: AbstractTreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>) => {
-  return (inProgress ? inProgress : filteredNodeLoader ? createFilterKeyFromProvider(filteredNodeLoader.dataProvider) : undefined);
-};
+
 const normalizeDataProvider = (dataProvider: IPresentationTreeDataProvider | FilteredPresentationTreeDataProvider) => {
   if (dataProvider instanceof FilteredPresentationTreeDataProvider) {
     return dataProvider.parentDataProvider;

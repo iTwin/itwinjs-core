@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import produce, { castDraft } from "immer";
 import { StagePanelLocation } from "@bentley/ui-abstract";
-import { UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
-import { addFloatingWidget, addPanelWidget, addTab, createNineZoneState, createWidgetState } from "@bentley/ui-ninezone";
+import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
+import { addFloatingWidget, addPanelWidget, addTab, createNineZoneState, createWidgetState, NineZoneState } from "@bentley/ui-ninezone";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
   ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, expandWidget, findTab, FrontstageDef,
@@ -20,10 +20,11 @@ import {
 } from "../../ui-framework";
 import TestUtils, { UiSettingsStub } from "../TestUtils";
 import { Logger } from "@bentley/bentleyjs-core";
+import { initializePanel, useUpdateNineZoneSize } from "../../ui-framework/widget-panels/Frontstage";
 
-function createSavedNineZoneState() {
+function createSavedNineZoneState(args?: Partial<NineZoneState>) {
   return {
-    ...createNineZoneState(),
+    ...createNineZoneState(args),
     tabs: {},
   };
 }
@@ -151,6 +152,77 @@ describe("useNineZoneDispatch", () => {
       size: 200,
     });
     (frontstageDef.nineZoneState === undefined).should.true;
+  });
+
+  it("should set nineZoneSize when RESIZE is received", () => {
+    const spy = sinon.stub(FrontstageManager, "nineZoneSize").set(() => { });
+    const frontstageDef = new FrontstageDef();
+    frontstageDef.nineZoneState = createNineZoneState();
+    const { result } = renderHook(() => useNineZoneDispatch(frontstageDef));
+    result.current({
+      type: "RESIZE",
+      size: {
+        width: 5,
+        height: 10,
+      },
+    });
+    spy.calledOnceWithExactly(sinon.match({ width: 5, height: 10 }));
+  });
+
+  it("should set vertical (left/right) panel max size from percentage spec", () => {
+    const frontstageDef = new FrontstageDef();
+    const panel = new StagePanelDef();
+    sinon.stub(panel, "maxSizeSpec").get(() => ({ percentage: 50 }));
+    sinon.stub(frontstageDef, "leftPanel").get(() => panel);
+    frontstageDef.nineZoneState = createNineZoneState();
+    const { result } = renderHook(() => useNineZoneDispatch(frontstageDef));
+    result.current({
+      type: "RESIZE",
+      size: {
+        height: 200,
+        width: 500,
+      },
+    });
+    frontstageDef.nineZoneState.panels.left.maxSize.should.eq(250);
+  });
+
+  it("should set horizontal (top/bottom) panel max size from percentage spec", () => {
+    const frontstageDef = new FrontstageDef();
+    const panel = new StagePanelDef();
+    sinon.stub(panel, "maxSizeSpec").get(() => ({ percentage: 50 }));
+    sinon.stub(frontstageDef, "topPanel").get(() => panel);
+    frontstageDef.nineZoneState = createNineZoneState();
+    const { result } = renderHook(() => useNineZoneDispatch(frontstageDef));
+    result.current({
+      type: "RESIZE",
+      size: {
+        height: 200,
+        width: 500,
+      },
+    });
+    frontstageDef.nineZoneState.panels.top.maxSize.should.eq(100);
+  });
+
+  it("should update panel size", () => {
+    const frontstageDef = new FrontstageDef();
+    const panel = new StagePanelDef();
+    sinon.stub(panel, "maxSizeSpec").get(() => 250);
+    sinon.stub(frontstageDef, "leftPanel").get(() => panel);
+
+    let state = createNineZoneState();
+    state = produce(state, (draft) => {
+      draft.panels.left.size = 300;
+    });
+    frontstageDef.nineZoneState = state;
+    const { result } = renderHook(() => useNineZoneDispatch(frontstageDef));
+    result.current({
+      type: "RESIZE",
+      size: {
+        height: 200,
+        width: 500,
+      },
+    });
+    frontstageDef.nineZoneState.panels.left.size!.should.eq(250);
   });
 });
 
@@ -398,6 +470,38 @@ describe("useFrontstageManager", () => {
       (frontstageDef1.nineZoneState === undefined).should.true;
     });
   });
+
+  describe("onWidgetLabelChangedEvent", () => {
+    it("should update tab label", () => {
+      const frontstageDef = new FrontstageDef();
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "w1");
+      state = addTab(state, "w1", "t1");
+      frontstageDef.nineZoneState = state;
+      const widgetDef = new WidgetDef({ id: "t1" });
+      renderHook(() => useFrontstageManager(frontstageDef));
+
+      sinon.stub(widgetDef, "label").get(() => "test");
+      FrontstageManager.onWidgetLabelChangedEvent.emit({
+        widgetDef,
+      });
+
+      frontstageDef.nineZoneState.tabs.t1.label.should.eq("test");
+    });
+
+    it("should not fail if tab doesn't exist", () => {
+      const frontstageDef = new FrontstageDef();
+      frontstageDef.nineZoneState = createNineZoneState();
+      const widgetDef = new WidgetDef({ id: "t1" });
+      renderHook(() => useFrontstageManager(frontstageDef));
+
+      sinon.stub(widgetDef, "label").get(() => "test");
+
+      (() => {
+        FrontstageManager.onWidgetLabelChangedEvent.emit({ widgetDef });
+      }).should.not.throw();
+    });
+  });
 });
 
 describe("useSyncDefinitions", () => {
@@ -475,6 +579,12 @@ describe("useSyncDefinitions", () => {
 });
 
 describe("initializeNineZoneState", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("should initialize widgets", () => {
     const frontstageDef = new FrontstageDef();
     sinon.stub(frontstageDef, "centerLeft").get(() => new ZoneDef());
@@ -502,6 +612,19 @@ describe("initializeNineZoneState", () => {
     const state = initializeNineZoneState(frontstageDef);
     state.widgets.leftStart.activeTabId!.should.eq("w1");
   });
+
+  it("should initialize size", () => {
+    sandbox.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
+    const frontstageDef = new FrontstageDef();
+    const sut = initializeNineZoneState(frontstageDef);
+    sut.size.should.eql({ width: 10, height: 20 });
+  });
+
+  it("should not initialize size", () => {
+    const frontstageDef = new FrontstageDef();
+    const sut = initializeNineZoneState(frontstageDef);
+    sut.size.should.eql({ width: 0, height: 0 });
+  });
 });
 
 describe("addPanelWidgets", () => {
@@ -520,6 +643,28 @@ describe("addPanelWidgets", () => {
     sinon.stub(panelZone, "widgetDefs").get(() => [widgetDef]);
     state = addPanelWidgets(state, frontstageDef, "left");
     state.panels.left.widgets[0].should.eq("leftStart");
+  });
+});
+
+describe("initializePanel", () => {
+  it("should initialize max size", () => {
+    const state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const leftPanel = new StagePanelDef();
+    sinon.stub(frontstageDef, "leftPanel").get(() => leftPanel);
+    sinon.stub(leftPanel, "maxSizeSpec").get(() => 100);
+    const sut = initializePanel(state, frontstageDef, "left");
+    sut.panels.left.maxSize.should.eq(100);
+  });
+
+  it("should initialize min size", () => {
+    const state = createNineZoneState();
+    const frontstageDef = new FrontstageDef();
+    const leftPanel = new StagePanelDef();
+    sinon.stub(frontstageDef, "leftPanel").get(() => leftPanel);
+    sinon.stub(leftPanel, "minSize").get(() => 50);
+    const sut = initializePanel(state, frontstageDef, "left");
+    sut.panels.left.minSize.should.eq(50);
   });
 });
 
@@ -570,12 +715,20 @@ describe("getWidgetId", () => {
     getWidgetId("right", "end").should.eq("rightEnd");
   });
 
-  it("should return 'top'", () => {
+  it("should return 'topStart'", () => {
     getWidgetId("top", "start").should.eq("topStart");
   });
 
-  it("should return 'bottom'", () => {
+  it("should return 'topEnd'", () => {
+    getWidgetId("top", "end").should.eq("topEnd");
+  });
+
+  it("should return 'bottomStart'", () => {
     getWidgetId("bottom", "start").should.eq("bottomStart");
+  });
+
+  it("should return 'bottomEnd'", () => {
+    getWidgetId("bottom", "end").should.eq("bottomEnd");
   });
 });
 
@@ -769,6 +922,46 @@ describe("restoreNineZoneState", () => {
     sut.should.matchSnapshot();
   });
 
+  it("should RESIZE", () => {
+    sandbox.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
+    const frontstageDef = new FrontstageDef();
+    const savedState = {
+      ...createSavedNineZoneState({
+        size: {
+          width: 1,
+          height: 2,
+        },
+      }),
+      tabs: {
+        t1: {
+          id: "t1",
+        },
+      },
+    };
+
+    const sut = restoreNineZoneState(frontstageDef, savedState);
+    sut.size.should.eql({ width: 10, height: 20 });
+  });
+
+  it("should not RESIZE", () => {
+    const frontstageDef = new FrontstageDef();
+    const savedState = {
+      ...createSavedNineZoneState({
+        size: {
+          width: 1,
+          height: 2,
+        },
+      }),
+      tabs: {
+        t1: {
+          id: "t1",
+        },
+      },
+    };
+
+    const sut = restoreNineZoneState(frontstageDef, savedState);
+    sut.size.should.eql({ width: 1, height: 2 });
+  });
 });
 
 describe("packNineZoneState", () => {
@@ -778,5 +971,36 @@ describe("packNineZoneState", () => {
     nineZone = addTab(nineZone, "w1", "t1");
     const sut = packNineZoneState(nineZone);
     sut.should.matchSnapshot();
+  });
+});
+
+describe("useUpdateNineZoneSize", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should update size of nine zone state when new frontstage is activated", () => {
+    const { rerender } = renderHook((props) => useUpdateNineZoneSize(props), { initialProps: new FrontstageDef() });
+
+    const newFrontstageDef = new FrontstageDef();
+    newFrontstageDef.nineZoneState = createNineZoneState();
+
+    sandbox.stub(FrontstageManager, "nineZoneSize").get(() => new Size(10, 20));
+    rerender(newFrontstageDef);
+
+    newFrontstageDef.nineZoneState!.size.should.eql({ width: 10, height: 20 });
+  });
+
+  it("should not update size if FrontstageManager.nineZoneSize is not initialized", () => {
+    const { rerender } = renderHook((props) => useUpdateNineZoneSize(props), { initialProps: new FrontstageDef() });
+
+    const newFrontstageDef = new FrontstageDef();
+    newFrontstageDef.nineZoneState = createNineZoneState({ size: { height: 1, width: 2 } });
+
+    rerender(newFrontstageDef);
+
+    newFrontstageDef.nineZoneState!.size.should.eql({ height: 1, width: 2 });
   });
 });

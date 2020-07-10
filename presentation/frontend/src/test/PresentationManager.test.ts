@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
-
+/* tslint:disable:deprecation */
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
@@ -12,10 +12,11 @@ import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { EventSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import {
-  Content, ContentRequestOptions, ContentUpdateInfo, Descriptor, HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, KeySet,
-  LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PartialHierarchyModification, PartialHierarchyModificationJSON,
-  PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface, PresentationStatus, PresentationUnitSystem,
-  RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, UpdateInfo, VariableValueTypes,
+  Content, ContentRequestOptions, ContentUpdateInfo, Descriptor, DistinctValuesRequestOptions, FieldDescriptor, FieldDescriptorType,
+  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, KeySet, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged,
+  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions, PresentationError, PresentationRpcEvents,
+  PresentationRpcInterface, PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset,
+  RulesetVariable, UpdateInfo, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
@@ -801,7 +802,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup((x) => x.getDistinctValues(prepareOptions(options),
-          moq.deepEquals(descriptor.createStrippedDescriptor().toJSON()),
+          moq.deepEquals(descriptor.createStrippedDescriptor()),
           moq.deepEquals(keyset.toJSON()), fieldName, maximumValueCount))
         .returns(async () => result)
         .verifiable();
@@ -821,6 +822,46 @@ describe("PresentationManager", () => {
       await manager.getDistinctValues(options, createRandomDescriptor(), new KeySet(), "");
       rpcRequestsHandlerMock.verifyAll();
     });
+
+  });
+
+  describe("getPagedDistinctValues", () => {
+
+    it("requests distinct values", async () => {
+      const keys = new KeySet();
+      const descriptor = createRandomDescriptor();
+      const fieldDescriptor: FieldDescriptor = {
+        type: FieldDescriptorType.Name,
+        fieldName: faker.random.word(),
+      };
+      const result = {
+        total: 1,
+        items: [{
+          displayValue: faker.random.word(),
+          groupedRawValues: [faker.random.word(), faker.random.word()],
+        }],
+      };
+      const managerOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        descriptor,
+        keys,
+        fieldDescriptor,
+      };
+      const rpcHandlerOptions = {
+        ...prepareOptions(managerOptions),
+        descriptor: descriptor.createStrippedDescriptor(),
+        keys: keys.toJSON(),
+      };
+      rpcRequestsHandlerMock
+        .setup((x) => x.getPagedDistinctValues(rpcHandlerOptions))
+        .returns(async () => result)
+        .verifiable();
+      const actualResult = await manager.getPagedDistinctValues(managerOptions);
+      rpcRequestsHandlerMock.verifyAll();
+      expect(actualResult).to.deep.eq(result);
+    });
+
   });
 
   describe("getDisplayLabelDefinition", () => {

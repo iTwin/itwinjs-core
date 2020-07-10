@@ -934,6 +934,17 @@ export class Matrix3d implements BeJSONFunctions {
       + this.coffs[3] * this.coffs[4]
       + this.coffs[6] * this.coffs[7];
   }
+  /**
+   * Dot product of an indexed column with a vector given as x,y,z
+   * @param columnIndex index of column.  Must be 0,1,2
+   * @param x x component of vector
+   * @param y y component of vector
+   * @param z z component of vector
+   */
+  public columnDotXYZ(columnIndex: AxisIndex, x: number, y: number, z: number) {
+    return this.coffs[columnIndex] * x + this.coffs[columnIndex + 3] * y + this.coffs[columnIndex + 6] * z;
+  }
+
   /** Return (a copy of) the X row */
   public rowX(result?: Vector3d): Vector3d { return Vector3d.create(this.coffs[0], this.coffs[1], this.coffs[2], result); }
   /** Return (a copy of) the Y row */

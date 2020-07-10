@@ -13,9 +13,21 @@ import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcP
 import { INSTANCE } from "./RpcRegistry";
 import { RpcRequest } from "./RpcRequest";
 import { RpcRequestContext } from "./RpcRequestContext";
+import { RpcRoutingToken } from "./RpcRoutingToken";
 
 /** @public */
-export type RpcConfigurationSupplier = () => { new(): RpcConfiguration };
+export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => { new(): RpcConfiguration };
+
+/** @alpha */
+export interface RpcRoutingMap extends RpcConfigurationSupplier { configurations: Map<number, RpcConfigurationSupplier>; }
+
+/** @alpha */
+export namespace RpcRoutingMap {
+  export function create(): RpcRoutingMap {
+    const configurations = new Map();
+    return Object.assign((routing?: RpcRoutingToken) => configurations.get(routing!.id)(), { configurations });
+  }
+}
 
 /** A RpcConfiguration specifies how calls on an RPC interface will be marshalled, plus other operating parameters.
  * RpcConfiguration is the base class for specific configurations.
@@ -45,7 +57,30 @@ export abstract class RpcConfiguration {
 
   /** Sets the configuration supplier for an RPC interface class. */
   public static assign<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, supplier: RpcConfigurationSupplier): void {
-    definition.prototype.configurationSupplier = supplier;
+    const map = definition.prototype.configurationSupplier as RpcRoutingMap | undefined;
+    if (!map || typeof (map.configurations) === "undefined") {
+      definition.prototype.configurationSupplier = supplier;
+    } else {
+      map.configurations.set(RpcRoutingToken.default.id, supplier);
+    }
+  }
+
+  /** Sets the configuration supplier for an RPC interface class for a given routing. */
+  public static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: { new(): RpcConfiguration }): void {
+    if (!definition.prototype.configurationSupplier) {
+      RpcConfiguration.assign(definition, RpcRoutingMap.create());
+    }
+
+    let map = definition.prototype.configurationSupplier as RpcRoutingMap;
+    if (typeof (map.configurations) === "undefined") {
+      const existing = map as RpcConfigurationSupplier;
+      map = RpcRoutingMap.create();
+      RpcConfiguration.assign(definition, map);
+      map.configurations.set(RpcRoutingToken.default.id, existing);
+    }
+
+    const supplier = () => configuration;
+    map.configurations.set(routing.id, supplier);
   }
 
   /** Obtains the instance of an RPC configuration class. */
@@ -71,19 +106,46 @@ export abstract class RpcConfiguration {
     deserialize: async (_request: SerializedRpcRequest): Promise<ClientRequestContext> => new ClientRequestContext(""),
   };
 
+  /** @internal */
+  public attached: RpcInterfaceDefinition[] = [];
+
   /** The protocol of the configuration. */
   public abstract readonly protocol: RpcProtocol;
 
   /** The RPC interfaces managed by the configuration. */
   public abstract readonly interfaces: () => RpcInterfaceDefinition[];
 
+  /** @alpha */
+  public allowAttachedInterfaces: boolean = true;
+
+  /** @alpha */
+  public get attachedInterfaces(): ReadonlyArray<RpcInterfaceDefinition> { return this.attached; }
+
   /** The target interval (in milliseconds) between connection attempts for pending RPC operation requests. */
   public pendingOperationRetryInterval = 10000;
+
+  /** @alpha */
+  public readonly routing: RpcRoutingToken = RpcRoutingToken.default;
 
   /** The control channel for the configuration.
    * @internal
    */
   public readonly controlChannel = RpcControlChannel.obtain(this);
+
+  /** @alpha */
+  public attach<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void {
+    if (!this.allowAttachedInterfaces) {
+      return;
+    }
+
+    if (this.interfaces().indexOf(definition) !== -1 || this.attached.indexOf(definition) !== -1) {
+      return;
+    }
+
+    this.attached.push(definition);
+    RpcConfiguration.assign(definition, () => this.constructor as any);
+    RpcManager.initializeInterface(definition);
+  }
 
   /** Initializes the RPC interfaces managed by the configuration. */
   public static initializeInterfaces(configuration: RpcConfiguration) {
@@ -93,7 +155,7 @@ export abstract class RpcConfiguration {
 
   /** @internal */
   public static supply(definition: RpcInterface): RpcConfiguration {
-    return RpcConfiguration.obtain(definition.configurationSupplier ? definition.configurationSupplier() : RpcDefaultConfiguration);
+    return RpcConfiguration.obtain(definition.configurationSupplier ? definition.configurationSupplier(definition.routing) : RpcDefaultConfiguration);
   }
 
   /** @internal */

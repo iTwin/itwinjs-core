@@ -4,15 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  ConfigurableUiManager, ContentViewManager, IModelViewportControl as UIFW_IModelViewportControl, IModelViewportControlOptions, ViewSelector,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentViewManager, IModelViewportControl as UIFW_IModelViewportControl, IModelViewportControlOptions, ViewSelector,
   ViewUtilities,
 } from "@bentley/ui-framework";
+// uncomment following to test overriding default view overlay
+// import { ScreenViewport } from "@bentley/imodeljs-frontend";
+// import { MyCustomViewOverlay } from "../frontstages/FrontstageUi2";
 
 /** iModel Viewport Control
  */
 export class IModelViewportControl extends UIFW_IModelViewportControl {
   public static get id() {
     return "TestApp.IModelViewport";
+  }
+
+  constructor(info: ConfigurableCreateInfo, options: IModelViewportControlOptions) {
+    super(info, { ...options, deferNodeInitialization: true });  // force deferNodeInitialization for subclass
   }
 
   /** Get the React component that will be shown when no iModel data is available */
@@ -28,6 +35,12 @@ export class IModelViewportControl extends UIFW_IModelViewportControl {
     else
       return Promise.resolve();
   }
+
+  /* uncomment to test overriding view overlay
+  protected _getViewOverlay = (_viewport: ScreenViewport): React.ReactNode => {
+    return < MyCustomViewOverlay />;
+  }
+  */
 
   public onActivated(): void {
     super.onActivated();

@@ -14,6 +14,9 @@ import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
 import { UiCore } from "../UiCore";
 import { CommonProps } from "../utils/Props";
 import { Omit } from "../utils/typeUtils";
+import { FocusTrap } from "../focustrap/FocusTrap";
+
+// cspell:ignore focustrap
 
 /** Enum for button types. Determines button label, and default button style.
  * @public
@@ -78,6 +81,8 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   movable?: boolean;
   /** Indicates whether the content should be inset. Default: true */
   inset?: boolean;
+  /** Indicates whether the focus should be trapped within the dialog. Default: true */
+  trapFocus?: boolean;
 
   /** Whether the hide the header. Default: false */
   hideHeader?: boolean;
@@ -108,14 +113,14 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   width?: string | number;
   /** Initial height of dialog. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
   height?: string | number;
-  /** Minimum width that the dialog may be resized to. Default: 300 */
-  minWidth?: number;
-  /** Minimum height that the dialog may be resized to. Default: 100 */
-  minHeight?: number;
-  /** Maximum width that the dialog may be resized to. */
-  maxWidth?: number;
-  /** Maximum height that the dialog may be resized to. */
-  maxHeight?: number;
+  /** Minimum width that the dialog may be resized to. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. Default: 300px */
+  minWidth?: string | number;
+  /** Minimum height that the dialog may be resized to. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. Default: 100px */
+  minHeight?: string | number;
+  /** Maximum width that the dialog may be resized to. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
+  maxWidth?: string | number;
+  /** Maximum height that the dialog may be resized to. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
+  maxHeight?: string | number;
 
   /** Whether to show background overlay. Default: true.
    * @note Modeless dialogs require an id and an implementation of onModelessPointerDown.
@@ -168,6 +173,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     movable: false,
     modal: true,
     inset: true,
+    trapFocus: true,
   };
 
   /** @internal */
@@ -189,7 +195,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       opened, title, footer, buttonCluster, onClose, onEscape, onOutsideClick,
       minWidth, minHeight, x, y, width, height, maxHeight, maxWidth,
       backgroundStyle, titleStyle, footerStyle, style, contentStyle, contentClassName,
-      modal, resizable, movable, className, alignment, inset, modelessId, onModelessPointerDown,
+      modal, resizable, movable, className, alignment, inset, trapFocus, modelessId, onModelessPointerDown,
       hideHeader, header, ...props } = this.props;
 
     const containerStyle: React.CSSProperties = {
@@ -222,12 +228,13 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         containerStyle.height = this.state.height;
     }
 
-    containerStyle.minWidth = minWidth + "px";
-    containerStyle.minHeight = minHeight + "px";
-    if (maxWidth)
-      containerStyle.maxWidth = maxWidth + "px";
-    if (maxHeight)
-      containerStyle.maxHeight = maxHeight + "px";
+    const minMaxStyle: React.CSSProperties = {};
+    minMaxStyle.minWidth = (typeof minWidth === "number") ? minWidth + "px" : minWidth;
+    minMaxStyle.minHeight = (typeof minHeight === "number") ? minHeight + "px" : minHeight;
+    if (maxWidth !== undefined)
+      minMaxStyle.maxWidth = (typeof maxWidth === "number") ? maxWidth + "px" : maxWidth;
+    if (maxHeight !== undefined)
+      minMaxStyle.maxHeight = (typeof maxHeight === "number") ? maxHeight + "px" : maxHeight;
 
     const buttons = this.getFooterButtons(this.props);
 
@@ -245,7 +252,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         data-testid="core-dialog-head"
         onPointerDown={this._handleStartMove}>
         <div className={"core-dialog-title"} data-testid="core-dialog-title" style={titleStyle}>{title}</div>
-        <span
+        <button
           className={"core-dialog-close icon icon-close"}
           data-testid="core-dialog-close"
           onClick={onClose}
@@ -267,45 +274,47 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       >
         {opened &&
           <DivWithOutsideClick onOutsideClick={onOutsideClick}>
-            <div
-              className={classnames("core-dialog-container", this.getCSSClassNameFromAlignment(alignment))}
-              style={containerStyle}
-              data-testid="core-dialog-container"
-              onPointerDown={this._handleContainerPointerDown}
-            >
-              <div className={"core-dialog-area"} ref={this._containerRef}>
-                {!hideHeader &&
-                  headerElement
-                }
-                <div className={classnames(
-                  "core-dialog-content",
-                  { "core-dialog-content-no-inset": !inset },
-                  contentClassName)}
-                  style={contentStyle}>
-                  {this.props.children}
-                </div>
-                {footerElement &&
-                  <div className={"core-dialog-footer"} style={footerStyle}>
-                    {footerElement}
+            <FocusTrap active={trapFocus && modal} returnFocusOnDeactivate={true}>
+              <div
+                className={classnames("core-dialog-container", this.getCSSClassNameFromAlignment(alignment))}
+                style={{ ...containerStyle, ...minMaxStyle }}
+                data-testid="core-dialog-container"
+                onPointerDown={this._handleContainerPointerDown}
+              >
+                <div className={"core-dialog-area"} ref={this._containerRef} style={minMaxStyle}>
+                  {!hideHeader &&
+                    headerElement
+                  }
+                  <div className={classnames(
+                    "core-dialog-content",
+                    { "core-dialog-content-no-inset": !inset },
+                    contentClassName)}
+                    style={contentStyle}>
+                    {this.props.children}
                   </div>
-                }
-                <div
-                  className={classnames("core-dialog-drag", "core-dialog-drag-right", { "core-dialog-drag-enabled": resizable })}
-                  data-testid="core-dialog-drag-right"
-                  onPointerDown={this._handleStartResizeRight}
-                />
-                <div
-                  className={classnames("core-dialog-drag", "core-dialog-drag-bottom-mid", { "core-dialog-drag-enabled": resizable })}
-                  data-testid="core-dialog-drag-bottom"
-                  onPointerDown={this._handleStartResizeDown}
-                />
-                <div
-                  className={classnames("core-dialog-drag", "core-dialog-drag-bottom-right", { "core-dialog-drag-enabled": resizable })}
-                  data-testid="core-dialog-drag-bottom-right"
-                  onPointerDown={this._handleStartResizeDownRight}
-                />
+                  {footerElement &&
+                    <div className={"core-dialog-footer"} style={footerStyle}>
+                      {footerElement}
+                    </div>
+                  }
+                  <div
+                    className={classnames("core-dialog-drag", "core-dialog-drag-right", { "core-dialog-drag-enabled": resizable })}
+                    data-testid="core-dialog-drag-right"
+                    onPointerDown={this._handleStartResizeRight}
+                  />
+                  <div
+                    className={classnames("core-dialog-drag", "core-dialog-drag-bottom-mid", { "core-dialog-drag-enabled": resizable })}
+                    data-testid="core-dialog-drag-bottom"
+                    onPointerDown={this._handleStartResizeDown}
+                  />
+                  <div
+                    className={classnames("core-dialog-drag", "core-dialog-drag-bottom-right", { "core-dialog-drag-enabled": resizable })}
+                    data-testid="core-dialog-drag-bottom-right"
+                    onPointerDown={this._handleStartResizeDownRight}
+                  />
+                </div>
               </div>
-            </div>
+            </FocusTrap>
           </DivWithOutsideClick>
         }
       </div>
@@ -480,16 +489,20 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       if (this.state.rightResizing) {
         const pointerX = event.clientX;
         width = pointerX - x;
-        width = Math.max(width, minWidth!);
-        if (maxWidth !== undefined)
+        // istanbul ignore else
+        if (typeof minWidth === "number")
+          width = Math.max(width, minWidth!);
+        if (maxWidth !== undefined && typeof maxWidth === "number")
           width = Math.min(width, maxWidth);
       }
 
       if (this.state.downResizing) {
         const pointerY = event.clientY;
         height = pointerY - y!;
-        height = Math.max(height, minHeight!);
-        if (maxHeight !== undefined)
+        // istanbul ignore else
+        if (typeof minHeight === "number")
+          height = Math.max(height, minHeight!);
+        if (maxHeight !== undefined && typeof maxHeight === "number")
           height = Math.min(height, maxHeight);
       }
 

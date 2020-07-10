@@ -228,6 +228,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
         while (a > 180)
           a -= 360;
         while (a < -180)
+          /* istanbul ignore next */
           a += 360;
         if (a > 90)
           a -= 180;

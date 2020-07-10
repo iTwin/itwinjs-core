@@ -12,7 +12,7 @@ import { IModelHostConfiguration, NativeAppBackend } from "@bentley/imodeljs-bac
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
-
+import * as path from "path";
 // tslint:disable:no-console
 
 async function init() {
@@ -28,6 +28,7 @@ async function init() {
   hostConfig.imodelClient = CloudEnv.cloudEnv.imodelClient;
   hostConfig.concurrentQuery.concurrent = 2;
   hostConfig.concurrentQuery.pollInterval = 5;
+  hostConfig.cacheDir = path.join(__dirname, "out");
   await NativeAppBackend.startup(hostConfig);
 
   Logger.initializeToConsole();

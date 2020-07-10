@@ -63,7 +63,7 @@ export class KeySet {
   // note: all keys are stored as strings because we need ability to find them by value
   private _instanceKeys: Map<string, Set<string>>; // class name => instance ids
   private _nodeKeys: Set<string>;
-  private _guid: GuidString;
+  private _guid!: GuidString;
 
   /**
    * Creates an instance of KeySet.
@@ -72,9 +72,14 @@ export class KeySet {
   constructor(source?: Keys) {
     this._instanceKeys = new Map();
     this._nodeKeys = new Set();
-    this._guid = Guid.createValue();
+    this.recalculateGuid();
     if (source)
       this.add(source);
+  }
+
+  private recalculateGuid() {
+    // empty keyset should have empty guid, otherwise use a random guid value
+    this._guid = this.isEmpty ? Guid.empty : Guid.createValue();
   }
 
   /**
@@ -146,7 +151,7 @@ export class KeySet {
 
     this._instanceKeys = new Map();
     this._nodeKeys = new Set();
-    this._guid = Guid.createValue();
+    this.recalculateGuid();
     return this;
   }
 
@@ -201,7 +206,7 @@ export class KeySet {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     }
     if (this.size !== sizeBefore)
-      this._guid = Guid.createValue();
+      this.recalculateGuid();
     return this;
   }
 
@@ -244,7 +249,7 @@ export class KeySet {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     }
     if (this.size !== sizeBefore)
-      this._guid = Guid.createValue();
+      this.recalculateGuid();
     return this;
   }
 

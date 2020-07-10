@@ -16,14 +16,12 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {
   CustomFormattedNumberParams, IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes,
-  PropertyRecord, PropertyValue, PropertyValueFormat,
+  PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
 import { Icon, IconInput, Input, InputProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
-import { StandardTypeNames } from "../common/StandardTypeNames";
-import { StandardEditorNames } from "./StandardEditorNames";
 
 /** @internal */
 interface CustomNumberEditorState {
@@ -253,7 +251,6 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     const className = classnames("components-cell-editor", "components-customnumber-editor", this.props.className);
 
     const inputProps: InputProps = {
-      type: "text",
       className,
       style: this.props.style ? this.props.style : minWidthStyle,
       readOnly,

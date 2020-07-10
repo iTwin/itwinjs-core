@@ -45,7 +45,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
   /** @internal */
   public componentDidUpdate(oldProps: ShowHideDialogProps<T>) {
     if (this.props.initialHidden && oldProps.initialHidden !== this.props.initialHidden) {
-      this.setState((_, props) => ({ hiddenColumns: props.initialHidden || [] }));
+      this.setState((_, props) => ({ hiddenColumns: props.initialHidden || /* istanbul ignore next */[] }));
     }
   }
 

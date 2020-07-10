@@ -27,9 +27,9 @@
       transition:             border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
 
       &:focus {
-        border-color:       $buic-inputs-border !important;
+        border-color:       $buic-foreground-focus-border !important;
         outline:            0px !important;
-        box-shadow:         $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, $buic-inputs-focus-boxshadow-gradient2 0px 0px 0px 2px !important;
+        box-shadow:         $uicore-inputs-focus-gradient !important;
       }
 
     }

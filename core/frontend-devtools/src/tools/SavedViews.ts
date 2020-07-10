@@ -11,18 +11,7 @@ import { CodeProps, ViewStateProps } from "@bentley/imodeljs-common";
 import {
   EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, SheetViewState, SpatialViewState, Tool, ViewState,
 } from "@bentley/imodeljs-frontend";
-
-function copyStringToClipboard(str: string): void {
-  const el = document.createElement("textarea");
-  el.value = str;
-  el.setAttribute("readonly", "");
-  el.style.position = "absolute";
-  el.style.left = "-9999px";
-  document.body.appendChild(el);
-  el.select();
-  document.execCommand("copy");
-  document.body.removeChild(el);
-}
+import { copyStringToClipboard } from "../ClipboardUtilities";
 
 /** Serialize a ViewState to JSON. The returned JSON can later be passed to [deserializeViewState] to reinstantiate the ViewState.
  * @beta

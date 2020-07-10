@@ -67,6 +67,9 @@ describe("calculateProximityScale", () => {
 
     proximityScale = calculateProximityScale(100, 200);
     expect(proximityScale).to.eq(0.50);
+
+    proximityScale = calculateProximityScale(100, 60);
+    expect(proximityScale).to.eq(0.0);
   });
 });
 

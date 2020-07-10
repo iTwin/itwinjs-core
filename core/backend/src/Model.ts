@@ -27,6 +27,8 @@ import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 export class Model extends Entity implements ModelProps {
   /** @internal */
   public static get className(): string { return "Model"; }
+  /** @internal */
+  public static get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
   public readonly modeledElement!: RelatedElement;
   public readonly name: string;
   public readonly parentModel!: Id64String;

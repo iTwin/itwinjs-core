@@ -5,12 +5,11 @@
 /** @packageDocumentation
  * @module Helpers
  */
-import * as path from "path";
 import * as rimraf from "rimraf";
 // common includes
 import { Guid } from "@bentley/bentleyjs-core";
 // backend includes
-import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@bentley/imodeljs-backend";
 // frontend includes
 import {
   IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
@@ -103,14 +102,13 @@ export const terminate = async (frontendApp = IModelApp) => {
     return;
 
   // store directory that needs to be cleaned-up
-  const tempDirectory = (PresentationBackend.initProps && PresentationBackend.initProps.id)
-    ? path.join(KnownLocations.tmpdir, "ecpresentation", PresentationBackend.initProps.id) : undefined;
+  const cacheDirectory = PresentationBackend.initProps?.cacheDirectory;
 
   // terminate backend
   PresentationBackend.terminate();
   await IModelHost.shutdown();
-  if (tempDirectory)
-    rimraf.sync(tempDirectory);
+  if (cacheDirectory)
+    rimraf.sync(cacheDirectory);
 
   // terminate frontend
   PresentationFrontend.terminate();

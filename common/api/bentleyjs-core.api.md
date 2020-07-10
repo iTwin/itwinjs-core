@@ -8,6 +8,9 @@
 export class AbandonedError extends Error {
 }
 
+// @public
+export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | undefined;
+
 // @beta
 export function assert(condition: boolean, msg?: string): asserts condition;
 
@@ -269,6 +272,9 @@ export class Config {
 }
 
 // @public
+export type Constructor<T> = new (...args: any[]) => T;
+
+// @public
 export enum DbOpcode {
     Delete = 9,
     Insert = 18,
@@ -336,6 +342,7 @@ export enum DbResult {
     BE_SQLITE_ERROR_SchemaTooNew = 268435466,
     BE_SQLITE_ERROR_SchemaTooOld = 285212682,
     BE_SQLITE_ERROR_SchemaUpgradeFailed = 318767114,
+    BE_SQLITE_ERROR_SchemaUpgradeRecommended = 369098762,
     BE_SQLITE_ERROR_SchemaUpgradeRequired = 251658250,
     BE_SQLITE_FORMAT = 24,
     BE_SQLITE_FULL = 13,
@@ -960,6 +967,9 @@ export const isElectronRenderer: boolean;
 
 // @public
 export function isIDisposable(obj: unknown): obj is IDisposable;
+
+// @public
+export function isInstanceOf<T>(obj: any, constructor: Constructor<T>): boolean;
 
 // @public
 export namespace JsonUtils {

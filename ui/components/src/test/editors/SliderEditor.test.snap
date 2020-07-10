@@ -5,6 +5,7 @@ exports[`<SliderEditor /> renders correctly 1`] = `
   className="components-cell-editor components-slider-editor"
 >
   <PopupButton
+    focusTarget=".core-slider-handle"
     label={0}
     onClose={[Function]}
     onEnter={[Function]}

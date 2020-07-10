@@ -30,6 +30,10 @@ export interface TerrainProps {
   heightOrigin?: number;
   /** Determines how/if the heightOrigin is applied to the terrain height. Default value: Geodetic */
   heightOriginMode?: TerrainHeightOriginMode;
+  /** If true, terrain will be treated as non-locatable - i.e., tools will not interact with it. This is useful when transparent terrain is displayed to allow
+   * the user to interact with elements behind the terrain.
+   */
+  nonLocatable?: boolean;
 }
 
 /** Correction modes for terrain height
@@ -59,10 +63,13 @@ export class TerrainSettings {
   public readonly heightOrigin: number;
   /** Determines how/if the heightOrigin is applied to the terrain height. Default value: Geodetic */
   public readonly heightOriginMode: TerrainHeightOriginMode;
+  /** Controls whether tools will interact with terrain. If false, tools will be able to interact with elements underneath the terrain. This is useful when the terrain is transparent. */
+  public readonly locatable: boolean;
 
-  constructor(providerName: TerrainProviderName = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Geodetic) {
+  constructor(providerName: TerrainProviderName = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Geodetic, locatable = true) {
     this.providerName = providerName;
     this.exaggeration = Math.min(100, Math.max(0.1, exaggeration));
+    this.locatable = locatable;
     this.applyLighting = applyLighting;
     this.heightOrigin = heightOrigin;
     switch (heightOriginMode) {
@@ -81,21 +88,27 @@ export class TerrainSettings {
       return new TerrainSettings();
 
     const providerName = "CesiumWorldTerrain";    // This is only terrain provider currently supported.
-    return new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode);
+    return new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode, true !== json.nonLocatable);
   }
 
   public toJSON(): TerrainProps {
-    return {
-      providerName: this.providerName !== "CesiumWorldTerrain" ? this.providerName : undefined,
-      exaggeration: 1 !== this.exaggeration ? this.exaggeration : undefined,
-      applyLighting: this.applyLighting ? true : undefined,
-      heightOrigin: 0 !== this.heightOrigin ? this.heightOrigin : undefined,
-      heightOriginMode: this.heightOriginMode,
-    };
+    const props: TerrainProps = { heightOriginMode: this.heightOriginMode };
+    if ("CesiumWorldTerrain" !== this.providerName)
+      props.providerName = this.providerName;
+    if (1 !== this.exaggeration)
+      props.exaggeration = this.exaggeration;
+    if (!this.locatable)
+      props.nonLocatable = true;
+    if (this.applyLighting)
+      props.applyLighting = true;
+    if (0 !== this.heightOrigin)
+      props.heightOrigin = this.heightOrigin;
+
+    return props;
   }
 
   public equals(other: TerrainSettings): boolean {
-    return this.providerName === other.providerName && this.exaggeration === other.exaggeration && this.applyLighting === other.applyLighting && this.heightOrigin === other.heightOrigin && this.heightOriginMode === other.heightOriginMode;
+    return this.providerName === other.providerName && this.exaggeration === other.exaggeration && this.applyLighting === other.applyLighting && this.heightOrigin === other.heightOrigin && this.heightOriginMode === other.heightOriginMode && this.locatable === other.locatable;
   }
 
   /** Returns true if these settings are equivalent to the supplied JSON settings. */
@@ -112,12 +125,14 @@ export class TerrainSettings {
       return this;
 
     const props = {
-      providerName: undefined !== changedProps.providerName ? changedProps.providerName : this.providerName,
-      exaggeration: undefined !== changedProps.exaggeration ? changedProps.exaggeration : this.exaggeration,
-      applyLighting: undefined !== changedProps.applyLighting ? changedProps.applyLighting : this.applyLighting,
-      heightOrigin: undefined !== changedProps.heightOrigin ? changedProps.heightOrigin : this.heightOrigin,
-      heightOriginMode: undefined !== changedProps.heightOriginMode ? changedProps.heightOriginMode : this.heightOriginMode,
+      providerName: changedProps.providerName ?? this.providerName,
+      exaggeration: changedProps.exaggeration ?? this.exaggeration,
+      nonLocatable: changedProps.nonLocatable ?? !this.locatable,
+      applyLighting: changedProps.applyLighting ?? this.applyLighting,
+      heightOrigin: changedProps.heightOrigin ?? this.heightOrigin,
+      heightOriginMode: changedProps.heightOriginMode ?? this.heightOriginMode,
     };
+
     return TerrainSettings.fromJSON(props);
   }
 }

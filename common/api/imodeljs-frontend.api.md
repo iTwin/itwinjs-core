@@ -45,6 +45,7 @@ import { CodeSpec } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { ColorDefProps } from '@bentley/imodeljs-common';
 import { ColorIndex } from '@bentley/imodeljs-common';
+import { Constructor } from '@bentley/bentleyjs-core';
 import { ContentIdProvider } from '@bentley/imodeljs-common';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
@@ -56,8 +57,10 @@ import { DialogPropertyItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { Dictionary } from '@bentley/bentleyjs-core';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
+import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
+import { DisplayStyleSettingsProps } from '@bentley/imodeljs-common';
 import { DownloadBriefcaseOptions } from '@bentley/imodeljs-common';
 import { EasingFunction } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
@@ -89,6 +92,8 @@ import { GeometricModel2dProps } from '@bentley/imodeljs-common';
 import { GeometricModel3dProps } from '@bentley/imodeljs-common';
 import { GeometricModelProps } from '@bentley/imodeljs-common';
 import { GeometryClass } from '@bentley/imodeljs-common';
+import { GeometryContainmentRequestProps } from '@bentley/imodeljs-common';
+import { GeometryContainmentResponseProps } from '@bentley/imodeljs-common';
 import { GeometryQuery } from '@bentley/geometry-core';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
@@ -1994,6 +1999,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
     set lights(lights: LightSettings);
     // @internal
     loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
+    // @internal (undocumented)
+    protected onOverridesApplied(overrides: DisplayStyle3dSettingsProps): void;
     setSunTime(time: number): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
@@ -2048,6 +2055,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get monochromeColor(): ColorDef;
     set monochromeColor(val: ColorDef);
     get name(): string;
+    // @internal (undocumented)
+    protected onOverridesApplied(overrides: DisplayStyleSettingsProps): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     get scheduleScript(): RenderScheduleState.Script | undefined;
@@ -3152,6 +3161,8 @@ export abstract class GltfReader {
     // (undocumented)
     protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined;
     // (undocumented)
+    protected readonly _extensions: any;
+    // (undocumented)
     protected extractReturnToCenter(extensions: any): number[] | undefined;
     // (undocumented)
     protected findTextureMapping(textureId: string): TextureMapping | undefined;
@@ -3875,6 +3886,8 @@ export abstract class IModelConnection extends IModel {
     fontMap?: FontMap;
     // @internal
     readonly geoServices: GeoServices;
+    // @beta
+    getGeometryContainment(requestProps: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // @beta
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
@@ -4609,9 +4622,7 @@ export abstract class MapTilingScheme {
     cartographicToFraction(latitudeRadians: number, longitudeRadians: number, result: Point2d): Point2d;
     cartographicToTileXY(carto: Cartographic, level: number, result?: Point2d): Point2d;
     // (undocumented)
-    computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection): Transform;
-    // (undocumented)
-    ecefToPixelFraction(point: Point3d): Point3d;
+    computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection, applyTerrain: boolean): Transform;
     fractionToCartographic(xFraction: number, yFraction: number, result: Cartographic, height?: number): Cartographic;
     getNumberOfXTilesAtLevel(level: number): number;
     getNumberOfYTilesAtLevel(level: number): number;
@@ -6469,6 +6480,8 @@ export interface RenderPlan {
     // (undocumented)
     readonly lights?: LightSettings;
     // (undocumented)
+    readonly locatableTerrain: boolean;
+    // (undocumented)
     readonly monochromeMode: MonochromeMode;
     // (undocumented)
     readonly monoColor: ColorDef;
@@ -7786,6 +7799,7 @@ export class Storage {
     readonly id: string;
     get isOpen(): boolean;
     removeAll(): Promise<void>;
+    removeData(key: string): Promise<void>;
     setData(key: string, value: StorageValue): Promise<void>;
 }
 
@@ -8040,6 +8054,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     logRealityTiles: boolean;
     // (undocumented)
     modelToView(modelPt: XYZ, result?: Point3d): Point3d;
+    // (undocumented)
+    nonLocatableTerrain: boolean;
     // (undocumented)
     onBatchDisposed(batch: Batch): void;
     // (undocumented)
@@ -8385,6 +8401,8 @@ export abstract class TileAdmin {
     addLoadListener(callback: (imodel: IModelConnection) => void): () => void;
     // @internal
     abstract addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void;
+    // @internal (undocumented)
+    abstract get alwaysRequestEdges(): boolean;
     // @internal
     abstract clearTilesForViewport(vp: Viewport): void;
     // @internal
@@ -8471,6 +8489,7 @@ export abstract class TileAdmin {
 // @alpha (undocumented)
 export namespace TileAdmin {
     export interface Props {
+        alwaysRequestEdges?: boolean;
         // @internal
         cancelBackendTileRequests?: boolean;
         contextPreloadParentDepth?: number;
@@ -8543,6 +8562,7 @@ export interface TileContent {
 
 // @beta
 export interface TiledGraphicsProvider {
+    addToScene?: (context: SceneContext) => void;
     forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
 }
 
@@ -9259,6 +9279,9 @@ export class TraversalSelectionContext {
     // (undocumented)
     selectOrQueue(tile: RealityTile, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
 }
+
+// @public
+export function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined>;
 
 // @beta
 export class TwoWayViewportSync {
@@ -10173,6 +10196,9 @@ export abstract class Viewport implements IDisposable {
     protected constructor(target: RenderTarget);
     // @internal (undocumented)
     protected addDecorations(_decorations: Decorations): void;
+    addFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
+    // @internal (undocumented)
+    addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void;
     // @internal
     addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
     // @beta
@@ -10231,19 +10257,25 @@ export abstract class Viewport implements IDisposable {
     set displayStyle(style: DisplayStyleState);
     // (undocumented)
     dispose(): void;
+    dropFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean;
     dropSubCategoryOverride(id: Id64String): void;
     // @beta
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     get emphasisSettings(): Hilite.Settings;
     set emphasisSettings(settings: Hilite.Settings);
+    // @deprecated
     get featureOverrideProvider(): FeatureOverrideProvider | undefined;
     set featureOverrideProvider(provider: FeatureOverrideProvider | undefined);
+    findFeatureOverrideProvider(predicate: (provider: FeatureOverrideProvider) => boolean): FeatureOverrideProvider | undefined;
+    findFeatureOverrideProviderOfType<T>(type: Constructor<T>): T | undefined;
     // @internal
     flashDuration: number;
     // @internal
     flashIntensity: number;
     // @internal
     flashUpdateTime?: BeTimePoint;
+    // @alpha (undocumented)
+    forEachTiledGraphicsProvider(func: (provider: TiledGraphicsProvider) => void): void;
     // @internal (undocumented)
     protected forEachTiledGraphicsProviderTree(func: (ref: TileTreeReference) => void): void;
     // @internal (undocumented)
@@ -10341,6 +10373,8 @@ export abstract class Viewport implements IDisposable {
     // @beta
     get outsideClipColor(): ColorDef | undefined;
     set outsideClipColor(color: ColorDef | undefined);
+    // @beta
+    overrideDisplayStyle(overrides: DisplayStyleSettingsProps): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @beta
     get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides;

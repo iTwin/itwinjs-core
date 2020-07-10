@@ -5,11 +5,65 @@
 import * as React from "react";
 import {
   BasicNavigationWidget, BasicToolWidget, ContentGroup, CoreTools,
-  Frontstage, FrontstageProps, FrontstageProvider, IModelViewportControl, StagePanel, StagePanelState, UiFramework, Widget, WidgetState, Zone,
+  Frontstage, FrontstageProps, FrontstageProvider, IModelViewportControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher, ToolbarHelper, UiFramework, Widget, WidgetState, Zone,
 } from "@bentley/ui-framework";
-import { StageUsage } from "@bentley/ui-abstract";
+import { CommonToolbarItem, StageUsage } from "@bentley/ui-abstract";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { AppTools } from "../../tools/ToolSpecifications";
+import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
+
+export function MyCustomViewOverlay() {
+  const [syncIdsOfInterest] = React.useState([SampleAppUiActionId.setTestProperty]);
+  const [showOverlay, setShowOverlay] = React.useState(SampleAppIModelApp.getTestProperty() !== "HIDE");
+
+  React.useEffect(() => {
+    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+      if (0 === syncIdsOfInterest.length)
+        return;
+
+      // istanbul ignore else
+      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
+        const show = SampleAppIModelApp.getTestProperty() !== "HIDE";
+        if (show !== showOverlay)
+          setShowOverlay(show);
+      }
+    };
+
+    // Note: that items with conditions have condition run when loaded into the items manager
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    return () => {
+      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
+    };
+  }, [setShowOverlay, showOverlay, syncIdsOfInterest]);
+
+  return showOverlay ?
+    <div className="uifw-view-overlay">
+      <div className="my-custom-control" style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100%",
+        backgroundColor: "white",
+      }}>
+        <div>Hello World</div>
+        <div>(turn off using Hide/Show items tool in horizontal toolbar at top-left)</div>
+      </div>
+    </div> : null;
+}
 
 export class FrontstageUi2 extends FrontstageProvider {
+  private _supplyViewOverlay = (viewport: ScreenViewport) => {
+    if (viewport.view) {
+      return <MyCustomViewOverlay />;
+    }
+    return null;
+  }
+
+  public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
+    ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),
+    ToolbarHelper.createToolbarItemFromItemDef(135, AppTools.toggleHideShowItemsCommand, { groupPriority: 30 }),
+  ];
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
@@ -18,7 +72,7 @@ export class FrontstageUi2 extends FrontstageProvider {
           {
             id: "primaryContent",
             classId: IModelViewportControl.id,
-            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
+            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection, supplyViewOverlay: this._supplyViewOverlay },
           },
         ],
       },
@@ -35,36 +89,40 @@ export class FrontstageUi2 extends FrontstageProvider {
         usage={StageUsage.General}
         applicationData={{ key: "value" }}
         contentManipulationTools={
-          <Zone
-            widgets={[
-              <Widget isFreeform={true} element={<BasicToolWidget />} />,
-            ]}
+          < Zone
+            widgets={
+              [
+                <Widget isFreeform={true} element={<BasicToolWidget additionalHorizontalItems={this.additionalHorizontalToolbarItems} />} />,
+              ]}
           />
         }
         viewNavigationTools={
-          <Zone
-            widgets={[
-              <Widget isFreeform={true} element={<BasicNavigationWidget />} />,
-            ]}
+          < Zone
+            widgets={
+              [
+                <Widget isFreeform={true} element={<BasicNavigationWidget />} />,
+              ]}
           />
         }
         toolSettings={
-          <Zone
-            widgets={[
-              <Widget isToolSettings={true} />,
-            ]}
+          < Zone
+            widgets={
+              [
+                <Widget isToolSettings={true} />,
+              ]}
           />
         }
         statusBar={
-          <Zone
-            widgets={[
-              <Widget isStatusBar={true} classId="SmallStatusBar" />,
-            ]}
+          < Zone
+            widgets={
+              [
+                <Widget isStatusBar={true} classId="SmallStatusBar" />,
+              ]}
           />
         }
 
         leftPanel={
-          <StagePanel
+          < StagePanel
             size={300}
             defaultState={StagePanelState.Minimized}
             panelZones={{
@@ -91,7 +149,7 @@ export class FrontstageUi2 extends FrontstageProvider {
         }
 
         topPanel={
-          <StagePanel
+          < StagePanel
             size={90}
             defaultState={StagePanelState.Minimized}
             panelZones={{
@@ -112,7 +170,7 @@ export class FrontstageUi2 extends FrontstageProvider {
         }
 
         rightPanel={
-          <StagePanel
+          < StagePanel
             defaultState={StagePanelState.Open}
             panelZones={{
               start: {
@@ -138,7 +196,7 @@ export class FrontstageUi2 extends FrontstageProvider {
         }
 
         bottomPanel={
-          <StagePanel
+          < StagePanel
             size={180}
             defaultState={StagePanelState.Minimized}
             panelZones={{

@@ -8,6 +8,16 @@ exports[`StagePanel SplitterPaneTarget should render 1`] = `
 
 exports[`StagePanel should not render w/o runtime props 1`] = `""`;
 
+exports[`StagePanel should pass down maxSize number property 1`] = `
+<FrameworkStagePanel
+  changeHandler={[Function]}
+  maxSize={200}
+  panelState={2}
+  renderPane={[Function]}
+  resizable={true}
+/>
+`;
+
 exports[`StagePanel should render collapsed pane 1`] = `
 <div
   key="wd-0"

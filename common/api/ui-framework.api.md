@@ -988,6 +988,10 @@ export type ContentCallback = (content: ContentProps) => void;
 // @public
 export class ContentControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    protected getKeyedReactNode(): React.ReactNode;
+    // (undocumented)
+    protected getReactNode(): React.ReactNode;
     getType(): ConfigurableUiControlType;
     get isViewport(): boolean;
     get navigationAidControl(): string;
@@ -998,6 +1002,8 @@ export class ContentControl extends ConfigurableUiControl {
     set reactElement(r: React.ReactNode);
     get reactNode(): React.ReactNode;
     set reactNode(r: React.ReactNode);
+    // (undocumented)
+    protected _reactNode: React.ReactNode;
     get viewport(): ScreenViewport | undefined;
 }
 
@@ -1164,6 +1170,8 @@ export class CoreTools {
     static get measureToolGroup(): GroupItemDef;
     // (undocumented)
     static get panViewCommand(): ToolItemDef;
+    // (undocumented)
+    static get restoreFrontstageLayoutCommandItemDef(): ToolItemDef;
     // (undocumented)
     static get rotateViewCommand(): ToolItemDef;
     // (undocumented)
@@ -2239,6 +2247,9 @@ export class FrontstageManager {
     static get modalFrontstageCount(): number;
     static get nestedFrontstageCount(): number;
     static get NineZoneManager(): NineZoneManager;
+    // @internal (undocumented)
+    static get nineZoneSize(): Size | undefined;
+    static set nineZoneSize(size: Size | undefined);
     static readonly onContentControlActivatedEvent: ContentControlActivatedEvent;
     static readonly onContentLayoutActivatedEvent: ContentLayoutActivatedEvent;
     static readonly onFrontstageActivatedEvent: FrontstageActivatedEvent;
@@ -2261,6 +2272,8 @@ export class FrontstageManager {
     static readonly onToolPanelOpenedEvent: UiEvent<void>;
     // @internal (undocumented)
     static readonly onWidgetExpandEvent: UiEvent<WidgetEventArgs>;
+    // @internal (undocumented)
+    static readonly onWidgetLabelChangedEvent: UiEvent<WidgetChangedEventArgs>;
     // @internal (undocumented)
     static readonly onWidgetShowEvent: UiEvent<WidgetEventArgs>;
     static readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
@@ -2709,7 +2722,7 @@ export interface IModelUserInfo {
 
 // @beta
 export class IModelViewportControl extends ViewportContentControl {
-    constructor(info: ConfigurableCreateInfo, options: IModelViewportControlOptions);
+    constructor(info: ConfigurableCreateInfo, _options: IModelViewportControlOptions);
     // (undocumented)
     protected _alwaysUseSuppliedViewState: boolean;
     // (undocumented)
@@ -2718,12 +2731,18 @@ export class IModelViewportControl extends ViewportContentControl {
     protected getImodelViewportReactElement(iModelConnection: IModelConnection, viewState: ViewStateProp): React.ReactNode;
     protected getNoContentReactElement(_options: IModelViewportControlOptions): React.ReactNode;
     getReactElementForViewSelectorChange(iModelConnection: IModelConnection, _unusedViewDefinitionId: Id64String, viewState: ViewState, _name: string): React.ReactNode;
+    // (undocumented)
+    protected getReactNode(): React.ReactNode;
     protected _getViewOverlay: (viewport: ScreenViewport) => React.ReactNode;
     // (undocumented)
     static get id(): string;
     // (undocumented)
     protected _iModelConnection: IModelConnection | undefined;
+    // (undocumented)
+    protected initializeReactNode(): void;
     get navigationAidControl(): string;
+    // (undocumented)
+    protected _options: IModelViewportControlOptions;
     // (undocumented)
     protected _viewState: ViewStateProp | undefined;
 }
@@ -2732,8 +2751,10 @@ export class IModelViewportControl extends ViewportContentControl {
 export interface IModelViewportControlOptions {
     alwaysUseSuppliedViewState?: boolean;
     bgColor?: string;
+    deferNodeInitialization?: boolean;
     disableDefaultViewOverlay?: boolean;
     iModelConnection?: IModelConnection | (() => IModelConnection);
+    supplyViewOverlay?: (_viewport: ScreenViewport) => React.ReactNode;
     viewState?: ViewStateProp;
 }
 
@@ -2749,6 +2770,9 @@ export class Indicator extends React.Component<IndicatorProps, any> {
 
 // @internal (undocumented)
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState;
+
+// @internal (undocumented)
+export function initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panel: PanelSide): NineZoneState;
 
 // @alpha (undocumented)
 export class InputEditorCommitHandler {
@@ -3979,6 +4003,22 @@ export class ReducerRegistry {
 // @beta
 export const ReducerRegistryInstance: ReducerRegistry;
 
+// @alpha
+export class RestoreFrontstageLayoutTool extends Tool {
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(frontstageId?: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @internal
 export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedNineZoneState): NineZoneState;
 
@@ -4329,6 +4369,98 @@ export const setPanelSize: <Base extends {
 
 // @internal (undocumented)
 export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus;
+
+// @internal (undocumented)
+export const setWidgetLabel: <Base extends {
+    readonly draggedTab: {
+        readonly tabId: string;
+        readonly position: {
+            readonly x: number;
+            readonly y: number;
+        };
+    } | undefined;
+    readonly floatingWidgets: {
+        readonly byId: {
+            readonly [x: string]: {
+                readonly bounds: {
+                    readonly left: number;
+                    readonly top: number;
+                    readonly right: number;
+                    readonly bottom: number;
+                };
+                readonly id: string;
+            };
+        };
+        readonly allIds: readonly string[];
+    };
+    readonly panels: {
+        readonly bottom: {
+            readonly span: boolean;
+            readonly side: import("@bentley/ui-ninezone").HorizontalPanelSide;
+            readonly collapseOffset: number;
+            readonly collapsed: boolean;
+            readonly maxSize: number;
+            readonly minSize: number;
+            readonly pinned: boolean;
+            readonly size: number | undefined;
+            readonly widgets: readonly string[];
+        };
+        readonly left: {
+            readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
+            readonly collapseOffset: number;
+            readonly collapsed: boolean;
+            readonly maxSize: number;
+            readonly minSize: number;
+            readonly pinned: boolean;
+            readonly size: number | undefined;
+            readonly widgets: readonly string[];
+        };
+        readonly right: {
+            readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
+            readonly collapseOffset: number;
+            readonly collapsed: boolean;
+            readonly maxSize: number;
+            readonly minSize: number;
+            readonly pinned: boolean;
+            readonly size: number | undefined;
+            readonly widgets: readonly string[];
+        };
+        readonly top: {
+            readonly span: boolean;
+            readonly side: import("@bentley/ui-ninezone").HorizontalPanelSide;
+            readonly collapseOffset: number;
+            readonly collapsed: boolean;
+            readonly maxSize: number;
+            readonly minSize: number;
+            readonly pinned: boolean;
+            readonly size: number | undefined;
+            readonly widgets: readonly string[];
+        };
+    };
+    readonly tabs: {
+        readonly [x: string]: {
+            readonly id: string;
+            readonly label: string;
+        };
+    };
+    readonly toolSettings: {
+        readonly type: "docked";
+    } | {
+        readonly type: "widget";
+    };
+    readonly widgets: {
+        readonly [x: string]: {
+            readonly activeTabId: string | undefined;
+            readonly id: string;
+            readonly minimized: boolean;
+            readonly tabs: readonly string[];
+        };
+    };
+    readonly size: {
+        readonly width: number;
+        readonly height: number;
+    };
+}>(base: Base, id: string, label: string) => Base;
 
 // @internal (undocumented)
 export const setWidgetState: <Base extends {
@@ -4725,6 +4857,12 @@ export class StagePanelDef extends WidgetHost {
     // @internal (undocumented)
     initializePanelState(panelState: StagePanelState): void;
     get location(): StagePanelLocation_2;
+    // @internal (undocumented)
+    get maxSizeSpec(): number | {
+        percentage: number;
+    } | undefined;
+    // @internal (undocumented)
+    get minSize(): number | undefined;
     get panelState(): StagePanelState;
     set panelState(panelState: StagePanelState);
     // @internal
@@ -4768,12 +4906,17 @@ export enum StagePanelLocation {
 }
 
 // @beta
+export type StagePanelMaxSizeSpec = number | {
+    percentage: number;
+};
+
+// @beta
 export interface StagePanelProps {
     allowedZones?: ZoneLocation[];
     applicationData?: any;
     defaultState?: StagePanelState;
     header?: React.ReactNode;
-    maxSize?: number;
+    maxSize?: StagePanelMaxSizeSpec;
     minSize?: number;
     panelZones?: StagePanelZonesProps;
     resizable: boolean;
@@ -5866,9 +6009,12 @@ export function useUiSettingsContext(): UiSettings;
 // @internal (undocumented)
 export function useUiVisibility(): boolean;
 
+// @internal
+export function useUpdateNineZoneSize(frontstageDef: FrontstageDef): void;
+
 // @alpha
 export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
-    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | AbstractTreeNodeLoaderWithProvider<import("@bentley/presentation-components/lib/presentation-components/tree/FilteredDataProvider").FilteredPresentationTreeDataProvider>;
+    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | import("@bentley/ui-components").PagedTreeNodeLoader<import("@bentley/presentation-components/lib/presentation-components/tree/FilteredDataProvider").FilteredPresentationTreeDataProvider>;
     isFiltering: boolean;
     nodeHighlightingProps: import("@bentley/ui-components").HighlightableTreeProps | undefined;
 };
@@ -6153,6 +6299,12 @@ export class Widget extends React.Component<WidgetProps> {
 
 // @public
 export const WIDGET_OPACITY_DEFAULT = 0.9;
+
+// @internal (undocumented)
+export interface WidgetChangedEventArgs {
+    // (undocumented)
+    widgetDef: WidgetDef;
+}
 
 // @public
 export interface WidgetChangeHandler {

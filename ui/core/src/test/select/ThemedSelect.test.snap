@@ -473,3 +473,58 @@ exports[`<ThemedSelect /> renders with fixed menu correctly 1`] = `
   />
 </div>
 `;
+
+exports[`<ThemedSelect /> renders with no options correctly 1`] = `
+<div
+  className="uicore-reactSelectTop"
+>
+  <StateManager
+    classNamePrefix="react-select"
+    components={
+      Object {
+        "Menu": [Function],
+      }
+    }
+    defaultInputValue=""
+    defaultMenuIsOpen={false}
+    defaultValue={null}
+    menuPortalTarget={
+      <div
+        id="portal"
+      />
+    }
+    noOptionsMessage={[Function]}
+    options={
+      Array [
+        Object {
+          "label": "Red",
+          "value": 0,
+        },
+        Object {
+          "label": "White",
+          "value": 1,
+        },
+        Object {
+          "label": "Blue",
+          "value": 2,
+        },
+        Object {
+          "label": "Yellow",
+          "value": 3,
+        },
+      ]
+    }
+    styles={
+      Object {
+        "menuPortal": [Function],
+      }
+    }
+    value={
+      Object {
+        "label": "Red",
+        "value": 0,
+      }
+    }
+  />
+</div>
+`;

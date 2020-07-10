@@ -197,6 +197,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     areaToChordXY(fraction0: number, fraction1: number): number;
     get center(): Point3d;
     circularRadius(): number | undefined;
+    circularRadiusXY(): number | undefined;
     clone(): Arc3d;
     cloneAtZ(z?: number): Arc3d;
     cloneInRotatedBasis(theta: Angle): Arc3d;
@@ -1037,6 +1038,7 @@ export enum ClipStatus {
 export class ClipUtilities {
     static announceLoopsOfConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet | ClipPlane, range: Range3d, loopFunction: (loopPoints: GrowableXYZArray) => void, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): void;
     static announceNNC(intervals: Range1d[], cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    static captureOrDrop(data: GrowableXYZArray, minLength: number, destination: GrowableXYZArray[], cache: GrowableXYZArrayCache): void;
     static clipPolygonToClipShape(polygon: Point3d[], clipShape: ClipPrimitive): Point3d[][];
     static clipPolygonToClipShapeReturnGrowableXYZArrays(polygon: Point3d[], clipShape: ClipPrimitive): GrowableXYZArray[];
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
@@ -1494,6 +1496,7 @@ export class CurveLocationDetailPair {
     approachType?: CurveCurveApproachType;
     clone(result?: CurveLocationDetailPair): CurveLocationDetailPair;
     static createCapture(detailA: CurveLocationDetail, detailB: CurveLocationDetail, result?: CurveLocationDetailPair): CurveLocationDetailPair;
+    static createCaptureOptionalReverse(detailA: CurveLocationDetail, detailB: CurveLocationDetail, reversed: boolean, result?: CurveLocationDetailPair): CurveLocationDetailPair;
     detailA: CurveLocationDetail;
     detailB: CurveLocationDetail;
     swapDetails(): void;
@@ -2196,6 +2199,7 @@ export class HalfEdge {
     static testFacePositiveAreaXY(node: HalfEdge): boolean;
     static testMateMaskExterior(node: HalfEdge): boolean;
     static testNodeMaskNotExterior(node: HalfEdge): boolean;
+    static transferEdgeProperties(fromNode: HalfEdge, toNode: HalfEdge): void;
     static transverseIntersectionFractions(nodeA0: HalfEdge, nodeB0: HalfEdge, result?: Vector2d): Vector2d | undefined;
     vectorToFaceSuccessor(result?: Vector3d): Vector3d;
     vectorToFaceSuccessorXY(result?: Vector2d): Vector2d;
@@ -2203,6 +2207,7 @@ export class HalfEdge {
     get vertexSuccessor(): HalfEdge;
     x: number;
     y: number;
+    yankFromVertexLoop(): HalfEdge | undefined;
     z: number;
 }
 
@@ -2238,6 +2243,7 @@ export class HalfEdgeGraph {
     splitEdge(base: undefined | HalfEdge, xA?: number, yA?: number, zA?: number, iA?: number): HalfEdge;
     splitEdgeAtFraction(base: HalfEdge, fraction: number): HalfEdge;
     transformInPlace(transform: Transform): void;
+    yankAndDeleteEdges(deleteThisNode: NodeFunction): number;
 }
 
 // @internal
@@ -2911,6 +2917,7 @@ export class Matrix3d implements BeJSONFunctions {
     axisOrderCrossProductsInPlace(axisOrder: AxisOrder): void;
     clone(result?: Matrix3d): Matrix3d;
     coffs: Float64Array;
+    columnDotXYZ(columnIndex: AxisIndex, x: number, y: number, z: number): number;
     columnX(result?: Vector3d): Vector3d;
     columnXDotColumnY(): number;
     columnXMagnitude(): number;
@@ -4430,7 +4437,7 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
     protected _stack: CurveCollection[];
 }
 
-// @alpha
+// @public
 export enum RegionBinaryOpType {
     // (undocumented)
     AMinusB = 3,
@@ -4481,8 +4488,10 @@ export class RegionOps {
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined;
     static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
     static createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap?: boolean, consolidateAdjacentPrimitives?: boolean): CurveCollection | undefined;
-    static curveArrayRange(curves: AnyCurve[]): Range3d;
+    static curveArrayRange(data: any): Range3d;
     static expandLineStrings(candidates: CurvePrimitive[]): CurvePrimitive[];
+    static polygonBooleanXYToLoops(inputA: MultiLineStringDataVariant[], operation: RegionBinaryOpType, inputB: MultiLineStringDataVariant[]): AnyRegion | undefined;
+    static polygonBooleanXYToPolyface(inputA: MultiLineStringDataVariant[], operation: RegionBinaryOpType, inputB: MultiLineStringDataVariant[], triangulate?: boolean): Polyface | undefined;
     static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
@@ -5297,6 +5306,7 @@ export class Vector3d extends XYZ {
     static dotProductAsXYAndZ(dataA: XYAndZ, dataB: XYAndZ): number;
     dotProductStart3dEnd4d(pointA: Point3d, pointB: Point4d): number;
     dotProductStartEnd(pointA: XYAndZ, pointB: XYAndZ): number;
+    dotProductStartEndXY(pointA: Point3d, pointB: Point3d): number;
     dotProductStartEndXYZ(pointA: Point3d, x: number, y: number, z: number): number;
     dotProductStartEndXYZW(pointA: Point3d, x: number, y: number, z: number, w: number): number;
     dotProductXY(vectorB: Vector3d): number;

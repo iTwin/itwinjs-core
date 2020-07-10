@@ -6,8 +6,6 @@
  * @module iModels
  */
 
-import * as glob from "glob";
-import * as path from "path";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
 import {
   assert, AsyncMutex, BeDuration, BeEvent, BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64,
@@ -19,11 +17,14 @@ import {
   HubIModel, IModelBankClient, IModelClient, IModelHubClient, IModelHubError,
 } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDownloader, BriefcaseKey, BriefcaseProps, BriefcaseStatus, CreateIModelProps, DownloadBriefcaseOptions, DownloadBriefcaseStatus,
-  IModelError, IModelVersion, RequestBriefcaseProps, SyncMode,
+  BriefcaseDownloader, BriefcaseKey, BriefcaseProps, BriefcaseStatus, CreateIModelProps,
+  DownloadBriefcaseOptions, DownloadBriefcaseStatus,
+  IModelError, IModelRpcProps, IModelVersion, RequestBriefcaseProps, SyncMode, UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, CancelRequest, ProgressCallback, ProgressInfo, UserCancelledError } from "@bentley/itwin-client";
+import * as glob from "glob";
+import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb, OpenParams } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -131,9 +132,6 @@ export class BriefcaseEntry {
 
   /** Mode used to open the briefcase */
   public openMode: OpenMode;
-
-  /** Whether to performan any upgrades upon opening the db */
-  public upgrade: IModelJsNative.UpgradeMode = IModelJsNative.UpgradeMode.None;
 
   /** Params used to open the briefcase */
   public openParams: OpenParams; // tslint:disable-line:deprecation
@@ -259,6 +257,18 @@ export class BriefcaseEntry {
     return briefcaseProps;
   }
 
+  /** @internal */
+  public getIModelRpcProps(): IModelRpcProps {
+    const iModelRpcProps: IModelRpcProps = {
+      key: this.getKey(),
+      contextId: this.contextId,
+      iModelId: this.iModelId,
+      changeSetId: this.targetChangeSetId,
+      openMode: this.openMode,
+    };
+    return iModelRpcProps;
+  }
+
   /** Get the properties of this briefcase that are useful for debug logs
    * @internal
    */
@@ -316,10 +326,9 @@ class BriefcaseCache {
   }
 
   /** Find VariableVersion (PullAndPush or PullOnly) briefcase */
-  public findBriefcaseByBriefcaseId(iModelId: GuidString, briefcaseId: BriefcaseId, syncMode: SyncMode, upgrade: IModelJsNative.UpgradeMode = IModelJsNative.UpgradeMode.None): BriefcaseEntry | undefined {
+  public findBriefcaseByBriefcaseId(iModelId: GuidString, briefcaseId: BriefcaseId, syncMode: SyncMode): BriefcaseEntry | undefined {
     for (const entry of this._briefcases.values()) {
       if (entry.iModelId === iModelId && entry.briefcaseId === briefcaseId && entry.syncMode === syncMode) {
-        entry.upgrade = upgrade;
         return entry;
       }
     }
@@ -481,7 +490,7 @@ export class BriefcaseManager {
         }
         // Validate that the briefcase id is set to standalone
         if (briefcaseId !== BriefcaseIdValue.Standalone) {
-          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOfline: The briefcase found is not valid", Logger.logError, loggerCategory, () => ({
+          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOffline: The briefcase found is not valid", Logger.logError, loggerCategory, () => ({
             pathname: bcPathname, syncMode, briefcaseId,
           }));
         }
@@ -811,12 +820,13 @@ export class BriefcaseManager {
   /** Open a downloaded briefcase
    * @internal
    */
-  public static openBriefcase(briefcase: BriefcaseEntry) {
+  public static openBriefcase(briefcase: BriefcaseEntry, upgradeOptions?: UpgradeOptions) {
     Logger.logTrace(loggerCategory, "BriefcaseManager.openBriefcase: Opening a new NativeDb connection to a briefcase", () => briefcase.getDebugInfo());
-    const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openMode, briefcase.upgrade);
-    briefcase.isOpen = true;
+    const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openMode, upgradeOptions);
+    // NEEDS_WORK: Temporary cast to any to by pass circular dependency between iModelJs and addon - will remove after addon gets updated
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, `Unable to reopen briefcase at ${briefcase.pathname}`, Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+    briefcase.isOpen = true;
   }
 
   /**

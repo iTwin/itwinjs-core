@@ -38,3 +38,7 @@ You can now open snapshot files using ui-test-app. These are the relevant enviro
 * imjs_TESTAPP_START_WITH_SNAPSHOTS - set to 1 to start with File Open dialog (optional)
 
 __Note:__ You must navigate to your snapshot folder the first time you use the File Open dialog. To open other files, click the "Home" button in the upper-left then click "Open Local File". You still need to sign-in.
+
+## Using the Edit Front stage to test writing to iModel
+
+To test writing to an iModel, the '.env' file in the ui-test-app directory should set the variable imjs_TESTAPP_ALLOW_WRITE=1. Optionally this variable can be set in the command shell before starting the servers. Currently only files from iModelHub can be edited.
