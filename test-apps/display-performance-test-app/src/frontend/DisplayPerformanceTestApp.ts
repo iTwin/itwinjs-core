@@ -591,7 +591,7 @@ class DefaultConfigs {
       this.viewName = "V0";
       this.testType = "timing";
       this.csvFormat = "original";
-      this.renderOptions = { useWebGL2: true };
+      this.renderOptions = { useWebGL2: true, dpiAwareLOD: true };
     }
     if (prevConfigs !== undefined) {
       if (prevConfigs.view) this.view = new ViewSize(prevConfigs.view.width, prevConfigs.view.height);
