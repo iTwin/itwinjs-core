@@ -586,8 +586,8 @@ class DefaultConfigs {
       this.numRendersToSkip = 50;
       this.outputName = "performanceResults.csv";
       this.outputPath = MobileRpcConfiguration.isMobileFrontend ? undefined : "D:\\output\\performanceData\\";
-      this.iModelName = "Wraith2.bim";
-      this.iModelHubProject = "DisplayPerformanceTest";
+      this.iModelName = "TimingTest_General.bim";
+      this.iModelHubProject = "iModel Testing";
       this.viewName = "V0";
       this.testType = "timing";
       this.csvFormat = "original";
