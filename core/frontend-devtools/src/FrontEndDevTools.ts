@@ -19,7 +19,7 @@ import { ChangePlanProjectionSettingsTool, DumpPlanProjectionSettingsTool, Overr
 import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
 import { AttachRealityModelTool, SaveRealityModelTool } from "./tools/RealityModelTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
-import { CompileShadersTool, LoseWebGLContextTool, ToggleWiremeshTool } from "./tools/RenderSystemTools";
+import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool, ToggleWiremeshTool } from "./tools/RenderSystemTools";
 import {
   ToggleDrapeFrustumTool, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool,
   ToggleRealityTileBounds, ToggleRealityTileFreeze, ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect,
@@ -93,6 +93,7 @@ export class FrontendDevTools {
       ShowTileVolumesTool,
       SourceAspectIdFromElementIdTool,
       Toggle3dManipulationsTool,
+      ToggleDPIForLODTool,
       ToggleDrapeFrustumTool,
       ToggleFrustumSnapshotTool,
       TogglePrimitiveVisibilityTool,

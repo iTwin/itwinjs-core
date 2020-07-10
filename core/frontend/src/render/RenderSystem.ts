@@ -103,6 +103,11 @@ export interface RenderSystemDebugControl {
   /** Draw surfaces as "pseudo-wiremesh", using GL_LINES instead of GL_TRIANGLES. Useful for visualizing faces of a mesh. Not suitable for real wiremesh display. */
   drawSurfacesAsWiremesh: boolean;
 
+  /** Overrides [[RenderSystem.dpiAwareLOD]].
+   * @internal
+   */
+  dpiAwareLOD: boolean;
+
   /** Record GPU profiling information for each frame drawn. Check isGLTimerSupported before using.
    * @internal
    */
@@ -180,6 +185,9 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public get supportsInstancing(): boolean { return true; }
+
+  /** @internal */
+  public get dpiAwareLOD(): boolean { return true === this.options.dpiAwareLOD; }
 
   /** @internal */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
@@ -498,12 +506,26 @@ export namespace RenderSystem {
     filterMapDrapeTextures?: boolean;
 
     /** If true, [[ScreenViewport]]s will respect the DPI of the display.  See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
+     * @see [[dpiAwareLOD]] to control whether device pixel ratio affects the level of detail for tile graphics and decorations.
+     * @see [[Viewport.cssPixelsToDevicePixels]] to convert CSS pixels to device pixels.
+     * @see [[Viewport.devicePixelRatio]].
      *
      * Default value: true
      *
      * @beta
      */
     dpiAwareViewports?: boolean;
+
+    /** If true, [[ScreenViewport]]s will take into account the DPI of the display when computing the level of detail for tile graphics and decorations.
+     * This can result in sharper-looking images on high-DPI devices like mobile phones, but may reduce performance on such devices.
+     * @note This setting has no effect if [[dpiAwareViewports]] is `false`.
+     * @see [[Viewport.devicePixelRatio]].
+     *
+     * Default value: false
+     *
+     * @beta
+     */
+    dpiAwareLOD?: boolean;
 
     /** If true will attempt to create a WebGL2 context.
      *

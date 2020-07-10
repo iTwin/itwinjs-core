@@ -1051,6 +1051,20 @@ export class Toggle3dManipulationsTool extends ViewportToggleTool {
     static toolId: string;
 }
 
+// @beta
+export class ToggleDPIForLODTool extends RenderSystemDebugControlTool {
+    // (undocumented)
+    execute(control: RenderSystemDebugControl): void;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha
 export class ToggleDrapeFrustumTool extends RenderTargetDebugControlToggleTool {
     // (undocumented)

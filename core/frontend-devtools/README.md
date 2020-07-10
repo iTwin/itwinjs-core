@@ -62,6 +62,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt 3dmanip` - Change the `allow3dManipulations` flag for the 3d view associated with the active viewport.
 * `fdt tiletree bounds` - When enabled, draws bounding boxes representing the volume of each tile tree displayed in the active viewport.
 * `fdt toggle readpixels` - Toggles "read pixels" mode on the active viewport. In this mode, geometry is rendered to the screen as if it was being rendered off-screen for element locate purposes.
+* `fdt dpi lod` - Toggles whether device pixel ratio should be taken into account when computing LOD for tiles and decoration graphics.
 * `fdt attachments` - Toggles display of view attachments in the sheet view associated with the active viewport.
 * `fdt attachment bounds` - Toggles display of bounding boxes around each view attachment in the active viewport.
 * `fdt toggle drapefrustum` - Toggles display of frustum that is used to drape classifiers and background map.

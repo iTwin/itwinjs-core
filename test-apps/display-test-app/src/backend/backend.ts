@@ -100,6 +100,9 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_DPI_AWARE_VIEWPORTS)
     configuration.dpiAwareViewports = false;
 
+  if (undefined !== process.env.SVT_DPI_LOD)
+    configuration.dpiAwareLOD = true;
+
   if (undefined !== process.env.SVT_NO_CANCEL_TILE_REQUESTS)
     configuration.cancelBackendTileRequests = false;
 

@@ -718,6 +718,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   private _drawSurfacesAsWiremesh = false;
   public get drawSurfacesAsWiremesh() { return this._drawSurfacesAsWiremesh; }
   public set drawSurfacesAsWiremesh(asWiremesh: boolean) { this._drawSurfacesAsWiremesh = asWiremesh; }
+
+  private _dpiAwareLOD?: boolean;
+  public get dpiAwareLOD(): boolean { return this._dpiAwareLOD ?? super.dpiAwareLOD; }
+  public set dpiAwareLOD(dpiAware: boolean) { this._dpiAwareLOD = dpiAware; }
+
   public loseContext(): boolean {
     const ext = this.capabilities.queryExtensionObject<WEBGL_lose_context>("WEBGL_lose_context");
     if (undefined === ext)

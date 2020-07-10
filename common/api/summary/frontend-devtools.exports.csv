@@ -106,6 +106,7 @@ alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) =>
 alpha;TextBoxProps
 beta;TileStatisticsTracker
 alpha;Toggle3dManipulationsTool 
+beta;ToggleDPIForLODTool 
 alpha;ToggleDrapeFrustumTool 
 beta;ToggleFrustumSnapshotTool 
 beta;TogglePrimitiveVisibilityTool 

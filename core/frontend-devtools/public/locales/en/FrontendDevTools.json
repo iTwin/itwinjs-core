@@ -6,6 +6,9 @@
     "ToggleWiremesh": {
       "keyin": "fdt toggle wiremesh"
     },
+    "ToggleDPIForLOD": {
+      "keyin": "fdt dpi lod"
+    },
     "ToggleReadPixels": {
       "keyin": "fdt toggle readpixels"
     },

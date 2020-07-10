@@ -6250,6 +6250,8 @@ export abstract class RenderClipVolume implements IDisposable {
 // @public
 export class RenderContext {
     constructor(vp: Viewport, frustum?: Frustum);
+    // @internal
+    adjustPixelSizeForLOD(cssPixelSize: number): number;
     createBranch(branch: GraphicBranch, location: Transform): RenderGraphic;
     // @internal (undocumented)
     createGraphicBranch(branch: GraphicBranch, location: Transform, opts?: GraphicBranchOptions): RenderGraphic;
@@ -6730,6 +6732,8 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     abstract doIdleWork(): boolean;
     // @internal (undocumented)
+    get dpiAwareLOD(): boolean;
+    // @internal (undocumented)
     enableDiagnostics(_enable: RenderDiagnostics): void;
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
     findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
@@ -6764,6 +6768,7 @@ export namespace RenderSystem {
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
         doIdleWork?: boolean;
+        dpiAwareLOD?: boolean;
         dpiAwareViewports?: boolean;
         // @internal
         filterMapDrapeTextures?: boolean;
@@ -6785,6 +6790,8 @@ export interface RenderSystemDebugControl {
     compileAllShaders(): boolean;
     // @internal
     debugShaderFiles?: DebugShaderFile[];
+    // @internal
+    dpiAwareLOD: boolean;
     drawSurfacesAsWiremesh: boolean;
     // @internal
     readonly isGLTimerSupported: boolean;
@@ -6795,6 +6802,7 @@ export interface RenderSystemDebugControl {
 
 // @internal
 export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
+    adjustPixelSizeForLOD(cssPixelSize: number): number;
     // (undocumented)
     abstract get analysisFraction(): number;
     abstract set analysisFraction(fraction: number);
@@ -6816,7 +6824,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     createPlanarClassifier(_properties: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined;
     // (undocumented)
-    cssPixelsToDevicePixels(cssPixels: number): number;
+    cssPixelsToDevicePixels(cssPixels: number, floor?: boolean): number;
     // (undocumented)
     get debugControl(): RenderTargetDebugControl | undefined;
     // (undocumented)

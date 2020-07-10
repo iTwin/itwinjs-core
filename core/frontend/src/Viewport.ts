@@ -2365,6 +2365,7 @@ export abstract class Viewport implements IDisposable {
    * one pixel of the view represents more spatial area at the back of the Frustum than the front.)
    * @param point The point to test, in World coordinates. If undefined, the center of the view in NPC space is used.
    * @returns The width of a view pixel at the supplied world point, in meters.
+   * @note A "pixel" refers to a logical (CSS) pixel, not a device pixel.
    */
   public getPixelSizeAtPoint(point?: Point3d): number {
     if (point === undefined)
