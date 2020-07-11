@@ -1856,10 +1856,13 @@ export function ThemedSelect(props: ThemedSelectProps): JSX.Element;
 
 // @beta
 export type ThemedSelectProps = {
+    "aria-label"?: string;
+    "aria-labelledby"?: string;
     autoFocus?: boolean;
     backspaceRemovesValue?: boolean;
     blurInputOnSelect?: boolean;
     captureMenuScroll?: boolean;
+    className?: string;
     closeMenuOnSelect?: boolean;
     closeMenuOnScroll?: boolean | EventListener;
     components?: SelectComponentsConfig<OptionType>;
