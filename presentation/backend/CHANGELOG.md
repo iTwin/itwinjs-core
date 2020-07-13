@@ -1,6 +1,11 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Fri, 10 Jul 2020 17:23:14 GMT and should not be manually modified.
+This log was last generated on Mon, 13 Jul 2020 18:50:14 GMT and should not be manually modified.
+
+## 2.3.1
+Mon, 13 Jul 2020 18:50:14 GMT
+
+*Version update only*
 
 ## 2.3.0
 Fri, 10 Jul 2020 17:23:14 GMT
