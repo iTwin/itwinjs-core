@@ -18,7 +18,7 @@ This extension is an example of a extension that can be added to iModel.js host 
   npm run build
   ```
 
-4. Copy all the output files in the lib/build directory tree to imjs_extensions/geoPhoto directory in the web resources of the host application.
+4. Copy all the output files in the lib/build directory tree to the host app's ./build/imjs_extensions/geoNames directory.
 
 5. Start the host application - go to its directory and run:
 
@@ -27,8 +27,8 @@ This extension is an example of a extension that can be added to iModel.js host 
   ```
 
 6. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
-
-7. Start the extension using the ExtensionTool - ExtensionTool.run("localhost:3000/geoNames");
+7. Add the following line to the app's startup method - `ExtensionTool.run("localhost:3000/geoNames");`.  Where `localhost:3000` is the location of the app locally
+8. The following toolIds will be available: `GeoNamesOnTool`, `GeoNamesOffTool`, `GeoNamesUpdateTool`
 
 ## Contributing
 
