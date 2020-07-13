@@ -179,10 +179,13 @@ export class Angle implements BeJSONFunctions {
         return degrees;
       const numPeriods = Math.floor(degrees / period);
       return degrees - numPeriods * period;
+    } else if (degrees < 0) {
+      // negative angle ...
+      const radians1 = Angle.adjustDegrees0To360(-degrees);
+      return 360.0 - radians1;
     }
-    // negative angle ...
-    const radians1 = Angle.adjustDegrees0To360(-degrees);
-    return 360.0 - radians1;
+    // fall through for Nan (disaster) !!!
+    return 0;
   }
   /** Adjust a radians value so it is in -180..180 */
   public static adjustDegreesSigned180(degrees: number): number {
@@ -192,9 +195,12 @@ export class Angle implements BeJSONFunctions {
       const period = 360.0;
       const numPeriods = 1 + Math.floor((degrees - 180.0) / period);
       return degrees - numPeriods * period;
+    } else if (degrees < 0) {
+      // negative angle ...
+      return -Angle.adjustDegreesSigned180(-degrees);
     }
-    // negative angle ...
-    return -Angle.adjustDegreesSigned180(-degrees);
+    // fall through for NaN disaster.
+    return 0;
   }
   /** Adjust a radians value so it is positive in 0..2Pi */
   public static adjustRadians0To2Pi(radians: number): number {
@@ -204,10 +210,13 @@ export class Angle implements BeJSONFunctions {
         return radians;
       const numPeriods = Math.floor(radians / period);
       return radians - numPeriods * period;
+    } else if (radians < 0) {
+      // negative angle ...
+      const radians1 = Angle.adjustRadians0To2Pi(-radians);
+      return Math.PI * 2.0 - radians1;
     }
-    // negative angle ...
-    const radians1 = Angle.adjustRadians0To2Pi(-radians);
-    return Math.PI * 2.0 - radians1;
+    // fall through for NaN disaster.
+    return 0;
   }
   /** Adjust a radians value so it is positive in -PI..PI */
   public static adjustRadiansMinusPiPlusPi(radians: number): number {
@@ -217,9 +226,12 @@ export class Angle implements BeJSONFunctions {
       const period = Math.PI * 2.0;
       const numPeriods = 1 + Math.floor((radians - Math.PI) / period);
       return radians - numPeriods * period;
+    } else if (radians < 0) {
+      // negative angle ...
+      return -Angle.adjustRadiansMinusPiPlusPi(-radians);
     }
-    // negative angle ...
-    return -Angle.adjustRadiansMinusPiPlusPi(-radians);
+    // fall through for NaN disaster.
+    return 0;
   }
   /** return a (newly allocated) Angle object with value 0 radians */
   public static zero() { return new Angle(0); }
