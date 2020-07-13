@@ -1,6 +1,15 @@
 # Change Log - @bentley/webgl-compatibility
 
-This log was last generated on Tue, 07 Jul 2020 14:44:52 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2020 17:23:14 GMT and should not be manually modified.
+
+## 2.3.0
+Fri, 10 Jul 2020 17:23:14 GMT
+
+### Updates
+
+- Updated default context creator to try webgl1 context if webgl2 fails
+- Ensure standard derivatives feature is properly pushed to WebGL feature list.
+- New optional feature added: WebGLFeature.StandardDerivatives
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

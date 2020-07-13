@@ -2,6 +2,42 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.3.0",
+      "tag": "@bentley/ui-framework_v2.3.0",
+      "date": "Fri, 10 Jul 2020 17:23:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Provide an immediate tool that will restore the default layout for frontstage."
+          },
+          {
+            "comment": "Provide ability to support subclassing IModelViewportControl and allow custom overlay component without sub-classing."
+          },
+          {
+            "comment": "fix styling of docked toolsetting so controls are centered."
+          },
+          {
+            "comment": "Fix tool settings styling on FireFox."
+          },
+          {
+            "comment": "Accessibility: Improved focus borders & indicators"
+          },
+          {
+            "comment": "Fix floating widget bug."
+          },
+          {
+            "comment": "Models Tree: Show sub-model contents under geometric elements"
+          },
+          {
+            "comment": "Enable minSize and maxSize StagePanelProps in 2.0. Allow percentage units to be passed in to maxSize prop."
+          },
+          {
+            "comment": "Enable WidgetDef.setLabel() in 2.0 mode."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.2.1",
       "tag": "@bentley/ui-framework_v2.2.1",
       "date": "Tue, 07 Jul 2020 14:44:52 GMT",

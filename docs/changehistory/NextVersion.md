@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 ignore: true
 ---
@@ -36,5 +37,11 @@ Some iModels contain thousands of [SectionDrawingLocation]($backend)s. When hype
 Previously, when iModel.js computed the appropriate level of detail for tiles and decoration graphics, it exclusively used the logical resolution, ignoring device pixel ratio. On high-DPI devices this causes lower-resolution graphics to be displayed, resulting in a less detailed image.
 
 Now, if [RenderSystem.Options.dpiAwareLOD]($frontend) is set to `true` when supplied to [IModelApp.startup]($frontend), level of detail computations will take device pixel ratio into account. This will result in a sharper image on high-DPI displays. However, it may also reduce display performance, especially on mobile devices, due to more tiles of higher resolution being displayed.
+=======
+---
+ignore: true
+---
+# NextVersion
+>>>>>>> 72e6d0f475... 2.3.0
 
 This option has no effect if [RenderSystem.Options.dpiAwareViewports]($frontend) is overridden to be `false`.
