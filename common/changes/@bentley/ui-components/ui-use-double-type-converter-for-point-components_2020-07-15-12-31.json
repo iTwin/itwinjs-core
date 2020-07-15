@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Use 'Double' type converter for point components. Also add possibility to supply custom components' converter for `Point2dTypeConverter` and `Point3dTypeConverter`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "grigas.petraitis@bentley.com"
+}

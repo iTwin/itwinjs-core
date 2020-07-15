@@ -26,6 +26,12 @@ export class TypeConverterManager {
     TypeConverterManager._converters[typename] = instance;
   }
 
+  public static unregisterConverter(typename: string): void {
+    if (TypeConverterManager._converters.hasOwnProperty(typename)) {
+      delete TypeConverterManager._converters[typename];
+    }
+  }
+
   public static getConverter(typename: string): TypeConverter {
     if (TypeConverterManager._converters.hasOwnProperty(typename))
       return TypeConverterManager._converters[typename];
