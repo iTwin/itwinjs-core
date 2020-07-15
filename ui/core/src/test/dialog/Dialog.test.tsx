@@ -45,6 +45,10 @@ describe("Dialog", () => {
       const container = component.getByTestId("core-dialog-title");
       expect(container.style.fontWeight).to.equal("bold");
     });
+    it("should render with active FocusTrap", () => {
+      const component = render(<Dialog opened={true} modal={true} trapFocus={true} />);
+      expect(component.getByTestId("focus-trap-div")).to.exist;
+    });
   });
 
   describe("buttons", () => {

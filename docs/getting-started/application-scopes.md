@@ -1,8 +1,11 @@
 ---
 containsMetadata: 'AvailableScopes'
 ---
+
 # Available scopes
+
 This list contains all the OAuth scopes that are required for an application to interact with various portions of the iTwin Services.
+
 | Name                     | Description                                                                                  |
 |--------------------------|----------------------------------------------------------------------------------------------|
 | openid                   | Required to get the id_token and the id of the user                                          |

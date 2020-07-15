@@ -6,7 +6,7 @@
 
 @mixin uicore-inputs-checkbox {
 
-  display: flex;
+  display: inline-flex;
   align-items: center;
   position: relative;
   padding-left: $uicore-l;
@@ -14,17 +14,18 @@
   cursor: pointer;
   user-select: none;
   color: $buic-foreground-body;
+  min-height: 1em;
 
   > input {
     position: absolute;
     opacity: 0;
-    width: 0;
     cursor: pointer;
   }
 
   .core-checkbox-checkmark,
   .core-checkbox-indeterminate {
     position: absolute;
+    top: 2px;
     left: 0;
     height: 1em;
     width: 1em;

@@ -20,7 +20,7 @@ exports[`MessageBox renders renders correctly 1`] = `
   movable={false}
   opened={true}
   resizable={false}
-  trapFocus={true}
+  trapFocus={false}
   width="512px"
 >
   <MessageContainer
