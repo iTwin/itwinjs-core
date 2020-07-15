@@ -159,3 +159,38 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * `project <projectName>`.
   * `asset <assetName>`.
   * `public` - loads Bentley-published public extensions.
+* `fdt toggle terrain` - Toggle terrain display for background maps.
+* `fdt attach maplayer <name>` - Attach a background map layer from name within the map layer source list.  Partial names may be used.
+* `fdt attach mapoverlay <name>` - Attach an overlay map layer from name within the map layer source list.  Partial names may be used.
+* `fdt set map base <name>` - Set the background base map from name within the map layer source list.  Partial names may be used.
+* `fdt set map base color <red, green, blue>` - Set map base color by red, green and blue values [0..255].
+* `fdt set map base transparency <transparency>` - Set map base transparency [0..1].
+* `fdt detach maplayers` - Detach all map layers.
+* `fdt set mapLayer transparency <index, transparency>`.  Set the map layer to the supplied transparency value [0..1].
+* `fdt set mapLayer visibility <index, on|off>`.  Set the map layer visibility.
+* `fdt reorder maplayer <fromIndex, toIndex>`.  Move the map layer at `fromIndex` to `toIndex`.
+* `fdt zoom maplayer <index>` Zoom to map layer. If index is omitted layer 0 is used.
+* `fdt attach wms maplayer <URL, name, username, password>` Attach a WMS map layer. WMS is a very common OGC standard map service that produces images on demand.
+ The following arguments can be supplied -- only the URL is required.
+  * `URL` - The URL for the map layer.
+  * `name` - The map layer name. (if not supplied the URL is used)
+  * `username` - User Name (only required if credentials are required by server)
+  * `password` - Password (only required if credentials are required by server)
+* `fdt attach wmts maplayer <URL, name, username, password>` Attach a WTMS map layer. WTMS is an OGC standard map service that produces cached tiles.
+The following arguments can be supplied -- only the URL is required.
+  * `URL` - The URL for the map layer.
+  * `name` - The map layer name. (if not supplied the URL is used)
+  * `username` - User Name (only required if credentials are required by server)
+  * `password` - Password (only required if credentials are required by server)
+* `fdt attach arcgis maplayer <URL, name, username, password>` Attach an ArcGIS map layer.  This uses the ArcGIS rest API directly - the URL in this case will generally end with "MapServer".
+The following arguments can be supplied -- only the URL is required.
+  * `URL` - The URL for the map layer.
+  * `name` - The map layer name. (if not supplied the URL is used)
+  * `username` - User Name (only required if credentials are required by server)
+  * `password` - Password (only required if credentials are required by server)
+* `fdt attach tileurl maplayer <URL, name, username, password>` Attach a map layer from tiles directly from a file server by supplying a URL template.
+The following arguments can be supplied -- only the URL is required.
+  * `URL` - URL template with level, column and row parameters i.e. "https://b.tile.openstreetmap.org/{level}/{column}/{row}.png"
+  * `name` - The map layer name. (if not supplied the URL is used)
+  * `username` - User Name (only required if credentials are required by server)
+  * `password` - Password (only required if credentials are required by server)

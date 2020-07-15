@@ -6,11 +6,18 @@
 import { assert, expect } from "chai";
 import { Capabilities } from "@bentley/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
-import { Debug, FrameBuffer, GL, RenderBuffer, System, TextureHandle } from "../../../webgl";
+import { Debug } from "../../../render/webgl/Diagnostics";
+import { FrameBuffer } from "../../../render/webgl/FrameBuffer";
+import { GL } from "../../../render/webgl/GL";
+import { RenderBuffer } from "../../../render/webgl/RenderBuffer";
+import { TextureHandle } from "../../../render/webgl/Texture";
+import { System } from "../../../render/webgl/System";
 
 describe("FrameBuffer tests", () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
+  // tslint:disable-next-line:no-return-await
+  before(async () => await IModelApp.startup());
+  // tslint:disable-next-line:no-return-await
+  after(async () => await IModelApp.shutdown());
 
   it("should produce and bind a valid framebuffer with single color attachment", () => {
     if (!IModelApp.hasRenderSystem)

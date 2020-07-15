@@ -62,8 +62,6 @@ export enum TextureUnit {
   FeatureSymbology = One,
   SurfaceTexture = Two,
   LineCode = Two,
-  TerrainMesh0 = Two,
-  TerrainMesh1 = Five,     // Terrain meshes do not use VertexLUT.
 
   PickFeatureId = Three,
   PickDepthAndOrder = Four,
@@ -78,6 +76,13 @@ export enum TextureUnit {
   // Texture unit 7 is overloaded. Therefore receiving shadows and thematic display are mutually exclusive.
   ShadowMap = Seven,
   ThematicSensors = Seven,
+  // The number of allowable map layers for either background or overlay map is limited to 3 if only 8 texture units is available (IOS)... 6 layers are available if the hardware supports them.
+  TerrainMesh0 = Two,
+  TerrainMesh1 = VertexLUT,                       // Terrain meshes do not use VertexLUT.
+  TerrainMesh2 = ShadowMap,                       //  Shadow map when picking -- PickDepthAndOrder otherwise....
+  TerrainMesh3 = WebGLRenderingContext.TEXTURE8,  // These are used only if available.
+  TerrainMesh4 = WebGLRenderingContext.TEXTURE9,
+  TerrainMesh5 = WebGLRenderingContext.TEXTURE10,
 }
 
 /**

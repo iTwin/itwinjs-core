@@ -5,10 +5,16 @@
 import { assert, expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import { RenderSystem } from "../../../render/RenderSystem";
-import {
-  AttributeMap, CompileStatus, DrawParams, FeatureMode, FragmentShaderComponent, ProgramBuilder, ShaderProgramParams, SingularTechnique, System,
-  Target, TechniqueFlags, TechniqueId, VariableType, VertexShaderComponent, ViewportQuadGeometry,
-} from "../../../webgl";
+import { AttributeMap } from "../../../render/webgl/AttributeMap";
+import { CompileStatus } from "../../../render/webgl/ShaderProgram";
+import { DrawParams, ShaderProgramParams } from "../../../render/webgl/DrawCommand";
+import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../../../render/webgl/ShaderBuilder";
+import { SingularTechnique } from "../../../render/webgl/Technique";
+import { System } from "../../../render/webgl/System";
+import { Target } from "../../../render/webgl/Target";
+import { TechniqueId } from "../../../render/webgl/TechniqueId";
+import { ViewportQuadGeometry } from "../../../render/webgl/CachedGeometry";
 
 function createPurpleQuadBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));

@@ -8,16 +8,13 @@
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { ClipVector, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
-import {
-  ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat,
-  PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps,
-} from "@bentley/imodeljs-common";
+import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { BackgroundMapTileTreeReference, TileTreeReference } from "../tile/internal";
+import { MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
@@ -140,7 +137,7 @@ export abstract class RenderTerrainMeshGeometry implements IDisposable, RenderMe
 
 /** @internal */
 export class TerrainTexture {
-  public constructor(public readonly texture: RenderTexture, public readonly scale: Vector2d, public readonly translate: Vector2d, public readonly clipRectangle?: Range2d) {
+  public constructor(public readonly texture: RenderTexture, public featureId: number, public readonly scale: Vector2d, public readonly translate: Vector2d, public readonly targetRectangle: Range2d, public readonly layerIndex: number, public transparency: number, public readonly clipRectangle?: Range2d) {
   }
 }
 
@@ -251,7 +248,9 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createTerrainMeshGeometry(_terrainMesh: TerrainMeshPrimitive, _transform: Transform): RenderTerrainMeshGeometry | undefined { return undefined; }
   /** @internal */
-  public createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  public createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  /** @internal */
+  public get maxTerrainImageryLayers() { return 0; }
   /** @internal */
   public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
@@ -259,7 +258,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
   /** @internal */
-  public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
+  public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined {
     const rasterTile = new MeshArgs();

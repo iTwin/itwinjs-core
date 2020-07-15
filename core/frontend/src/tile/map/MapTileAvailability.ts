@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { SortedArray } from "@bentley/bentleyjs-core";
 import { Cartographic } from "@bentley/imodeljs-common";
-import { MapCartoRectangle, MapTilingScheme } from "./internal";
+import { MapCartoRectangle, MapTilingScheme } from "../internal";
+import { SortedArray } from "@bentley/bentleyjs-core";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 /** @internal */

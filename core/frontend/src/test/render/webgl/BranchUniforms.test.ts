@@ -9,7 +9,9 @@ import { IModelApp } from "../../../IModelApp";
 import { ViewRect } from "../../../ViewRect";
 import { createEmptyRenderPlan, RenderPlan } from "../../../render/RenderPlan";
 import { GraphicBranch } from "../../../render/GraphicBranch";
-import { Branch, ClipVolume, Target } from "../../../webgl";
+import { Branch } from "../../../render/webgl/Graphic";
+import { ClipVolume } from "../../../render/webgl/ClipVolume";
+import { Target } from "../../../render/webgl/Target";
 
 function makeClipVolume(): ClipVolume {
   const vec = ClipVector.createEmpty();

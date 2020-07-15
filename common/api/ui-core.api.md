@@ -1774,6 +1774,7 @@ export interface SplitButtonProps extends CommonProps {
     label: string | React.ReactNode;
     onClick?: (event: any) => any;
     onExecute?: () => any;
+    toolTip?: string;
 }
 
 // @beta

@@ -10,14 +10,15 @@
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, RenderTexture } from "@bentley/imodeljs-common";
-import { BackgroundMapTileTreeReference, GraphicsCollectorDrawArgs, TileTreeReference } from "../../tile/internal";
+import { GraphicsCollectorDrawArgs, MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { ViewState3d } from "../../ViewState";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { RenderGraphic } from "../RenderGraphic";
-import { BranchStack } from "./BranchStack";
 import { BatchState } from "./BatchState";
-import { FrameBuffer } from "./FrameBuffer"; import { GL } from "./GL";
+import { BranchStack } from "./BranchStack";
+import { FrameBuffer } from "./FrameBuffer";
+import { GL } from "./GL";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
 import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
@@ -33,7 +34,7 @@ export class BackgroundMapDrape extends TextureDrape {
   private _frustum?: Frustum;
   private _width = 0;
   private _height = 0;
-  private _mapTree: BackgroundMapTileTreeReference;
+  private _mapTree: MapTileTreeReference;
   private _drapedTree: TileTreeReference;
   private static _postProjectionMatrix = Matrix4d.createRowValues(
     0, 1, 0, 0,
@@ -46,7 +47,7 @@ export class BackgroundMapDrape extends TextureDrape {
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
   private readonly _plane = Plane3dByOriginAndUnitNormal.create(Point3d.createZero(), Vector3d.create(0, 0, 1))!;
 
-  private constructor(drapedTree: TileTreeReference, mapTree: BackgroundMapTileTreeReference) {
+  private constructor(drapedTree: TileTreeReference, mapTree: MapTileTreeReference) {
     super();
     this._drapedTree = drapedTree;
     this._mapTree = mapTree;
@@ -63,7 +64,7 @@ export class BackgroundMapDrape extends TextureDrape {
     this._graphics.push(graphic);
   }
 
-  public static create(draped: TileTreeReference, map: BackgroundMapTileTreeReference): BackgroundMapDrape {
+  public static create(draped: TileTreeReference, map: MapTileTreeReference): BackgroundMapDrape {
     return new BackgroundMapDrape(draped, map);
   }
 
@@ -77,7 +78,7 @@ export class BackgroundMapDrape extends TextureDrape {
       return;
 
     const tileTree = this._mapTree.treeOwner.load();
-    if (undefined === tileTree)
+    if (undefined === tileTree || !this._mapTree.initializeImagery())
       return;
 
     const requiredWidth = 2 * Math.max(context.target.viewRect.width, context.target.viewRect.height);     // TBD - Size to textured area.

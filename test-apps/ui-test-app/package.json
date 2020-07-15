@@ -42,6 +42,7 @@
     "@bentley/logger-config": "2.4.0-dev.6",
     "@bentley/build-tools": "2.4.0-dev.6",
     "@bentley/imodeljs-markup": "2.4.0-dev.6",
+    "@bentley/frontend-devtools": "2.4.0-dev.6",
     "@bentley/react-scripts": "3.4.1",
     "@types/classnames": "^2.2.3",
     "@types/lorem-ipsum": "^1.0.2",
@@ -51,6 +52,7 @@
     "@types/react-redux": "^7.0.1",
     "@types/react-select": "^3.0.4",
     "@types/semver": "^5.5.0",
+    "@types/react-beautiful-dnd": "^12.1.2",
     "cpx": "^1.5.0",
     "cross-env": "^5.1.4",
     "dotenv": "^8.2.0",
@@ -101,6 +103,7 @@
     "react-compound-slider": "^2.5.0",
     "react-dom": "^16.8.0",
     "react-redux": "^7.2.0",
+    "react-beautiful-dnd": "^13.0.0",
     "react-select": "^3.0.4",
     "redux": "^4.0.3",
     "semver": "^5.5.0"

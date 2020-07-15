@@ -495,7 +495,7 @@ export class AccuSnap implements Decorator {
     if (!hit)
       return false;
 
-    if (hit.isModelHit)
+    if (hit.isModelHit || hit.isMapHit)
       return false;       // Avoid annoying flashing of reality models.
 
     const snap = AccuSnap.toSnapDetail(hit);

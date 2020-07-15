@@ -63,7 +63,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** Optionally return a tooltip describing the hit. */
-  public getToolTip(_hit: HitDetail): HTMLElement | string | undefined { return undefined; }
+  public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> { return undefined; }
 
   /** Optionally add any decorations specific to this reference. For example, map tile trees may add a logo image and/or copyright attributions.
    * @note This is only invoked for background maps and TiledGraphicsProviders - others have no decorations, but if they did implement this it would not be called.

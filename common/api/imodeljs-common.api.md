@@ -382,6 +382,12 @@ export enum BackgroundMapType {
     Street = 1
 }
 
+// @alpha
+export type BaseLayerProps = MapLayerProps | ColorDefProps;
+
+// @alpha
+export type BaseLayerSettings = MapLayerSettings | ColorDef;
+
 // @beta
 export enum BatchType {
     PlanarClassifier = 2,
@@ -1578,6 +1584,9 @@ export class DisplayStyleSettings {
     get hasSubCategoryOverride(): boolean;
     // (undocumented)
     protected readonly _json: DisplayStyleSettingsProps;
+    // @alpha
+    get mapImagery(): MapImagerySettings;
+    set mapImagery(mapImagery: MapImagerySettings);
     get monochromeColor(): ColorDef;
     set monochromeColor(color: ColorDef);
     get monochromeMode(): MonochromeMode;
@@ -1589,6 +1598,8 @@ export class DisplayStyleSettings {
     get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined;
     set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined);
     get subCategoryOverrides(): Map<Id64String, SubCategoryOverride>;
+    // @internal
+    synchMapImagery(): void;
     // @beta
     get timePoint(): number | undefined;
     set timePoint(timePoint: number | undefined);
@@ -1610,6 +1621,8 @@ export interface DisplayStyleSettingsProps {
     backgroundMap?: BackgroundMapProps;
     contextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64String[];
+    // @alpha
+    mapImagery?: MapImageryProps;
     monochromeColor?: ColorDefProps;
     monochromeMode?: MonochromeMode;
     // @beta
@@ -3566,6 +3579,119 @@ export interface LineStyleProps extends DefinitionElementProps {
 export type LocalAlignedBox3d = Range3d;
 
 export { LogFunction }
+
+// @alpha
+export interface MapImageryProps {
+    // (undocumented)
+    backgroundBase?: BaseLayerProps;
+    // (undocumented)
+    backgroundLayers?: MapLayerProps[];
+    // (undocumented)
+    overlayLayers?: MapLayerProps[];
+}
+
+// @alpha
+export class MapImagerySettings {
+    // (undocumented)
+    get backgroundBase(): BaseLayerSettings;
+    set backgroundBase(base: BaseLayerSettings);
+    // (undocumented)
+    get backgroundLayers(): MapLayerSettings[];
+    // @internal
+    get baseTransparency(): number;
+    static fromJSON(imageryJson?: MapImageryProps, mapProps?: BackgroundMapProps): MapImagerySettings;
+    // (undocumented)
+    get overlayLayers(): MapLayerSettings[];
+    // (undocumented)
+    toJSON(): MapImageryProps;
+}
+
+// @alpha
+export interface MapLayerProps {
+    formatId?: string;
+    isBase?: boolean;
+    maxZoom?: number;
+    name?: string;
+    password?: string;
+    subLayers?: MapSubLayerProps[];
+    transparency?: number;
+    transparentBackground?: boolean;
+    url?: string;
+    userName?: string;
+    visible?: boolean;
+}
+
+// @alpha
+export class MapLayerSettings {
+    get allSubLayersInvisible(): boolean;
+    clone(changedProps: MapLayerProps): MapLayerSettings;
+    // @internal (undocumented)
+    displayMatches(other: MapLayerSettings): boolean;
+    // (undocumented)
+    readonly formatId: string;
+    static fromJSON(json?: MapLayerProps): MapLayerSettings | undefined;
+    static fromMapSettings(mapSettings: BackgroundMapSettings): MapLayerSettings;
+    getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined;
+    // (undocumented)
+    readonly isBase: boolean;
+    isSubLayerVisible(subLayer: MapSubLayerSettings): boolean;
+    // @internal (undocumented)
+    matchesNameAndUrl(name: string, url: string): boolean;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly password?: string;
+    subLayerById(id?: SubLayerId): MapSubLayerSettings | undefined;
+    // (undocumented)
+    readonly subLayers: MapSubLayerSettings[];
+    toJSON(): MapLayerProps;
+    // (undocumented)
+    readonly transparency: number;
+    // (undocumented)
+    readonly transparentBackground: boolean;
+    // (undocumented)
+    readonly url: string;
+    // (undocumented)
+    readonly userName?: string;
+    // (undocumented)
+    readonly visible: boolean;
+}
+
+// @alpha
+export interface MapSubLayerProps {
+    // (undocumented)
+    children?: SubLayerId[];
+    // (undocumented)
+    id?: SubLayerId;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    parent?: SubLayerId;
+    // (undocumented)
+    title?: string;
+    // (undocumented)
+    visible?: boolean;
+}
+
+// @alpha
+export class MapSubLayerSettings {
+    constructor(name: string, title?: string, visible?: boolean, id?: SubLayerId, parent?: SubLayerId, children?: SubLayerId[]);
+    readonly children?: SubLayerId[];
+    clone(changedProps: MapSubLayerProps): MapSubLayerSettings;
+    // @internal (undocumented)
+    displayMatches(other: MapSubLayerSettings): boolean;
+    static fromJSON(json: MapSubLayerProps): MapSubLayerSettings | undefined;
+    readonly id: SubLayerId;
+    get idString(): string;
+    get isLeaf(): boolean;
+    get isNamed(): boolean;
+    readonly name: string;
+    readonly parent?: SubLayerId;
+    readonly title?: string;
+    // (undocumented)
+    toJSON(): MapSubLayerProps;
+    readonly visible: boolean;
+}
 
 // @public
 export function mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus;
@@ -5969,6 +6095,9 @@ export interface SubjectProps extends ElementProps {
     // (undocumented)
     description?: string;
 }
+
+// @alpha (undocumented)
+export type SubLayerId = string | number;
 
 // @public
 export enum SyncMode {

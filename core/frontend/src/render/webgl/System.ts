@@ -8,15 +8,12 @@
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
-import {
-  ElementAlignedBox3d, Gradient, ImageBuffer, IModelError, PackedFeatureTable, RenderMaterial,
-  RenderTexture,
-} from "@bentley/imodeljs-common";
+import { ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture } from "@bentley/imodeljs-common";
 import { Capabilities, DepthType } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { BackgroundMapTileTreeReference, TileTreeReference } from "../../tile/internal";
+import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { ToolAdmin } from "../../tools/ToolAdmin";
 import { Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
@@ -30,22 +27,20 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import {
-  DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderTerrainMeshGeometry, TerrainTexture,
-} from "../RenderSystem";
+import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
 import { Debug } from "./Diagnostics";
 import { WebGLDisposable } from "./Disposable";
-import { LineCode } from "./LineCode";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
 import { Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { UniformHandle } from "./Handle";
 import { Layer, LayerContainer } from "./Layer";
+import { LineCode } from "./LineCode";
 import { Material } from "./Material";
 import { MeshGraphic } from "./Mesh";
 import { PointCloudGeometry } from "./PointCloud";
@@ -437,9 +432,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public createTerrainMeshGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform): RenderTerrainMeshGeometry | undefined {
     return TerrainMeshGeometry.createGeometry(terrainMesh, transform);
   }
-  public createTerrainMeshGraphic(terrainGeometry: RenderTerrainMeshGeometry, featureTable: PackedFeatureTable, textures?: TerrainTexture[]): RenderGraphic | undefined {
-    return TerrainMeshGeometry.createGraphic(this, terrainGeometry as TerrainMeshGeometry, featureTable, textures);
+  public createTerrainMeshGraphic(terrainGeometry: RenderTerrainMeshGeometry, featureTable: PackedFeatureTable, tileId: string, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
+    return TerrainMeshGeometry.createGraphic(this, terrainGeometry as TerrainMeshGeometry, featureTable, tileId, baseColor, baseTransparent, textures);
   }
+
   public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
     return createPrimitive((viOrigin) => PolylineGeometry.create(params, viOrigin), instances);
   }
@@ -578,7 +574,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public createClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
     return ClipVolume.create(clipVector);
   }
-  public createBackgroundMapDrape(drapedTree: TileTreeReference, mapTree: BackgroundMapTileTreeReference) {
+  public createBackgroundMapDrape(drapedTree: TileTreeReference, mapTree: MapTileTreeReference) {
     return BackgroundMapDrape.create(drapedTree, mapTree);
   }
 
@@ -640,6 +636,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public ensureSamplerBound(uniform: UniformHandle, unit: TextureUnit): void {
     this.lineCodeTexture!.bindSampler(uniform, unit);
   }
+  public get maxTerrainImageryLayers() { return Math.min(this.capabilities.maxFragTextureUnits, this.capabilities.maxVertTextureUnits) < 16 ? 3 : 6; }
 
   public disposeTexture(texture: WebGLTexture) {
     System.instance.context.deleteTexture(texture);

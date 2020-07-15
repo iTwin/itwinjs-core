@@ -16,3 +16,17 @@ Previously, when iModel.js computed the appropriate level of detail for tiles an
 Now, if [RenderSystem.Options.dpiAwareLOD]($frontend) is set to `true` when supplied to [IModelApp.startup]($frontend), level of detail computations will take device pixel ratio into account. This will result in a sharper image on high-DPI displays. However, it may also reduce display performance, especially on mobile devices, due to more tiles of higher resolution being displayed.
 
 This option has no effect if [RenderSystem.Options.dpiAwareViewports]($frontend) is overridden to be `false`.
+
+## Background Map Enhancements
+
+![Background Map with Wetlands and GIS layers](assets/MapLayers.png)
+
+Support for map imagery from WMS, WMTS, ArcGIS, AzureMaps, MapBox and file based tiled map servers is added in this version.  This imagery is seperated into base map, background layers and overlay layers.  The visibility and transparency of these layers can be individually controlled.  Map servers can either provide fixed, potentially cached tiles based on a predefined tiling scheme (WMTS, AzureMaps, MapBox) or produce images on demand (WMS, ArcGIS MapServer).  In general cached tile servers are more performant while the servers that produce images on demand are more flexible and may potentially include hierarchical sublayers that can be filtered seperately.
+
+### BaseMap
+
+The base map imagery can now be provided by any map imagery source or set to be a single color.  The transparency of the base map can be controlled seperately from the background map. [DisplayStyleState]($frontend) methods `changeBaseMapProps` and `changeBaseMapTransparency` are provided to control the baseMap display.   The `changeBackgroundMapProps` method continues to supports changing map properties that are not related to imagery. If `changeBackgroundMapProps` is used to change the legacy map imagery settings (`providerName` and `providerData.mapType`), the base map properties are set appropriately.  The  [DisplayStyleState]($frontend) `backgroundMapBase` property contains the base map imagery settings.
+
+### Map Layers
+
+Map Layers can be either **background** layers displayed on top of the base map but below all iModel geometry or **overlay** layers displayed on top of the iModel geometry.  The  [DisplayStyleState]($frontend) properties `backgroundMapLayers` and `overlayMapLayers` contain the background and overlay layers.  A set of  [DisplayStyleState]($frontend) methods, `attachMapLayer`, `detachMapLayerByIndex`, `changeMapLayerProps`, `changeMapSubLayerProps` etc are provided to manipulate these layers.

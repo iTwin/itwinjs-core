@@ -40,6 +40,8 @@ export * from "./IModelVersion";
 export * from "./Image";
 export * from "./LightSettings";
 export * from "./LinePixels";
+export * from "./MapImagerySettings";
+export * from "./MapLayerSettings";
 export * from "./MassProperties";
 export * from "./MaterialProps";
 export * from "./ModelProps";

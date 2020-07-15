@@ -6,14 +6,12 @@
  * @module Views
  */
 
-import {
-  Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ,
-} from "@bentley/geometry-core";
-import { Cartographic, ColorByName, ColorDef, Frustum, GlobeMode } from "@bentley/imodeljs-common";
+import { assert } from "@bentley/bentleyjs-core";
+import { Angle, Arc3d, AxisOrder, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@bentley/geometry-core";
+import { Cartographic, ColorByName, ColorDef, EcefLocation, Frustum, GeoCoordStatus, GlobeMode } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
-import { MapTile, WebMercatorTilingScheme } from "./tile/internal";
+import { WebMercatorTilingScheme } from "./tile/internal";
 
 const scratchRange = Range3d.createNull();
 const scratchZeroPoint = Point3d.createZero();
@@ -43,6 +41,7 @@ export class BackgroundMapGeometry {
   public readonly maxGeometryChordHeight: number;
   private _mercatorFractionToDb: Transform;
   private _mercatorTilingScheme: WebMercatorTilingScheme;
+  private _ecefToDb: Transform;
   public static maxCartesianDistance = 1E4;           // If globe is 3D we still consider the map geometry flat within this distance of the project extents.
   private static _transitionDistanceMultiplier = .25;  // In the transition range which extends beyond the caretesian range we intepolate between cartesian and ellipsoid.
 
@@ -50,22 +49,23 @@ export class BackgroundMapGeometry {
   private static _scratchRayAngles = new Array<LongitudeLatitudeNumber>();
   private static _scratchPoint = Point3d.createZero();
 
-  constructor(private _ecefToDb: Transform, private _bimElevationBias: number, globeMode: GlobeMode, iModel: IModelConnection) {
+  constructor(private _bimElevationBias: number, globeMode: GlobeMode, iModel: IModelConnection) {
+    this._ecefToDb = iModel.backgroundMapLocation.getMapEcefToDb(_bimElevationBias);
     this.globeMode = globeMode;
     this.cartesianRange = BackgroundMapGeometry.getCartesianRange(iModel);
     this.cartesianTransitionRange = this.cartesianRange.clone();
     this.cartesianTransitionRange.expandInPlace(BackgroundMapGeometry.getCartesianTransitionDistance(iModel));
     this.cartesianDiagonal = this.cartesianRange.diagonal().magnitudeXY();
     const earthRadius = Constant.earthRadiusWGS84.equator;
-    this.globeOrigin = _ecefToDb.origin.cloneAsPoint3d();
-    this.globeMatrix = _ecefToDb.matrix.clone();
+    this.globeOrigin = this._ecefToDb.origin.cloneAsPoint3d();
+    this.globeMatrix = this._ecefToDb.matrix.clone();
     this.cartesianChordHeight = Math.sqrt(this.cartesianDiagonal * this.cartesianDiagonal + earthRadius * earthRadius) - earthRadius; // Maximum chord height deviation of the cartesian area.
-    const halfChordAngle = Angle.piOver2Radians / MapTile.globeMeshDimension;
+    const halfChordAngle = Angle.piOver2Radians / 10;
     this.maxGeometryChordHeight = (1 - Math.cos(halfChordAngle)) * earthRadius;
     this.cartesianPlane = this.getPlane();
     this.geometry = (globeMode === GlobeMode.Ellipsoid) ? this.getEarthEllipsoid() : this.cartesianPlane;
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
-    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(_ecefToDb, _bimElevationBias, iModel, false);
+    this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(this._ecefToDb, _bimElevationBias, iModel, false);
   }
   public static getCartesianRange(iModel: IModelConnection, result?: Range3d): Range3d {
     const cartesianRange = Range3d.createFrom(iModel.projectExtents, result);
@@ -196,7 +196,6 @@ export class BackgroundMapGeometry {
         }
       }
     } else {
-      // Intersection with ellipsoid...
       const minOffset = heightRange ? heightRange.low : 0, maxOffset = (heightRange ? heightRange.high : 0) + this.cartesianChordHeight;
       const radiusOffsets = [minOffset, maxOffset];
 
@@ -348,4 +347,84 @@ export class BackgroundMapGeometry {
       }
     }
   }
+}
+
+/** @internal */
+export class BackgroundMapLocation {
+  private _ecefToDb?: Transform;
+  private _ecefValidated = false;
+
+  public onEcefChanged(ecefLocation: EcefLocation) {
+    this._ecefToDb = ecefLocation.getTransform().inverse()!;
+    this._ecefValidated = false;
+  }
+
+  public async initialize(iModel: IModelConnection): Promise<void> {
+    if (this._ecefToDb !== undefined && this._ecefValidated)
+      return;
+
+    if (!iModel.ecefLocation) {
+      this._ecefToDb = Transform.createIdentity();
+      return;
+    }
+
+    const ecefLocationDbToEcef = iModel.ecefLocation.getTransform();
+    this._ecefToDb = ecefLocationDbToEcef.inverse();
+    if (this._ecefToDb === undefined) {
+      assert(false);
+      this._ecefToDb = Transform.createIdentity();
+      return;
+    }
+
+    const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
+    if (geoConverter === undefined) {
+      this._ecefValidated = true;     // No GCS... trust the input transform...
+      return;
+    }
+
+    const projectExtents = iModel.projectExtents;
+    const origin = projectExtents.localXYZToWorld(.5, .5, .5)!;
+
+    const ecefOriginTest = ecefLocationDbToEcef.multiplyPoint3d(origin);
+    const cartoOriginTest = Cartographic.fromEcef(ecefOriginTest);
+    if (cartoOriginTest !== undefined && Math.abs(cartoOriginTest.height) < 1.0E5) {
+      this._ecefValidated = true;     // ECEF looks reasonable - use it...
+      return;
+    }
+
+    origin.z = 0; // always use ground plane
+    const eastPoint = origin.plusXYZ(10, 0, 0);
+    const northPoint = origin.plusXYZ(0, 10, 0);
+
+    const response = await geoConverter.getGeoCoordinatesFromIModelCoordinates([origin, northPoint, eastPoint]);
+    if (response.geoCoords[0].s !== GeoCoordStatus.Success || response.geoCoords[1].s !== GeoCoordStatus.Success || response.geoCoords[2].s !== GeoCoordStatus.Success) {
+      this._ecefValidated = true;   // No GCS... trust the input transform...
+      return;
+    }
+
+    const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
+    const geoNorth = Point3d.fromJSON(response.geoCoords[1].p);
+    const geoEast = Point3d.fromJSON(response.geoCoords[2].p);
+    const ecefOrigin = Cartographic.fromDegrees(geoOrigin.x, geoOrigin.y, geoOrigin.z).toEcef()!;
+    const ecefNorth = Cartographic.fromDegrees(geoNorth.x, geoNorth.y, geoNorth.z).toEcef()!;
+    const ecefEast = Cartographic.fromDegrees(geoEast.x, geoEast.y, geoEast.z).toEcef()!;
+
+    const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast);
+    const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
+    const matrix = Matrix3d.createRigidFromColumns(xVector, yVector, AxisOrder.XYZ)!;
+    this._ecefToDb = Transform.createMatrixPickupPutdown(matrix, origin, ecefOrigin).inverse()!;
+    this._ecefValidated = true;
+  }
+  public getMapEcefToDb(bimElevationBias: number): Transform {
+    if (undefined === this._ecefToDb) {
+      assert(false);
+      return Transform.createIdentity();
+    }
+
+    const mapEcefToDb = this._ecefToDb.clone();
+    mapEcefToDb.origin.z += bimElevationBias;
+
+    return mapEcefToDb;
+  }
+
 }

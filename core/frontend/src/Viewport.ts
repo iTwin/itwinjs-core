@@ -1431,17 +1431,19 @@ export abstract class Viewport implements IDisposable {
     }
   }
   /** @internal */
-  public getToolTip(hit: HitDetail): HTMLElement | string {
-    let toolTip: string | HTMLElement = "";
+  public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    const promises = new Array<Promise<string | HTMLElement | undefined>>();
     if (this.displayStyle) {
-      this.displayStyle.forEachTileTreeRef((model) => {
-        const thisToolTip = model.getToolTip(hit);
-        if (thisToolTip !== undefined)
-          toolTip = thisToolTip;
+      this.displayStyle.forEachTileTreeRef(async (tree) => {
+        promises.push(tree.getToolTip(hit));
       });
     }
+    const results = await Promise.all(promises);
+    for (const result of results)
+      if (result !== undefined)
+        return result;
 
-    return toolTip;
+    return "";
   }
 
   /** @internal */
@@ -2585,6 +2587,16 @@ export abstract class Viewport implements IDisposable {
       receiver(undefined);
     else
       this.target.readPixels(rect, selector, receiver, excludeNonLocatable);
+  }
+  /** @internal */
+  public isPixelSelectable(pixel: Pixel.Data) {
+    if (undefined === pixel.featureTable || undefined === pixel.elementId)
+      return false;
+
+    if (pixel.featureTable.modelId === pixel.elementId)
+      return false;    // Reality Models not selectable
+
+    return undefined === this.displayStyle.mapLayerFromIds(pixel.featureTable.modelId, pixel.elementId);  // Maps no selectable.
   }
 
   /** Read the current image from this viewport from the rendering system. If a view rectangle outside the actual view is specified, the entire view is captured.

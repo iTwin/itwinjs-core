@@ -13,9 +13,7 @@ import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
-import {
-  RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams,
-} from "./internal";
+import { MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
 
 /** @internal */
 export class TraversalDetails {
@@ -130,6 +128,7 @@ export class RealityTileTree extends TileTree {
   public get is3d() { return true; }
   public get maxDepth() { return this.loader.maxDepth; }
   public get isContentUnbounded() { return this.loader.isContentUnbounded; }
+  public get isTransparent() { return false; }
 
   protected _selectTiles(args: TileDrawArgs): Tile[] { return this.selectRealityTiles(args, []); }
   public get viewFlagOverrides() { return this.loader.viewFlagOverrides; }
@@ -187,10 +186,11 @@ export class RealityTileTree extends TileTree {
               targetBranch.add(graphics);
             } else {
               clipVector.transformInPlace(args.location);
-              for (const primitive of clipVector.clips)
-                for (const clipPlanes of primitive.fetchClipPlanesRef()!.convexSets)
-                  for (const plane of clipPlanes.planes)
-                    plane.offsetDistance(-displayedDescendant.radius * .05);     // Overlap with existing (high resolution) tile slightly to avoid cracks.
+              if (!this.isTransparent)
+                for (const primitive of clipVector.clips)
+                  for (const clipPlanes of primitive.fetchClipPlanesRef()!.convexSets)
+                    for (const plane of clipPlanes.planes)
+                      plane.offsetDistance(-displayedDescendant.radius * .05);     // Overlap with existing (high resolution) tile slightly to avoid cracks.
 
               const branch = new GraphicBranch();
               const doClipOverride = new ViewFlagOverrides();
@@ -229,10 +229,6 @@ export class RealityTileTree extends TileTree {
 
   public getBaseRealityDepth(_sceneContext: SceneContext) { return -1; }
 
-  public purgeRealityTiles(purgeOlderThan: BeTimePoint) {
-    this.rootTile.purgeContents(purgeOlderThan);
-  }
-
   public selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadDebugBuilder?: GraphicBuilder): RealityTile[] {
     this._lastSelected = BeTimePoint.now();
     const selected: RealityTile[] = [];
@@ -267,6 +263,17 @@ export class RealityTileTree extends TileTree {
 
       this.logTiles("Preloaded: ", preloaded.values());
       this.logTiles("Missing: ", context.missing.values());
+
+      const imageryTiles: RealityTile[] = [];
+      for (const selectedTile of selected) {
+        if (selectedTile instanceof MapTile) {
+          const selectedImageryTiles = (selectedTile as MapTile).imageryTiles;
+          if (selectedImageryTiles)
+            selectedImageryTiles.forEach((tile) => imageryTiles.push(tile));
+        }
+      }
+      if (imageryTiles.length)
+        this.logTiles("Imagery:", imageryTiles.values());
     }
 
     IModelApp.tileAdmin.addTilesForViewport(args.context.viewport, selected, args.readyTiles);

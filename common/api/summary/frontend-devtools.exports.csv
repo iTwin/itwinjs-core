@@ -5,7 +5,13 @@ alpha;appendDataListEntries(dl: DataList, entries: DataListEntry[]): void
 beta;ApplyRenderingStyleTool 
 beta;ApplyViewByIdTool 
 beta;ApplyViewTool 
+alpha;AttachArcGISMapLayerByUrlTool 
+alpha;AttachMapLayerTool 
+alpha;AttachMapOverlayTool 
 alpha;AttachRealityModelTool 
+alpha;AttachTileURLMapLayerByUrlTool 
+alpha;AttachWmsMapLayerByUrlTool 
+alpha;AttachWmtsMapLayerByUrlTool 
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
@@ -46,6 +52,7 @@ alpha;DataListHandler = (list: HTMLDataListElement) => void
 alpha;DataListProps
 alpha;DefaultTileSizeModifierTool 
 beta;deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise
+alpha;DetachMapLayersTool 
 beta;DiagnosticsPanel
 beta;DiagnosticsPanelProps
 beta;class DisplayStyleTool 
@@ -68,6 +75,12 @@ beta;KeyinFieldProps
 alpha;LabeledNumericInput
 alpha;LabeledNumericInputProps 
 beta;LoseWebGLContextTool 
+alpha;MapBaseColorTool 
+alpha;MapBaseTransparencyTool 
+alpha;MapLayerSubLayerVisiblityTool 
+alpha;MapLayerTransparencyTool 
+alpha;MapLayerVisibilityTool 
+alpha;MapLayerZoomTool 
 alpha;MeasureTileLoadTimeTool 
 beta;MemoryTracker
 alpha;NestedMenu
@@ -87,6 +100,7 @@ alpha;RealityTransitionTool
 beta;class RenderSystemDebugControlTool 
 beta;class RenderTargetDebugControlToggleTool 
 beta;class RenderTargetDebugControlTool 
+alpha;ReorderMapLayers 
 beta;ReportWebGLCompatibilityTool 
 alpha;SaveRealityModelTool 
 beta;SaveRenderingStyleTool 
@@ -94,6 +108,7 @@ beta;SaveViewTool
 beta;SelectElementsByIdTool 
 beta;serializeViewState(view: ViewState): ViewStateProps
 alpha;SetAspectRatioSkewTool 
+alpha;SetMapBaseTool 
 beta;ShowTileVolumesTool 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
@@ -120,6 +135,7 @@ alpha;ToggleRealityTilePreload
 beta;ToggleSelectedViewFrustumTool 
 beta;ToggleShadowFrustumTool 
 beta;ToggleSkyboxTool 
+alpha;ToggleTerrainTool 
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleTileTreeBoundsDecorationTool 
 beta;ToggleViewAttachmentBoundariesTool 
