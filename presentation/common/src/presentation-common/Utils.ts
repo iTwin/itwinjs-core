@@ -38,7 +38,7 @@ export interface ValuesDictionary<T> {
 
 /**
  * A structure for paged responses
- * @alpha
+ * @beta
  */
 export interface PagedResponse<T> {
   /** Total number of items */

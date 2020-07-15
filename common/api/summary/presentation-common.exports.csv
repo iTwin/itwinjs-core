@@ -21,6 +21,8 @@ public;ClassInfoJSON
 public;ComputeDisplayValueCallback = (type: string, value: string | number | boolean |
 public;ConditionContainer
 public;Content
+beta;ContentDescriptorRequestOptions
+beta;ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentFlags
 public;ContentInstancesOfSpecificClassesSpecification 
 public;ContentJSON
@@ -54,6 +56,10 @@ public;DescriptorJSON
 public;DescriptorOverrides
 public;DescriptorSource
 public;DisabledSortingRule 
+beta;DisplayLabelRequestOptions
+beta;DisplayLabelRpcRequestOptions = PresentationRpcRequestOptions
+beta;DisplayLabelsRequestOptions
+beta;DisplayLabelsRpcRequestOptions = PresentationRpcRequestOptions
 public;DisplayValue = string | undefined | DisplayValuesMap | DisplayValuesArray
 public;DisplayValue
 alpha;DisplayValueGroup
@@ -74,7 +80,11 @@ public;ECPropertyValueQuerySpecification
 public;EditorDescription
 public;EnumerationChoice
 public;EnumerationInfo
+beta;ExtendedContentRequestOptions
+beta;ExtendedContentRpcRequestOptions = PresentationRpcRequestOptions
 public;ExtendedDataRule 
+beta;ExtendedHierarchyRequestOptions
+beta;ExtendedHierarchyRpcRequestOptions = PresentationRpcRequestOptions
 public;Field
 alpha;FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor | RelatedContentFieldDescriptor
 alpha;FieldDescriptor
@@ -111,6 +121,11 @@ public;InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeV
 public;InstanceLabelOverrideValueSpecificationBase
 public;InstanceLabelOverrideValueSpecificationType
 public;InstanceNodesOfSpecificClassesSpecification 
+internal;isContentDescriptorRequestOptions: 
+internal;isDisplayLabelRequestOptions: 
+internal;isDisplayLabelsRequestOptions: 
+internal;isExtendedContentRequestOptions: 
+internal;isExtendedHierarchyRequestOptions: 
 public;Item
 public;ItemJSON
 public;Key = Readonly
@@ -172,7 +187,7 @@ alpha;NodeUpdateInfo
 alpha;NodeUpdateInfoJSON
 public;Omit
 public;Paged
-alpha;PagedResponse
+beta;PagedResponse
 public;PageOptions
 alpha;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo
 alpha;PartialHierarchyModification

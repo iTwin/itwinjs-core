@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { Element, IModelDb } from "@bentley/imodeljs-backend";
 import { InstanceKey } from "@bentley/presentation-common";
 
@@ -23,3 +23,9 @@ export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | u
   });
   return key;
 }
+
+/** @beta */
+export type WithClientRequestContext<T> = T & {
+  /** Context of a client request */
+  requestContext: ClientRequestContext;
+};

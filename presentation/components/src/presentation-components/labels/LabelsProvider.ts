@@ -51,7 +51,7 @@ export class PresentationLabelsProvider implements IPresentationLabelsProvider {
   }
 
   private async getLabelInternal(key: InstanceKey) {
-    return (await Presentation.presentation.getDisplayLabelDefinition({ imodel: this.imodel }, key)).displayValue; // WIP
+    return (await Presentation.presentation.getDisplayLabelDefinition({ imodel: this.imodel, key })).displayValue; // WIP
   }
 
   // tslint:disable-next-line:naming-convention
@@ -66,7 +66,7 @@ export class PresentationLabelsProvider implements IPresentationLabelsProvider {
   }
 
   private async getLabelsInternal(keys: InstanceKey[]) {
-    return (await Presentation.presentation.getDisplayLabelDefinitions({ imodel: this.imodel }, keys)).map((def) => def.displayValue); // WIP;
+    return (await Presentation.presentation.getDisplayLabelDefinitions({ imodel: this.imodel, keys })).map((def) => def.displayValue); // WIP
   }
 
   // tslint:disable-next-line:naming-convention

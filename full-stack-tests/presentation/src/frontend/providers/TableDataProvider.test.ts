@@ -108,7 +108,8 @@ describe("TableDataProvider", async () => {
   });
 
   it("requests backend only once to get first page", async () => {
-    const getContentAndContentSizeSpy = sinon.spy(Presentation.presentation.rpcRequestsHandler, "getContentAndSize");
+    const getPagedContentSpy = sinon.spy(Presentation.presentation.rpcRequestsHandler, "getPagedContent");
+    const getPagedContentSetSpy = sinon.spy(Presentation.presentation.rpcRequestsHandler, "getPagedContentSet");
     provider.keys = new KeySet([instances.physicalModel]);
     provider.pagingSize = 10;
 
@@ -118,7 +119,8 @@ describe("TableDataProvider", async () => {
 
     expect(count).to.not.eq(0);
     expect(row).to.not.be.undefined;
-    expect(getContentAndContentSizeSpy).to.be.calledOnce;
+    expect(getPagedContentSpy).to.not.be.called;
+    expect(getPagedContentSetSpy).to.be.calledOnce;
   });
 
   describe("sorting", () => {

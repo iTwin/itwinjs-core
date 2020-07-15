@@ -6,6 +6,7 @@
  * @module Core
  */
 
+import { DescriptorOverrides, SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
@@ -66,10 +67,24 @@ export interface RequestOptionsWithRuleset<TIModel> extends RequestOptions<TIMod
 }
 
 /**
- * Request type for hierarchy requests
+ * Base request type for hierarchy requests
  * @public
  */
-export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> { }
+export interface HierarchyRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
+}
+
+/**
+ * Request type for hierarchy requests
+ * @beta
+ */
+export interface ExtendedHierarchyRequestOptions<TIModel, TNodeKey> extends HierarchyRequestOptions<TIModel> {
+  /** Key of the parent node to get children for */
+  parentKey?: TNodeKey;
+}
+/** @internal */
+export const isExtendedHierarchyRequestOptions = <TIModel, TNodeKey>(opts: HierarchyRequestOptions<TIModel> | ExtendedHierarchyRequestOptions<TIModel, TNodeKey>): opts is ExtendedHierarchyRequestOptions<TIModel, TNodeKey> => {
+  return !!(opts as ExtendedHierarchyRequestOptions<TIModel, TNodeKey>).parentKey;
+};
 
 /**
  * Request type for content requests
@@ -84,6 +99,42 @@ export interface ContentRequestOptions<TIModel> extends RequestOptionsWithRulese
    */
   unitSystem?: PresentationUnitSystem;
 }
+
+/**
+ * Request type for content descriptor requests
+ * @beta
+ */
+export interface ContentDescriptorRequestOptions<TIModel, TKeySet> extends ContentRequestOptions<TIModel> {
+  /**
+   * Content display type.
+   * @see [[DefaultContentDisplayTypes]]
+   */
+  displayType: string;
+  /** Input keys for getting the content */
+  keys: TKeySet;
+  /** Information about the selection event that was the cause of this content request */
+  selection?: SelectionInfo;
+}
+/** @internal */
+export const isContentDescriptorRequestOptions = <TIModel, TKeySet>(opts: ContentRequestOptions<TIModel> | ContentDescriptorRequestOptions<TIModel, TKeySet>): opts is ContentDescriptorRequestOptions<TIModel, TKeySet> => {
+  return !!(opts as ContentDescriptorRequestOptions<TIModel, TKeySet>).keys;
+};
+
+/**
+ * Request type for content requests
+ * @beta
+ */
+export interface ExtendedContentRequestOptions<TIModel, TDescriptor, TKeySet> extends ContentRequestOptions<TIModel> {
+  /** Content descriptor or overrides for customizing the returned content */
+  descriptor: TDescriptor | DescriptorOverrides;
+  /** Input keys for getting the content */
+  keys: TKeySet;
+}
+/** @internal */
+export const isExtendedContentRequestOptions = <TIModel, TDescriptor, TKeySet>(opts: ContentRequestOptions<TIModel> | ExtendedContentRequestOptions<TIModel, TDescriptor, TKeySet>): opts is ExtendedContentRequestOptions<TIModel, TDescriptor, TKeySet> => {
+  return !!(opts as ExtendedContentRequestOptions<TIModel, TDescriptor, TKeySet>).descriptor
+    && !!(opts as ExtendedContentRequestOptions<TIModel, TDescriptor, TKeySet>).keys;
+};
 
 /**
  * Request type for distinct values' requests
@@ -103,6 +154,32 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet> ext
  * @public
  */
 export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> { }
+
+/**
+ * Request type for label requests
+ * @beta
+ */
+export interface DisplayLabelRequestOptions<TIModel, TInstanceKey> extends RequestOptions<TIModel> {
+  /** Key of ECInstance to get label for */
+  key: TInstanceKey;
+}
+/** @internal */
+export const isDisplayLabelRequestOptions = <TIModel, TInstanceKey>(opts: LabelRequestOptions<TIModel> | DisplayLabelRequestOptions<TIModel, TInstanceKey>): opts is DisplayLabelRequestOptions<TIModel, TInstanceKey> => {
+  return !!(opts as DisplayLabelRequestOptions<TIModel, TInstanceKey>).key;
+};
+
+/**
+ * Request type for labels requests
+ * @beta
+ */
+export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends RequestOptions<TIModel> {
+  /** Keys of ECInstances to get labels for */
+  keys: TInstanceKey[];
+}
+/** @internal */
+export const isDisplayLabelsRequestOptions = <TIModel, TInstanceKey>(opts: LabelRequestOptions<TIModel> | DisplayLabelsRequestOptions<TIModel, TInstanceKey>): opts is DisplayLabelsRequestOptions<TIModel, TInstanceKey> => {
+  return !!(opts as DisplayLabelsRequestOptions<TIModel, TInstanceKey>).keys;
+};
 
 /**
  * Request options used for selection scope related requests
