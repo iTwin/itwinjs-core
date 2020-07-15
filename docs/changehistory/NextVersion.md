@@ -30,3 +30,15 @@ The base map imagery can now be provided by any map imagery source or set to be 
 ### Map Layers
 
 Map Layers can be either **background** layers displayed on top of the base map but below all iModel geometry or **overlay** layers displayed on top of the iModel geometry.  The  [DisplayStyleState]($frontend) properties `backgroundMapLayers` and `overlayMapLayers` contain the background and overlay layers.  A set of  [DisplayStyleState]($frontend) methods, `attachMapLayer`, `detachMapLayerByIndex`, `changeMapLayerProps`, `changeMapSubLayerProps` etc are provided to manipulate these layers.
+
+## Antialiasing
+
+Antialiasing can now be turned on and off per view by setting [Viewport.antialiasSamples]($frontend) to the number of desired samples.  A value of 1 will turn off antialiasing, and a value > 1 will turn it on and attempt to use that many samples (restricted by the given hardware constraints).
+
+[ViewportManager.setAntialiasingAllViews]($frontend) can be used to set the antialiasing samples in all currnet views as well as all future views created.
+
+![example of no antialiasing on left, and antialiasing with 8 samples on the right](./assets/AntialiasExample1.png)
+<p align="center">Example: no antialiasing on left, and antialiasing with 8 samples on the right</p>
+
+![example of no antialiasing on left, and antialiasing with 4 samples on the right](./assets/AntialiasExample2.png)
+<p align="center">Example: no antialiasing on left, and antialiasing with 4 samples on the right</p>

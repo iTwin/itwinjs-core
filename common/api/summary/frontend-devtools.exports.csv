@@ -107,6 +107,7 @@ beta;SaveRenderingStyleTool
 beta;SaveViewTool 
 beta;SelectElementsByIdTool 
 beta;serializeViewState(view: ViewState): ViewStateProps
+internal;SetAASamplesTool 
 alpha;SetAspectRatioSkewTool 
 alpha;SetMapBaseTool 
 beta;ShowTileVolumesTool 

@@ -224,6 +224,9 @@
     },
     "SaveRenderingStyle": {
       "keyin": "fdt save rendering style"
+    },
+    "SetAASamples": {
+      "keyin": "fdt aasamples"
     }
   }
 }

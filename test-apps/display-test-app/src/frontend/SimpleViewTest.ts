@@ -167,6 +167,7 @@ async function main() {
     useWebGL2: false !== configuration.useWebGL2,
     planProjections: true,
     debugShaders: true === configuration.debugShaders,
+    antialiasSamples: configuration.antialiasSamples,
   };
 
   const tileAdminProps = DisplayTestApp.tileAdminProps;

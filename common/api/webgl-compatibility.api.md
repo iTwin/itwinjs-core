@@ -14,6 +14,8 @@ export class Capabilities {
     // (undocumented)
     get isWebGL2(): boolean;
     // (undocumented)
+    get maxAntialiasSamples(): number;
+    // (undocumented)
     get maxColorAttachments(): number;
     // (undocumented)
     get maxDepthType(): DepthType;

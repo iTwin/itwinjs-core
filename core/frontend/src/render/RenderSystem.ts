@@ -160,6 +160,12 @@ export abstract class RenderSystem implements IDisposable {
    */
   public readonly options: RenderSystem.Options;
 
+  /** Antialias samples to use on all subsequently created render targets.
+   * Default value: undefined (no antialiasing)
+   * @beta
+   */
+  public antialiasSamples?: number;
+
   /** Initialize the RenderSystem with the specified options.
    * @note The RenderSystem takes ownership of the supplied Options and freezes it.
    * @internal
@@ -563,5 +569,12 @@ export namespace RenderSystem {
      * @internal
      */
     debugShaders?: boolean;
+
+    /** Initial antialias setting
+     * If > 1, and a WebGL2 context is being used, will turn on antialiasing using that many samples.
+     * Default value: 1
+     * @beta
+     */
+    antialiasSamples?: number;
   }
 }

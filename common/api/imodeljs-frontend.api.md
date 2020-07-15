@@ -7040,6 +7040,8 @@ export namespace RenderScheduleState {
 export abstract class RenderSystem implements IDisposable {
     // @internal
     protected constructor(options?: RenderSystem.Options);
+    // @beta
+    antialiasSamples?: number;
     // @internal (undocumented)
     collectStatistics(_stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
@@ -7124,6 +7126,7 @@ export abstract class RenderSystem implements IDisposable {
 export namespace RenderSystem {
     // @beta
     export interface Options {
+        antialiasSamples?: number;
         // @internal
         contextAttributes?: WebGLContextAttributes;
         // @internal
@@ -7173,6 +7176,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     get animationBranches(): AnimationBranchStates | undefined;
     set animationBranches(_transforms: AnimationBranchStates | undefined);
+    // (undocumented)
+    get antialiasSamples(): number;
+    set antialiasSamples(_numSamples: number);
     // (undocumented)
     abstract changeDecorations(decorations: Decorations): void;
     // (undocumented)
@@ -8293,6 +8299,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get animationBranches(): AnimationBranchStates | undefined;
     set animationBranches(branches: AnimationBranchStates | undefined);
+    // (undocumented)
+    get antialiasSamples(): number;
+    set antialiasSamples(numSamples: number);
     // (undocumented)
     protected abstract _assignDC(): boolean;
     // (undocumented)
@@ -10450,6 +10459,8 @@ export class ViewManager {
     // @internal (undocumented)
     get sceneInvalidated(): boolean;
     get selectedView(): ScreenViewport | undefined;
+    // @beta
+    setAntialiasingAllViews(numSamples: number): void;
     setSelectedView(vp: ScreenViewport | undefined): BentleyStatus;
     setViewCursor(cursor?: string): void;
     // @internal (undocumented)
@@ -10600,6 +10611,9 @@ export abstract class Viewport implements IDisposable {
     set analysisFraction(fraction: number);
     // @internal (undocumented)
     get analysisStyle(): AnalysisStyle | undefined;
+    // @beta
+    get antialiasSamples(): number;
+    set antialiasSamples(numSamples: number);
     // @internal
     applyViewState(val: ViewState): void;
     // (undocumented)

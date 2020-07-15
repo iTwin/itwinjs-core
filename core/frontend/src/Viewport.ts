@@ -1083,6 +1083,20 @@ export abstract class Viewport implements IDisposable {
     this.invalidateRenderPlan();
   }
 
+  /** Turn on or off antialiasing in each [[Viewport]] registered with the ViewManager.
+   * Setting numSamples to 1 turns it off, setting numSamples > 1 turns it on with that many samples.
+   * @beta
+   */
+  public get antialiasSamples(): number {
+    return undefined !== this._target ? this._target.antialiasSamples : 1;
+  }
+  public set antialiasSamples(numSamples: number) {
+    if (undefined !== this._target) {
+      this._target.antialiasSamples = numSamples;
+      this.invalidateRenderPlan();
+    }
+  }
+
   /** return true if viewing globe (globeMode is 3D and eye location is far above globe
    * @alpha
    */

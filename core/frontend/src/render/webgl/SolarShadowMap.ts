@@ -462,7 +462,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     renderCommands.reset(target, this._branchStack, this._batchState);
     renderCommands.addGraphics(this._graphics);
 
-    System.instance.frameBufferStack.execute(bundle.fbo, true, () => {
+    System.instance.frameBufferStack.execute(bundle.fbo, true, false, () => {
       System.instance.context.clearDepth(1.0);
       System.instance.context.clear(GL.BufferBit.Depth);
       target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
@@ -471,7 +471,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     // copy depth buffer to EVSM shadow buffer and average down for AA effect
     gl.viewport(0, 0, evsmWidth, evsmHeight);
-    System.instance.frameBufferStack.execute(bundle.fboSM, true, () => {
+    System.instance.frameBufferStack.execute(bundle.fboSM, true, false, () => {
       System.instance.applyRenderState(this._noZRenderState);
       const params = getDrawParams(target, bundle.evsmGeom);
       target.techniques.draw(params);

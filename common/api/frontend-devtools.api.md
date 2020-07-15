@@ -1085,6 +1085,20 @@ export class SelectElementsByIdTool extends Tool {
 // @beta
 export function serializeViewState(view: ViewState): ViewStateProps;
 
+// @internal
+export class SetAASamplesTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(_control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha (undocumented)
 export class SetAspectRatioSkewTool extends Tool {
     // (undocumented)

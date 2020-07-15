@@ -542,6 +542,36 @@
       ]
     },
     {
+      "testName": "Antialiasing",
+      "testType": "both",
+      "renderOptions": {
+        "useWebGL2": true,
+        "antialiasSamples": 4
+      },
+      "tests": [
+        {
+          "iModelName": "CBI-Peru.bim",
+          "viewName": "X5"
+        },
+        {
+          "iModelName": "DTopoPNew.bim",
+          "viewName": "X2"
+        },
+        {
+          "iModelName": "Fortis.bim",
+          "viewName": "W12"
+        },
+        {
+          "iModelName": "LDT.bim",
+          "viewName": "W5"
+        },
+        {
+          "iModelName": "Offshore.bim",
+          "viewName": "X0"
+        }
+      ]
+    },
+    {
       "testName": "Text",
       "testType": "both",
       "tests": [

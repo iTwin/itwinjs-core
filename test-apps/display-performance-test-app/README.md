@@ -88,6 +88,7 @@ You can specify any render option that is part of the RenderSystem.Options inter
 * preserveShaderSourceCode - If true, preserve the shader source code as internal strings, useful for debugging purposes.
 * displaySolarShadows - If true, display solar shadows. (this will only cause shadows to be displayed if shadows are enabled in the view flags)
 * useWebGL2 - If true, attempt to use a WebGL2 rendering context.
+* antialiasSamples - If > 1 and using WebGL2, antialias the rendered image with the given number of samples.
 
 You can specify any tile property that is part of the TileAdmin.Props interface. The types of tile properties that can be specified include (but are not limited to):
 

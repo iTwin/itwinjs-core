@@ -102,6 +102,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
   public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
 
+  public get antialiasSamples(): number { return 1; }
+  public set antialiasSamples(_numSamples: number) { }
+
   /** Update the solar shadow map. If a SceneContext is supplied, shadows are enabled; otherwise, shadows are disabled. */
   public updateSolarShadows(_context: SceneContext | undefined): void { }
   public getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined { return undefined; }

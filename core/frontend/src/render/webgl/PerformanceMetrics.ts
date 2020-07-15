@@ -108,7 +108,7 @@ export class PerformanceMetrics {
       // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work
       const bytes = new Uint8Array(4);
       const gl = system.context;
-      system.frameBufferStack.execute(fbo, true, () => {
+      system.frameBufferStack.execute(fbo, true, false, () => {
         gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
       });
 

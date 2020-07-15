@@ -35,4 +35,5 @@ export interface SVTConfiguration {
   doIdleWork?: boolean; // default ON
   debugShaders?: boolean; // default OFF
   alwaysLoadEdges?: boolean; // default OFF
+  antialiasSamples?: number; // default 1 (No antialiasing)
 }

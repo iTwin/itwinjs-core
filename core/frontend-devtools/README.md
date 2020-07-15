@@ -194,3 +194,6 @@ The following arguments can be supplied -- only the URL is required.
   * `name` - The map layer name. (if not supplied the URL is used)
   * `username` - User Name (only required if credentials are required by server)
   * `password` - Password (only required if credentials are required by server)
+* `fdt aasamples <nSamples>` - Sets the number of antialias samples for the current viewport where nSamples is the number of samples to use; if 1 or less then antialiasing is turned off, if > 1 then antialiasing is turned on and it will attempt to use that many samples (restricted by the given hardware constraints)
+The following arguments can also be supplied:
+  * `all`: (optional) sets it for all open viewports as well as all future viewports

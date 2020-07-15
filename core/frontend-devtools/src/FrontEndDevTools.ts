@@ -23,7 +23,7 @@ import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
 import { AttachRealityModelTool, SaveRealityModelTool } from "./tools/RealityModelTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool, ToggleWiremeshTool } from "./tools/RenderSystemTools";
-import { ToggleDrapeFrustumTool, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze, ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect } from "./tools/RenderTargetTools";
+import { SetAASamplesTool, ToggleDrapeFrustumTool, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze, ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect } from "./tools/RenderTargetTools";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
 import { ApplyViewByIdTool, ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
 import { SelectElementsByIdTool } from "./tools/SelectionTools";
@@ -97,6 +97,7 @@ export class FrontendDevTools {
       SaveRenderingStyleTool,
       SaveViewTool,
       SelectElementsByIdTool,
+      SetAASamplesTool,
       SetAspectRatioSkewTool,
       ToggleVolClassIntersect,
       SetMapBaseTool,

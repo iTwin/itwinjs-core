@@ -72,6 +72,7 @@ export class ToggleDrapeFrustumTool extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleDrapeFrustum";
   public get aspect(): DebugControlBoolean { return "displayDrapeFrustum"; }
 }
+
 /** Control whether all geometry renders, or only instanced or batched geometry.
  * Allowed argument: "instanced", "batched", "all". Defaults to "all" if no arguments supplied.
  * @beta
@@ -145,4 +146,31 @@ export class ToggleRealityTileLogging extends RenderTargetDebugControlToggleTool
 export class ToggleVolClassIntersect extends RenderTargetDebugControlToggleTool {
   public static toolId = "ToggleVCIntersect";
   public get aspect(): DebugControlBoolean { return "vcSupportIntersectingVolumes"; }
+}
+
+/** Set the number of antialiasing sampes to use (<=1 for no antialiasing).
+ * @internal
+ */
+export class SetAASamplesTool extends RenderTargetDebugControlTool {
+  public static toolId = "SetAASamples";
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return 2; }
+
+  private _aaSamples = 1;
+  private _changeAll = false;
+
+  public execute(_control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    if (this._changeAll)
+      IModelApp.viewManager.setAntialiasingAllViews(this._aaSamples);
+    else
+      vp.antialiasSamples = this._aaSamples;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    if (0 < args.length)
+      this._aaSamples = parseInt(args[0], 10);
+    this._changeAll = (1 < args.length && args[1].toLowerCase() === "all");
+
+    return this.run(args);
+  }
 }
