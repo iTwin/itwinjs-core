@@ -16,6 +16,7 @@ import { getSourcePosition } from "../utils/paths";
  *  - Any call to `require()` wrapped in a try/catch block
  *  - Any call to `require()` where the argument is an expression which cannot be statically resolved
  *    - NB that not all JS expressions will trigger this case.  Something like `"foo" + "bar"` can still be treated by webpack as if it were just `"foobar"`.
+ *  - Any non-call use of require (assigning it to another variable, etc.)
  *
  * Ignoring these calls to `require` means that the statement will be left - unmodified - in the resulting bundle.
  * Thus, such optional dependencies can still be used so long as they are installed and discoverable via normal node module resolution at runtime.
@@ -47,6 +48,14 @@ export class IgnoreOptionalDependenciesPlugin {
           }
 
           logger.log(`Ignoring require(<<expression>>) at ${getSourcePosition(parser.state.current, expr.loc)}`);
+          return true;
+        });
+        parser.hooks.expression.for("require").tap("IgnoreOptionalDependenciesPlugin", (expr: any) => {
+          if (!this._requestRegex.test(parser.state.current.request))
+            return;
+
+          const logger = parser.state.compilation.getLogger("IgnoreOptionalDependenciesPlugin");
+          logger.log(`Ignoring non-call require expression at ${getSourcePosition(parser.state.current, expr.loc)}`);
           return true;
         });
       });
