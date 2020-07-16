@@ -130,6 +130,8 @@ export interface ChildNodeSpecificationBase {
     priority?: number;
     relatedInstances?: RelatedInstanceSpecification[];
     specType: ChildNodeSpecificationTypes;
+    // @beta
+    suppressSimilarAncestorsCheck?: boolean;
 }
 
 // @public
