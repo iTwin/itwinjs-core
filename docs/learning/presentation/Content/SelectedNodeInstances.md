@@ -5,7 +5,7 @@ Returns content for selected (input) instances.
 ## Attributes
 
 Name | Required? | Type | Default | Meaning
--|-|-|-|-|-
+-|-|-|-|-
 *Filtering* |
 `acceptableSchemaName` | No | `string` | `""` | Filter selected nodes by specified schema name. All schemas are accepted if not specified.
 `acceptableClassNames` | No | `string[]` | `[]` | Filter selected nodes by specified class names. All classes are accepted if not specified.
