@@ -17,8 +17,6 @@ import { getDisplayName } from "../common/Utils";
 import { FilteredPresentationTreeDataProvider } from "./FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 
-// tslint:disable:deprecation
-
 /**
  * Props that are injected to the TreeWithFilteringSupport HOC component.
  * @public
@@ -46,10 +44,10 @@ export interface TreeWithFilteringSupportProps {
  * @public
  * @deprecated Use `useControlledTreeFiltering` instead. Will be removed in iModel.js 3.0
  */
-// tslint:disable-next-line: variable-name naming-convention
+// tslint:disable-next-line: variable-name naming-convention deprecation
 export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps> {
 
-  type CombinedProps = P & TreeWithFilteringSupportProps;
+  type CombinedProps = P & TreeWithFilteringSupportProps; // tslint:disable-line:deprecation
 
   interface FilterKey {
     imodel: IModelConnection;

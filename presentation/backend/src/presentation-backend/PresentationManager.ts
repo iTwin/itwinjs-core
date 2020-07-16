@@ -11,8 +11,9 @@ import * as path from "path";
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, EventSink, EventSinkManager, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import {
-  Content, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayValueGroup,
-  DistinctValuesRequestOptions, getLocalesDirectory, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node,
+  Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions,
+  ExtendedHierarchyRequestOptions, getLocalesDirectory, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node,
   NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationStatus,
   PresentationUnitSystem, RequestPriority, Ruleset, RulesetVariable, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
@@ -23,7 +24,7 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { getElementKey } from "./Utils";
+import { getElementKey, WithClientRequestContext } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -354,27 +355,34 @@ export class PresentationManager {
    * @param requestOptions Options for the request
    * @param parentKey Key of the parentNode
    * @return A promise object that returns either a node response containing nodes and node count on success or an error string on error
+   * @deprecated Use `getNodes` and `getNodesCount` separately
    */
   public async getNodesAndCount(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey) {
+    const options = { ...requestOptions, requestContext, parentKey };
     const [count, nodes] = await Promise.all([
-      this.getNodesCount(requestContext, requestOptions, parentKey),
-      this.getNodes(requestContext, requestOptions, parentKey),
+      this.getNodesCount(options),
+      this.getNodes(options),
     ]);
     return { nodes, count };
   }
 
   /**
    * Retrieves nodes
-   * @param requestContext Client request context
-   * @param requestOptions options for the request
-   * @param parentKey    Key of the parent node if requesting for child nodes.
-   * @return A promise object that returns either an array of nodes on success or an error string on error.
+   * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
    */
-  public async getNodes(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey): Promise<Node[]> {
-    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+  public async getNodes(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey): Promise<Node[]>;
+  /**
+   * Retrieves nodes
+   * @beta
+   */
+  public async getNodes(requestOptions: WithClientRequestContext<Paged<ExtendedHierarchyRequestOptions<IModelDb, NodeKey>>>): Promise<Node[]>;
+  public async getNodes(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<Paged<ExtendedHierarchyRequestOptions<IModelDb, NodeKey>>>, deprecatedRequestOptions?: Paged<HierarchyRequestOptions<IModelDb>>, deprecatedParentKey?: NodeKey): Promise<Node[]> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.getNodes({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, parentKey: deprecatedParentKey });
+    }
+    const { rulesetId, strippedOptions: { parentKey, ...strippedOptions } } = this.registerRuleset(requestContextOrOptions);
     const params = {
       requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
-      requestContext,
       rulesetId,
       ...strippedOptions,
       nodeKey: parentKey,
@@ -384,16 +392,21 @@ export class PresentationManager {
 
   /**
    * Retrieves nodes count
-   * @param requestContext Client request context
-   * @param requestOptions options for the request
-   * @param parentKey Key of the parent node if requesting for child nodes.
-   * @return A promise object that returns the number of nodes.
+   * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
    */
-  public async getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number> {
-    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+  public async getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number>;
+  /**
+   * Retrieves nodes count
+   * @beta
+   */
+  public async getNodesCount(requestOptions: WithClientRequestContext<ExtendedHierarchyRequestOptions<IModelDb, NodeKey>>): Promise<number>;
+  public async getNodesCount(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<ExtendedHierarchyRequestOptions<IModelDb, NodeKey>>, deprecatedRequestOptions?: HierarchyRequestOptions<IModelDb>, deprecatedParentKey?: NodeKey): Promise<number> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.getNodesCount({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, parentKey: deprecatedParentKey });
+    }
+    const { rulesetId, strippedOptions: { parentKey, ...strippedOptions } } = this.registerRuleset(requestContextOrOptions);
     const params = {
       requestId: parentKey ? NativePlatformRequestTypes.GetChildrenCount : NativePlatformRequestTypes.GetRootNodesCount,
-      requestContext,
       rulesetId,
       ...strippedOptions,
       nodeKey: parentKey,
@@ -402,130 +415,154 @@ export class PresentationManager {
   }
 
   /**
-   * Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged.
-   * @param requestContext The client request context
-   * @param requestOptions options for the request
-   * @param paths Paths from root node to some child node.
-   * @param markedIndex Index of the path in `paths` that will be marked.
-   * @return A promise object that returns either an array of paths on success or an error string on error.
+   * Retrieves paths from root nodes to children nodes according to specified instance key paths. Intersecting paths will be merged.
+   * @deprecated Use an overload with one argument
    */
-  public async getNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
-    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+  public async getNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
+  /**
+   * Retrieves paths from root nodes to children nodes according to specified instance key paths. Intersecting paths will be merged.
+   * TODO: Return results in pages
+   * @beta
+   */
+  public async getNodePaths(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb> & { paths: InstanceKey[][], markedIndex: number }>): Promise<NodePathElement[]>;
+  public async getNodePaths(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<HierarchyRequestOptions<IModelDb> & { paths: InstanceKey[][], markedIndex: number }>, deprecatedRequestOptions?: HierarchyRequestOptions<IModelDb>, deprecatedPaths?: InstanceKey[][], deprecatedMarkedIndex?: number): Promise<NodePathElement[]> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.getNodePaths({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, paths: deprecatedPaths!, markedIndex: deprecatedMarkedIndex! });
+    }
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestContextOrOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetNodePaths,
-      requestContext,
       rulesetId,
       ...strippedOptions,
-      paths,
-      markedIndex,
+      paths: strippedOptions.paths.map((p) => p.map((s) => InstanceKey.toJSON(s))),
     };
     return this.request(params, NodePathElement.listReviver);
   }
 
   /**
    * Retrieves paths from root nodes to nodes containing filter text in their label.
-   * @param requestContext The client request context
-   * @param requestOptions options for the request
-   * @param filterText Text to filter nodes against.
-   * @return A promise object that returns either an array of paths on success or an error string on error.
+   * @deprecated Use an overload with one argument
    */
-  public async getFilteredNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]> {
-    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+  public async getFilteredNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]>;
+  /**
+   * Retrieves paths from root nodes to nodes containing filter text in their label.
+   * TODO: Return results in pages
+   * @beta
+   */
+  public async getFilteredNodePaths(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb> & { filterText: string }>): Promise<NodePathElement[]>;
+  public async getFilteredNodePaths(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<HierarchyRequestOptions<IModelDb> & { filterText: string }>, deprecatedRequestOptions?: HierarchyRequestOptions<IModelDb>, deprecatedFilterText?: string): Promise<NodePathElement[]> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.getFilteredNodePaths({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, filterText: deprecatedFilterText! });
+    }
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestContextOrOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetFilteredNodePaths,
-      requestContext,
       rulesetId,
       ...strippedOptions,
-      filterText,
     };
     return this.request(params, NodePathElement.listReviver);
   }
 
   /**
    * Loads the whole hierarchy with the specified parameters
-   * @param requestContext The client request context
-   * @param requestOptions options for the request
+   * @return A promise object that resolves when the hierarchy is fully loaded
+   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
+   * @deprecated Use an overload with one argument
+   */
+  public async loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void>;
+  /**
+   * Loads the whole hierarchy with the specified parameters
    * @return A promise object that resolves when the hierarchy is fully loaded
    * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
    */
-  public async loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void> {
-    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+  public async loadHierarchy(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb>>): Promise<void>;
+  public async loadHierarchy(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<HierarchyRequestOptions<IModelDb>>, deprecatedRequestOptions?: HierarchyRequestOptions<IModelDb>): Promise<void> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.loadHierarchy({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions });
+    }
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestContextOrOptions);
     const params = {
       requestId: NativePlatformRequestTypes.LoadHierarchy,
-      requestContext,
       rulesetId,
       ...strippedOptions,
     };
     const start = new Date();
     await this.request(params);
     Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Loading full hierarchy for `
-      + `iModel "${requestOptions.imodel.iModelId}" and ruleset "${rulesetId}" `
+      + `iModel "${requestContextOrOptions.imodel.iModelId}" and ruleset "${rulesetId}" `
       + `completed in ${((new Date()).getTime() - start.getTime()) / 1000} s.`);
   }
 
   /**
    * Retrieves the content descriptor which can be used to get content.
-   * @param requestContext The client request context
-   * @param requestOptions options for the request
-   * @param displayType  The preferred display type of the return content.
-   * @param keys         Keys of ECInstances to get the content for.
-   * @param selection    Optional selection info in case the content is being requested due to selection change.
-   * @return A promise object that returns either a descriptor on success or an error string on error.
+   * @deprecated Use an overload with [[ContentDescriptorRequestOptions]]
    */
-  public async getContentDescriptor(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined> {
-    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+  public async getContentDescriptor(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
+  /**
+   * Retrieves the content descriptor which can be used to get content
+   * @beta
+   */
+  public async getContentDescriptor(requestOptions: WithClientRequestContext<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<Descriptor | undefined>;
+  public async getContentDescriptor(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<ContentDescriptorRequestOptions<IModelDb, KeySet>>, deprecatedRequestOptions?: ContentRequestOptions<IModelDb>, deprecatedDisplayType?: string, deprecatedKeys?: KeySet, deprecatedSelection?: SelectionInfo): Promise<Descriptor | undefined> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.getContentDescriptor({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, displayType: deprecatedDisplayType!, keys: deprecatedKeys!, selection: deprecatedSelection });
+    }
+    const { rulesetId, strippedOptions } = this.registerRuleset(requestContextOrOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetContentDescriptor,
-      requestContext,
       rulesetId,
       ...strippedOptions,
-      displayType,
-      keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
-      selection,
+      keys: getKeysForContentRequest(requestContextOrOptions.imodel, requestContextOrOptions.keys).toJSON(),
     };
     return this.request(params, Descriptor.reviver);
   }
 
   /**
-   * Retrieves the content set size based on the supplied content descriptor override.
-   * @param requestContext Client request context
-   * @param requestOptions          options for the request
-   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
-   * @param keys                    Keys of ECInstances to get the content for.
-   * @return A promise object that returns either a number on success or an error string on error.
-   * Even if concrete implementation returns content in pages, this function returns the total
-   * number of records in the content set.
+   * Retrieves the content set size based on the supplied content descriptor override
+   * @deprecated Use an overload with [[ExtendedContentRequestOptions]]
    */
-  public async getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number> {
-    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+  public async getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
+  /**
+   * Retrieves the content set size based on the supplied content descriptor override
+   * @beta
+   */
+  public async getContentSetSize(requestOptions: WithClientRequestContext<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>>): Promise<number>;
+  public async getContentSetSize(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>>, deprecatedRequestOptions?: ContentRequestOptions<IModelDb>, deprecatedDescriptorOrOverrides?: Descriptor | DescriptorOverrides, deprecatedKeys?: KeySet): Promise<number> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.getContentSetSize({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, descriptor: deprecatedDescriptorOrOverrides!, keys: deprecatedKeys! });
+    }
+    const { rulesetId, strippedOptions: { descriptor, ...strippedOptions } } = this.registerRuleset(requestContextOrOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetContentSetSize,
-      requestContext,
       rulesetId,
       ...strippedOptions,
-      keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
-      descriptorOverrides: createContentDescriptorOverrides(descriptorOrOverrides),
+      keys: getKeysForContentRequest(requestContextOrOptions.imodel, requestContextOrOptions.keys).toJSON(),
+      descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
     return this.request(params);
   }
 
   /**
    * Retrieves the content based on the supplied content descriptor override.
-   * @param requestContext Client request context
-   * @param requestOptions          options for the request
-   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
-   * @param keys                    Keys of ECInstances to get the content for.
-   * @return A promise object that returns either content on success or an error string on error.
+   * @deprecated Use an overload with [[ExtendedContentRequestOptions]]
    */
-  public async getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined> {
-    const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
+  public async getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
+  /**
+   * Retrieves the content based on the supplied content descriptor override.
+   * @beta
+   */
+  public async getContent(requestOptions: WithClientRequestContext<Paged<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>>>): Promise<Content | undefined>;
+  public async getContent(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<Paged<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>>>, deprecatedRequestOptions?: Paged<ContentRequestOptions<IModelDb>>, deprecatedDescriptorOrOverrides?: Descriptor | DescriptorOverrides, deprecatedKeys?: KeySet): Promise<Content | undefined> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.getContent({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, descriptor: deprecatedDescriptorOrOverrides!, keys: deprecatedKeys! });
+    }
+    const { rulesetId, strippedOptions: { descriptor, ...strippedOptions } } = this.registerRuleset(requestContextOrOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetContent,
-      requestContext,
       rulesetId,
       ...strippedOptions,
-      keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
-      descriptorOverrides: createContentDescriptorOverrides(descriptorOrOverrides),
+      keys: getKeysForContentRequest(requestContextOrOptions.imodel, requestContextOrOptions.keys).toJSON(),
+      descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
     return this.request(params, Content.reviver);
   }
@@ -537,11 +574,12 @@ export class PresentationManager {
    * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
    * @param keys                    Keys of ECInstances to get the content for
    * @return A promise object that returns either content and content set size on success or an error string on error.
+   * @deprecated Use `getContent` and `getContentSetSize` separately
    */
   public async getContentAndSize(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet) {
     const [size, content] = await Promise.all<number, Content | undefined>([
-      this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys),
-      this.getContent(requestContext, requestOptions, descriptorOrOverrides, keys),
+      this.getContentSetSize(requestContext, requestOptions, descriptorOrOverrides, keys), // tslint:disable-line:deprecation
+      this.getContent(requestContext, requestOptions, descriptorOrOverrides, keys), // tslint:disable-line:deprecation
     ]);
     return { content, size };
   }
@@ -578,7 +616,7 @@ export class PresentationManager {
    * @return A promise object that returns either distinct values on success or an error string on error.
    * @alpha
    */
-  public async getPagedDistinctValues(requestContext: ClientRequestContext, requestOptions: DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet>): Promise<PagedResponse<DisplayValueGroup>> {
+  public async getPagedDistinctValues(requestOptions: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet>>): Promise<PagedResponse<DisplayValueGroup>> {
     if (requestOptions.fieldDescriptor.parent) {
       // not supported yet
       return {
@@ -590,7 +628,6 @@ export class PresentationManager {
     const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
     const params = {
       requestId: NativePlatformRequestTypes.GetPagedDistinctValues,
-      requestContext,
       rulesetId,
       ...strippedOptionsNoDescriptorAndKeys,
       keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
@@ -607,41 +644,58 @@ export class PresentationManager {
 
   /**
    * Retrieves display label definition of specific item
-   * @param requestContext The client request context
-   * @param requestOptions options for the request
-   * @param key Key of an instance to get label for
+   * @deprecated Use an overload with [[DisplayLabelRequestOptions]]
    */
-  public async getDisplayLabelDefinition(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<LabelDefinition> {
+  public async getDisplayLabelDefinition(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<LabelDefinition>;
+  /**
+   * Retrieves display label definition of specific item
+   * @beta
+   */
+  public async getDisplayLabelDefinition(requestOptions: WithClientRequestContext<DisplayLabelRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition>;
+  public async getDisplayLabelDefinition(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<DisplayLabelRequestOptions<IModelDb, InstanceKey>>, deprecatedRequestOptions?: LabelRequestOptions<IModelDb>, deprecatedKey?: InstanceKey): Promise<LabelDefinition> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.getDisplayLabelDefinition({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, key: deprecatedKey! });
+    }
     const params = {
       requestId: NativePlatformRequestTypes.GetDisplayLabel,
-      requestContext,
-      ...requestOptions,
-      key,
+      ...requestContextOrOptions,
+      key: InstanceKey.toJSON(requestContextOrOptions.key),
     };
     return this.request(params, LabelDefinition.reviver);
   }
 
   /**
    * Retrieves display labels definitions of specific items
-   * @param requestContext The client request context
-   * @param requestOptions options for the request
-   * @param instanceKeys Keys of instances to get labels for
+   * @deprecated Use an overload with [[DisplayLabelsRequestOptions]]
    */
-  public async getDisplayLabelDefinitions(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<LabelDefinition[]> {
-    instanceKeys = instanceKeys.map((k) => {
+  public async getDisplayLabelDefinitions(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<LabelDefinition[]>;
+  /**
+   * Retrieves display label definitions of specific items
+   * @beta
+   */
+  public async getDisplayLabelDefinitions(requestOptions: WithClientRequestContext<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]>;
+  public async getDisplayLabelDefinitions(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>, deprecatedRequestOptions?: LabelRequestOptions<IModelDb>, deprecatedInstanceKeys?: InstanceKey[]): Promise<LabelDefinition[]> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.getDisplayLabelDefinitions({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, keys: deprecatedInstanceKeys! });
+    }
+    const concreteKeys = requestContextOrOptions.keys.map((k) => {
       if (k.className === "BisCore:Element")
-        return getElementKey(requestOptions.imodel, k.id);
+        return getElementKey(requestContextOrOptions.imodel, k.id);
       return k;
-    }).filter<InstanceKey>((k): k is InstanceKey => (undefined !== k));
-    const rulesetId = "RulesDrivenECPresentationManager_RulesetId_DisplayLabel";
-    const overrides: DescriptorOverrides = {
-      displayType: DefaultContentDisplayTypes.List,
-      contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
-      hiddenFieldNames: [],
+    }).filter<InstanceKey>((k): k is InstanceKey => !!k);
+    const contentRequestOptions: WithClientRequestContext<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>> = {
+      ...requestContextOrOptions,
+      rulesetOrId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
+      descriptor: {
+        displayType: DefaultContentDisplayTypes.List,
+        contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
+        hiddenFieldNames: [],
+      },
+      keys: new KeySet(concreteKeys),
     };
-    const content = await this.getContent(requestContext, { ...requestOptions, rulesetOrId: rulesetId }, overrides, new KeySet(instanceKeys));
-    requestContext.enter();
-    return instanceKeys.map((key) => {
+    const content = await this.getContent(contentRequestOptions);
+    requestContextOrOptions.requestContext.enter();
+    return concreteKeys.map((key) => {
       const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
       if (!item)
         return { displayValue: "", rawValue: "", typeName: "" };
@@ -651,24 +705,36 @@ export class PresentationManager {
 
   /**
    * Retrieves available selection scopes.
-   * @param requestContext The client request context
-   * @param requestOptions options for the request
+   * @deprecated Use an overload with one argument
    */
-  public async getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]> {
-    (requestContext as any);
-    (requestOptions as any);
+  public async getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
+  /**
+   * Retrieves available selection scopes.
+   * @beta
+   */
+  public async getSelectionScopes(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb>>): Promise<SelectionScope[]>;
+  public async getSelectionScopes(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<SelectionScopeRequestOptions<IModelDb>>, deprecatedRequestOptions?: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.getSelectionScopes({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions });
+    }
     return SelectionScopesHelper.getSelectionScopes();
   }
 
   /**
    * Computes selection set based on provided selection scope.
-   * @param requestContext The client request context
-   * @param requestOptions Options for the request
-   * @param keys Keys of elements to get the content for.
-   * @param scopeId ID of selection scope to use for computing selection
+   * @deprecated Use an overload with one argument
    */
-  public async computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet> {
-    (requestContext as any);
+  public async computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet>;
+  /**
+   * Computes selection set based on provided selection scope.
+   * @beta
+   */
+  public async computeSelection(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }>): Promise<KeySet>;
+  public async computeSelection(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }>, deprecatedRequestOptions?: SelectionScopeRequestOptions<IModelDb>, deprecatedIds?: Id64String[], deprecatedScopeId?: string): Promise<KeySet> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.computeSelection({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions, ids: deprecatedIds!, scopeId: deprecatedScopeId! });
+    }
+    const { requestContext, ids, scopeId, ...requestOptions } = requestContextOrOptions;
     return SelectionScopesHelper.computeSelection(requestOptions, ids, scopeId);
   }
 
@@ -690,19 +756,31 @@ export class PresentationManager {
     return JSON.parse(serializedResponse, reviver);
   }
 
-  public async compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb>): Promise<PartialHierarchyModification[]> {
-    const prev = getPrevValues(requestOptions);
-    const currRulesetId = this.getRulesetIdObject(requestOptions.rulesetOrId);
+  /** @deprecated Use an overload with one argument */
+  public async compareHierarchies(requestContext: ClientRequestContext, requestOptions: PresentationDataCompareOptions<IModelDb>): Promise<PartialHierarchyModification[]>;
+  /**
+   * Compares two hierarchies specified in the request options
+   * TODO: Return results in pages
+   * @beta
+   */
+  public async compareHierarchies(requestOptions: WithClientRequestContext<PresentationDataCompareOptions<IModelDb>>): Promise<PartialHierarchyModification[]>;
+  public async compareHierarchies(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<PresentationDataCompareOptions<IModelDb>>, deprecatedRequestOptions?: PresentationDataCompareOptions<IModelDb>): Promise<PartialHierarchyModification[]> {
+    if (requestContextOrOptions instanceof ClientRequestContext) {
+      return this.compareHierarchies({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions });
+    }
+
+    const prev = getPrevValues(requestContextOrOptions);
+    const currRulesetId = this.getRulesetIdObject(requestContextOrOptions.rulesetOrId);
     const prevRulesetId = this.getRulesetIdObject(prev.rulesetOrId);
     if (prevRulesetId.parts.id !== currRulesetId.parts.id)
       throw new PresentationError(PresentationStatus.InvalidArgument, "Can't compare rulesets with different IDs");
 
-    this.registerRuleset(requestOptions);
-    const imodelAddon = this.getNativePlatform().getImodelAddon(requestOptions.imodel);
-    const modificationJsons = await this.getNativePlatform().compareHierarchies(requestContext, imodelAddon, {
+    this.registerRuleset(requestContextOrOptions);
+    const imodelAddon = this.getNativePlatform().getImodelAddon(requestContextOrOptions.imodel);
+    const modificationJsons = await this.getNativePlatform().compareHierarchies(requestContextOrOptions.requestContext, imodelAddon, {
       prevRulesetId: prevRulesetId.uniqueId,
       currRulesetId: currRulesetId.uniqueId,
-      locale: normalizeLocale(requestOptions.locale ?? this.activeLocale) ?? "",
+      locale: normalizeLocale(requestContextOrOptions.locale ?? this.activeLocale) ?? "",
     });
     return modificationJsons.map(PartialHierarchyModification.fromJSON);
   }

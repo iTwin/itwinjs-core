@@ -162,10 +162,12 @@ async function main() {
     filterMapTextures: true === configuration.filterMapTextures,
     filterMapDrapeTextures: false !== configuration.filterMapDrapeTextures,
     dpiAwareViewports: false !== configuration.dpiAwareViewports,
+    dpiAwareLOD: true === configuration.dpiAwareLOD,
     doIdleWork: false !== configuration.doIdleWork,
     useWebGL2: false !== configuration.useWebGL2,
     planProjections: true,
     debugShaders: true === configuration.debugShaders,
+    antialiasSamples: configuration.antialiasSamples,
   };
 
   const tileAdminProps = DisplayTestApp.tileAdminProps;

@@ -39,7 +39,7 @@ steps:
          if mainBranch in branchName:
            distTag = "nightly"
          elif "release/" in branchName:
-           print "On a release branch"
+           print ("On a release branch")
            if currentReleaseBranch in branchName:
              distTag = "latest"
            elif oldReleaseBranch in branchName:

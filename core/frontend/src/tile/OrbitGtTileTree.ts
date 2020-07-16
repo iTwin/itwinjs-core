@@ -429,7 +429,7 @@ class OrbitGtTreeReference extends OrbitGtTileTree.Reference {
     if (undefined !== tree)
       tree.collectStatistics(stats);
   }
-  public getToolTip(hit: HitDetail): HTMLElement | string | undefined {
+  public async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
     const tree = this.treeOwner.tileTree;
     if (undefined === tree || hit.iModel !== tree.iModel)
       return undefined;

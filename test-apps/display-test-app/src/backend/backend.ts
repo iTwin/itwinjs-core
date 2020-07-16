@@ -100,8 +100,18 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_DPI_AWARE_VIEWPORTS)
     configuration.dpiAwareViewports = false;
 
+  if (undefined !== process.env.SVT_DPI_LOD)
+    configuration.dpiAwareLOD = true;
+
   if (undefined !== process.env.SVT_NO_CANCEL_TILE_REQUESTS)
     configuration.cancelBackendTileRequests = false;
+
+  const aaSamplesVar = process.env.SVT_AASAMPLES;
+  if (undefined !== aaSamplesVar && "0" !== aaSamplesVar && "false" !== aaSamplesVar.toLowerCase()) {
+    const aaSamples = Number.parseInt(aaSamplesVar, 10);
+    if (!Number.isNaN(aaSamples))
+      configuration.antialiasSamples = aaSamples;
+  }
 
   const useWebGL2Var = process.env.SVT_USE_WEBGL2;
   if (undefined !== useWebGL2Var && ("0" === useWebGL2Var || "false" === useWebGL2Var.toLowerCase()))

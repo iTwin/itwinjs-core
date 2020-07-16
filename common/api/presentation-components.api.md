@@ -13,8 +13,8 @@ import { ControlledTreeProps } from '@bentley/ui-components';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
+import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
-import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { HighlightableTreeProps } from '@bentley/ui-components';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
@@ -331,14 +331,14 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
 // @alpha (undocumented)
 export interface PresentationTreeDataProviderDataSourceEntryPoints {
     // (undocumented)
-    getFilteredNodePaths: (requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string) => Promise<NodePathElement[]>;
+    getFilteredNodePaths: (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>, filterText: string) => Promise<NodePathElement[]>;
     // (undocumented)
-    getNodes: (requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey) => Promise<Node[]>;
-    // (undocumented)
-    getNodesAndCount: (requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey) => Promise<{
+    getNodesAndCount: (requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>) => Promise<{
         nodes: Node[];
         count: number;
     }>;
+    // (undocumented)
+    getNodesCount: (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>) => Promise<number>;
 }
 
 // @public

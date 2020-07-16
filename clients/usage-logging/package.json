@@ -1,6 +1,6 @@
 {
   "name": "@bentley/usage-logging-client",
-  "version": "2.4.0-dev.2",
+  "version": "2.4.0-dev.7",
   "description": "iModel.js Usage Logging Client",
   "main": "lib/usage-logging-client.js",
   "typings": "lib/usage-logging-client",
@@ -34,17 +34,17 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.4.0-dev.2"
+    "@bentley/bentleyjs-core": "2.4.0-dev.7"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "^2.4.0-dev.2"
+    "@bentley/itwin-client": "^2.4.0-dev.7"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.4.0-dev.2",
-    "@bentley/certa": "2.4.0-dev.2",
-    "@bentley/config-loader": "2.4.0-dev.2",
-    "@bentley/itwin-client": "2.4.0-dev.2",
-    "@bentley/oidc-signin-tool": "2.4.0-dev.2",
+    "@bentley/build-tools": "2.4.0-dev.7",
+    "@bentley/certa": "2.4.0-dev.7",
+    "@bentley/config-loader": "2.4.0-dev.7",
+    "@bentley/itwin-client": "2.4.0-dev.7",
+    "@bentley/oidc-signin-tool": "2.4.0-dev.7",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

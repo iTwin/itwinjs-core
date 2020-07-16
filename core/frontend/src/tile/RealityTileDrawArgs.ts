@@ -51,7 +51,7 @@ export class RealityTileDrawArgs extends TileDrawArgs {
       }
 
       if (!behindEye)
-        return scratchXRange.isNull ? 1.0E-3 : Math.sqrt(scratchXRange.length() * scratchYRange.length());
+        return scratchXRange.isNull ? 1.0E-3 : this.context.adjustPixelSizeForLOD(Math.sqrt(scratchXRange.length() * scratchYRange.length()));
     }
 
     return super.getPixelSize(tile);

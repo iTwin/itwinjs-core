@@ -75,6 +75,7 @@ export class Capabilities {
   private _maxFragUniformVectors: number = 0;
   private _canRenderDepthWithoutColor: boolean = false;
   private _maxAnisotropy?: number;
+  private _maxAntialiasSamples: number = 1;
 
   private _extensionMap: { [key: string]: any } = {}; // Use this map to store actual extension objects retrieved from GL.
   private _presentFeatures: WebGLFeature[] = []; // List of features the system can support (not necessarily dependent on extensions)
@@ -92,6 +93,7 @@ export class Capabilities {
   public get maxVertUniformVectors(): number { return this._maxVertUniformVectors; }
   public get maxVaryingVectors(): number { return this._maxVaryingVectors; }
   public get maxFragUniformVectors(): number { return this._maxFragUniformVectors; }
+  public get maxAntialiasSamples(): number { return this._maxAntialiasSamples; }
   public get isWebGL2(): boolean { return this._isWebGL2; }
 
   /** These getters check for existence of extension objects to determine availability of features.  In WebGL2, could just return true for some. */
@@ -211,6 +213,7 @@ export class Capabilities {
     this._maxVertUniformVectors = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
     this._maxVaryingVectors = gl.getParameter(gl.MAX_VARYING_VECTORS);
     this._maxFragUniformVectors = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
+    this._maxAntialiasSamples = (this._isWebGL2 && undefined !== gl2 ? gl.getParameter(gl2.MAX_SAMPLES) : 1);
 
     const extensions = gl.getSupportedExtensions(); // This just retrieves a list of available extensions (not necessarily enabled).
     if (extensions) {

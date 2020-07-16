@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, compareStrings, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf, SortedArray, StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
@@ -53,7 +53,8 @@ import { SheetViewState } from "./Sheet";
  *
  * If the provider's internal state changes such that the Viewport should recompute the symbology overrides, the provider should notify the viewport by
  * calling [[Viewport.setFeatureOverrideProviderChanged]].
- * @see [[Viewport.featureOverrideProvider]]
+ * @see [[Viewport.addFeatureOverrideProvider]]
+ * @see [[Viewport.dropFeatureOverrideProvider]]
  * @public
  */
 export interface FeatureOverrideProvider {
@@ -928,7 +929,7 @@ export abstract class Viewport implements IDisposable {
   private _neverDrawn?: Id64Set;
   private _alwaysDrawn?: Id64Set;
   private _alwaysDrawnExclusive: boolean = false;
-  private _featureOverrideProvider?: FeatureOverrideProvider;
+  private readonly _featureOverrideProviders: FeatureOverrideProvider[] = [];
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
@@ -1080,6 +1081,20 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.settings.applyOverrides(overrides);
     this._changeFlags.setDisplayStyle();
     this.invalidateRenderPlan();
+  }
+
+  /** Turn on or off antialiasing in each [[Viewport]] registered with the ViewManager.
+   * Setting numSamples to 1 turns it off, setting numSamples > 1 turns it on with that many samples.
+   * @beta
+   */
+  public get antialiasSamples(): number {
+    return undefined !== this._target ? this._target.antialiasSamples : 1;
+  }
+  public set antialiasSamples(numSamples: number) {
+    if (undefined !== this._target) {
+      this._target.antialiasSamples = numSamples;
+      this.invalidateRenderPlan();
+    }
   }
 
   /** return true if viewing globe (globeMode is 3D and eye location is far above globe
@@ -1430,17 +1445,19 @@ export abstract class Viewport implements IDisposable {
     }
   }
   /** @internal */
-  public getToolTip(hit: HitDetail): HTMLElement | string {
-    let toolTip: string | HTMLElement = "";
+  public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    const promises = new Array<Promise<string | HTMLElement | undefined>>();
     if (this.displayStyle) {
-      this.displayStyle.forEachTileTreeRef((model) => {
-        const thisToolTip = model.getToolTip(hit);
-        if (thisToolTip !== undefined)
-          toolTip = thisToolTip;
+      this.displayStyle.forEachTileTreeRef(async (tree) => {
+        promises.push(tree.getToolTip(hit));
       });
     }
+    const results = await Promise.all(promises);
+    for (const result of results)
+      if (result !== undefined)
+        return result;
 
-    return toolTip;
+    return "";
   }
 
   /** @internal */
@@ -1564,20 +1581,98 @@ export abstract class Viewport implements IDisposable {
     this._perModelCategoryVisibility.addOverrides(fs, ovrs);
   }
 
+  /** Add a [[FeatureOverrideProvider]] to customize the appearance of [[Feature]]s within the viewport.
+   * The provider will be invoked whenever the overrides are determined to need updating.
+   * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
+   * the internal state of the provider changes such that the computed overrides must also change.
+   * @note A Viewport can have any number of FeatureOverrideProviders. No attempt is made to resolve conflicts between two different providers overriding the same Feature.
+   * @param provider The provider to register.
+   * @returns true if the provider was registered, or false if the provider was already registered.
+   * @see [[dropFeatureOverrideProvider]] to remove the provider.
+   * @see [[findFeatureOverrideProvider]] to find an existing provider.
+   * @see [[FeatureSymbology.Overrides]].
+   */
+  public addFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean {
+    if (this._featureOverrideProviders.includes(provider))
+      return false;
+
+    this._featureOverrideProviders.push(provider);
+    this.setFeatureOverrideProviderChanged();
+    return true;
+  }
+
+  /** Removes the specified FeatureOverrideProvider from the viewport.
+   * @param provider The provider to drop.
+   * @returns true if the provider was dropped, or false if it was not registered.
+   * @see [[addFeatureOverrideProvider]].
+   */
+  public dropFeatureOverrideProvider(provider: FeatureOverrideProvider): boolean {
+    const index = this._featureOverrideProviders.indexOf(provider);
+    if (-1 === index)
+      return false;
+
+    this._featureOverrideProviders.splice(index, 1);
+    this.setFeatureOverrideProviderChanged();
+    return true;
+  }
+
+  /** Locate the first registered FeatureOverrideProvider matching the supplied criterion.
+   * @param predicate A function that will be invoked for each provider currently registered with the viewport, returning true to accept the provider.
+   * @returns The first registered provider that matches the predicate, or undefined if no providers match the predicate.
+   * @see [[findFeatureOverrideProviderOfType]] to locate a provider of a specific class.
+   * @see [[addFeatureOverrideProvider]] to register a provider.
+   */
+  public findFeatureOverrideProvider(predicate: (provider: FeatureOverrideProvider) => boolean): FeatureOverrideProvider | undefined {
+    for (const provider of this._featureOverrideProviders)
+      if (predicate(provider))
+        return provider;
+
+    return undefined;
+  }
+
+  /** Locate the first registered FeatureOverrideProvider of the specified class. For example, to locate a registered [[EmphasizeElements]] provider:
+   * ```ts
+   * const provider: EmphasizeElements = viewport.findFeatureOverrideProviderOfType<EmphasizeElements>(EmphasizeElements);
+   * ```
+   * @see [[findFeatureOverrideProvider]] to locate a registered provider matching any arbitrary criterion.
+   */
+  public findFeatureOverrideProviderOfType<T>(type: Constructor<T>): T | undefined {
+    const provider = this.findFeatureOverrideProvider((x) => isInstanceOf<T>(x, type));
+    return asInstanceOf<T>(provider, type);
+  }
+
+  /** @internal */
+  public addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void {
+    for (const provider of this._featureOverrideProviders)
+      provider.addFeatureOverrides(ovrs, this);
+  }
+
   /** An object which can customize the appearance of [[Feature]]s within a viewport.
    * If defined, the provider will be invoked whenever the overrides are determined to need updating.
    * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
    * the internal state of the provider changes such that the computed overrides must also change.
    * @see [[FeatureSymbology.Overrides]]
+   * @see [[findFeatureOverrideProvider]] as a replacement for the deprecated getter.
+   * @see [[addFeatureOverrideProvider]] as the replacement for the deprecated setter.
+   * @note A viewport can now have any number of FeatureOverrideProviders, therefore this property is deprecated. The getter will return undefined unless exactly one provider is registered; the setter will remove any other providers and register only the new provider.
+   * @deprecated Use [[addFeatureOverrideProvider]].
    */
   public get featureOverrideProvider(): FeatureOverrideProvider | undefined {
-    return this._featureOverrideProvider;
+    return 1 === this._featureOverrideProviders.length ? this._featureOverrideProviders[0] : undefined;
   }
+
   public set featureOverrideProvider(provider: FeatureOverrideProvider | undefined) {
-    if (provider !== this._featureOverrideProvider) {
-      this._featureOverrideProvider = provider;
+    if (this.featureOverrideProvider === provider) // tslint:disable-line:deprecation
+      return;
+
+    if (undefined === provider) {
+      this._featureOverrideProviders.length = 0;
       this.setFeatureOverrideProviderChanged();
+      return;
     }
+
+    this._featureOverrideProviders.length = 0;
+    this.addFeatureOverrideProvider(provider);
   }
 
   /** Notifies this viewport that the internal state of its [[FeatureOverrideProvider]] has changed such that its
@@ -2286,6 +2381,7 @@ export abstract class Viewport implements IDisposable {
    * one pixel of the view represents more spatial area at the back of the Frustum than the front.)
    * @param point The point to test, in World coordinates. If undefined, the center of the view in NPC space is used.
    * @returns The width of a view pixel at the supplied world point, in meters.
+   * @note A "pixel" refers to a logical (CSS) pixel, not a device pixel.
    */
   public getPixelSizeAtPoint(point?: Point3d): number {
     if (point === undefined)
@@ -2505,6 +2601,16 @@ export abstract class Viewport implements IDisposable {
       receiver(undefined);
     else
       this.target.readPixels(rect, selector, receiver, excludeNonLocatable);
+  }
+  /** @internal */
+  public isPixelSelectable(pixel: Pixel.Data) {
+    if (undefined === pixel.featureTable || undefined === pixel.elementId)
+      return false;
+
+    if (pixel.featureTable.modelId === pixel.elementId)
+      return false;    // Reality Models not selectable
+
+    return undefined === this.displayStyle.mapLayerFromIds(pixel.featureTable.modelId, pixel.elementId);  // Maps no selectable.
   }
 
   /** Read the current image from this viewport from the rendering system. If a view rectangle outside the actual view is specified, the entire view is captured.

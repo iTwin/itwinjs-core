@@ -8,6 +8,9 @@
 export class AbandonedError extends Error {
 }
 
+// @public
+export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | undefined;
+
 // @beta
 export function assert(condition: boolean, msg?: string): asserts condition;
 
@@ -267,6 +270,9 @@ export class Config {
     remove(varName: string): void;
     set(varName: string, value: boolean | string | number): void;
 }
+
+// @public
+export type Constructor<T> = new (...args: any[]) => T;
 
 // @public
 export enum DbOpcode {
@@ -961,6 +967,9 @@ export const isElectronRenderer: boolean;
 
 // @public
 export function isIDisposable(obj: unknown): obj is IDisposable;
+
+// @public
+export function isInstanceOf<T>(obj: any, constructor: Constructor<T>): boolean;
 
 // @public
 export namespace JsonUtils {

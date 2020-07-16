@@ -115,6 +115,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
     items.push(this.getViewFlagItem("visEdges", this.getFlagState("visEdges"), "UiFramework:listTools.visEdges"));
     items.push(this.getViewFlagItem("ambientOcclusion", this.getFlagState("ambientOcclusion"), "UiFramework:listTools.ambientOcclusion"));
     items.push(this.getViewFlagItem("shadows", this.getFlagState("shadows"), "UiFramework:listTools.shadows"));
+    items.push(this.getViewFlagItem("backgroundMap", this.getFlagState("backgroundMap"), "UiFramework:listTools.backgroundMap"));
     return <div className="uifw-view-attributes-contents">{items}</div>;
   }
 

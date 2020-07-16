@@ -180,6 +180,7 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       const range = accum.geometries!.computeRange();
       const pt = range.low.interpolate(0.5, range.high);
       pixelSize = this.viewport.getPixelSizeAtPoint(pt);
+      pixelSize = this.viewport.target.adjustPixelSizeForLOD(pixelSize);
 
       if (this.applyAspectRatioSkew) {
         // Aspect ratio skew > 1.0 stretches the view in Y. In that case use the smaller vertical pixel distance for our stroke tolerance.

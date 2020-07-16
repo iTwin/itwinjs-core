@@ -86,10 +86,10 @@ describe("IModelBridgeFwk (#integration)", () => {
     // verify that an unchanged source results in an unchanged imodel
     await runBridge(bridgeJobDef, serverArgs, false);
 
-    // verify that a change source changes the imodel
+    // verify that a changed source changes the imodel
     IModelJsFs.copySync(path.join(KnownTestLocations.assetsDir, "TestBridge_v2.json"), targetPath, { overwrite: true });
     await runBridge(bridgeJobDef, serverArgs, true);
 
-    // IModelJsFs.purgeDirSync(KnownTestLocations.outputDir);
+    IModelJsFs.purgeDirSync(KnownTestLocations.outputDir);
   });
 });

@@ -1,0 +1,39 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/index";
+
+$uicore-list-item-height:               $uicore-baseline * 2;    ///  22px; /// ~1.618;
+
+ul.core-listbox {
+  list-style: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  color: $buic-foreground-body;
+  border: 1px solid $buic-foreground-disabled; // default border: disabled or muted foreground
+  position: relative; // required to properly set scrollTop position
+
+  &:focus {
+    border-color: $buic-foreground-focus;
+  }
+
+  .core-listbox-item {
+    display: inline-flex;
+    line-height: $uicore-list-item-height;
+    padding-left: 4px;
+    &[data-current] {
+      background-color: $buic-row-selection;
+    }
+    &:hover {
+      background-color: $buic-row-hover;
+    }
+  }
+}

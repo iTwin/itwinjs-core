@@ -346,7 +346,7 @@ export class SelectionTool extends PrimitiveTool {
             if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
               continue; // no geometry at this location...
 
-            if (undefined !== pixel.featureTable && pixel.featureTable.modelId === pixel.elementId)
+            if (!vp.isPixelSelectable(pixel))
               continue; // reality model, terrain, etc - not selectable
 
             if (undefined !== outline && !offset.containsPoint(testPoint))
@@ -479,7 +479,7 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
-    if (hit !== undefined && !hit.isModelHit) { // model hit = terrain, reality models, background maps, etc - not selectable
+    if (hit !== undefined && !hit.isModelHit && !hit.isMapHit) { // model hit = terrain, reality models, background maps, etc - not selectable
       if (EventHandled.Yes === await this.selectDecoration(ev, hit))
         return EventHandled.Yes;
 

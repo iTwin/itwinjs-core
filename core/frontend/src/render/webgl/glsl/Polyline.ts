@@ -10,7 +10,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent,
+  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderBuilder, VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
 import { IsInstanced } from "../TechniqueFlags";
@@ -77,6 +77,11 @@ vec2 computeLineCodeTextureCoords(vec2 windowDir, vec4 projPos, float adjust) {
 /** @internal */
 export const adjustWidth = `
 void adjustWidth(inout float width, vec2 d2, vec2 org) {
+  if (u_aaSamples > 1) {
+    if (width < 5.0)
+      width += (5.0 - width) * 0.125;
+    return;
+  }
   // calculate slope based width adjustment for non-AA lines, widths 1 to 4
   vec2 d2A = abs(d2);
   const float s_myFltEpsilon = 0.0001;  // limit test resolution to 4 digits in case 24 bit (s16e7) is used in hardware
@@ -86,9 +91,9 @@ void adjustWidth(inout float width, vec2 d2, vec2 org) {
 
     if (width < 1.5) { // width 1
       if (tan <= 1.0)
-        width = d2A.y / len;
+        width = d2A.y;
       else
-        width = d2A.x / len;
+        width = d2A.x;
       // width 1 requires additional adjustment plus trimming in frag shader using v_lnInfo
       width *= 1.01;
       v_lnInfo.xy = org;
@@ -102,27 +107,38 @@ void adjustWidth(inout float width, vec2 d2, vec2 org) {
 
     } else if (width < 2.5) { // width 2
       if (tan <= 0.5)
-        width = 2.0 * d2A.y / len;
+        width = 2.0 * d2A.y;
       else
-        width = (d2A.y + 2.0 * d2A.x) / len;
+        width = (d2A.y + 2.0 * d2A.x);
 
     } else if (width < 3.5) { // width 3
         if (tan <= 1.0)
-            width = (3.0 * d2A.y + d2A.x) / len;
+            width = (3.0 * d2A.y + d2A.x);
         else
-            width = (d2A.y + 3.0 * d2A.x) / len;
+            width = (d2A.y + 3.0 * d2A.x);
 
     } else { // if (width < 4.5) // width 4
       if (tan <= 0.5)
-        width = (4.0 * d2A.y + d2A.x) / len;
+        width = (4.0 * d2A.y + d2A.x);
       else if (tan <= 2.0)
-        width = (3.0 * d2A.y + 3.0 * d2A.x) / len;
+        width = (3.0 * d2A.y + 3.0 * d2A.x);
       else
-        width = (d2A.y + 4.0 * d2A.x) / len;
+        width = (d2A.y + 4.0 * d2A.x);
     }
+    width /= len;
   }
 }
 `;
+
+/** @internal */
+export function addAdjustWidth(vert: VertexShaderBuilder) {
+  vert.addUniform("u_aaSamples", VariableType.Int, (prog) => {
+    prog.addGraphicUniform("u_aaSamples", (attr, params) => {
+      attr.setUniform1i(params.target.compositor.antialiasSamples);
+    });
+  });
+  vert.addFunction(adjustWidth);
+}
 
 /** @internal */
 export function addLineCodeTexture(frag: FragmentShaderBuilder) {
@@ -180,7 +196,7 @@ function addCommon(prog: ProgramBuilder) {
   vert.addGlobal("miterAdjust", VariableType.Float, "0.0");
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   prog.addVarying("v_lnInfo", VariableType.Vec4);
-  vert.addFunction(adjustWidth);
+  addAdjustWidth(vert);
   vert.addFunction(decodePosition);
 }
 

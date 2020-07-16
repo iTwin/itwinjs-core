@@ -1,6 +1,22 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Tue, 07 Jul 2020 14:44:52 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2020 17:23:14 GMT and should not be manually modified.
+
+## 2.3.0
+Fri, 10 Jul 2020 17:23:14 GMT
+
+### Updates
+
+- geometry clip containment
+- allow opening briefcases readonly with SnapshotDb.openFile and StandaloneDb.openFile
+- Bug fix and doc fix
+- Add IModelDb.computeProjectExtents().
+- Performance tests for 2D Elemen CRUD operations
+- Changes to support imodel-bridge
+- fix spelling mistakes in Device class
+- Fix typo in comments
+- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades. 
+- disallow protected operations for missing schemas marked with SchemaHasBehavior custom attribute
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

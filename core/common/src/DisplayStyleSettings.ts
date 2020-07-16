@@ -15,14 +15,15 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
 import { GroundPlaneProps } from "./GroundPlane";
 import { HiddenLine } from "./HiddenLine";
+import { SubCategoryOverride } from "./imodeljs-common";
 import { LightSettings, LightSettingsProps } from "./LightSettings";
+import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
 import { RenderSchedule } from "./RenderSchedule";
 import { SkyBoxProps } from "./SkyBox";
 import { SolarShadowSettings, SolarShadowSettingsProps } from "./SolarShadows";
 import { SpatialClassificationProps } from "./SpatialClassificationProps";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
-import { SubCategoryOverride } from "./SubCategoryOverride";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
 import { ViewFlagProps, ViewFlags } from "./ViewFlags";
 
@@ -42,7 +43,6 @@ export interface EnvironmentProps {
   ground?: GroundPlaneProps;
   sky?: SkyBoxProps;
 }
-
 /** JSON representation of the blob properties for an OrbitGt property cloud.
  * @alpha
  */
@@ -112,12 +112,16 @@ export interface DisplayStyleSettingsProps {
   timePoint?: number;
   /** Overrides applied to the appearances of subcategories in the view. */
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
-  /** Settings controlling display of map imagery within views of geolocated models. */
+  /** Settings controlling display of map within views of geolocated models. */
   backgroundMap?: BackgroundMapProps;
   /** Contextual Reality Models */
   contextRealityModels?: ContextRealityModelProps[];
   /** List of IDs of excluded elements */
   excludedElements?: Id64String[];
+  /** Map Imagery.
+   * @alpha
+   */
+  mapImagery?: MapImageryProps;
 }
 
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
@@ -216,6 +220,7 @@ export class DisplayStyleSettings {
   private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
   private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
   private _backgroundMap: BackgroundMapSettings;
+  private _mapImagery: MapImagerySettings;
   private _analysisStyle?: AnalysisStyle;
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
@@ -236,6 +241,7 @@ export class DisplayStyleSettings {
     this._monochromeMode = MonochromeMode.Flat === this._json.monochromeMode ? MonochromeMode.Flat : MonochromeMode.Scaled;
 
     this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
+    this._mapImagery = MapImagerySettings.fromJSON(this._json.mapImagery, this._json.backgroundMap);
 
     if (this._json.analysisStyle)
       this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
@@ -318,6 +324,25 @@ export class DisplayStyleSettings {
       this._json.backgroundMap = map.toJSON();
     }
   }
+
+  /** Get the map imagery for this display style.  Map imagery includes the background map base as well as background layers and overlay layers.
+   * In earlier versions only a background map image was supported as specified by the providerName and mapType members of [[BackgroundMapSettings]] object.
+   * In order to provide backward compatibility the original [[BackgroundMapSettings]] are synchronized with the [[MapImagerySettings]] base layer as long as
+   * the settings are compatible.  The map imagery typically only should be modified only through  [DisplayStyleState]($frontend) methods.
+   * Map imagery should only be modified from backend, changes to map imagery from front end should be handled only through [DisplayStyleState]($frontend) methods.
+   * @alpha
+   */
+  public get mapImagery(): MapImagerySettings { return this._mapImagery; }
+
+  public set mapImagery(mapImagery: MapImagerySettings) {
+    this._mapImagery = mapImagery;
+    this._json.mapImagery = this._mapImagery.toJSON();
+  }
+
+  /** @internal
+   * Handles keeping the map imagery layers in synch after changes have been made (used internally only by front end)
+   */
+  public synchMapImagery() { this._json.mapImagery = this._mapImagery.toJSON(); }
 
   /** @internal */
   public get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined {
@@ -476,10 +501,10 @@ export class DisplayStyleSettings {
       }
 
       if (this.scheduleScriptProps)
-        props.scheduleScript = [ ...this.scheduleScriptProps ];
+        props.scheduleScript = [...this.scheduleScriptProps];
 
-      props.subCategoryOvr = this._json.subCategoryOvr ? [ ...this._json.subCategoryOvr ] : [ ];
-      props.excludedElements = this._json.excludedElements ? [ ...this._json.excludedElements ] : [ ];
+      props.subCategoryOvr = this._json.subCategoryOvr ? [...this._json.subCategoryOvr] : [];
+      props.excludedElements = this._json.excludedElements ? [...this._json.excludedElements] : [];
     }
 
     return props;
@@ -531,7 +556,7 @@ export class DisplayStyleSettings {
       this.timePoint = overrides.timePoint;
 
     if (overrides.contextRealityModels)
-      this._json.contextRealityModels = [ ...overrides.contextRealityModels ];
+      this._json.contextRealityModels = [...overrides.contextRealityModels];
 
     if (overrides.analysisStyle)
       this.analysisStyle = AnalysisStyle.fromJSON(overrides.analysisStyle);
@@ -540,15 +565,15 @@ export class DisplayStyleSettings {
       this.analysisFraction = overrides.analysisFraction;
 
     if (overrides.scheduleScript)
-      this.scheduleScriptProps = [ ...overrides.scheduleScript ];
+      this.scheduleScriptProps = [...overrides.scheduleScript];
 
     if (overrides.subCategoryOvr) {
-      this._json.subCategoryOvr = [ ...overrides.subCategoryOvr ];
+      this._json.subCategoryOvr = [...overrides.subCategoryOvr];
       this.populateSubCategoryOverridesFromJSON();
     }
 
     if (overrides.excludedElements) {
-      this._json.excludedElements = [ ...overrides.excludedElements ];
+      this._json.excludedElements = [...overrides.excludedElements];
       this.populateExcludedElementsFromJSON();
     }
   }

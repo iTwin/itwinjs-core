@@ -40,6 +40,7 @@ export * from "./NativeAppBackend";
 export * from "./IModelExporter";
 export * from "./IModelImporter";
 export * from "./IModelTransformer";
+export * from "./IModelSchemaLoader";
 export * from "./AutoPush";
 export * from "./BackendRequestContext";
 export * from "./CloudStorageBackend";

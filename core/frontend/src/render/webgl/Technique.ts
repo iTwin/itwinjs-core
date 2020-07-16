@@ -691,6 +691,7 @@ export class Techniques implements WebGLDisposable {
       for (const command of commands)
         command.execute(executor);
     });
+    System.instance.frameBufferStack.markTargetsDirty();
   }
 
   /** Execute the commands for a single given classification primitive (the first 3 commands should be a push, the primitive, then a pop) */
@@ -709,6 +710,7 @@ export class Techniques implements WebGLDisposable {
         executor.draw(params);
       }
     });
+    System.instance.frameBufferStack.markTargetsDirty();
   }
 
   public get isDisposed(): boolean { return 0 === this._list.length; }

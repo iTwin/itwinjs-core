@@ -34,6 +34,8 @@ export interface SplitButtonProps extends CommonProps {
   icon?: IconSpec;
   /** Indicates whether to draw a border around the button */
   drawBorder?: boolean;
+  /** ToolTip text */
+  toolTip?: string;
 }
 
 /** @internal */
@@ -73,7 +75,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
       this.props.drawBorder && "core-split-button-border");
 
     return (
-      <div data-testid="core-split-button-root"
+      <div data-testid="core-split-button-root" title={this.props.toolTip}
         className={classNames}
         style={this.props.style}
         tabIndex={0}

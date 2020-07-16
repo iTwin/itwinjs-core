@@ -1,6 +1,15 @@
-# Change Log - @bentley/hypermodeling-extension
+# Change Log - @bentley/hypermodeling-frontend
 
-This log was last generated on Tue, 07 Jul 2020 14:44:52 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2020 17:23:14 GMT and should not be manually modified.
+
+## 2.3.0
+Fri, 10 Jul 2020 17:23:14 GMT
+
+### Updates
+
+- Clean up API; add customization points.
+- Reset active section marker when a new view is applied to the viewport; add HyperModeling.isActive() and HyperModelingDecorator.alignToSpatialView(); HyperModelingDecorator.toggleSection() does not apply the spatial view, only its frustum and clip volume.
+- Convert hypermodeling extension into hypermodeling-frontend package.
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

@@ -73,19 +73,20 @@ export class Provider implements FeatureOverrideProvider {
   private sync(): void { this._vp.setFeatureOverrideProviderChanged(); }
 
   public static get(vp: Viewport): Provider | undefined {
-    return vp.featureOverrideProvider instanceof Provider ? vp.featureOverrideProvider : undefined;
+    return vp.findFeatureOverrideProvider((x) => x instanceof Provider) as Provider | undefined;
   }
 
   public static remove(vp: Viewport): void {
-    if (undefined !== this.get(vp))
-      vp.featureOverrideProvider = undefined;
+    const provider = this.get(vp);
+    if (provider)
+      vp.dropFeatureOverrideProvider(provider);
   }
 
   public static getOrCreate(vp: Viewport): Provider {
     let provider = this.get(vp);
     if (undefined === provider) {
       provider = new Provider(vp);
-      vp.featureOverrideProvider = provider;
+      vp.addFeatureOverrideProvider(provider);
     }
 
     return provider;

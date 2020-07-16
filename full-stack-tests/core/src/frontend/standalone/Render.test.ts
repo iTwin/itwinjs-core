@@ -749,7 +749,7 @@ describe("Render mirukuru", () => {
         }
       }
       const ovrProvider = new RenderTestOverrideProvider();
-      vp.featureOverrideProvider = ovrProvider;
+      vp.addFeatureOverrideProvider(ovrProvider);
 
       // Specify element is never drawn.
       ovrProvider.ovrFunc = (ovrs, _) => ovrs.setNeverDrawn(elemId);
@@ -1421,7 +1421,7 @@ describe("White-on-white reversal", async () => {
       }
 
       vp.displayStyle.backgroundColor = ColorDef.white;
-      vp.featureOverrideProvider = new ColorOverride();
+      vp.addFeatureOverrideProvider(new ColorOverride());
     });
   });
 

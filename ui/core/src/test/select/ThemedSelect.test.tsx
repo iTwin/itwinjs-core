@@ -82,6 +82,10 @@ describe("<ThemedSelect />", () => {
     shallow(<ThemedSelect options={colorChoices} value={colorChoices[0]} noOptionsMessage={() => "No options"} />).should.matchSnapshot();
   });
 
+  it("renders with no options correctly", () => {
+    const className = "uicore-reactSelect.width100";
+    shallow(<ThemedSelect className={className} options={colorChoices} value={colorChoices[0]} noOptionsMessage={() => "No options"} />).should.matchSnapshot();
+  });
 });
 
 describe("<ThemedSelect - React Testing Library />", () => {

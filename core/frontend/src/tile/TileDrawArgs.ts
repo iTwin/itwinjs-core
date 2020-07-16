@@ -81,7 +81,7 @@ export class TileDrawArgs {
 
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
     const pixelSizeAtPt = this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
-    return 0 !== pixelSizeAtPt ? radius / pixelSizeAtPt : 1.0e-3;
+    return 0 !== pixelSizeAtPt ? this.context.adjustPixelSizeForLOD(radius / pixelSizeAtPt) : 1.0e-3;
   }
 
   /** Compute this size of a sphere on screen in pixels */

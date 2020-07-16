@@ -8,60 +8,67 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
-import { PackedFeatureTable, RenderTexture } from "@bentley/imodeljs-common";
+import { Range2d, Range3d, Transform } from "@bentley/geometry-core";
+import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@bentley/imodeljs-common";
+import { IndexedGeometry, IndexedGeometryParams, Matrix4 } from "../../webgl";
 import { GraphicBranch } from "../GraphicBranch";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { RenderSystem, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
 import { AttributeMap } from "./AttributeMap";
-import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./Handle";
-import { Matrix4 } from "./Matrix";
 import { Primitive } from "./Primitive";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 
+const scratchOverlapRange = Range2d.createNull();
+
 /** @internal */
 export class TerrainTextureParams {
-  public static maxTexturesPerMesh = 2;
-  constructor(public matrix: Matrix4, public textures: RenderTexture[]) { }
+
+  constructor(public matrices: Matrix4[], public textures: RenderTexture[]) { }
   public static create(terrainTextures: TerrainTexture[]) {
-    assert(terrainTextures.length <= TerrainTextureParams.maxTexturesPerMesh);
-    const matrix = new Matrix4();      // Published as Mat4.
+    const maxTexturesPerMesh = System.instance.maxTerrainImageryLayers;
+    assert(terrainTextures.length <= maxTexturesPerMesh);
+
     const renderTextures = [];
-    for (let i = 0; i < terrainTextures.length; i++) {
-      const base = i * 8;
-      const terrainTexture = terrainTextures[i];
+    const matrices = new Array<Matrix4>();
+    for (const terrainTexture of terrainTextures) {
+      const matrix = new Matrix4();      // Published as Mat4.
       renderTextures.push(terrainTexture.texture);
       assert(terrainTexture.texture !== undefined, "Texture not defined in TerrainTextureParams constructor");
-      matrix.data[base + 0] = terrainTexture.translate.x;
-      matrix.data[base + 1] = terrainTexture.translate.y;
-      matrix.data[base + 2] = terrainTexture.scale.x;
-      matrix.data[base + 3] = terrainTexture.scale.y;
+      matrix.data[0] = terrainTexture.translate.x;
+      matrix.data[1] = terrainTexture.translate.y;
+      matrix.data[2] = terrainTexture.scale.x;
+      matrix.data[3] = terrainTexture.scale.y;
 
       if (terrainTexture.clipRectangle) {
-        matrix.data[base + 4] = terrainTexture.clipRectangle.low.x;
-        matrix.data[base + 5] = terrainTexture.clipRectangle.low.y;
-        matrix.data[base + 6] = terrainTexture.clipRectangle.high.x;
-        matrix.data[base + 7] = terrainTexture.clipRectangle.high.y;
+        matrix.data[4] = terrainTexture.clipRectangle.low.x;
+        matrix.data[5] = terrainTexture.clipRectangle.low.y;
+        matrix.data[6] = terrainTexture.clipRectangle.high.x;
+        matrix.data[7] = terrainTexture.clipRectangle.high.y;
       } else {
-        matrix.data[base + 4] = matrix.data[base + 5] = 0;
-        matrix.data[base + 6] = matrix.data[base + 7] = 1;
+        matrix.data[4] = matrix.data[5] = 0;
+        matrix.data[6] = matrix.data[7] = 1;
       }
+      matrix.data[8] = (1.0 - terrainTexture.transparency);
+      matrix.data[9] = terrainTexture.featureId;
+      matrices.push(matrix);
     }
 
-    for (let i = terrainTextures.length; i < TerrainTextureParams.maxTexturesPerMesh; i++) {
-      const base = i * 8;
-      matrix.data[base + 4] = matrix.data[base + 5] = 1;
-      matrix.data[base + 6] = matrix.data[base + 7] = -1;
+    for (let i = terrainTextures.length; i < maxTexturesPerMesh; i++) {
+      const matrix = new Matrix4();
+      matrix.data[0] = matrix.data[1] = 0.0;
+      matrix.data[2] = matrix.data[3] = 1.0;
+      matrix.data[4] = matrix.data[5] = 1;
+      matrix.data[6] = matrix.data[7] = -1;
+      matrices.push(matrix);
     }
-
-    return new TerrainTextureParams(matrix, renderTextures);
+    return new TerrainTextureParams(matrices, renderTextures);
   }
 }
 
@@ -112,7 +119,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
   public get uvQParams() { return this._terrainMeshParams.uvParams.params; }
   public get hasFeatures(): boolean { return this._terrainMeshParams.featureID !== undefined; }
 
-  private constructor(private _terrainMeshParams: TerrainMeshParams, public textureParams?: TerrainTextureParams, private readonly _transform?: Transform) {
+  private constructor(private _terrainMeshParams: TerrainMeshParams, public textureParams: TerrainTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean) {
     super(_terrainMeshParams);
   }
 
@@ -121,24 +128,61 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
     dispose(this._terrainMeshParams);
   }
 
-  public static createGeometry(terrainMesh: TerrainMeshPrimitive, transform?: Transform) {
+  public static createGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined) {
     const params = TerrainMeshParams.createFromTerrain(terrainMesh);
-    return new TerrainMeshGeometry(params!, undefined, transform);
+    return new TerrainMeshGeometry(params!, undefined, transform, undefined, false);
+  }
+  public getRange(): Range3d {
+    return Range3d.createXYZXYZ(this.qOrigin[0], this.qOrigin[1], this.qOrigin[2], this.qOrigin[0] + Quantization.rangeScale16 * this.qScale[0], this.qOrigin[1] + Quantization.rangeScale16 * this.qScale[1], this.qOrigin[2] + Quantization.rangeScale16 * this.qScale[2]);
   }
 
-  public static createGraphic(system: RenderSystem, terrainMesh: TerrainMeshGeometry, featureTable: PackedFeatureTable, textures?: TerrainTexture[]): RenderGraphic | undefined {
+  public static createGraphic(system: RenderSystem, terrainMesh: TerrainMeshGeometry, featureTable: PackedFeatureTable, tileId: string, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
     const meshes = [];
-    if (textures === undefined) {
-      // assert(false, "Undefined terrain textures in createTerrainMesh");
-      meshes.push(terrainMesh);
-    } else {
-      const texturesPerMesh = TerrainTextureParams.maxTexturesPerMesh;
-      for (let i = 0; i < textures.length;) {
-        const meshTextures = [];
-        for (let j = 0; j < texturesPerMesh && i < textures.length; j++, i++)
-          meshTextures.push(textures[i]);
+    if (textures === undefined)
+      textures = [];
 
-        meshes.push(new TerrainMeshGeometry(terrainMesh._terrainMeshParams, TerrainTextureParams.create(meshTextures), terrainMesh._transform));
+    const texturesPerMesh = System.instance.maxTerrainImageryLayers;
+    const layers = new Array<TerrainTexture[]>();
+    let layerCount = 0;
+    for (const texture of textures) {
+      const layer = layers[texture.layerIndex];
+      if (layer) {
+        layer.push(texture);
+      } else {
+        layerCount++;
+        layers[texture.layerIndex] = [texture];
+      }
+    }
+    if (layerCount < 2) {
+      // If only there is not more than one layer then we can group all of the textures into a single draw call.
+      meshes.push(new TerrainMeshGeometry(terrainMesh._terrainMeshParams, TerrainTextureParams.create(textures), terrainMesh._transform, baseColor, baseTransparent));
+    } else {
+      const primaryLayer = layers.shift()!;
+      for (const primaryTexture of primaryLayer) {
+        const targetRectangle = primaryTexture.targetRectangle;
+        const overlapMinimum = 1.0E-5 * (targetRectangle.high.x - targetRectangle.low.x) * (targetRectangle.high.y - targetRectangle.low.y);
+        const layerTextures = [primaryTexture];
+        for (const secondaryLayer of layers) {
+          if (!secondaryLayer)
+            continue;
+          for (const secondaryTexture of secondaryLayer) {
+            const secondaryRectangle = secondaryTexture.targetRectangle;
+            const overlap = targetRectangle.intersect(secondaryRectangle, scratchOverlapRange);
+            if (!overlap.isNull && (overlap.high.x - overlap.low.x) * (overlap.high.y - overlap.low.y) > overlapMinimum) {
+              const textureRange = Range2d.createXYXY(overlap.low.x, overlap.low.y, overlap.high.x, overlap.high.y);
+              secondaryRectangle.worldToLocal(textureRange.low, textureRange.low);
+              secondaryRectangle.worldToLocal(textureRange.high, textureRange.high);
+
+              if (secondaryTexture.clipRectangle)
+                textureRange.intersect(secondaryTexture.clipRectangle, textureRange);
+
+              if (!textureRange.isNull)
+                layerTextures.push(new TerrainTexture(secondaryTexture.texture, secondaryTexture.featureId, secondaryTexture.scale, secondaryTexture.translate, secondaryTexture.targetRectangle, secondaryTexture.layerIndex, secondaryTexture.transparency, textureRange));
+            }
+            layerTextures.length = Math.min(layerTextures.length, texturesPerMesh);
+            meshes.push(new TerrainMeshGeometry(terrainMesh._terrainMeshParams, TerrainTextureParams.create(layerTextures), terrainMesh._transform, baseColor, baseTransparent));
+          }
+        }
       }
     }
 
@@ -148,7 +192,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
     const branch = new GraphicBranch();
     for (const mesh of meshes) {
       const primitive = Primitive.create(() => mesh);
-      branch.add(system.createBatch(primitive!, featureTable, Range3d.createNull()));
+      branch.add(system.createBatch(primitive!, featureTable, Range3d.createNull(), tileId));
     }
 
     return system.createBranch(branch, terrainMesh._transform ? terrainMesh._transform : Transform.createIdentity());
@@ -159,6 +203,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
   }
 
   public get techniqueId(): TechniqueId { return TechniqueId.TerrainMesh; }
+
   public getRenderPass(target: Target): RenderPass {
     if (target.isDrawingShadowMap)
       return RenderPass.None;
@@ -166,7 +211,7 @@ export class TerrainMeshGeometry extends IndexedGeometry implements RenderTerrai
     if (target.nonLocatableTerrain && !target.drawNonLocatable)
       return RenderPass.None;
 
-    if (target.terrainTransparency > 0.0)
+    if (target.terrainTransparency > 0.0 || this._baseIsTransparent)
       return RenderPass.Translucent;
 
     return RenderPass.OpaqueGeneral;

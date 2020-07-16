@@ -105,6 +105,7 @@ $uicore-menu-top-bottom-padding:  $uicore-menu-padding * 2/3;
       width: calc(100% - 2 * #{$uicore-menu-padding});
       align-items: center;
       position: relative;
+      box-sizing: content-box;
 
       &:hover {
         background-color: $buic-row-hover;

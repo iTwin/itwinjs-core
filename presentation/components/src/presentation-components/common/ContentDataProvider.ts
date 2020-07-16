@@ -301,8 +301,12 @@ export class ContentDataProvider implements IContentDataProvider {
         exceeds the suggested size of ${DEFAULT_KEYS_BATCH_SIZE}. Possible "HTTP 413 Payload Too Large" error.`;
       Logger.logWarning(PresentationComponentsLoggerCategory.Content, msg);
     }
-    return Presentation.presentation.getContentDescriptor(this.createRequestOptions(),
-      this._displayType, this.keys, this.selectionInfo);
+    return Presentation.presentation.getContentDescriptor({
+      ...this.createRequestOptions(),
+      displayType: this._displayType,
+      keys: this.keys,
+      selection: this.selectionInfo,
+    });
   });
 
   /**
@@ -371,11 +375,17 @@ export class ContentDataProvider implements IContentDataProvider {
     }
 
     const requestSize = undefined !== pageOptions && 0 === pageOptions.start && undefined !== pageOptions.size;
-    const options = { ...this.createRequestOptions(), paging: pageOptions };
-    if (requestSize)
-      return Presentation.presentation.getContentAndSize(options, descriptorOrOverrides, this.keys);
+    const options = {
+      ...this.createRequestOptions(),
+      descriptor: descriptorOrOverrides,
+      keys: this.keys,
+      paging: pageOptions,
+    };
 
-    const content = await Presentation.presentation.getContent(options, descriptorOrOverrides, this.keys);
+    if (requestSize)
+      return Presentation.presentation.getContentAndSize(options);
+
+    const content = await Presentation.presentation.getContent(options);
     return content ? { content, size: content.contentSet.length } : undefined;
   }, { isMatchingKey: MemoizationHelpers.areContentRequestsEqual as any });
 

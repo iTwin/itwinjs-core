@@ -68,7 +68,7 @@ export class EventSink {
 
   public emit(namespace: string, eventName: string, data: any, options: EmitOptions = { strategy: EmitStrategy.None }): void {
     if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
-      Logger.logError(loggingCategory, "EventSource is disabled. Interface 'NativeAppRpcInterface' is not registered");
+      Logger.logInfo(loggingCategory, "EventSource is disabled. Interface 'NativeAppRpcInterface' is not registered");
       return;
     }
     if (options.strategy === EmitStrategy.PurgeOlderEvents) {

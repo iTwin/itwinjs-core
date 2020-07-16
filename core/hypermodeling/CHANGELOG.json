@@ -1,6 +1,24 @@
 {
-  "name": "@bentley/hypermodeling-extension",
+  "name": "@bentley/hypermodeling-frontend",
   "entries": [
+    {
+      "version": "2.3.0",
+      "tag": "@bentley/hypermodeling-frontend_v2.3.0",
+      "date": "Fri, 10 Jul 2020 17:23:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clean up API; add customization points."
+          },
+          {
+            "comment": "Reset active section marker when a new view is applied to the viewport; add HyperModeling.isActive() and HyperModelingDecorator.alignToSpatialView(); HyperModelingDecorator.toggleSection() does not apply the spatial view, only its frustum and clip volume."
+          },
+          {
+            "comment": "Convert hypermodeling extension into hypermodeling-frontend package."
+          }
+        ]
+      }
+    },
     {
       "version": "2.2.1",
       "tag": "@bentley/hypermodeling-extension_v2.2.1",

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ClipPrimitive, ClipShape, ClipVector, Point3d } from "@bentley/geometry-core";
-import { ClipVolume } from "../../../webgl";
+import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { IModelApp } from "../../../IModelApp";
 
 describe("ClipVolume", async () => {

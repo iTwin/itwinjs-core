@@ -1,6 +1,17 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Tue, 07 Jul 2020 14:44:52 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2020 17:23:14 GMT and should not be manually modified.
+
+## 2.3.0
+Fri, 10 Jul 2020 17:23:14 GMT
+
+### Updates
+
+- geometry clip containment
+- Fix useControlledTreeFiltering hook to react to dataProvider changes.
+- Expose logger categories similar to how it's done in core
+- Add ability to swap data source used by `PresentationTreeDataProvider`
+- Add support for nested property categories. Can be enabled by setting `PresentationPropertyDataProvider.isNestedPropertyCategoryGroupingEnabled = true`
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

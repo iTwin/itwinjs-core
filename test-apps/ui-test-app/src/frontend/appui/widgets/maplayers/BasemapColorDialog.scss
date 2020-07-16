@@ -1,0 +1,74 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/index";
+
+$divider-color: $buic-background-toolbutton-stroke;
+$hovered-icon-color: $buic-foreground-primary-tone;
+
+.basemap-color-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.basemap-color {
+  display: flex;
+  flex-direction: column;
+
+  .components-color-swatch {
+    width: 2.0em;
+    height: 2.0em;
+  }
+
+  .basemap-color-top {
+    width: 100%;
+    height: 150px;
+    display: inline;
+  }
+
+  .basemap-color-bottom {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 32px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+    .basemap-color-bottom-left {
+      width: calc(100% - 32px);
+      height: 100%;
+      margin-right: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .basemap-color-bottom-right {
+      width: 32px;
+      height: 100%;
+    }
+  }
+}
+
+.basemap-color-presets {
+  width: 100%;
+  height: 24px;
+  padding-top: 10px;
+  margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-column-gap: 2px;
+  border-top: 1px solid $buic-background-5;
+  justify-items: center;
+
+  .basemap-color-swatch{
+    width: 2em;
+    height: 2em;
+    padding: 0;
+    border-color: $buic-inputs-border;
+  }
+}

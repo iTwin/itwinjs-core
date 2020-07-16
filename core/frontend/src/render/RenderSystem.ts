@@ -8,16 +8,13 @@
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { ClipVector, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
-import {
-  ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat,
-  PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps,
-} from "@bentley/imodeljs-common";
+import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { BackgroundMapTileTreeReference, TileTreeReference } from "../tile/internal";
+import { MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
@@ -103,6 +100,11 @@ export interface RenderSystemDebugControl {
   /** Draw surfaces as "pseudo-wiremesh", using GL_LINES instead of GL_TRIANGLES. Useful for visualizing faces of a mesh. Not suitable for real wiremesh display. */
   drawSurfacesAsWiremesh: boolean;
 
+  /** Overrides [[RenderSystem.dpiAwareLOD]].
+   * @internal
+   */
+  dpiAwareLOD: boolean;
+
   /** Record GPU profiling information for each frame drawn. Check isGLTimerSupported before using.
    * @internal
    */
@@ -135,7 +137,7 @@ export abstract class RenderTerrainMeshGeometry implements IDisposable, RenderMe
 
 /** @internal */
 export class TerrainTexture {
-  public constructor(public readonly texture: RenderTexture, public readonly scale: Vector2d, public readonly translate: Vector2d, public readonly clipRectangle?: Range2d) {
+  public constructor(public readonly texture: RenderTexture, public featureId: number, public readonly scale: Vector2d, public readonly translate: Vector2d, public readonly targetRectangle: Range2d, public readonly layerIndex: number, public transparency: number, public readonly clipRectangle?: Range2d) {
   }
 }
 
@@ -157,6 +159,12 @@ export abstract class RenderSystem implements IDisposable {
    * @internal
    */
   public readonly options: RenderSystem.Options;
+
+  /** Antialias samples to use on all subsequently created render targets.
+   * Default value: undefined (no antialiasing)
+   * @beta
+   */
+  public antialiasSamples?: number;
 
   /** Initialize the RenderSystem with the specified options.
    * @note The RenderSystem takes ownership of the supplied Options and freezes it.
@@ -180,6 +188,9 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public get supportsInstancing(): boolean { return true; }
+
+  /** @internal */
+  public get dpiAwareLOD(): boolean { return true === this.options.dpiAwareLOD; }
 
   /** @internal */
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
@@ -243,7 +254,9 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createTerrainMeshGeometry(_terrainMesh: TerrainMeshPrimitive, _transform: Transform): RenderTerrainMeshGeometry | undefined { return undefined; }
   /** @internal */
-  public createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  public createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  /** @internal */
+  public get maxTerrainImageryLayers() { return 0; }
   /** @internal */
   public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
@@ -251,7 +264,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
   /** @internal */
-  public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
+  public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined {
     const rasterTile = new MeshArgs();
@@ -498,12 +511,26 @@ export namespace RenderSystem {
     filterMapDrapeTextures?: boolean;
 
     /** If true, [[ScreenViewport]]s will respect the DPI of the display.  See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
+     * @see [[dpiAwareLOD]] to control whether device pixel ratio affects the level of detail for tile graphics and decorations.
+     * @see [[Viewport.cssPixelsToDevicePixels]] to convert CSS pixels to device pixels.
+     * @see [[Viewport.devicePixelRatio]].
      *
      * Default value: true
      *
      * @beta
      */
     dpiAwareViewports?: boolean;
+
+    /** If true, [[ScreenViewport]]s will take into account the DPI of the display when computing the level of detail for tile graphics and decorations.
+     * This can result in sharper-looking images on high-DPI devices like mobile phones, but may reduce performance on such devices.
+     * @note This setting has no effect if [[dpiAwareViewports]] is `false`.
+     * @see [[Viewport.devicePixelRatio]].
+     *
+     * Default value: false
+     *
+     * @beta
+     */
+    dpiAwareLOD?: boolean;
 
     /** If true will attempt to create a WebGL2 context.
      *
@@ -542,5 +569,12 @@ export namespace RenderSystem {
      * @internal
      */
     debugShaders?: boolean;
+
+    /** Initial antialias setting
+     * If > 1, and a WebGL2 context is being used, will turn on antialiasing using that many samples.
+     * Default value: 1
+     * @beta
+     */
+    antialiasSamples?: number;
   }
 }

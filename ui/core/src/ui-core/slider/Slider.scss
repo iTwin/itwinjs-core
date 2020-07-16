@@ -19,6 +19,10 @@ $uicore-slider-minmax-margin:   6px;
   align-items: center;
   width: 100%;
 
+  span.uicore-text-body[data-testid="core-slider-min"] {
+    margin-right: 4px;
+  }
+
   &.core-slider-tickLabels {
     margin-bottom: 9px;
   }
@@ -85,6 +89,7 @@ $uicore-slider-minmax-margin:   6px;
       background: $buic-background-control;
       box-sizing: border-box;
       outline: none;
+      padding: 0;
 
       &:hover {
         border-color: $buic-foreground-focus;

@@ -1,867 +1,72 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PresentationManager addon results conversion to Presentation objects returns child nodes 1`] = `
-Array [
-  Object {
-    "key": Object {
-      "instanceKeys": Array [
-        Object {
-          "className": "parse",
-          "id": "0x7cd90000012ed5",
-        },
-      ],
-      "pathFromRoot": Array [
-        "p1",
-      ],
-      "type": "ECInstancesNode",
-    },
-    "label": Object {
-      "displayValue": "test2",
-      "rawValue": "test2",
-      "typeName": "string",
-    },
-  },
-  Object {
-    "key": Object {
-      "pathFromRoot": Array [
-        "p1",
-        "p3",
-      ],
-      "type": "type 2",
-    },
-    "label": Object {
-      "displayValue": "test3",
-      "rawValue": "test3",
-      "typeName": "string",
-    },
-  },
-]
-`;
-
-exports[`PresentationManager addon results conversion to Presentation objects returns child nodes and child node count when requesting first page 1`] = `
-Array [
-  Object {
-    "key": Object {
-      "instanceKeys": Array [
-        Object {
-          "className": "innovative",
-          "id": "0x13692000000857a",
-        },
-      ],
-      "pathFromRoot": Array [
-        "p1",
-      ],
-      "type": "ECInstancesNode",
-    },
-    "label": Object {
-      "displayValue": "test2",
-      "rawValue": "test2",
-      "typeName": "string",
-    },
-  },
-  Object {
-    "key": Object {
-      "pathFromRoot": Array [
-        "p1",
-        "p3",
-      ],
-      "type": "type 2",
-    },
-    "label": Object {
-      "displayValue": "test3",
-      "rawValue": "test3",
-      "typeName": "string",
-    },
-  },
-]
-`;
-
-exports[`PresentationManager addon results conversion to Presentation objects returns content 1`] = `
+exports[`PresentationManager addon results conversion to Presentation objects [deprecated] getContentAndSize returns content and content set size 1`] = `
 Object {
   "contentSet": Array [
     Object {
       "classInfo": Object {
-        "id": "0x9cb400000105b7",
-        "label": "reinvent",
-        "name": "Unbranded",
+        "id": "0xd9840000016309",
+        "label": "withdrawal Rustic dynamic",
+        "name": "Frozen",
       },
       "displayValues": Object {
-        "New Jersey": "Investment Account firmware",
+        "leading-edge": "Cove invoice",
       },
-      "imageId": "aa3748ee-065a-457c-8698-8926324075a0",
+      "imageId": "72957d71-7601-4278-88cd-b599e4aa4b45",
       "labelDefinition": Object {
-        "displayValue": "web services",
-        "rawValue": "Movies",
+        "displayValue": "system",
+        "rawValue": "Fish",
         "typeName": "string",
       },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "bottom-line",
-          "id": "0x3911000000c35f",
+          "className": "Checking Account",
+          "id": "0xd13b000001861e",
         },
       ],
       "values": Object {
-        "New Jersey": "Incredible Steel Pizza Delaware Kina",
+        "leading-edge": "Zimbabwe Dollar",
       },
     },
   ],
   "descriptor": Object {
     "categories": Array [
       Object {
-        "description": "Est aliquam veritatis et non laborum.",
-        "expand": true,
-        "label": "ivory compelling",
-        "name": "Visionary",
+        "description": "Quasi praesentium qui quia.",
+        "expand": false,
+        "label": "Cuban Peso Peso Convertible",
+        "name": "Clothing",
         "parent": undefined,
-        "priority": 84294,
+        "priority": 31617,
       },
     ],
     "contentFlags": 0,
-    "displayType": "qui ut suscipit",
+    "displayType": "repellendus asperiores quas",
     "fields": Array [
       Object {
         "category": Object {
-          "description": "Est aliquam veritatis et non laborum.",
-          "expand": true,
-          "label": "ivory compelling",
-          "name": "Visionary",
-          "parent": undefined,
-          "priority": 84294,
-        },
-        "editor": undefined,
-        "isReadonly": true,
-        "label": "transmit Money Market Account Books",
-        "name": "New Jersey",
-        "priority": 91234,
-        "properties": Array [
-          Object {
-            "property": Object {
-              "classInfo": Object {
-                "id": "0x15254000000bad1",
-                "label": "navigate Usability",
-                "name": "invoice",
-              },
-              "name": "internet solution",
-              "type": "string",
-            },
-            "relatedClassPath": Array [],
-          },
-        ],
-        "type": Object {
-          "typeName": "string",
-          "valueFormat": "Primitive",
-        },
-      },
-    ],
-    "selectClasses": Array [
-      Object {
-        "isSelectPolymorphic": true,
-        "navigationPropertyClasses": Array [],
-        "pathToPrimaryClass": Array [],
-        "relatedInstanceClasses": Array [],
-        "relatedPropertyPaths": Array [],
-        "selectClassInfo": Object {
-          "id": "0x136b200000007fb",
-          "label": "SMTP",
-          "name": "Sleek Steel Shirt",
-        },
-      },
-    ],
-  },
-}
-`;
-
-exports[`PresentationManager addon results conversion to Presentation objects returns content and content set size when requesting first page 1`] = `
-Object {
-  "contentSet": Array [
-    Object {
-      "classInfo": Object {
-        "id": "0xc6be0000014546",
-        "label": "Wooden transmitter Web",
-        "name": "Fantastic",
-      },
-      "displayValues": Object {
-        "challenge": "ivory Fish Borders",
-      },
-      "imageId": "d49bf74f-3130-40f5-afd8-9376a54f2366",
-      "labelDefinition": Object {
-        "displayValue": "Frozen",
-        "rawValue": "deposit",
-        "typeName": "string",
-      },
-      "mergedFieldNames": Array [],
-      "primaryKeys": Array [
-        Object {
-          "className": "virtual",
-          "id": "0x17f060000002588",
-        },
-      ],
-      "values": Object {
-        "challenge": "Berkshire Orchestrator",
-      },
-    },
-  ],
-  "descriptor": Object {
-    "categories": Array [
-      Object {
-        "description": "Totam unde id eum veritatis odio asperiores tempora soluta.",
-        "expand": true,
-        "label": "Applications",
-        "name": "Jordanian Dinar",
-        "parent": undefined,
-        "priority": 46057,
-      },
-    ],
-    "contentFlags": 0,
-    "displayType": "dolore aut laboriosam",
-    "fields": Array [
-      Object {
-        "category": Object {
-          "description": "Totam unde id eum veritatis odio asperiores tempora soluta.",
-          "expand": true,
-          "label": "Applications",
-          "name": "Jordanian Dinar",
-          "parent": undefined,
-          "priority": 46057,
-        },
-        "editor": undefined,
-        "isReadonly": true,
-        "label": "Accountability",
-        "name": "challenge",
-        "priority": 11785,
-        "properties": Array [
-          Object {
-            "property": Object {
-              "classInfo": Object {
-                "id": "0x1179c000000147e",
-                "label": "Nuevo Sol infrastructure",
-                "name": "Clothing",
-              },
-              "name": "input",
-              "type": "string",
-            },
-            "relatedClassPath": Array [],
-          },
-        ],
-        "type": Object {
-          "typeName": "string",
-          "valueFormat": "Primitive",
-        },
-      },
-    ],
-    "selectClasses": Array [
-      Object {
-        "isSelectPolymorphic": true,
-        "navigationPropertyClasses": Array [],
-        "pathToPrimaryClass": Array [],
-        "relatedInstanceClasses": Array [],
-        "relatedPropertyPaths": Array [],
-        "selectClassInfo": Object {
-          "id": "0x12e380000002029",
-          "label": "Berkshire",
-          "name": "ubiquitous",
-        },
-      },
-    ],
-  },
-}
-`;
-
-exports[`PresentationManager addon results conversion to Presentation objects returns content descriptor 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "description": "Aut eaque ut commodi atque quae voluptatem quos esse.",
-      "expand": true,
-      "label": "Virginia Fundamental",
-      "name": "Computer",
-      "parent": undefined,
-      "priority": 62349,
-    },
-    Object {
-      "description": "Est rerum consequuntur perferendis sunt.",
-      "expand": false,
-      "label": "user-centric vortals",
-      "name": "impactful",
-      "parent": undefined,
-      "priority": 93330,
-    },
-    Object {
-      "description": "Tempore dolorum rerum ut earum corporis molestias quae officia.",
-      "expand": false,
-      "label": "Gorgeous Cotton Fish ubiquitous Nevada",
-      "name": "synthesize",
-      "parent": undefined,
-      "priority": 90947,
-    },
-    Object {
-      "description": "Est alias quia odio magnam dolorem dolores dignissimos.",
-      "expand": false,
-      "label": "quantify",
-      "name": "Web",
-      "parent": undefined,
-      "priority": 10390,
-    },
-  ],
-  "connectionId": "9bdefa36-ec66-4506-bf3d-07a05f70a751",
-  "contentFlags": 0,
-  "contentOptions": "car",
-  "displayType": "1080p",
-  "fields": Array [
-    Object {
-      "category": Object {
-        "description": "Aut eaque ut commodi atque quae voluptatem quos esse.",
-        "expand": true,
-        "label": "Virginia Fundamental",
-        "name": "Computer",
-        "parent": undefined,
-        "priority": 62349,
-      },
-      "editor": Object {
-        "name": "Tactics",
-        "params": Object {
-          "some_param": 40009,
-        },
-      },
-      "isReadonly": false,
-      "label": "Fresh GB",
-      "name": "Primitive property field with editor",
-      "priority": 46791,
-      "properties": Array [
-        Object {
-          "property": Object {
-            "classInfo": Object {
-              "id": "0x10d140000017318",
-              "label": "Forward",
-              "name": "generating",
-            },
-            "enumerationInfo": Object {
-              "choices": Array [
-                Object {
-                  "label": "cohesive web-enabled Functionality",
-                  "value": "a7f4a333-b03b-4ba1-a2fe-7bb8028c3136",
-                },
-                Object {
-                  "label": "Savings Account Bedfordshire Computers",
-                  "value": "40ed9f0e-fd9c-4a09-892f-77777b017967",
-                },
-              ],
-              "isStrict": true,
-            },
-            "name": "Buckinghamshire",
-            "type": "string",
-          },
-          "relatedClassPath": Array [],
-        },
-      ],
-      "type": Object {
-        "typeName": "string",
-        "valueFormat": "Primitive",
-      },
-    },
-    Object {
-      "category": Object {
-        "description": "Est rerum consequuntur perferendis sunt.",
-        "expand": false,
-        "label": "user-centric vortals",
-        "name": "impactful",
-        "parent": undefined,
-        "priority": 93330,
-      },
-      "editor": undefined,
-      "isReadonly": false,
-      "label": "drive",
-      "name": "Complex array of structs property field",
-      "priority": 68238,
-      "properties": Array [
-        Object {
-          "property": Object {
-            "classInfo": Object {
-              "id": "0x3a5b000000136a",
-              "label": "calculate upward-trending orchestrate",
-              "name": "definition",
-            },
-            "kindOfQuantity": Object {
-              "currentFormatId": "e5cd2d77-cb2e-4710-a87b-212e7abb463b",
-              "label": "Books District Avon",
-              "name": "District",
-              "persistenceUnit": "copying",
-            },
-            "name": "interface",
-            "type": "double",
-          },
-          "relatedClassPath": Array [],
-        },
-      ],
-      "type": Object {
-        "memberType": Object {
-          "members": Array [
-            Object {
-              "label": "Berkshire deposit",
-              "name": "methodology",
-              "type": Object {
-                "typeName": "string",
-                "valueFormat": "Primitive",
-              },
-            },
-            Object {
-              "label": "program action-items Applications",
-              "name": "multi-tasking",
-              "type": Object {
-                "memberType": Object {
-                  "typeName": "string",
-                  "valueFormat": "Primitive",
-                },
-                "typeName": "string[]",
-                "valueFormat": "Array",
-              },
-            },
-          ],
-          "typeName": "SomeClass",
-          "valueFormat": "Struct",
-        },
-        "typeName": "string[]",
-        "valueFormat": "Array",
-      },
-    },
-    Object {
-      "autoExpand": true,
-      "category": Object {
-        "description": "Tempore dolorum rerum ut earum corporis molestias quae officia.",
-        "expand": false,
-        "label": "Gorgeous Cotton Fish ubiquitous Nevada",
-        "name": "synthesize",
-        "parent": undefined,
-        "priority": 90947,
-      },
-      "contentClassInfo": Object {
-        "id": "0x123ad0000007c7b",
-        "label": "Mountains Cloned Money Market Account",
-        "name": "bypass",
-      },
-      "editor": undefined,
-      "isReadonly": true,
-      "label": "Planner",
-      "name": "Nested content field",
-      "nestedFields": Array [
-        Object {
-          "category": Object {
-            "description": "Est alias quia odio magnam dolorem dolores dignissimos.",
-            "expand": false,
-            "label": "quantify",
-            "name": "Web",
-            "parent": undefined,
-            "priority": 10390,
-          },
-          "editor": undefined,
-          "isReadonly": false,
-          "label": "infrastructures Bacon",
-          "name": "Simple property field",
-          "priority": 22802,
-          "type": Object {
-            "typeName": "string",
-            "valueFormat": "Primitive",
-          },
-        },
-      ],
-      "pathToPrimaryClass": Array [
-        Object {
-          "isForwardRelationship": true,
-          "isPolymorphicRelationship": true,
-          "relationshipInfo": Object {
-            "id": "0x20750000010083",
-            "label": "Cotton Car New Zealand",
-            "name": "Ethiopian Birr",
-          },
-          "sourceClassInfo": Object {
-            "id": "0xb1dd00000019c9",
-            "label": "generate Iceland bandwidth-monitored",
-            "name": "Unbranded Soft Salad",
-          },
-          "targetClassInfo": Object {
-            "id": "0x1553a000000e67d",
-            "label": "Dam Bouvet Island (Bouvetoya)",
-            "name": "Sleek Plastic Chair",
-          },
-        },
-      ],
-      "priority": 63044,
-      "type": Object {
-        "members": Array [
-          Object {
-            "label": "orchestrate Rustic Visionary",
-            "name": "Investor",
-            "type": Object {
-              "typeName": "string",
-              "valueFormat": "Primitive",
-            },
-          },
-        ],
-        "typeName": "Checking Account",
-        "valueFormat": "Struct",
-      },
-    },
-  ],
-  "inputKeysHash": "80a912b6-e09f-4060-9d4f-8494d6707e39",
-  "selectClasses": Array [
-    Object {
-      "isSelectPolymorphic": true,
-      "navigationPropertyClasses": Array [
-        Object {
-          "isForwardRelationship": false,
-          "isPolymorphicRelationship": true,
-          "relationshipInfo": Object {
-            "id": "0xe46e000000ede0",
-            "label": "grid-enabled Berkshire South Carolina",
-            "name": "online",
-          },
-          "sourceClassInfo": Object {
-            "id": "0x100c8000000d1b3",
-            "label": "Sleek",
-            "name": "Afghani",
-          },
-          "targetClassInfo": Object {
-            "id": "0x17cd40000011730",
-            "label": "Cotton Brand overriding",
-            "name": "monitor",
-          },
-        },
-      ],
-      "pathToPrimaryClass": Array [
-        Object {
-          "isForwardRelationship": false,
-          "isPolymorphicRelationship": true,
-          "relationshipInfo": Object {
-            "id": "0x5f5a0000013bca",
-            "label": "IB",
-            "name": "withdrawal",
-          },
-          "sourceClassInfo": Object {
-            "id": "0xd472000001042e",
-            "label": "Personal Loan Account Practical",
-            "name": "deposit",
-          },
-          "targetClassInfo": Object {
-            "id": "0x5b780000008e6e",
-            "label": "Malta",
-            "name": "withdrawal",
-          },
-        },
-      ],
-      "relatedInstanceClasses": Array [
-        Object {
-          "isForwardRelationship": true,
-          "isPolymorphicRelationship": true,
-          "relationshipInfo": Object {
-            "id": "0xcc6b0000012cdc",
-            "label": "Ohio",
-            "name": "1080p",
-          },
-          "sourceClassInfo": Object {
-            "id": "0x11790000016016",
-            "label": "teal responsive",
-            "name": "vertical",
-          },
-          "targetClassInfo": Object {
-            "id": "0x25d00000002d13",
-            "label": "Money Market Account",
-            "name": "initiatives",
-          },
-        },
-      ],
-      "relatedPropertyPaths": Array [
-        Array [
-          Object {
-            "isForwardRelationship": false,
-            "isPolymorphicRelationship": false,
-            "relationshipInfo": Object {
-              "id": "0xb93a0000011415",
-              "label": "Avon Nebraska",
-              "name": "Tactics",
-            },
-            "sourceClassInfo": Object {
-              "id": "0x65ac0000014ae6",
-              "label": "calculate Cotton Grocery",
-              "name": "Rubber",
-            },
-            "targetClassInfo": Object {
-              "id": "0x191d000000f220",
-              "label": "Vietnam redundant bluetooth",
-              "name": "Sports",
-            },
-          },
-        ],
-      ],
-      "selectClassInfo": Object {
-        "id": "0xc61d000000776f",
-        "label": "Tuna plum Computer",
-        "name": "robust",
-      },
-    },
-  ],
-}
-`;
-
-exports[`PresentationManager addon results conversion to Presentation objects returns content for BisCore:Element instances when concrete key is found 1`] = `
-Object {
-  "contentSet": Array [
-    Object {
-      "classInfo": Object {
-        "id": "0xbf320000003661",
-        "label": "deposit out-of-the-box Distributed",
-        "name": "compressing",
-      },
-      "displayValues": Object {
-        "Saint Helena Pound": "Direct Morocco withdrawal",
-      },
-      "imageId": "64382bbf-1b0d-491b-aa30-a7f186049600",
-      "labelDefinition": Object {
-        "displayValue": "Georgia",
-        "rawValue": "Bike",
-        "typeName": "string",
-      },
-      "mergedFieldNames": Array [],
-      "primaryKeys": Array [
-        Object {
-          "className": "Refined",
-          "id": "0x3e910000008a73",
-        },
-      ],
-      "values": Object {
-        "Saint Helena Pound": "IB microchip bypassing",
-      },
-    },
-  ],
-  "descriptor": Object {
-    "categories": Array [
-      Object {
-        "description": "Maxime doloribus voluptas nostrum voluptatem qui quis.",
-        "expand": false,
-        "label": "Automotive",
-        "name": "Soft",
-        "parent": undefined,
-        "priority": 4374,
-      },
-    ],
-    "contentFlags": 0,
-    "displayType": "quia quo sunt",
-    "fields": Array [
-      Object {
-        "category": Object {
-          "description": "Maxime doloribus voluptas nostrum voluptatem qui quis.",
+          "description": "Quasi praesentium qui quia.",
           "expand": false,
-          "label": "Automotive",
-          "name": "Soft",
+          "label": "Cuban Peso Peso Convertible",
+          "name": "Clothing",
           "parent": undefined,
-          "priority": 4374,
-        },
-        "editor": undefined,
-        "isReadonly": true,
-        "label": "front-end",
-        "name": "Saint Helena Pound",
-        "priority": 54475,
-        "properties": Array [
-          Object {
-            "property": Object {
-              "classInfo": Object {
-                "id": "0x55dc0000010588",
-                "label": "Customer-focused Rhode Island",
-                "name": "dot-com",
-              },
-              "name": "Somoni",
-              "type": "string",
-            },
-            "relatedClassPath": Array [],
-          },
-        ],
-        "type": Object {
-          "typeName": "string",
-          "valueFormat": "Primitive",
-        },
-      },
-    ],
-    "selectClasses": Array [
-      Object {
-        "isSelectPolymorphic": true,
-        "navigationPropertyClasses": Array [],
-        "pathToPrimaryClass": Array [],
-        "relatedInstanceClasses": Array [],
-        "relatedPropertyPaths": Array [],
-        "selectClassInfo": Object {
-          "id": "0x1e7b000001533d",
-          "label": "back up",
-          "name": "incubate",
-        },
-      },
-    ],
-  },
-}
-`;
-
-exports[`PresentationManager addon results conversion to Presentation objects returns content for BisCore:Element instances when concrete key is not found 1`] = `
-Object {
-  "contentSet": Array [
-    Object {
-      "classInfo": Object {
-        "id": "0x3f21000001718c",
-        "label": "Station Investment Account",
-        "name": "invoice",
-      },
-      "displayValues": Object {
-        "alarm": "Computer cyan Money Market Account",
-      },
-      "imageId": "8f1f3d1d-3ef4-4635-81be-4b1cae94a589",
-      "labelDefinition": Object {
-        "displayValue": "hierarchy",
-        "rawValue": "multi-tasking",
-        "typeName": "string",
-      },
-      "mergedFieldNames": Array [],
-      "primaryKeys": Array [
-        Object {
-          "className": "Knoll",
-          "id": "0x1860800000135ae",
-        },
-      ],
-      "values": Object {
-        "alarm": "generating Borders",
-      },
-    },
-  ],
-  "descriptor": Object {
-    "categories": Array [
-      Object {
-        "description": "Reiciendis a dolor et quis.",
-        "expand": false,
-        "label": "Borders navigate",
-        "name": "Niue",
-        "parent": undefined,
-        "priority": 57694,
-      },
-    ],
-    "contentFlags": 0,
-    "displayType": "error soluta non",
-    "fields": Array [
-      Object {
-        "category": Object {
-          "description": "Reiciendis a dolor et quis.",
-          "expand": false,
-          "label": "Borders navigate",
-          "name": "Niue",
-          "parent": undefined,
-          "priority": 57694,
-        },
-        "editor": undefined,
-        "isReadonly": true,
-        "label": "Granite Engineer utilisation",
-        "name": "alarm",
-        "priority": 51617,
-        "properties": Array [
-          Object {
-            "property": Object {
-              "classInfo": Object {
-                "id": "0x247400000094bd",
-                "label": "Electronics bypassing",
-                "name": "Kids",
-              },
-              "name": "mint green",
-              "type": "string",
-            },
-            "relatedClassPath": Array [],
-          },
-        ],
-        "type": Object {
-          "typeName": "string",
-          "valueFormat": "Primitive",
-        },
-      },
-    ],
-    "selectClasses": Array [
-      Object {
-        "isSelectPolymorphic": true,
-        "navigationPropertyClasses": Array [],
-        "pathToPrimaryClass": Array [],
-        "relatedInstanceClasses": Array [],
-        "relatedPropertyPaths": Array [],
-        "selectClassInfo": Object {
-          "id": "0x479f0000000d4f",
-          "label": "Garden",
-          "name": "ivory",
-        },
-      },
-    ],
-  },
-}
-`;
-
-exports[`PresentationManager addon results conversion to Presentation objects returns content when descriptor overrides are passed instead of descriptor 1`] = `
-Object {
-  "contentSet": Array [
-    Object {
-      "classInfo": Object {
-        "id": "0xae7100000128e2",
-        "label": "circuit",
-        "name": "Strategist",
-      },
-      "displayValues": Object {
-        "Sleek": "synthesize bandwidth",
-      },
-      "imageId": "c30f7d0d-957f-4ec8-a39e-e6739d45d3e0",
-      "labelDefinition": Object {
-        "displayValue": "Buckinghamshire",
-        "rawValue": "Security",
-        "typeName": "string",
-      },
-      "mergedFieldNames": Array [],
-      "primaryKeys": Array [
-        Object {
-          "className": "applications",
-          "id": "0x877c00000000ee",
-        },
-      ],
-      "values": Object {
-        "Sleek": "Norwegian Krone",
-      },
-    },
-  ],
-  "descriptor": Object {
-    "categories": Array [
-      Object {
-        "description": "Commodi error aperiam qui.",
-        "expand": true,
-        "label": "International",
-        "name": "payment",
-        "parent": undefined,
-        "priority": 462,
-      },
-    ],
-    "contentFlags": 0,
-    "displayType": "magnam laudantium aut",
-    "fields": Array [
-      Object {
-        "category": Object {
-          "description": "Commodi error aperiam qui.",
-          "expand": true,
-          "label": "International",
-          "name": "payment",
-          "parent": undefined,
-          "priority": 462,
+          "priority": 31617,
         },
         "editor": undefined,
         "isReadonly": false,
-        "label": "Ergonomic",
-        "name": "Sleek",
-        "priority": 55581,
+        "label": "impactful Unbranded Buckinghamshire",
+        "name": "leading-edge",
+        "priority": 45846,
         "properties": Array [
           Object {
             "property": Object {
               "classInfo": Object {
-                "id": "0x8bb600000129f1",
-                "label": "open architecture Handcrafted Wooden Bacon",
-                "name": "Salad",
+                "id": "0x1300200000158b3",
+                "label": "generate",
+                "name": "Awesome",
               },
-              "name": "black",
+              "name": "eco-centric",
               "type": "string",
             },
             "relatedClassPath": Array [],
@@ -881,9 +86,9 @@ Object {
         "relatedInstanceClasses": Array [],
         "relatedPropertyPaths": Array [],
         "selectClassInfo": Object {
-          "id": "0xa52200000168c0",
-          "label": "SAS cross-platform copying",
-          "name": "Granite",
+          "id": "0x1b05000000b104",
+          "label": "Kids back-end",
+          "name": "e-markets",
         },
       },
     ],
@@ -891,103 +96,45 @@ Object {
 }
 `;
 
-exports[`PresentationManager addon results conversion to Presentation objects returns filtered node paths 1`] = `
+exports[`PresentationManager addon results conversion to Presentation objects [deprecated] getNodesAndCount returns child nodes and child node count 1`] = `
 Array [
   Object {
-    "children": Array [],
-    "filteringData": Object {
-      "childMatchesCount": 70391,
-      "matchesCount": 98659,
+    "key": Object {
+      "instanceKeys": Array [
+        Object {
+          "className": "multimedia",
+          "id": "0x8a760000007aa6",
+        },
+      ],
+      "pathFromRoot": Array [
+        "p1",
+      ],
+      "type": "ECInstancesNode",
     },
-    "index": 376,
-    "isMarked": true,
-    "node": Object {
-      "backColor": "rgb(
-    242,
-    162,
-    154
-  )",
-      "hasChildren": false,
-      "isCheckboxEnabled": false,
-      "isCheckboxVisible": false,
-      "isChecked": true,
-      "isEditable": true,
-      "isExpanded": true,
-      "isSelectionDisabled": true,
-      "key": Object {
-        "instanceKeys": Array [
-          Object {
-            "className": "Unbranded",
-            "id": "0x797500000144f5",
-          },
-          Object {
-            "className": "Chicken",
-            "id": "0xa3d0000006868",
-          },
-        ],
-        "pathFromRoot": Array [
-          "33f3e289-286b-47d7-a60c-1c01cc415ed0",
-          "56b06080-6fe6-407b-a8ee-bc5367e19f0f",
-        ],
-        "type": "ECInstancesNode",
-      },
-      "label": Object {
-        "displayValue": "Handcrafted Metal Bike",
-        "rawValue": "Delaware",
-        "typeName": "string",
-      },
+    "label": Object {
+      "displayValue": "test2",
+      "rawValue": "test2",
+      "typeName": "string",
+    },
+  },
+  Object {
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p3",
+      ],
+      "type": "type 2",
+    },
+    "label": Object {
+      "displayValue": "test3",
+      "rawValue": "test3",
+      "typeName": "string",
     },
   },
 ]
 `;
 
-exports[`PresentationManager addon results conversion to Presentation objects returns node paths 1`] = `
-Array [
-  Object {
-    "children": Array [],
-    "index": 854,
-    "node": Object {
-      "backColor": "rgb(
-    101,
-    167,
-    210
-  )",
-      "foreColor": "#049C51",
-      "hasChildren": false,
-      "isCheckboxEnabled": true,
-      "isCheckboxVisible": false,
-      "isChecked": false,
-      "isEditable": false,
-      "isExpanded": false,
-      "isSelectionDisabled": true,
-      "key": Object {
-        "instanceKeys": Array [
-          Object {
-            "className": "Auto Loan Account",
-            "id": "0x18568000000ca1f",
-          },
-          Object {
-            "className": "withdrawal",
-            "id": "0x1085b0000011b7a",
-          },
-        ],
-        "pathFromRoot": Array [
-          "f52f375a-0436-459a-bde5-3c4bc445086e",
-          "14fe97ce-5875-470c-abf1-7260d627dcbc",
-        ],
-        "type": "ECInstancesNode",
-      },
-      "label": Object {
-        "displayValue": "Checking Account",
-        "rawValue": "Towels",
-        "typeName": "string",
-      },
-    },
-  },
-]
-`;
-
-exports[`PresentationManager addon results conversion to Presentation objects returns root nodes 1`] = `
+exports[`PresentationManager addon results conversion to Presentation objects [deprecated] getNodesAndCount returns root nodes and root nodes count 1`] = `
 Array [
   Object {
     "backColor": "backColor1",
@@ -1032,8 +179,8 @@ Array [
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "Spur",
-          "id": "0x1698b000001730c",
+          "className": "multi-byte",
+          "id": "0xb3480000004708",
         },
       ],
       "pathFromRoot": Array [
@@ -1064,7 +211,1427 @@ Array [
 ]
 `;
 
-exports[`PresentationManager addon results conversion to Presentation objects returns root nodes and root nodes count when requesting first page 1`] = `
+exports[`PresentationManager addon results conversion to Presentation objects getContent [deprecated] returns content 1`] = `
+Object {
+  "contentSet": Array [
+    Object {
+      "classInfo": Object {
+        "id": "0xbeea000000cfbc",
+        "label": "Response copy",
+        "name": "Northern Mariana Islands",
+      },
+      "displayValues": Object {
+        "capacitor": "withdrawal Berkshire",
+      },
+      "imageId": "9daf8ac9-4691-498c-81c0-0d1d8f168ac6",
+      "labelDefinition": Object {
+        "displayValue": "lavender",
+        "rawValue": "overriding",
+        "typeName": "string",
+      },
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "connecting",
+          "id": "0x1b130000016301",
+        },
+      ],
+      "values": Object {
+        "capacitor": "Handcrafted Soft Shoes Sausages Unbranded",
+      },
+    },
+  ],
+  "descriptor": Object {
+    "categories": Array [
+      Object {
+        "description": "Enim ut nostrum voluptatem incidunt repudiandae minima necessitatibus cupiditate.",
+        "expand": false,
+        "label": "Fantastic",
+        "name": "Chips",
+        "parent": undefined,
+        "priority": 71815,
+      },
+    ],
+    "contentFlags": 0,
+    "displayType": "eveniet quia minus",
+    "fields": Array [
+      Object {
+        "category": Object {
+          "description": "Enim ut nostrum voluptatem incidunt repudiandae minima necessitatibus cupiditate.",
+          "expand": false,
+          "label": "Fantastic",
+          "name": "Chips",
+          "parent": undefined,
+          "priority": 71815,
+        },
+        "editor": undefined,
+        "isReadonly": true,
+        "label": "concept Implemented analyzing",
+        "name": "capacitor",
+        "priority": 71984,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x6f100000010a50",
+                "label": "Unbranded Metal",
+                "name": "Incredible",
+              },
+              "name": "Assistant",
+              "type": "string",
+            },
+            "relatedClassPath": Array [],
+          },
+        ],
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": true,
+        "navigationPropertyClasses": Array [],
+        "pathToPrimaryClass": Array [],
+        "relatedInstanceClasses": Array [],
+        "relatedPropertyPaths": Array [],
+        "selectClassInfo": Object {
+          "id": "0x16f2b000001440c",
+          "label": "attitude-oriented sky blue input",
+          "name": "Architect",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getContent returns content 1`] = `
+Object {
+  "contentSet": Array [
+    Object {
+      "classInfo": Object {
+        "id": "0x684c0000016b07",
+        "label": "Oklahoma",
+        "name": "Gorgeous",
+      },
+      "displayValues": Object {
+        "Computer": "SSL",
+      },
+      "imageId": "27a4b02b-2aa3-4ca0-affd-813a6d23ff4c",
+      "labelDefinition": Object {
+        "displayValue": "invoice",
+        "rawValue": "Data",
+        "typeName": "string",
+      },
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "Gorgeous Cotton Salad",
+          "id": "0x1b0800000176b7",
+        },
+      ],
+      "values": Object {
+        "Computer": "dynamic",
+      },
+    },
+  ],
+  "descriptor": Object {
+    "categories": Array [
+      Object {
+        "description": "Magnam a ea est voluptatum repellat sapiente.",
+        "expand": false,
+        "label": "lime Monitored Plastic",
+        "name": "Estate",
+        "parent": undefined,
+        "priority": 90957,
+      },
+    ],
+    "contentFlags": 0,
+    "displayType": "autem tempora optio",
+    "fields": Array [
+      Object {
+        "category": Object {
+          "description": "Magnam a ea est voluptatum repellat sapiente.",
+          "expand": false,
+          "label": "lime Monitored Plastic",
+          "name": "Estate",
+          "parent": undefined,
+          "priority": 90957,
+        },
+        "editor": undefined,
+        "isReadonly": true,
+        "label": "bypass Global",
+        "name": "Computer",
+        "priority": 91732,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x7edf0000000a83",
+                "label": "transmitter",
+                "name": "RAM",
+              },
+              "name": "Senegal",
+              "type": "string",
+            },
+            "relatedClassPath": Array [],
+          },
+        ],
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": true,
+        "navigationPropertyClasses": Array [],
+        "pathToPrimaryClass": Array [],
+        "relatedInstanceClasses": Array [],
+        "relatedPropertyPaths": Array [],
+        "selectClassInfo": Object {
+          "id": "0xd633000001609a",
+          "label": "mobile client-driven maroon",
+          "name": "parsing",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getContent returns content for BisCore:Element instances when concrete key is found 1`] = `
+Object {
+  "contentSet": Array [
+    Object {
+      "classInfo": Object {
+        "id": "0x5b7a0000016867",
+        "label": "Ergonomic Steel Keyboard",
+        "name": "RAM",
+      },
+      "displayValues": Object {
+        "auxiliary": "Plastic Cliff",
+      },
+      "imageId": "65d31f24-bab4-4ca1-9ee8-9f5cd479bdb4",
+      "labelDefinition": Object {
+        "displayValue": "North Carolina",
+        "rawValue": "Regional",
+        "typeName": "string",
+      },
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "Incredible",
+          "id": "0x138400000016185",
+        },
+      ],
+      "values": Object {
+        "auxiliary": "Enterprise-wide Hungary bypass",
+      },
+    },
+  ],
+  "descriptor": Object {
+    "categories": Array [
+      Object {
+        "description": "Dolore iusto quia necessitatibus repellendus tempore beatae amet.",
+        "expand": true,
+        "label": "Cambridgeshire",
+        "name": "models",
+        "parent": undefined,
+        "priority": 45998,
+      },
+    ],
+    "contentFlags": 0,
+    "displayType": "laboriosam nihil dolor",
+    "fields": Array [
+      Object {
+        "category": Object {
+          "description": "Dolore iusto quia necessitatibus repellendus tempore beatae amet.",
+          "expand": true,
+          "label": "Cambridgeshire",
+          "name": "models",
+          "parent": undefined,
+          "priority": 45998,
+        },
+        "editor": undefined,
+        "isReadonly": false,
+        "label": "Beauty",
+        "name": "auxiliary",
+        "priority": 54780,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x14c080000009f62",
+                "label": "pink",
+                "name": "regional",
+              },
+              "name": "hack",
+              "type": "string",
+            },
+            "relatedClassPath": Array [],
+          },
+        ],
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": true,
+        "navigationPropertyClasses": Array [],
+        "pathToPrimaryClass": Array [],
+        "relatedInstanceClasses": Array [],
+        "relatedPropertyPaths": Array [],
+        "selectClassInfo": Object {
+          "id": "0x6c6a000000b8a8",
+          "label": "parsing",
+          "name": "Tuna",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getContent returns content for BisCore:Element instances when concrete key is not found 1`] = `
+Object {
+  "contentSet": Array [
+    Object {
+      "classInfo": Object {
+        "id": "0x16f200000139de",
+        "label": "salmon Administrator pixel",
+        "name": "Corner",
+      },
+      "displayValues": Object {
+        "transform": "Radial Refined",
+      },
+      "imageId": "18ab0004-a5ac-483e-98d0-940a1b35b529",
+      "labelDefinition": Object {
+        "displayValue": "challenge",
+        "rawValue": "neural",
+        "typeName": "string",
+      },
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "withdrawal",
+          "id": "0x9a97000000f0ba",
+        },
+      ],
+      "values": Object {
+        "transform": "convergence Lead",
+      },
+    },
+  ],
+  "descriptor": Object {
+    "categories": Array [
+      Object {
+        "description": "Ad temporibus ut sed et velit amet labore molestias.",
+        "expand": true,
+        "label": "Gloves secondary Soft",
+        "name": "capability",
+        "parent": undefined,
+        "priority": 80687,
+      },
+    ],
+    "contentFlags": 0,
+    "displayType": "est est similique",
+    "fields": Array [
+      Object {
+        "category": Object {
+          "description": "Ad temporibus ut sed et velit amet labore molestias.",
+          "expand": true,
+          "label": "Gloves secondary Soft",
+          "name": "capability",
+          "parent": undefined,
+          "priority": 80687,
+        },
+        "editor": undefined,
+        "isReadonly": true,
+        "label": "Handcrafted Rhode Island invoice",
+        "name": "transform",
+        "priority": 45104,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0x108070000009765",
+                "label": "Soap Principal engineer",
+                "name": "South Dakota",
+              },
+              "name": "stable",
+              "type": "string",
+            },
+            "relatedClassPath": Array [],
+          },
+        ],
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": true,
+        "navigationPropertyClasses": Array [],
+        "pathToPrimaryClass": Array [],
+        "relatedInstanceClasses": Array [],
+        "relatedPropertyPaths": Array [],
+        "selectClassInfo": Object {
+          "id": "0x12f820000000ced",
+          "label": "orange relationships payment",
+          "name": "Kentucky",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getContent returns content when descriptor overrides are passed instead of descriptor 1`] = `
+Object {
+  "contentSet": Array [
+    Object {
+      "classInfo": Object {
+        "id": "0x11d50000009da2",
+        "label": "Shirt",
+        "name": "grey",
+      },
+      "displayValues": Object {
+        "didactic": "ivory AGP Response",
+      },
+      "imageId": "9dedee5c-aeea-4182-af72-0f27e7e18410",
+      "labelDefinition": Object {
+        "displayValue": "International",
+        "rawValue": "TCP",
+        "typeName": "string",
+      },
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "compress",
+          "id": "0x8f4a000000d129",
+        },
+      ],
+      "values": Object {
+        "didactic": "Ergonomic Rubber Mouse logistical",
+      },
+    },
+  ],
+  "descriptor": Object {
+    "categories": Array [
+      Object {
+        "description": "Deserunt numquam doloremque recusandae cupiditate in.",
+        "expand": false,
+        "label": "Concrete Home Loan Account applications",
+        "name": "Designer",
+        "parent": undefined,
+        "priority": 30036,
+      },
+    ],
+    "contentFlags": 0,
+    "displayType": "ut qui quasi",
+    "fields": Array [
+      Object {
+        "category": Object {
+          "description": "Deserunt numquam doloremque recusandae cupiditate in.",
+          "expand": false,
+          "label": "Concrete Home Loan Account applications",
+          "name": "Designer",
+          "parent": undefined,
+          "priority": 30036,
+        },
+        "editor": undefined,
+        "isReadonly": false,
+        "label": "neural",
+        "name": "didactic",
+        "priority": 54871,
+        "properties": Array [
+          Object {
+            "property": Object {
+              "classInfo": Object {
+                "id": "0xa3d80000018658",
+                "label": "Direct partnerships",
+                "name": "ADP",
+              },
+              "name": "Lead",
+              "type": "string",
+            },
+            "relatedClassPath": Array [],
+          },
+        ],
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": true,
+        "navigationPropertyClasses": Array [],
+        "pathToPrimaryClass": Array [],
+        "relatedInstanceClasses": Array [],
+        "relatedPropertyPaths": Array [],
+        "selectClassInfo": Object {
+          "id": "0x44c1000000de32",
+          "label": "Money Market Account Awesome Fresh Soap Specialist",
+          "name": "leading-edge",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getContentDescriptor [deprecated] returns content descriptor 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "description": "Culpa blanditiis eos deserunt sunt non facere esse aut.",
+      "expand": false,
+      "label": "infomediaries Djibouti solid state",
+      "name": "AGP",
+      "parent": undefined,
+      "priority": 86695,
+    },
+    Object {
+      "description": "Quia consectetur doloremque ea consequatur omnis neque veritatis.",
+      "expand": true,
+      "label": "quantify",
+      "name": "next generation",
+      "parent": undefined,
+      "priority": 73993,
+    },
+    Object {
+      "description": "Voluptates minima eos recusandae temporibus laboriosam est at.",
+      "expand": false,
+      "label": "SCSI Grove",
+      "name": "mint green",
+      "parent": undefined,
+      "priority": 43681,
+    },
+    Object {
+      "description": "Ut sit dicta nobis labore et consectetur officiis eius eveniet.",
+      "expand": false,
+      "label": "Principal Gloves Fresh",
+      "name": "Plastic",
+      "parent": undefined,
+      "priority": 30622,
+    },
+  ],
+  "connectionId": "2433fd4e-3dae-4f64-a2a9-bb96a4e8d758",
+  "contentFlags": 0,
+  "contentOptions": "bar",
+  "displayType": "bypassing",
+  "fields": Array [
+    Object {
+      "category": Object {
+        "description": "Culpa blanditiis eos deserunt sunt non facere esse aut.",
+        "expand": false,
+        "label": "infomediaries Djibouti solid state",
+        "name": "AGP",
+        "parent": undefined,
+        "priority": 86695,
+      },
+      "editor": Object {
+        "name": "Missouri",
+        "params": Object {
+          "some_param": 67647,
+        },
+      },
+      "isReadonly": true,
+      "label": "North Carolina Gold",
+      "name": "Primitive property field with editor",
+      "priority": 55720,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x517600000178b5",
+              "label": "User-friendly",
+              "name": "Manager",
+            },
+            "enumerationInfo": Object {
+              "choices": Array [
+                Object {
+                  "label": "calculate tan action-items",
+                  "value": "d1624cb5-f6b4-494c-990b-e8d3bff699ee",
+                },
+                Object {
+                  "label": "context-sensitive standardization",
+                  "value": "496cc7ce-89c1-44dc-b59e-571afea0957a",
+                },
+              ],
+              "isStrict": false,
+            },
+            "name": "deploy",
+            "type": "string",
+          },
+          "relatedClassPath": Array [],
+        },
+      ],
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "category": Object {
+        "description": "Quia consectetur doloremque ea consequatur omnis neque veritatis.",
+        "expand": true,
+        "label": "quantify",
+        "name": "next generation",
+        "parent": undefined,
+        "priority": 73993,
+      },
+      "editor": undefined,
+      "isReadonly": true,
+      "label": "Berkshire",
+      "name": "Complex array of structs property field",
+      "priority": 6362,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x12b750000016775",
+              "label": "white back-end Grocery",
+              "name": "Timor-Leste",
+            },
+            "kindOfQuantity": Object {
+              "currentFormatId": "7a7792a9-07d7-44f3-8c46-3c8a9b606383",
+              "label": "Direct bleeding-edge",
+              "name": "Money Market Account",
+              "persistenceUnit": "calculating",
+            },
+            "name": "Steel",
+            "type": "double",
+          },
+          "relatedClassPath": Array [],
+        },
+      ],
+      "type": Object {
+        "memberType": Object {
+          "members": Array [
+            Object {
+              "label": "functionalities USB",
+              "name": "enable",
+              "type": Object {
+                "typeName": "string",
+                "valueFormat": "Primitive",
+              },
+            },
+            Object {
+              "label": "platforms eyeballs",
+              "name": "e-business",
+              "type": Object {
+                "memberType": Object {
+                  "typeName": "string",
+                  "valueFormat": "Primitive",
+                },
+                "typeName": "string[]",
+                "valueFormat": "Array",
+              },
+            },
+          ],
+          "typeName": "SomeClass",
+          "valueFormat": "Struct",
+        },
+        "typeName": "string[]",
+        "valueFormat": "Array",
+      },
+    },
+    Object {
+      "autoExpand": true,
+      "category": Object {
+        "description": "Voluptates minima eos recusandae temporibus laboriosam est at.",
+        "expand": false,
+        "label": "SCSI Grove",
+        "name": "mint green",
+        "parent": undefined,
+        "priority": 43681,
+      },
+      "contentClassInfo": Object {
+        "id": "0x83530000007eff",
+        "label": "salmon Avon",
+        "name": "Drive",
+      },
+      "editor": undefined,
+      "isReadonly": true,
+      "label": "iterate",
+      "name": "Nested content field",
+      "nestedFields": Array [
+        Object {
+          "category": Object {
+            "description": "Ut sit dicta nobis labore et consectetur officiis eius eveniet.",
+            "expand": false,
+            "label": "Principal Gloves Fresh",
+            "name": "Plastic",
+            "parent": undefined,
+            "priority": 30622,
+          },
+          "editor": undefined,
+          "isReadonly": true,
+          "label": "approach Pennsylvania",
+          "name": "Simple property field",
+          "priority": 53350,
+          "type": Object {
+            "typeName": "string",
+            "valueFormat": "Primitive",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0xa3e400000001f4",
+            "label": "alarm auxiliary",
+            "name": "Kansas",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x175850000013346",
+            "label": "Security",
+            "name": "maroon",
+          },
+          "targetClassInfo": Object {
+            "id": "0x185dd0000009b28",
+            "label": "Associate Future",
+            "name": "Albania",
+          },
+        },
+      ],
+      "priority": 89835,
+      "type": Object {
+        "members": Array [
+          Object {
+            "label": "Refined Wooden Hat enable payment",
+            "name": "Orchestrator",
+            "type": Object {
+              "typeName": "string",
+              "valueFormat": "Primitive",
+            },
+          },
+        ],
+        "typeName": "Loaf",
+        "valueFormat": "Struct",
+      },
+    },
+  ],
+  "inputKeysHash": "620258e2-300c-4987-ac6f-5aeefb42c048",
+  "selectClasses": Array [
+    Object {
+      "isSelectPolymorphic": true,
+      "navigationPropertyClasses": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0xc9b50000012ad2",
+            "label": "enterprise SQL",
+            "name": "Enhanced",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x61cc0000013ac5",
+            "label": "Comoros secondary",
+            "name": "Home Loan Account",
+          },
+          "targetClassInfo": Object {
+            "id": "0x1174300000120f0",
+            "label": "Credit Card Account Kip Peso Uruguayo Uruguay Peso en Unidades Indexadas",
+            "name": "Estate",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0xd172000000db9c",
+            "label": "Automated fresh-thinking",
+            "name": "Gorgeous Metal Computer",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x163e000000294d",
+            "label": "Ameliorated",
+            "name": "Cambridgeshire",
+          },
+          "targetClassInfo": Object {
+            "id": "0x10441000000d81c",
+            "label": "Wooden quantify Savings Account",
+            "name": "Avon",
+          },
+        },
+      ],
+      "relatedInstanceClasses": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0xfe400000006eab",
+            "label": "zero tolerance",
+            "name": "Designer",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x57260000008c77",
+            "label": "installation",
+            "name": "Idaho",
+          },
+          "targetClassInfo": Object {
+            "id": "0x65b700000090f8",
+            "label": "Incredible Cotton extensible",
+            "name": "New Jersey",
+          },
+        },
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": false,
+            "isPolymorphicRelationship": true,
+            "relationshipInfo": Object {
+              "id": "0xe8f60000017d20",
+              "label": "copy Personal Loan Account",
+              "name": "Manager",
+            },
+            "sourceClassInfo": Object {
+              "id": "0xc76f0000016272",
+              "label": "green neural next generation",
+              "name": "olive",
+            },
+            "targetClassInfo": Object {
+              "id": "0x1a1f0000008e71",
+              "label": "Gorgeous Plastic Chips index",
+              "name": "Fresh",
+            },
+          },
+        ],
+      ],
+      "selectClassInfo": Object {
+        "id": "0xa7330000012bd2",
+        "label": "mission-critical",
+        "name": "deposit",
+      },
+    },
+  ],
+}
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getContentDescriptor returns content descriptor 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "description": "Odio temporibus consequatur dicta suscipit provident.",
+      "expand": true,
+      "label": "Assurance turquoise navigating",
+      "name": "Berkshire",
+      "parent": undefined,
+      "priority": 12066,
+    },
+    Object {
+      "description": "A debitis pariatur eveniet consectetur maxime.",
+      "expand": true,
+      "label": "card",
+      "name": "Versatile",
+      "parent": undefined,
+      "priority": 39992,
+    },
+    Object {
+      "description": "Est ipsum eveniet eius quis expedita cum.",
+      "expand": true,
+      "label": "Usability",
+      "name": "Fresh",
+      "parent": undefined,
+      "priority": 46957,
+    },
+    Object {
+      "description": "Quos eius quasi consequatur quia ut.",
+      "expand": false,
+      "label": "vortals reboot Massachusetts",
+      "name": "Ergonomic",
+      "parent": undefined,
+      "priority": 91965,
+    },
+  ],
+  "connectionId": "d61dcbd0-3355-426a-9ebf-3eadccd4b8be",
+  "contentFlags": 0,
+  "contentOptions": "bar",
+  "displayType": "withdrawal",
+  "fields": Array [
+    Object {
+      "category": Object {
+        "description": "Odio temporibus consequatur dicta suscipit provident.",
+        "expand": true,
+        "label": "Assurance turquoise navigating",
+        "name": "Berkshire",
+        "parent": undefined,
+        "priority": 12066,
+      },
+      "editor": Object {
+        "name": "International",
+        "params": Object {
+          "some_param": 18536,
+        },
+      },
+      "isReadonly": true,
+      "label": "Barbados protocol Tuna",
+      "name": "Primitive property field with editor",
+      "priority": 391,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x5d6000000a44a",
+              "label": "Planner",
+              "name": "haptic",
+            },
+            "enumerationInfo": Object {
+              "choices": Array [
+                Object {
+                  "label": "heuristic input installation",
+                  "value": "a81cf4e0-66e2-422b-86a1-cb332b9d5ea2",
+                },
+                Object {
+                  "label": "Licensed Jersey",
+                  "value": "8cc2df40-7654-4ca6-98c9-c5308326ff0f",
+                },
+              ],
+              "isStrict": false,
+            },
+            "name": "Ways",
+            "type": "string",
+          },
+          "relatedClassPath": Array [],
+        },
+      ],
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "category": Object {
+        "description": "A debitis pariatur eveniet consectetur maxime.",
+        "expand": true,
+        "label": "card",
+        "name": "Versatile",
+        "parent": undefined,
+        "priority": 39992,
+      },
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Checking Account Corporate Czech Koruna",
+      "name": "Complex array of structs property field",
+      "priority": 72803,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0xa6a300000100de",
+              "label": "New Jersey",
+              "name": "Savings Account",
+            },
+            "kindOfQuantity": Object {
+              "currentFormatId": "73ec9ab2-ad8b-4b3e-bec3-b18cad6ccf1e",
+              "label": "invoice Borders",
+              "name": "Specialist",
+              "persistenceUnit": "alarm",
+            },
+            "name": "Cliffs",
+            "type": "double",
+          },
+          "relatedClassPath": Array [],
+        },
+      ],
+      "type": Object {
+        "memberType": Object {
+          "members": Array [
+            Object {
+              "label": "B2C Security transmitting",
+              "name": "Saint Lucia",
+              "type": Object {
+                "typeName": "string",
+                "valueFormat": "Primitive",
+              },
+            },
+            Object {
+              "label": "orange",
+              "name": "attitude-oriented",
+              "type": Object {
+                "memberType": Object {
+                  "typeName": "string",
+                  "valueFormat": "Primitive",
+                },
+                "typeName": "string[]",
+                "valueFormat": "Array",
+              },
+            },
+          ],
+          "typeName": "SomeClass",
+          "valueFormat": "Struct",
+        },
+        "typeName": "string[]",
+        "valueFormat": "Array",
+      },
+    },
+    Object {
+      "autoExpand": true,
+      "category": Object {
+        "description": "Est ipsum eveniet eius quis expedita cum.",
+        "expand": true,
+        "label": "Usability",
+        "name": "Fresh",
+        "parent": undefined,
+        "priority": 46957,
+      },
+      "contentClassInfo": Object {
+        "id": "0x16e2c0000017034",
+        "label": "Steel",
+        "name": "optical",
+      },
+      "editor": undefined,
+      "isReadonly": true,
+      "label": "Alabama",
+      "name": "Nested content field",
+      "nestedFields": Array [
+        Object {
+          "category": Object {
+            "description": "Quos eius quasi consequatur quia ut.",
+            "expand": false,
+            "label": "vortals reboot Massachusetts",
+            "name": "Ergonomic",
+            "parent": undefined,
+            "priority": 91965,
+          },
+          "editor": undefined,
+          "isReadonly": true,
+          "label": "reciprocal Baby",
+          "name": "Simple property field",
+          "priority": 45271,
+          "type": Object {
+            "typeName": "string",
+            "valueFormat": "Primitive",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0x5d030000017189",
+            "label": "firewall",
+            "name": "interface",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x59d70000008348",
+            "label": "New Hampshire bypassing Handmade Rubber Cheese",
+            "name": "metrics",
+          },
+          "targetClassInfo": Object {
+            "id": "0x5b6b0000003e98",
+            "label": "cohesive Checking Account",
+            "name": "empower",
+          },
+        },
+      ],
+      "priority": 48920,
+      "type": Object {
+        "members": Array [
+          Object {
+            "label": "Cross-group",
+            "name": "Infrastructure",
+            "type": Object {
+              "typeName": "string",
+              "valueFormat": "Primitive",
+            },
+          },
+        ],
+        "typeName": "explicit",
+        "valueFormat": "Struct",
+      },
+    },
+  ],
+  "inputKeysHash": "56c8a034-328a-4ac5-bf67-c3c8fa1ad1ad",
+  "selectClasses": Array [
+    Object {
+      "isSelectPolymorphic": true,
+      "navigationPropertyClasses": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "relationshipInfo": Object {
+            "id": "0x1133300000174c4",
+            "label": "Facilitator CFA Franc BCEAO Cheese",
+            "name": "parsing",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x15bbd0000005593",
+            "label": "infomediaries",
+            "name": "Fiji Dollar",
+          },
+          "targetClassInfo": Object {
+            "id": "0x122c9000000a1ac",
+            "label": "Devolved Metal bypassing",
+            "name": "solid state",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0x3807000000c381",
+            "label": "Liaison Chief",
+            "name": "Refined",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x1f5300000045c1",
+            "label": "Metal",
+            "name": "Isle",
+          },
+          "targetClassInfo": Object {
+            "id": "0x37b8000000aa97",
+            "label": "global Practical focus group",
+            "name": "Plaza",
+          },
+        },
+      ],
+      "relatedInstanceClasses": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "relationshipInfo": Object {
+            "id": "0x1458c000000684a",
+            "label": "Pre-emptive Integration web services",
+            "name": "transmitter",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x8e580000009b76",
+            "label": "indigo maximized",
+            "name": "United States Minor Outlying Islands",
+          },
+          "targetClassInfo": Object {
+            "id": "0xca4c00000147dd",
+            "label": "Automotive Refined Concrete Chair Home Loan Account",
+            "name": "Generic Frozen Cheese",
+          },
+        },
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": false,
+            "relationshipInfo": Object {
+              "id": "0x15a440000006ffd",
+              "label": "visualize override contingency",
+              "name": "platforms",
+            },
+            "sourceClassInfo": Object {
+              "id": "0x9461000000f239",
+              "label": "feed input",
+              "name": "SQL",
+            },
+            "targetClassInfo": Object {
+              "id": "0x1652700000102d5",
+              "label": "intangible ivory",
+              "name": "payment",
+            },
+          },
+        ],
+      ],
+      "selectClassInfo": Object {
+        "id": "0x13e9000000023d3",
+        "label": "multi-byte",
+        "name": "Mississippi",
+      },
+    },
+  ],
+}
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getFilteredNodePaths [deprecated] returns filtered node paths 1`] = `
+Array [
+  Object {
+    "children": Array [],
+    "filteringData": Object {
+      "childMatchesCount": 66000,
+      "matchesCount": 49415,
+    },
+    "index": 494,
+    "isMarked": true,
+    "node": Object {
+      "backColor": "rgb(
+    105,
+    5,
+    9
+  )",
+      "description": "Qui accusamus consequatur reiciendis adipisci fuga voluptatem esse.",
+      "foreColor": "#84D40A",
+      "hasChildren": true,
+      "isCheckboxEnabled": true,
+      "isCheckboxVisible": true,
+      "isChecked": true,
+      "isEditable": true,
+      "isExpanded": false,
+      "isSelectionDisabled": true,
+      "key": Object {
+        "instanceKeys": Array [
+          Object {
+            "className": "synthesize",
+            "id": "0xb97c0000011e58",
+          },
+          Object {
+            "className": "collaboration",
+            "id": "0x6585000000cee0",
+          },
+        ],
+        "pathFromRoot": Array [
+          "0146d975-613b-49ab-a61f-20bda4c8e81a",
+          "0d2eb41d-4a3b-48a0-8400-92a3e6ad85ea",
+        ],
+        "type": "ECInstancesNode",
+      },
+      "label": Object {
+        "displayValue": "Electronics",
+        "rawValue": "Tuna",
+        "typeName": "string",
+      },
+    },
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getFilteredNodePaths returns filtered node paths 1`] = `
+Array [
+  Object {
+    "children": Array [],
+    "filteringData": Object {
+      "childMatchesCount": 6721,
+      "matchesCount": 18930,
+    },
+    "index": 861,
+    "isMarked": true,
+    "node": Object {
+      "backColor": "rgb(
+    204,
+    226,
+    70
+  )",
+      "foreColor": "#A867F6",
+      "hasChildren": true,
+      "isCheckboxEnabled": false,
+      "isCheckboxVisible": false,
+      "isChecked": true,
+      "isEditable": false,
+      "isExpanded": true,
+      "isSelectionDisabled": false,
+      "key": Object {
+        "instanceKeys": Array [
+          Object {
+            "className": "Ball",
+            "id": "0x104990000004fc4",
+          },
+          Object {
+            "className": "Montana",
+            "id": "0x11bf10000002c01",
+          },
+        ],
+        "pathFromRoot": Array [
+          "21d1c027-bea3-4416-9fd3-ff8cf9035f83",
+          "30662f47-039f-481e-8693-75ec166aa453",
+        ],
+        "type": "ECInstancesNode",
+      },
+      "label": Object {
+        "displayValue": "withdrawal",
+        "rawValue": "Small",
+        "typeName": "string",
+      },
+    },
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getNodePaths [deprecated] returns node paths 1`] = `
+Array [
+  Object {
+    "children": Array [],
+    "index": 626,
+    "node": Object {
+      "backColor": "rgb(
+    228,
+    94,
+    162
+  )",
+      "hasChildren": true,
+      "isCheckboxEnabled": false,
+      "isCheckboxVisible": true,
+      "isChecked": false,
+      "isEditable": false,
+      "isExpanded": false,
+      "isSelectionDisabled": true,
+      "key": Object {
+        "instanceKeys": Array [
+          Object {
+            "className": "International",
+            "id": "0x158e0000000f8b3",
+          },
+          Object {
+            "className": "unleash",
+            "id": "0x10678000001804d",
+          },
+        ],
+        "pathFromRoot": Array [
+          "2e2737ba-e44a-4137-81c0-3b9bda037293",
+          "a83130b4-7a88-4453-bfc6-58def17aa003",
+        ],
+        "type": "ECInstancesNode",
+      },
+      "label": Object {
+        "displayValue": "Ergonomic",
+        "rawValue": "lavender",
+        "typeName": "string",
+      },
+    },
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getNodePaths returns node paths 1`] = `
+Array [
+  Object {
+    "children": Array [],
+    "index": 118,
+    "node": Object {
+      "backColor": "rgb(
+    143,
+    75,
+    113
+  )",
+      "foreColor": "#F60C4B",
+      "hasChildren": true,
+      "isCheckboxEnabled": true,
+      "isCheckboxVisible": true,
+      "isChecked": true,
+      "isEditable": false,
+      "isExpanded": true,
+      "isSelectionDisabled": false,
+      "key": Object {
+        "instanceKeys": Array [
+          Object {
+            "className": "Rubber",
+            "id": "0x7fba000000a1c0",
+          },
+          Object {
+            "className": "engineer",
+            "id": "0xc2bd000000e8c9",
+          },
+        ],
+        "pathFromRoot": Array [
+          "15fc4488-4edc-4357-88f0-7d6c4dd68a7b",
+          "1c2ff0f1-6636-4b10-bded-2a66e751f893",
+        ],
+        "type": "ECInstancesNode",
+      },
+      "label": Object {
+        "displayValue": "connect",
+        "rawValue": "Credit Card Account",
+        "typeName": "string",
+      },
+    },
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getNodes [deprecated] returns child nodes 1`] = `
+Array [
+  Object {
+    "key": Object {
+      "instanceKeys": Array [
+        Object {
+          "className": "invoice",
+          "id": "0x118e500000048e1",
+        },
+      ],
+      "pathFromRoot": Array [
+        "p1",
+      ],
+      "type": "ECInstancesNode",
+    },
+    "label": Object {
+      "displayValue": "test2",
+      "rawValue": "test2",
+      "typeName": "string",
+    },
+  },
+  Object {
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p3",
+      ],
+      "type": "type 2",
+    },
+    "label": Object {
+      "displayValue": "test3",
+      "rawValue": "test3",
+      "typeName": "string",
+    },
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getNodes returns child nodes 1`] = `
+Array [
+  Object {
+    "key": Object {
+      "instanceKeys": Array [
+        Object {
+          "className": "Creative",
+          "id": "0xa906000001474f",
+        },
+      ],
+      "pathFromRoot": Array [
+        "p1",
+      ],
+      "type": "ECInstancesNode",
+    },
+    "label": Object {
+      "displayValue": "test2",
+      "rawValue": "test2",
+      "typeName": "string",
+    },
+  },
+  Object {
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p3",
+      ],
+      "type": "type 2",
+    },
+    "label": Object {
+      "displayValue": "test3",
+      "rawValue": "test3",
+      "typeName": "string",
+    },
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getNodes returns root nodes 1`] = `
 Array [
   Object {
     "backColor": "backColor1",
@@ -1109,8 +1676,8 @@ Array [
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "Checking Account",
-          "id": "0x12bf00000005879",
+          "className": "Personal Loan Account",
+          "id": "0x671b0000017448",
         },
       ],
       "pathFromRoot": Array [

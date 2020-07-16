@@ -14,7 +14,7 @@ import { addAnimation } from "./Animation";
 import { addColor } from "./Color";
 import { addShaderFlags } from "./Common";
 import { addWhiteOnWhiteReversal } from "./Fragment";
-import { addLineCode, adjustWidth } from "./Polyline";
+import { addAdjustWidth, addLineCode } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
 import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
@@ -122,7 +122,7 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   addLineCode(builder, lineCodeArgs);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   builder.addVarying("v_lnInfo", VariableType.Vec4);
-  vert.addFunction(adjustWidth);
+  addAdjustWidth(vert);
 
   addViewport(vert);
   addModelViewMatrix(vert);

@@ -28,10 +28,12 @@ export interface SVTConfiguration {
   filterMapDrapeTextures?: boolean; // default ON (if extension supported)
   useFakeCloudStorageTileCache?: boolean; // default OFF
   dpiAwareViewports?: boolean; // default ON
+  dpiAwareLOD?: boolean; // default OFF
   cancelBackendTileRequests?: boolean; // default ON
   disableEdges?: boolean; // default OFF
   useWebGL2?: boolean; // default ON
   doIdleWork?: boolean; // default ON
   debugShaders?: boolean; // default OFF
   alwaysLoadEdges?: boolean; // default OFF
+  antialiasSamples?: number; // default 1 (No antialiasing)
 }

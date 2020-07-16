@@ -14,8 +14,8 @@ import {
 } from "@bentley/ui-abstract";
 import { MessageSeverity, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
-  Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactMessage,
-  ReactNotifyMessageDetails, StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, WidgetState, withStatusFieldProps,
+  Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager,
+  ReactMessage, ReactNotifyMessageDetails, StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, WidgetState, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../";
@@ -26,7 +26,7 @@ import { SampleStatusField } from "../appui/statusfields/SampleStatusField";
 import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
-import { ToolWithSettings } from "../tools/ToolWithSettings";
+import { ToolWithSettings } from "./ToolWithSettings";
 import { Presentation } from "@bentley/presentation-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 

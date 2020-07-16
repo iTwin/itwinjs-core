@@ -15,6 +15,7 @@ import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
+import { System } from "./render/webgl/System";
 
 /** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
  * Decorators generate [[Decorations]].
@@ -518,5 +519,14 @@ export class ViewManager {
   public refreshForModifiedModels(modelIds: Id64Arg | undefined): void {
     for (const vp of this._viewports)
       vp.refreshForModifiedModels(modelIds);
+  }
+
+  /** Turn on or off antialiasing in each [[Viewport]] registered with the ViewManager.
+   * Setting numSamples to 1 turns it off, setting numSamples > 1 turns it on with that many samples.
+   * @beta
+   */
+  public setAntialiasingAllViews(numSamples: number): void {
+    this.forEachViewport((vp) => vp.antialiasSamples = numSamples);
+    System.instance.antialiasSamples = numSamples;
   }
 }

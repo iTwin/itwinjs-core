@@ -88,32 +88,30 @@ Array [
 ]
 `;
 
-exports[`TreeDataProvider getNodes children returns presentation manager result 1`] = `
+exports[`TreeDataProvider getNodes returns presentation manager result 1`] = `
 Array [
   Object {
     "__presentation-components/key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "olive",
-          "id": "0x69150000016f27",
+          "className": "payment",
+          "id": "0x16be80000004405",
         },
         Object {
-          "className": "cross-platform",
-          "id": "0xc11d0000006f7b",
+          "className": "Sleek Granite Soap",
+          "id": "0x91bb0000011198",
         },
       ],
       "pathFromRoot": Array [
-        "e5e66399-295a-454e-a1ab-590b334ae253",
-        "b5928504-ca89-4d67-9fe9-01f13624cefb",
+        "4a55713b-f10a-423a-a6e0-c54b1b677e78",
+        "d1ea9e80-e8b1-4710-a1b1-7fa1c654a1f8",
       ],
       "type": "ECInstancesNode",
     },
-    "checkBoxState": 1,
-    "description": "Sunt excepturi est animi.",
+    "description": "Aut et tempore voluptatum rerum unde autem nulla.",
     "hasChildren": true,
-    "icon": "motivating",
-    "id": "b5928504-ca89-4d67-9fe9-01f13624cefb/e5e66399-295a-454e-a1ab-590b334ae253",
-    "isCheckboxVisible": true,
+    "icon": "Dobra",
+    "id": "d1ea9e80-e8b1-4710-a1b1-7fa1c654a1f8/4a55713b-f10a-423a-a6e0-c54b1b677e78",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -121,120 +119,35 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "Multi-channelled",
-        "value": "deposit",
+        "displayValue": "Turkish Lira",
+        "value": "Handcrafted Granite Chicken",
         "valueFormat": 0,
       },
     },
-    "parentId": "b4da3271-b2d6-497b-a799-93a4436cec5f",
-    "style": Object {
-      "colorOverrides": Object {
-        "color": -717867777,
-      },
-    },
+    "parentId": "62a2f68d-cb37-4531-995a-ac9b559e9ef8",
   },
   Object {
     "__presentation-components/key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "Practical Concrete Pizza",
-          "id": "0xc14b00000120e7",
+          "className": "optical",
+          "id": "0x5a610000016c10",
         },
         Object {
-          "className": "platforms",
-          "id": "0x8a760000016461",
+          "className": "Senegal",
+          "id": "0xb5ae0000000db4",
         },
       ],
       "pathFromRoot": Array [
-        "377376d7-efbb-4df5-a70a-4764c60c82ae",
-        "baa5384c-065b-43f7-bfbe-9d55e79bfb1f",
-      ],
-      "type": "ECInstancesNode",
-    },
-    "description": "Sunt eveniet facilis officia.",
-    "hasChildren": true,
-    "icon": "Technician",
-    "id": "baa5384c-065b-43f7-bfbe-9d55e79bfb1f/377376d7-efbb-4df5-a70a-4764c60c82ae",
-    "label": PropertyRecord {
-      "property": Object {
-        "displayLabel": "Label",
-        "name": "node_label",
-        "typename": "string",
-      },
-      "value": Object {
-        "displayValue": "Antigua and Barbuda",
-        "value": "Shoes",
-        "valueFormat": 0,
-      },
-    },
-    "parentId": "b4da3271-b2d6-497b-a799-93a4436cec5f",
-    "style": Object {
-      "colorOverrides": Object {
-        "backgroundColor": 1215880959,
-        "color": -1153090305,
-      },
-    },
-  },
-]
-`;
-
-exports[`TreeDataProvider getNodes root returns presentation manager result 1`] = `
-Array [
-  Object {
-    "__presentation-components/key": Object {
-      "instanceKeys": Array [
-        Object {
-          "className": "data-warehouse",
-          "id": "0xc8340000009d04",
-        },
-        Object {
-          "className": "Washington",
-          "id": "0xc7df000000977f",
-        },
-      ],
-      "pathFromRoot": Array [
-        "48ae5ef5-0f6e-4931-ba46-85cc14189a13",
-        "8287e887-4294-40a6-b4fc-635a36a5784a",
+        "ea29ec34-9504-448a-93b5-6ec63a5c5450",
+        "b8a8c076-222c-4b3c-9c60-4ee0adecf300",
       ],
       "type": "ECInstancesNode",
     },
     "autoExpand": true,
-    "icon": "Unbranded",
-    "id": "8287e887-4294-40a6-b4fc-635a36a5784a/48ae5ef5-0f6e-4931-ba46-85cc14189a13",
-    "label": PropertyRecord {
-      "property": Object {
-        "displayLabel": "Label",
-        "name": "node_label",
-        "typename": "string",
-      },
-      "value": Object {
-        "displayValue": "payment",
-        "value": "open-source",
-        "valueFormat": 0,
-      },
-    },
-  },
-  Object {
-    "__presentation-components/key": Object {
-      "instanceKeys": Array [
-        Object {
-          "className": "backing up",
-          "id": "0xe5bf0000011f41",
-        },
-        Object {
-          "className": "auxiliary",
-          "id": "0x14bc1000001057a",
-        },
-      ],
-      "pathFromRoot": Array [
-        "3c15e225-8d91-4174-8f69-1c86639b762a",
-        "6c7177b4-13aa-482a-9d6b-76624dbc4a02",
-      ],
-      "type": "ECInstancesNode",
-    },
-    "autoExpand": true,
+    "description": "Quia nihil molestias delectus necessitatibus reiciendis consequatur.",
     "hasChildren": true,
-    "id": "6c7177b4-13aa-482a-9d6b-76624dbc4a02/3c15e225-8d91-4174-8f69-1c86639b762a",
+    "id": "b8a8c076-222c-4b3c-9c60-4ee0adecf300/ea29ec34-9504-448a-93b5-6ec63a5c5450",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": PropertyRecord {
@@ -244,14 +157,15 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "Manager",
-        "value": "Outdoors",
+        "displayValue": "heuristic",
+        "value": "Avon",
         "valueFormat": 0,
       },
     },
+    "parentId": "62a2f68d-cb37-4531-995a-ac9b559e9ef8",
     "style": Object {
       "colorOverrides": Object {
-        "color": 1986721023,
+        "color": 559783167,
       },
     },
   },
