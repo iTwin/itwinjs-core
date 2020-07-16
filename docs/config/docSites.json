@@ -39,9 +39,9 @@
     ],
     "headerTabs": {
       "Getting Started": "getting-started",
-      "BIS": "bis",
+      "Samples": "sample-showcase",
       "Learning": "learning",
-      "API Reference": "reference",
+      "API": "reference",
       "v2.3.0": "changehistory"
     },
     "archivedVersions": [
