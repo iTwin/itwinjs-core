@@ -12,6 +12,7 @@ Name | Required? | Type | Default | Meaning | Performance Notes
 `instanceFilter` | No | [ECExpression](./ECExpressions.md#instance-filter) | `""` | Condition for filtering instances
 `hideNodesInHierarchy` | No | `boolean` | `false` | Hide nodes provided by this specification and directly show their children. | Expensive
 `hideIfNoChildren` | No | `boolean` | `false` | Hide nodes if they don't have children. | Expensive
+`suppressSimilarAncestorsCheck` | No | `boolean` | `false` | Suppress similar ancestor nodes' checking when creating nodes based on this specification. [See more](./InfiniteHierarchiesPrevention.md)
 *Ordering* |
 `priority` | No | `number` | `1000` | Changes the order of specifications used to create nodes for specific branch.
 `doNotSort` | No | `boolean` | `false` | Suppress default sorting of nodes returned by this specification. | Improves
