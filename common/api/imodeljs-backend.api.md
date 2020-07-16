@@ -427,8 +427,8 @@ export class BriefcaseDb extends IModelDb {
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onCreated: BeEvent<(_imodelDb: BriefcaseDb) => void>;
-    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _briefcaseProps: BriefcaseProps) => void>;
-    static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext | AuthorizedClientRequestContext, _imodelDb: BriefcaseDb) => void>;
+    static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _briefcaseProps: BriefcaseProps) => void>;
+    static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext | ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: AuthorizedClientRequestContext | ClientRequestContext, briefcaseKey: BriefcaseKey, options?: OpenBriefcaseOptions & UpgradeOptions): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType?: ChangesType): Promise<void>;
@@ -2657,6 +2657,7 @@ export class IModelHost {
     // @internal
     static elementEditors: Map<string, IElementEditor>;
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // @internal (undocumented)
     static get isNativeAppBackend(): boolean;
@@ -2668,10 +2669,12 @@ export class IModelHost {
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @internal (undocumented)
     static get platform(): typeof IModelJsNative;
+    // @alpha
     static removeCrashReportProperty(name: string): void;
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
     static sessionId: GuidString;
+    // @alpha
     static setCrashReportProperty(name: string, value: string): void;
     static shutdown(): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
