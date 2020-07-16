@@ -10,7 +10,7 @@ import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
-  LabeledSelect, LabeledTextarea, LabeledToggle, LeadingText, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
+  LabeledSelect, LabeledTextarea, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
   NewBadge, NumericInput, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile,
   Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
@@ -18,6 +18,8 @@ import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExam
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
+
+// tslint:disable: no-console
 
 /** Creates a Component Example */
 export const createComponentExample = (title: string, description: string | undefined, content: React.ReactNode): ComponentExampleProps => {
@@ -178,7 +180,6 @@ export class ComponentExamplesProvider {
       title: "SearchBox",
       examples: [
         createComponentExample("SearchBox", undefined,
-          // tslint:disable-next-line: no-console
           <SearchBox placeholder="Search" onValueChanged={(value: string) => console.log(`Search text: ${value}`)} />),
       ],
     };
@@ -360,6 +361,37 @@ export class ComponentExamplesProvider {
     };
   }
 
+  private static get listboxSamples(): ComponentExampleCategory {
+    const listItems = ["London", "Paris", "Stockholm", "Berlin", "Mumbai", "Christchurch", "Johannesburg", "Beijing", "New York"];
+
+    return {
+      title: "Listbox",
+      examples: [
+        createComponentExample("Basic Listbox", undefined,
+          <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
+            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            {
+              listItems?.map((cityName) =>
+                <ListboxItem key={cityName} className="map-source-list-entry" value={cityName}>
+                  <span className="map-source-list-entry-name" title={cityName}>{cityName}</span>
+                </ListboxItem>)
+            }
+          </Listbox>),
+        createComponentExample("Listbox with disabled entries", undefined,
+          <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
+            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            {
+              listItems?.map((cityName, index) =>
+                <ListboxItem key={cityName} className="map-source-list-entry" value={cityName} disabled={0 === index % 2}>
+                  <span className="map-source-list-entry-name" title={cityName}>{cityName}</span>
+                </ListboxItem>)
+            }
+          </Listbox>),
+
+      ],
+    };
+  }
+
   public static get categories(): ComponentExampleCategory[] {
     return [
       ComponentExamplesProvider.badgeSamples,
@@ -368,6 +400,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.contextMenuSample,
       ComponentExamplesProvider.expandableListBlockSamples,
       ComponentExamplesProvider.inputsSamples,
+      ComponentExamplesProvider.listboxSamples,
       ComponentExamplesProvider.loadingSamples,
       ComponentExamplesProvider.searchBoxSample,
       ComponentExamplesProvider.selectSamples,

@@ -14,7 +14,8 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   overflow-y: auto;
 
   .map-expandable-blocks-block {
-    width: 100%
+    width: 100%;
+    border: none;
   }
 }
 
@@ -63,7 +64,7 @@ $hovered-icon-color: $buic-foreground-primary-tone;
       width: auto;
     }
 
-    &[data-current] {
+    &[aria-selected="true"] {
       .map-source-list-entry-attach {
         display: inline-block;
       }

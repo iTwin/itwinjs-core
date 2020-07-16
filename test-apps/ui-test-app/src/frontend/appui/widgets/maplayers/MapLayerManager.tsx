@@ -1,5 +1,3 @@
-import "./MapLayerManager.scss";
-import "./ExpandableBlock.scss";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -14,16 +12,15 @@ import {
   ScreenViewport, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { ColorSwatch, UiComponents } from "@bentley/ui-components";
-import { Button, ContextMenu, ContextMenuItem, Icon, Input, LoadingSpinner, OptionType, SpinnerSize, ThemedSelect } from "@bentley/ui-core";
+import { Button, ContextMenu, ContextMenuItem, ExpandableBlock, Icon, Input, Listbox, ListboxItem, LoadingSpinner, OptionType, SpinnerSize, ThemedSelect } from "@bentley/ui-core";
 import { ActionMeta, ValueType } from "react-select/src/types";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { assert } from "@bentley/ui-ninezone";
 import { BasemapColorDialog } from "./BasemapColorDialog";
-import { ExpandableBlock } from "./ExpandableBlock";
-import { Listbox, ListboxItem } from "./Listbox";
 import { MapUrlDialog } from "./MapUrlDialog";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";
 import { TransparencyPopupButton } from "./TransparencyPopupButton";
+import "./MapLayerManager.scss";
 
 export interface StyleMapLayerSettings {
   /** Name */
@@ -597,7 +594,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
         </div>
       </div>
       <div className="map-manager-header">
-        <ExpandableBlock title="Sources" isExpanded={showExpandedSource} onClick={toggleShowSource}>
+        <ExpandableBlock title="Sources" className="map-expandable-blocks-block" isExpanded={showExpandedSource} onClick={toggleShowSource}>
           <div className="map-manager-source-listbox-header">
             <Input type="text" className="map-manager-source-list-filter"
               placeholder={placeholderLabel}
@@ -610,7 +607,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
             <Listbox id="map-sources" className="map-manager-source-list" onKeyPress={handleKeypressOnSourceList}>
               {
                 filteredOptions?.map((mapName) =>
-                  <ListboxItem key={mapName} className="map-source-list-entry" value={mapName} label={mapName}>
+                  <ListboxItem key={mapName} className="map-source-list-entry" value={mapName}>
                     <span className="map-source-list-entry-name" title={mapName}>{mapName}</span>
                     <span className="map-source-list-entry-attach" onClick={() => { handleAttachAsBackground(mapName); }} title="Attach as Background"> <Icon iconSpec={"icon-cube-faces-bottom"} /></span>
                     <span className="map-source-list-entry-attach" onClick={() => { handleAttachAsOverlay(mapName); }} title="Attach as Overlay"> <Icon iconSpec={"icon-cube-faces-top"} /></span>
