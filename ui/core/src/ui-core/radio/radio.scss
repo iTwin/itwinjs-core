@@ -13,6 +13,7 @@
   cursor: pointer;
   user-select: none;
   color: $buic-foreground-body;
+  min-height: 1.57em;
 
   > input {
     position: absolute;
@@ -41,6 +42,7 @@
     border-color:     $buic-foreground-muted;
   }
 
+  & input:active ~ .core-radio-checkmark,
   & input:focus ~ .core-radio-checkmark {
     border-color:     $buic-foreground-focus-border;
     box-shadow:       $uicore-inputs-focus-gradient;
@@ -66,7 +68,7 @@
   }
 
   &.core-disabled {
-    opacity: $uicore-opacity-5;
+    opacity: $uicore-opacity-disabled;
     cursor: not-allowed;
   }
 

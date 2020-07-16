@@ -26,7 +26,7 @@ $hoverColor: $buic-foreground-primary-tone;
   &:focus {
     color: $hoverColor;
     border-color: $hoverColor;
-    box-shadow:         $uicore-inputs-focus-gradient;
+    background-color: $buic-background-focus-overlay;
     outline: none;
   }
 

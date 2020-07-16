@@ -35,6 +35,7 @@
     border-color:       $buic-foreground-disabled;
     color:              $buic-foreground-disabled;
     cursor:             not-allowed;
+    opacity:            $uicore-opacity-disabled;
   }
 
   &:focus {

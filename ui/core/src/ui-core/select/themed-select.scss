@@ -37,10 +37,6 @@
       border: 1px solid $buic-inputs-border;
       cursor: pointer;
 
-      &[disabled] {
-        background-color: $buic-foreground-disabled;
-      }
-
       svg {
         width: unset;
         height: unset;
@@ -54,6 +50,13 @@
         &:hover {
           border-color: $buic-foreground-focus;
         }
+      }
+
+      &--is-disabled {
+        background-color: $buic-background-control-disabled;
+        color: $buic-text-color-disabled;
+        opacity: $uicore-opacity-disabled;
+        cursor: not-allowed;
       }
 
       .react-select__placeholder {

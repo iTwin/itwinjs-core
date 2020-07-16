@@ -92,8 +92,12 @@ $toggle-handle-large: $toggle-height-large - ($toggle-padding * 2);
 
 /* Disabled toggle */
 .core-toggle.uicore-disabled {
-  opacity: .4;
-  cursor: default;
+  .core-toggle-input:checked~.core-toggle-background {
+    background: $buic-foreground-disabled;
+  }
+
+  opacity: $uicore-opacity-disabled;
+  cursor: not-allowed;
 }
 
 .core-toggle.core-toggle-rounded .core-toggle-handle {
