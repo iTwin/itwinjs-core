@@ -483,7 +483,8 @@ export class IModelHost {
   /**
    * Add or update a property that should be included in a crash report.
    * @param name The name of the property
-   * @param value The value of the propert
+   * @param value The value of the property
+   * @alpha
    */
   public static setCrashReportProperty(name: string, value: string): void {
     assert(undefined !== this._platform);
@@ -493,6 +494,7 @@ export class IModelHost {
   /**
    * Remove a previously defined property so that will not be included in a crash report.
    * @param name The name of the property
+   * @alpha
    */
   public static removeCrashReportProperty(name: string): void {
     assert(undefined !== this._platform);
@@ -501,6 +503,7 @@ export class IModelHost {
 
   /**
    * Get all properties that will be included in a crash report.
+   * @alpha
    */
   public static getCrashReportProperties(): CrashReportingConfigNameValuePair[] {
     assert(undefined !== this._platform);

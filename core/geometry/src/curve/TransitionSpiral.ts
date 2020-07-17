@@ -24,6 +24,7 @@ import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
+import { NormalizedTransition } from "./NormalizedTransition";
 
 // import {} from "./";
 
@@ -36,7 +37,7 @@ import { StrokeOptions } from "./StrokeOptions";
  * * The relationship is the equation
  * ** `sweepRadians = arcLength * average Curvature = arcLength * 0.5 * (curvature0 + curvature1)`
  * * That is, regardless of any curvature properties other than symmetry, specifying any 3 of the quantities fully determines the remaining one.
- * @alpha
+ * @beta
  */
 export class TransitionConditionalProperties {
   /** radius (or 0 at start) */
@@ -140,7 +141,9 @@ export class TransitionConditionalProperties {
   /**
    * Test if this and other have matching numeric and undefined members.
    */
-  public isAlmostEqual(other: TransitionConditionalProperties) {
+  public isAlmostEqual(other?: TransitionConditionalProperties) {
+    if (!other)
+      return false;
     if (!this.almostEqualCoordinate(this.radius0, other.radius0))
       return false;
     if (!this.almostEqualCoordinate(this.radius1, other.radius1))
@@ -162,11 +165,16 @@ export class TransitionConditionalProperties {
     if (this.curveLength !== undefined)
       this.curveLength *= a;
   }
+  public static areAlmostEqual(a: TransitionConditionalProperties | undefined, b: TransitionConditionalProperties | undefined): boolean {
+    if (a === undefined)
+      return b === undefined;
+    return a.isAlmostEqual(b);
+  }
 }
 /**
  * A transition spiral is a curve defined by its curvature, with the curvature function symmetric about midpoint.
  * * `TransitionConditionalProperties` implements the computations of the interrelationship of radii, bearing, and length.
- * @alpha
+ * @beta
  */
 export class TransitionSpiral3d extends CurvePrimitive {
   /** String name for schema properties */
@@ -231,7 +239,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
   private _activeStrokes?: LineString3d;
   /** Return the internal stroked form of the (possibly partial) spiral   */
   public get activeStrokes(): LineString3d { return this._activeStrokes !== undefined ? this._activeStrokes : this._globalStrokes; }
-
+  private _evaluator: NormalizedTransition;
   /** Total curve arc length (computed) */
   private _arcLength01: number;
   /** Curvatures (inverse radii) at start and end */
@@ -240,8 +248,10 @@ export class TransitionSpiral3d extends CurvePrimitive {
   private _spiralType: string | undefined;
   /** Original defining properties. */
   private _properties: TransitionConditionalProperties | undefined;
+  /** evaluator for transition */
   // constructor demands all bearing, radius, and length data -- caller determines usual dependency of "any 4 determine the 5th"
-  constructor(spiralType: string | undefined,
+  private constructor(spiralType: string | undefined,
+    evaluator: NormalizedTransition,
     radius01: Segment1d,
     bearing01: AngleSweep,
     activeFractionInterval: Segment1d,
@@ -249,6 +259,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
     arcLength: number,
     properties: TransitionConditionalProperties | undefined) {
     super();
+    this._evaluator = evaluator;
     this._spiralType = spiralType;
     this.localToWorld = localToWorld;
     this.radius01 = radius01;
@@ -268,14 +279,16 @@ export class TransitionSpiral3d extends CurvePrimitive {
   public static readonly defaultSpiralType = "clothoid";
   /** return the spiral type as a string (undefined resolves to default type "clothoid") */
   public getSpiralType(): string { if (this._spiralType === undefined) return TransitionSpiral3d.defaultSpiralType; return this._spiralType; }
-  /** Return the bearing at given fraction .... */
+
+  /** use the integrated function to return an angle at fractional position. */
   public globalFractionToBearingRadians(fraction: number): number {
-    return this.bearing01.startRadians + fraction * this._arcLength01 * (this._curvature01.x0 + 0.5 * fraction * (this._curvature01.x1 - this._curvature01.x0));
+    const f = this._evaluator.fractionToArea(fraction);
+    return this.bearing01.startRadians + this._arcLength01 * this._curvature01.fractionToPoint(f);
   }
-  /** Return the curvature at given fraction ... */
+  /** use the integrated function to return an angle at fractional position. */
   public globalFractionToCurvature(fraction: number): number {
-    // BUG? active interval
-    return this._curvature01.fractionToPoint(fraction);
+    const f = this._evaluator.fractionToCurvatureFraction(fraction);
+    return this._curvature01.fractionToPoint(f);
   }
 
   /** Return the bearing at given fraction of the active interval .... */
@@ -365,9 +378,14 @@ export class TransitionSpiral3d extends CurvePrimitive {
    * @param activeFractionInterval fractional limits of the active portion of the spiral.
    * @param localToWorld placement frame.  Fractional coordinate 0 is at the origin.
    */
-  public static createRadiusRadiusBearingBearing(radius01: Segment1d, bearing01: AngleSweep, activeFractionInterval: Segment1d, localToWorld: Transform) {
+  public static createRadiusRadiusBearingBearing(radius01: Segment1d, bearing01: AngleSweep, activeFractionInterval: Segment1d, localToWorld: Transform, typeName?: string) {
     const arcLength = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(radius01.x0, radius01.x1, bearing01.sweepRadians);
-    return new TransitionSpiral3d("clothoid",
+    if (typeName === undefined)
+      typeName = "clothoid";
+    const evaluator = NormalizedTransition.findEvaluator(typeName);
+    if (!evaluator)
+      return undefined;
+    return new TransitionSpiral3d(typeName, evaluator,
       radius01.clone(),
       bearing01.clone(), activeFractionInterval.clone(), localToWorld.clone(), arcLength,
       new TransitionConditionalProperties(radius01.x0, radius01.x1,
@@ -394,6 +412,9 @@ export class TransitionSpiral3d extends CurvePrimitive {
     arcLength: number | undefined,
     fractionInterval: undefined | Segment1d,
     localToWorld: Transform): TransitionSpiral3d | undefined {
+    const evaluator = NormalizedTransition.findEvaluator("clothoid");
+    if (!evaluator)
+      return undefined;
     const data = new TransitionConditionalProperties(radius0, radius1, bearing0, bearing1, arcLength);
     const data1 = data.clone();
     if (!data.tryResolveAnySingleUnknown())
@@ -402,6 +423,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
       fractionInterval = Segment1d.create(0, 1);
     return new TransitionSpiral3d(
       spiralType,
+      evaluator,
       Segment1d.create(data.radius0, data.radius1),
       AngleSweep.createStartEnd(data.bearing0!, data.bearing1!),
       fractionInterval ? fractionInterval.clone() : Segment1d.create(0, 1),
@@ -420,7 +442,10 @@ export class TransitionSpiral3d extends CurvePrimitive {
   }
   /** Deep clone of this spiral */
   public clone(): TransitionSpiral3d {
-    return TransitionSpiral3d.createRadiusRadiusBearingBearing(this.radius01, this.bearing01, this.activeFractionInterval, this.localToWorld);
+    return new TransitionSpiral3d(this._spiralType, this._evaluator,
+      this.radius01.clone(), this.bearing01.clone(),
+      this.activeFractionInterval.clone(), this.localToWorld.clone(), this._arcLength01,
+      this._properties?.clone());
   }
   /** apply `transform` to this spiral's local to world transform. */
   public tryTransformInPlace(transformA: Transform): boolean {
@@ -515,9 +540,10 @@ export class TransitionSpiral3d extends CurvePrimitive {
     let globalFraction = this.activeFractionInterval.fractionToPoint(activeFraction);
     globalFraction = Geometry.clampToStartEnd(globalFraction, 0, 1);
     const numStrokes = this._globalStrokes.packedPoints.length - 1;
-    const index0 = Math.trunc(globalFraction * numStrokes); // This indexes the point to the left of the query
+    const index0 = Math.trunc(globalFraction * numStrokes); // This indexes the point to the left of the query.
     const globalFraction0 = index0 / numStrokes;
     result = this._globalStrokes.packedPoints.getPoint3dAtUncheckedPointIndex(index0, result);
+    // console.log(" fractionToPoint ", activeFraction, this.activeFractionInterval, "( global integration " + globalFraction0 + " to " + globalFraction + ")", index0);
     this.fullSpiralIncrementalIntegral(result, globalFraction0, globalFraction, true);
     return result;
   }

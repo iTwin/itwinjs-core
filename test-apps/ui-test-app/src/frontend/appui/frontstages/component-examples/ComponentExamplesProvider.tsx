@@ -9,15 +9,17 @@ import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
-  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, LabeledInput, LabeledSelect,
-  LabeledTextarea, LabeledToggle, LeadingText, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText, NewBadge,
-  NumericInput, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
-  Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
+  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
+  LabeledSelect, LabeledTextarea, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
+  NewBadge, NumericInput, Radio, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile,
+  Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
+
+// tslint:disable: no-console
 
 /** Creates a Component Example */
 export const createComponentExample = (title: string, description: string | undefined, content: React.ReactNode): ComponentExampleProps => {
@@ -114,8 +116,16 @@ export class ComponentExamplesProvider {
         createComponentExample("Disabled Input", "Input with disabled prop", <Input placeholder="Disabled Input" disabled />),
 
         createComponentExample("Check Box", "Basic Check Box", <Checkbox label="Basic Check Box" />),
+        createComponentExample("Check Box Set", "Set of Check Boxes",
+          <div>
+            <Checkbox label="First" />
+            <Checkbox label="Success" status={InputStatus.Success} />
+            <Checkbox label="Warning" status={InputStatus.Warning} />
+            <Checkbox label="Error" status={InputStatus.Error} />
+          </div>),
         createComponentExample("Disabled Check Box", "Check Box with disabled prop", <Checkbox label="Disabled Check Box" disabled />),
         createComponentExample("Indeterminate Check Box", "Check Box with indeterminate prop", <Checkbox label="Indeterminate Check Box" indeterminate />),
+        createComponentExample("Check Box with text after", "Check Box with <label> after", <div><Checkbox id="cb1" />&nbsp;&nbsp;<label htmlFor="cb1">This is text in a span</label></div>),
 
         createComponentExample("Radio Button", "Basic Radio Buttons",
           <div>
@@ -170,7 +180,6 @@ export class ComponentExamplesProvider {
       title: "SearchBox",
       examples: [
         createComponentExample("SearchBox", undefined,
-          // tslint:disable-next-line: no-console
           <SearchBox placeholder="Search" onValueChanged={(value: string) => console.log(`Search text: ${value}`)} />),
       ],
     };
@@ -220,6 +229,10 @@ export class ComponentExamplesProvider {
           <div className="uicore-full-width">
             <ThemedSelect isMulti={true} isSearchable={true} options={cityChoices} />
           </div>),
+        createComponentExample("Disabled ThemedSelect", "ThemedSelect component with isDisabled prop",
+          <div className="uicore-full-width">
+            <ThemedSelect options={colorChoices} isDisabled />
+          </div>),
       ],
     };
   }
@@ -248,6 +261,9 @@ export class ComponentExamplesProvider {
             showTicks getTickCount={() => 10} />),
         createComponentExample("Slider w/ tick labels", "Slider with showTickLabels prop",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax showTickLabels
+            showTicks getTickCount={() => 10} />),
+        createComponentExample("Disabled Slider", "Slider with disabled prop",
+          <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax showTickLabels disabled
             showTicks getTickCount={() => 10} />),
       ],
     };
@@ -339,7 +355,39 @@ export class ComponentExamplesProvider {
         createComponentExample("Large Toggle", "Toggle with large={true}", <Toggle isOn={true} large={true} />),
         createComponentExample("Square Toggle", "Toggle with rounded={false}", <Toggle isOn={true} rounded={false} />),
         createComponentExample("Toggle with Checkmark", "Toggle with showCheckmark prop", <Toggle isOn={true} showCheckmark={true} />),
+        createComponentExample("Disabled Toggle", "Toggle with disabled prop", <Toggle isOn={true} showCheckmark={true} disabled />),
         createComponentExample("LabeledToggle", undefined, <LabeledToggle isOn={true} label="Toggle label" />),
+      ],
+    };
+  }
+
+  private static get listboxSamples(): ComponentExampleCategory {
+    const listItems = ["London", "Paris", "Stockholm", "Berlin", "Mumbai", "Christchurch", "Johannesburg", "Beijing", "New York"];
+
+    return {
+      title: "Listbox",
+      examples: [
+        createComponentExample("Basic Listbox", undefined,
+          <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
+            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            {
+              listItems?.map((cityName) =>
+                <ListboxItem key={cityName} className="map-source-list-entry" value={cityName}>
+                  <span className="map-source-list-entry-name" title={cityName}>{cityName}</span>
+                </ListboxItem>)
+            }
+          </Listbox>),
+        createComponentExample("Listbox with disabled entries", undefined,
+          <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
+            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            {
+              listItems?.map((cityName, index) =>
+                <ListboxItem key={cityName} className="map-source-list-entry" value={cityName} disabled={0 === index % 2}>
+                  <span className="map-source-list-entry-name" title={cityName}>{cityName}</span>
+                </ListboxItem>)
+            }
+          </Listbox>),
+
       ],
     };
   }
@@ -352,6 +400,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.contextMenuSample,
       ComponentExamplesProvider.expandableListBlockSamples,
       ComponentExamplesProvider.inputsSamples,
+      ComponentExamplesProvider.listboxSamples,
       ComponentExamplesProvider.loadingSamples,
       ComponentExamplesProvider.searchBoxSample,
       ComponentExamplesProvider.selectSamples,

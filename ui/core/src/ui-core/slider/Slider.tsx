@@ -397,6 +397,7 @@ function Handle(props: HandleProps) {
         className="core-slider-handle"
         data-testid="core-slider-handle"
         style={{ left: `${percent}%` }}
+        disabled={disabled}
         {...getHandleProps(id, {
           onMouseEnter: _onMouseEnter,
           onMouseLeave: _onMouseLeave,

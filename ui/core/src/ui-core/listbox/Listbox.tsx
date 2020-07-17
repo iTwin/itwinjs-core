@@ -29,12 +29,24 @@ export interface ListboxProps extends React.DetailedHTMLProps<React.HTMLAttribut
 }
 
 /**
+ * `ListboxItem` Props.
+ * @alpha
+ */
+export interface ListboxItemProps extends React.DetailedHTMLProps<React.LiHTMLAttributes<HTMLLIElement>, HTMLLIElement> {
+  /** The unique item's value. */
+  value: ListboxValue;
+  /** set if item is disabled. */
+  disabled?: boolean;
+}
+
+/**
  * `Listbox` Context.
  * @alpha
  */
 export interface ListboxContextProps {
   listboxId?: string;
   listboxValue?: ListboxValue;
+  focusValue?: ListboxValue;
   onListboxValueChange: ((newValue: ListboxValue) => void);
   listboxRef?: React.RefObject<HTMLUListElement>;
 }
@@ -43,15 +55,56 @@ export interface ListboxContextProps {
  * Context set up by listbox for use by `ListboxItems` .
  * @alpha
  */
-// tslint:disable-next-line: variable-name
-export const ListboxContext = React.createContext<ListboxContextProps>({ onListboxValueChange: (_newValue: ListboxValue | undefined) => { } });
+// istanbul ignore next
+export const ListboxContext = React.createContext<ListboxContextProps>({ onListboxValueChange: (_newValue: ListboxValue | undefined) => { } }); // tslint:disable-line: variable-name
 
 function makeId(...args: Array<string | number | null | undefined>) {
   return args.filter((val) => val != null).join("--");
 }
 
-function getOptionValueArray(childNodes: React.ReactNode) {
-  return React.Children.toArray(childNodes).filter((node) => React.isValidElement(node) && node.props.value).map((optionNode) => (optionNode as React.ReactElement).props.value);
+function getOptionValueArray(childNodes: React.ReactNode): ListboxItemProps[] {
+  return React.Children.toArray(childNodes).filter((node) => React.isValidElement(node) && node.props.value).map((optionNode) => ((optionNode as React.ReactElement).props as ListboxItemProps));
+}
+
+function processKeyboardNavigation(optionValues: ListboxItemProps[], itemIndex: number, key: string): [number, boolean] {
+  let keyProcessed = false;
+  let newIndex = itemIndex;
+
+  // Note: In aria example Page Up/Down just moves up or down by one item. See https://www.w3.org/TR/wai-aria-practices-1.1/examples/listbox/js/listbox.js
+  if (key === "ArrowDown" || key === "PageDown") {
+    for (let i = itemIndex + 1; i < optionValues.length; i++) {
+      if (!optionValues[i].disabled) {
+        newIndex = i;
+        break;
+      }
+    }
+    keyProcessed = true;
+  } else if (key === "ArrowUp" || key === "PageUp") {
+    for (let i = itemIndex - 1; i >= 0; i--) {
+      if (!optionValues[i].disabled) {
+        newIndex = i;
+        break;
+      }
+    }
+    keyProcessed = true;
+  } else if (key === "Home") {
+    for (let i = 0; i < optionValues.length; i++) {
+      if (!optionValues[i].disabled) {
+        newIndex = i;
+        break;
+      }
+    }
+    keyProcessed = true;
+  } else if (key === "End") {
+    for (let i = optionValues.length - 1; i >= 0; i--) {
+      if (!optionValues[i].disabled) {
+        newIndex = i;
+        break;
+      }
+    }
+    keyProcessed = true;
+  }
+  return [newIndex, keyProcessed];
 }
 
 /**
@@ -64,39 +117,45 @@ export function Listbox(props: ListboxProps) {
   const [listId] = React.useState(id ?? Guid.createValue());
   const optionValues = React.useMemo(() => getOptionValueArray(children), [children]);
   const classes = React.useMemo(() => classnames("core-listbox", className), [className]);
-  const [currentValue, setCurrentValue] = React.useState<ListboxValue>(undefined !== selectedValue ? selectedValue : optionValues.length ? optionValues[0] : "");
+  const [currentValue, setCurrentValue] = React.useState<ListboxValue | undefined>(selectedValue);
+  const [focusValue, setFocusValue] = React.useState<ListboxValue | undefined>(currentValue);
   const scrollTopRef = React.useRef(0);
   const handleValueChange = React.useCallback((newValue: ListboxValue) => {
+    // istanbul ignore else
     if (newValue !== currentValue) {
       setCurrentValue(newValue);
+      setFocusValue(newValue);
       if (onListboxValueChange)
-        onListboxValueChange(currentValue);
+        onListboxValueChange(newValue);
     }
 
+    // istanbul ignore else
     if (listRef.current)
       listRef.current.focus();  // ensure list has focus
   }, [setCurrentValue, currentValue, onListboxValueChange]);
 
   const focusOption = React.useCallback((itemIndex: number) => {
+    // istanbul ignore else
     if (itemIndex >= 0 && itemIndex < optionValues.length) {
-      const newSelectionValue = optionValues[itemIndex];
+      const newSelection = optionValues[itemIndex];
       const listElement = listRef.current as HTMLUListElement;
-      const optionToSelect = listElement.querySelector(`li[data-value="${newSelectionValue}"]`) as HTMLLIElement | null;
-      if (optionToSelect && listElement) {
+      const optionToFocus = listElement.querySelector(`li[data-value="${newSelection.value}"]`) as HTMLLIElement | null;
+      // istanbul ignore else
+      if (optionToFocus && listElement) {
         let newScrollTop = listElement.scrollTop;
 
+        // istanbul ignore next
         if (listElement.scrollHeight > listElement.clientHeight) {
           const scrollBottom = listElement.clientHeight + listElement.scrollTop;
-          const elementBottom = optionToSelect.offsetTop + optionToSelect.offsetHeight;
+          const elementBottom = optionToFocus.offsetTop + optionToFocus.offsetHeight;
           if (elementBottom > scrollBottom) {
             newScrollTop = elementBottom - listElement.clientHeight;
-          } else if (optionToSelect.offsetTop < listElement.scrollTop) {
-            newScrollTop = optionToSelect.offsetTop;
+          } else if (optionToFocus.offsetTop < listElement.scrollTop) {
+            newScrollTop = optionToFocus.offsetTop;
           }
           scrollTopRef.current = newScrollTop;
         }
-        setCurrentValue(newSelectionValue);
-        listElement.focus();  // ensure list has focus
+        setFocusValue(newSelection.value);
       }
     }
   }, [optionValues]);
@@ -105,32 +164,28 @@ export function Listbox(props: ListboxProps) {
     if (optionValues.length < 1)
       return;
 
-    let itemIndex = optionValues.findIndex((optionValue) => ((optionValue === currentValue) || (0 === currentValue.length)));
-    const key = event.key;
-    // TODO: add PageUp/PageDown
-    if (key === "ArrowDown") {
-      if (itemIndex < (optionValues.length - 1))
-        itemIndex = itemIndex + 1;
-      else
-        itemIndex = optionValues.length - 1;
-    } else if (key === "ArrowUp") {
-      if (itemIndex > 0)
-        itemIndex = itemIndex - 1;
-      else
-        itemIndex = 0;
-    } else if (key === "Home") {
-      itemIndex = 0;
-    } else if (key === "End") {
-      itemIndex = optionValues.length - 1;
-    } else {
-      if (onKeyPress)
-        onKeyPress(event);
+    const itemIndex = (undefined === focusValue) ? 0 : optionValues.findIndex((optionValue) => ((optionValue.value === focusValue)));
+
+    if (event.keyCode === 32) {
+      event.preventDefault();
+      // istanbul ignore else
+      if (focusValue)
+        handleValueChange(focusValue);
       return;
+    } else {
+      const [newItemIndex, keyProcessed] = processKeyboardNavigation(optionValues, itemIndex, event.key);
+      // istanbul ignore else
+      if (keyProcessed) {
+        event.preventDefault();
+        focusOption(newItemIndex);
+        return;
+      }
     }
 
-    event.preventDefault();
-    focusOption(itemIndex);
-  }, [currentValue, optionValues, focusOption, onKeyPress]);
+    // istanbul ignore else
+    if (onKeyPress)
+      onKeyPress(event);
+  }, [focusValue, optionValues, focusOption, onKeyPress, handleValueChange]);
 
   const isInitialMount = React.useRef(true);
 
@@ -140,15 +195,16 @@ export function Listbox(props: ListboxProps) {
     if (isInitialMount.current) {
       isInitialMount.current = false;
 
-      if (currentValue.length) {
-        const itemIndex = optionValues.findIndex((optionValue) => ((optionValue === currentValue) || (0 === currentValue.length)));
+      if (undefined !== focusValue) {
+        const itemIndex = optionValues.findIndex((optionValue) => (optionValue.value === focusValue));
         focusOption(itemIndex);
       }
     } else {
       list.scrollTop = scrollTopRef.current;
     }
-  }, [currentValue, focusOption, optionValues]);
+  }, [focusValue, focusOption, optionValues]);
 
+  // istanbul ignore next
   const handleOnScroll = React.useCallback((_event: React.UIEvent<HTMLUListElement, UIEvent>) => {
     if (listRef.current)
       scrollTopRef.current = listRef.current.scrollTop;
@@ -170,6 +226,8 @@ export function Listbox(props: ListboxProps) {
     role="listbox"
     // https://www.w3.org/TR/wai-aria-practices-1.2/examples/listbox/listbox-collapsible.html
     tabIndex={0}
+    // https://www.w3.org/TR/wai-aria-practices-1.2/examples/listbox/listbox-scrollable.html
+    aria-activedescendant={makeId(currentValue, listId)}
     {...otherProps}
     ref={listRef}
     id={listId}
@@ -180,6 +238,7 @@ export function Listbox(props: ListboxProps) {
     <ListboxContext.Provider
       value={{
         listboxValue: currentValue,
+        focusValue,
         listboxId: listId,
         onListboxValueChange: handleValueChange,
         listboxRef: listRef,
@@ -191,19 +250,6 @@ export function Listbox(props: ListboxProps) {
 }
 
 /**
- * `ListboxItem` Props.
- * @alpha
- */
-export interface ListboxItemProps extends React.DetailedHTMLProps<React.LiHTMLAttributes<HTMLLIElement>, HTMLLIElement> {
-  /** The unique item's value. */
-  value: ListboxValue;
-  /** The item's human-readable label. */
-  label: string;
-  /** set if item is disabled. */
-  disabled?: boolean;
-}
-
-/**
  * `ListboxItem` component.
  * @alpha
  */
@@ -211,46 +257,35 @@ export function ListboxItem(props: ListboxItemProps) {
   const {
     children,
     value,
-    label,
     className,
     disabled,
-    onMouseDown,
-    onPointerDown,
     ...otherProps
   } = props;
 
   const {
     listboxValue,
+    focusValue,
     listboxId,
     onListboxValueChange,
   } = React.useContext(ListboxContext);
 
-  const classes = React.useMemo(() => classnames("core-listbox-item", className), [className]);
+  const hasFocus = focusValue === value;
+
+  const classes = React.useMemo(() => classnames("core-listbox-item", hasFocus && "focused", className), [className, hasFocus]);
   const itemRef = React.useRef<HTMLLIElement>(null);
   const isSelected = listboxValue === value;
 
-  const handleMouseDown = React.useCallback((event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+  const handleClick = React.useCallback((event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     event.preventDefault();
+    // istanbul ignore next
     const selectedValue = event.currentTarget?.dataset?.value;
+    // istanbul ignore else
     if (undefined !== selectedValue)
       onListboxValueChange(selectedValue);
-
-    if (onMouseDown)
-      onMouseDown(event);
-  }, [onListboxValueChange, onMouseDown]);
-
-  const handlePointerDown = React.useCallback((event: React.PointerEvent<HTMLLIElement>) => {
-    event.preventDefault();
-    const selectedValue = event.currentTarget?.dataset?.value;
-    if (undefined !== selectedValue)
-      onListboxValueChange(selectedValue);
-
-    if (onPointerDown)
-      onPointerDown(event);
-  }, [onListboxValueChange, onPointerDown]);
+  }, [onListboxValueChange]);
 
   const getItemId = React.useCallback(() => {
-    return value ? makeId(value, listboxId) : undefined;
+    return makeId(value, listboxId);
   }, [listboxId, value]);
 
   return (
@@ -271,11 +306,9 @@ export function ListboxItem(props: ListboxItemProps) {
       {...otherProps}
       ref={itemRef}
       id={getItemId()}
-      data-current={isSelected ? "" : undefined}
-      data-label={label}
+      // used for css styling
       data-value={value}
-      onMouseDown={handleMouseDown}
-      onPointerDown={handlePointerDown}
+      onClick={handleClick}
     >
       {children}
     </li>

@@ -1864,6 +1864,7 @@ export class Geometry {
     static maxAbsXYZ(x: number, y: number, z: number): number;
     static maxXY(a: number, b: number): number;
     static maxXYZ(a: number, b: number, c: number): number;
+    static meanCurvatureOfRadii(r0: number, r1: number): number;
     static minXY(a: number, b: number): number;
     static modulo(a: number, period: number): number;
     static resolveNumber(value: number | undefined, defaultValue?: number): number;
@@ -2034,6 +2035,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     pushWrap(numWrap: number): void;
     pushXY(x: number, y: number): void;
     resize(pointCount: number): void;
+    reverseInPlace(): void;
     scaleInPlace(factor: number): void;
     setAtCheckedPointIndex(pointIndex: number, value: XAndY): boolean;
     setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean;
@@ -2392,7 +2394,7 @@ export namespace IModelJson {
     }
     export interface RuledSweepProps {
         capped?: boolean;
-        countour: [CurveCollectionProps];
+        contour: [CurveCollectionProps];
     }
     export interface SolidPrimitiveProps {
         box?: BoxProps;
@@ -2421,9 +2423,11 @@ export namespace IModelJson {
         sweepAngle?: AngleProps;
     }
     export interface TransitionSpiralProps extends AxesProps {
+        activeFractionInterval?: number[];
         curveLength?: number;
         endBearing?: AngleProps;
         endRadius?: number;
+        // @deprecated
         fractionInterval?: number[];
         intervalFractions?: [number, number];
         origin: XYZProps;
@@ -3493,6 +3497,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     setOriginAndVectorsXYZ(x0: number, y0: number, z0: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): Plane3dByOriginAndVectors;
     toJSON(): any;
     toRigidFrame(result?: Transform): Transform | undefined;
+    transformInPlace(transform: Transform): void;
     unitNormal(result?: Vector3d): Vector3d | undefined;
     unitNormalRay(result?: Ray3d): Ray3d | undefined;
     vectorU: Vector3d;
@@ -4661,6 +4666,7 @@ export class Sample {
 
 // @public
 export class Segment1d {
+    absoluteDelta(): number;
     clampDirectedTo01(): boolean;
     clipBy01FunctionValuesPositive(f0: number, f1: number): boolean;
     clone(): Segment1d;
@@ -5013,24 +5019,25 @@ export type TransformProps = number[][] | number[] | {
     matrix: Matrix3dProps;
 };
 
-// @alpha
+// @beta
 export class TransitionConditionalProperties {
     constructor(radius0: number | undefined, radius1: number | undefined, bearing0: Angle | undefined, bearing1: Angle | undefined, arcLength: number | undefined);
     applyScaleFactor(a: number): void;
+    // (undocumented)
+    static areAlmostEqual(a: TransitionConditionalProperties | undefined, b: TransitionConditionalProperties | undefined): boolean;
     bearing0: Angle | undefined;
     bearing1: Angle | undefined;
     clone(): TransitionConditionalProperties;
     curveLength: number | undefined;
-    isAlmostEqual(other: TransitionConditionalProperties): boolean;
+    isAlmostEqual(other?: TransitionConditionalProperties): boolean;
     numDefinedProperties(): number;
     radius0: number | undefined;
     radius1: number | undefined;
     tryResolveAnySingleUnknown(): boolean;
 }
 
-// @alpha
+// @beta
 export class TransitionSpiral3d extends CurvePrimitive {
-    constructor(spiralType: string | undefined, radius01: Segment1d, bearing01: AngleSweep, activeFractionInterval: Segment1d, localToWorld: Transform, arcLength: number, properties: TransitionConditionalProperties | undefined);
     activeFractionInterval: Segment1d;
     get activeStrokes(): LineString3d;
     static averageCurvature(radiusLimits: Segment1d): number;
@@ -5040,7 +5047,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
     cloneTransformed(transform: Transform): TransitionSpiral3d;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     static create(spiralType: string | undefined, radius0: number | undefined, radius1: number | undefined, bearing0: Angle | undefined, bearing1: Angle | undefined, arcLength: number | undefined, fractionInterval: undefined | Segment1d, localToWorld: Transform): TransitionSpiral3d | undefined;
-    static createRadiusRadiusBearingBearing(radius01: Segment1d, bearing01: AngleSweep, activeFractionInterval: Segment1d, localToWorld: Transform): TransitionSpiral3d;
+    static createRadiusRadiusBearingBearing(radius01: Segment1d, bearing01: AngleSweep, activeFractionInterval: Segment1d, localToWorld: Transform, typeName?: string): TransitionSpiral3d | undefined;
     static curvatureToRadius(curvature: number): number;
     curveLength(): number;
     readonly curvePrimitiveType = "transitionSpiral";

@@ -81,7 +81,7 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   movable?: boolean;
   /** Indicates whether the content should be inset. Default: true */
   inset?: boolean;
-  /** Indicates whether the focus should be trapped within the dialog. Default: true */
+  /** Indicates whether the focus should be trapped within the dialog. Default: false */
   trapFocus?: boolean;
 
   /** Whether the hide the header. Default: false */
@@ -173,7 +173,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     movable: false,
     modal: true,
     inset: true,
-    trapFocus: true,
+    trapFocus: false,
   };
 
   /** @internal */

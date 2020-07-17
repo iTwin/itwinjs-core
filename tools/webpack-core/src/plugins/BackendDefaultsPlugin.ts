@@ -38,6 +38,7 @@ export class BackendDefaultsPlugin {
       new IgnoreOptionalDependenciesPlugin([
         "debug",
         "express",
+        "got",
         "keyv",
         "ws",
       ]),

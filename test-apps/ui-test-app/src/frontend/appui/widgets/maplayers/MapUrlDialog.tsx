@@ -7,8 +7,8 @@
 import * as React from "react";
 import { Dialog, DialogButtonType, Input, Select } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
-import "./MapUrlDialog.scss";
 import { IModelApp, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import "./MapUrlDialog.scss";
 
 export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, onOkResult: () => void }) {
   const [dialogTitle] = React.useState("Specify Map Source");
