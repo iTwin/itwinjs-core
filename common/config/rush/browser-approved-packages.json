@@ -375,10 +375,6 @@
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
-      "name": "electron-chromedriver",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "enzyme",
       "allowedCategories": [ "frontend" ]
     },
@@ -947,12 +943,12 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "ws",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "wms-capabilities",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "ws",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "xmldom",

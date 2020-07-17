@@ -28,10 +28,9 @@ means nodes generated from different specifications do not get grouped and sorte
 All [general use customization rules](../Customization/index.md#rules) can be applied to hierarchies. In addition, there
 are some hierarchy-specific customization rules:
 - [GroupingRule](./GroupingRule.md) for advanced grouping
-- NodeArtifactsRule to help create hierarchies for specific cases
+- [NodeArtifactsRule](./NodeArtifactsRule.md) to help create hierarchies for specific cases
 
-## Expressions
+## Related Topics
+- [Infinite hierarchies prevention](./InfiniteHierarchiesPrevention.md)
 - [ECExpressions](./ECExpressions.md)
-
-## Terminology
 - [Terminology](./Terminology.md)

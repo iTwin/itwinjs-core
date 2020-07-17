@@ -2657,6 +2657,8 @@ export class IModelHost {
     // @internal
     static elementEditors: Map<string, IElementEditor>;
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    // @alpha
+    static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // @internal (undocumented)
     static get isNativeAppBackend(): boolean;
     // @internal (undocumented)
@@ -2667,9 +2669,13 @@ export class IModelHost {
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @internal (undocumented)
     static get platform(): typeof IModelJsNative;
+    // @alpha
+    static removeCrashReportProperty(name: string): void;
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
     static sessionId: GuidString;
+    // @alpha
+    static setCrashReportProperty(name: string, value: string): void;
     static shutdown(): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
     static startup(configuration?: IModelHostConfiguration): Promise<void>;
