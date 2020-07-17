@@ -669,16 +669,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /** Reverse the points within the linestring. */
   public reverseInPlace(): void {
     if (this._points.length >= 2) {
-      let i0 = 0;
-      let i1 = this._points.length - 1;
-      const a: Point3d = this._points.getPoint3dAtUncheckedPointIndex(0);
-      while (i0 < i1) {
-        this._points.getPoint3dAtUncheckedPointIndex(i0, a);
-        this._points.setAtCheckedPointIndex(i0, this._points.getPoint3dAtUncheckedPointIndex(i1));
-        this._points.setAtCheckedPointIndex(i1, a);
-        i0++;
-        i1--;
-      }
+      this._points.reverseInPlace();
+      if (this._uvParams)
+        this._uvParams.reverseInPlace();
     }
   }
   /** Apply `transform` to each point of this linestring. */
@@ -860,7 +853,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     let numConsecutiveZero = 0;
     let hA = 0;
     let segmentFraction = 0;
-    for (let i = 0; i < this._points.length; i++ , pointA.setFrom(pointB), hA = hB) {
+    for (let i = 0; i < this._points.length; i++, pointA.setFrom(pointB), hA = hB) {
       this._points.getPoint3dAtUncheckedPointIndex(i, pointB);
       hB = Geometry.correctSmallMetricDistance(plane.altitude(pointB));
       if (hB === 0.0)
@@ -1128,7 +1121,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     const pointB = LineString3d._workPointB;
     this._points.getPoint3dAtUncheckedPointIndex(0, pointA);
     let status = false;
-    for (let i = 1; i < n; i++ , pointA.setFrom(pointB), globalFractionA = globalFractionB) {
+    for (let i = 1; i < n; i++, pointA.setFrom(pointB), globalFractionA = globalFractionB) {
       this._points.getPoint3dAtUncheckedPointIndex(i, pointB);
       globalFractionB = i / (n - 1);
       if (clipper.announceClippedSegmentIntervals(0.0, 1.0, pointA, pointB, capture))
@@ -1223,7 +1216,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     const numParentPoint = points.length;
     if (map.primitive && map.primitive === this && map.componentData && map.componentData.length + 1 === numParentPoint) {
       points.getPoint3dAtUncheckedPointIndex(0, pointA);
-      for (let k = 0; k + 1 < numParentPoint; k++ , pointA.setFromPoint3d(pointB)) {
+      for (let k = 0; k + 1 < numParentPoint; k++, pointA.setFromPoint3d(pointB)) {
         points.getPoint3dAtUncheckedPointIndex(k + 1, pointB);
         const segmentMap = map.componentData![k];
         const m = segmentMap.numStroke;

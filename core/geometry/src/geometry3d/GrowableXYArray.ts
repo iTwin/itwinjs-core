@@ -370,11 +370,10 @@ export class GrowableXYArray extends IndexedXYCollection {
     return true;
   }
   /**
-   * Set the coordinates of a single point given as coordinates
+   * Set the coordinates of a single point given as coordinates.
    * @param pointIndex index of point to set
    * @param x x coordinate
    * @param y y coordinate
-   * @param z z coordinate
    */
   public setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean {
     if (!this.isIndexValid(pointIndex))
@@ -397,6 +396,22 @@ export class GrowableXYArray extends IndexedXYCollection {
     }
     return result;
   }
+  /** reverse the order of points. */
+  public reverseInPlace() {
+    const n = this.length;
+    let j0, j1;
+    let a;
+    const data = this._data;
+    for (let i0 = 0, i1 = n - 1; i0 < i1; i0++, i1--) {
+      j0 = 2 * i0;
+      j1 = 2 * i1;
+      a = data[j0]; data[j0] = data[j1]; data[j1] = a;
+      j0++;
+      j1++;
+      a = data[j0]; data[j0] = data[j1]; data[j1] = a;
+    }
+  }
+
   /** multiply each point by the transform, replace values. */
   public multiplyTransformInPlace(transform: Transform) {
     const data = this._data;

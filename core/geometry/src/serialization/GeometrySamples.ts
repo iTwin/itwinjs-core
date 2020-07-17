@@ -2238,7 +2238,7 @@ export class Sample {
     result.push(CoordinateXYZ.create(pointA));
     result.push(Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC)!);
     result.push(PointString3d.create(pointA, pointB));
-    result.push(TransitionSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 100), AngleSweep.createStartEndDegrees(0, 5), Segment1d.create(0, 0.5), Transform.createIdentity()));
+    result.push(TransitionSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 100), AngleSweep.createStartEndDegrees(0, 5), Segment1d.create(0, 0.5), Transform.createIdentity())!);
     result.push(LineString3d.create(pointABCD));
     result.push(BezierCurve3d.create(pointABC)!);
     result.push(BezierCurve3dH.create(pointABC)!);

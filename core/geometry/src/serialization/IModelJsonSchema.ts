@@ -322,7 +322,15 @@ export namespace IModelJson {
     endRadius?: number;
     /** length along curve */
     curveLength?: number;
-    /** Fractional part of active interval. */
+    /** Fractional part of active interval.
+     * * There has been name confusion between native and typescript .... accept any variant ..
+     * * native (July 2020) emits activeFractionInterval
+     */
+    activeFractionInterval?: number[];
+    /**
+     * DEPRECATED -- use activeFractionInterval.   Reader looks for both, writer produces activeFractionInterval
+     * @deprecated
+     */
     fractionInterval?: number[];
     /** TransitionSpiral type.   Default is `"clothoid"` */
     type?: string; //   one of:   "clothoid" | "biquadratic" | "bloss" | "cosine" | "sine";
@@ -457,7 +465,7 @@ export namespace IModelJson {
    */
   export interface RuledSweepProps {
     /** Array of contours */
-    countour: [CurveCollectionProps];
+    contour: [CurveCollectionProps];
     /** optional capping flag. */
     capped?: boolean;
   }
@@ -703,8 +711,11 @@ export namespace IModelJson {
       const endRadius = Reader.parseNumberProperty(data, "endRadius");
       const length = Reader.parseNumberProperty(data, "curveLength", undefined);
 
-      const interval = Reader.parseSegment1dProperty(data, "fractionInterval", undefined);
-
+      let interval = Reader.parseSegment1dProperty(data, "activeFractionInterval", undefined);
+      if (!interval)
+        interval = Reader.parseSegment1dProperty(data, "fractionInterval", undefined);
+      if (!interval)
+        interval = Reader.parseSegment1dProperty(data, "activeInterval", undefined);
       const spiralType = Reader.parseStringProperty(data, "spiralType", "clothoid");
       if (origin)
         return TransitionSpiral3d.create(
@@ -1289,7 +1300,7 @@ export namespace IModelJson {
       Writer.insertOrientationFromMatrix(value, data.localToWorld.matrix, true);
 
       if (!data.activeFractionInterval.isExact01)
-        value.fractionInterval = [data.activeFractionInterval.x0, data.activeFractionInterval.x1];
+        value.activeFractionInterval = [data.activeFractionInterval.x0, data.activeFractionInterval.x1];
       // Object.defineProperty(value, "fractionInterval", { value: [data.activeFractionInterval.x0, data.activeFractionInterval.x1] });
 
       // if possible, do selective output of defining data (omit exactly one out of the 5, matching original definition)

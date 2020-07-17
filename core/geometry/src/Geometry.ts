@@ -490,7 +490,10 @@ export class Geometry {
       + zx * this.tripleProduct(xy, xz, xw, yy, yz, yw, wy, wz, ww)
       - wx * this.tripleProduct(xy, xz, xw, yy, yz, yw, zy, zz, zw);
   }
-
+  /** Return the mean curvature for two radii, with 0 radius implying 0 curvature */
+  public static meanCurvatureOfRadii(r0: number, r1: number): number {
+    return 0.5 * (this.safeDivideFraction(1, r0, 0) + this.safeDivideFraction(1, r1, 0));
+  }
   /**
  * Returns curvature magnitude from a first and second derivative vector.
  * @param ux  first derivative x component
