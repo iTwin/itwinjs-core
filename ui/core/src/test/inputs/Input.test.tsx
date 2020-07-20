@@ -14,6 +14,12 @@ describe("<Input />", () => {
     expect(input.container.querySelector("input[type='text']")).not.to.be.null;
   });
 
+  it("renders with 'numeric' type", () => {
+    const input = render(<Input type="numeric" />);
+
+    expect(input.container.querySelector("input[type='numeric']")).not.to.be.null;
+  });
+
   it("focus into input with setFocus prop", () => {
     const component = render(<Input setFocus={true} />);
     const input = component.container.querySelector("input[type='text']");
