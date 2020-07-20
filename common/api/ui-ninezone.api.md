@@ -237,10 +237,11 @@ export class CssProperties {
     static fromBounds(props: RectangleProps): React_2.CSSProperties;
     // (undocumented)
     static fromPosition(props: PointProps): React_2.CSSProperties;
+    // (undocumented)
+    static transformFromPosition(props: PointProps): {
+        transform: string;
+    };
 }
-
-// @internal
-export function CursorOverlay(): JSX.Element | null;
 
 // @internal (undocumented)
 export type CursorType = "ew-resize" | "ns-resize" | "grabbing";
@@ -326,10 +327,10 @@ export interface DockedToolSettingsHandleProps extends CommonProps {
 }
 
 // @internal
-export const DockedToolSettingsOverflow: React.NamedExoticComponent<DockedToolSettingsOverflowProps>;
+export const DockedToolSettingsOverflow: React.MemoExoticComponent<React.ForwardRefExoticComponent<DockedToolSettingsOverflowProps & React.RefAttributes<HTMLDivElement>>>;
 
 // @internal
-export interface DockedToolSettingsOverflowProps extends ToolSettingProps {
+export interface DockedToolSettingsOverflowProps extends CommonProps {
     onClick?: () => void;
     onResize?: (w: number) => void;
 }
@@ -2288,11 +2289,17 @@ export interface ToolSettingsDragStartAction {
 export const ToolSettingsNodeContext: React.Context<React.ReactNode>;
 
 // @internal
-export const ToolSettingsOverflowPanel: React.ForwardRefExoticComponent<ToolSettingsOverflowPanelProps & React.RefAttributes<HTMLDivElement>>;
+export function ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps): JSX.Element;
 
 // @internal
-export interface ToolSettingsOverflowPanelProps extends ToolSettingProps {
+export interface ToolSettingsOverflowPanelProps extends CommonProps {
     children?: React.ReactNode;
+    // (undocumented)
+    onClose: () => void;
+    // (undocumented)
+    open: boolean;
+    // (undocumented)
+    target: HTMLElement | undefined;
 }
 
 // @beta
@@ -2400,6 +2407,9 @@ export interface TooltipProps extends CommonProps {
 
 // @internal (undocumented)
 export type TopPanelSide = "top";
+
+// @internal
+export function useCursor(): void;
 
 // @internal (undocumented)
 export function useDoubleClick(onDoubleClick?: () => void): () => void;
@@ -2693,14 +2703,18 @@ export interface WidgetManagerProps {
 }
 
 // @internal (undocumented)
-export const WidgetMenu: React.ForwardRefExoticComponent<WidgetMenuProps & React.RefAttributes<HTMLDivElement>>;
+export function WidgetMenu(props: WidgetMenuProps): JSX.Element;
 
 // @internal (undocumented)
 export interface WidgetMenuProps extends CommonProps {
     // (undocumented)
     children?: React.ReactNode;
     // (undocumented)
-    onClick?: () => void;
+    onClose?: () => void;
+    // (undocumented)
+    open?: boolean;
+    // (undocumented)
+    target?: HTMLElement;
 }
 
 // @internal (undocumented)

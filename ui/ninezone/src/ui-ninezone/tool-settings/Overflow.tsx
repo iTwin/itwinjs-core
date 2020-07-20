@@ -9,14 +9,13 @@
 import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { useResizeObserver } from "@bentley/ui-core";
+import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { Ellipsis } from "../base/Ellipsis";
-import { ToolSettingProps } from "./Setting";
 
 /** Properties of [[ToolSettingsOverflow]] component.
  * @internal
  */
-export interface DockedToolSettingsOverflowProps extends ToolSettingProps {
+export interface DockedToolSettingsOverflowProps extends CommonProps {
   /** Function called when button is clicked. */
   onClick?: () => void;
   /** Function called when button is resized. */
@@ -26,20 +25,25 @@ export interface DockedToolSettingsOverflowProps extends ToolSettingProps {
 /** Entry point to overflown tool settings of [[DockedToolSettings]] component.
  * @internal
  */
-export const DockedToolSettingsOverflow = React.memo(function DockedToolSettingsOverflow(props: DockedToolSettingsOverflowProps) { // tslint:disable-line: variable-name no-shadowed-variable
-  const ref = useResizeObserver<HTMLDivElement>(props.onResize);
-  const className = classnames(
-    "nz-toolSettings-overflow",
-    props.className,
-  );
-  return (
-    <div
-      className={className}
-      onClick={props.onClick}
-      ref={ref}
-      style={props.style}
-    >
-      <Ellipsis />
-    </div>
-  );
-});
+export const DockedToolSettingsOverflow = React.memo( // tslint:disable-line: variable-name
+  React.forwardRef<HTMLDivElement, DockedToolSettingsOverflowProps>(
+    function DockedToolSettingsOverflow(props, ref) {  // tslint:disable-line: no-shadowed-variable
+      const roRef = useResizeObserver<HTMLDivElement>(props.onResize);
+      const refs = useRefs(roRef, ref);
+      const className = classnames(
+        "nz-toolSettings-overflow",
+        props.className,
+      );
+      return (
+        <div
+          className={className}
+          onClick={props.onClick}
+          ref={refs}
+          style={props.style}
+        >
+          <Ellipsis />
+        </div>
+      );
+    },
+  ),
+);

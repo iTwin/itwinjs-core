@@ -9,9 +9,11 @@
 import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
+import { CommonProps, NoChildrenProps, Popup, useRefState } from "@bentley/ui-core";
 import { useToolItemEntryContext } from "./ToolbarWithOverflow";
 import { useResizeObserverSingleDimension } from "./ItemWrapper";
+import { Direction } from "./utilities/Direction";
+import { RelativePosition } from "@bentley/ui-abstract";
 
 /** Properties of [[ToolbarOverflowButton]] component.
  * @internal
@@ -20,6 +22,12 @@ import { useResizeObserverSingleDimension } from "./ItemWrapper";
 export interface ToolbarOverflowButtonProps extends CommonProps, NoChildrenProps {
   /** Function called when button is clicked. */
   onClick?: () => void;
+  /** Function called when panel is closed. */
+  onClose?: () => void;
+  /** Describes if the panel is open. */
+  open?: boolean;
+  /** Panel expand direction. */
+  expandsTo: Direction;
   /** Panel element containing the overflown buttons */
   panelNode?: React.ReactNode;
   /** Title for the item. */
@@ -31,6 +39,7 @@ export interface ToolbarOverflowButtonProps extends CommonProps, NoChildrenProps
  */
 export function ToolbarOverflowButton(props: ToolbarOverflowButtonProps) {
   const { onResize, useHeight } = useToolItemEntryContext();
+  const [targetRef, target] = useRefState<HTMLDivElement>();
   const ref = useResizeObserverSingleDimension<HTMLButtonElement>(onResize, useHeight);
   const className = classnames(
     "components-toolbar-item-container",
@@ -42,7 +51,10 @@ export function ToolbarOverflowButton(props: ToolbarOverflowButtonProps) {
     "components-ellipsis-icon",
   );
   return (
-    <div className={className}>
+    <div
+      className={className}
+      ref={targetRef}
+    >
       <button
         ref={ref}
         onClick={props.onClick}
@@ -54,7 +66,31 @@ export function ToolbarOverflowButton(props: ToolbarOverflowButtonProps) {
           <div className="components-ellipsis" />
         </div>
       </button>
-      {props.panelNode}
+      <Popup
+        className="components-toolbar-overflow_popup"
+        offset={0}
+        showShadow={false}
+        isOpen={props.open}
+        onClose={props.onClose}
+        position={toToolbarOverflowRelativePosition(props.expandsTo)}
+        target={target}
+      >
+        {props.panelNode}
+      </Popup>
     </div>
   );
+}
+
+/** @internal */
+export function toToolbarOverflowRelativePosition(expandsTo: Direction): RelativePosition {
+  switch (expandsTo) {
+    case Direction.Bottom:
+      return RelativePosition.Bottom;
+    case Direction.Left:
+      return RelativePosition.Left;
+    case Direction.Right:
+      return RelativePosition.Right;
+    case Direction.Top:
+      return RelativePosition.Top;
+  }
 }

@@ -9,7 +9,7 @@
 import "./Docked.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, OutsideClickEvent, useOnOutsideClick, useRefs, useResizeObserver } from "@bentley/ui-core";
+import { CommonProps, useRefs, useRefState, useResizeObserver } from "@bentley/ui-core";
 import { assert } from "../base/assert";
 import { DockedToolSettingsHandle } from "./Handle";
 import { DockedToolSettingsOverflow } from "./Overflow";
@@ -53,7 +53,7 @@ export interface DockedToolSettingsProps extends CommonProps {
  * @internal future
  */
 export function DockedToolSettings(props: DockedToolSettingsProps) {
-  const [isOverflowPanelOpen, setIsOverflowPanelOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
   const width = React.useRef<number | undefined>(undefined);
   const handleWidth = React.useRef<number | undefined>(undefined);
@@ -72,16 +72,12 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
   const resizeObserverRef = useResizeObserver(handleResize);
 
   const onOverflowClick = React.useCallback(() => {
-    setIsOverflowPanelOpen((prev) => !prev);
+    setOpen((prev) => !prev);
   }, []);
-  const onOutsideClick = React.useCallback(() => {
-    setIsOverflowPanelOpen(false);
+  const handleOnClose = React.useCallback(() => {
+    setOpen(false);
   }, []);
-  const isOutsideEvent = React.useCallback((e: OutsideClickEvent) => {
-    return !!ref.current && (e.target instanceof Node) && !ref.current.contains(e.target);
-  }, []);
-  const panelRef = useOnOutsideClick<HTMLDivElement>(onOutsideClick, isOutsideEvent);
-
+  const [targetRef, target] = useRefState<HTMLDivElement>();
   const refs = useRefs(ref, resizeObserverRef);
   const children = React.useMemo(() => React.Children.toArray(props.children), [props.children]);
   const dockedChildren = children.reduce<Array<[string, React.ReactNode]>>((acc, child, index) => {
@@ -128,24 +124,25 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
         <DockedToolSettingsOverflow
           onClick={onOverflowClick}
           onResize={handleOverflowResize}
+          ref={targetRef}
         />
       )}
-      {overflownChildren.length > 0 && isOverflowPanelOpen &&
-        <ToolSettingsOverflowPanel
-          ref={panelRef}
-        >
-          <PanelContainer>
-            {overflownChildren.map(([key, child]) => {
-              return (
-                <OverflowLabelAndEditor
-                  key={key}
-                  wrapper={child}
-                />
-              );
-            })}
-          </PanelContainer>
-        </ToolSettingsOverflowPanel>
-      }
+      <ToolSettingsOverflowPanel
+        onClose={handleOnClose}
+        open={overflownChildren.length > 0 && open}
+        target={target}
+      >
+        <PanelContainer>
+          {overflownChildren.map(([key, child]) => {
+            return (
+              <OverflowLabelAndEditor
+                key={key}
+                wrapper={child}
+              />
+            );
+          })}
+        </PanelContainer>
+      </ToolSettingsOverflowPanel>
     </div>
   );
 }
@@ -311,8 +308,8 @@ function verifiedMapEntries<T>(map: Map<string, T | undefined>) {
   return map as Map<string, T>;
 }
 
-function DefaultPanelContainer(p: { children: React.ReactNode }) {
-  return <>{p.children}</>;
+function DefaultPanelContainer(props: { children: React.ReactNode }) {
+  return <div className="nz-toolSettings-docked_container">{props.children}</div>;
 }
 
 /** @internal */

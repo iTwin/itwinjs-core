@@ -172,9 +172,19 @@
  animation-name: animate-horizontal;
 }
 
+.core-popup-left-top {
+  transform-origin: right top 0px;
+  animation-name: animate-corner;
+ }
+
 .core-popup-right {
  transform-origin: left;
  animation-name: animate-horizontal;
+}
+
+.core-popup-right-top {
+  transform-origin: left top 0px;
+  animation-name: animate-corner;
 }
 
 .core-popup-top {

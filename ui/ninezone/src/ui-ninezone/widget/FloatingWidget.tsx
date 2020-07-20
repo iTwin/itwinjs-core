@@ -18,6 +18,7 @@ import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetProvider } from "./Widget";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
+import { CssProperties } from "../utilities/Css";
 
 /** @internal */
 export type FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom";
@@ -33,15 +34,13 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
   const { id, bounds } = props.floatingWidget;
   const { minimized } = props.widget;
   const style = React.useMemo(() => {
-    const { left, top } = bounds;
     const boundsRect = Rectangle.create(bounds);
-    const height = boundsRect.getHeight();
-    const width = boundsRect.getWidth();
+    const { height, width } = boundsRect.getSize();
+    const position = boundsRect.topLeft();
     return {
+      ...CssProperties.transformFromPosition(position),
       height: minimized ? undefined : height,
       width,
-      left,
-      top,
     };
   }, [bounds, minimized]);
   const className = React.useMemo(() => classnames(

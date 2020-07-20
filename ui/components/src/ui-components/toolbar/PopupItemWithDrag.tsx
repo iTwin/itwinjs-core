@@ -9,14 +9,14 @@
 import "./PopupItem.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ActionButton, ConditionalStringValue, GroupButton, ToolbarItemUtilities } from "@bentley/ui-abstract";
-import { BadgeUtilities, IconHelper, OutsideClickEvent, useOnOutsideClick } from "@bentley/ui-core";
+import { ActionButton, ConditionalStringValue, GroupButton, RelativePosition, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { BadgeUtilities, IconHelper, useRefState } from "@bentley/ui-core";
 import { ToolbarButtonItemProps } from "./Item";
-import { ToolbarPopupContext } from "./PopupItem";
+import { PopupItemPopup, ToolbarPopupContext } from "./PopupItem";
 import { PopupItemsPanel } from "./PopupItemsPanel";
-import { ToolbarPanelAlignmentHelpers, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
+import { ToolbarPanelAlignment, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
 import { useDragInteraction } from "./useDragInteraction";
-import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
+import { Direction } from "./utilities/Direction";
 
 /** Properties of [[PopupItem]] component.
  * @beta
@@ -81,7 +81,7 @@ function getActiveAction(item: GroupButton): ActionButton | undefined {
 export function PopupItemWithDrag(props: PopupItemWithDragProps) {
   const [isPanelShown, setPanelShown] = React.useState(false);
   const [activeAction, setActiveAction] = React.useState(getActiveAction(props.groupItem));
-  const { expandsTo, direction, overflowExpandsTo, overflowDirection, panelAlignment, onPopupPanelOpenClose } = useToolbarWithOverflowDirectionContext();
+  const { expandsTo, overflowExpandsTo, panelAlignment, onPopupPanelOpenClose } = useToolbarWithOverflowDirectionContext();
 
   React.useEffect(() => {
     const newActiveAction = getActiveAction(props.groupItem);
@@ -133,25 +133,12 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
     isDisabled && "components-disabled",
     props.className);
 
-  const ref = React.useRef<HTMLButtonElement>(null);
-  const onOutsideClick = React.useCallback(
-    // istanbul ignore next
-    () => {
-      processPanelOpenClose(false);
-    }, [processPanelOpenClose]);
-  const isOutsideEvent = React.useCallback((e: OutsideClickEvent) => {
-    // if clicking on button that open panel - don't trigger outside click processing
-    return !!ref.current && (e.target instanceof Node) && !ref.current.contains(e.target);
-  }, []);
-  const panelRef = useOnOutsideClick<HTMLDivElement>(onOutsideClick, isOutsideEvent);
+  const [targetRef, target] = useRefState<HTMLButtonElement>();
+  const handleClose = React.useCallback(() => {
+    processPanelOpenClose(false);
+  }, [processPanelOpenClose]);
   const { hasOverflow } = useToolItemEntryContext();
-  const panelClassName = classnames(
-    "components-toolbar-popup-panel-container",
-    hasOverflow && "components-overflown",
-    OrthogonalDirectionHelpers.getCssClassName(hasOverflow ? overflowDirection : direction),
-    DirectionHelpers.getCssClassName(hasOverflow ? overflowExpandsTo : expandsTo),
-    ToolbarPanelAlignmentHelpers.getCssClassName(panelAlignment),
-  );
+  const expandsToDirection = hasOverflow ? overflowExpandsTo : expandsTo;
 
   return (
     <ToolbarPopupContext.Provider value={{
@@ -160,7 +147,7 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
     }
     }>
       <button
-        ref={ref}
+        ref={targetRef}
         disabled={props.isDisabled}  // this is needed to prevent focusing/keyboard access to disabled buttons
         onPointerDown={handlePointerDown}
         onClick={handleButtonClick}
@@ -179,11 +166,31 @@ export function PopupItemWithDrag(props: PopupItemWithDragProps) {
         }
         <div className="components-triangle" />
       </button>
-      {isPanelShown &&
-        <div ref={panelRef} className={panelClassName}>
-          <PopupItemsPanel groupItem={props.groupItem} activateOnPointerUp={true} />
-        </div>
-      }
+      <PopupItemPopup
+        isOpen={isPanelShown}
+        onClose={handleClose}
+        position={toToolbarPopupRelativePosition(expandsToDirection, panelAlignment)}
+        target={target}
+      >
+        <PopupItemsPanel groupItem={props.groupItem} activateOnPointerUp={true} />
+      </PopupItemPopup>
     </ToolbarPopupContext.Provider>
   );
+}
+
+/** @internal */
+export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition {
+  switch (expandsTo) {
+    case Direction.Bottom: {
+      if (alignment === ToolbarPanelAlignment.End)
+        return RelativePosition.BottomRight;
+      return RelativePosition.BottomLeft;
+    }
+    case Direction.Left:
+      return RelativePosition.LeftTop;
+    case Direction.Right:
+      return RelativePosition.RightTop;
+    case Direction.Top:
+      return RelativePosition.Top;
+  }
 }

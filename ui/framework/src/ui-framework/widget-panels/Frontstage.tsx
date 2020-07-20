@@ -39,14 +39,14 @@ const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontsta
   return (
     <>
       <ModalFrontstageComposer stageInfo={activeModalFrontstageInfo} />
+      <WidgetPanelsToolSettings />
       <WidgetPanels
         className="uifw-widgetPanels"
         centerContent={<WidgetPanelsToolbars />}
       >
         <WidgetPanelsFrontstageContent />
       </WidgetPanels>
-      <WidgetPanelsToolSettings />
-      <WidgetPanelsStatusBar className="uifw-statusBar" />
+      <WidgetPanelsStatusBar />
       <FloatingWidgets />
     </>
   );

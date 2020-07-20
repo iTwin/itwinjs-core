@@ -22,11 +22,6 @@ exports[`WidgetPanels should render 1`] = `
   <div
     class="nz-widgetPanels-panelTarget nz-hidden nz-span nz-bottom"
   />
-  <div
-    class="nz-widget-floatingTab nz-hidden"
-  >
-    <span />
-  </div>
 </div>
 `;
 
@@ -132,10 +127,5 @@ exports[`WidgetPanels should render widget content 1`] = `
   <div
     class="nz-widgetPanels-panelTarget nz-hidden nz-span nz-bottom"
   />
-  <div
-    class="nz-widget-floatingTab nz-hidden"
-  >
-    <span />
-  </div>
 </div>
 `;

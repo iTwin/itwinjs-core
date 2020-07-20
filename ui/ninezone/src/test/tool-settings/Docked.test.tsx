@@ -103,7 +103,7 @@ describe("DockedToolSettings", () => {
       }
       return createDOMRect();
     });
-    const { container } = render(
+    render(
       <DockedToolSettings
         panelContainer={(props) => <div className="panel-container">{props.children}</div>}
       >
@@ -119,7 +119,8 @@ describe("DockedToolSettings", () => {
     act(() => {
       fireEvent.click(document.getElementsByClassName("nz-toolSettings-overflow")[0]);
     });
-    container.firstChild!.should.matchSnapshot();
+    const panel = document.getElementsByClassName("nz-toolSettings-panel")[0];
+    panel.should.matchSnapshot();
   });
 
   it("should close overflow panel on outside click", () => {
@@ -150,8 +151,8 @@ describe("DockedToolSettings", () => {
     document.getElementsByClassName("nz-toolSettings-panel").length.should.eq(1);
 
     act(() => {
-      fireEvent.mouseDown(document);
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(document);
+      fireEvent.pointerUp(document);
     });
 
     document.getElementsByClassName("nz-toolSettings-panel").length.should.eq(0);

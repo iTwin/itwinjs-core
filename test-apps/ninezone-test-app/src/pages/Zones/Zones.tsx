@@ -318,13 +318,13 @@ export default function Zones() {
     <button onClick={update}>Update</button>
   </>, [add, addToStart, remove, removeFromStart, update]);
   const nineZone = React.useMemo(() => <>
+    <ToolSettings settings={settings} />
     <WidgetPanels
       className="nzdemo-widgetPanels"
       centerContent={ui}
     >
       {content}
     </WidgetPanels>
-    <ToolSettings settings={settings} />
     <Footer
       isInFooterMode
       className="nzdemo-footer"

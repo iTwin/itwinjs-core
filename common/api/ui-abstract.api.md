@@ -705,7 +705,11 @@ export enum RelativePosition {
     // (undocumented)
     Left = 0,
     // (undocumented)
+    LeftTop = 9,
+    // (undocumented)
     Right = 2,
+    // (undocumented)
+    RightTop = 8,
     // (undocumented)
     Top = 1,
     // (undocumented)

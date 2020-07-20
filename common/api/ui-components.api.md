@@ -2486,6 +2486,9 @@ export class Point3dTypeConverter extends BasePointTypeConverter {
 // @beta
 export function PopupItem(props: PopupItemProps): JSX.Element;
 
+// @internal (undocumented)
+export function PopupItemPopup(props: PopupItemPopupProps): JSX.Element;
+
 // @beta
 export interface PopupItemProps extends ToolbarButtonItemProps {
     hideIndicator?: boolean;
@@ -3904,6 +3907,9 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
     toolbarOpacitySetting?: ToolbarOpacitySetting;
     useDragInteraction?: boolean;
 }
+
+// @internal (undocumented)
+export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;
 
 // @beta
 export interface TreeActions {

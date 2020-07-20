@@ -2,18 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-.uifw-widgetPanels-frontstage {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+@import "../style/themecolors";
+@import "../z-index";
 
-  > .uifw-widgetPanels {
-    flex: 1 1 auto;
-    min-height: 0;
+.core-tooltip-tooltip {
+  animation-name: none !important;
+  max-width: 400px;
+  font-size: 14px;
+  background-color: $buic-background-tooltip;
+  text-align: center;
+  border: 1px solid $buic-foreground-disabled;
+  padding: 2px 6px;
 
-    > .nz-widgetPanels-content {
-      position: relative;
-      pointer-events: none;
-    }
-  }
+  @include uicore-z-index(tooltip);
 }

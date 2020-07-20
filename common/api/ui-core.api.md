@@ -1345,6 +1345,9 @@ export enum Orientation {
 // @internal (undocumented)
 export type OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent;
 
+// @internal (undocumented)
+export function placementToPosition(placement: TooltipPlacement | undefined): RelativePosition;
+
 // @internal
 export class Point implements PointProps {
     constructor(x?: number, y?: number);
@@ -2064,13 +2067,14 @@ export const TOOLBAR_OPACITY_DEFAULT = 0.5;
 export function Tooltip(props: TooltipProps): JSX.Element;
 
 // @beta
+export type TooltipPlacement = "bottom" | "left" | "right" | "top";
+
+// @beta
 export interface TooltipProps extends CommonProps {
-    // (undocumented)
-    below?: boolean;
-    // (undocumented)
-    percent?: number;
-    // (undocumented)
-    value: MessageType;
+    children?: React.ReactNode;
+    placement?: TooltipPlacement;
+    target?: HTMLElement;
+    visible?: boolean;
 }
 
 // @public
@@ -2272,6 +2276,9 @@ export function useRefEffect<T>(callback: (instance: T | null) => (void | (() =>
 
 // @internal
 export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
+
+// @internal
+export function useRefState<T>(): [React.Ref<T>, T | undefined];
 
 // @internal
 export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;

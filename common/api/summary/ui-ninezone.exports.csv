@@ -42,7 +42,6 @@ internal;createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState
 internal;createWidgetState(id: WidgetState["id"], args?: Partial
 internal;Css
 internal;CssProperties
-internal;CursorOverlay(): JSX.Element | null
 internal;CursorType = "ew-resize" | "ns-resize" | "grabbing"
 internal;CursorTypeContext: React.Context
 beta;Dialog 
@@ -55,7 +54,7 @@ internal;DockedToolSetting(props: ToolSettingProps): JSX.Element
 internal;DockedToolSettings(props: DockedToolSettingsProps): JSX.Element
 internal;DockedToolSettingsHandle: React.NamedExoticComponent
 internal;DockedToolSettingsHandleProps 
-internal;DockedToolSettingsOverflow: React.NamedExoticComponent
+internal;DockedToolSettingsOverflow: React.MemoExoticComponent
 internal;DockedToolSettingsOverflowProps 
 internal;DockedToolSettingsProps 
 internal;DockedToolSettingsState
@@ -344,7 +343,7 @@ internal;ToolSettingProps
 beta;ToolSettings 
 internal;ToolSettingsDragStartAction
 internal;ToolSettingsNodeContext: React.Context
-internal;ToolSettingsOverflowPanel: React.ForwardRefExoticComponent
+internal;ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps): JSX.Element
 internal;ToolSettingsOverflowPanelProps 
 beta;ToolSettingsPopup 
 beta;ToolSettingsPopupProps 
@@ -361,6 +360,7 @@ beta;Tooltip
 beta;TooltipDefaultProps = Pick
 beta;TooltipProps 
 internal;TopPanelSide = "top"
+internal;useCursor(): void
 internal;useDoubleClick(onDoubleClick?: () => void): () => void
 internal;useDrag
 internal;useDraggedItemId
@@ -414,7 +414,7 @@ internal;WidgetDragAction
 internal;WidgetDragEndAction
 internal;WidgetIdContext: React.Context
 beta;WidgetManagerProps
-internal;WidgetMenu: React.ForwardRefExoticComponent
+internal;WidgetMenu(props: WidgetMenuProps): JSX.Element
 internal;WidgetMenuProps 
 internal;WidgetOverflow: React.NamedExoticComponent
 internal;WidgetOverflowProps

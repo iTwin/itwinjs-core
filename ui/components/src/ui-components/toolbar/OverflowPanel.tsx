@@ -25,7 +25,7 @@ export interface ToolbarOverflowPanelProps extends CommonProps {
  * @internal
  */
 // tslint:disable-next-line: variable-name
-export const ToolbarOverflowPanel = React.forwardRef<HTMLDivElement, ToolbarOverflowPanelProps>((props, ref) => {
+export function ToolbarOverflowPanel(props: ToolbarOverflowPanelProps) {
   const { expandsTo, overflowExpandsTo, overflowDirection } = useToolbarWithOverflowDirectionContext();
 
   const className = classnames(
@@ -39,10 +39,9 @@ export const ToolbarOverflowPanel = React.forwardRef<HTMLDivElement, ToolbarOver
   return (
     <div
       className={className}
-      ref={ref}
       style={props.style}
     >
       {props.children}
     </div>
   );
-});
+}

@@ -249,6 +249,7 @@ internal;PlayerButtonProps
 public;Point2dTypeConverter 
 public;Point3dTypeConverter 
 beta;PopupItem(props: PopupItemProps): JSX.Element
+internal;PopupItemPopup(props: PopupItemPopupProps): JSX.Element
 beta;PopupItemProps 
 beta;PopupItemWithDrag(props: PopupItemWithDragProps): JSX.Element
 beta;PopupItemWithDragProps 
@@ -388,6 +389,7 @@ beta;ToolbarProps
 beta;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React.Context
 beta;ToolbarWithOverflowProps 
+internal;toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition
 beta;TreeActions
 beta;TreeCellUpdatedArgs
 beta;TreeCheckboxStateChangeEventArgs

@@ -13,7 +13,7 @@ import {
   ActionButton, CommonToolbarItem, ConditionalBooleanValue, ConditionalStringValue, CustomButtonDefinition,
   GroupButton, OnItemExecutedFunc, ToolbarItemUtilities,
 } from "@bentley/ui-abstract";
-import { BadgeUtilities, CommonProps, IconHelper, NoChildrenProps, OutsideClickEvent, useOnOutsideClick, useRefs } from "@bentley/ui-core";
+import { BadgeUtilities, CommonProps, IconHelper, NoChildrenProps, useRefs } from "@bentley/ui-core";
 import { ToolbarButtonItem } from "./Item";
 import { ToolbarItems } from "./Items";
 import { ItemWrapper, useResizeObserverSingleDimension } from "./ItemWrapper";
@@ -312,17 +312,12 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
     width.current !== undefined && handleContainerResize(width.current);
   }, [handleContainerResize]);
   const resizeObserverRef = useResizeObserverSingleDimension(handleResize, useHeight);
-  // handle open and closing overflow panel
-  const onOverflowClick = React.useCallback(() => {
+  const handleClick = React.useCallback(() => {
     setIsOverflowPanelOpen((prev) => !prev);
   }, []);
-  const onOutsideClick = React.useCallback(() => {
+  const handleClose = React.useCallback(() => {
     setIsOverflowPanelOpen(false);
   }, []);
-  const isOutsideEvent = React.useCallback((e: OutsideClickEvent) => {
-    return !!ref.current && (e.target instanceof Node) && !ref.current.contains(e.target);
-  }, []);
-  const panelRef = useOnOutsideClick<HTMLDivElement>(onOutsideClick, isOutsideEvent);
 
   const refs = useRefs(ref, resizeObserverRef);
   const availableItems = React.Children.toArray(availableNodes);
@@ -353,9 +348,12 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
       }}
     >
       <ToolbarOverflowButton
-        onClick={onOverflowClick}
-        panelNode={overflowItems.length > 0 && isOverflowPanelOpen &&
-          <ToolbarOverflowPanel ref={panelRef} >
+        expandsTo={expandsTo}
+        onClick={handleClick}
+        onClose={handleClose}
+        open={overflowItems.length > 0 && isOverflowPanelOpen}
+        panelNode={
+          <ToolbarOverflowPanel>
             <OverflowItemsContainer>
               {overflowItems.map(([key, child]) => {
                 return (
@@ -376,7 +374,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
         }
       />
     </ToolbarItemContext.Provider>);
-  }, [useHeight, overflowPanelItems, handleOverflowResize, isOverflowPanelOpen, onOverflowClick, panelRef]);
+  }, [handleClick, handleClose, handleOverflowResize, isOverflowPanelOpen, expandsTo, overflowPanelItems, useHeight]);
 
   const className = classnames(
     "components-toolbar-overflow-sizer",
@@ -392,7 +390,9 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
         expandsTo, direction, overflowExpandsTo, panelAlignment, useDragInteraction,
         toolbarOpacitySetting: undefined !== props.toolbarOpacitySetting ? props.toolbarOpacitySetting : ToolbarOpacitySetting.Proximity,
         overflowDirection: direction === OrthogonalDirection.Horizontal ? OrthogonalDirection.Vertical : OrthogonalDirection.Horizontal,
-        openPopupCount: popupPanelCount, onPopupPanelOpenClose: handlePopupPanelOpenClose, overflowDisplayActive: overflowPanelItems.length > 0 && isOverflowPanelOpen,
+        openPopupCount: popupPanelCount,
+        onPopupPanelOpenClose: handlePopupPanelOpenClose,
+        overflowDisplayActive: overflowPanelItems.length > 0 && isOverflowPanelOpen,
         onItemExecuted: props.onItemExecuted ? props.onItemExecuted : () => { },
         onKeyDown: props.onKeyDown ? props.onKeyDown : (_e: React.KeyboardEvent) => { },
       }
