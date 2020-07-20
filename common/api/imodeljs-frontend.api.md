@@ -7131,6 +7131,7 @@ export namespace RenderSystem {
         contextAttributes?: WebGLContextAttributes;
         // @internal
         debugShaders?: boolean;
+        devicePixelRatioOverride?: number;
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;

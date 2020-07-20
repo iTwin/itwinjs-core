@@ -100,6 +100,13 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_DPI_AWARE_VIEWPORTS)
     configuration.dpiAwareViewports = false;
 
+  const devicePixelRatioOverrideVar = process.env.SVT_DEVICE_PIXEL_RATIO_OVERRIDE;
+  if (undefined !== devicePixelRatioOverrideVar) {
+    const devicePixelRatioOverride = Number.parseFloat(devicePixelRatioOverrideVar);
+    if (!Number.isNaN(devicePixelRatioOverride))
+      configuration.devicePixelRatioOverride = devicePixelRatioOverride;
+  }
+
   if (undefined !== process.env.SVT_DPI_LOD)
     configuration.dpiAwareLOD = true;
 

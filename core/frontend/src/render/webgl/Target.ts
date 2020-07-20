@@ -1136,6 +1136,9 @@ export class OnScreenTarget extends Target {
     if (false === this.renderSystem.options.dpiAwareViewports)
       return 1.0;
 
+    if (undefined !== this.renderSystem.options.devicePixelRatioOverride)
+      return this.renderSystem.options.devicePixelRatioOverride;
+
     return window.devicePixelRatio || 1.0;
   }
 

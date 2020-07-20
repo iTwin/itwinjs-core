@@ -136,6 +136,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
 * SVT_DISABLE_DPI_AWARE_VIEWPORTS
   * If defined, do not respect the DPI of the system when rendering viewports.
+* SVT_DEVICE_PIXEL_RATIO_OVERRIDE
+  * If defined, the pixel ratio used instead of the system's actual device pixel ratio.
 * SVT_DPI_LOD
   * If defined, account for the device DPI when computing level of detail for tiles and decoration graphics.
 * SVT_NO_CANCEL_TILE_REQUESTS
