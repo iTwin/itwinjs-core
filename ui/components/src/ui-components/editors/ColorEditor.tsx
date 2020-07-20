@@ -23,6 +23,8 @@ interface ColorEditorState {
   colorValue: number;
   readonly: boolean;
   isDisabled?: boolean;
+  numColumns: number;
+  availableColors: ColorDef[];
 }
 
 /** ColorEditor React component that is a property editor with text input
@@ -30,33 +32,14 @@ interface ColorEditorState {
  */
 export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorEditorState> implements TypeEditor {
   private _control: any | null = null;
-  private _isMounted = false;
-  private _availableColors: ColorDef[] = [];
-  private _numColumns = 4;
 
   /** @internal */
   public readonly state: Readonly<ColorEditorState> = {
     colorValue: 0,
     readonly: false,
+    numColumns: 4,
+    availableColors: [],
   };
-
-  constructor(props: PropertyEditorProps) {
-    super(props);
-
-    const record = this.props.propertyRecord;
-    if (record && record.property && record.property.editor && record.property.editor.params) {
-      const colorParams = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.ColorData) as ColorEditorParams;
-      // istanbul ignore else
-      if (colorParams) {
-        colorParams.colorValues.forEach((colorNumber: number) => {
-          this._availableColors.push(ColorDef.create(colorNumber));
-        });
-        // istanbul ignore else
-        if (colorParams.numColumns)
-          this._numColumns = colorParams.numColumns;
-      }
-    }
-  }
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
     const record = this.props.propertyRecord;
@@ -100,13 +83,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 
   /** @internal */
   public componentDidMount() {
-    this._isMounted = true;
     this.setStateFromProps(); // tslint:disable-line:no-floating-promises
-  }
-
-  /** @internal */
-  public componentWillUnmount() {
-    this._isMounted = false;
   }
 
   /** @internal */
@@ -118,26 +95,37 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 
   private async setStateFromProps() {
     const record = this.props.propertyRecord;
-    let initialValue = 0;
 
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      initialValue = (record.value as PrimitiveValue).value as number;
-    }
+      const colorValue = (record.value as PrimitiveValue).value as number;
+      let numColumns = 4;
+      const availableColors = new Array<ColorDef>();
+      const readonly = record && undefined !== record.isReadonly ? record.isReadonly : false;
+      const isDisabled = record ? record.isDisabled : undefined;
 
-    const readonly = record && undefined !== record.isReadonly ? record.isReadonly : false;
-    const isDisabled = record ? record.isDisabled : undefined;
+      if (record.property.editor && record.property.editor.params) {
+        const colorParams = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.ColorData) as ColorEditorParams;
+        // istanbul ignore else
+        if (colorParams) {
+          colorParams.colorValues.forEach((colorNumber: number) => {
+            availableColors.push(ColorDef.create(colorNumber));
+          });
+          // istanbul ignore else
+          if (colorParams.numColumns)
+            numColumns = colorParams.numColumns;
+        }
+      }
 
-    // istanbul ignore else
-    if (this._isMounted)
       this.setState(
-        { colorValue: initialValue, readonly, isDisabled },
+        { colorValue, readonly, isDisabled, numColumns, availableColors },
         () => {
           if (this.props.setFocus) {
             this.setFocus();
           }
         },
       );
+    }
   }
 
   /** @internal */
@@ -147,8 +135,8 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
       <div className={classnames("components-color-editor", this.props.className)} style={this.props.style}>
         <ColorPickerButton ref={(control) => this._control = control}
           activeColor={colorDef}
-          colorDefs={this._availableColors.length > 0 ? this._availableColors : undefined}
-          numColumns={this._numColumns}
+          colorDefs={this.state.availableColors.length > 0 ? this.state.availableColors : [colorDef]}
+          numColumns={this.state.numColumns}
           disabled={this.state.isDisabled ? true : false}
           readonly={this.state.readonly}
           onColorPick={this._onColorPick}

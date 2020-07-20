@@ -167,6 +167,8 @@ alpha;IconPickerProps
 alpha;IconPropertyEditor 
 public;IImageLoader
 public;Image = LoadedImage | LoadedBinaryImage
+beta;ImageCheckBoxEditor 
+beta;ImageCheckBoxPropertyEditor 
 public;ImageFileFormat = "png" | "jpg" | "jpge"
 public;ImageSourceType = "svg" | "url" | "binary" | "core-icon" | "webfont-icon"
 public;ImmediatelyLoadedTreeNodeItem 

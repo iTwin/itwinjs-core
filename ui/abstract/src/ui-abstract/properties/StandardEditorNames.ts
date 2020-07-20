@@ -20,4 +20,5 @@ export enum StandardEditorNames {
   Slider = "slider",
   Toggle = "toggle",
   WeightPicker = "weight-picker",
+  ImageCheckBox = "image-check-box",
 }

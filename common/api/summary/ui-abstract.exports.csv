@@ -51,6 +51,7 @@ beta;IconDefinition
 beta;IconEditorParams 
 beta;IconListEditorParams 
 beta;IconSpecUtilities
+beta;ImageCheckBoxParams 
 beta;InputEditorSizeParams 
 beta;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
 beta;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem

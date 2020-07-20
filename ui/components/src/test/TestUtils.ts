@@ -5,8 +5,8 @@
 import { ColorByName } from "@bentley/imodeljs-common";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, ParseResults, PrimitiveValue,
-  PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValueFormat, StandardEditorNames, StandardTypeNames, StructValue,
+  ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, ImageCheckBoxParams, ParseResults,
+  PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValueFormat, StandardEditorNames, StandardTypeNames, StructValue,
 } from "@bentley/ui-abstract";
 import { ColumnDescription, CompositeFilterDescriptorCollection, FilterableTable, UiComponents } from "../ui-components";
 import { TableFilterDescriptorCollection } from "../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
@@ -123,6 +123,35 @@ export class TestUtils {
     return property;
   }
 
+  public static createEnumStringProperty(name: string, index: string, column?: ColumnDescription) {
+    const value: PrimitiveValue = {
+      displayValue: "",
+      value: index,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      displayLabel: name,
+      name,
+      typename: StandardTypeNames.Enum,
+    };
+
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.isReadonly = false;
+    propertyRecord.property.enum = { choices: [], isStrict: false };
+    propertyRecord.property.enum.choices = [
+      { label: "Yellow", value: "yellow" },
+      { label: "Red", value: "red" },
+      { label: "Green", value: "green" },
+      { label: "Blue", value: "blue" },
+    ];
+
+    if (column)
+      column.propertyDescription = description;
+
+    return propertyRecord;
+  }
+
   public static createEnumProperty(name: string, index: string | number, column?: ColumnDescription) {
     const value: PrimitiveValue = {
       displayValue: "",
@@ -193,6 +222,31 @@ export class TestUtils {
     return propertyRecord;
   }
 
+  public static createImageCheckBoxProperty(name: string, booleanValue: boolean) {
+    const value: PrimitiveValue = {
+      displayValue: "",
+      value: booleanValue,
+      valueFormat: PropertyValueFormat.Primitive,
+    };
+
+    const description: PropertyDescription = {
+      displayLabel: name,
+      name,
+      typename: StandardTypeNames.Boolean,
+    };
+    const propertyRecord = new PropertyRecord(value, description);
+    propertyRecord.property.editor = {
+      name: "image-check-box",
+      params: [{
+        type: PropertyEditorParamTypes.CheckBoxImages,
+        imageOff: "icon-visibility-hide-2",
+        imageOn: "icon-visibility",
+      } as ImageCheckBoxParams,
+      ],
+    };
+    propertyRecord.isReadonly = false;
+    return propertyRecord;
+  }
   public static createColorProperty(propertyName: string, colorValue: number) {
 
     const value: PrimitiveValue = {

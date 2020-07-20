@@ -461,6 +461,16 @@ export class IconSpecUtilities {
 }
 
 // @beta
+export interface ImageCheckBoxParams extends BasePropertyEditorParams {
+    // (undocumented)
+    imageOff: string;
+    // (undocumented)
+    imageOn: string;
+    // (undocumented)
+    type: PropertyEditorParamTypes.CheckBoxImages;
+}
+
+// @beta
 export interface InputEditorSizeParams extends BasePropertyEditorParams {
     maxLength?: number;
     size?: number;
@@ -629,6 +639,8 @@ export enum PropertyEditorParamTypes {
     // (undocumented)
     CheckBoxIcons = "UiAbstract-CheckBoxIcons",
     // (undocumented)
+    CheckBoxImages = "UiAbstract-CheckBoxImages",
+    // (undocumented)
     ColorData = "UiAbstract-ColorData",
     // (undocumented)
     CustomFormattedNumber = "UiAbstract-CustomFormattedNumber",
@@ -791,6 +803,8 @@ export enum StandardEditorNames {
     EnumButtonGroup = "enum-buttongroup",
     // (undocumented)
     IconPicker = "icon-picker",
+    // (undocumented)
+    ImageCheckBox = "image-check-box",
     // (undocumented)
     MultiLine = "multi-line",
     // (undocumented)

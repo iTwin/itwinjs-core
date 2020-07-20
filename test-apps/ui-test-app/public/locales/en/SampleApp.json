@@ -191,7 +191,8 @@
         "Station": "Station",
         "Coordinate": "Coordinate",
         "Length": "Length",
-        "Angle": "Angle"
+        "Angle": "Angle",
+        "ImageCheckBox": "Image Check Box"
       },
       "Options": {
         "Red": "Red",

@@ -47,7 +47,6 @@ interface ColorPickerState {
  * @beta
  */
 export class ColorPickerButton extends React.PureComponent<ColorPickerProps, ColorPickerState> {
-  private _colors: ColorDef[] = [];
   private _target: HTMLElement | null = null;
 
   /** @internal */
@@ -56,16 +55,9 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
   };
 
   /** @internal */
-  constructor(props: ColorPickerProps) {
-    super(props);
-
-    if (props.colorDefs) {
-      props.colorDefs.forEach((color: ColorDef) => { this._colors.push(color); });
-    } else {
-      ColorPickerButton.defaultColors.forEach((color: ColorDef) => { this._colors.push(color); });
-    }
-    this.state = { showPopup: false };
-  }
+  public readonly state: Readonly<ColorPickerState> = {
+    showPopup: false,
+  };
 
   public static get defaultColors(): ColorDef[] {
     return [
@@ -114,11 +106,15 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
 
   private renderPopup(title: string | undefined) {
     const containerStyle: React.CSSProperties = { gridTemplateColumns: `repeat(${this.props.numColumns}, 1fr)` };
+    let colors = this.props.colorDefs;
+    if (!colors || 0 === colors.length)
+      colors = ColorPickerButton.defaultColors;
+
     return (
       <div className="components-colorpicker-popup-container">
         {title && <h4>{title}</h4>}
         <div data-testid="components-colorpicker-popup-colors" className="components-colorpicker-popup-colors" style={containerStyle}>
-          {this._colors.map((color, index) => <ColorSwatch className="components-colorpicker-swatch" key={index} colorDef={color}
+          {colors.map((color, index) => <ColorSwatch className="components-colorpicker-swatch" key={index} colorDef={color}
             onColorPick={this._handleColorPicked} round={this.props.round} />)}
         </div>
       </div>
