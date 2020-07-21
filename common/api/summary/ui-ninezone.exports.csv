@@ -189,6 +189,8 @@ internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | Panel
 internal;NineZoneContext: React.Context
 internal;NineZoneDispatch = (action: NineZoneActionTypes) => void
 internal;NineZoneDispatchContext: React.Context
+internal;NineZoneLabels
+internal;NineZoneLabelsContext: React.Context
 alpha;NineZoneManager
 internal;NineZoneManagerHiddenWidget
 internal;NineZoneManagerHiddenWidgets =
@@ -199,7 +201,7 @@ alpha;NineZoneNestedStagePanelsManager
 alpha;NineZoneNestedStagePanelsManagerProps 
 internal;NineZoneProps
 internal;NineZoneProvider(props: NineZoneProviderProps): JSX.Element
-internal;NineZoneProviderProps
+internal;NineZoneProviderProps 
 alpha;NineZoneStagePanelManager 
 alpha;NineZoneStagePanelManagerProps 
 alpha;NineZoneStagePanelPaneManager
@@ -379,6 +381,7 @@ internal;UseDragWidgetArgs
 internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
 internal;useIsDraggedType(type: DragItem["type"]): boolean
+internal;useLabel(labelKey: keyof NineZoneLabels): string | undefined
 internal;useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray
 internal;usePanelTarget
 internal;UsePanelTargetArgs

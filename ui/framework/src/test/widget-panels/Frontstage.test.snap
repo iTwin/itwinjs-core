@@ -6,6 +6,11 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
 >
   <NineZone
     dispatch={[Function]}
+    labels={
+      Object {
+        "dockToolSettingsTitle": "widget.tooltips.dockToolSettings",
+      }
+    }
     state={
       Object {
         "draggedTab": undefined,

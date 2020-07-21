@@ -248,5 +248,10 @@
     "mouse": "Mouse",
     "touch": "Touch",
     "pin": "Pin"
+  },
+  "widget": {
+    "tooltips": {
+      "dockToolSettings": "Dock to top"
+    }
   }
 }

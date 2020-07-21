@@ -7,20 +7,19 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import produce, { castDraft } from "immer";
+import { act, renderHook } from "@testing-library/react-hooks";
+import { Logger } from "@bentley/bentleyjs-core";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import { addFloatingWidget, addPanelWidget, addTab, createNineZoneState, createWidgetState, NineZoneState } from "@bentley/ui-ninezone";
-import { act, renderHook } from "@testing-library/react-hooks";
 import {
   ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, expandWidget, findTab, FrontstageDef,
-  FrontstageManager, getPanelSide, getWidgetId, initializeNineZoneState, isFrontstageStateSettingResult, ModalFrontstageComposer,
-  packNineZoneState, restoreNineZoneState, setPanelSize, setWidgetState, showWidget, StagePanelDef, StagePanelZoneDef, StagePanelZonesDef,
-  UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState, useSavedFrontstageState,
-  useSaveFrontstageSettings, useSyncDefinitions, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
+  FrontstageManager, getPanelSide, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult,
+  ModalFrontstageComposer, packNineZoneState, restoreNineZoneState, setPanelSize, setWidgetState, showWidget, StagePanelDef, StagePanelZoneDef,
+  StagePanelZonesDef, UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
+  useSavedFrontstageState, useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
 } from "../../ui-framework";
 import TestUtils, { UiSettingsStub } from "../TestUtils";
-import { Logger } from "@bentley/bentleyjs-core";
-import { initializePanel, useUpdateNineZoneSize } from "../../ui-framework/widget-panels/Frontstage";
 
 function createSavedNineZoneState(args?: Partial<NineZoneState>) {
   return {
@@ -120,6 +119,14 @@ describe("ModalFrontstageComposer", () => {
 });
 
 describe("ActiveFrontstageDefProvider", () => {
+  before(async () => {
+    await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should render", () => {
     const frontstageDef = new FrontstageDef();
     const wrapper = shallow(<ActiveFrontstageDefProvider frontstageDef={frontstageDef} />);

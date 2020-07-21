@@ -9,7 +9,7 @@
 import "./SendBack.scss";
 import * as React from "react";
 import { assert } from "../base/assert";
-import { NineZoneDispatchContext } from "../base/NineZone";
+import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { toolSettingsTabId } from "../base/NineZoneState";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
@@ -22,6 +22,7 @@ export const SendBack = React.memo(function SendBack() { // tslint:disable-line:
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   const side = React.useContext(PanelSideContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
+  const dockToolSettingsTitle = useLabel("dockToolSettingsTitle");
   assert(widgetId);
   if (activeTabId !== toolSettingsTabId)
     return null;
@@ -36,6 +37,7 @@ export const SendBack = React.memo(function SendBack() { // tslint:disable-line:
           widgetId,
         });
       }}
+      title={dockToolSettingsTitle}
     >
       <i />
     </button >

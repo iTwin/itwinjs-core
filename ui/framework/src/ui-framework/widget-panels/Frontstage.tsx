@@ -13,8 +13,8 @@ import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
   addPanelWidget, addTab, assert, createNineZoneState, createTabsState, floatingWidgetBringToFront, FloatingWidgets, FloatingWidgetState,
-  isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneState, NineZoneStateReducer, PanelSide,
-  TabState, toolSettingsTabId, WidgetPanels, WidgetState as NZ_WidgetState,
+  isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState, NineZoneStateReducer,
+  PanelSide, TabState, toolSettingsTabId, WidgetPanels, WidgetState as NZ_WidgetState,
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
@@ -151,18 +151,27 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
   useSaveFrontstageSettings(frontstageDef);
   useFrontstageManager(frontstageDef);
   useSyncDefinitions(frontstageDef);
+  const labels = useLabels();
   return (
     <div className="uifw-widgetPanels-frontstage">
       <NineZone
         dispatch={dispatch}
+        labels={labels}
         state={nineZone || defaultNineZone}
-        widgetContent={widgetContent}
         toolSettingsContent={toolSettingsContent}
+        widgetContent={widgetContent}
       >
         {widgetPanelsFrontstage}
       </NineZone>
     </div>
   );
+}
+
+/** @internal */
+export function useLabels() {
+  return React.useMemo<NineZoneLabels>(() => ({
+    dockToolSettingsTitle: UiFramework.translate("widget.tooltips.dockToolSettings"),
+  }), []);
 }
 
 /** @internal */

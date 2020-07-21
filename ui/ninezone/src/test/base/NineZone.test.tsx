@@ -5,12 +5,11 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { NineZone } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
-import { createNineZoneState } from "../../ui-ninezone/base/NineZoneState";
-import { MeasureContext, NineZoneDispatch } from "../../ui-ninezone/base/NineZone";
+import { renderHook } from "@testing-library/react-hooks";
 import { Rectangle } from "@bentley/ui-core";
 import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill"; // tslint:disable-line: no-direct-imports
+import { createNineZoneState, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, useLabel } from "../../ui-ninezone";
+import { NineZoneProvider } from "../Providers";
 import { createBoundingClientRect, createDOMRect, ResizeObserverMock } from "../Utils";
 
 describe("<NineZone />", () => {
@@ -123,5 +122,15 @@ describe("<NineZoneProvider />", () => {
       9-Zone
     </NineZoneProvider>);
     container.firstChild!.should.matchSnapshot();
+  });
+});
+
+describe("useLabel", () => {
+  it("should return label", () => {
+    const labels: NineZoneLabels = {
+      dockToolSettingsTitle: "test",
+    };
+    const { result } = renderHook(() => useLabel("dockToolSettingsTitle"), { wrapper: (props: {}) => <NineZoneLabelsContext.Provider value={labels} {...props} /> });
+    result.current!.should.eq("test");
   });
 });

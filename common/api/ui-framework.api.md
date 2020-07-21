@@ -72,6 +72,7 @@ import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NestedStagePanelKey } from '@bentley/ui-ninezone';
 import { NestedStagePanelsManagerProps } from '@bentley/ui-ninezone';
 import { NineZoneDispatch } from '@bentley/ui-ninezone';
+import { NineZoneLabels } from '@bentley/ui-ninezone';
 import { NineZoneManager } from '@bentley/ui-ninezone';
 import { NineZoneManagerProps } from '@bentley/ui-ninezone';
 import { NineZoneStagePanelManagerProps } from '@bentley/ui-ninezone';
@@ -5981,6 +5982,9 @@ export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
 
 // @beta
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
+
+// @internal (undocumented)
+export function useLabels(): NineZoneLabels;
 
 // @internal (undocumented)
 export function useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispatch;

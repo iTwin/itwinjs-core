@@ -1062,6 +1062,15 @@ export type NineZoneDispatch = (action: NineZoneActionTypes) => void;
 // @internal (undocumented)
 export const NineZoneDispatchContext: React.Context<NineZoneDispatch>;
 
+// @internal (undocumented)
+export interface NineZoneLabels {
+    // (undocumented)
+    dockToolSettingsTitle?: string;
+}
+
+// @internal (undocumented)
+export const NineZoneLabelsContext: React.Context<NineZoneLabels | undefined>;
+
 // @alpha
 export class NineZoneManager {
     // @internal (undocumented)
@@ -1156,6 +1165,8 @@ export interface NineZoneProps {
     // (undocumented)
     dispatch: NineZoneDispatch;
     // (undocumented)
+    labels?: NineZoneLabels;
+    // (undocumented)
     state: NineZoneState;
     // (undocumented)
     toolSettingsContent?: React.ReactNode;
@@ -1167,19 +1178,9 @@ export interface NineZoneProps {
 export function NineZoneProvider(props: NineZoneProviderProps): JSX.Element;
 
 // @internal (undocumented)
-export interface NineZoneProviderProps {
-    // (undocumented)
-    children?: React.ReactNode;
-    // (undocumented)
-    dispatch: NineZoneDispatch;
+export interface NineZoneProviderProps extends NineZoneProps {
     // (undocumented)
     measure: () => Rectangle;
-    // (undocumented)
-    state: NineZoneState;
-    // (undocumented)
-    toolSettingsContent?: React.ReactNode;
-    // (undocumented)
-    widgetContent?: React.ReactNode;
 }
 
 // @alpha
@@ -2508,6 +2509,9 @@ export function useIsDraggedItem(item: DragItem): boolean;
 
 // @internal (undocumented)
 export function useIsDraggedType(type: DragItem["type"]): boolean;
+
+// @internal (undocumented)
+export function useLabel(labelKey: keyof NineZoneLabels): string | undefined;
 
 // @internal
 export function useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray<string> | undefined, (size: number) => void, (size: number) => void, (key: string) => (size: number) => void];
