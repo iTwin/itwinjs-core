@@ -111,7 +111,7 @@
       > .core-dialog-head {
         flex-shrink: 0;
         align-items: center;
-        background-color: $buic-background-titlebar-outoffocus;
+        background-color: $buic-background-titlebar; /* $buic-background-titlebar-outoffocus; */
         color: $buic-text-color;
         display: flex;
         padding: 4px;
@@ -185,11 +185,13 @@
         }
       }
 
+      /*
       &:focus-within {
         .core-dialog-head {
           background-color: $buic-background-titlebar;
         }
       }
+      */
 
     }
 

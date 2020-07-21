@@ -175,12 +175,15 @@ export interface AsyncValueProcessingResult {
 
 // @public
 export abstract class BasePointTypeConverter extends TypeConverter {
+    constructor(componentConverterName?: string);
+    // (undocumented)
+    componentConverterName: string;
     // (undocumented)
     protected abstract constructPoint(_values: Primitives.Point): ConvertedPrimitives.Point | undefined;
     // (undocumented)
     convertFromString(value: string): ConvertedPrimitives.Point2d | ConvertedPrimitives.Point3d | undefined;
     // (undocumented)
-    convertToString(value?: Primitives.Point): string;
+    convertToString(value?: Primitives.Point): string | Promise<string>;
     // (undocumented)
     protected abstract getVectorLength(point: Primitives.Point): number | undefined;
     // (undocumented)
@@ -2464,6 +2467,7 @@ export interface PlayerButtonProps extends CommonProps {
 
 // @public
 export class Point2dTypeConverter extends BasePointTypeConverter {
+    constructor(componentConverterName?: string);
     // (undocumented)
     protected constructPoint(values: Primitives.Point): ConvertedPrimitives.Point2d | undefined;
     // (undocumented)
@@ -2472,6 +2476,7 @@ export class Point2dTypeConverter extends BasePointTypeConverter {
 
 // @public
 export class Point3dTypeConverter extends BasePointTypeConverter {
+    constructor(componentConverterName?: string);
     // (undocumented)
     protected constructPoint(values: Primitives.Point): ConvertedPrimitives.Point3d | undefined;
     // (undocumented)
@@ -4385,6 +4390,8 @@ export class TypeConverterManager {
     static getConverter(typename: string): TypeConverter;
     // (undocumented)
     static registerConverter(typename: string, converter: new () => TypeConverter): void;
+    // (undocumented)
+    static unregisterConverter(typename: string): void;
 }
 
 // @beta

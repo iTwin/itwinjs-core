@@ -241,4 +241,13 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
   public toRigidFrame(result?: Transform): Transform | undefined {
     return Transform.createRigidFromOriginAndColumns(this.origin, this.vectorU, this.vectorV, AxisOrder.XYZ, result);
   }
+
+  /**
+   * Apply the transform to the origin and vectors in place.
+   */
+  public transformInPlace(transform: Transform) {
+    transform.multiplyPoint3d(this.origin, this.origin);
+    transform.multiplyVector (this.vectorU, this.vectorU);
+    transform.multiplyVector (this.vectorV, this.vectorV);
+  }
 }

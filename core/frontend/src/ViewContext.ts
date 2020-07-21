@@ -81,6 +81,14 @@ export class RenderContext {
    * @see [[RenderSystem.createBranch]]
    */
   public createBranch(branch: GraphicBranch, location: Transform): RenderGraphic { return this.createGraphicBranch(branch, location); }
+
+  /** Given the size of a logical pixel in meters, convert it to the size of a physical pixel in meters, if [[RenderSystem.dpiAwareLOD]] is `true`.
+   * Used when computing LOD for graphics.
+   * @internal
+   */
+  public adjustPixelSizeForLOD(cssPixelSize: number): number {
+    return this.viewport.target.adjustPixelSizeForLOD(cssPixelSize);
+  }
 }
 
 /** Provides context for an [[InteractiveTool]] to display decorations representing its current state.

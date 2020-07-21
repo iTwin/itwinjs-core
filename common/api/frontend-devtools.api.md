@@ -7,6 +7,7 @@
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeDuration } from '@bentley/bentleyjs-core';
+import { ColorDef } from '@bentley/imodeljs-common';
 import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { Decorator } from '@bentley/imodeljs-frontend';
 import { EmphasizeElements } from '@bentley/imodeljs-frontend';
@@ -19,6 +20,7 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { LocateFilterStatus } from '@bentley/imodeljs-frontend';
 import { LocateResponse } from '@bentley/imodeljs-frontend';
+import { MapLayerSource } from '@bentley/imodeljs-frontend';
 import { PrimitiveTool } from '@bentley/imodeljs-frontend';
 import { RenderSystemDebugControl } from '@bentley/imodeljs-frontend';
 import { RenderTargetDebugControl } from '@bentley/imodeljs-frontend';
@@ -90,6 +92,34 @@ export class ApplyViewTool extends Tool {
     static toolId: string;
 }
 
+// @alpha
+export class AttachArcGISMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
+    constructor();
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class AttachMapLayerTool extends AttachMapLayerBaseTool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(name: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class AttachMapOverlayTool extends AttachMapLayerTool {
+    constructor();
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha (undocumented)
 export class AttachRealityModelTool extends Tool {
     // (undocumented)
@@ -100,6 +130,31 @@ export class AttachRealityModelTool extends Tool {
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
     run(data: string): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class AttachTileURLMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
+    constructor();
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class AttachWmsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
+    constructor();
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class AttachWmtsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
+    constructor();
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -421,6 +476,20 @@ export class DefaultTileSizeModifierTool extends Tool {
 // @beta
 export function deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise<ViewState>;
 
+// @alpha
+export class DetachMapLayersTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(..._args: string[]): boolean;
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export class DiagnosticsPanel {
     constructor(vp: Viewport, props?: DiagnosticsPanelProps);
@@ -665,6 +734,90 @@ export class LoseWebGLContextTool extends RenderSystemDebugControlTool {
 }
 
 // @alpha
+export class MapBaseColorTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(color: ColorDef): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class MapBaseTransparencyTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(transparency: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class MapLayerSubLayerVisiblityTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(layerIndex: number, visible: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class MapLayerTransparencyTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(layerIndex: number, transparency: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class MapLayerVisibilityTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(layerIndex: number, enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class MapLayerZoomTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(layerIndex: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
 export class MeasureTileLoadTimeTool extends Tool {
     // (undocumented)
     run(_args: any[]): boolean;
@@ -857,6 +1010,20 @@ export abstract class RenderTargetDebugControlTool extends Tool {
     run(_args: any[]): boolean;
 }
 
+// @alpha
+export class ReorderMapLayers extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(from: number, to: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export class ReportWebGLCompatibilityTool extends Tool {
     // (undocumented)
@@ -918,6 +1085,20 @@ export class SelectElementsByIdTool extends Tool {
 // @beta
 export function serializeViewState(view: ViewState): ViewStateProps;
 
+// @internal
+export class SetAASamplesTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(_control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha (undocumented)
 export class SetAspectRatioSkewTool extends Tool {
     // (undocumented)
@@ -928,6 +1109,13 @@ export class SetAspectRatioSkewTool extends Tool {
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
     run(skew?: number): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class SetMapBaseTool extends AttachMapLayerTool {
+    constructor();
     // (undocumented)
     static toolId: string;
 }
@@ -1047,6 +1235,20 @@ export class TileStatisticsTracker {
 export class Toggle3dManipulationsTool extends ViewportToggleTool {
     // (undocumented)
     protected toggle(vp: Viewport, allow?: boolean): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleDPIForLODTool extends RenderSystemDebugControlTool {
+    // (undocumented)
+    execute(control: RenderSystemDebugControl): void;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1180,6 +1382,20 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
     parse(_args: string[]): boolean;
     // (undocumented)
     get require3d(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleTerrainTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }

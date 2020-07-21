@@ -333,6 +333,92 @@ describe("HyperModeling (#integration)", () => {
     });
   });
 
+  it("customizes marker visibility", async () => {
+    await testOnScreenViewport("0x80", hypermodel, 100, 100, async (vp) => {
+      const dec = (await HyperModeling.startOrStop(vp, true))!;
+      expect(dec.markers.markers.size).to.equal(3);
+      let firstMarker: SectionMarker | undefined;
+      for (const entry of dec.markers.markers) {
+        if (firstMarker)
+          dec.markers.markers.delete(entry);
+        else
+          firstMarker = entry;
+      }
+
+      expect(dec.markers.markers.size).to.equal(1);
+      expect(firstMarker).not.to.be.undefined;
+      const marker = firstMarker!;
+
+      class Handler extends SectionMarkerHandler {
+        public static visible = true;
+
+        public async activateMarker(_marker: SectionMarker, _decorator: HyperModelingDecorator) { return true; }
+        public async deactivateMarker(_marker: SectionMarker, _decorator: HyperModelingDecorator) { }
+        public isMarkerVisible(_marker: SectionMarker, _dec: HyperModelingDecorator, _config: SectionMarkerConfig): boolean {
+          return super.isMarkerVisible(_marker, _dec, _config) && Handler.visible;
+        }
+      }
+
+      dec.syncImmediately = true;
+      HyperModeling.updateConfiguration({ markerHandler: new Handler() });
+
+      const expectVisible = (visible: boolean) => expect(marker.visible).to.equal(visible);
+      expectVisible(true);
+
+      const model = marker.state.model;
+      vp.changeModelDisplay(model, false);
+      dec.requestSync();
+      expectVisible(false);
+
+      const cat = marker.state.category;
+      vp.changeCategoryDisplay(cat, false);
+      dec.requestSync();
+      expectVisible(false);
+
+      vp.changeModelDisplay(model, true);
+      dec.requestSync();
+      expectVisible(false);
+
+      vp.changeModelDisplay(model, false);
+      dec.updateConfiguration({ ignoreModelSelector: true, ignoreCategorySelector: true });
+      dec.requestSync();
+      expectVisible(true);
+
+      dec.updateConfiguration({ hiddenSectionTypes: [ marker.state.sectionType ] });
+      dec.requestSync();
+      expectVisible(false);
+
+      dec.updateConfiguration({ hiddenSectionTypes: [] });
+      dec.requestSync();
+      expectVisible(true);
+
+      Handler.visible = false;
+      expectVisible(true);
+      dec.requestSync();
+      expectVisible(false);
+
+      await dec.setActiveMarker(marker);
+      expectVisible(true);
+
+      await dec.setActiveMarker(undefined);
+      expectVisible(false);
+
+      dec.updateConfiguration({ ignoreModelSelector: false, ignoreCategorySelector: false });
+      vp.changeModelDisplay(model, true);
+      vp.changeCategoryDisplay(cat, true);
+      dec.requestSync();
+      expectVisible(false);
+
+      Handler.visible = true;
+      expectVisible(false);
+      dec.requestSync();
+      expectVisible(true);
+
+      // Reset for subsequent tests.
+      HyperModeling.replaceConfiguration();
+    });
+  });
+
   it("Activates and deactivates markers", async () => {
     class Handler extends SectionMarkerHandler {
       public allowActivate = true;

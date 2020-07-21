@@ -9,6 +9,7 @@
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { AbstractToolbarProps } from "@bentley/ui-abstract";
 import { SectionMarker } from "./SectionMarkers";
+import { SectionMarkerConfig } from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
 
 /** Supplies interactions with [[SectionMarker]]s, including a mini-toolbar displayed when the mouse hovers over a marker and what action occurs when the user clicks a marker.
@@ -87,5 +88,33 @@ export class SectionMarkerHandler {
         await decorator.openSheet(marker);
         break;
     }
+  }
+
+  /** Customize which markers are visible. [[HyperModelingDecorator]] determines marker visibility as follows:
+   *  - If a marker is currently active (selected), only that marker is visible.
+   *  - Otherwise, the marker is visible if this method returns `true`.
+   * The default implementation of this method determines visibility based on the [[SectionMarkerConfig]] as follows.
+   *  - If the marker is of a type included in the config's `hiddenSectionTypes`, it is invisible.
+   *  - If the marker belongs to a model not currently displayed in the viewport and the config's `ignoreModelSelector` is false, it is invisible.
+   *  - If the marker belongs to a category not currently displayed in the viewport and the config's `ignoreCategorySelector` is false, it is invisible,
+   *  - Otherwise, the marker is visible, unless this method returns `false`.
+   * The default implementation of this method always returns `true`
+   * @param marker The marker whose visibility is to be determined.
+   * @param decorator The hypermodeling decorator to which the marker belongs.
+   * @param config The configuration controlling marker visibility based on [SectionType]($common), [ModelSelectorState]($frontend), and [CategorySelectorState]($frontend).
+   * @returns true if the marker should be displayed; false to make it invisible.
+   * @see [[HyperModelingDecorator.requestSync]] to force the decorator to reevaluate marker visibility when the criterion used by your implementation of this method changes.
+   */
+  public isMarkerVisible(marker: SectionMarker, decorator: HyperModelingDecorator, config: SectionMarkerConfig): boolean {
+    if (undefined !== config.hiddenSectionTypes && config.hiddenSectionTypes.includes(marker.state.sectionType))
+      return false;
+
+    if (!config.ignoreCategorySelector && !decorator.viewport.view.viewsCategory(marker.state.category))
+      return false;
+
+    if (!config.ignoreModelSelector && !decorator.viewport.view.viewsModel(marker.state.model))
+      return false;
+
+    return true;
   }
 }

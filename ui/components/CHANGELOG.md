@@ -1,6 +1,19 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Tue, 07 Jul 2020 14:44:52 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2020 17:23:14 GMT and should not be manually modified.
+
+## 2.3.0
+Fri, 10 Jul 2020 17:23:14 GMT
+
+### Updates
+
+- geometry clip containment
+- Fix ToolbarWithOverflow to honor ToolbarOpacitySetting.Defaults
+- Accessibility: Improved focus borders & indicators
+- Use DelayedSpinned in ControlledTree.
+- Add support for nested property categories
+- Show tooltips for property values when rendering PropertyRecords
+- Changing SelectableContent component to use ThemedSelect in place of a pure HTML select element
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

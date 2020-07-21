@@ -5,12 +5,12 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
-import { Point3d, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  CategorySelectorProps, DisplayStyleProps, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
+  CategorySelectorProps, DisplayStyleProps, EcefLocation, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import {
-  DrawingViewState, EmphasizeElements, IModelConnection, MockRender, ScreenViewport, SheetViewState, SpatialViewState, SubCategoriesCache, ViewState,
+  BackgroundMapLocation, DrawingViewState, EmphasizeElements, IModelConnection, MockRender, ScreenViewport, SheetViewState, SpatialViewState, SubCategoriesCache, ViewState,
 } from "@bentley/imodeljs-frontend";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentProps, CoreTools, Frontstage,
@@ -32,6 +32,8 @@ describe("SavedViewLayout", () => {
   imodelMock.setup((x) => x.views).returns(() => viewsMock.object);
   imodelMock.setup((x) => x.subcategories).returns(() => new SubCategoriesCache(imodelMock.object));
   imodelMock.setup((x) => x.models).returns(() => new IModelConnection.Models(imodelMock.object));
+  imodelMock.setup((x) => x.backgroundMapLocation).returns(() => new BackgroundMapLocation());
+  imodelMock.setup((x) => x.ecefLocation).returns(() => new EcefLocation({ origin: Point3d.createZero(), orientation: YawPitchRollAngles.createRadians(0, 0, 0) }));
 
   const viewDefinitionProps1: SpatialViewDefinitionProps = {
     cameraOn: false, origin, extents,
@@ -238,7 +240,6 @@ describe("SavedViewLayout", () => {
   it("should create and parse Drawing saved view layout", async () => {
     const emphasizeElements = new EmphasizeElements();
     emphasizeElements.wantEmphasis = true;
-    viewportMock.setup((x) => x.featureOverrideProvider).returns(() => emphasizeElements);
     viewportMock.setup((x) => x.neverDrawn).returns(() => undefined);
     viewportMock.setup((x) => x.alwaysDrawn).returns(() => undefined);
 
@@ -256,13 +257,17 @@ describe("SavedViewLayout", () => {
 
     if (frontstageProvider.frontstageDef) {
       if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
+        const getEmphasizeElements = EmphasizeElements.get;
+        EmphasizeElements.get = () => emphasizeElements;
+
         const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
           (contentProps: ContentProps) => {
             if (contentProps.applicationData)
               delete contentProps.applicationData;
           });
-        const serialized = JSON.stringify(savedViewLayoutProps);
 
+        EmphasizeElements.get = getEmphasizeElements;
+        const serialized = JSON.stringify(savedViewLayoutProps);
         serializedSavedViewLayoutProps = serialized;
       }
     }
@@ -294,7 +299,6 @@ describe("SavedViewLayout", () => {
       // emphasize the elements
       expect(SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps)).to.be.true;
     }
-
   });
 
   it("should create and parse Sheet saved view layout", async () => {

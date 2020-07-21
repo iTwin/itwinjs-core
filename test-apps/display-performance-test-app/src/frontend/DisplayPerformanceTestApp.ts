@@ -586,12 +586,12 @@ class DefaultConfigs {
       this.numRendersToSkip = 50;
       this.outputName = "performanceResults.csv";
       this.outputPath = MobileRpcConfiguration.isMobileFrontend ? undefined : "D:\\output\\performanceData\\";
-      this.iModelName = "Wraith2.bim";
-      this.iModelHubProject = "DisplayPerformanceTest";
+      this.iModelName = "TimingTest_General.bim";
+      this.iModelHubProject = "iModel Testing";
       this.viewName = "V0";
       this.testType = "timing";
       this.csvFormat = "original";
-      this.renderOptions = { useWebGL2: true };
+      this.renderOptions = { useWebGL2: true, dpiAwareLOD: true };
     }
     if (prevConfigs !== undefined) {
       if (prevConfigs.view) this.view = new ViewSize(prevConfigs.view.width, prevConfigs.view.height);
@@ -742,7 +742,7 @@ class FOProvider implements FeatureOverrideProvider {
   private _defaultOvrs: FeatureSymbology.Appearance | undefined;
   private readonly _vp: Viewport;
 
-  private constructor(vp: Viewport) { this._vp = vp; }
+  public constructor(vp: Viewport) { this._vp = vp; }
 
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _vp: Viewport): void {
     this._elementOvrs.forEach((value, key) => ovrs.overrideElement(key, value));
@@ -775,20 +775,22 @@ class FOProvider implements FeatureOverrideProvider {
   private sync(): void { this._vp.setFeatureOverrideProviderChanged(); }
 
   public static get(vp: Viewport): FOProvider | undefined {
-    return vp.featureOverrideProvider instanceof FOProvider ? vp.featureOverrideProvider : undefined;
+    return vp.findFeatureOverrideProviderOfType<FOProvider>(FOProvider);
   }
 
   public static remove(vp: Viewport): void {
-    if (undefined !== this.get(vp))
-      vp.featureOverrideProvider = undefined;
+    const provider = this.get(vp);
+    if (provider)
+      vp.dropFeatureOverrideProvider(provider);
   }
 
   public static getOrCreate(vp: Viewport): FOProvider {
     let provider = this.get(vp);
     if (undefined === provider) {
       provider = new FOProvider(vp);
-      vp.featureOverrideProvider = provider;
+      vp.addFeatureOverrideProvider(provider);
     }
+
     return provider;
   }
 }

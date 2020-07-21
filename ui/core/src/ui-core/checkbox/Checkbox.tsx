@@ -81,13 +81,14 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
       onClick, onBlur, setFocus, ...inputProps } = this.props;
     const checkBoxClass = classnames("core-checkbox",
       disabled && "core-disabled",
+      !label && "core-checkbox-no-label",
       status,
       className);
 
     return (
       <label className={checkBoxClass} onClick={onClick} onBlur={onBlur}>
         {label &&
-          <span>{label}</span>
+          <span className="core-checkbox-label">{label}</span>
         }
         <input type="checkbox" ref={this._checkboxInput} {...inputProps}
           disabled={disabled} className={inputClassName} style={inputStyle}

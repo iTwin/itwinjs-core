@@ -375,10 +375,6 @@
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
-      "name": "electron-chromedriver",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "enzyme",
       "allowedCategories": [ "frontend" ]
     },
@@ -667,6 +663,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-beautiful-dnd",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "react-compound-slider",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -941,6 +941,10 @@
     {
       "name": "webpack-sources",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "wms-capabilities",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "ws",

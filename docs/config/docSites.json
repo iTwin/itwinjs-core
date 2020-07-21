@@ -1,36 +1,31 @@
 {
-  "landing-page": {
-    "docSiteId": 1,
-    "displayName": ""
-  },
   "getting-started": {
-    "docSiteId": 2,
+    "docSiteId": 1,
     "displayName": "Getting Started"
   },
   "reference": {
-    "docSiteId": 3,
+    "docSiteId": 2,
     "displayName": "API Reference"
   },
   "bis": {
-    "docSiteId": 4,
+    "docSiteId": 3,
     "displayName": "Base Infrastructure Schema"
   },
   "learning": {
-    "docSiteId": 5,
+    "docSiteId": 4,
     "displayName": "Learning"
   },
   "changehistory": {
-    "docSiteId": 6,
+    "docSiteId": 5,
     "displayName": "Change History"
   },
   "metadata": {
-    "home": "landing-page",
-    "logo": "landing-page/assets/imodeljs-logo.svg",
-    "smallLogo": "landing-page/assets/imodeljs-icon.svg",
-    "sponsoredByLogo": "landing-page/assets/bentley.svg",
-    "favicon": "landing-page/assets/imodeljs_favicon_16.png",
+    "home": "learning",
+    "logo": "assets/imodeljs-logo.svg",
+    "smallLogo": "assets/imodeljs-icon.svg",
+    "sponsoredByLogo": "assets/bentley.svg",
+    "favicon": "assets/imodeljs_favicon_16.png",
     "docSiteOrder": [
-      "landing-page",
       "getting-started",
       "learning",
       "bis",
@@ -39,10 +34,10 @@
     ],
     "headerTabs": {
       "Getting Started": "getting-started",
-      "BIS": "bis",
+      "Samples": "sample-showcase",
       "Learning": "learning",
-      "API Reference": "reference",
-      "v2.2.0": "changehistory"
+      "API": "reference",
+      "v2.3.0": "changehistory"
     },
     "archivedVersions": [
       {
@@ -88,7 +83,7 @@
       "webgl-compatibility": "webgl-compatibility"
     },
     "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"imodeljs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
-    "ogShareImage": "landing-page/assets/twitter-share.png",
+    "ogShareImage": "assets/twitter-share.png",
     "katexOptions": {
       "macros": {
         "\\matrixXY": "{\\begin{bmatrix}#1_{xx}\\ #1_{xy}\\ #1_{xz} \\\\ #1_{yx}\\ #1_{yy}\\ #1_{yz} \\\\ #1_{zx}\\ #1_{zy}\\ #1_{zz}\\end{bmatrix}}",

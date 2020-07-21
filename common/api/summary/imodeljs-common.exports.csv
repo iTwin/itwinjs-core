@@ -20,6 +20,8 @@ public;BackgroundMapProps
 public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
 public;BackgroundMapSettings
 public;BackgroundMapType
+alpha;BaseLayerProps = MapLayerProps | ColorDefProps
+alpha;BaseLayerSettings = MapLayerSettings | ColorDef
 beta;BatchType
 public;class BentleyCloudRpcConfiguration 
 public;BentleyCloudRpcManager 
@@ -245,6 +247,12 @@ public;LinePixels
 public;LineStyle
 beta;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
+alpha;MapImageryProps
+alpha;MapImagerySettings
+alpha;MapLayerProps
+alpha;MapLayerSettings
+alpha;MapSubLayerProps
+alpha;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
@@ -436,6 +444,7 @@ public;SubCategoryAppearance
 public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
+alpha;SubLayerId = string | number
 public;SyncMode
 public;TerrainHeightOriginMode
 public;TerrainProps

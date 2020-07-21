@@ -8,8 +8,8 @@
 
 import { Guid, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
-import { ContentJSON } from "./content/Content";
-import { DescriptorJSON, DescriptorOverrides, SelectionInfo } from "./content/Descriptor";
+import { DescriptorJSON } from "./content/Descriptor";
+import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
 import { InstanceKeyJSON } from "./EC";
 import { PresentationError, PresentationStatus } from "./Error";
@@ -19,7 +19,8 @@ import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
-  ContentRequestOptions, DistinctValuesRequestOptions, HierarchyRequestOptions, LabelRequestOptions, Paged, PresentationDataCompareOptions,
+  ContentDescriptorRequestOptions, ContentRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
+  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyRequestOptions, Paged, PresentationDataCompareOptions,
   SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
@@ -104,18 +105,15 @@ export class RpcRequestsHandler implements IDisposable {
     return this.requestRepeatedly(doRequest, this.injectClientId(rpcOptions));
   }
 
-  public async getNodesAndCount(options: Paged<HierarchyRequestOptions<IModelRpcProps>>, parentKey?: NodeKeyJSON) {
-    return this.request<{ nodes: NodeJSON[], count: number }, Paged<HierarchyRequestOptions<IModelRpcProps>>, any>(
-      this.rpcClient, this.rpcClient.getNodesAndCount, options, parentKey);
+  public async getNodesCount(options: ExtendedHierarchyRequestOptions<IModelRpcProps, NodeKeyJSON>): Promise<number> {
+    return this.request<number, ExtendedHierarchyRequestOptions<IModelRpcProps, NodeKeyJSON>>(
+      this.rpcClient, this.rpcClient.getNodesCount, options); // tslint:disable-line:deprecation - false positive
   }
-  public async getNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps>>, parentKey?: NodeKeyJSON): Promise<NodeJSON[]> {
-    return this.request<NodeJSON[], Paged<HierarchyRequestOptions<IModelRpcProps>>>(
-      this.rpcClient, this.rpcClient.getNodes, options, parentKey);
+  public async getPagedNodes(options: Paged<ExtendedHierarchyRequestOptions<IModelRpcProps, NodeKeyJSON>>): Promise<PagedResponse<NodeJSON>> {
+    return this.request<PagedResponse<NodeJSON>, Paged<ExtendedHierarchyRequestOptions<IModelRpcProps, NodeKeyJSON>>>(
+      this.rpcClient, this.rpcClient.getPagedNodes, options);
   }
-  public async getNodesCount(options: HierarchyRequestOptions<IModelRpcProps>, parentKey?: NodeKeyJSON): Promise<number> {
-    return this.request<number, HierarchyRequestOptions<IModelRpcProps>>(
-      this.rpcClient, this.rpcClient.getNodesCount, options, parentKey);
-  }
+
   public async getNodePaths(options: HierarchyRequestOptions<IModelRpcProps>, paths: InstanceKeyJSON[][], markedIndex: number): Promise<NodePathElementJSON[]> {
     return this.request<NodePathElementJSON[], HierarchyRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getNodePaths, options, paths, markedIndex);
@@ -124,27 +122,29 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<NodePathElementJSON[], HierarchyRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getFilteredNodePaths, options, filterText);
   }
+
   public async loadHierarchy(options: HierarchyRequestOptions<IModelRpcProps>): Promise<void> {
     return this.request<void, HierarchyRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.loadHierarchy, options);
   }
 
-  public async getContentDescriptor(options: ContentRequestOptions<IModelRpcProps>, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): Promise<DescriptorJSON | undefined> {
-    return this.request<DescriptorJSON | undefined, ContentRequestOptions<IModelRpcProps>>(
-      this.rpcClient, this.rpcClient.getContentDescriptor, options, displayType, keys, selection);
+  public async getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON>): Promise<DescriptorJSON | undefined> {
+    return this.request<DescriptorJSON | undefined, ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON>>(
+      this.rpcClient, this.rpcClient.getContentDescriptor, options); // tslint:disable-line:deprecation - false positive
   }
-  public async getContentSetSize(options: ContentRequestOptions<IModelRpcProps>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<number> {
-    return this.request<number, ContentRequestOptions<IModelRpcProps>>(
-      this.rpcClient, this.rpcClient.getContentSetSize, options, descriptorOrOverrides, keys);
+  public async getContentSetSize(options: ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>): Promise<number> {
+    return this.request<number, ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>(
+      this.rpcClient, this.rpcClient.getContentSetSize, options); // tslint:disable-line:deprecation - false positive
   }
-  public async getContent(options: ContentRequestOptions<IModelRpcProps>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): Promise<ContentJSON | undefined> {
-    return this.request<ContentJSON | undefined, ContentRequestOptions<IModelRpcProps>>(
-      this.rpcClient, this.rpcClient.getContent, options, descriptorOrOverrides, keys);
+  public async getPagedContent(options: Paged<ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>) {
+    return this.request<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined, Paged<ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>>(
+      this.rpcClient, this.rpcClient.getPagedContent, options);
   }
-  public async getContentAndSize(options: ContentRequestOptions<IModelRpcProps>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON) {
-    return this.request<{ content?: ContentJSON, size: number }, ContentRequestOptions<IModelRpcProps>, any>(
-      this.rpcClient, this.rpcClient.getContentAndSize, options, descriptorOrOverrides, keys);
+  public async getPagedContentSet(options: Paged<ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>) {
+    return this.request<PagedResponse<ItemJSON>, Paged<ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON>>>(
+      this.rpcClient, this.rpcClient.getPagedContentSet, options);
   }
+
   public async getDistinctValues(options: ContentRequestOptions<IModelRpcProps>, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]> {
     return this.request<string[], ContentRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.getDistinctValues, options, descriptor, keys, fieldName, maximumValueCount);
@@ -154,13 +154,13 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient, this.rpcClient.getPagedDistinctValues, options);
   }
 
-  public async getDisplayLabelDefinition(options: LabelRequestOptions<IModelRpcProps>, key: InstanceKeyJSON): Promise<LabelDefinitionJSON> {
-    return this.request<LabelDefinitionJSON, LabelRequestOptions<IModelRpcProps>, any>(
-      this.rpcClient, this.rpcClient.getDisplayLabelDefinition, options, key);
+  public async getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON> {
+    return this.request<LabelDefinitionJSON, DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>, any>(
+      this.rpcClient, this.rpcClient.getDisplayLabelDefinition, options); // tslint:disable-line:deprecation - false positive
   }
-  public async getDisplayLabelDefinitions(options: LabelRequestOptions<IModelRpcProps>, keys: InstanceKeyJSON[]): Promise<LabelDefinitionJSON[]> {
-    return this.request<LabelDefinitionJSON[], LabelRequestOptions<IModelRpcProps>, any>(
-      this.rpcClient, this.rpcClient.getDisplayLabelDefinitions, options, keys);
+  public async getPagedDisplayLabelDefinitions(options: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<PagedResponse<LabelDefinitionJSON>> {
+    return this.request<PagedResponse<LabelDefinitionJSON>, DisplayLabelsRequestOptions<IModelRpcProps, InstanceKeyJSON>, any>(
+      this.rpcClient, this.rpcClient.getPagedDisplayLabelDefinitions, options);
   }
 
   public async getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps>): Promise<SelectionScope[]> {

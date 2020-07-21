@@ -7,6 +7,7 @@
  */
 
 import { Primitives, StandardTypeNames } from "@bentley/ui-abstract";
+import { isPromiseLike } from "@bentley/ui-core";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
 import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
@@ -18,28 +19,41 @@ import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
  * @public
  */
 export abstract class BasePointTypeConverter extends TypeConverter {
-  private formatValue(value: number | string): string {
+
+  public componentConverterName: string;
+
+  public constructor(componentConverterName: string = StandardTypeNames.Double) {
+    super();
+    this.componentConverterName = componentConverterName;
+  }
+
+  private formatValue(value: number | string) {
     if (typeof value === "string")
       value = parseFloat(value);
-    return (Math.round(value * 100) / 100).toString();
+    return TypeConverterManager.getConverter(this.componentConverterName).convertToString(value);
   }
+
   public convertToString(value?: Primitives.Point) {
     if (!value)
       return "";
-    let stringValue = "";
+
+    let components = new Array<string | Promise<string>>();
     if (Array.isArray(value)) {
       if (value.length === 0)
         return "";
-      stringValue = this.formatValue(value[0]);
-      for (let i = 1; i < value.length; i++)
-        stringValue += `, ${this.formatValue(value[i])}`;
+      components = (value as Array<string | number>).map((c) => this.formatValue(c));
     } else {
-      stringValue = `${this.formatValue(value.x)}, ${this.formatValue(value.y)}`;
-      if ((value as any).z !== undefined)
-        stringValue += `, ${this.formatValue((value as any).z)}`;
+      components = [this.formatValue(value.x), this.formatValue(value.y)];
+      if (undefined !== (value as any).z)
+        components.push(this.formatValue((value as any).z));
     }
-    return stringValue;
+    const hasAsyncComponents = components.some(isPromiseLike);
+    if (hasAsyncComponents) {
+      return Promise.all(components.map((c) => isPromiseLike(c) ? c : Promise.resolve(c))).then((c) => c.join(", "));
+    }
+    return components.join(", ");
   }
+
   public convertFromString(value: string) {
     return this.constructPoint(value.split(","));
   }
@@ -67,6 +81,11 @@ export abstract class BasePointTypeConverter extends TypeConverter {
  * @public
  */
 export class Point2dTypeConverter extends BasePointTypeConverter {
+
+  public constructor(componentConverterName?: string) {
+    super(componentConverterName);
+  }
+
   protected getVectorLength(point: Primitives.Point): number | undefined {
     const derivedPoint = this.constructPoint(point);
 
@@ -93,6 +112,11 @@ TypeConverterManager.registerConverter(StandardTypeNames.Point2d, Point2dTypeCon
  * @public
  */
 export class Point3dTypeConverter extends BasePointTypeConverter {
+
+  public constructor(componentConverterName?: string) {
+    super(componentConverterName);
+  }
+
   protected getVectorLength(point: Primitives.Point): number | undefined {
     const derivedPoint = this.constructPoint(point);
 

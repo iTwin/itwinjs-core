@@ -9,7 +9,7 @@ import { IModelApp, IModelConnection, RenderGraphic, SnapshotConnection, Spatial
 import {
   DisplayParams, Geometry, GeometryAccumulator, GeometryOptions, PolyfacePrimitive, PolyfacePrimitiveList, StrokesPrimitiveList,
 } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Branch, System } from "@bentley/imodeljs-frontend/lib/webgl";
+import { Branch } from "@bentley/imodeljs-frontend/lib/webgl";
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
@@ -48,7 +48,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addPath works as expected", () => {
-    accum = new GeometryAccumulator(iModel, System.instance);
+    accum = new GeometryAccumulator(iModel, IModelApp.renderSystem);
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -69,7 +69,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addLoop works as expected", () => {
-    accum = new GeometryAccumulator(iModel, System.instance);
+    accum = new GeometryAccumulator(iModel, IModelApp.renderSystem);
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -93,7 +93,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addPolyface works as expected", () => {
-    accum = new GeometryAccumulator(iModel, System.instance);
+    accum = new GeometryAccumulator(iModel, IModelApp.renderSystem);
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -133,7 +133,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addGeometry works as expected", () => {
-    accum = new GeometryAccumulator(iModel, System.instance);
+    accum = new GeometryAccumulator(iModel, IModelApp.renderSystem);
 
     expect(accum.geometries.isEmpty).to.be.true;
     expect(accum.isEmpty).to.be.true;
@@ -143,7 +143,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("clear works as expected", () => {
-    accum = new GeometryAccumulator(iModel, System.instance);
+    accum = new GeometryAccumulator(iModel, IModelApp.renderSystem);
 
     expect(accum.isEmpty).to.be.true;
     accum.addGeometry(new FakeGeometry());
@@ -153,7 +153,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("toMeshBuilderMap works as expected", () => {
-    accum = new GeometryAccumulator(iModel, System.instance);
+    accum = new GeometryAccumulator(iModel, IModelApp.renderSystem);
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -194,7 +194,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("toMeshes works as expected", () => {
-    accum = new GeometryAccumulator(iModel, System.instance);
+    accum = new GeometryAccumulator(iModel, IModelApp.renderSystem);
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -235,7 +235,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("saveToGraphicList works as expected", () => {
-    accum = new GeometryAccumulator(iModel, System.instance);
+    accum = new GeometryAccumulator(iModel, IModelApp.renderSystem);
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));

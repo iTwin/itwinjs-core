@@ -13,7 +13,7 @@
     @include uicore-buttons-button;
 
     padding:            $uicore-button-padding-bordered $uicore-bordered-padding;
-    border-color:       $buic-text-color-disabled;
+    border-color:       $buic-foreground-disabled;
     background-color:   transparent;
     color:              $buic-text-color;
 

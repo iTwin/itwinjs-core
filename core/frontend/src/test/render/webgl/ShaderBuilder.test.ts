@@ -5,10 +5,11 @@
 
 import { assert, expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
+import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import {
-  CompileStatus, FragmentShaderComponent, ProgramBuilder, ShaderProgram, ShaderVariable, ShaderVariables, System, VariablePrecision, VariableScope,
-  VariableType, VertexShaderComponent,
-} from "../../../webgl";
+  FragmentShaderComponent, ProgramBuilder, ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType, VertexShaderComponent,
+} from "../../../render/webgl/ShaderBuilder";
+import { System } from "../../../render/webgl/System";
 
 describe("Variable declaration tests", () => {
   before(async () => IModelApp.startup());

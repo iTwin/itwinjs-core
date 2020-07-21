@@ -193,7 +193,8 @@
     "hidEdges": "Hidden Edges",
     "monochrome": "Monochrome Display",
     "ambientOcclusion": "Ambient Occlusion",
-    "shadows": "Shadows"
+    "shadows": "Shadows",
+    "backgroundMap": "Background Map"
   },
   "visibilityWidget": {
     "modeltree": "Model Tree",

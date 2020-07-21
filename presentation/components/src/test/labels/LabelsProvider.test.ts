@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
-
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
@@ -38,7 +37,7 @@ describe("PresentationLabelsProvider", () => {
       const key = createRandomECInstanceKey();
       const result = faker.random.word();
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabelDefinition(moq.It.isObjectWith({ imodel: imodelMock.object }), key))
+        .setup(async (x) => x.getDisplayLabelDefinition(moq.It.isObjectWith({ imodel: imodelMock.object, key })))
         .returns(async () => ({ displayValue: result, rawValue: result, typeName: "string" }))
         .verifiable(moq.Times.exactly(1));
       expect(await provider.getLabel(key)).to.eq(result);
@@ -49,7 +48,7 @@ describe("PresentationLabelsProvider", () => {
       const key = createRandomECInstanceKey();
       const result = faker.random.word();
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabelDefinition(moq.It.isObjectWith({ imodel: imodelMock.object }), key))
+        .setup(async (x) => x.getDisplayLabelDefinition(moq.It.isObjectWith({ imodel: imodelMock.object, key })))
         .returns(async () => ({ displayValue: result, rawValue: result, typeName: "string" }))
         .verifiable(moq.Times.exactly(1));
       expect(await provider.getLabel(key)).to.eq(result);
@@ -63,11 +62,11 @@ describe("PresentationLabelsProvider", () => {
       const result1 = faker.random.word();
       const result2 = faker.random.word();
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabelDefinition(moq.It.isObjectWith({ imodel: imodelMock.object }), key1))
+        .setup(async (x) => x.getDisplayLabelDefinition(moq.It.isObjectWith({ imodel: imodelMock.object, key: key1 })))
         .returns(async () => ({ displayValue: result1, rawValue: result1, typeName: "string" }))
         .verifiable(moq.Times.exactly(1));
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabelDefinition(moq.It.isObjectWith({ imodel: imodelMock.object }), key2))
+        .setup(async (x) => x.getDisplayLabelDefinition(moq.It.isObjectWith({ imodel: imodelMock.object, key: key2 })))
         .returns(async () => ({ displayValue: result2, rawValue: result2, typeName: "string" }))
         .verifiable(moq.Times.exactly(1));
       expect(await provider.getLabel(key1)).to.eq(result1);
@@ -83,7 +82,7 @@ describe("PresentationLabelsProvider", () => {
       const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
       const result = [faker.random.word(), faker.random.word()];
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object }), keys))
+        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object, keys })))
         .returns(async () => result.map((value) => ({ rawValue: value, displayValue: value, typeName: "string" })))
         .verifiable(moq.Times.exactly(1));
       expect(await provider.getLabels(keys)).to.deep.eq(result);
@@ -94,7 +93,7 @@ describe("PresentationLabelsProvider", () => {
       const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
       const result = [faker.random.word(), faker.random.word()];
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object }), keys))
+        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object, keys })))
         .returns(async () => result.map((value) => ({ rawValue: value, displayValue: value, typeName: "string" })))
         .verifiable(moq.Times.exactly(1));
       expect(await provider.getLabels(keys)).to.deep.eq(result);
@@ -108,11 +107,11 @@ describe("PresentationLabelsProvider", () => {
       const result1 = [faker.random.word(), faker.random.word()];
       const result2 = [faker.random.word(), faker.random.word()];
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object }), keys1))
+        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object, keys: keys1 })))
         .returns(async () => result1.map((value) => ({ rawValue: value, displayValue: value, typeName: "string" })))
         .verifiable(moq.Times.exactly(1));
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object }), keys2))
+        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object, keys: keys2 })))
         .returns(async () => result2.map((value) => ({ rawValue: value, displayValue: value, typeName: "string" })))
         .verifiable(moq.Times.exactly(1));
       expect(await provider.getLabels(keys1)).to.deep.eq(result1);

@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 07 Jul 2020 14:44:52 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2020 17:23:14 GMT and should not be manually modified.
+
+## 2.3.0
+Fri, 10 Jul 2020 17:23:14 GMT
+
+### Updates
+
+- geometry clip containment
+- Fully-transparent classifiers indicate the classified geometry should be clipped.
+- A TiledGraphicsProvider may override scene creation.
+- Add ability to override selected aspects of a viewport's display style.
+- Fix failure to locate textures when deserializing glTF in some instances.
+- Fix exception on missing shader uniform on Linux under specific combination of graphics settings.
+- Viewport now supports multiple feature override providers. The featureOverrideProvider property is deprecated.
+- added removeData() to native storage
+- Honor non-locatable flag on TerrainSettings.
+- Implement new thematic display modes: slope and hillshade.
+- enforce max texture size for stepped gradients.
+- New thematic gradient modes implemented and documented: Stepped, SteppedWithDelimiter, and IsoLines
+- Use height from ECEF transform for terrain cartesian region.
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

@@ -40,9 +40,8 @@ export class LocalizationHelper {
     return labelDefinitions;
   }
 
-  public getLocalizedContent(content: Content | undefined) {
-    if (content !== undefined)
-      content.contentSet.forEach((item) => this.translateContentItem(item));
+  public getLocalizedContent(content: Content) {
+    content.contentSet.forEach((item) => this.translateContentItem(item));
     return content;
   }
 

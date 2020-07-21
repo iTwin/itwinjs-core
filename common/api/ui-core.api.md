@@ -1057,6 +1057,52 @@ export class Line {
     p2: Point;
 }
 
+// @alpha
+export function Listbox(props: ListboxProps): JSX.Element;
+
+// @alpha
+export const ListboxContext: React.Context<ListboxContextProps>;
+
+// @alpha
+export interface ListboxContextProps {
+    // (undocumented)
+    focusValue?: ListboxValue;
+    // (undocumented)
+    listboxId?: string;
+    // (undocumented)
+    listboxRef?: React.RefObject<HTMLUListElement>;
+    // (undocumented)
+    listboxValue?: ListboxValue;
+    // (undocumented)
+    onListboxValueChange: ((newValue: ListboxValue) => void);
+}
+
+// @alpha
+export function ListboxItem(props: ListboxItemProps): JSX.Element;
+
+// @alpha
+export interface ListboxItemProps extends React.DetailedHTMLProps<React.LiHTMLAttributes<HTMLLIElement>, HTMLLIElement> {
+    disabled?: boolean;
+    value: ListboxValue;
+}
+
+// @alpha
+export interface ListboxProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLUListElement>, HTMLUListElement> {
+    // (undocumented)
+    ariaLabel?: any;
+    // (undocumented)
+    ariaLabelledBy?: any;
+    // (undocumented)
+    id?: string;
+    // (undocumented)
+    onListboxValueChange?: ((newValue: ListboxValue) => void);
+    // (undocumented)
+    selectedValue?: ListboxValue;
+}
+
+// @alpha
+export type ListboxValue = string;
+
 // @public
 export class LoadingBar extends React.PureComponent<LoadingBarProps> {
     // (undocumented)
@@ -1774,6 +1820,7 @@ export interface SplitButtonProps extends CommonProps {
     label: string | React.ReactNode;
     onClick?: (event: any) => any;
     onExecute?: () => any;
+    toolTip?: string;
 }
 
 // @beta
@@ -1856,10 +1903,13 @@ export function ThemedSelect(props: ThemedSelectProps): JSX.Element;
 
 // @beta
 export type ThemedSelectProps = {
+    "aria-label"?: string;
+    "aria-labelledby"?: string;
     autoFocus?: boolean;
     backspaceRemovesValue?: boolean;
     blurInputOnSelect?: boolean;
     captureMenuScroll?: boolean;
+    className?: string;
     closeMenuOnSelect?: boolean;
     closeMenuOnScroll?: boolean | EventListener;
     components?: SelectComponentsConfig<OptionType>;

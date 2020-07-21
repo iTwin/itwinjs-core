@@ -1,6 +1,21 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 07 Jul 2020 14:44:52 GMT and should not be manually modified.
+This log was last generated on Fri, 10 Jul 2020 17:23:14 GMT and should not be manually modified.
+
+## 2.3.0
+Fri, 10 Jul 2020 17:23:14 GMT
+
+### Updates
+
+- geometry clip containment
+- Add ability to create selective overrides from display style settings, and apply the overrides to another settings.
+- Fix orientation of Ecef.createFromCartographicOrigin
+- Add non-locatable flag to TerrainSettings.
+- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades. 
+- Support for multiple RPC interface clients and attaching interfaces after startup.
+- Add function to convert solar angles to solar direction.
+- enforce max texture size for stepped gradients.
+- New thematic gradient modes implemented and documented: Stepped, SteppedWithDelimiter, and IsoLines
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

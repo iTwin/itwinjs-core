@@ -6,14 +6,19 @@
 
 @mixin uicore-inputs-checkbox {
 
-  display: flex;
-  align-items: center;
+  display: block;
   position: relative;
-  padding-left: $uicore-l;
   font-size: $uicore-font-size;
   cursor: pointer;
   user-select: none;
   color: $buic-foreground-body;
+  min-width: 1em;
+  min-height: 1.57em;
+
+  &.core-checkbox-no-label {
+    display: inline-block;
+    min-height: 1em;
+  }
 
   > input {
     position: absolute;
@@ -22,9 +27,14 @@
     cursor: pointer;
   }
 
+  .core-checkbox-label {
+    padding-left: $uicore-l;
+  }
+
   .core-checkbox-checkmark,
   .core-checkbox-indeterminate {
     position: absolute;
+    top: 2px;
     left: 0;
     height: 1em;
     width: 1em;
@@ -44,6 +54,8 @@
     border-color:     $buic-foreground-muted;
   }
 
+  & input:active ~ .core-checkbox-checkmark,
+  & input:active ~ .core-checkbox-indeterminate,
   & input:focus ~ .core-checkbox-checkmark,
   & input:focus ~ .core-checkbox-indeterminate {
     border-color:     $buic-foreground-focus-border;
@@ -94,7 +106,7 @@
   }
 
   &.core-disabled {
-    opacity: $uicore-opacity-5;
+    opacity: $uicore-opacity-disabled;
     cursor: not-allowed;
   }
 

@@ -87,308 +87,158 @@ describe("TreeDataProvider", () => {
 
   describe("getNodesCount", () => {
 
-    describe("root", () => {
-
-      it("returns presentation manager result", async () => {
-        const resultNodes = [createRandomECInstancesNode(), createRandomECInstancesNode()];
-        presentationManagerMock
-          .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, undefined))
-          .returns(async () => resultNodes)
-          .verifiable();
-        const actualResult = await provider.getNodesCount();
-        expect(actualResult).to.eq(resultNodes.length);
-        presentationManagerMock.verifyAll();
-      });
-
-      it("memoizes result", async () => {
-        const resultNodes = [createRandomECInstancesNode(), createRandomECInstancesNode()];
-        const resultContainers = [new PromiseContainer<{ nodes: Node[], count: number }>(), new PromiseContainer<{ nodes: Node[], count: number }>()];
-        presentationManagerMock
-          .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 } }, undefined))
-          .returns(async () => resultContainers[0].promise);
-        presentationManagerMock
-          .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 } }, undefined))
-          .returns(async () => resultContainers[1].promise);
-        provider.pagingSize = 10;
-        const promises = [provider.getNodesCount(), provider.getNodesCount()];
-        resultContainers.forEach((c: PromiseContainer<{ nodes: Node[], count: number }>, index: number) => c.resolve({ nodes: resultNodes, count: index }));
-        const results = await Promise.all(promises);
-        expect(results[1]).to.eq(results[0]).to.eq(0);
-        presentationManagerMock.verify((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 } }, undefined), moq.Times.once());
-      });
-
-      it("requests count and first page when paging size is set", async () => {
-        const result = { nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 + faker.random.number() };
-        const pageSize = 20;
-        presentationManagerMock
-          .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation({ start: 0, size: pageSize }) }, undefined))
-          .returns(async () => result)
-          .verifiable();
-        provider.pagingSize = pageSize;
-        const actualResult = await provider.getNodesCount();
-        expect(actualResult).to.eq(result.count);
-        presentationManagerMock.verifyAll();
-      });
-
-      it("returns nodes count equal to requested nodes list count when page options are undefined", async () => {
-        const nodes = [createRandomECInstancesNode(), createRandomECInstancesNode(), createRandomECInstancesNode(), createRandomECInstancesNode()];
-        presentationManagerMock.setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, undefined))
-          .returns(async () => nodes)
-          .verifiable(moq.Times.once());
-        presentationManagerMock.setup((x) => x.getNodesCount(moq.It.isAny(), moq.It.isAny()))
-          .verifiable(moq.Times.never());
-        const count = await provider.getNodesCount();
-        presentationManagerMock.verifyAll();
-        expect(count).to.equal(nodes.length);
-      });
+    it("returns presentation manager result through `getNodesCount` when page options not set", async () => {
+      const parentKey = createRandomECInstancesNodeKey();
+      const parentNode = createRandomTreeNodeItem(parentKey);
+      presentationManagerMock
+        .setup((x) => x.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, parentKey }))
+        .returns(async () => 999)
+        .verifiable();
+      const actualResult = await provider.getNodesCount(parentNode);
+      expect(actualResult).to.eq(999);
+      presentationManagerMock.verifyAll();
     });
 
-    describe("children", () => {
+    it("returns presentation manager result through `getNodesAndCount` when page options are set", async () => {
+      const resultNodes = [createRandomECInstancesNode(), createRandomECInstancesNode()];
+      const parentKey = createRandomECInstancesNodeKey();
+      const parentNode = createRandomTreeNodeItem(parentKey);
+      presentationManagerMock
+        .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 123 }, parentKey }))
+        .returns(async () => ({ nodes: resultNodes, count: resultNodes.length }))
+        .verifiable();
+      provider.pagingSize = 123;
+      const actualResult = await provider.getNodesCount(parentNode);
+      expect(actualResult).to.eq(resultNodes.length);
+      presentationManagerMock.verifyAll();
+    });
 
-      it("returns presentation manager result", async () => {
-        const resultNodes = [createRandomECInstancesNode(), createRandomECInstancesNode()];
-        const parentKey = createRandomECInstancesNodeKey();
-        const parentNode = createRandomTreeNodeItem(parentKey);
-        presentationManagerMock
-          .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, parentKey))
-          .returns(async () => resultNodes)
-          .verifiable();
-        const actualResult = await provider.getNodesCount(parentNode);
-        expect(actualResult).to.eq(resultNodes.length);
-        presentationManagerMock.verifyAll();
-      });
+    it("memoizes result", async () => {
+      const parentKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
+      const parentNodes = parentKeys.map((key) => createRandomTreeNodeItem(key));
+      const resultContainers = [new PromiseContainer<{ nodes: Node[], count: number }>(), new PromiseContainer<{ nodes: Node[], count: number }>()];
 
-      it("memoizes result", async () => {
-        const parentKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
-        const parentNodes = parentKeys.map((key) => createRandomTreeNodeItem(key));
-        const resultContainers = [new PromiseContainer<{ nodes: Node[], count: number }>(), new PromiseContainer<{ nodes: Node[], count: number }>()];
+      presentationManagerMock
+        .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 }, parentKey: parentKeys[0] }))
+        .returns(async () => resultContainers[0].promise)
+        .verifiable(moq.Times.once());
+      presentationManagerMock
+        .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 }, parentKey: parentKeys[1] }))
+        .returns(async () => resultContainers[1].promise)
+        .verifiable(moq.Times.once());
 
-        presentationManagerMock
-          .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 } }, parentKeys[0]))
-          .returns(async () => resultContainers[0].promise)
-          .verifiable(moq.Times.once());
-        presentationManagerMock
-          .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 } }, parentKeys[1]))
-          .returns(async () => resultContainers[1].promise)
-          .verifiable(moq.Times.once());
+      provider.pagingSize = 10;
+      const promises = [
+        provider.getNodesCount(parentNodes[0]),
+        provider.getNodesCount(parentNodes[0]),
+        provider.getNodesCount(parentNodes[1]),
+      ];
+      resultContainers.forEach((c, index) => c.resolve({ nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: index }));
+      const results = await Promise.all(promises);
+      expect(results[0]).to.eq(results[1]).to.eq(0);
+      expect(results[2]).to.eq(1);
 
-        provider.pagingSize = 10;
-        const promises = [
-          provider.getNodesCount(parentNodes[0]),
-          provider.getNodesCount(parentNodes[0]),
-          provider.getNodesCount(parentNodes[1]),
-        ];
-        resultContainers.forEach((c: PromiseContainer<{ nodes: Node[], count: number }>, index: number) => c.resolve({ nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: index }));
-        const results = await Promise.all(promises);
-        expect(results[0]).to.eq(results[1]).to.eq(0);
-        expect(results[2]).to.eq(1);
+      presentationManagerMock.verifyAll();
+    });
 
-        presentationManagerMock.verifyAll();
-      });
+    it("clears memoized result when ruleset variables changes", async () => {
+      const parentKey = createRandomECInstancesNodeKey();
+      const parentNode = createRandomTreeNodeItem(parentKey);
+      presentationManagerMock
+        .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 }, parentKey }))
+        .returns(async () => ({ nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 }))
+        .verifiable(moq.Times.exactly(2));
 
-      it("clears memoized result when ruleset variables changes", async () => {
-        const parentKey = createRandomECInstancesNodeKey();
-        const parentNode = createRandomTreeNodeItem(parentKey);
-        presentationManagerMock
-          .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 10 } }, parentKey))
-          .returns(async () => ({ nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 }))
-          .verifiable(moq.Times.exactly(2));
+      provider.pagingSize = 10;
+      await provider.getNodesCount(parentNode);
+      onVariableChanged.raiseEvent("testVar");
+      await provider.getNodesCount(parentNode);
 
-        provider.pagingSize = 10;
-        await provider.getNodesCount(parentNode);
-        onVariableChanged.raiseEvent("testVar");
-        await provider.getNodesCount(parentNode);
+      presentationManagerMock.verifyAll();
+    });
 
-        presentationManagerMock.verifyAll();
-      });
-
-      it("uses default page options", async () => {
-        const parentKey = createRandomECInstancesNodeKey();
-        const parentNode = createRandomTreeNodeItem(parentKey);
-        const result = { nodes: [], count: faker.random.number() };
-        presentationManagerMock
-          .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation({ start: 0, size: 20 }) }, parentKey))
-          .returns(async () => result)
-          .verifiable();
-        provider.pagingSize = 20;
-        const actualResult = await provider.getNodesCount(parentNode);
-        expect(actualResult).to.eq(result.count);
-        presentationManagerMock.verifyAll();
-      });
-
-      it("returns nodes count equal to requested nodes list count when page options are undefined", async () => {
-        const parentKey = createRandomECInstancesNodeKey();
-        const parentNode = createRandomTreeNodeItem(parentKey);
-        const nodes = [createRandomECInstancesNode(), createRandomECInstancesNode(), createRandomECInstancesNode(), createRandomECInstancesNode()];
-        presentationManagerMock.setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, parentKey))
-          .returns(async () => nodes)
-          .verifiable(moq.Times.once());
-        presentationManagerMock.setup((x) => x.getNodesCount(moq.It.isAny(), moq.It.isAny()))
-          .verifiable(moq.Times.never());
-        const count = await provider.getNodesCount(parentNode);
-        presentationManagerMock.verifyAll();
-        expect(count).to.equal(nodes.length);
-      });
-
+    it("uses `getNodesCount` data source override if supplied", async () => {
+      const override = sinon.mock().resolves(0);
+      provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getNodesCount: override } });
+      await provider.getNodesCount(undefined);
+      presentationManagerMock.verify((x) => x.getNodesCount(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      expect(override).to.be.calledOnce;
     });
 
   });
 
   describe("getNodes", () => {
 
-    describe("root", () => {
-
-      it("returns presentation manager result", async () => {
-        const pageOptions: PageOptions = { start: 0, size: faker.random.number() };
-        const result = { nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 };
-        presentationManagerMock
-          .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions) }, undefined))
-          .returns(async () => result)
-          .verifiable();
-        const actualResult = await provider.getNodes(undefined, pageOptions);
-        expect(actualResult).to.matchSnapshot();
-        presentationManagerMock.verifyAll();
-      });
-
-      it("memoizes result", async () => {
-        const resultNodesFirstPageContainer0 = new PromiseContainer<Node[]>();
-        const resultNodesFirstPageContainer1 = new PromiseContainer<{ nodes: Node[], count: number }>();
-        const resultNodesNonFirstPageContainer = new PromiseContainer<Node[]>();
-        presentationManagerMock
-          .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, undefined))
-          .returns(async () => resultNodesFirstPageContainer0.promise)
-          .verifiable(moq.Times.once());
-        presentationManagerMock
-          .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 0 } }, undefined))
-          .verifiable(moq.Times.never());
-        presentationManagerMock
-          .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 1, size: 0 } }, undefined))
-          .returns(async () => resultNodesNonFirstPageContainer.promise)
-          .verifiable(moq.Times.once());
-        presentationManagerMock
-          .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 1 } }, undefined))
-          .returns(async () => resultNodesFirstPageContainer1.promise)
-          .verifiable(moq.Times.once());
-
-        const promises = [
-          provider.getNodes(), provider.getNodes(),
-          provider.getNodes(undefined, { start: 0, size: 0 }), provider.getNodes(undefined, { start: 0, size: 0 }),
-          provider.getNodes(undefined, { start: 1, size: 0 }), provider.getNodes(undefined, { start: 1, size: 0 }),
-          provider.getNodes(undefined, { start: 0, size: 1 }), provider.getNodes(undefined, { start: 0, size: 1 }),
-        ];
-        resultNodesFirstPageContainer0.resolve([createRandomECInstancesNode()]);
-        resultNodesFirstPageContainer1.resolve({ nodes: [createRandomECInstancesNode()], count: 1 });
-        resultNodesNonFirstPageContainer.resolve([createRandomECInstancesNode()]);
-        const results = await Promise.all(promises);
-
-        expect(results[0]).to.eq(results[1], "results[0] should eq results[1]");
-        expect(results[2])
-          .to.eq(results[3], "results[2] should eq results[3]")
-          .to.eq(results[0], "both results[2] and results[3] should eq results[0]");
-        expect(results[4]).to.eq(results[5], "results[4] should eq results[5]");
-        expect(results[6]).to.eq(results[7], "results[6] should eq results[7]");
-
-        presentationManagerMock.verifyAll();
-      });
-
-      it("clears memoized result when ruleset variables changes", async () => {
-        presentationManagerMock
-          .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, undefined))
-          .returns(async () => [createRandomECInstancesNode()])
-          .verifiable(moq.Times.exactly(2));
-
-        await provider.getNodes(undefined);
-        onVariableChanged.raiseEvent("testVar");
-        await provider.getNodes(undefined);
-
-        presentationManagerMock.verifyAll();
-      });
-
+    it("returns presentation manager result", async () => {
+      const parentKey = createRandomECInstancesNodeKey();
+      const parentNode = createRandomTreeNodeItem(parentKey);
+      const pageOptions: PageOptions = { start: 0, size: faker.random.number() };
+      presentationManagerMock
+        .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions), parentKey }))
+        .returns(async () => ({ nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 }))
+        .verifiable();
+      const actualResult = await provider.getNodes(parentNode, pageOptions);
+      expect(actualResult).to.matchSnapshot();
+      presentationManagerMock.verifyAll();
     });
 
-    describe("children", () => {
+    it("memoizes result", async () => {
+      const parentKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
+      const parentNodes = parentKeys.map((key) => createRandomTreeNodeItem(key));
+      const resultNodesFirstPageContainer0 = new PromiseContainer<{ nodes: Node[], count: number }>();
+      const resultNodesFirstPageContainer1 = new PromiseContainer<{ nodes: Node[], count: number }>();
+      const resultNodesNonFirstPageContainer = new PromiseContainer<{ nodes: Node[], count: number }>();
 
-      it("returns presentation manager result", async () => {
-        const parentKey = createRandomECInstancesNodeKey();
-        const parentNode = createRandomTreeNodeItem(parentKey);
-        const pageOptions: PageOptions = { start: 0, size: faker.random.number() };
-        presentationManagerMock
-          .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: pageOptionsUiToPresentation(pageOptions) }, parentKey))
-          .returns(async () => ({ nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 }))
-          .verifiable();
-        const actualResult = await provider.getNodes(parentNode, pageOptions);
-        expect(actualResult).to.matchSnapshot();
-        presentationManagerMock.verifyAll();
-      });
+      presentationManagerMock
+        .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined, parentKey: parentKeys[0] }))
+        .returns(async () => resultNodesFirstPageContainer0.promise)
+        .verifiable(moq.Times.once());
+      presentationManagerMock
+        .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 0 }, parentKey: parentKeys[0] }))
+        .verifiable(moq.Times.never());
+      presentationManagerMock
+        .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 1, size: 0 }, parentKey: parentKeys[0] }))
+        .returns(async () => resultNodesNonFirstPageContainer.promise)
+        .verifiable(moq.Times.once());
+      presentationManagerMock
+        .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 1 }, parentKey: parentKeys[1] }))
+        .returns(async () => resultNodesFirstPageContainer1.promise)
+        .verifiable(moq.Times.once());
 
-      it("memoizes result", async () => {
-        const parentKeys = [createRandomECInstancesNodeKey(), createRandomECInstancesNodeKey()];
-        const parentNodes = parentKeys.map((key) => createRandomTreeNodeItem(key));
-        const resultNodesFirstPageContainer0 = new PromiseContainer<Node[]>();
-        const resultNodesFirstPageContainer1 = new PromiseContainer<{ nodes: Node[], count: number }>();
-        const resultNodesNonFirstPageContainer = new PromiseContainer<Node[]>();
+      const promises = [
+        provider.getNodes(parentNodes[0], undefined), provider.getNodes(parentNodes[0], undefined),
+        provider.getNodes(parentNodes[0], { start: 0, size: 0 }), provider.getNodes(parentNodes[0], { start: 0, size: 0 }),
+        provider.getNodes(parentNodes[0], { start: 1, size: 0 }), provider.getNodes(parentNodes[0], { start: 1, size: 0 }),
+        provider.getNodes(parentNodes[1], { start: 0, size: 1 }), provider.getNodes(parentNodes[1], { start: 0, size: 1 }),
+      ];
+      resultNodesFirstPageContainer0.resolve({ nodes: [createRandomECInstancesNode()], count: 1 });
+      resultNodesFirstPageContainer1.resolve({ nodes: [createRandomECInstancesNode()], count: 1 });
+      resultNodesNonFirstPageContainer.resolve({ nodes: [createRandomECInstancesNode()], count: 1 });
+      const results = await Promise.all(promises);
 
-        presentationManagerMock
-          .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: undefined }, parentKeys[0]))
-          .returns(async () => resultNodesFirstPageContainer0.promise)
-          .verifiable(moq.Times.once());
-        presentationManagerMock
-          .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 0 } }, parentKeys[0]))
-          .verifiable(moq.Times.never());
-        presentationManagerMock
-          .setup((x) => x.getNodes({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 1, size: 0 } }, parentKeys[0]))
-          .returns(async () => resultNodesNonFirstPageContainer.promise)
-          .verifiable(moq.Times.once());
-        presentationManagerMock
-          .setup((x) => x.getNodesAndCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, paging: { start: 0, size: 1 } }, parentKeys[1]))
-          .returns(async () => resultNodesFirstPageContainer1.promise)
-          .verifiable(moq.Times.once());
+      expect(results[0]).to.eq(results[1], "results[0] should eq results[1]");
+      expect(results[2])
+        .to.eq(results[3], "results[2] should eq results[3]")
+        .to.eq(results[0], "both results[2] and results[3] should eq results[0]");
+      expect(results[4]).to.eq(results[5], "results[4] should eq results[5]");
+      expect(results[6]).to.eq(results[7], "results[6] should eq results[7]");
 
-        const promises = [
-          provider.getNodes(parentNodes[0], undefined), provider.getNodes(parentNodes[0], undefined),
-          provider.getNodes(parentNodes[0], { start: 0, size: 0 }), provider.getNodes(parentNodes[0], { start: 0, size: 0 }),
-          provider.getNodes(parentNodes[0], { start: 1, size: 0 }), provider.getNodes(parentNodes[0], { start: 1, size: 0 }),
-          provider.getNodes(parentNodes[1], { start: 0, size: 1 }), provider.getNodes(parentNodes[1], { start: 0, size: 1 }),
-        ];
-        resultNodesFirstPageContainer0.resolve([createRandomECInstancesNode()]);
-        resultNodesFirstPageContainer1.resolve({ nodes: [createRandomECInstancesNode()], count: 1 });
-        resultNodesNonFirstPageContainer.resolve([createRandomECInstancesNode()]);
-        const results = await Promise.all(promises);
-
-        expect(results[0]).to.eq(results[1], "results[0] should eq results[1]");
-        expect(results[2])
-          .to.eq(results[3], "results[2] should eq results[3]")
-          .to.eq(results[0], "both results[2] and results[3] should eq results[0]");
-        expect(results[4]).to.eq(results[5], "results[4] should eq results[5]");
-        expect(results[6]).to.eq(results[7], "results[6] should eq results[7]");
-
-        presentationManagerMock.verifyAll();
-      });
-
-    });
-
-    it("uses `getNodes` data source override if supplied", async () => {
-      const override = sinon.mock().resolves([]);
-      provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getNodes: override } });
-      await provider.getNodes();
-      presentationManagerMock.verify((x) => x.getNodes(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-      expect(override).to.be.calledOnce;
+      presentationManagerMock.verifyAll();
     });
 
     it("uses `getNodesAndCount` data source override if supplied", async () => {
       const override = sinon.mock().resolves({ count: 0, nodes: [] });
       provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getNodesAndCount: override } });
-      await provider.getNodes(undefined, { start: 0, size: 5 });
-      presentationManagerMock.verify((x) => x.getNodesAndCount(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      await provider.getNodes();
+      presentationManagerMock.verify((x) => x.getNodesAndCount(moq.It.isAny()), moq.Times.never());
       expect(override).to.be.calledOnce;
     });
 
-    it("Logs warning when requesting nodes and pagingSize is not the same as passed pageOptions", async () => {
+    it("logs a warning when requesting nodes and pagingSize is not the same as passed pageOptions", async () => {
       const pageOptions: PageOptions = { start: 0, size: 10 };
       const loggerSpy = sinon.spy(Logger, "logWarning");
       const result = { nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 };
-      presentationManagerMock.setup((x) => x.getNodesAndCount(moq.It.isAny(), moq.It.isAny())).returns(async () => result);
-      presentationManagerMock.setup((x) => x.getNodes(moq.It.isAny(), moq.It.isAny())).returns(async () => result.nodes);
+      presentationManagerMock.setup((x) => x.getNodesAndCount(moq.It.isAny())).returns(async () => result);
 
       // Paging size is not set and pageOptions are passed
       await provider.getNodes(undefined, pageOptions);

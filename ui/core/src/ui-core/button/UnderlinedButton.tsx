@@ -34,12 +34,14 @@ export function UnderlinedButton(props: UnderlinedButtonProps) {
   );
 
   return (
-    <button
+    <span
       className={className}
       title={props.title}
       onClick={props.onClick}
+      tabIndex={0}
+      role="link"
     >
       {props.children}
-    </button>
+    </span>
   );
 }

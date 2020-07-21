@@ -107,7 +107,7 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
   const overrideColor = frag.get(FragmentShaderComponent.OverrideColor);
   if (undefined !== overrideColor) {
     frag.addFunction("vec4 overrideColor(vec4 currentColor)", overrideColor);
-    prelude.addline("output0 = overrideColor(output0);");
+    prelude.addline("  output0 = overrideColor(output0);");
   }
 
   const overrideFeatureId = frag.get(FragmentShaderComponent.OverrideFeatureId);
@@ -134,7 +134,7 @@ export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
   const overrideColor = frag.get(FragmentShaderComponent.OverrideColor);
   if (undefined !== overrideColor) {
     frag.addFunction("vec4 overrideColor(vec4 currentColor)", overrideColor);
-    prelude.addline("output0 = overrideColor(output0);");
+    prelude.addline("  output0 = overrideColor(output0);");
   }
 
   addRenderPass(frag);

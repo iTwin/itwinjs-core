@@ -14,8 +14,6 @@ import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent
 import { getDisplayName } from "../common/Utils";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 
-// tslint:disable:deprecation
-
 /**
  * Props that are injected to the TreeWithUnifiedSelection HOC component.
  * @public
@@ -54,7 +52,7 @@ export interface TreeWithUnifiedSelectionProps {
 export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>) {
 
   type TreeComponentInstance = InstanceType<typeof TreeComponent>;
-  type CombinedProps = P & TreeWithUnifiedSelectionProps;
+  type CombinedProps = P & TreeWithUnifiedSelectionProps; // tslint:disable-line:deprecation
   type CombinedPropsWithForwardedRef = CombinedProps & {
     forwardedRef: React.Ref<TreeComponentInstance>;
   };

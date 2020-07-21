@@ -17,6 +17,7 @@ export * from "./Disposable";
 export * from "./ElectronUtils";
 export * from "./Id";
 export * from "./IndexMap";
+export * from "./InstanceOf";
 export * from "./JsonUtils";
 export * from "./LRUMap";
 export * from "./Logger";

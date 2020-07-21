@@ -252,6 +252,7 @@ export abstract class ViewState extends ElementState {
    * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
+    await this.iModel.backgroundMapLocation.initialize(this.iModel);
     this._auxCoordSystem = undefined;
     const acsId = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValid(acsId)) {

@@ -13,6 +13,7 @@ export * from "./tools/EmphasizeElementsTool";
 export * from "./tools/ExtensionServiceTool";
 export * from "./tools/FrustumDecoration";
 export * from "./tools/InspectElementTool";
+export * from "./tools/MapLayerTool";
 export * from "./tools/MeasureTileLoadTime";
 export * from "./tools/parseArgs";
 export * from "./tools/parseToggle";

@@ -79,9 +79,13 @@ export class Segment1d {
    */
   public fractionToPoint(fraction: number): number { return Geometry.interpolate(this.x0, fraction, this.x1); }
   /**
-   * Return the signed start-to-end shift (aka distance)
+   * Return the signed start-to-end shift (aka signed distance)
    */
   public signedDelta(): number { return this.x1 - this.x0; }
+  /**
+   * Return the absolute start-to-end shift (aka distance)
+   */
+  public absoluteDelta(): number { return Math.abs(this.x1 - this.x0); }
   /**
    * * swap the x0 and x1 member values.
    * * This makes the fractionToPoint evaluates reverse direction.

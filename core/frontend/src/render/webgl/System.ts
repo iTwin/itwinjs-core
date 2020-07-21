@@ -8,15 +8,12 @@
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
-import {
-  ElementAlignedBox3d, Gradient, ImageBuffer, IModelError, PackedFeatureTable, RenderMaterial,
-  RenderTexture,
-} from "@bentley/imodeljs-common";
+import { ColorDef, ElementAlignedBox3d, Gradient, ImageBuffer, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture } from "@bentley/imodeljs-common";
 import { Capabilities, DepthType } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { BackgroundMapTileTreeReference, TileTreeReference } from "../../tile/internal";
+import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { ToolAdmin } from "../../tools/ToolAdmin";
 import { Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
@@ -30,29 +27,27 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import {
-  DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderTerrainMeshGeometry, TerrainTexture,
-} from "../RenderSystem";
+import { DebugShaderFile, GLTimerResultCallback, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, RenderTerrainMeshGeometry, TerrainTexture } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
 import { Debug } from "./Diagnostics";
 import { WebGLDisposable } from "./Disposable";
-import { LineCode } from "./LineCode";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
 import { Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { UniformHandle } from "./Handle";
 import { Layer, LayerContainer } from "./Layer";
+import { LineCode } from "./LineCode";
 import { Material } from "./Material";
 import { MeshGraphic } from "./Mesh";
 import { PointCloudGeometry } from "./PointCloud";
 import { PointStringGeometry } from "./PointString";
 import { PolylineGeometry } from "./Polyline";
 import { Primitive, SkyCubePrimitive, SkySpherePrimitive } from "./Primitive";
-import { RenderBuffer } from "./RenderBuffer";
+import { RenderBuffer, RenderBufferMultiSample } from "./RenderBuffer";
 import { TextureUnit } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
@@ -81,6 +76,7 @@ abstract class WebGLExtensions {
   public abstract setDrawBuffers(attachments: GLenum[]): void;
   public abstract vertexAttribDivisor(index: number, divisor: number): void;
   public abstract drawArraysInst(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void;
+  public abstract invalidateFrameBuffer(_attachments: number[]): void;
 }
 
 /** Describes WebGL1 extension methods.
@@ -112,6 +108,8 @@ class WebGL1Extensions extends WebGLExtensions {
       this._instancingExtension.drawArraysInstancedANGLE(type, first, count, numInstances);
     }
   }
+
+  public invalidateFrameBuffer(_attachments: number[]): void { } // does not exist in WebGL1
 }
 
 /** Describes WebGL2 extension methods.
@@ -133,6 +131,10 @@ class WebGL2Extensions extends WebGLExtensions {
   }
 
   public drawArraysInst(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void { this._context.drawArraysInstanced(type, first, count, numInstances); }
+
+  public invalidateFrameBuffer(attachments: number[]): void {
+    this._context.invalidateFramebuffer(this._context.FRAMEBUFFER, attachments);
+  }
 }
 
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects.
@@ -437,9 +439,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public createTerrainMeshGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform): RenderTerrainMeshGeometry | undefined {
     return TerrainMeshGeometry.createGeometry(terrainMesh, transform);
   }
-  public createTerrainMeshGraphic(terrainGeometry: RenderTerrainMeshGeometry, featureTable: PackedFeatureTable, textures?: TerrainTexture[]): RenderGraphic | undefined {
-    return TerrainMeshGeometry.createGraphic(this, terrainGeometry as TerrainMeshGeometry, featureTable, textures);
+  public createTerrainMeshGraphic(terrainGeometry: RenderTerrainMeshGeometry, featureTable: PackedFeatureTable, tileId: string, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
+    return TerrainMeshGeometry.createGraphic(this, terrainGeometry as TerrainMeshGeometry, featureTable, tileId, baseColor, baseTransparent, textures);
   }
+
   public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
     return createPrimitive((viOrigin) => PolylineGeometry.create(params, viOrigin), instances);
   }
@@ -480,7 +483,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     this.currentRenderState.copyFrom(newState);
   }
 
-  public createDepthBuffer(width: number, height: number): DepthBuffer | undefined {
+  public createDepthBuffer(width: number, height: number, numSamples: number = 1): DepthBuffer | undefined {
     // Note: The buffer/texture created here have ownership passed to the caller (system will not dispose of these)
     switch (this.capabilities.maxDepthType) {
       case DepthType.RenderBufferUnsignedShort16: {
@@ -491,8 +494,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       }
       case DepthType.TextureUnsignedInt24Stencil8: {
         if (this.capabilities.isWebGL2) {
-          const context2 = this.context as WebGL2RenderingContext;
-          return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, context2.UNSIGNED_INT_24_8);
+          if (numSamples > 1) {
+            return RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.DEPTH24_STENCIL8, numSamples);
+          } else {
+            const context2 = this.context as WebGL2RenderingContext;
+            return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, context2.UNSIGNED_INT_24_8);
+          }
         } else {
           const dtExt: WEBGL_depth_texture | undefined = this.capabilities.queryExtensionObject<WEBGL_depth_texture>("WEBGL_depth_texture");
           return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, dtExt!.UNSIGNED_INT_24_8_WEBGL);
@@ -578,7 +585,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public createClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
     return ClipVolume.create(clipVector);
   }
-  public createBackgroundMapDrape(drapedTree: TileTreeReference, mapTree: BackgroundMapTileTreeReference) {
+  public createBackgroundMapDrape(drapedTree: TileTreeReference, mapTree: MapTileTreeReference) {
     return BackgroundMapDrape.create(drapedTree, mapTree);
   }
 
@@ -640,6 +647,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public ensureSamplerBound(uniform: UniformHandle, unit: TextureUnit): void {
     this.lineCodeTexture!.bindSampler(uniform, unit);
   }
+  public get maxTerrainImageryLayers() { return Math.min(this.capabilities.maxFragTextureUnits, this.capabilities.maxVertTextureUnits) < 16 ? 3 : 6; }
 
   public disposeTexture(texture: WebGLTexture) {
     System.instance.context.deleteTexture(texture);
@@ -708,6 +716,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     }
   }
 
+  public invalidateFrameBuffer(attachments: number[]): void { this._extensions.invalidateFrameBuffer(attachments); }
+
   public enableDiagnostics(enable: RenderDiagnostics): void {
     Debug.printEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.DebugOutput);
     Debug.evaluateEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.WebGL);
@@ -718,6 +728,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   private _drawSurfacesAsWiremesh = false;
   public get drawSurfacesAsWiremesh() { return this._drawSurfacesAsWiremesh; }
   public set drawSurfacesAsWiremesh(asWiremesh: boolean) { this._drawSurfacesAsWiremesh = asWiremesh; }
+
+  private _dpiAwareLOD?: boolean;
+  public get dpiAwareLOD(): boolean { return this._dpiAwareLOD ?? super.dpiAwareLOD; }
+  public set dpiAwareLOD(dpiAware: boolean) { this._dpiAwareLOD = dpiAware; }
+
   public loseContext(): boolean {
     const ext = this.capabilities.queryExtensionObject<WEBGL_lose_context>("WEBGL_lose_context");
     if (undefined === ext)

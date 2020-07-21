@@ -116,6 +116,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _drawNonLocatable = true;
   private _currentlyDrawingClassifier?: PlanarClassifier;
   private _analysisFraction: number = 0;
+  private _antialiasSamples = 1;
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
@@ -154,6 +155,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
     this._compositor = SceneCompositor.create(this);  // compositor is created but not yet initialized... we are still undisposed
     this.renderRect = rect ? rect : new ViewRect();  // if the rect is undefined, expect that it will be updated dynamically in an OnScreenTarget
+    if (undefined !== System.instance.antialiasSamples)
+      this._antialiasSamples = System.instance.antialiasSamples;
+    else
+      this._antialiasSamples = (undefined !== System.instance.options.antialiasSamples ? System.instance.options.antialiasSamples : 1);
   }
 
   public get compositor() { return this._compositor; }
@@ -191,6 +196,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this._animationBranches = undefined;
   }
+
+  public get antialiasSamples(): number { return this._antialiasSamples; }
+  public set antialiasSamples(numSamples: number) { this._antialiasSamples = numSamples; }
 
   public get solarShadowMap(): SolarShadowMap { return this.compositor.solarShadowMap; }
   public get isDrawingShadowMap(): boolean { return this.solarShadowMap.isEnabled && this.solarShadowMap.isDrawing; }
@@ -752,7 +760,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     let result: Pixel.Buffer | undefined;
     const fbo = FrameBuffer.create([texture]);
     if (undefined !== fbo) {
-      this.renderSystem.frameBufferStack.execute(fbo, true, () => {
+      this.renderSystem.frameBufferStack.execute(fbo, true, false, () => {
         this._drawNonLocatable = !excludeNonLocatable;
         result = this.readPixelsFromFbo(rect, selector);
         this._drawNonLocatable = true;
@@ -853,7 +861,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         this.performanceMetrics.beginOperation("Finish GPU Queue");
         const gl = this.renderSystem.context;
         const bytes = new Uint8Array(4);
-        this.renderSystem.frameBufferStack.execute(this._fbo!, true, () => {
+        this.renderSystem.frameBufferStack.execute(this._fbo!, true, false, () => {
           gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
         });
         this.performanceMetrics.endOperation();
@@ -885,7 +893,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     const context = this.renderSystem.context;
     let didSucceed = true;
-    this.renderSystem.frameBufferStack.execute(this._fbo, true, () => {
+    this.renderSystem.frameBufferStack.execute(this._fbo, true, false, () => {
       try {
         context.readPixels(x, y, w, h, context.RGBA, context.UNSIGNED_BYTE, out);
       } catch (e) {
@@ -1169,7 +1177,7 @@ export class OnScreenTarget extends Target {
 
     // Render to our framebuffer
     const system = this.renderSystem;
-    system.frameBufferStack.push(this._fbo!, true);
+    system.frameBufferStack.push(this._fbo!, true, false);
 
     const viewRect = this.viewRect;
 
@@ -1320,7 +1328,7 @@ export class OffScreenTarget extends Target {
 
   protected _beginPaint(): void {
     assert(this._fbo !== undefined);
-    this.renderSystem.frameBufferStack.push(this._fbo!, true);
+    this.renderSystem.frameBufferStack.push(this._fbo!, true, false);
   }
 
   protected _endPaint(): void {

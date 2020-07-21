@@ -109,7 +109,7 @@ abstract class FrameBuffers implements WebGLDisposable {
   public drawHilite(cmds: DrawCommands, target: Target): void {
     const system = System.instance;
     const gl = system.context;
-    system.frameBufferStack.execute(this._hilite, true, () => {
+    system.frameBufferStack.execute(this._hilite, true, false, () => {
       gl.clearColor(0, 0, 0, 0);
       gl.clear(GL.BufferBit.Color);
       target.techniques.execute(target, cmds, RenderPass.Hilite);
@@ -119,7 +119,7 @@ abstract class FrameBuffers implements WebGLDisposable {
   public compose(target: Target): void {
     const system = System.instance;
     const gl = system.context;
-    system.frameBufferStack.execute(this._combine, true, () => {
+    system.frameBufferStack.execute(this._combine, true, false, () => {
       gl.clearColor(0, 0, 0, 0);
       gl.clear(GL.BufferBit.Color);
       target.techniques.draw(getDrawParams(target, this._combineGeom));
@@ -182,7 +182,7 @@ class MRTFrameBuffers extends FrameBuffers {
   }
 
   public draw(cmds: DrawCommands, target: Target): void {
-    System.instance.frameBufferStack.execute(this._fbo, true, () => {
+    System.instance.frameBufferStack.execute(this._fbo, true, false, () => {
       target.techniques.draw(getDrawParams(target, this._clearGeom));
       target.techniques.execute(target, cmds, RenderPass.PlanarClassification);
     });
@@ -222,7 +222,7 @@ class MPFrameBuffers extends FrameBuffers {
     const gl = system.context;
     const draw = (feature: boolean) => {
       const fbo = feature ? this._feature : this._color;
-      system.frameBufferStack.execute(fbo, true, () => {
+      system.frameBufferStack.execute(fbo, true, false, () => {
         gl.clearColor(0, 0, 0, 0);
         gl.clear(GL.BufferBit.Color);
         target.compositor.currentRenderTargetIndex = feature ? 1 : 0;

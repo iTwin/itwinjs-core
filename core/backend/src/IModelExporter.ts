@@ -7,17 +7,20 @@
  */
 import * as path from "path";
 import { DbResult, GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { Schema } from "@bentley/ecschema-metadata";
 import { ChangeSet } from "@bentley/imodelhub-client";
 import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, GeometricElement, RecipeDefinitionElement, RepositoryLink } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { IModelSchemaLoader } from "./IModelSchemaLoader";
 import { DefinitionModel, Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 
@@ -105,6 +108,17 @@ export abstract class IModelExportHandler {
   /** Called when a relationship should be deleted. */
   protected onDeleteRelationship(_relInstanceId: Id64String): void { }
 
+  /** If `true` is returned, then the schema will be exported.
+   * @note This method can optionally be overridden to exclude an individual schema from the export. The base implementation always returns `true`.
+   */
+  protected shouldExportSchema(_schema: Schema): boolean { return true; }
+
+  /** Called when an schema should be exported.
+   * @param schema The schema to export
+   * @note This should be overridden to actually do the export.
+   */
+  protected onExportSchema(_schema: Schema): void { }
+
   /** Helper method that allows IModelExporter to call protected methods in IModelExportHandler.
    * @internal
    */
@@ -129,6 +143,10 @@ export class IModelExporter {
    * @see [Model.isTemplate]($backend)
    */
   public wantTemplateModels: boolean = true;
+  /** A flag that indicates whether *system* schemas should be exported or not. The default is `false`.
+   * @see [[exportSchemas]]
+   */
+  public wantSystemSchemas: boolean = false;
   /** Optionally cached entity change information */
   private _sourceDbChanges?: ChangedInstanceIds;
   /** The handler called by this IModelExporter. */
@@ -195,7 +213,9 @@ export class IModelExporter {
     this._excludedRelationshipClasses.add(this.sourceDb.getJsClass<typeof Relationship>(classFullName));
   }
 
-  /** Export all entity types from the source iModel. */
+  /** Export all entity instance types from the source iModel.
+   * @note [[exportSchemas]] must be called separately.
+   */
   public exportAll(): void {
     this.exportCodeSpecs();
     this.exportFonts();
@@ -242,6 +262,28 @@ export class IModelExporter {
     for (const relInstanceId of this._sourceDbChanges.relationship.deleteIds) {
       this.handler.callProtected.onDeleteRelationship(relInstanceId);
     }
+  }
+
+  /** Export schemas from the source iModel.
+   * @note This must be called separately from [[exportAll]] or [[exportChanges]].
+   */
+  public exportSchemas(): void {
+    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
+    const sql = "SELECT Name FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId"; // ensure schema dependency order
+    let readyToExport: boolean = this.wantSystemSchemas ? true : false;
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const schemaName: string = statement.getValue(0).getString();
+        const schema: Schema = schemaLoader.getSchema(schemaName);
+        if (!readyToExport) {
+          readyToExport = schema.fullName === BisCoreSchema.schemaName; // schemas prior to BisCore are considered *system* schemas
+        }
+        if (readyToExport && this.handler.callProtected.shouldExportSchema(schema)) {
+          Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
+          this.handler.callProtected.onExportSchema(schema);
+        }
+      }
+    });
   }
 
   /** For logging, indicate the change type if known. */

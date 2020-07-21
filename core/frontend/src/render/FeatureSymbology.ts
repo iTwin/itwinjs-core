@@ -508,9 +508,7 @@ export namespace FeatureSymbology {
       if (undefined !== viewport.alwaysDrawn)
         this.setAlwaysDrawnSet(viewport.alwaysDrawn, viewport.isAlwaysDrawnExclusive);
 
-      if (undefined !== viewport.featureOverrideProvider)
-        viewport.featureOverrideProvider.addFeatureOverrides(this, viewport);
-
+      viewport.addFeatureOverrides(this);
       viewport.addModelSubCategoryVisibilityOverrides(this, this._modelSubCategoryOverrides);
 
       // This will include any per-model subcategory visibility overrides added above.

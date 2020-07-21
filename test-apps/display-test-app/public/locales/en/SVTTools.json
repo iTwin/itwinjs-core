@@ -5,6 +5,11 @@
         "keyin": "dta drawing aid points"
       }
     },
+    "Fence": {
+      "ClassifySelected": {
+        "keyin": "dta classifyclip selected"
+      }
+    },
     "Markup": {
       "keyin": "dta markup",
       "TestSelect": {

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlaneContainment, ClipShape, ClipVector, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, TorusPipe, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, TextString, TextStringProps, ViewFlags } from "@bentley/imodeljs-common";
+import { Angle, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet, Geometry, LineSegment3d, LineString3d, Loop, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range3d, Sphere, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AreaPattern, BackgroundFill, BRepEntity, Code, ColorByName, ColorDef, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, Placement3dProps, TextString, TextStringProps, ViewFlags } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import { BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -14,24 +14,55 @@ function assertTrue(expr: boolean): asserts expr {
   assert.isTrue(expr);
 }
 
-function createCircle(radius: number, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement): GeometricElement {
-  const builder = new GeometryStreamBuilder();
-  builder.appendGeometry(Arc3d.createXY(Point3d.createZero(), radius));
+function createGeometryPart(geom: GeometryStreamProps, imodel: SnapshotDb): Id64String {
+  const partProps: GeometryPartProps = {
+    classFullName: GeometryPart.classFullName,
+    model: IModel.dictionaryId,
+    code: Code.createEmpty(),
+    geom,
+  };
+  return imodel.elements.insertElement(partProps);
+}
 
+function createGeometricElem(geom: GeometryStreamProps, placement: Placement3dProps, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
   const elementProps: PhysicalElementProps = {
     classFullName: PhysicalObject.classFullName,
     model: seedElement.model,
     category: seedElement.category,
     code: Code.createEmpty(),
     userLabel: "UserLabel-" + 1,
-    geom: builder.geometryStream,
-    placement: { origin, angles },
+    geom,
+    placement,
   };
-
-  return imodel.elements.createElement<GeometricElement>(elementProps);
+  const el = imodel.elements.createElement<GeometricElement>(elementProps);
+  return imodel.elements.insertElement(el);
 }
 
-function createDisjointCircles(radius: number, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement): GeometricElement {
+function createPartElem(partId: Id64String, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement, isRelative = false): Id64String {
+  const builder = new GeometryStreamBuilder();
+  builder.appendGeometryPart3d(partId, isRelative ? origin : undefined, isRelative ? angles : undefined);
+  return createGeometricElem(builder.geometryStream, isRelative ? { origin: Point3d.createZero(), angles: YawPitchRollAngles.createDegrees(0, 0, 0) } : { origin, angles }, imodel, seedElement);
+}
+
+function createCirclePart(radius: number, imodel: SnapshotDb): Id64String {
+  const builder = new GeometryStreamBuilder();
+  builder.appendGeometry(Arc3d.createXY(Point3d.createZero(), radius));
+  return createGeometryPart(builder.geometryStream, imodel);
+}
+
+function createCircleElem(radius: number, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
+  const builder = new GeometryStreamBuilder();
+  builder.appendGeometry(Arc3d.createXY(Point3d.createZero(), radius));
+  return createGeometricElem(builder.geometryStream, { origin, angles }, imodel, seedElement);
+}
+
+function createSphereElem(radius: number, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
+  const builder = new GeometryStreamBuilder();
+  builder.appendGeometry(Sphere.createCenterRadius(Point3d.createZero(), radius));
+  return createGeometricElem(builder.geometryStream, { origin, angles }, imodel, seedElement);
+}
+
+function createDisjointCirclesElem(radius: number, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
   const builder = new GeometryStreamBuilder();
   const xOffset = radius * 1.5;
   builder.appendGeometry(Arc3d.createXY(Point3d.create(-xOffset), radius));
@@ -39,18 +70,7 @@ function createDisjointCircles(radius: number, origin: Point3d, angles: YawPitch
   geomParams.geometryClass = GeometryClass.Construction;
   builder.appendGeometryParamsChange(geomParams);
   builder.appendGeometry(Arc3d.createXY(Point3d.create(xOffset), radius));
-
-  const elementProps: PhysicalElementProps = {
-    classFullName: PhysicalObject.classFullName,
-    model: seedElement.model,
-    category: seedElement.category,
-    code: Code.createEmpty(),
-    userLabel: "UserLabel-" + 1,
-    geom: builder.geometryStream,
-    placement: { origin, angles },
-  };
-
-  return imodel.elements.createElement<GeometricElement>(elementProps);
+  return createGeometricElem(builder.geometryStream, { origin, angles }, imodel, seedElement);
 }
 
 describe("GeometryStream", () => {
@@ -930,7 +950,7 @@ describe("GeometryStream", () => {
   });
 
   it("create GeometricElement3d from world coordinate brep data", async () => {
-    // Currently only have parasolid for windows...
+    // Currently parasolid limited to windows...
     if ("win32" !== Platform.platformName)
       return;
 
@@ -1278,24 +1298,18 @@ describe("Geometry Containment", () => {
     imodel.close();
   });
 
-  it("clip simple curve containment", async () => {
+  it("clip volume curve containment", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    const rangeInsideEl = createCircle(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    const rangeInsideId = imodel.elements.insertElement(rangeInsideEl);
-    const rangeOutsideEl = createCircle(1.0, Point3d.create(12, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    const rangeOutsideId = imodel.elements.insertElement(rangeOutsideEl);
-    const edgeOverlapEl = createCircle(1.0, Point3d.create(0, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    const edgeOverlapId = imodel.elements.insertElement(edgeOverlapEl);
-    const cornerOverlapEl = createCircle(1.0, Point3d.create(10, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    const cornerOverlapId = imodel.elements.insertElement(cornerOverlapEl);
-    const rangeOvrGeomOutEl = createCircle(1.25, Point3d.create(11, -1, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    const rangeOvrGeomOutId = imodel.elements.insertElement(rangeOvrGeomOutEl);
-    const rangeOvrGeomInEl = createCircle(0.85, Point3d.create(5, 9, 0), YawPitchRollAngles.createDegrees(45, 0, 0), imodel, seedElement);
-    const rangeOvrGeomInId = imodel.elements.insertElement(rangeOvrGeomInEl);
+    const rangeInsideId = createCircleElem(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOutsideId = createCircleElem(1.0, Point3d.create(12, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const edgeOverlapId = createCircleElem(1.0, Point3d.create(0, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const cornerOverlapId = createCircleElem(1.0, Point3d.create(10, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOvrGeomOutId = createCircleElem(1.25, Point3d.create(11, -1, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOvrGeomInId = createCircleElem(0.85, Point3d.create(5, 9, 0), YawPitchRollAngles.createDegrees(45, 0, 0), imodel, seedElement);
     imodel.saveChanges();
 
     const range = Range3d.create(Point3d.create(0, 0, -5), Point3d.create(10, 10, 5));
@@ -1331,20 +1345,124 @@ describe("Geometry Containment", () => {
     assert.isTrue(0 === result.numOverlap);
   });
 
-  it("clip displayed curve containment", async () => {
+  it("clip volume mesh containment", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    const primInConsOutEl = createDisjointCircles(1.0, Point3d.create(10, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    const primInConsOutId = imodel.elements.insertElement(primInConsOutEl);
-    const primOutConsInEl = createDisjointCircles(1.0, Point3d.create(0, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    const primOutConsInId = imodel.elements.insertElement(primOutConsInEl);
-    const primInConsInEl = createDisjointCircles(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    const primInConsInIn = imodel.elements.insertElement(primInConsInEl);
-    const primOvrConsOvrEl = createDisjointCircles(1.0, Point3d.create(5, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    const primOvrConsOvrIn = imodel.elements.insertElement(primOvrConsOvrEl);
+    const rangeInsideId = createSphereElem(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOutsideId = createSphereElem(1.0, Point3d.create(12, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const edgeOverlapId = createSphereElem(1.0, Point3d.create(0, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const cornerOverlapId = createSphereElem(1.0, Point3d.create(10, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOvrGeomOutId = createSphereElem(1.25, Point3d.create(11, -1, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOvrGeomInId = createSphereElem(0.85, Point3d.create(5, 9, 0), YawPitchRollAngles.createDegrees(45, 0, 0), imodel, seedElement);
+    imodel.saveChanges();
+
+    const range = Range3d.create(Point3d.create(0, 0, -5), Point3d.create(10, 10, 5));
+    const clip = ClipVector.createEmpty();
+    const block = ClipShape.createBlock(range, ClipMaskXYZRangePlanes.All, false, false);
+    clip.appendReference(block);
+
+    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyInside];
+
+    const requestProps: GeometryContainmentRequestProps = {
+      candidates: [rangeInsideId, rangeOutsideId, edgeOverlapId, cornerOverlapId, rangeOvrGeomOutId, rangeOvrGeomInId],
+      clip: clip.toJSON(),
+      allowOverlaps: true,
+    };
+
+    const requestContext = new BackendRequestContext();
+    let result = await imodel.getGeometryContainment(requestContext, requestProps);
+
+    assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
+    assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
+    assert.isTrue(2 === result.numInside);
+    assert.isTrue(2 === result.numOutside);
+    assert.isTrue(2 === result.numOverlap);
+    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+
+    requestProps.allowOverlaps = false; // test inside mode...
+    result = await imodel.getGeometryContainment(requestContext, requestProps);
+
+    assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
+    assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
+    assert.isTrue(2 === result.numInside);
+    assert.isTrue(4 === result.numOutside);
+    assert.isTrue(0 === result.numOverlap);
+  });
+
+  it("clip volume part containment", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const partAId = createCirclePart(1.0, imodel);
+    const partBId = createCirclePart(1.25, imodel);
+    const partCId = createCirclePart(0.85, imodel);
+
+    // create part entries without instance transform...
+    const rangeInsideId = createPartElem(partAId, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOutsideId = createPartElem(partAId, Point3d.create(12, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const edgeOverlapId = createPartElem(partAId, Point3d.create(0, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const cornerOverlapId = createPartElem(partAId, Point3d.create(10, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOvrGeomOutId = createPartElem(partBId, Point3d.create(11, -1, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOvrGeomInId = createPartElem(partCId, Point3d.create(5, 9, 0), YawPitchRollAngles.createDegrees(45, 0, 0), imodel, seedElement);
+
+    // create part entries with instance transform...
+    const rangeInsideRId = createPartElem(partAId, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement, true);
+    const rangeOutsideRId = createPartElem(partAId, Point3d.create(12, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement, true);
+    const edgeOverlapRId = createPartElem(partAId, Point3d.create(0, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement, true);
+    const cornerOverlapRId = createPartElem(partAId, Point3d.create(10, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement, true);
+    const rangeOvrGeomOutRId = createPartElem(partBId, Point3d.create(11, -1, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement, true);
+    const rangeOvrGeomInRId = createPartElem(partCId, Point3d.create(5, 9, 0), YawPitchRollAngles.createDegrees(45, 0, 0), imodel, seedElement, true);
+
+    imodel.saveChanges();
+
+    const range = Range3d.create(Point3d.create(0, 0, -5), Point3d.create(10, 10, 5));
+    const clip = ClipVector.createEmpty();
+    const block = ClipShape.createBlock(range, ClipMaskXYZRangePlanes.All, false, false);
+    clip.appendReference(block);
+
+    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyInside];
+
+    const requestProps: GeometryContainmentRequestProps = {
+      candidates: [rangeInsideId, rangeOutsideId, edgeOverlapId, cornerOverlapId, rangeOvrGeomOutId, rangeOvrGeomInId, rangeInsideRId, rangeOutsideRId, edgeOverlapRId, cornerOverlapRId, rangeOvrGeomOutRId, rangeOvrGeomInRId],
+      clip: clip.toJSON(),
+      allowOverlaps: true,
+    };
+
+    const requestContext = new BackendRequestContext();
+    let result = await imodel.getGeometryContainment(requestContext, requestProps);
+
+    assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
+    assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
+    assert.isTrue(4 === result.numInside);
+    assert.isTrue(4 === result.numOutside);
+    assert.isTrue(4 === result.numOverlap);
+    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+
+    requestProps.allowOverlaps = false; // test inside mode...
+    result = await imodel.getGeometryContainment(requestContext, requestProps);
+
+    assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
+    assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
+    assert.isTrue(4 === result.numInside);
+    assert.isTrue(8 === result.numOutside);
+    assert.isTrue(0 === result.numOverlap);
+  });
+
+  it("clip volume displayed containment", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const primInConsOutId = createDisjointCirclesElem(1.0, Point3d.create(10, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const primOutConsInId = createDisjointCirclesElem(1.0, Point3d.create(0, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const primInConsInId = createDisjointCirclesElem(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const primOvrConsOvrId = createDisjointCirclesElem(1.0, Point3d.create(5, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     imodel.saveChanges();
 
     const range = Range3d.create(Point3d.create(0, 0, -5), Point3d.create(10, 10, 5));
@@ -1355,7 +1473,7 @@ describe("Geometry Containment", () => {
     const expectedContainmentDef: ClipPlaneContainment[] = [ClipPlaneContainment.Ambiguous, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.Ambiguous];
 
     const requestProps: GeometryContainmentRequestProps = {
-      candidates: [primInConsOutId, primOutConsInId, primInConsInIn, primOvrConsOvrIn],
+      candidates: [primInConsOutId, primOutConsInId, primInConsInId, primOvrConsOvrId],
       clip: clip.toJSON(),
       allowOverlaps: true,
     };
@@ -1397,33 +1515,17 @@ describe("Geometry Containment", () => {
     assert.isTrue(1 === result.numOverlap);
   });
 
-  it("clip L shape mesh containment", async () => {
+  it("clip L shape volume curve containment", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    // const box = Box.createRange(Range3d.create(Point3d.create(-0.5, -0.5, -0.5), Point3d.create(0.5, 0.5, 0.5)), true);
-    // const box = Sphere.createCenterRadius(Point3d.create(0, 0, 0), 1.0);
-    const box = TorusPipe.createDgnTorusPipe(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitZ(), 1.0, 0.1, Angle.create360(), true);
-    assert.isFalse(undefined === box);
-
-    const builder = new GeometryStreamBuilder();
-    builder.appendGeometry(box!);
-
-    const elementProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      userLabel: "UserLabel-" + 1,
-      geom: builder.geometryStream,
-      placement: { origin: Point3d.create(2.5, 2.5, 0), angles: YawPitchRollAngles.createDegrees(0, 0, 0) },
-    };
-
-    const insideEl = imodel.elements.createElement(elementProps);
-    // const insideEl = createCircle(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
-    const insideId = imodel.elements.insertElement(insideEl);
+    const rangeInsideXYId = createCircleElem(1.0, Point3d.create(2.5, 2.5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeInsideYId = createCircleElem(1.0, Point3d.create(2.5, 7.5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeInsideXId = createCircleElem(1.0, Point3d.create(7.5, 2.5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOutsideId = createCircleElem(1.0, Point3d.create(7.5, 7.5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOvrGeomOvrId = createCircleElem(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
     imodel.saveChanges();
 
     const clipShapePts: Point3d[] = [];
@@ -1437,11 +1539,90 @@ describe("Geometry Containment", () => {
     const clip = ClipVector.createEmpty();
     clip.appendShape(clipShapePts, -5, 5);
 
-    // const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous];
-    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside];
+    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous];
 
     const requestProps: GeometryContainmentRequestProps = {
-      candidates: [insideId],
+      candidates: [rangeInsideXYId, rangeInsideXId, rangeInsideYId, rangeOutsideId, rangeOvrGeomOvrId],
+      clip: clip.toJSON(),
+      allowOverlaps: true,
+    };
+
+    const requestContext = new BackendRequestContext();
+    const result = await imodel.getGeometryContainment(requestContext, requestProps);
+
+    assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
+    assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
+    assert.isTrue(3 === result.numInside);
+    assert.isTrue(1 === result.numOutside);
+    assert.isTrue(1 === result.numOverlap);
+    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+  });
+
+  it("clip L shape volume mesh containment", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const rangeInsideXYId = createSphereElem(1.0, Point3d.create(2.5, 2.5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeInsideYId = createSphereElem(1.0, Point3d.create(2.5, 7.5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeInsideXId = createSphereElem(1.0, Point3d.create(7.5, 2.5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOutsideId = createSphereElem(1.0, Point3d.create(7.5, 7.5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOvrGeomOvrId = createSphereElem(1.0, Point3d.create(5, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    imodel.saveChanges();
+
+    const clipShapePts: Point3d[] = [];
+    clipShapePts.push(Point3d.create(0, 0, 0));
+    clipShapePts.push(Point3d.create(10, 0, 0));
+    clipShapePts.push(Point3d.create(10, 5, 0));
+    clipShapePts.push(Point3d.create(5, 5, 0));
+    clipShapePts.push(Point3d.create(5, 10, 0));
+    clipShapePts.push(Point3d.create(0, 10, 0));
+    clipShapePts.push(Point3d.create(0, 0, 0));
+    const clip = ClipVector.createEmpty();
+    clip.appendShape(clipShapePts, -5, 5);
+
+    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous];
+
+    const requestProps: GeometryContainmentRequestProps = {
+      candidates: [rangeInsideXYId, rangeInsideXId, rangeInsideYId, rangeOutsideId, rangeOvrGeomOvrId],
+      clip: clip.toJSON(),
+      allowOverlaps: true,
+    };
+
+    const requestContext = new BackendRequestContext();
+    const result = await imodel.getGeometryContainment(requestContext, requestProps);
+
+    assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
+    assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
+    assert.isTrue(3 === result.numInside);
+    assert.isTrue(1 === result.numOutside);
+    assert.isTrue(1 === result.numOverlap);
+    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+  });
+
+  it("clip plane curve containment", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const rangeInsideId = createCircleElem(1.0, Point3d.create(0, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOutsideId = createCircleElem(1.0, Point3d.create(10, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOverlapId = createCircleElem(1.0, Point3d.create(5, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    imodel.saveChanges();
+
+    const plane = Plane3dByOriginAndUnitNormal.create(Point3d.create(5, 0, 0), Vector3d.create(-1, 0, 0)); // inward normal...
+    const planeSet = ConvexClipPlaneSet.createEmpty();
+    planeSet.addPlaneToConvexSet(ClipPlane.createPlane(plane!));
+    const prim = ClipPrimitive.createCapture(planeSet);
+    const clip = ClipVector.createEmpty();
+    clip.appendReference(prim);
+
+    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous];
+
+    const requestProps: GeometryContainmentRequestProps = {
+      candidates: [rangeInsideId, rangeOutsideId, rangeOverlapId],
       clip: clip.toJSON(),
       allowOverlaps: true,
     };
@@ -1452,8 +1633,45 @@ describe("Geometry Containment", () => {
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
     assert.isTrue(1 === result.numInside);
-    assert.isTrue(0 === result.numOutside);
-    assert.isTrue(0 === result.numOverlap);
+    assert.isTrue(1 === result.numOutside);
+    assert.isTrue(1 === result.numOverlap);
+    result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+  });
+
+  it("clip plane mesh containment", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const rangeInsideId = createSphereElem(1.0, Point3d.create(0, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOutsideId = createSphereElem(1.0, Point3d.create(10, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    const rangeOverlapId = createSphereElem(1.0, Point3d.create(5, 0, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement);
+    imodel.saveChanges();
+
+    const plane = Plane3dByOriginAndUnitNormal.create(Point3d.create(5, 0, 0), Vector3d.create(-1, 0, 0)); // inward normal...
+    const planeSet = ConvexClipPlaneSet.createEmpty();
+    planeSet.addPlaneToConvexSet(ClipPlane.createPlane(plane!));
+    const prim = ClipPrimitive.createCapture(planeSet);
+    const clip = ClipVector.createEmpty();
+    clip.appendReference(prim);
+
+    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous];
+
+    const requestProps: GeometryContainmentRequestProps = {
+      candidates: [rangeInsideId, rangeOutsideId, rangeOverlapId],
+      clip: clip.toJSON(),
+      allowOverlaps: true,
+    };
+
+    const requestContext = new BackendRequestContext();
+    const result = await imodel.getGeometryContainment(requestContext, requestProps);
+
+    assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
+    assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
+    assert.isTrue(1 === result.numInside);
+    assert.isTrue(1 === result.numOutside);
+    assert.isTrue(1 === result.numOverlap);
     result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
   });
 });

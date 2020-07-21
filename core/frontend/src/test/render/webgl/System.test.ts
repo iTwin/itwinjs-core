@@ -7,7 +7,7 @@ import { IModelApp } from "../../../IModelApp";
 import { MockRender } from "../../../render/MockRender";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { TileAdmin } from "../../../tile/internal";
-import { System } from "../../../webgl";
+import { System } from "../../../render/webgl/System";
 
 function _createCanvas(): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas") as HTMLCanvasElement;

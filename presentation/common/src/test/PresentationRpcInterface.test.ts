@@ -7,12 +7,15 @@ import * as faker from "faker";
 import { Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@bentley/imodeljs-common";
 import {
-  ContentRpcRequestOptions, DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, LabelRpcRequestOptions, Paged,
-  PresentationDataCompareRpcOptions, PresentationRpcInterface, SelectionScopeRpcRequestOptions,
+  ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions,
+  DistinctValuesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, KeySet,
+  LabelRpcRequestOptions, Paged, PresentationDataCompareRpcOptions, PresentationRpcInterface, SelectionScopeRpcRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import * as moq from "./_helpers/Mocks";
-import { createRandomDescriptorJSON, createRandomECInstanceKey, createRandomECInstancesNodeKey } from "./_helpers/random";
+import {
+  createRandomDescriptorJSON, createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON,
+} from "./_helpers/random";
 
 describe("PresentationRpcInterface", () => {
   class TestRpcRequest extends RpcRequest {
@@ -58,54 +61,76 @@ describe("PresentationRpcInterface", () => {
       rpcInterface.forward = mock.object;
     });
 
-    it("forwards getNodesAndCount call", async () => {
+    it("[deprecated] forwards getNodesAndCount call", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         rulesetOrId: faker.random.word(),
       };
-      await rpcInterface.getNodesAndCount(token, options);
+      await rpcInterface.getNodesAndCount(token, options); // tslint:disable-line:deprecation
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
-    it("forwards getNodes call for root nodes", async () => {
+    it("[deprecated] forwards getNodes call for root nodes", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         rulesetOrId: faker.random.word(),
       };
-      await rpcInterface.getNodes(token, options);
+      await rpcInterface.getNodes(token, options); // tslint:disable-line:deprecation
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
-    it("forwards getNodes call for child nodes", async () => {
+    it("[deprecated] forwards getNodes call for child nodes", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
-
         rulesetOrId: faker.random.word(),
       };
       const parentKey = createRandomECInstancesNodeKey();
-      await rpcInterface.getNodes(token, options, parentKey);
+      await rpcInterface.getNodes(token, options, parentKey); // tslint:disable-line:deprecation
       mock.verify(async (x) => x(toArguments(token, options, parentKey)), moq.Times.once());
     });
 
-    it("forwards getNodesCount call for root nodes", async () => {
+    it("[deprecated] forwards getNodesCount call for root nodes", async () => {
       const options: HierarchyRpcRequestOptions = {
+        rulesetOrId: faker.random.word(),
+      };
+      await rpcInterface.getNodesCount(token, options); // tslint:disable-line:deprecation
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
+    });
 
+    it("forwards getNodesCount call for root nodes", async () => {
+      const options: ExtendedHierarchyRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
       };
       await rpcInterface.getNodesCount(token, options);
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
-    it("forwards getNodesCount call for child nodes", async () => {
+    it("[deprecated] forwards getNodesCount call for child nodes", async () => {
       const options: HierarchyRpcRequestOptions = {
-
         rulesetOrId: faker.random.word(),
       };
       const parentKey = createRandomECInstancesNodeKey();
-      await rpcInterface.getNodesCount(token, options, parentKey);
+      await rpcInterface.getNodesCount(token, options, parentKey); // tslint:disable-line:deprecation
       mock.verify(async (x) => x(toArguments(token, options, parentKey)), moq.Times.once());
+    });
+
+    it("forwards getNodesCount call for child nodes", async () => {
+      const options: ExtendedHierarchyRpcRequestOptions = {
+        rulesetOrId: faker.random.word(),
+        parentKey: createRandomECInstancesNodeKey(),
+      };
+      await rpcInterface.getNodesCount(token, options);
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
+    });
+
+    it("forwards getPagedNodes call", async () => {
+      const options: Paged<ExtendedHierarchyRpcRequestOptions> = {
+        rulesetOrId: faker.random.word(),
+        parentKey: createRandomECInstancesNodeKeyJSON(),
+      };
+      await rpcInterface.getPagedNodes(token, options);
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
     it("forwards getFilteredNodePaths call", async () => {
       const options: HierarchyRpcRequestOptions = {
-
         rulesetOrId: faker.random.word(),
       };
       await rpcInterface.getFilteredNodePaths(token, options, "filter");
@@ -129,43 +154,83 @@ describe("PresentationRpcInterface", () => {
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
-    it("forwards getContentDescriptor call", async () => {
+    it("[deprecated] forwards getContentDescriptor call", async () => {
       const options: ContentRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
       };
       const keys = new KeySet().toJSON();
-      await rpcInterface.getContentDescriptor(token, options, "test", keys, undefined);
+      await rpcInterface.getContentDescriptor(token, options, "test", keys, undefined); // tslint:disable-line:deprecation
       mock.verify(async (x) => x(toArguments(token, options, "test", keys, undefined)), moq.Times.once());
     });
 
-    it("forwards getContentSetSize call", async () => {
+    it("forwards getContentDescriptor call", async () => {
+      const options: ContentDescriptorRpcRequestOptions = {
+        rulesetOrId: faker.random.word(),
+        displayType: "test",
+        keys: new KeySet().toJSON(),
+      };
+      await rpcInterface.getContentDescriptor(token, options);
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
+    });
+
+    it("[deprecated] forwards getContentSetSize call", async () => {
       const options: ContentRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
       };
       const descriptor = createRandomDescriptorJSON();
       const keys = new KeySet().toJSON();
-      await rpcInterface.getContentSetSize(token, options, descriptor, keys);
+      await rpcInterface.getContentSetSize(token, options, descriptor, keys); // tslint:disable-line:deprecation
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
 
-    it("forwards getContent call", async () => {
+    it("forwards getContentSetSize call", async () => {
+      const options: ExtendedContentRpcRequestOptions = {
+        rulesetOrId: faker.random.word(),
+        descriptor: createRandomDescriptorJSON(),
+        keys: new KeySet().toJSON(),
+      };
+      await rpcInterface.getContentSetSize(token, options);
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
+    });
+
+    it("[deprecated] forwards getContent call", async () => {
       const options: Paged<ContentRpcRequestOptions> = {
         rulesetOrId: faker.random.word(),
       };
       const descriptor = createRandomDescriptorJSON();
       const keys = new KeySet().toJSON();
-      await rpcInterface.getContent(token, options, descriptor, keys);
+      await rpcInterface.getContent(token, options, descriptor, keys); // tslint:disable-line:deprecation
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
 
-    it("forwards getContentAndSize call", async () => {
+    it("[deprecated] forwards getContentAndSize call", async () => {
       const options: Paged<ContentRpcRequestOptions> = {
         rulesetOrId: faker.random.word(),
       };
       const descriptor = createRandomDescriptorJSON();
       const keys = new KeySet().toJSON();
-      await rpcInterface.getContentAndSize(token, options, descriptor, keys);
+      await rpcInterface.getContentAndSize(token, options, descriptor, keys); // tslint:disable-line:deprecation
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
+    });
+
+    it("forwards getPagedContent call", async () => {
+      const options: Paged<ExtendedContentRpcRequestOptions> = {
+        rulesetOrId: faker.random.word(),
+        descriptor: createRandomDescriptorJSON(),
+        keys: new KeySet().toJSON(),
+      };
+      await rpcInterface.getPagedContent(token, options);
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
+    });
+
+    it("forwards getPagedContentSet call", async () => {
+      const options: Paged<ExtendedContentRpcRequestOptions> = {
+        rulesetOrId: faker.random.word(),
+        descriptor: createRandomDescriptorJSON(),
+        keys: new KeySet().toJSON(),
+      };
+      await rpcInterface.getPagedContentSet(token, options);
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
     it("forwards getDistinctValues call", async () => {
@@ -194,20 +259,36 @@ describe("PresentationRpcInterface", () => {
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
-    it("forwards getDisplayLabelDefinition call", async () => {
+    it("[deprecated] forwards getDisplayLabelDefinition call", async () => {
       const key = createRandomECInstanceKey();
       const options: LabelRpcRequestOptions = {
       };
-      await rpcInterface.getDisplayLabelDefinition(token, options, key);
+      await rpcInterface.getDisplayLabelDefinition(token, options, key); // tslint:disable-line:deprecation
       mock.verify(async (x) => x(toArguments(token, options, key)), moq.Times.once());
     });
 
-    it("forwards getDisplayLabelDefinitions call", async () => {
+    it("forwards getDisplayLabelDefinition call", async () => {
+      const options: DisplayLabelRpcRequestOptions = {
+        key: createRandomECInstanceKey(),
+      };
+      await rpcInterface.getDisplayLabelDefinition(token, options);
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
+    });
+
+    it("[deprecated] forwards getDisplayLabelDefinitions call", async () => {
       const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
       const options: LabelRpcRequestOptions = {
       };
-      await rpcInterface.getDisplayLabelDefinitions(token, options, keys);
+      await rpcInterface.getDisplayLabelDefinitions(token, options, keys); // tslint:disable-line:deprecation
       mock.verify(async (x) => x(toArguments(token, options, keys)), moq.Times.once());
+    });
+
+    it("forwards getPagedDisplayLabelDefinitions call", async () => {
+      const options: DisplayLabelsRpcRequestOptions = {
+        keys: [createRandomECInstanceKey(), createRandomECInstanceKey()],
+      };
+      await rpcInterface.getPagedDisplayLabelDefinitions(token, options);
+      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
     it("forwards getSelectionScopes call", async () => {

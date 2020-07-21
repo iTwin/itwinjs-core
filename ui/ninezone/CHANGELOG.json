@@ -2,6 +2,21 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "2.3.0",
+      "tag": "@bentley/ui-ninezone_v2.3.0",
+      "date": "Fri, 10 Jul 2020 17:23:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix tool settings styling on FireFox. Floating Toolsettings was missing z-index."
+          },
+          {
+            "comment": "Replace PointerEvents with touch and mouse events."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.2.1",
       "tag": "@bentley/ui-ninezone_v2.2.1",
       "date": "Tue, 07 Jul 2020 14:44:52 GMT",

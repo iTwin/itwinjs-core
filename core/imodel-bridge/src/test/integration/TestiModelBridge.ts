@@ -45,10 +45,7 @@ class TestBridge extends IModelBridgeBase {
     return this._repositoryLink;
   }
   public async initializeJob(): Promise<void> {
-    const documentStatus = this.getDocumentStatus(); // This will create a repositoryLink for the sourceData if one does not already exist
-    this._sourceDataState = documentStatus.itemState;
-    this._repositoryLink = documentStatus.element;
-    if (ItemState.New === documentStatus.itemState) {
+    if (ItemState.New === this._sourceDataState) {
       this.createGroupModel();
       this.createPhysicalModel();
       this.createDefinitionModel();
@@ -89,16 +86,19 @@ class TestBridge extends IModelBridgeBase {
   }
 
   public async updateExistingData() {
-    if (this._sourceDataState === ItemState.Unchanged) {
-      return;
-    }
-
     const groupModelId = this.queryGroupModel();
     const physicalModelId = this.queryPhysicalModel();
     const definitionModelId = this.queryDefinitionModel();
     if (undefined === groupModelId || undefined === physicalModelId || undefined === definitionModelId) {
       const error = "Unable to find model Id for " + undefined === groupModelId ? ModelNames.Group : (undefined === physicalModelId ? ModelNames.Physical : ModelNames.Definition);
       throw new IModelError(IModelStatus.BadArg, error, Logger.logError, loggerCategory);
+    }
+
+    if (this._sourceDataState === ItemState.Unchanged) {
+      /* Need to record these two scopes. Otherwise, the 'detectDeletedElements' logic will try to delete all of the elements in these scopes as unseen */
+      this.synchronizer.onScopeSkipped(groupModelId);
+      this.synchronizer.onScopeSkipped(physicalModelId);
+      return;
     }
 
     if (this._sourceDataState === ItemState.New) {
@@ -356,9 +356,9 @@ class TestBridge extends IModelBridgeBase {
         id: group.guid,
         checksum: hash.MD5(str),
       };
-      const results = this.synchronizer.detectChanges(this.repositoryLink.id, "Group", sourceItem);
+      const results = this.synchronizer.detectChanges(groupModelId, "Group", sourceItem);
       if (results.state === ItemState.Unchanged) {
-        this.synchronizer.onElementSeen(results.id!, this.repositoryLink.id);
+        this.synchronizer.onElementSeen(results.id!, groupModelId);
         continue;
       }
       if (group.name === undefined) {

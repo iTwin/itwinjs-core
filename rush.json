@@ -461,12 +461,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "wms-extension-example",
-      "projectFolder": "extensions/wms",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "iot-demo",
       "projectFolder": "extensions/iot-demo",
       "reviewCategory": "internal",

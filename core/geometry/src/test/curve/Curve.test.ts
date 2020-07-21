@@ -158,6 +158,7 @@ class ExerciseCurve {
       let point = curve.fractionToPoint(f);
       let pointA = curveA.fractionToPoint(1.0 - f);
       if (!ck.testPoint3d(point, pointA, "Reverse Curve", curve, f)) {
+        console.log("Reverse in place trap", curveA);
         point = curve.fractionToPoint(f);
         pointA = curveA.fractionToPoint(1.0 - f);
       }
@@ -726,7 +727,7 @@ describe("CurvePrimitive.TransitionSpiral", () => {
       Segment1d.create(0, 100),
       AngleSweep.createStartEndDegrees(0, 5),
       Segment1d.create(0, 1),
-      Transform.createIdentity());
+      Transform.createIdentity())!;
     const point0 = c.fractionToPointAndDerivative(0);
     const point1 = Ray3d.createZero();
     const numStroke = 50;
