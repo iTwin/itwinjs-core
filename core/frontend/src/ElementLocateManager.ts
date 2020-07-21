@@ -291,7 +291,12 @@ export class ElementLocateManager {
   public async filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): Promise<LocateFilterStatus> {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
     if (!this.options.allowDecorations && !hit.isElementHit) {
-      out.reason = ElementLocateManager.getFailureMessageKey("Transient");
+      if (hit.isModelHit)
+        out.reason = ElementLocateManager.getFailureMessageKey("RealityModel");
+      else if (hit.isMapHit)
+        out.reason = ElementLocateManager.getFailureMessageKey("Map");
+      else
+        out.reason = ElementLocateManager.getFailureMessageKey("Transient");
       return LocateFilterStatus.Reject;
     }
 

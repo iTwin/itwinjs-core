@@ -1924,6 +1924,7 @@ export enum DepthPointSource {
     Geometry = 0,
     Grid = 4,
     GroundPlane = 3,
+    Map = 7,
     Model = 1,
     TargetPoint = 6
 }
