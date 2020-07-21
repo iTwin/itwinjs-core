@@ -2909,7 +2909,7 @@ export class ScreenViewport extends Viewport {
     this.target.updateViewRect();
 
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
-    this.toolTipDiv = this.addNewDiv("overlay-tooltip", false, 40);
+    this.toolTipDiv = this.addNewDiv("overlay-tooltip", true, 40);
     this.setCursor();
     this.addLogo();
   }

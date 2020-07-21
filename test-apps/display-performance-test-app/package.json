@@ -47,8 +47,7 @@
     "@bentley/imodeljs-backend": "2.4.0-dev.11",
     "@bentley/projectshare-client": "2.4.0-dev.11",
     "@bentley/ui-abstract": "2.4.0-dev.11",
-    "body-parser": "^1.18.2",
-    "tooltip.js": "^1.2.0"
+    "body-parser": "^1.18.2"
   },
   "devDependencies": {
     "@bentley/perf-tools": "2.4.0-dev.11",
@@ -66,7 +65,6 @@
     "express": "^4.16.3",
     "npm-run-all": "^4.1.5",
     "null-loader": "^0.1.1",
-    "popper.js": "^1.14.4",
     "rimraf": "^3.0.2",
     "react": "^16.8.0",
     "tslint": "^5.11.0",
