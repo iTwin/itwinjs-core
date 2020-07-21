@@ -1,18 +1,36 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ToolWidgetComposer ToolWidgetComposer should render correctly 1`] = `
-<ToolsArea
-  onMouseEnter={[Function]}
-/>
+<ContextProvider
+  value={
+    Object {
+      "onElementRef": [Function],
+      "proximityScale": 1,
+    }
+  }
+>
+  <ToolsArea
+    onMouseEnter={[Function]}
+  />
+</ContextProvider>
 `;
 
 exports[`ToolWidgetComposer ToolWidgetComposer with should render 1`] = `
-<ToolsArea
-  button={
-    <BackstageAppButton
-      icon="icon-test"
-    />
+<ContextProvider
+  value={
+    Object {
+      "onElementRef": [Function],
+      "proximityScale": 1,
+    }
   }
-  onMouseEnter={[Function]}
-/>
+>
+  <ToolsArea
+    button={
+      <BackstageAppButton
+        icon="icon-test"
+      />
+    }
+    onMouseEnter={[Function]}
+  />
+</ContextProvider>
 `;

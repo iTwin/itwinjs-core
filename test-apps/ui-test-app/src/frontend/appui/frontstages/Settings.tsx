@@ -41,6 +41,8 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
   private _useNewUiDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.newUiDescription");
   private _useProximityOpacityTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.useProximityOpacityTitle");
   private _useProximityOpacityDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.useProximityOpacityDescription");
+  private _snapWidgetOpacityTitle: string = UiFramework.i18n.translate("SampleApp:settingsStage.snapWidgetOpacityTitle");
+  private _snapWidgetOpacityDescription: string = UiFramework.i18n.translate("SampleApp:settingsStage.snapWidgetOpacityDescription");
 
   private _onThemeChange = async () => {
     const theme = this._isLightTheme() ? ColorTheme.Dark : ColorTheme.Light;
@@ -63,6 +65,12 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
     UiShowHideManager.useProximityOpacity = !UiShowHideManager.useProximityOpacity;
 
     await SampleAppIModelApp.appUiSettings.useProximityOpacity.saveSetting(SampleAppIModelApp.uiSettings);
+  }
+
+  private _onSnapWidgetOpacityChange = async () => {
+    UiShowHideManager.snapWidgetOpacity = !UiShowHideManager.snapWidgetOpacity;
+
+    await SampleAppIModelApp.appUiSettings.snapWidgetOpacity.saveSetting(SampleAppIModelApp.uiSettings);
   }
 
   public render(): React.ReactNode {
@@ -119,6 +127,15 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
           </div>
           <div className="panel right-panel">
             <Toggle isOn={UiShowHideManager.useProximityOpacity} showCheckmark={false} onChange={this._onUseProximityOpacityChange} />
+          </div>
+        </div>
+        <div className="uifw-settings-item">
+          <div className="panel left-panel">
+            <span className="title">{this._snapWidgetOpacityTitle}</span>
+            <span className="description">{this._snapWidgetOpacityDescription}</span>
+          </div>
+          <div className="panel right-panel">
+            <Toggle isOn={UiShowHideManager.snapWidgetOpacity} showCheckmark={false} onChange={this._onSnapWidgetOpacityChange} />
           </div>
         </div>
       </div>

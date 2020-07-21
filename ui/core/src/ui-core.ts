@@ -167,6 +167,7 @@ export * from "./ui-core/utils/hooks/useRefs";
 export * from "./ui-core/utils/hooks/useRefState";
 export * from "./ui-core/utils/hooks/useResizeObserver";
 export * from "./ui-core/utils/hooks/useTargeted";
+export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
 
 /** @docs-package-description
  * The ui-core package contains general purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.

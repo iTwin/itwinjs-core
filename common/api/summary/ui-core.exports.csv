@@ -18,7 +18,7 @@ public;ButtonSize
 public;ButtonType
 internal;calculateBackdropFilterBlur: (proximityScale: number) => number
 internal;calculateBoxShadowOpacity: (proximityScale: number) => number
-internal;calculateProximityScale: (proximity: number, threshold?: number) => number
+internal;calculateProximityScale: (proximity: number, snap?: boolean, threshold?: number) => number
 internal;calculateToolbarOpacity: (proximityScale: number) => number
 public;Centered(props: CommonDivProps): JSX.Element
 public;Checkbox 
@@ -263,16 +263,20 @@ public;UnderlinedButtonProps
 public;useDisposable
 public;useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void
 public;useOptionalDisposable
-internal;useProximityToMouse: (elementRef: React.RefObject
+internal;useProximityToMouse: (elementSet: WidgetElementSet, snap?: boolean, threshold?: number) => number
 internal;useRefEffect
 internal;useRefs
 internal;useRefState
 internal;useResizeObserver
 internal;useTargeted: (ref: React.RefObject
+internal;useWidgetOpacityContext(): WidgetOpacityContextProps
 public;VerticalAlignment
 public;VerticalTabs(props: TabsProps): JSX.Element
 public;WebFontIcon(props: WebFontIconProps): JSX.Element
 public;WebFontIconProps 
+internal;WidgetElementSet 
+internal;WidgetOpacityContext: React.Context
+internal;WidgetOpacityContextProps
 public;withIsPressed: 
 public;WithIsPressedProps
 public;withOnOutsideClick: 

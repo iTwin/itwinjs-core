@@ -163,7 +163,7 @@ export const calculateBackdropFilterBlur: (proximityScale: number) => number;
 export const calculateBoxShadowOpacity: (proximityScale: number) => number;
 
 // @internal
-export const calculateProximityScale: (proximity: number, threshold?: number) => number;
+export const calculateProximityScale: (proximity: number, snap?: boolean, threshold?: number) => number;
 
 // @internal
 export const calculateToolbarOpacity: (proximityScale: number) => number;
@@ -2275,7 +2275,7 @@ outsideEventPredicate?: (e: OutsideClickEvent) => boolean): React.RefObject<T>;
 export function useOptionalDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable | undefined): TDisposable | undefined;
 
 // @internal
-export const useProximityToMouse: (elementRef: React.RefObject<Element>) => number;
+export const useProximityToMouse: (elementSet: WidgetElementSet, snap?: boolean, threshold?: number) => number;
 
 // @internal
 export function useRefEffect<T>(callback: (instance: T | null) => (void | (() => void)), deps: ReadonlyArray<any>): (instance: T | null) => void;
@@ -2291,6 +2291,9 @@ export function useResizeObserver<T extends Element>(onResize?: (width: number, 
 
 // @internal
 export const useTargeted: (ref: React.RefObject<Element>) => boolean;
+
+// @internal (undocumented)
+export function useWidgetOpacityContext(): WidgetOpacityContextProps;
 
 // @public
 export enum VerticalAlignment {
@@ -2315,6 +2318,21 @@ export interface WebFontIconProps extends CommonProps {
     iconSize?: "small" | "medium" | "large" | "x-large";
     onClick?: React.MouseEventHandler<HTMLSpanElement>;
     title?: string;
+}
+
+// @internal (undocumented)
+export class WidgetElementSet extends Set<React.RefObject<Element>> {
+}
+
+// @internal
+export const WidgetOpacityContext: React.Context<WidgetOpacityContextProps>;
+
+// @internal (undocumented)
+export interface WidgetOpacityContextProps {
+    // (undocumented)
+    readonly onElementRef: (elementRef: React.RefObject<Element>) => void;
+    // (undocumented)
+    readonly proximityScale: number;
 }
 
 // @public
