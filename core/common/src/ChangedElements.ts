@@ -14,6 +14,7 @@ export interface ChangedElements {
   elements: Id64String[];
   classIds: Id64String[];
   opcodes: number[];
+  type: number[];
   modelIds?: Id64String[];
 }
 
