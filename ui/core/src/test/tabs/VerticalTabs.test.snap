@@ -4,5 +4,6 @@ exports[`<VerticalTabs /> renders correctly 1`] = `
 <Tabs
   labels={Array []}
   mainClassName="uicore-tabs-vertical"
+  orientation={1}
 />
 `;

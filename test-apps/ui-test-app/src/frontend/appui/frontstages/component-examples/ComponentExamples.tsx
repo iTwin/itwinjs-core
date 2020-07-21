@@ -47,7 +47,7 @@ const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: Comp
   const darkLabel = UiFramework.i18n.translate("SampleApp:settingsStage.dark");
   const lightLabel = UiFramework.i18n.translate("SampleApp:settingsStage.light");
 
-  const _handleClickLabel = (index: number) => {
+  const _handleActivateTab = (index: number) => {
     setActiveIndex(index);
   };
 
@@ -56,7 +56,7 @@ const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: Comp
       <div className="component-examples-categories">
         <VerticalTabs
           labels={props.categories.map((category: ComponentExampleCategory) => category.title)}
-          activeIndex={activeIndex} onClickLabel={_handleClickLabel} />
+          activeIndex={activeIndex} onActivateTab={_handleActivateTab} />
       </div>
       <div className="component-examples-items">
         <ComponentExample title={_themeTitle} description={_themeDescription}

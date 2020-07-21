@@ -63,6 +63,7 @@ export class ComponentExamplesProvider {
           <CheckListBox>
             <CheckListBoxItem label="Item 1" />
             <CheckListBoxItem label="Item 2" />
+            <CheckListBoxItem label="Item 3" />
           </CheckListBox>),
         createComponentExample("CheckListBox with separator", undefined,
           <CheckListBox>
@@ -80,7 +81,7 @@ export class ComponentExamplesProvider {
     return {
       title: "ContextMenu",
       examples: [
-        createComponentExample("ContextMenu", undefined, <UnderlinedButton onClick={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
+        createComponentExample("ContextMenu", undefined, <UnderlinedButton onActivate={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
       ],
     };
   }

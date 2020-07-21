@@ -890,10 +890,7 @@ export enum HorizontalAlignment {
 }
 
 // @public
-export class HorizontalTabs extends React.PureComponent<TabsProps> {
-    // @internal (undocumented)
-    render(): JSX.Element;
-}
+export function HorizontalTabs(props: TabsProps): JSX.Element;
 
 // @public
 export function Icon(props: IconProps): JSX.Element | null;
@@ -1185,6 +1182,7 @@ export class LocalUiSettings implements UiSettings {
 // @public
 export interface MainTabsProps extends TabsProps {
     mainClassName: string;
+    orientation: Orientation;
 }
 
 // @public
@@ -1868,7 +1866,12 @@ export interface SvgSpriteProps extends CommonProps {
 }
 
 // @public
-export class Tabs extends React.PureComponent<MainTabsProps> {
+export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
+    constructor(props: MainTabsProps);
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: MainTabsProps): void;
     // @internal (undocumented)
     render(): JSX.Element;
 }
@@ -1878,6 +1881,8 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
     activeIndex?: number;
     green?: boolean;
     labels: string[];
+    onActivateTab?: (index: number) => any;
+    // @deprecated
     onClickLabel?: (index: number) => any;
 }
 
@@ -2251,6 +2256,7 @@ export function UnderlinedButton(props: UnderlinedButtonProps): JSX.Element;
 export interface UnderlinedButtonProps {
     children: string | React.ReactNode;
     className?: string;
+    onActivate?: () => void;
     onClick?: (e: React.MouseEvent) => void;
     title?: string;
 }
@@ -2297,10 +2303,7 @@ export enum VerticalAlignment {
 }
 
 // @public
-export class VerticalTabs extends React.PureComponent<TabsProps> {
-    // @internal (undocumented)
-    render(): JSX.Element;
-}
+export function VerticalTabs(props: TabsProps): JSX.Element;
 
 // @public
 export function WebFontIcon(props: WebFontIconProps): JSX.Element;

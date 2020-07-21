@@ -22,12 +22,30 @@ export interface UnderlinedButtonProps {
   title?: string;
   /** Callback to onClick event */
   onClick?: (e: React.MouseEvent) => void;
+  /** Callback to activate */
+  onActivate?: () => void;
 }
 
 /** A React component that makes text clickable and underlined
  * @public
  */
 export function UnderlinedButton(props: UnderlinedButtonProps) {
+  const handleKeyUp = React.useCallback((event: React.KeyboardEvent) => {
+    const key = event.key;
+
+    switch (key) {
+      case "Enter":
+      case " ":
+        props.onActivate && props.onActivate();
+        break;
+    }
+  }, [props]);
+
+  const handleClick = React.useCallback((e: React.MouseEvent) => {
+    props.onClick && props.onClick(e);
+    props.onActivate && props.onActivate();
+  }, [props]);
+
   const className = classnames(
     "core-underlined-button",
     props.className ? props.className : undefined,
@@ -37,7 +55,8 @@ export function UnderlinedButton(props: UnderlinedButtonProps) {
     <span
       className={className}
       title={props.title}
-      onClick={props.onClick}
+      onClick={handleClick}
+      onKeyUp={handleKeyUp}
       tabIndex={0}
       role="link"
     >
