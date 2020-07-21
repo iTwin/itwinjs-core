@@ -44,7 +44,7 @@ export enum IModelHubPermission {
  * @internal
  */
 export class RbacClient extends WsgClient {
-  public static readonly searchKey: string = "RBAC.URL";
+  public static readonly searchKey: string = "RBAC.Url.APIM";
   public static readonly configRelyingPartyUri = "imjs_rbac_relying_party_uri";
 
   public constructor() {

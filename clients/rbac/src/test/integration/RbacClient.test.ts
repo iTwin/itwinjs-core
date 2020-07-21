@@ -10,6 +10,11 @@ import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { IModelHubPermission, Permission, RbacClient } from "../../RbacClient";
 import { TestConfig } from "../TestConfig";
 
+//  These tests require that the client_id requests the following scopes:
+//    - openid
+//    - context-registry-service:read-only
+//    - rbac-user:external-client
+
 describe("RbacClient (#integration)", () => {
   const contextRegistry = new ContextRegistryClient();
   const rbacClient = new RbacClient();
