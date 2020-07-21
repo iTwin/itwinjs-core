@@ -10,6 +10,15 @@ import { AxisAlignedBox3dProps } from "./geometry/Placement";
  */
 
 /** @internal */
+export enum TypeOfChange {
+  Property = 0b1,
+  Geometry = 0b10,
+  Placement = 0b100,
+  Indirect = 0b1000,
+  Hidden = 0b10000,
+}
+
+/** @internal */
 export interface ChangedElements {
   elements: Id64String[];
   classIds: Id64String[];
