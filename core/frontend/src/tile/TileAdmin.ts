@@ -96,6 +96,8 @@ export abstract class TileAdmin {
   public abstract get disableMagnification(): boolean;
   /** @internal */
   public abstract get alwaysRequestEdges(): boolean;
+  /** @internal */
+  public abstract get alwaysSubdivideIncompleteTiles(): boolean;
 
   /** @internal */
   public abstract get tileExpirationTime(): BeDuration;
@@ -461,6 +463,12 @@ export namespace TileAdmin {
      * @alpha
      */
     alwaysRequestEdges?: boolean;
+
+    /** If true, when choosing whether to sub-divide or magnify a tile for refinement, the tile will always be sub-divided if any geometry was omitted from it.
+     * Default value: false
+     * @internal
+     */
+    alwaysSubdivideIncompleteTiles?: boolean;
   }
 }
 
@@ -580,6 +588,7 @@ class Admin extends TileAdmin {
   private readonly _ignoreAreaPatterns: boolean;
   private readonly _disableMagnification: boolean;
   private readonly _alwaysRequestEdges: boolean;
+  private readonly _alwaysSubdivideIncompleteTiles: boolean;
   private readonly _maxMajorVersion: number;
   private readonly _useProjectExtents: boolean;
   private readonly _maximumLevelsToSkip: number;
@@ -657,6 +666,7 @@ class Admin extends TileAdmin {
     this._ignoreAreaPatterns = true === options.ignoreAreaPatterns;
     this._disableMagnification = true === options.disableMagnification;
     this._alwaysRequestEdges = true === options.alwaysRequestEdges;
+    this._alwaysSubdivideIncompleteTiles = true === options.alwaysSubdivideIncompleteTiles;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : CurrentImdlVersion.Major;
     this._useProjectExtents = false !== options.useProjectExtents;
 
@@ -702,6 +712,7 @@ class Admin extends TileAdmin {
   public get maximumLevelsToSkip() { return this._maximumLevelsToSkip; }
   public get disableMagnification() { return this._disableMagnification; }
   public get alwaysRequestEdges() { return this._alwaysRequestEdges; }
+  public get alwaysSubdivideIncompleteTiles() { return this._alwaysSubdivideIncompleteTiles; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
   public get tileTreeExpirationTime() { return this._treeExpirationTime; }
   public get contextPreloadParentDepth() { return this._contextPreloadParentDepth; }

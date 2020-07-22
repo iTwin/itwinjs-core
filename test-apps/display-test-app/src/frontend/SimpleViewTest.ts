@@ -192,6 +192,7 @@ async function main() {
   tileAdminProps.tileExpirationTime = configuration.tileExpirationSeconds;
   tileAdminProps.maximumLevelsToSkip = configuration.maxTilesToSkip;
   tileAdminProps.alwaysRequestEdges = true === configuration.alwaysLoadEdges;
+  tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
 
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
