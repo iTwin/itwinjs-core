@@ -46,62 +46,28 @@ export class BridgeRunner {
 }
 
 // @alpha
-export interface IModelBridge {
-    // (undocumented)
-    getApplicationId(): string;
-    // (undocumented)
-    getApplicationVersion(): string;
-    // (undocumented)
-    getBridgeName(): string;
-    // (undocumented)
-    getSynchronizer(): Synchronizer;
-    importDefinitions(): Promise<any>;
-    importDomainSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
-    importDynamicSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
-    initialize(params: BridgeJobDefArgs): any;
-    initializeJob(): Promise<void>;
-    onOpenIModel(): Promise<BentleyStatus>;
-    openSourceData(sourcePath: string): Promise<BentleyStatus>;
-    // (undocumented)
-    setJobSubject(subject: Subject): void;
-    // (undocumented)
-    setSynchronizer(synchronizer: Synchronizer): void;
-    updateExistingData(): Promise<any>;
-}
-
-// @alpha
-export abstract class IModelBridgeBase implements IModelBridge {
+export abstract class IModelBridge {
     // (undocumented)
     abstract getApplicationId(): string;
     // (undocumented)
     abstract getApplicationVersion(): string;
     // (undocumented)
     abstract getBridgeName(): string;
-    // (undocumented)
-    getSynchronizer(): Synchronizer;
-    // (undocumented)
+    getJobSubjectName(sourcePath: string): string;
     abstract importDefinitions(): Promise<any>;
-    // (undocumented)
     abstract importDomainSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
-    // (undocumented)
     abstract importDynamicSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
-    // (undocumented)
     abstract initialize(params: BridgeJobDefArgs): any;
-    // (undocumented)
     abstract initializeJob(): Promise<void>;
+    set jobSubject(subject: Subject);
     // (undocumented)
     get jobSubject(): Subject;
-    // (undocumented)
     onOpenIModel(): Promise<BentleyStatus>;
-    // (undocumented)
     abstract openSourceData(sourcePath: string): Promise<BentleyStatus>;
-    // (undocumented)
-    setJobSubject(subject: Subject): void;
-    // (undocumented)
-    setSynchronizer(sync: Synchronizer): void;
+    supportsMultipleFilesPerChannel(): boolean;
+    set synchronizer(sync: Synchronizer);
     // (undocumented)
     get synchronizer(): Synchronizer;
-    // (undocumented)
     abstract updateExistingData(): Promise<any>;
 }
 

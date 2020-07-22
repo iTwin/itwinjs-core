@@ -16,7 +16,7 @@ import {
 import { Box, Cone, LinearSweep, Loop, Point3d, SolidPrimitive, StandardViewIndex, Vector3d } from "@bentley/geometry-core";
 
 import { ItemState, SourceItem, SynchronizationResults } from "../../Synchronizer";
-import { IModelBridgeBase } from "../../IModelBridge";
+import { IModelBridge } from "../../IModelBridge";
 import { TestBridgeLoggerCategory } from "./TestBridgeLoggerCategory";
 import { TestBridgeSchema } from "./TestBridgeSchema";
 import { TestBridgeGroupModel } from "./TestBridgeModels";
@@ -31,7 +31,7 @@ import * as fs from "fs";
 
 const loggerCategory: string = TestBridgeLoggerCategory.Bridge;
 
-class TestBridge extends IModelBridgeBase {
+class TestBridge extends IModelBridge {
   private _data: any;
   private _sourceDataState: ItemState = ItemState.New;
   private _sourceData?: string;
@@ -95,9 +95,6 @@ class TestBridge extends IModelBridgeBase {
     }
 
     if (this._sourceDataState === ItemState.Unchanged) {
-      /* Need to record these two scopes. Otherwise, the 'detectDeletedElements' logic will try to delete all of the elements in these scopes as unseen */
-      this.synchronizer.onScopeSkipped(groupModelId);
-      this.synchronizer.onScopeSkipped(physicalModelId);
       return;
     }
 
@@ -358,7 +355,7 @@ class TestBridge extends IModelBridgeBase {
       };
       const results = this.synchronizer.detectChanges(groupModelId, "Group", sourceItem);
       if (results.state === ItemState.Unchanged) {
-        this.synchronizer.onElementSeen(results.id!, groupModelId);
+        this.synchronizer.onElementSeen(results.id!);
         continue;
       }
       if (group.name === undefined) {
@@ -402,7 +399,7 @@ class TestBridge extends IModelBridgeBase {
     };
     const results = this.synchronizer.detectChanges(physicalModelId, "Tile", sourceItem);
     if (results.state === ItemState.Unchanged) {
-      this.synchronizer.onElementSeen(results.id!, physicalModelId);
+      this.synchronizer.onElementSeen(results.id!);
       return;
     }
     if (tile.casingMaterial === undefined) {

@@ -6,20 +6,22 @@
  * @module Framework
  */
 import { ChangesType, LockLevel } from "@bentley/imodelhub-client";
-import { BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, SnapshotDb, Subject, SubjectOwnsSubjects } from "@bentley/imodeljs-backend";
+import {
+  BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
+  SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
+} from "@bentley/imodeljs-backend";
 import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { DomainOptions, DownloadBriefcaseOptions, IModel, IModelError, ProfileOptions, SubjectProps, SyncMode, UpgradeOptions } from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
+import * as os from "os";
 
 import { IModelBridge } from "./IModelBridge";
 import { BridgeLoggerCategory } from "./BridgeLoggerCategory";
 import { Synchronizer } from "./Synchronizer";
 import { ServerArgs } from "./IModelHubUtils";
 import { IModelBankArgs, IModelBankUtils } from "./IModelBankUtils";
-
-// import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 
 /** @alpha */
 export const loggerCategory: string = BridgeLoggerCategory.Framework;
@@ -32,10 +34,10 @@ export class BridgeJobDefArgs {
   public revisionComments?: string;
   /** Should be run after all documents have been synchronized.  Runs any actions (like project extent calculations) that need to run on the completed imodel */
   public allDocsProcessed: boolean = false;
-  /** Indicates whether the BridgeRunner should update the profile of the imodel's db. */
-  public updateDbProfile: boolean = false;
+  /** Indicates whether the BridgeRunner should update the profile of the imodel's db. This would only need to be set to false if the imodel needs to be opened by legacy products */
+  public updateDbProfile: boolean = true;
   /** Indicates whether the BridgeRunner should update any of the core domain schemas in the imodel */
-  public updateDomainSchemas: boolean = false;
+  public updateDomainSchemas: boolean = true;
   /** The module containing the IModel Bridge implementation */
   public bridgeModule?: string;
   /** Path to the source file */
@@ -176,8 +178,6 @@ export class BridgeRunner {
     }
 
     await iModelDbBuilder.initialize();
-    // Disabiling until we figure out how to get permissions for this scope in access token.
-    // await UsageLoggingUtilities.postUserUsage(this._requestContext, this._serverArgs.contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial);
 
     this.initProgressMeter();
 
@@ -214,7 +214,8 @@ abstract class IModelDbBuilder {
   protected _jobSubject?: Subject;
 
   constructor(protected readonly _bridge: IModelBridge, protected readonly _bridgeArgs: BridgeJobDefArgs) {
-    this._jobSubjectName = this._bridge.getBridgeName() + ":" + this._bridgeArgs.sourcePath!;
+    // this._jobSubjectName = this._bridge.getBridgeName() + ":" + this._bridgeArgs.sourcePath!;
+    this._jobSubjectName = this._bridge.getJobSubjectName(this._bridgeArgs.sourcePath!);
   }
 
   public async abstract initialize(): Promise<void>;
@@ -283,7 +284,7 @@ abstract class IModelDbBuilder {
 
   public async updateExistingData(): Promise<void> {
     await this._updateExistingData();
-    this._bridge!.getSynchronizer().detectDeletedElements();
+    this._bridge!.synchronizer.detectDeletedElements();
 
     const options: ComputeProjectExtentsOptions = {
       reportExtentsWithOutliers: false,
@@ -369,7 +370,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 
     this._jobSubject = this.findJob();
     if (undefined !== this._jobSubject) {
-      this._bridge.setJobSubject(this._jobSubject);
+      this._bridge.jobSubject = this._jobSubject;
     } else {
       this._jobSubject = this.insertJobSubject();    // this is the first time that this bridge has tried to convert this input file into this iModel
 
@@ -377,7 +378,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 
       await this.enterBridgeChannel(); // (also locks the Job Subject)
 
-      this._bridge.setJobSubject(this._jobSubject);
+      this._bridge.jobSubject = this._jobSubject;
       await this._bridge.initializeJob();
 
       await this._saveAndPushChanges("Initialized Bridge Job Subject", ChangesType.Regular);
@@ -449,7 +450,11 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 
     const token = await this._serverArgs.getToken();
     this._requestContext = new AuthorizedClientRequestContext(token, this._activityId, this._bridge.getApplicationId(), this._bridge.getApplicationVersion());
-
+    if (this._requestContext === undefined) {
+      throw new IModelError(IModelStatus.BadRequest, "Failed to instantiate AuthorizedClientRequestContext", Logger.logError, loggerCategory);
+    }
+    assert(this._serverArgs.contextId !== undefined);
+    await UsageLoggingUtilities.postUserUsage(this._requestContext, this._serverArgs.contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial);
   }
 
   /** This will download the briefcase, open it with the option to update the Db profile, close it, re-open with the option to upgrade core domain schemas */
@@ -501,8 +506,8 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     }
 
     this._imodel = briefcaseDb;
-    const synchronizer = new Synchronizer(briefcaseDb, this._requestContext);
-    this._bridge.setSynchronizer(synchronizer);
+    const synchronizer = new Synchronizer(briefcaseDb, this._bridge.supportsMultipleFilesPerChannel(), this._requestContext);
+    this._bridge.synchronizer = synchronizer;
 
     briefcaseDb.concurrencyControl.startBulkMode(); // We will run in bulk mode the whole time.
   }
@@ -524,8 +529,8 @@ class SnapshotDbBuilder extends IModelDbBuilder {
       throw new IModelError(IModelStatus.BadModel, `Unable to create empty SnapshotDb at ${filePath}`, Logger.logError, loggerCategory);
     }
 
-    const synchronizer = new Synchronizer(this._imodel!, undefined);
-    this._bridge.setSynchronizer(synchronizer);
+    const synchronizer = new Synchronizer(this._imodel!, this._bridge.supportsMultipleFilesPerChannel());
+    this._bridge.synchronizer = synchronizer;
   }
 
   protected async _enterChannel(channelRootId: Id64String, _lockRoot?: boolean): Promise<void> {
@@ -536,10 +541,10 @@ class SnapshotDbBuilder extends IModelDbBuilder {
     assert(this._imodel !== undefined);
     this._jobSubject = this.findJob();
     if (undefined !== this._jobSubject) {
-      this._bridge.setJobSubject(this._jobSubject);
+      this._bridge.jobSubject = this._jobSubject;
     } else {
       this._jobSubject = this.insertJobSubject();    // this is the first time that this bridge has tried to convert this input file into this iModel
-      this._bridge.setJobSubject(this._jobSubject);
+      this._bridge.jobSubject = this._jobSubject;
       await this._bridge.initializeJob();
     }
 
