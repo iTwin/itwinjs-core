@@ -125,6 +125,7 @@ export enum WebGLFeature {
 // @beta
 export interface WebGLRenderCompatibilityInfo {
     contextErrorMessage?: string;
+    createdContext?: WebGLRenderingContext | WebGL2RenderingContext | undefined;
     missingOptionalFeatures: WebGLFeature[];
     missingRequiredFeatures: WebGLFeature[];
     status: WebGLRenderCompatibilityStatus;

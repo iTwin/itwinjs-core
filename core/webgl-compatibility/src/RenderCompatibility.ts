@@ -105,6 +105,10 @@ export interface WebGLRenderCompatibilityInfo {
    * Possible supplemental details describing why a context could not be created (due to performance caveat or other reason).
    */
   contextErrorMessage?: string;
+  /**
+   * The context used to generate the compatibility information.
+   */
+  createdContext?: WebGLRenderingContext | WebGL2RenderingContext | undefined;
 }
 
 /** A function that creates and returns a WebGLRenderingContext given a canvas and desired attributes.
@@ -150,6 +154,7 @@ export function queryRenderCompatibility(useWebGL2: boolean, createContext?: Con
         missingRequiredFeatures: [],
         userAgent: navigator.userAgent,
         contextErrorMessage: errorMessage,
+        createdContext: context,
       };
   }
 
