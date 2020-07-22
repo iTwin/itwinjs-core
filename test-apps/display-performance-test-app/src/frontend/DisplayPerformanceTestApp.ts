@@ -187,6 +187,9 @@ function getRenderOpts(): string {
       case "useWebGL2":
         if (value) optString += "+webGL2";
         break;
+      case "antialiasSamples":
+        if (value > 1) optString += "+aa" + (value as number);
+        break;
       default:
         if (value) optString += "+" + key;
     }
