@@ -37,13 +37,6 @@ export class PlanarTilePatch {
   public getClipShape(): Point3d[] {
     return [this.corners[0], this.corners[1], this.corners[3], this.corners[2]];
   }
-
-  public setReprojectedCorners(reprojectedCorners: Point3d[], reprojectionRange: Range3d): void {
-    assert(this.corners.length === 4 && reprojectedCorners.length === 4);
-    for (let i = 0; i < 4; i++)
-      if (reprojectionRange.containsPoint(this.corners[i]))
-        this.corners[i] = reprojectedCorners[i];
-  }
 }
 
 /** @internal */
@@ -292,41 +285,57 @@ export class MapTile extends RealityTile {
     return true;
   }
 
-  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
-    try {
-      const mapTree = this.mapTree;
-      const rowCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesY : 2;
-      const columnCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesX : 2;
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+    const mapTree = this.mapTree;
+    const rowCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesY : 2;
+    const columnCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesX : 2;
 
-      const resolveChildren = (children: Tile[]) => {
-        const childrenRange = Range3d.createNull();
-        for (const child of children)
-          childrenRange.extendRange(child.range);
+    const resolveChildren = (children: Tile[]) => {
+      const childrenRange = Range3d.createNull();
+      for (const child of children)
+        childrenRange.extendRange(child.range);
 
-        if (!this.range.containsRange(childrenRange))
-          this.range.extendRange(childrenRange);
+      if (!this.range.containsRange(childrenRange))
+        this.range.extendRange(childrenRange);
 
-        resolve(children);
-      };
-
-      const doGlobe = mapTree.doCreateGlobeChildren(this);
-      const kids = doGlobe ? this.createGlobeChildren(columnCount, rowCount) : this.createPlanarChildren(mapTree.getChildCorners(this, columnCount, rowCount), columnCount, rowCount);
-      if (doGlobe || !mapTree.doReprojectChildren(this)) {
-        resolveChildren(kids);
-        return;
-      }
-
-      mapTree.reprojectTileChildCorners(this, columnCount, rowCount, kids).then(() => {
-        resolveChildren(kids);
-      }).catch((err) => {
-        reject(err);
-      });
-    } catch (err) {
-      reject(err);
+      resolve(children);
+    };
+    if (mapTree.doCreateGlobeChildren(this)) {
+      this.createGlobeChildren(columnCount, rowCount, resolveChildren);
+      return;
     }
+
+    const resolvePlanarChildren = (childCorners: Point3d[][]) => {
+      const level = this.quadId.level + 1;
+      const column = this.quadId.column * 2;
+      const row = this.quadId.row * 2;
+      const children = [];
+      const childrenAreLeaves = (this.depth + 1) === mapTree.loader.maxDepth;
+      const globeMode = this.mapTree.globeMode;
+      for (let j = 0; j < rowCount; j++) {
+        for (let i = 0; i < columnCount; i++) {
+          const quadId = new QuadId(level, column + i, row + j);
+          const corners = childCorners[j * columnCount + i];
+          const rectangle = mapTree.getTileRectangle(quadId);
+
+          const normal = PolygonOps.areaNormal([corners[0], corners[1], corners[3], corners[2]]);
+          normal.normalizeInPlace();
+
+          const heightRange = this.mapTree.getChildHeightRange(quadId, rectangle, this);
+          const diagonal = Math.max(corners[0].distance(corners[3]), corners[1].distance(corners[2])) / 2.0;
+          const chordHeight = globeMode === GlobeMode.Ellipsoid ? Math.sqrt(diagonal * diagonal + Constant.earthRadiusWGS84.equator * Constant.earthRadiusWGS84.equator) - Constant.earthRadiusWGS84.equator : 0.0;
+          const range = Range3d.createArray(MapTile.computeRangeCorners(corners, normal!, chordHeight, scratchCorners, heightRange));
+          children.push(this.mapTree.createPlanarChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal!, rectangle, chordHeight, heightRange));
+        }
+      }
+      resolveChildren(children);
+    };
+    assert(columnCount === 2);
+    assert(rowCount === 2);
+    mapTree.getPlanarChildCorners(this, columnCount, rowCount, resolvePlanarChildren);
   }
 
-  private createGlobeChildren(columnCount: number, rowCount: number) {
+  private createGlobeChildren(columnCount: number, rowCount: number, resolve: (children: MapTile[]) => void) {
     const level = this.quadId.level + 1;
     const column = this.quadId.column * 2;
     const row = this.quadId.row * 2;
@@ -346,38 +355,12 @@ export class MapTile extends RealityTile {
 
         children.push(this.mapTree.createGlobeChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: false }, quadId, range.corners(), rectangle, ellipsoidPatch, heightRange));
       }
+      resolve(children);
     }
 
     return children;
   }
 
-  protected createPlanarChildren(childCorners: Point3d[][], columnCount: number, rowCount: number) {
-    const level = this.quadId.level + 1;
-    const column = this.quadId.column * 2;
-    const row = this.quadId.row * 2;
-    const mapTree = this.mapTree;
-    const children = [];
-    const childrenAreLeaves = (this.depth + 1) === mapTree.loader.maxDepth;
-    const globeMode = this.mapTree.globeMode;
-    for (let j = 0; j < rowCount; j++) {
-      for (let i = 0; i < columnCount; i++) {
-        const quadId = new QuadId(level, column + i, row + j);
-        const corners = childCorners[j * columnCount + i];
-        const rectangle = mapTree.getTileRectangle(quadId);
-
-        const normal = PolygonOps.areaNormal([corners[0], corners[1], corners[3], corners[2]]);
-        normal.normalizeInPlace();
-
-        const heightRange = this.mapTree.getChildHeightRange(quadId, rectangle, this);
-        const diagonal = Math.max(corners[0].distance(corners[3]), corners[1].distance(corners[2])) / 2.0;
-        const chordHeight = globeMode === GlobeMode.Ellipsoid ? Math.sqrt(diagonal * diagonal + Constant.earthRadiusWGS84.equator * Constant.earthRadiusWGS84.equator) - Constant.earthRadiusWGS84.equator : 0.0;
-        const range = Range3d.createArray(MapTile.computeRangeCorners(corners, normal!, chordHeight, scratchCorners, heightRange));
-        children.push(this.mapTree.createPlanarChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal!, rectangle, chordHeight, heightRange));
-      }
-    }
-
-    return children;
-  }
   public static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result: Point3d[], heightRange?: Range1d) {
     if (result === undefined) {
       result = [];
@@ -485,15 +468,15 @@ export class MapTile extends RealityTile {
     return this._patch instanceof PlanarTilePatch ? new PlanarProjection(this._patch, heightRange) : new EllipsoidProjection(this._patch, heightRange);
   }
 
-  public setReprojectedCorners(reprojectedCorners: Point3d[]) {
-    if (this._patch instanceof PlanarTilePatch)
-      this._patch.setReprojectedCorners(reprojectedCorners, this.mapTree.cartesianRange);
-  }
   public get baseImageryIsReady(): boolean {
-    if (undefined === this._imageryTiles)
-      return 0 === this.mapTree.imageryTrees.length;
+    if (undefined !== this.mapTree.baseColor || 0 === this.mapTree.imageryTrees.length)
+      return true;
 
-    return this._imageryTiles.length > 0 && this._imageryTiles[0].isReady;
+    if (undefined === this._imageryTiles)
+      return false;
+
+    const baseTreeId = this.mapTree.imageryTrees[0].modelId;
+    return this._imageryTiles.every((imageryTile) => imageryTile.imageryTree.modelId !== baseTreeId || imageryTile.isReady);
   }
 
   public get imageryIsReady(): boolean {
