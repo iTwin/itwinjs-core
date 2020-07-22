@@ -30,6 +30,7 @@ function configMockSettings() {
     return;
 
   Config.App.set("imjs_imodelhub_url", "https://mockimodelhub.com");
+  Config.App.set("imjs_rbac_url", "https://mockrbac.com");
   Config.App.set("imjs_buddi_url", "https://mockbuddi.com");
   Config.App.set("imjs_buddi_resolve_url_using_region", 0);
   Config.App.set("imjs_test_serviceAccount1_user_name", "test");
@@ -177,6 +178,20 @@ export class IModelHubUrlMock {
       return;
     const url = IModelHubUrlMock.getUrl();
     UrlDiscoveryMock.mockGetUrl(IModelBaseHandler.searchKey, Config.App.get("imjs_buddi_resolve_url_using_region"), url);
+  }
+}
+
+export class RbacUrlMock {
+  public static getUrl(): string {
+    configMockSettings();
+    return Config.App.get("imjs_rbac_url", "");
+  }
+
+  public static mockGetUrl() {
+    if (!TestConfig.enableMocks)
+      return;
+    const url = RbacUrlMock.getUrl();
+    UrlDiscoveryMock.mockGetUrl("RBAC.Url.APIM", Config.App.get("imjs_buddi_resolve_url_using_region"), url);
   }
 }
 

@@ -19,6 +19,7 @@ import { LockHandler } from "./imodelhub/Locks";
 import { ThumbnailHandler } from "./imodelhub/Thumbnails";
 import { UserInfoHandler } from "./imodelhub/Users";
 import { VersionHandler } from "./imodelhub/Versions";
+import { PermissionHandler } from "./imodelhub/Permissions";
 
 /**
  * Base class that allows access to different iModel related Class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
@@ -147,6 +148,14 @@ export abstract class IModelClient {
    */
   public get globalEvents(): GlobalEventHandler {
     return new GlobalEventHandler(this._handler);
+  }
+
+  /**
+   * Get the handler for permissions.
+   * @internal
+   */
+  public get permissions(): PermissionHandler | undefined {
+    return undefined;
   }
 
   /**

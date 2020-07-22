@@ -167,6 +167,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/rbac-client",
+      "allowedCategories": [ "common", "integration-testing" ]
+    },
+    {
       "name": "@bentley/react-scripts",
       "allowedCategories": [ "frontend", "internal" ]
     },

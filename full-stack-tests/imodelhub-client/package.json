@@ -44,6 +44,7 @@
     "@bentley/imodeljs-common": "2.4.0-dev.12",
     "@bentley/itwin-client": "2.4.0-dev.12",
     "@bentley/oidc-signin-tool": "2.4.0-dev.12",
+    "@bentley/rbac-client": "2.4.0-dev.12",
     "chai": "^4.1.2",
     "deep-assign": "^2.0.0",
     "fs-extra": "^8.1.0",

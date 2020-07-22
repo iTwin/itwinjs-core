@@ -39,7 +39,8 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.4.0-dev.12",
     "@bentley/frontend-authorization-client": "^2.4.0-dev.12",
-    "@bentley/itwin-client": "^2.4.0-dev.12"
+    "@bentley/itwin-client": "^2.4.0-dev.12",
+    "@bentley/rbac-client": "^2.4.0-dev.12"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "2.4.0-dev.12",
