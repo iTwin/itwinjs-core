@@ -1927,7 +1927,7 @@ export type ThemedSelectProps = {
     escapeClearsValue?: boolean;
     filterOption?: ((option: OptionType, rawInput: string) => boolean) | null;
     formatGroupLabel?: typeof formatGroupLabel;
-    formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => Node;
+    formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => React.ReactNode;
     getOptionLabel?: typeof getOptionLabel;
     getOptionValue?: typeof getOptionValue;
     hideSelectedOptions?: boolean;

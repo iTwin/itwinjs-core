@@ -45,7 +45,7 @@ export function TransparencyPopupButton({ transparency, onTransparencyChange, bu
   }, [onTransparencyChange, transparency]);
 
   return (
-    <div>
+    <>
       <button title={toolTipLabel} className="map-transparency-popup-button" onClick={togglePopupDisplay} ref={buttonRef}>
         <Icon iconSpec={"icon icon-visibility-semi-transparent"} />
       </button>
@@ -61,6 +61,6 @@ export function TransparencyPopupButton({ transparency, onTransparencyChange, bu
           </div>
         </div>
       </Popup >
-    </div >
+    </ >
   );
 }

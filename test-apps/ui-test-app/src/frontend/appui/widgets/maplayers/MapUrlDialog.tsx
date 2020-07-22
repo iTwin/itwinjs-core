@@ -11,7 +11,7 @@ import { IModelApp, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, 
 import "./MapUrlDialog.scss";
 
 export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, onOkResult: () => void }) {
-  const [dialogTitle] = React.useState("Specify Map Source");
+  const [dialogTitle] = React.useState("Attach Custom Layer");
   const [mapTypes] = React.useState(["ArcGIS", "WMS", "WMTS", "TileURL"]);
   const [mapType, setMapType] = React.useState("ArcGIS");
 

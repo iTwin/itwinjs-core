@@ -177,17 +177,17 @@ const renderingStyles: RenderingStyle[] = [{
   name: "Thematic: Height",
   viewflags: { ...renderingStyleViewFlags, thematicDisplay: true },
   thematic: {
-    axis: [ 0, 0, 1 ],
+    axis: [0, 0, 1],
     gradientSettings: { mode: ThematicGradientMode.SteppedWithDelimiter },
   },
-  lights: { },
+  lights: {},
 }, {
   name: "Thematic: Slope",
   viewflags: { ...renderingStyleViewFlags, thematicDisplay: true },
   thematic: {
     displayMode: ThematicDisplayMode.Slope,
-    range: [ 0, 90 ],
-    axis: [ 0, 0, 1 ],
+    range: [0, 90],
+    axis: [0, 0, 1],
     gradientSettings: {
       mode: ThematicGradientMode.Smooth,
       colorScheme: ThematicGradientColorScheme.Custom,
@@ -197,7 +197,7 @@ const renderingStyles: RenderingStyle[] = [{
       ],
     },
   },
-  lights: { },
+  lights: {},
 }, {
   name: "Gloss",
   environment: {
