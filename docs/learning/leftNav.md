@@ -13,6 +13,10 @@
 
 ### [BIS](../bis/index.md)
 
+- [Overview](../bis/index.md)
+- [Schema Reference](../bis/domains/index.md)
+- [EC](../bis/ec/index.md)
+
 ---
 
 &nbsp;

@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Editing
+ */
 
 import { ECClass, MutableClass, MutableStructClass, StructClass } from "../Metadata/Class";
 import { MutableSchema, Schema } from "../Metadata/Schema";

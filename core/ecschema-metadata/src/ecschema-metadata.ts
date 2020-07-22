@@ -53,3 +53,23 @@ export * from "./Validation/SchemaChanges";
 export * from "./Validation/SchemaCompareReporter";
 export { ISuppressionRule, IRuleSuppressionSet, IRuleSuppressionMap } from "./Validation/RuleSuppressionSet";
 export { SchemaValidater } from "./Validation/SchemaValidater";
+
+/** @docs-package-description
+ * The ecschema-metadata package contains classes for working with, validating, and editing ECSchemas that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
+ */
+/**
+ * @docs-group-description Metadata
+ * Definitions of classes and interfaces that represent all [EC elements]($docs/bis/ec/index.md).
+ */
+/**
+ * @docs-group-description Validation
+ * Set of classes used to perform validation on ECSchemas.
+ */
+/**
+ * @docs-group-description Comparison
+ * Set of classes to enable comparison of ECSchemas.
+ */
+/**
+ * @docs-group-description Utils
+ * A set of utility classes used throughout the package.
+ */

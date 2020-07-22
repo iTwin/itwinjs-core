@@ -26,6 +26,7 @@ The iModel.js library is organized into the following separately downloadable [n
 - ($i18n)
 - ($bentley)
 - ($geometry)
+- ($ecschema-metadata)
 - ($logger-config)
 
 ## iModel.js Client Packages

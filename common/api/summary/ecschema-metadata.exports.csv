@@ -55,7 +55,7 @@ beta;class ECClass
 beta;ECClassModifier
 beta;ECName
 internal;ECObjectsError 
-internal;ECObjectsStatus
+beta;ECObjectsStatus
 beta;ECRuleSet: IRuleSet
 internal;ECStringConstants
 beta;ECVersion
