@@ -154,7 +154,6 @@ export function queryRenderCompatibility(useWebGL2: boolean, createContext?: Con
         missingRequiredFeatures: [],
         userAgent: navigator.userAgent,
         contextErrorMessage: errorMessage,
-        createdContext: context,
       };
   }
 
