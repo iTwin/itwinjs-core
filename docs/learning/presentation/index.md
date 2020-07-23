@@ -15,6 +15,7 @@ why the library is commonly called "presentation rules engine".
 
 - Content
   - [Rules](./Content/index.md)
+  - [Property Categorization](./Content/PropertyCategorization.md)
   - [ECExpressions](./Content/ECExpressions.md)
   - [Terminology](./Content/Terminology.md)
 - Hierarchies
