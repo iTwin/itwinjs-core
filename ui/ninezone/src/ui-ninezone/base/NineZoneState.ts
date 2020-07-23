@@ -937,7 +937,8 @@ function isDockedToolSettingsState(state: ToolSettingsState): state is DockedToo
   return state.type === "docked";
 }
 
-function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps) {
+/** @internal */
+export function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps) {
   props.left = bounds.left;
   props.right = bounds.right;
   props.top = bounds.top;

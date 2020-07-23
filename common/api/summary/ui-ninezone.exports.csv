@@ -149,6 +149,11 @@ alpha;GroupTool
 alpha;GroupToolExpander 
 alpha;GroupToolExpanderProps 
 alpha;GroupToolProps 
+internal;GrowBottom 
+internal;GrowLeft 
+internal;GrowRight 
+internal;class GrowStrategy 
+internal;GrowTop 
 alpha;HandleMode
 alpha;HandleModeHelpers
 beta;HorizontalAnchor
@@ -253,6 +258,8 @@ internal;PointerCaptorArgs
 internal;PointerCaptorEvent = MouseEvent | TouchEvent
 internal;PointerCaptorProps 
 beta;ProgressProps 
+internal;RECTANGULAR_DEFAULT_MIN_HEIGHT = 220
+internal;RECTANGULAR_DEFAULT_MIN_WIDTH = 296
 internal;ResizeAction
 alpha;ResizeDirection
 alpha;ResizeDirectionHelpers
@@ -260,6 +267,7 @@ alpha;ResizeGrip
 alpha;ResizeGripProps 
 alpha;ResizeGripResizeArgs
 beta;ResizeHandle
+internal;ResizeStrategy
 internal;restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): SizeProps
 internal;RightPanelSide = "right"
 beta;SafeAreaInsets
@@ -269,6 +277,14 @@ beta;ScrollableToolSettingsProps
 internal;ScrollableWidgetContent: React.NamedExoticComponent
 internal;ScrollableWidgetContentProps
 internal;SendBack: React.NamedExoticComponent
+internal;setRectangleProps(props: Draft
+internal;ShrinkBottom 
+internal;class ShrinkHorizontalStrategy 
+internal;ShrinkLeft 
+internal;ShrinkRight 
+internal;class ShrinkStrategy 
+internal;ShrinkTop 
+internal;class ShrinkVerticalStrategy 
 internal;sideToCursorType(side: PanelSide): CursorType
 beta;Snap 
 beta;SnapMode 
@@ -372,6 +388,7 @@ beta;Tooltip
 beta;TooltipDefaultProps = Pick
 beta;TooltipProps 
 internal;TopPanelSide = "top"
+internal;UpdateWindowResizeSettings 
 internal;useCursor(): void
 internal;useDoubleClick(onDoubleClick?: () => void): () => void
 internal;useDrag
