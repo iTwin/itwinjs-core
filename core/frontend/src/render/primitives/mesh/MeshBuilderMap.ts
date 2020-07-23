@@ -56,7 +56,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   }
 
   public toMeshes(): MeshList {
-    const meshes = new MeshList(undefined !== this.features ? this.features.table : undefined);
+    const meshes = new MeshList(undefined !== this.features ? this.features.table : undefined, this.range);
     for (const builder of this._values)
       meshes.push(builder.mesh);
 

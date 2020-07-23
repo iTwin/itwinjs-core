@@ -174,6 +174,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * **dta record fps** *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
 * **dta zoom selected** - zoom the selected viewport to the elements in the selection set.
 * **dta incident markers** - toggle incident marker demo in the selected viewport.
+* **dta path decoration** - toggle drawing a small path decoration in the selected viewport for testing purposes.
 * **dta markup** - toggle markup on the selected viewport.
 * **dta output shaders** - output debug information for compiled shaders. Requires SVT_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
   * `d=output\directory\` - directory into which to put the output files.
