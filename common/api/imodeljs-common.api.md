@@ -6395,6 +6395,8 @@ export class TileMetadataReader {
 // @internal (undocumented)
 export interface TileOptions {
     // (undocumented)
+    readonly alwaysSubdivideIncompleteTiles: boolean;
+    // (undocumented)
     readonly disableMagnification: boolean;
     // (undocumented)
     readonly enableImprovedElision: boolean;

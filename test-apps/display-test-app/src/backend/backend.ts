@@ -115,6 +115,7 @@ function setupStandaloneConfiguration(): SVTConfiguration {
 
   configuration.disableEdges = undefined !== process.env.SVT_DISABLE_EDGE_DISPLAY;
   configuration.alwaysLoadEdges = undefined !== process.env.SVT_ALWAYS_LOAD_EDGES;
+  configuration.alwaysSubdivideIncompleteTiles = undefined !== process.env.SVT_SUBDIVIDE_INCOMPLETE;
 
   const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
   try { fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8"); } catch { }

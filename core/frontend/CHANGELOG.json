@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.3.3",
+      "tag": "@bentley/imodeljs-frontend_v2.3.3",
+      "date": "Thu, 23 Jul 2020 12:57:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix regression that could result in increased number of tile requests."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.3.2",
       "tag": "@bentley/imodeljs-frontend_v2.3.2",
       "date": "Tue, 14 Jul 2020 23:50:36 GMT",

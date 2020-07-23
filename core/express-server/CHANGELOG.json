@@ -2,6 +2,12 @@
   "name": "@bentley/express-server",
   "entries": [
     {
+      "version": "2.3.3",
+      "tag": "@bentley/express-server_v2.3.3",
+      "date": "Thu, 23 Jul 2020 12:57:15 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.3.2",
       "tag": "@bentley/express-server_v2.3.2",
       "date": "Tue, 14 Jul 2020 23:50:36 GMT",

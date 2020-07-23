@@ -8403,6 +8403,8 @@ export abstract class TileAdmin {
     abstract addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void;
     // @internal (undocumented)
     abstract get alwaysRequestEdges(): boolean;
+    // @internal (undocumented)
+    abstract get alwaysSubdivideIncompleteTiles(): boolean;
     // @internal
     abstract clearTilesForViewport(vp: Viewport): void;
     // @internal
@@ -8490,6 +8492,8 @@ export abstract class TileAdmin {
 export namespace TileAdmin {
     export interface Props {
         alwaysRequestEdges?: boolean;
+        // @internal
+        alwaysSubdivideIncompleteTiles?: boolean;
         // @internal
         cancelBackendTileRequests?: boolean;
         contextPreloadParentDepth?: number;

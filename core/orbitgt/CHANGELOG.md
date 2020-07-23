@@ -1,6 +1,11 @@
 # Change Log - @bentley/orbitgt-core
 
-This log was last generated on Tue, 14 Jul 2020 23:50:36 GMT and should not be manually modified.
+This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+
+## 2.3.3
+Thu, 23 Jul 2020 12:57:15 GMT
+
+*Version update only*
 
 ## 2.3.2
 Tue, 14 Jul 2020 23:50:36 GMT
