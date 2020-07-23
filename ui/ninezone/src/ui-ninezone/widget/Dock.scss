@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
-.nz-widget-sendBack {
+.nz-widget-dock {
   height: 100%;
   position: relative;
   padding: 0 0.5em;
@@ -23,7 +23,7 @@
     &:after {
       content: '';
       background: $buic-foreground-muted;
-
+      height: 33%;
       display: block;
     }
 
@@ -32,46 +32,6 @@
 
       &:after {
         background: $buic-foreground-activehover;
-      }
-    }
-  }
-
-  &.nz-left {
-    > i {
-      &:after {
-        width: 33%;
-        height: 100%;
-      }
-    }
-  }
-
-  &.nz-right {
-    > i {
-      &:after {
-        width: 33%;
-        height: 100%;
-        float: right;
-      }
-    }
-  }
-
-  &.nz-top {
-    > i {
-      &:after {
-        height: 33%;
-      }
-    }
-  }
-
-  &.nz-bottom {
-    > i {
-      position: relative;
-
-      &:after {
-        height: 33%;
-        width: 100%;
-        position: absolute;
-        bottom: 0;
       }
     }
   }

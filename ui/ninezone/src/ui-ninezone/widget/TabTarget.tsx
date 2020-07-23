@@ -9,7 +9,6 @@
 import "./TabTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { assert } from "../base/assert";
 import { DraggedWidgetIdContext, useTabTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
@@ -30,7 +29,6 @@ export const WidgetTabTarget = React.memo<WidgetTabTargetProps>(function WidgetT
   const widgetId = React.useContext(WidgetIdContext);
   const draggedTab = React.useContext(DraggedTabContext);
   const draggedWidget = React.useContext(DraggedWidgetIdContext);
-  assert(widgetId);
   const [ref, targeted] = useTabTarget<HTMLDivElement>({
     tabIndex: first ? tabIndex : tabIndex + 1,
     widgetId,

@@ -32,10 +32,12 @@ alpha;containHorizontally: (componentBounds: RectangleProps, containerBounds: Re
 alpha;containVertically: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
 internal;ContentNodeContext: React.Context
 internal;ContentZoneId = 5
+internal;createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Partial
+internal;createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial
 internal;createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelState
 internal;createNineZoneState(args?: Partial
 internal;createPanelsState(): PanelsState
-internal;createPanelState(side: PanelSide): PanelState
+internal;createPanelState(side: PanelSide):
 internal;createTabsState(args?: Partial
 internal;createTabState(id: TabState["id"], args?: Partial
 internal;createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState
@@ -50,6 +52,7 @@ beta;Direction
 internal;DirectionHelpers
 beta;DisabledResizeHandles
 internal;DisabledResizeHandlesHelpers
+internal;Dock: React.NamedExoticComponent
 internal;DockedToolSetting(props: ToolSettingProps): JSX.Element
 internal;DockedToolSettings(props: DockedToolSettingsProps): JSX.Element
 internal;DockedToolSettingsHandle: React.NamedExoticComponent
@@ -84,15 +87,20 @@ alpha;ExpandableButton
 alpha;ExpandableButtonProps 
 beta;ExpandableItem 
 beta;ExpandableItemProps 
+internal;findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined
+internal;findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined
 internal;FloatingTab(): JSX.Element
 internal;FloatingWidget: React.NamedExoticComponent
 internal;floatingWidgetBringToFront(state: Draft
 internal;FloatingWidgetBringToFrontAction
+internal;FloatingWidgetContext: React.Context
+internal;FloatingWidgetHomeState
 internal;FloatingWidgetIdContext: React.Context
 internal;FloatingWidgetProps
 internal;FloatingWidgetResizeAction
 internal;FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom"
 internal;FloatingWidgets: React.NamedExoticComponent
+internal;FloatingWidgetSendBackAction
 internal;FloatingWidgetsState
 internal;FloatingWidgetsStateContext: React.Context
 internal;FloatingWidgetState
@@ -185,7 +193,7 @@ beta;NestedStagePanelsManagerProps
 beta;NestedToolSettings 
 beta;NestedToolSettingsProps 
 internal;NineZone(props: NineZoneProps): JSX.Element
-internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetSendBackAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction
+internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction | ToolSettingsDockAction
 internal;NineZoneContext: React.Context
 internal;NineZoneDispatch = (action: NineZoneActionTypes) => void
 internal;NineZoneDispatchContext: React.Context
@@ -291,6 +299,7 @@ beta;Status
 internal;StatusHelpers
 beta;StatusMessageProps 
 alpha;Tab 
+internal;TabBarButtons: React.NamedExoticComponent
 alpha;TabGroup 
 alpha;TabGroupProps 
 internal;TabIdContext: React.Context
@@ -343,6 +352,7 @@ alpha;ToolsArea
 alpha;ToolsAreaProps 
 internal;ToolSettingProps 
 beta;ToolSettings 
+internal;ToolSettingsDockAction
 internal;ToolSettingsDragStartAction
 internal;ToolSettingsNodeContext: React.Context
 internal;ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps): JSX.Element
@@ -433,7 +443,6 @@ internal;WidgetPanelsProps
 internal;WidgetProps 
 internal;WidgetProvider: React.NamedExoticComponent
 internal;WidgetProviderProps
-internal;WidgetSendBackAction
 internal;WidgetsState
 internal;WidgetsStateContext: React.Context
 internal;WidgetState

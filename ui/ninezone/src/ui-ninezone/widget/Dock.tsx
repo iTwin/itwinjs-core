@@ -6,30 +6,20 @@
  * @module Widget
  */
 
-import "./SendBack.scss";
-import classnames from "classnames";
+import "./Dock.scss";
 import * as React from "react";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
-import { FloatingWidgetContext } from "./FloatingWidget";
-import { assert } from "../base/assert";
 
 /** @internal */
-export const SendBack = React.memo(function SendBack() { // tslint:disable-line: variable-name no-shadowed-variable
-  const floatingWidget = React.useContext(FloatingWidgetContext);
+export const Dock = React.memo(function Dock() { // tslint:disable-line: variable-name no-shadowed-variable
   const dispatch = React.useContext(NineZoneDispatchContext);
-  const title = useLabel("sendWidgetHomeTitle");
-  assert(floatingWidget);
-  const className = classnames(
-    "nz-widget-sendBack",
-    floatingWidget.home.side && `nz-${floatingWidget.home.side}`,
-  );
+  const title = useLabel("dockToolSettingsTitle");
   return (
     <button
-      className={className}
+      className="nz-widget-dock"
       onClick={() => {
         dispatch({
-          type: "FLOATING_WIDGET_SEND_BACK",
-          id: floatingWidget.id,
+          type: "TOOL_SETTINGS_DOCK",
         });
       }}
       title={title}

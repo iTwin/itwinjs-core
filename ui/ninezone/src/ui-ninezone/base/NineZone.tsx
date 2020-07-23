@@ -34,6 +34,7 @@ export interface NineZoneProps {
 /** @internal */
 export interface NineZoneLabels {
   dockToolSettingsTitle?: string;
+  sendWidgetHomeTitle?: string;
 }
 
 /** @internal future */

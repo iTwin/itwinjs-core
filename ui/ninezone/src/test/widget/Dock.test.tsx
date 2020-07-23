@@ -5,15 +5,11 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { createFloatingWidgetState, FloatingWidgetContext, NineZoneDispatch, NineZoneDispatchContext, SendBack } from "../../ui-ninezone";
+import { Dock, NineZoneDispatch, NineZoneDispatchContext } from "../../ui-ninezone";
 
-describe("SendBack", () => {
+describe("Dock", () => {
   it("should render", () => {
-    const { container } = render(
-      <FloatingWidgetContext.Provider value={createFloatingWidgetState("w1")}>
-        <SendBack />
-      </FloatingWidgetContext.Provider>,
-    );
+    const { container } = render(<Dock />);
     container.firstChild!.should.matchSnapshot();
   });
 
@@ -21,17 +17,14 @@ describe("SendBack", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     const { container } = render(
       <NineZoneDispatchContext.Provider value={dispatch}>
-        <FloatingWidgetContext.Provider value={createFloatingWidgetState("w1")}>
-          <SendBack />
-        </FloatingWidgetContext.Provider>,
+        <Dock />
       </NineZoneDispatchContext.Provider>,
     );
-    const button = container.getElementsByClassName("nz-widget-sendBack")[0];
+    const button = container.getElementsByClassName("nz-widget-dock")[0];
     fireEvent.click(button);
 
     dispatch.calledOnceWithExactly({
-      type: "FLOATING_WIDGET_SEND_BACK",
-      id: "w1",
+      type: "TOOL_SETTINGS_DOCK",
     }).should.true;
   });
 });

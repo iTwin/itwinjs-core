@@ -8,12 +8,24 @@
 
 import * as React from "react";
 import { SendBack } from "./SendBack";
+import { ActiveTabIdContext } from "./Widget";
+import { toolSettingsTabId } from "../base/NineZoneState";
+import { Dock } from "./Dock";
+import { FloatingWidgetIdContext } from "./FloatingWidget";
 
 /** @internal */
 export const TabBarButtons = React.memo(function TabBarButtons() { // tslint:disable-line: variable-name no-shadowed-variable
+  const isToolSettings = useIsToolSettingsTab();
+  const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   return (
     <>
-      <SendBack />
+      {floatingWidgetId && !isToolSettings && <SendBack />}
+      {isToolSettings && <Dock />}
     </>
   );
 });
+
+function useIsToolSettingsTab() {
+  const activeTabId = React.useContext(ActiveTabIdContext);
+  return activeTabId === toolSettingsTabId;
+}

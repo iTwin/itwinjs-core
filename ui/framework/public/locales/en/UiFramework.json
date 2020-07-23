@@ -251,7 +251,8 @@
   },
   "widget": {
     "tooltips": {
-      "dockToolSettings": "Dock to top"
+      "dockToolSettings": "Dock to top",
+      "sendHome": "Send to panel"
     }
   }
 }

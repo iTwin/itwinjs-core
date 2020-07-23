@@ -8,10 +8,9 @@ import * as sinon from "sinon";
 import { Point } from "@bentley/ui-core";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, addTab, createNineZoneState, FloatingTab, NineZoneDispatch,
+  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch,
 } from "../../ui-ninezone";
 import { createDragItemInfo, NineZoneProvider } from "../Providers";
-import { DragManager } from "../../ui-ninezone/base/DragManager";
 
 describe("FloatingTab", () => {
   const sandbox = sinon.createSandbox();
@@ -25,10 +24,9 @@ describe("FloatingTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1", { label: "tab 1" });
     nineZone = produce(nineZone, (draft) => {
-      draft.draggedTab = {
+      draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),
-        tabId: "t1",
-      };
+      });
     });
     const { container } = render(
       <NineZoneProvider
@@ -47,10 +45,9 @@ describe("FloatingTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1", { label: "tab 1" });
     nineZone = produce(nineZone, (draft) => {
-      draft.draggedTab = {
+      draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),
-        tabId: "t1",
-      };
+      });
     });
     render(
       <NineZoneProvider
@@ -83,10 +80,9 @@ describe("FloatingTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1", { label: "tab 1" });
     nineZone = produce(nineZone, (draft) => {
-      draft.draggedTab = {
+      draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),
-        tabId: "t1",
-      };
+      });
     });
     render(
       <NineZoneProvider
@@ -123,10 +119,9 @@ describe("FloatingTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1", { label: "tab 1" });
     nineZone = produce(nineZone, (draft) => {
-      draft.draggedTab = {
+      draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),
-        tabId: "t1",
-      };
+      });
     });
     render(
       <NineZoneProvider
@@ -168,10 +163,9 @@ describe("FloatingTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1", { label: "tab 1" });
     nineZone = produce(nineZone, (draft) => {
-      draft.draggedTab = {
+      draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),
-        tabId: "t1",
-      };
+      });
     });
     render(
       <NineZoneProvider

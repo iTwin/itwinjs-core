@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import { Rectangle } from "@bentley/ui-core";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext, PanelTarget, useDrag, WidgetIdContext,
-  WidgetTabTarget,
+  addPanelWidget, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext, PanelTarget, useDrag,
+  WidgetIdContext, WidgetTabTarget,
 } from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
 import { NineZoneProvider } from "../Providers";
@@ -28,10 +28,9 @@ describe("WidgetTitleBar", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = produce(nineZone, (stateDraft) => {
       stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.byId.w1 = {
+      stateDraft.floatingWidgets.byId.w1 = createFloatingWidgetState("w1", {
         bounds: new Rectangle(0, 100, 200, 400).toProps(),
-        id: "w1",
-      };
+      });
     });
     const { container } = render(
       <NineZoneProvider
@@ -68,10 +67,9 @@ describe("WidgetTitleBar", () => {
     nineZone = addPanelWidget(nineZone, "left", "w2");
     nineZone = produce(nineZone, (stateDraft) => {
       stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.byId.w1 = {
+      stateDraft.floatingWidgets.byId.w1 = createFloatingWidgetState("w1", {
         bounds: new Rectangle(0, 100, 200, 400).toProps(),
-        id: "w1",
-      };
+      });
     });
     const { container } = render(
       <NineZoneProvider
@@ -115,10 +113,9 @@ describe("WidgetTitleBar", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = produce(nineZone, (stateDraft) => {
       stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.byId.w1 = {
+      stateDraft.floatingWidgets.byId.w1 = createFloatingWidgetState("w1", {
         bounds: new Rectangle(0, 100, 200, 400).toProps(),
-        id: "w1",
-      };
+      });
     });
     const { container } = render(
       <NineZoneProvider
@@ -161,10 +158,9 @@ describe("WidgetTitleBar", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = produce(nineZone, (stateDraft) => {
       stateDraft.panels.left.widgets = [];
-      stateDraft.floatingWidgets.byId.w1 = {
+      stateDraft.floatingWidgets.byId.w1 = createFloatingWidgetState("w1", {
         bounds: new Rectangle(0, 100, 200, 400).toProps(),
-        id: "w1",
-      };
+      });
     });
     const { container } = render(
       <NineZoneProvider

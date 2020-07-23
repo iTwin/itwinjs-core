@@ -25,6 +25,7 @@ import {
   AppButton,
   ToolsArea,
   ScrollableWidgetContent,
+  NineZoneLabels,
 } from "@bentley/ui-ninezone";
 import { ToolSettingProps } from "./ToolSetting";
 import ToolSettings from "./ToolSettings";
@@ -304,6 +305,10 @@ export default function Zones() {
     initialState = addTab(initialState, "bottomPanel3", "bottomPanel3_1", { label: "Tab 1" });
     return initialState;
   });
+  const labels = React.useMemo<NineZoneLabels>(() => ({
+    dockToolSettingsTitle: "Dock to top",
+    sendWidgetHomeTitle: "Send to panel",
+  }), []);
   const widget = React.useMemo(() => <WidgetContent />, []);
   const toolSettings = React.useMemo(() => <div>{settingsStr}</div>, [settingsStr]);
   const ui = React.useMemo(() => <div className="nzdemo-toolbars">
@@ -343,9 +348,10 @@ export default function Zones() {
       >
         <NineZone
           dispatch={dispatch}
+          labels={labels}
           state={state}
-          widgetContent={widget}
           toolSettingsContent={toolSettings}
+          widgetContent={widget}
         >
           {nineZone}
         </NineZone>

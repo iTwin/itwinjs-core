@@ -3,7 +3,7 @@
 exports[`FloatingWidgets should render 1`] = `
 <div
   class="nz-widget-widget nz-widget-floatingWidget"
-  style="transform: translate(0px, 100px); height: 300px; width: 200px;"
+  style="transform: translate(0px, 0px); height: 0px; width: 0px;"
 >
   <div
     class="nz-widget-tabBar"
@@ -26,6 +26,11 @@ exports[`FloatingWidgets should render 1`] = `
         </div>
       </div>
     </div>
+    <button
+      class="nz-widget-sendBack nz-left"
+    >
+      <i />
+    </button>
   </div>
   <div
     class="nz-widget-floatingWidget_handle nz-left"
