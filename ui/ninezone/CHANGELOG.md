@@ -1,6 +1,21 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Fri, 10 Jul 2020 17:23:14 GMT and should not be manually modified.
+This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+
+## 2.3.3
+Thu, 23 Jul 2020 12:57:15 GMT
+
+*Version update only*
+
+## 2.3.2
+Tue, 14 Jul 2020 23:50:36 GMT
+
+*Version update only*
+
+## 2.3.1
+Mon, 13 Jul 2020 18:50:14 GMT
+
+*Version update only*
 
 ## 2.3.0
 Fri, 10 Jul 2020 17:23:14 GMT
@@ -68,7 +83,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Ability to drag docked tool settings to widget mode.
 - Support for floating widget targets.
-- Fix safe area insets for bottom zones w/o footer. 
+- Fix safe area insets for bottom zones w/o footer.
 - Keep active tab visible.
 - Reparent widget content when dragging widget around.
 - Floating widget stacking order.
