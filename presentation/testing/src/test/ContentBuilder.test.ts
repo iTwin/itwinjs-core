@@ -94,8 +94,8 @@ class DataProvider extends EmptyDataProvider {
   public getContent = async () => getContent(this.values, this.descriptor);
 }
 
-async function getEmptyContent({ }, descriptor: Readonly<Descriptor>) {
-  return new Content(descriptor, []);
+async function getEmptyContent(props: { descriptor: Readonly<Descriptor> }) {
+  return new Content(props.descriptor, []);
 }
 
 interface TestInstance {
@@ -172,8 +172,8 @@ describe("ContentBuilder", () => {
       rulesetManagerMock.setup(async (x) => x.add(moq.It.isAny())).returns(async (ruleset) => new RegisteredRuleset(ruleset, Guid.createValue(), () => { }));
       presentationManagerMock.reset();
       presentationManagerMock.setup((manager) => manager.rulesets()).returns(() => rulesetManagerMock.object);
-      presentationManagerMock.setup(async (manager) => manager.getContent(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(getEmptyContent);
-      presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => new BeEvent());
+      presentationManagerMock.setup(async (manager) => manager.getContent(moq.It.isAny())).returns(getEmptyContent);
+      presentationManagerMock.setup((x) => x.onIModelContentChanged).returns(() => new BeEvent());
       Presentation.setPresentationManager(presentationManagerMock.object);
     });
 

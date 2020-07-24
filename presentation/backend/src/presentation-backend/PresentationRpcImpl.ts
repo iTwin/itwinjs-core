@@ -336,6 +336,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
 
   public async compareHierarchies(token: IModelRpcProps, requestOptions: PresentationDataCompareRpcOptions): PresentationRpcResponse<PartialHierarchyModificationJSON[]> {
     return this.makeRequest(token, "compareHierarchies", requestOptions, async (options) => {
+      options = {
+        ...options,
+        ...(options.expandedNodeKeys ? { expandedNodeKeys: options.expandedNodeKeys.map(NodeKey.fromJSON) } : undefined),
+      };
       const result = await this.getManager(requestOptions.clientId).compareHierarchies(options);
       return result.map(PartialHierarchyModification.toJSON);
     });

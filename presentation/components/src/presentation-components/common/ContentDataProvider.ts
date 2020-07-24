@@ -10,7 +10,8 @@ import memoize from "micro-memoize";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, ContentRequestOptions, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, Field, KeySet, PageOptions, Ruleset, SelectionInfo,
+  Content, ContentRequestOptions, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, Field, KeySet, PageOptions, RegisteredRuleset, Ruleset,
+  SelectionInfo,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
@@ -99,10 +100,13 @@ export interface IContentDataProvider extends IPresentationDataProvider {
 export interface ContentDataProviderProps {
   /** IModel to pull data from. */
   imodel: IModelConnection;
+
   /** Id of the ruleset to use when requesting content or a ruleset itself. */
   ruleset: string | Ruleset;
+
   /** The content display type which this provider is going to load data for. */
   displayType: string;
+
   /**
    * Paging size for obtaining content records.
    *
@@ -122,12 +126,12 @@ export interface ContentDataProviderProps {
    * ```
    */
   pagingSize?: number;
+
   /**
-   * A flag telling the provider to not listen for presentation updates
-   * an invalidate cache.
-   * @internal
+   * Auto-update content when ruleset, ruleset variables or data in the iModel changes.
+   * @alpha
    */
-  doNotListenForPresentationUpdates?: boolean;
+  enableContentAutoUpdate?: boolean;
 }
 
 /**
@@ -151,14 +155,19 @@ export class ContentDataProvider implements IContentDataProvider {
     this._keys = new KeySet();
     this._previousKeysGuid = this._keys.guid;
     this._pagingSize = props.pagingSize;
-    if (!props.doNotListenForPresentationUpdates)
-      Presentation.presentation.onContentUpdate.addListener(this.onContentUpdate);
+    if (props.enableContentAutoUpdate) {
+      Presentation.presentation.onIModelContentChanged.addListener(this.onIModelContentChanged);
+      Presentation.presentation.rulesets().onRulesetModified.addListener(this.onRulesetModified);
+      Presentation.presentation.vars(this._rulesetRegistration.rulesetId).onVariableChanged.addListener(this.onRulesetVariableChanged);
+    }
     this.invalidateCache(CacheInvalidationProps.full());
   }
 
   /** Destructor. Must be called to clean up.  */
   public dispose() {
-    Presentation.presentation.onContentUpdate.removeListener(this.onContentUpdate);
+    Presentation.presentation.onIModelContentChanged.removeListener(this.onIModelContentChanged);
+    Presentation.presentation.rulesets().onRulesetModified.removeListener(this.onRulesetModified);
+    Presentation.presentation.vars(this._rulesetRegistration.rulesetId).onVariableChanged.removeListener(this.onRulesetVariableChanged);
     this._rulesetRegistration.dispose();
   }
 
@@ -389,14 +398,27 @@ export class ContentDataProvider implements IContentDataProvider {
     return content ? { content, size: content.contentSet.length } : undefined;
   }, { isMatchingKey: MemoizationHelpers.areContentRequestsEqual as any });
 
-  // tslint:disable-next-line: naming-convention
-  private onContentUpdate = (ruleset: Ruleset) => {
-    if (ruleset.id !== this.rulesetId)
-      return;
-
+  private onContentUpdate() {
     // note: subclasses are expected to override `invalidateCache` and notify components about
     // the changed content so components know to reload
     this.invalidateCache(CacheInvalidationProps.full());
+  }
+
+  // tslint:disable-next-line: naming-convention
+  private onIModelContentChanged = (args: { ruleset: Ruleset }) => {
+    if (args.ruleset.id === this.rulesetId)
+      this.onContentUpdate();
+  }
+
+  // tslint:disable-next-line: naming-convention
+  private onRulesetModified = (curr: RegisteredRuleset) => {
+    if (curr.id === this.rulesetId)
+      this.onContentUpdate();
+  }
+
+  // tslint:disable-next-line: naming-convention
+  private onRulesetVariableChanged = () => {
+    this.onContentUpdate();
   }
 
 }

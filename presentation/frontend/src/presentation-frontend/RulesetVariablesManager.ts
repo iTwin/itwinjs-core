@@ -18,7 +18,7 @@ export interface RulesetVariablesManager {
   /**
    * An event that is raised when variable changes.
    */
-  onVariableChanged: BeEvent<(variableId: string) => void>;
+  onVariableChanged: BeEvent<(variableId: string, prevValue: VariableValue, currValue: VariableValue) => void>;
 
   /**
    * Retrieves `string` variable value.
@@ -90,11 +90,10 @@ export interface RulesetVariablesManager {
 export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
 
   private _clientValues = new Map<string, [VariableValueTypes, VariableValue]>();
+  public onVariableChanged = new BeEvent<(variableId: string, prevValue: VariableValue, currValue: VariableValue) => void>();
 
   public constructor() {
   }
-
-  public onVariableChanged = new BeEvent<(variableId: string) => void>();
 
   public async getAllVariables(): Promise<RulesetVariable[]> {
     const variables: RulesetVariable[] = [];
@@ -149,8 +148,9 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     return value[1];
   }
   private async setValue(id: string, type: VariableValueTypes, value: VariableValue): Promise<void> {
+    const oldValue = this._clientValues.get(id);
     this._clientValues.set(id, [type, value]);
-    this.onVariableChanged.raiseEvent(id);
+    this.onVariableChanged.raiseEvent(id, oldValue?.[1], value);
   }
 
   /**

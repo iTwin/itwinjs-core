@@ -228,7 +228,7 @@
     },
     {
       "name": "@testing-library/react-hooks",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@typescript-eslint/parser",
@@ -301,6 +301,10 @@
     {
       "name": "chai-string",
       "allowedCategories": [ "frontend", "tools" ]
+    },
+    {
+      "name": "chai-subset",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "chalk",
@@ -472,7 +476,7 @@
     },
     {
       "name": "immer",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "immutable",
@@ -724,7 +728,7 @@
     },
     {
       "name": "react-test-renderer",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-virtualized",

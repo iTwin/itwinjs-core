@@ -7,47 +7,36 @@
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { Content, ContentUpdateInfo, Item, Ruleset, RulesetsFactory } from "@bentley/presentation-common";
+import { Content, Item, RulesetsFactory } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomContent, createRandomDescriptor, createRandomPrimitiveField, createRandomRuleset,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { TypeConverter, TypeConverterManager } from "@bentley/ui-components";
 import {
   DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider,
 } from "../presentation-components";
-import { createRandomPropertyRecord } from "./_helpers/UiComponents";
+import { createRandomPropertyRecord, mockPresentationManager } from "./_helpers/UiComponents";
 
 describe("DataProvidersFactory", () => {
 
-  let onContentUpdateEvent: BeEvent<(ruleset: Ruleset, info: ContentUpdateInfo) => void>;
-  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
-  const propertiesProvider = moq.Mock.ofType<IPresentationPropertyDataProvider>();
+  let presentationManagerMock: moq.IMock<PresentationManager>;
+  let propertiesProvider: moq.IMock<IPresentationPropertyDataProvider>;
   let factory: DataProvidersFactory | undefined;
   let props: DataProvidersFactoryProps | undefined;
-
-  before(() => {
-    Presentation.setPresentationManager(presentationManagerMock.object);
-  });
-
-  after(() => {
-    Presentation.terminate();
-  });
 
   beforeEach(() => {
     props = undefined;
     factory = undefined;
-    onContentUpdateEvent = new BeEvent();
-    propertiesProvider.reset();
-    presentationManagerMock.reset();
-    presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => onContentUpdateEvent);
-    presentationManagerMock.setup((x) => x.rulesets()).returns(() => moq.Mock.ofType<RulesetManager>().object);
+    propertiesProvider = moq.Mock.ofType<IPresentationPropertyDataProvider>();
+    presentationManagerMock = mockPresentationManager().presentationManager;
+    Presentation.setPresentationManager(presentationManagerMock.object);
   });
 
   afterEach(() => {
     sinon.restore();
+    Presentation.terminate();
   });
 
   const getFactory = (): DataProvidersFactory => {

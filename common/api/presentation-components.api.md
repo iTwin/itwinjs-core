@@ -109,8 +109,8 @@ export class ContentDataProvider implements IContentDataProvider {
 // @public
 export interface ContentDataProviderProps {
     displayType: string;
-    // @internal
-    doNotListenForPresentationUpdates?: boolean;
+    // @alpha
+    enableContentAutoUpdate?: boolean;
     imodel: IModelConnection;
     pagingSize?: number;
     ruleset: string | Ruleset;
@@ -274,6 +274,8 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
 
 // @public
 export interface PresentationPropertyDataProviderProps {
+    // @alpha
+    enableContentAutoUpdate?: boolean;
     imodel: IModelConnection;
     ruleset?: string | Ruleset;
 }
@@ -305,8 +307,8 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
 export interface PresentationTableDataProviderProps {
     cachedPagesCount?: number;
     displayType?: string;
-    // @internal
-    doNotListenForPresentationUpdates?: boolean;
+    // @alpha
+    enableContentAutoUpdate?: boolean;
     imodel: IModelConnection;
     pageSize?: number;
     ruleset: string | Ruleset;
@@ -356,6 +358,8 @@ export interface PresentationTreeDataProviderProps {
 export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataProviderProps {
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
+    // @alpha
+    enableHierarchyAutoUpdate?: boolean;
     pagingSize: number;
     // @alpha
     preloadingEnabled?: boolean;

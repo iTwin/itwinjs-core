@@ -4,7 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chaiJestSnapshot from "chai-jest-snapshot";
 import * as enzyme from "enzyme";
+import { enablePatches } from "immer";
 
 // configure enzyme (testing utils for React)
 enzyme.configure({ adapter: new (require("enzyme-adapter-react-16"))() }); // tslint:disable-line:no-var-requires
 chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer")); // tslint:disable-line:no-var-requires
+
+// configure immer
+enablePatches();

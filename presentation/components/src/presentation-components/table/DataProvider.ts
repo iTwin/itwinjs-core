@@ -64,11 +64,10 @@ export interface PresentationTableDataProviderProps {
   displayType?: string;
 
   /**
-   * A flag telling the provider to not listen for presentation updates
-   * an invalidate cache.
-   * @internal
+   * Auto-update table content when ruleset, ruleset variables or data in the iModel changes.
+   * @alpha
    */
-  doNotListenForPresentationUpdates?: boolean;
+  enableContentAutoUpdate?: boolean;
 }
 
 /**
@@ -90,7 +89,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
       ruleset: props.ruleset,
       displayType: props.displayType || DefaultContentDisplayTypes.Grid,
       pagingSize: props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE,
-      doNotListenForPresentationUpdates: props.doNotListenForPresentationUpdates,
+      enableContentAutoUpdate: props.enableContentAutoUpdate,
     });
     this._pages = new PageContainer(props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE,
       props.cachedPagesCount || TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT);

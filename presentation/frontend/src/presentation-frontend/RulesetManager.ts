@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Guid } from "@bentley/bentleyjs-core";
+import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 
 /**
@@ -14,6 +14,9 @@ import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
  * @public
  */
 export interface RulesetManager {
+  /** @alpha */
+  onRulesetModified: BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>;
+
   /**
    * Get a ruleset with the specified id.
    */
@@ -42,24 +45,13 @@ export interface RulesetManager {
 }
 
 /** @internal */
-export interface RulesetManagerImplProps {
-  /** Called when ruleset is modified */
-  onRulesetModified?: (curr: RegisteredRuleset, prev: Ruleset) => Promise<void>;
-}
-
-/** @internal */
 export class RulesetManagerImpl implements RulesetManager {
 
   private _clientRulesets = new Map<string, RegisteredRuleset[]>();
-  private _onRulesetModified?: (curr: RegisteredRuleset, prev: Ruleset) => Promise<void>;
+  public onRulesetModified = new BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>();
 
-  private constructor(props?: RulesetManagerImplProps) {
-    /* istanbul ignore next */
-    this._onRulesetModified = props?.onRulesetModified;
-  }
-
-  public static create(props?: RulesetManagerImplProps) {
-    return new RulesetManagerImpl(props);
+  public static create() {
+    return new RulesetManagerImpl();
   }
 
   /**
@@ -89,9 +81,7 @@ export class RulesetManagerImpl implements RulesetManager {
   public async modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset> {
     await this.remove(ruleset);
     const modified = await this.add({ ...newRules, id: ruleset.id });
-    // istanbul ignore else
-    if (this._onRulesetModified)
-      await this._onRulesetModified(modified, ruleset.toJSON());
+    this.onRulesetModified.raiseEvent(modified, ruleset.toJSON());
     return modified;
   }
 

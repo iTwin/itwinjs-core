@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// tslint:disable: no-direct-imports
 import { expect } from "chai";
-import * as moq from "typemoq";
 import * as React from "react";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, ScreenViewport, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, KeySet, LabelDefinition, Node, NodePathElement, StandardNodeTypes } from "@bentley/presentation-common";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import {
-  Presentation, PresentationManager, RulesetManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager,
-} from "@bentley/presentation-frontend";
+import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
+import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
@@ -38,9 +38,8 @@ describe("CategoryTree", () => {
 
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
-  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
-  const rulesetManagerMock = moq.Mock.ofType<RulesetManager>();
-  const rulesetVariablesMock = moq.Mock.ofType<RulesetVariablesManager>();
+  let presentationManagerMock: moq.IMock<PresentationManager>;
+  let rulesetVariablesMock: moq.IMock<RulesetVariablesManager>;
   const viewportMock = moq.Mock.ofType<Viewport>();
   const viewStateMock = moq.Mock.ofType<SpatialViewState>();
   const viewManagerMock = moq.Mock.ofType<ViewManager>();
@@ -51,9 +50,6 @@ describe("CategoryTree", () => {
     viewManagerMock.reset();
     imodelMock.reset();
     selectionManagerMock.reset();
-    presentationManagerMock.reset();
-    rulesetManagerMock.reset();
-    rulesetVariablesMock.reset();
     viewportMock.reset();
     viewStateMock.reset();
 
@@ -62,9 +58,10 @@ describe("CategoryTree", () => {
     selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
     selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAny())).returns(() => new KeySet());
     Presentation.setSelectionManager(selectionManagerMock.object);
-    presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetManagerMock.object);
-    presentationManagerMock.setup((x) => x.vars(moq.It.isAny())).returns(() => rulesetVariablesMock.object);
-    presentationManagerMock.setup((x) => x.onHierarchyUpdate).returns(() => new BeEvent());
+
+    const mocks = mockPresentationManager();
+    presentationManagerMock = mocks.presentationManager;
+    rulesetVariablesMock = mocks.rulesetVariablesManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
 
     async function* generator() {
