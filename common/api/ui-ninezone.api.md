@@ -822,6 +822,89 @@ export interface GroupToolProps extends CommonProps {
     onPointerUp?: () => void;
 }
 
+// @internal (undocumented)
+export class GrowBottom extends GrowStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, growBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export class GrowLeft extends GrowStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, growBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export class GrowRight extends GrowStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, growBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export abstract class GrowStrategy implements ResizeStrategy {
+    constructor(manager: ZonesManager);
+    // (undocumented)
+    abstract getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
+    // (undocumented)
+    abstract getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    abstract getShrinkStrategy(): ResizeStrategy;
+    // (undocumented)
+    abstract getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    readonly manager: ZonesManager;
+    // (undocumented)
+    abstract resize(bounds: RectangleProps, growBy: number): RectangleProps;
+    // (undocumented)
+    tryResize(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
+}
+
+// @internal (undocumented)
+export class GrowTop extends GrowStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, growBy: number): RectangleProps;
+}
+
 // @alpha
 export enum HandleMode {
     // (undocumented)
@@ -1560,6 +1643,15 @@ export interface ProgressProps extends CommonProps, NoChildrenProps {
     status: Status;
 }
 
+// @internal (undocumented)
+export const RECTANGULAR_DEFAULT_MIN_HEIGHT = 220;
+
+// @internal (undocumented)
+export const RECTANGULAR_DEFAULT_MIN_WIDTH = 296;
+
+// @internal (undocumented)
+export function removeTab(state: Draft<NineZoneState>, tabId: TabState["id"]): void;
+
 // @internal
 export interface ResizeAction {
     // (undocumented)
@@ -1623,6 +1715,16 @@ export enum ResizeHandle {
     Right = 2,
     // (undocumented)
     Top = 1
+}
+
+// @internal (undocumented)
+export interface ResizeStrategy {
+    // (undocumented)
+    getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    tryResize(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
 }
 
 // @internal (undocumented)
@@ -1694,6 +1796,127 @@ export interface ScrollableWidgetContentProps {
 
 // @internal (undocumented)
 export const SendBack: React.NamedExoticComponent<object>;
+
+// @internal (undocumented)
+export function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps): void;
+
+// @internal (undocumented)
+export class ShrinkBottom extends ShrinkVerticalStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, shrinkBy: number, moveBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export abstract class ShrinkHorizontalStrategy extends ShrinkStrategy {
+    // (undocumented)
+    getCurrentSize(bounds: RectangleProps): number;
+    // (undocumented)
+    getMinSize(): number;
+}
+
+// @internal (undocumented)
+export class ShrinkLeft extends ShrinkHorizontalStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, shrinkBy: number, moveBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export class ShrinkRight extends ShrinkHorizontalStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, shrinkBy: number, moveBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export abstract class ShrinkStrategy implements ResizeStrategy {
+    constructor(manager: ZonesManager);
+    // (undocumented)
+    abstract getCurrentSize(bounds: RectangleProps): number;
+    // (undocumented)
+    abstract getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
+    // (undocumented)
+    abstract getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getMaxShrinkSelfBy(bounds: RectangleProps): number;
+    // (undocumented)
+    abstract getMinSize(): number;
+    // (undocumented)
+    abstract getShrinkStrategy(): ResizeStrategy;
+    // (undocumented)
+    abstract getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    readonly manager: ZonesManager;
+    // (undocumented)
+    abstract resize(bounds: RectangleProps, shrinkBy: number, moveBy: number): RectangleProps;
+    // (undocumented)
+    tryResize(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): {
+        zones: {
+            1: import("./Zone").ZoneManagerProps;
+            2: import("./Zone").ZoneManagerProps;
+            3: import("./Zone").ZoneManagerProps;
+            4: import("./Zone").ZoneManagerProps;
+            6: import("./Zone").ZoneManagerProps;
+            7: import("./Zone").ZoneManagerProps;
+            8: import("./Zone").ZoneManagerProps;
+            9: import("./Zone").ZoneManagerProps;
+        };
+        draggedWidget?: import("./Widget").DraggedWidgetManagerProps | undefined;
+        isInFooterMode: boolean;
+        target?: import("./Zones").ZonesManagerTargetProps | undefined;
+        widgets: import("./Zones").ZonesManagerWidgetsProps;
+        zonesBounds: RectangleProps;
+        floatingZonesBounds?: RectangleProps | undefined;
+    };
+}
+
+// @internal (undocumented)
+export class ShrinkTop extends ShrinkVerticalStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, shrinkBy: number, moveBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export abstract class ShrinkVerticalStrategy extends ShrinkStrategy {
+    // (undocumented)
+    getCurrentSize(bounds: RectangleProps): number;
+    // (undocumented)
+    getMinSize(): number;
+}
 
 // @internal (undocumented)
 export function sideToCursorType(side: PanelSide): CursorType;
@@ -2471,6 +2694,21 @@ export interface TooltipProps extends CommonProps {
 
 // @internal (undocumented)
 export type TopPanelSide = "top";
+
+// @internal (undocumented)
+export class UpdateWindowResizeSettings implements ResizeStrategy {
+    constructor(manager: ZonesManager, resizeStrategy: ResizeStrategy);
+    // (undocumented)
+    getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    readonly manager: ZonesManager;
+    // (undocumented)
+    readonly resizeStrategy: ResizeStrategy;
+    // (undocumented)
+    tryResize(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
+}
 
 // @internal
 export function useCursor(): void;
@@ -3281,6 +3519,8 @@ export class ZonesManager {
     // @internal (undocumented)
     setDraggedWidgetProps(draggedWidget: DraggedWidgetManagerProps | undefined, props: ZonesManagerProps): ZonesManagerProps;
     // (undocumented)
+    setFloatingZonesBounds(bounds: RectangleProps | undefined, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
     setIsInFooterMode(isInFooterMode: boolean, props: ZonesManagerProps): ZonesManagerProps;
     // @internal (undocumented)
     setToolSettingsWidgetMode<TProps extends ZonesManagerProps>(mode: ToolSettingsWidgetMode, props: TProps): TProps;
@@ -3318,6 +3558,8 @@ export class ZonesManager {
 export interface ZonesManagerProps {
     // (undocumented)
     readonly draggedWidget?: DraggedWidgetManagerProps;
+    // (undocumented)
+    readonly floatingZonesBounds?: RectangleProps;
     // (undocumented)
     readonly isInFooterMode: boolean;
     // (undocumented)

@@ -140,8 +140,9 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
   public constructor(props: StagePanelProps) {
     super(props);
 
+    const panelState = this.props.runtimeProps?.panelDef.panelState;
     this.state = {
-      panelState: this.props.runtimeProps?.panelDef.panelState || StagePanelState.Open,
+      panelState: panelState === undefined ? StagePanelState.Open : panelState,
     };
   }
 

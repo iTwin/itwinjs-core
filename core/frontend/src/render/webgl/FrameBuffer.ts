@@ -22,6 +22,8 @@ export const enum FrameBufferBindState {
   Unbound,
   Bound,
   BoundWithAttachments,
+  BoundMultisampled,
+  BoundWithAttachmentsMultisampled,
   Suspended,
 }
 
@@ -39,7 +41,9 @@ export class FrameBuffer implements WebGLDisposable {
 
   public get isDisposed(): boolean { return this._fbo === undefined; }
 
-  public get isBound(): boolean { return FrameBufferBindState.Bound === this._bindState || FrameBufferBindState.BoundWithAttachments === this._bindState; }
+  public get isBound(): boolean { return FrameBufferBindState.Bound <= this._bindState && FrameBufferBindState.BoundWithAttachmentsMultisampled >= this._bindState; }
+
+  public get isBoundMultisampled(): boolean { return FrameBufferBindState.BoundMultisampled === this._bindState || FrameBufferBindState.BoundWithAttachmentsMultisampled === this._bindState; }
 
   public get isSuspended(): boolean { return FrameBufferBindState.Suspended === this._bindState; }
 
@@ -147,16 +151,17 @@ export class FrameBuffer implements WebGLDisposable {
 
     const gl = System.instance.context;
 
-    if (bindMS && undefined !== this._fboMs)
+    if (bindMS && undefined !== this._fboMs) {
       gl.bindFramebuffer(GL.FrameBuffer.TARGET, this._fboMs);
-    else
+      this._bindState = FrameBufferBindState.BoundMultisampled;
+    } else {
       gl.bindFramebuffer(GL.FrameBuffer.TARGET, this._fbo);
+      this._bindState = FrameBufferBindState.Bound;
+    }
 
     if (bindAttachments) {
       System.instance.setDrawBuffers(this._colorAttachments);
-      this._bindState = FrameBufferBindState.BoundWithAttachments;
-    } else {
-      this._bindState = FrameBufferBindState.Bound;
+      this._bindState++;
     }
     return true;
   }
@@ -315,6 +320,10 @@ export class FrameBufferStack {
   public get currentColorBuffer(): TextureHandle | undefined {
     assert(!this.isEmpty);
     return undefined !== this._top ? this._top.fbo.getColor(0) : undefined;
+  }
+
+  public get currentFbMultisampled(): boolean {
+    return undefined !== this._top ? this._top.fbo.isBoundMultisampled : false;
   }
 
   public get isEmpty(): boolean { return 0 === this._stack.length; }

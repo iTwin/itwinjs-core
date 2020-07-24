@@ -3874,7 +3874,7 @@ export class IModelApp {
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @internal
     static eventSourceOptions: EventSourceOptions;
-    // @internal (undocumented)
+    // @beta
     static get extensionAdmin(): ExtensionAdmin;
     // @internal
     static get features(): FeatureTrackingManager;
@@ -3951,7 +3951,7 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: FrontendAuthorizationClient;
-    // @internal (undocumented)
+    // @beta
     extensionAdmin?: ExtensionAdmin;
     // @internal
     features?: FeatureTrackingManager;

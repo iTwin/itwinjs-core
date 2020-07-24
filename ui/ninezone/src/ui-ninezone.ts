@@ -152,6 +152,7 @@ export * from "./ui-ninezone/zones/Outline";
 export * from "./ui-ninezone/zones/Zone";
 export * from "./ui-ninezone/zones/Zones";
 
+export * from "./ui-ninezone/zones/manager/ResizeStrategy";
 export * from "./ui-ninezone/zones/manager/Widget";
 export * from "./ui-ninezone/zones/manager/Zone";
 export * from "./ui-ninezone/zones/manager/Zones";

@@ -1,6 +1,6 @@
 # AccessToken
 
-An application must fetch an [AccessToken]($itwin-client) from the Bentley Authorization Server to access various services including iModelHub. AccessTokens are [JSON Web Tokens](https://jwt.io/) - they are time constrained and scoped down to restrict access to only specific services. The iModel.js API uses the [OpenID Connect](https://openid.net/connect/) specification for *authentication* - i.e., determining "who" the user is, and the OAuth 2.0 protocol is used for *authorization* - i.e., delegating the application to talk to services like iModelHub on behalf of the user. The OpenID Connect specification is really just an extension of the OAuth 2.0 protocol.
+An application must fetch an [AccessToken]($itwin-client) from the Bentley Authorization Server to access various iTwin Services including iModelHub. AccessTokens are [JSON Web Tokens](https://jwt.io/) - they are time constrained and scoped down to restrict access to only specific services. The iModel.js API uses the [OpenID Connect](https://openid.net/connect/) specification for *authentication* - i.e., determining "who" the user is, and the OAuth 2.0 protocol is used for *authorization* - i.e., delegating the application to talk to services like iModelHub on behalf of the user. The OpenID Connect specification is really just an extension of the OAuth 2.0 protocol.
 
 The Bentley Authorization Service is built on the [IdentityServer4](http://docs.identityserver.io/en/latest/) framework, an officially [certified](https://openid.net/certification/) implementation of OpenID Connect.
 
@@ -20,7 +20,7 @@ For Web Frontend Applications, the means of authenticating the user is commonly 
 
 For Agent or Service Applications, since a browser is not involved, you would be using the iModel.js OpenID Connect Backend API that makes web service requests to obtain the access token.
 
-### 3. Send the access token through the iModel.Js API
+### 3. Send the access token through the iModel.js API
 
 After obtaining an access token, the application is then required to pass that through any iModel.js frontend or backend API that take the AccessToken parameter.
 
@@ -28,4 +28,4 @@ After obtaining an access token, the application is then required to pass that t
 
 AccessTokens have a limited lifetime, typically an hour. The application needs to refresh access tokens using the API when the tokens are about to expire, and ensure that it will remain valid for the duration of the API call.
 
-The imodelJs API calls required to refresh the access token are different in Web Frontend Applications and Agent or Service Applications.
+The iModel.js API calls required to refresh the access token are different in Web Frontend Applications and Agent or Service Applications.

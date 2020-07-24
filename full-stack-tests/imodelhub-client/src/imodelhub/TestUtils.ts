@@ -318,11 +318,11 @@ export async function deleteIModelByName(requestContext: AuthorizedClientRequest
   }
 }
 
-export async function getIModelId(requestContext: AuthorizedClientRequestContext, imodelName: string): Promise<GuidString> {
+export async function getIModelId(requestContext: AuthorizedClientRequestContext, imodelName: string, projectId?: string): Promise<GuidString> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
-  const projectId = await getProjectId(requestContext);
+  projectId = projectId ?? await getProjectId(requestContext);
 
   const client = getDefaultClient();
   const imodels = await client.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName));

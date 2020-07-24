@@ -261,8 +261,8 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   beforeEach(async () => {
-    await utils.createIModel(requestContext, imodelName);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
+    await utils.createIModel(requestContext, imodelName, projectId);
+    imodelId = await utils.getIModelId(requestContext, imodelName, projectId);
     iModelClient = utils.getDefaultClient();
     await utils.deleteIModelByName(requestContext, projectId, createIModelName);
   });

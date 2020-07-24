@@ -271,6 +271,7 @@ export class Capabilities {
       unmaskedRenderer,
       unmaskedVendor,
       userAgent: navigator.userAgent,
+      createdContext: gl,
     };
   }
 

@@ -20,6 +20,7 @@ import { getNestedStagePanelKey } from "../../ui-framework/stagepanels/StagePane
 import { StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
 import TestUtils from "../TestUtils";
 import { TestContentControl, TestFrontstage } from "./FrontstageTestUtils";
+import { Rectangle } from "@bentley/ui-core";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";
@@ -82,7 +83,10 @@ describe("FrontstageComposer", () => {
     wrapper.update();
 
     const nineZoneProps: NineZoneManagerProps = {
-      zones: getDefaultZonesManagerProps(),
+      zones: {
+        ...getDefaultZonesManagerProps(),
+        floatingZonesBounds: new Rectangle().toProps(),
+      },
       nested: {
         panels: {
           inner: getDefaultNineZoneStagePanelsManagerProps(),

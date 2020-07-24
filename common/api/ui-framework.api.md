@@ -2060,6 +2060,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     getGhostOutlineBounds(zoneId: WidgetZoneId): RectangleProps | undefined;
     // (undocumented)
     getZoneDef(zoneId: number): ZoneDef | undefined;
+    // (undocumented)
+    handleFloatingZonesBoundsChange(bounds: RectangleProps): void;
     // @alpha (undocumented)
     handlePanelInitialize(panelLocation: StagePanelLocation_2, size: number): void;
     // @alpha (undocumented)
@@ -3680,6 +3682,8 @@ export class NestedFrontstage {
 
 // @public
 export interface NineZoneChangeHandler {
+    // (undocumented)
+    handleFloatingZonesBoundsChange(bounds: RectangleProps): void;
     // (undocumented)
     handleZonesBoundsChange(bounds: RectangleProps): void;
 }

@@ -652,11 +652,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       return;
     }
     case "TOOL_SETTINGS_DOCK": {
-      const location = findTab(state, toolSettingsTabId);
-      assert(location);
-      const floatingWidgetId = "floatingWidgetId" in location ? location.floatingWidgetId : undefined;
-      const side = "side" in location ? location.side : undefined;
-      removeWidgetTab(state, location.widgetId, floatingWidgetId, side, toolSettingsTabId);
+      removeTab(state, toolSettingsTabId);
       state.toolSettings = {
         type: "docked",
       };
@@ -678,6 +674,16 @@ export function floatingWidgetBringToFront(state: Draft<NineZoneState>, floating
   const idIndex = state.floatingWidgets.allIds.indexOf(floatingWidgetId);
   const spliced = state.floatingWidgets.allIds.splice(idIndex, 1);
   state.floatingWidgets.allIds.push(spliced[0]);
+}
+
+/** @internal */
+export function removeTab(state: Draft<NineZoneState>, tabId: TabState["id"]) {
+  const location = findTab(state, tabId);
+  if (!location)
+    return;
+  const floatingWidgetId = "floatingWidgetId" in location ? location.floatingWidgetId : undefined;
+  const side = "side" in location ? location.side : undefined;
+  return removeWidgetTab(state, location.widgetId, floatingWidgetId, side, tabId);
 }
 
 function removeWidgetTab(
@@ -937,7 +943,8 @@ function isDockedToolSettingsState(state: ToolSettingsState): state is DockedToo
   return state.type === "docked";
 }
 
-function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps) {
+/** @internal */
+export function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps) {
   props.left = bounds.left;
   props.right = bounds.right;
   props.top = bounds.top;

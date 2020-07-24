@@ -114,6 +114,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   private static _zoneIds: ReadonlyArray<WidgetZoneId> = widgetZoneIds.filter((z) => z !== 8);
   private _contentRefs = new Map<WidgetZoneId, React.Ref<HTMLDivElement>>();
   private _zonesMeasurer = React.createRef<HTMLDivElement>();
+  private _floatingZonesMeasurer = React.createRef<HTMLDivElement>();
   private _zonesStyle: React.CSSProperties = {
     pointerEvents: "none",
   };
@@ -143,10 +144,14 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   }
 
   public componentDidUpdate() {
-    if (!this._zonesMeasurer.current || !this.props.runtimeProps)
+    if (!this._zonesMeasurer.current || !this._floatingZonesMeasurer.current || !this.props.runtimeProps)
       return;
+    let floatingBounds = Rectangle.create(this._floatingZonesMeasurer.current.getBoundingClientRect());
     const bounds = Rectangle.create(this._zonesMeasurer.current.getBoundingClientRect());
+    const offset = bounds.topLeft().getOffsetTo(floatingBounds.topLeft());
+    floatingBounds = floatingBounds.setPosition(offset);
     this.props.runtimeProps.nineZoneChangeHandler.handleZonesBoundsChange(bounds);
+    this.props.runtimeProps.nineZoneChangeHandler.handleFloatingZonesBoundsChange(floatingBounds);
   }
 
   /** React lifecycle method.
@@ -486,6 +491,15 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
             </StagePanels>
           </StagePanels>
           {this.cloneZoneElements([8], runtimeProps)}
+          <div
+            id="uifw-ninezone-floating-zones-area"
+            ref={this._floatingZonesMeasurer}
+            style={{
+              height: "100%",
+              width: "100%",
+              position: "absolute",
+            }}
+          />
         </NZ_Zones>
         {this.cloneWidgetContentElements(Frontstage._zoneIds, runtimeProps)}
       </div>

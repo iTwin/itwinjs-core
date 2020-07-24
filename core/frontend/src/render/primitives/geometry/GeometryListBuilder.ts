@@ -19,6 +19,7 @@ import { DisplayParams } from "../DisplayParams";
 import { GeometryOptions } from "../Primitives";
 import { GeometryAccumulator } from "./GeometryAccumulator";
 import { Geometry } from "./GeometryPrimitives";
+import { MeshList } from "../mesh/MeshPrimitives";
 
 function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
   const pts3d: Point3d[] = [];
@@ -154,6 +155,8 @@ export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: RenderGraphic[] = [];
 
   public finishGraphic(accum: GeometryAccumulator): RenderGraphic {
+    let meshes: MeshList | undefined;
+    let range: Range3d | undefined;
     let featureTable: FeatureTable | undefined;
     if (!accum.isEmpty) {
       // Overlay decorations don't test Z. Tools like to layer multiple primitives on top of one another; they rely on the primitives rendering
@@ -161,13 +164,16 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       // No point generating edges for graphics that are always rendered in smooth shade mode.
       const options = GeometryOptions.createForGraphicBuilder(this);
       const tolerance = this.computeTolerance(accum);
-      featureTable = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickId);
+      meshes = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickId);
+      if (undefined !== meshes) {
+        featureTable = meshes.features;
+        range = meshes.range;
+      }
     }
 
     let graphic = (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
     if (undefined !== featureTable) {
-      const range = new Range3d(); // ###TODO compute range...
-      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), range);
+      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), (range !== undefined) ? range : new Range3d());
     }
 
     return graphic;

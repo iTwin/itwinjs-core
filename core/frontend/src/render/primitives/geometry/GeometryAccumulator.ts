@@ -8,7 +8,6 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { IndexedPolyface, Loop, Path, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { FeatureTable } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { GraphicBranch } from "../../GraphicBranch";
 import { RenderGraphic } from "../../RenderGraphic";
@@ -144,7 +143,7 @@ export class GeometryAccumulator {
    * Populate a list of Graphic objects from the accumulated Geometry objects.
    * removed ViewContext
    */
-  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickableId?: string): FeatureTable | undefined {
+  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickableId?: string): MeshList | undefined {
     const meshes = this.toMeshes(options, tolerance, pickableId);
     if (0 === meshes.length)
       return undefined;
@@ -177,6 +176,6 @@ export class GeometryAccumulator {
       graphics.push(this.system.createBranch(branch, transform));
     }
 
-    return meshes.features;
+    return meshes;
   }
 }

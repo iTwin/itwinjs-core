@@ -94,8 +94,8 @@ describe("iModelHub VersionHandler", () => {
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, imodelName, contextId, false, true);
     await utils.createIModel(requestContext, imodelName2, contextId, false, true);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
-    imodelId2 = await utils.getIModelId(requestContext, imodelName2);
+    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    imodelId2 = await utils.getIModelId(requestContext, imodelName2, contextId);
     iModelClient = utils.getDefaultClient();
     briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
     if (!TestConfig.enableMocks) {
@@ -105,7 +105,7 @@ describe("iModelHub VersionHandler", () => {
       if (changeSetCount > 9) {
         // Recreate iModel if can't create any new changesets
         await utils.createIModel(requestContext, imodelName, contextId, true, true);
-        imodelId = await utils.getIModelId(requestContext, imodelName);
+        imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
         briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
       }
       // Prepared second iModel
@@ -161,8 +161,8 @@ describe("iModelHub VersionHandler", () => {
     let baselineiModelId = Guid.createValue();
     if (!TestConfig.enableMocks) {
       baselineiModelName = baselineVersionsiModelNamePrefix + Guid.createValue();
-      await utils.createIModel(requestContext, baselineiModelName);
-      baselineiModelId = await utils.getIModelId(requestContext, baselineiModelName);
+      await utils.createIModel(requestContext, baselineiModelName, contextId);
+      baselineiModelId = await utils.getIModelId(requestContext, baselineiModelName, contextId);
     }
 
     // Create baseline version
