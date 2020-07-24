@@ -271,7 +271,7 @@ export class ToolWithSettings extends PrimitiveTool {
   private static _getImageCheckBoxDescription = (): PropertyDescription => {
     return {
       name: ToolWithSettings._imageCheckBoxName,
-      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.ImageCheckBox"),
+      displayLabel: "",
       typename: "boolean",
       editor: {
         name: "image-check-box",
@@ -279,7 +279,10 @@ export class ToolWithSettings extends PrimitiveTool {
           type: PropertyEditorParamTypes.CheckBoxImages,
           imageOff: "icon-clear-night",
           imageOn: "icon-clear-day",
-        } as ImageCheckBoxParams,
+        } as ImageCheckBoxParams, {
+          type: PropertyEditorParamTypes.SuppressEditorLabel,
+          suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams,
         ],
       },
     };

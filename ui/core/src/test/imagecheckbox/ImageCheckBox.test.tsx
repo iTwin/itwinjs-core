@@ -27,6 +27,12 @@ describe("<ImageCheckBox />", () => {
     ).should.matchSnapshot();
   });
 
+  it("border renders correctly", () => {
+    shallow(
+      <ImageCheckBox imageOn="icon-visibility" imageOff="icon-visibility-hide-2" border={true} />,
+    ).should.matchSnapshot();
+  });
+
   it("onClick should be called on change", () => {
     const handler = sinon.spy();
     const wrapper = shallow(<ImageCheckBox imageOn="icon-visibility" imageOff="icon-visibility-hide-2" onClick={handler} checked={false} />);

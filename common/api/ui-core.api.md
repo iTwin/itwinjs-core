@@ -931,6 +931,7 @@ export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
 
 // @public
 export interface ImageCheckBoxProps extends CommonProps {
+    border?: boolean;
     checked?: boolean;
     disabled?: boolean;
     imageOff: string | React.ReactNode;

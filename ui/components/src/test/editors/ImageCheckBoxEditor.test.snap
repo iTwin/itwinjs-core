@@ -2,6 +2,7 @@
 
 exports[`<ImageCheckBoxEditor /> renders correctly 1`] = `
 <ImageCheckBox
+  border={true}
   checked={false}
   className="components-cell-editor components-imagecheckbox-editor"
   data-testid="components-imagecheckbox-editor"

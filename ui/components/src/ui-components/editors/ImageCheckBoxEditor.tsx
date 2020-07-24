@@ -119,6 +119,7 @@ export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps
         imageOff={this.state.imageOff}
         imageOn={this.state.imageOn}
         className={className}
+        border={true}
         style={this.props.style}
         checked={checked}
         onClick={this._handleClick}
