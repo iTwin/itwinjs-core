@@ -105,6 +105,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Get the Native SQL statement
+   * @internal
    */
   public getNativeSql(): string {
     if (!this._stmt)
