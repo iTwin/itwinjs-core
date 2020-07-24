@@ -23,6 +23,7 @@ The iModel.js library is organized into the following separately downloadable [n
   - ($backend)
   - ($backend-itwin-client)
 - ($common)
+- ($ecschema-metadata)
 - ($i18n)
 - ($bentley)
 - ($geometry)

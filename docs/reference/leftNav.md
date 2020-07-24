@@ -11,6 +11,7 @@ packageClassification:  [
          "imodeljs-i18n",
          "backend-itwin-client",
          "bentleyjs-core",
+         "ecschema-metadata",
          "geometry-core",
          "ecschema-metadata",
          "logger-config",

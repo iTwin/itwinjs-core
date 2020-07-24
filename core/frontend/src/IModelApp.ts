@@ -98,7 +98,9 @@ export interface IModelAppOptions {
   quantityFormatter?: QuantityFormatter;
   /** @internal */
   renderSys?: RenderSystem | RenderSystem.Options;
-  /** @internal */
+  /** If present, supplies the [[ExtensionAdmin]] for this session.
+   * @beta
+   */
   extensionAdmin?: ExtensionAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
@@ -241,7 +243,9 @@ export class IModelApp {
   public static get iModelClient(): IModelClient { return this._imodelClient; }
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
-  /** @internal */
+  /** The [[ExtensionAdmin]] for this session.
+   * @beta
+   */
   public static get extensionAdmin() { return this._extensionAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
