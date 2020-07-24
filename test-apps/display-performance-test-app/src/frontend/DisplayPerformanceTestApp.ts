@@ -1175,9 +1175,25 @@ async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Sel
   }
 }
 
-async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array<Map<string, number>>, resultsCallback: (result: any) => void): Promise<void> {
+async function preRenderAsync(vp: ScreenViewport, numFramesToSkip: number): Promise<void> {
   IModelApp.viewManager.addViewport(vp);
 
+  let frameCount = 0;
+  vp.continuousRendering = true;
+  return new Promise((resolve: () => void, _reject) => {
+    const removeListener = vp.onRender.addListener((_) => {
+      if (++frameCount >= numFramesToSkip) {
+        removeListener();
+        vp.continuousRendering = false;
+        resolve();
+      } else {
+        vp.setRedrawPending();
+      }
+    });
+  });
+}
+
+async function renderAsync(vp: ScreenViewport, numFrames: number, timings: Array<Map<string, number>>, resultsCallback: (result: any) => void): Promise<void> {
   const debugControl = IModelApp.renderSystem.debugControl!;
   const target = vp.target as Target;
   const metrics = target.performanceMetrics!;
@@ -1251,10 +1267,7 @@ async function runTest(testConfig: DefaultConfigs) {
   gpuFramesCollected = 0; // Set the number of gpu timings collected back to 0
 
   // Throw away the first n renderFrame times, until it's more consistent
-  for (let i = 0; i < (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50); ++i) {
-    theViewport!.setRedrawPending();
-    theViewport!.renderFrame();
-  }
+  await preRenderAsync(theViewport!, (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50));
   testConfig.numRendersToTime = testConfig.numRendersToTime ? testConfig.numRendersToTime : 100;
 
   // Turn on performance metrics to start collecting data when we render things
