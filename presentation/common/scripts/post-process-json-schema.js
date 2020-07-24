@@ -5,6 +5,7 @@
 const fs = require("fs");
 const path = require("path");
 const yargs = require("yargs").argv;
+const { execSync } = require("child_process");
 
 if (!yargs.path)
   throw new Error("JSON schema path not specified (--path)");
@@ -39,3 +40,13 @@ function handleDescription(descr) {
 
 const processedSchema = handleObject(schema);
 fs.writeFileSync(schemaPath, JSON.stringify(processedSchema, undefined, 2));
+
+const isCI = (process.env.TF_BUILD);
+if (isCI) {
+  // break CI builds if the schema file changes during the build
+  const schemaFileStatus = execSync(`git status -s "${yargs.path}"`).toString().trim();
+  if (schemaFileStatus !== "") {
+    console.error("JSON schema file was modified during a CI build. Please build the package locally and commit the changes.\n");
+    process.exit(1);
+  }
+}
