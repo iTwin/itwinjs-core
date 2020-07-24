@@ -8,7 +8,6 @@
 import { AuthStatus, BentleyError, Logger } from "@bentley/bentleyjs-core";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 import { UserInfo } from "./UserInfo";
-
 const loggerCategory = ITwinClientLoggerCategory.Authorization;
 
 /**
@@ -22,23 +21,44 @@ export enum IncludePrefix {
   No = 1,
 }
 
+/**
+ * When TokenPrefix is used as a decorator for a class, this function gets access to that class's constructor. That class's constructor is stored
+ * in a dictionary that maps token prefix to constructor.
+ * @param prefix Prefix of the Token
+ * @internal
+ */
+export function TokenPrefix(prefix: string) {
+  return (constructor: any) => {
+    TokenPrefixToTypeContainer.tokenPrefixToConstructorDict[prefix] = constructor;
+  };
+}
+
+/**
+ * Class solely to hold the dictionary of mappings from token prefix (string) to the token's constructor
+ * @internal
+ */
+class TokenPrefixToTypeContainer {
+  public static tokenPrefixToConstructorDict: { [key: string]: any } = {};
+}
+
 /** Token issued by DelegationSecureTokenService for API access
  * @beta
  */
+@TokenPrefix("Bearer")
 export class AccessToken {
-  private static _jwtTokenPrefix = "Bearer";
-
-  private _jwt: string;
+  protected _prefix: string;
+  protected _tokenString?: string;
   private _userInfo?: UserInfo;
   private _startsAt?: Date;
   private _expiresAt?: Date;
 
   /** Create a new AccessToken given a JWT (Jason Web Token) */
-  public constructor(jwt: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo) {
-    this._jwt = jwt;
+  public constructor(tokenString?: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo) {
+    this._tokenString = tokenString;
     this._startsAt = startsAt;
     this._expiresAt = expiresAt;
     this._userInfo = userInfo;
+    this.setPrefix("Bearer");
   }
 
   /** @internal */
@@ -60,16 +80,33 @@ export class AccessToken {
   public getStartsAt(): Date | undefined {
     return this._startsAt;
   }
+  protected setPrefix(prefix: string) {
+    this._prefix = prefix;
+  }
 
   /**
    * Convert this AccessToken to a string that can be passed across the wire
+   * Users should overwrite this method in a subclass of AccessToken if their token is not converted to a string in this way.
    * @param includePrefix Include the token prefix to identify the type of token - "Bearer" for JSON Web Tokens (JWTs)
    * @beta
    */
   public toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
-    return (includePrefix === IncludePrefix.Yes) ? AccessToken._jwtTokenPrefix + " " + this._jwt : this._jwt;
+    const jwt = this._tokenString || "";
+    return (includePrefix === IncludePrefix.Yes) ? this._prefix + " " + jwt : jwt;
   }
-
+  /**
+   * Initialize the jwt field of the current instance of the AccessToken
+   * Users would typically override this method in a subclass of AccessToken
+   * if their token has to be initialized in a different way
+   * @param tokenStr String representation of the token
+   */
+  public initFromTokenString(tokenStr: string): void {
+    if (!tokenStr.startsWith(this._prefix)) {
+      throw new BentleyError(AuthStatus.Error, "Invalid access token", Logger.logError, loggerCategory, () => ({ tokenStr }));
+    }
+    const jwt = tokenStr.substr(this._prefix.length + 1);
+    this._tokenString = jwt;
+  }
   /**
    * Create an AccessToken from a string that's typically passed across the wire
    * - The AccessToken will not include the user information or expiry information
@@ -80,13 +117,18 @@ export class AccessToken {
    * @beta
    */
   public static fromTokenString(tokenStr: string): AccessToken {
-    if (!tokenStr.startsWith(AccessToken._jwtTokenPrefix)) {
-      throw new BentleyError(AuthStatus.Error, "Invalid access token", Logger.logError, loggerCategory, () => ({ tokenStr }));
-    }
-    const jwt = tokenStr.substr(AccessToken._jwtTokenPrefix.length + 1);
-    return new AccessToken(jwt);
+    const accessToken: AccessToken = AccessToken.generateProperTokenType(tokenStr);
+    accessToken.initFromTokenString(tokenStr);
+    return accessToken;
   }
-
+  private static generateProperTokenType(tokenStr: string): any {
+    for (const key in TokenPrefixToTypeContainer.tokenPrefixToConstructorDict) {
+      if (tokenStr.startsWith(key)) {
+        return new TokenPrefixToTypeContainer.tokenPrefixToConstructorDict[key]();
+      }
+    }
+    throw new BentleyError(AuthStatus.Error, "Invalid access token", Logger.logError, loggerCategory, () => ({ tokenStr }));
+  }
   /**
    * Creates a strongly typed AccessToken object from an untyped JSON with the same properties as [[AccessToken]]
    * @param jsonObj
@@ -101,11 +143,8 @@ export class AccessToken {
     const startsAt = jsonObj._startsAt !== undefined ? new Date(jsonObj._startsAt) : undefined;
     const expiresAt = jsonObj._expiresAt !== undefined ? new Date(jsonObj._expiresAt) : undefined;
     const userInfo = UserInfo.fromJson(jsonObj._userInfo);
-
-    const token = new AccessToken(jwt, startsAt, expiresAt, userInfo);
-    return token;
+    return new AccessToken(jwt, startsAt, expiresAt, userInfo);
   }
-
   /**
    * Creates AccessToken from the typical token responses obtained from Authorization servers
    * - The fields from the token response to different names in AccessToken to keep with naming guidelines

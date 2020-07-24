@@ -39,6 +39,7 @@ internal;SamlAccessToken
 internal;SamlAuthorizationToken 
 internal;class SamlToken
 beta;SasUrlExpired 
+internal;TokenPrefix(prefix: string): (constructor: any) => void
 internal;UrlDiscoveryClient 
 internal;UserCancelledError 
 beta;UserInfo
