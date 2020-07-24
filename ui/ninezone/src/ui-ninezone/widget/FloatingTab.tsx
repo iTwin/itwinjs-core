@@ -57,7 +57,7 @@ export function FloatingTab() {
     onDrag,
     onDragEnd,
   });
-  const style = draggedTab && CssProperties.fromPosition(draggedTab.position);
+  const style = draggedTab && CssProperties.transformFromPosition(draggedTab.position);
   const className = classnames(
     "nz-widget-floatingTab",
     !draggedTab && "nz-hidden",

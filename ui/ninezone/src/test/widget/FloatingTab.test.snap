@@ -3,7 +3,7 @@
 exports[`FloatingTab should render 1`] = `
 <div
   class="nz-widget-floatingTab"
-  style="left: 10px; top: 20px;"
+  style="transform: translate(10px, 20px);"
 >
   <span>
     tab 1

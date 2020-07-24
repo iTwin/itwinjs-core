@@ -43,6 +43,7 @@ With the above background in mind, the quickest/easiest migration pattern for al
 1. Add a `src/index.ts` file with an import to the current entry point of the app within `src/frontend`. For example if the entry point is currently `./src/frontend/index.ts`, then the new `./src/index.ts` will be as simple as the new [ui-test-app/src/index.ts](https://dev.azure.com/bentleycs/iModelTechnologies/_git/imodeljs/pullrequest/74170?_a=files&path=%2Ftest-apps%2Fui-test-app%2Fsrc%2Findex.ts) file.
 1. Remove the `iModelJs.buildModule` from the `build` script in `package.json` and replace call to `buildImodelJsModel` with `react-scripts build`.
 1. Add a `browserslist` section to the package.json
+
     ```json
     "browserslist": [
       "electron 6.0.0",
@@ -56,6 +57,7 @@ With the above background in mind, the quickest/easiest migration pattern for al
       "not <0.2%"
     ]
     ```
+
 1. Add a separate `tsconfig.json` for backend build called `tsconfig.backend.json`.
   - The build between the frontend and backend are now slightly different in their configuration meaning that an app now needs two separate tsconfigs
   - The contents of the `tsconfig.backend.json` should be similar to the following:
@@ -79,3 +81,18 @@ With the above background in mind, the quickest/easiest migration pattern for al
       ```
 
 ## FAQ
+
+- Receiving an out-of-memory exception when running `react-scripts build`?
+
+  > FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+
+  This is most likely the result of generating sourcemaps for the application. There are known issues in create-react-app of the sourcemap generation causing memory issues on large projects.
+
+  To workaround the issue either,
+
+  - Set the following environment variable, `GENERATE_SOURCEMAPS=false`.  The documentation about this and other react-scripts configurations are available on their [advanced configuration page](https://create-react-app.dev/docs/advanced-configuration).
+  - Or, increase the Node heap size by adding the `--max_old_space_size=4096` argument, like `react-scripts --max_old_space_size=4096 build`
+
+- What happens to the `config.json`?
+
+Previously iModel.js dynamically pulled a config.json file from the same web origin as the rest of the assets to provide the configuration.  This has been changed to follow create-react-app's way of handling configuration

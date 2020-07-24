@@ -8,15 +8,13 @@
 
 import * as React from "react";
 import { Tabs, TabsProps } from "./Tabs";
+import { Orientation } from "../enums/Orientation";
 
 /** Horizontal tabs meant to represent the current position in a page/section
  * @public
  */
-export class HorizontalTabs extends React.PureComponent<TabsProps> {
-  /** @internal */
-  public render(): JSX.Element {
-    return (
-      <Tabs mainClassName="uicore-tabs-horizontal" {...this.props} />
-    );
-  }
+export function HorizontalTabs(props: TabsProps) {
+  return (
+    <Tabs mainClassName="uicore-tabs-horizontal" orientation={Orientation.Horizontal} {...props} />
+  );
 }

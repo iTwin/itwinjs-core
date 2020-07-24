@@ -55,6 +55,31 @@ describe("<EnumButtonGroupEditor />", () => {
     expect(spyOnCommit.calledOnce).to.be.true;
   });
 
+  it("button press updates string value and display", async () => {
+    const record = TestUtils.createEnumStringProperty("Test", "red");
+    TestUtils.addEnumButtonGroupEditorSpecification(record);
+
+    const originalValue = (record.value as PrimitiveValue).value as string;
+    expect(originalValue).to.be.equal("red");
+
+    const spyOnCommit = sinon.spy();
+    function handleCommit(commit: PropertyUpdatedArgs): void {
+      const newValue = (commit.newValue as PrimitiveValue).value as string;
+      expect(newValue).to.be.equal("green");
+      spyOnCommit();
+    }
+
+    const renderedComponent = render(<EnumButtonGroupEditor propertyRecord={record} onCommit={handleCommit} />);
+    const greenButton = renderedComponent.getByTestId("Green");
+    expect(greenButton.tagName).to.be.equal("BUTTON");
+    expect(greenButton.classList.contains("nz-is-active")).to.be.false;
+
+    fireEvent.click(greenButton);
+    await TestUtils.flushAsyncOperations();
+    expect(greenButton.classList.contains("nz-is-active")).to.be.true;
+    expect(spyOnCommit.calledOnce).to.be.true;
+  });
+
   it("test support for enable/disable button states", async () => {
     const record = TestUtils.createEnumProperty("Test", 0);
     TestUtils.addEnumButtonGroupEditorSpecification(record);

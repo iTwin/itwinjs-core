@@ -50,7 +50,6 @@ export const Widget = React.memo<WidgetProps>(function Widget(props) { // tslint
   const measureNz = React.useContext(MeasureContext);
   const activeTab = useActiveTab();
   const ref = React.useRef<HTMLDivElement>(null);
-  assert(id !== undefined);
   const widgetId = floatingWidgetId === undefined ? id : floatingWidgetId;
   const onDragStart = React.useCallback<NonNullable<UseDragWidgetArgs["onDragStart"]>>((updateId, initialPointerPosition) => {
     assert(ref.current);
@@ -127,7 +126,7 @@ export const Widget = React.memo<WidgetProps>(function Widget(props) { // tslint
 });
 
 /** @internal */
-export const WidgetIdContext = React.createContext<WidgetState["id"] | undefined>(undefined); // tslint:disable-line: variable-name
+export const WidgetIdContext = React.createContext<WidgetState["id"]>(null!); // tslint:disable-line: variable-name
 WidgetIdContext.displayName = "nz:WidgetIdContext";
 
 /** @internal */

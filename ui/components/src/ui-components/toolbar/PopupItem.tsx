@@ -9,11 +9,11 @@
 import "./PopupItem.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ActionButton } from "@bentley/ui-abstract";
-import { OutsideClickEvent, useOnOutsideClick } from "@bentley/ui-core";
+import { ActionButton, RelativePosition } from "@bentley/ui-abstract";
+import { Popup, useRefState } from "@bentley/ui-core";
 import { ToolbarButtonItemProps } from "./Item";
-import { ToolbarPanelAlignmentHelpers, useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
-import { DirectionHelpers, OrthogonalDirectionHelpers } from "./utilities/Direction";
+import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
+import { toToolbarPopupRelativePosition } from "./PopupItemWithDrag";
 
 /** @internal */
 export interface ToolbarPopupContextProps {
@@ -51,7 +51,7 @@ export interface PopupItemProps extends ToolbarButtonItemProps {
  */
 export function PopupItem(props: PopupItemProps) {
   const [isPanelShown, setPanelShown] = React.useState(false);
-  const { expandsTo, direction, overflowExpandsTo, overflowDirection, panelAlignment, onPopupPanelOpenClose } = useToolbarWithOverflowDirectionContext();
+  const { expandsTo, overflowExpandsTo, panelAlignment, onPopupPanelOpenClose } = useToolbarWithOverflowDirectionContext();
   const processPanelOpenClose = React.useCallback((isOpening: boolean) => {
     setPanelShown((prev) => {
       // istanbul ignore else
@@ -74,25 +74,13 @@ export function PopupItem(props: PopupItemProps) {
     props.isDisabled && "components-disabled",
     props.className);
 
-  const ref = React.useRef<HTMLButtonElement>(null);
+  const [targetRef, target] = useRefState<HTMLButtonElement>();
   // istanbul ignore next
-  const onOutsideClick = React.useCallback(() => {
+  const handleClose = React.useCallback(() => {
     processPanelOpenClose(false);
   }, [processPanelOpenClose]);
-  // istanbul ignore next
-  const isOutsideEvent = React.useCallback((e: OutsideClickEvent) => {
-    // if clicking on button that open panel - don't trigger outside click processing
-    return !!ref.current && (e.target instanceof Node) && !ref.current.contains(e.target);
-  }, []);
-  const panelRef = useOnOutsideClick<HTMLDivElement>(onOutsideClick, isOutsideEvent);
   const { hasOverflow } = useToolItemEntryContext();
-  const panelClassName = classnames(
-    "components-toolbar-popup-panel-container",
-    hasOverflow && "components-overflown",
-    OrthogonalDirectionHelpers.getCssClassName(hasOverflow ? overflowDirection : direction),
-    DirectionHelpers.getCssClassName(hasOverflow ? overflowExpandsTo : expandsTo),
-    ToolbarPanelAlignmentHelpers.getCssClassName(panelAlignment),
-  );
+  const expandsToDirection = hasOverflow ? overflowExpandsTo : expandsTo;
 
   const { hideIndicator, panel } = props;
   return (
@@ -100,7 +88,7 @@ export function PopupItem(props: PopupItemProps) {
       closePanel: () => processPanelOpenClose(false),
     }}>
       <button
-        ref={ref}
+        ref={targetRef}
         disabled={props.isDisabled}  // this is needed to prevent focusing/keyboard access to disabled buttons
         onClick={onButtonClick}
         onKeyDown={props.onKeyDown}
@@ -118,7 +106,33 @@ export function PopupItem(props: PopupItemProps) {
         }
         {hideIndicator ? undefined : <div className="components-triangle" />}
       </button>
-      {isPanelShown && <div ref={panelRef} className={panelClassName}>{panel}</div>}
+      <PopupItemPopup
+        isOpen={isPanelShown}
+        onClose={handleClose}
+        position={toToolbarPopupRelativePosition(expandsToDirection, panelAlignment)}
+        target={target}
+      >
+        {panel}
+      </PopupItemPopup>
     </ToolbarPopupContext.Provider>
   );
+}
+
+/** @internal */
+interface PopupItemPopupProps {
+  children?: React.ReactNode;
+  isOpen?: boolean;
+  onClose(): void;
+  position: RelativePosition;
+  target?: HTMLElement;
+}
+
+/** @internal */
+export function PopupItemPopup(props: PopupItemPopupProps) {
+  return <Popup
+    className="components-toolbar-popupItem_popupItemPopup"
+    offset={0}
+    showShadow={false}
+    {...props}
+  />;
 }

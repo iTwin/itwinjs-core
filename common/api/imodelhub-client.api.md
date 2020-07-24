@@ -21,6 +21,7 @@ import { IModelHubStatus } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { Project } from '@bentley/context-registry-client';
+import { RbacClient } from '@bentley/rbac-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
 import { Response } from '@bentley/itwin-client';
@@ -500,6 +501,7 @@ export class HubIModel extends WsgInstance {
     iModelType?: IModelType;
     initialized?: boolean;
     name?: string;
+    secured?: boolean;
     userCreated?: string;
 }
 
@@ -596,6 +598,8 @@ export abstract class IModelClient {
     // @alpha
     get locks(): LockHandler;
     // @internal
+    get permissions(): PermissionHandler | undefined;
+    // @internal
     get requestOptions(): CustomRequestOptions;
     setFileHandler(fileHandler: FileHandler): void;
     // @alpha
@@ -665,6 +669,8 @@ export class IModelHandler {
 // @beta
 export class IModelHubClient extends IModelClient {
     constructor(fileHandler?: FileHandler, iModelBaseHandler?: IModelBaseHandler);
+    // @internal
+    get permissions(): PermissionHandler;
 }
 
 // @beta
@@ -743,6 +749,28 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
     fromJson(obj: any): void;
     iModelId?: GuidString;
     projectId?: string;
+}
+
+// @internal
+export enum IModelHubPermission {
+    // (undocumented)
+    ConfigureIModelAccess = 128,
+    // (undocumented)
+    Create = 1,
+    // (undocumented)
+    Delete = 8,
+    // (undocumented)
+    ManageResources = 16,
+    // (undocumented)
+    ManageVersions = 32,
+    // (undocumented)
+    Modify = 4,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Read = 2,
+    // (undocumented)
+    View = 64
 }
 
 // @beta
@@ -897,6 +925,13 @@ export function ParseEvent(response: Response): IModelHubEvent;
 
 // @internal
 export function ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent;
+
+// @internal
+export class PermissionHandler {
+    constructor(imodelsHandler: IModelsHandler, rbacClient: RbacClient);
+    getContextPermissions(requestContext: AuthorizedClientRequestContext, contextId: GuidString): Promise<IModelHubPermission>;
+    getiModelPermissions(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString): Promise<IModelHubPermission>;
+    }
 
 // @internal
 export class SeedFile extends WsgInstance {

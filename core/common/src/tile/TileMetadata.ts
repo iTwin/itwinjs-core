@@ -48,7 +48,19 @@ export interface TileOptions {
   readonly ignoreAreaPatterns: boolean;
   readonly useProjectExtents: boolean;
   readonly disableMagnification: boolean;
+  readonly alwaysSubdivideIncompleteTiles: boolean;
 }
+
+/** @internal */
+export const defaultTileOptions: TileOptions = Object.freeze({
+  maximumMajorTileFormatVersion: CurrentImdlVersion.Major,
+  enableInstancing: true,
+  enableImprovedElision: true,
+  ignoreAreaPatterns: false,
+  useProjectExtents: true,
+  disableMagnification: false,
+  alwaysSubdivideIncompleteTiles: false,
+});
 
 /** @internal */
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number {
@@ -474,7 +486,7 @@ export function readTileContentDescription(stream: ByteStream, sizeMultiplier: n
     // Non-spatial (2d) models are of arbitrary scale and contain geometry like line work and especially text which
     // can be adversely affected by quantization issues when zooming in closely.
     const maxLeafTolerance = 1.0;
-    const canSkipSubdivision = completeTile && !is2d && header.tolerance <= maxLeafTolerance && !options.disableMagnification;
+    const canSkipSubdivision = (completeTile || !options.alwaysSubdivideIncompleteTiles) && !is2d && header.tolerance <= maxLeafTolerance && !options.disableMagnification;
     if (canSkipSubdivision) {
       const minElementsPerTile = 100;
       if (completeTile && 0 === header.numElementsExcluded && header.numElementsIncluded <= minElementsPerTile) {

@@ -172,8 +172,6 @@ beta;ExpandableSection
 beta;ExpandableSectionProps 
 internal;expandWidget: 
 beta;ExtensibleToolbarProps
-internal;findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined
-internal;findWidget(state: NineZoneState, id: WidgetState_3["id"]): WidgetLocation | undefined
 public;FooterModeField 
 public;FooterModeFieldProps 
 beta;FrameworkRootState
@@ -578,6 +576,7 @@ internal;useFrontstageManager(frontstageDef: FrontstageDef): void
 internal;useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems
 internal;useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
+internal;useLabels(): NineZoneLabels
 internal;useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispatch
 internal;useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined
 public;UserProfileBackstageItem 

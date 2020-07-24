@@ -618,6 +618,8 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
 // @internal
 export class ChangedElementsDb implements IDisposable {
     constructor();
+    // (undocumented)
+    cleanCaches(): void;
     closeDb(): void;
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
     // (undocumented)
@@ -1532,6 +1534,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     dispose(): void;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
+    // @internal
+    getNativeSql(): string;
     getRow(): any;
     getValue(columnIx: number): ECSqlValue;
     get isPrepared(): boolean;

@@ -154,6 +154,7 @@ export abstract class ViewingToolHandle {
       case DepthPointSource.BackgroundMap:
       case DepthPointSource.GroundPlane:
       case DepthPointSource.Grid:
+      case DepthPointSource.Map:
         return isValid; // Sources with visible geometry/graphics are considered valid by default...
       default:
         return false; // Sources without visible geometry/graphics are NOT considered valid by default...
@@ -381,6 +382,7 @@ export abstract class ViewManip extends ViewTool {
     switch (result.source) {
       case DepthPointSource.Geometry:
       case DepthPointSource.Model:
+      case DepthPointSource.Map:
         isValidDepth = true;
         break;
       case DepthPointSource.BackgroundMap:

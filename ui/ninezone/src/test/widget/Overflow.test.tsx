@@ -45,7 +45,8 @@ describe("WidgetOverflow", () => {
     act(() => {
       fireEvent.click(button);
     });
-    container.firstChild!.should.matchSnapshot();
+    const menu = document.getElementsByClassName("nz-widget-menu")[0];
+    menu.should.matchSnapshot();
   });
 
   it("should close panel on outside click", () => {
@@ -67,8 +68,8 @@ describe("WidgetOverflow", () => {
     document.getElementsByClassName("nz-widget-menu").length.should.eq(1);
 
     act(() => {
-      fireEvent.mouseDown(document);
-      fireEvent.mouseUp(document);
+      fireEvent.pointerDown(document);
+      fireEvent.pointerUp(document);
     });
 
     document.getElementsByClassName("nz-widget-menu").length.should.eq(0);

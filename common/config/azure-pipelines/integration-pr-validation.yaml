@@ -76,6 +76,8 @@ jobs:
 
       node ./common/scripts/install-run-rush rebuild -v --to projectshare-client
 
+      node ./common/scripts/install-run-rush rebuild -v --to rbac-client
+
       node ./common/scripts/install-run-rush rebuild -v --to rpcinterface-full-stack-tests
 
       node ./common/scripts/install-run-rush rebuild -v --to oidc-signin-tool
@@ -99,6 +101,11 @@ jobs:
   - script: 'npm run test:integration'
     workingDirectory: clients/projectshare
     displayName: 'Run ProjectShare Client Tests'
+    condition: succeededOrFailed()
+
+  - script: 'npm run test:integration'
+    workingDirectory: clients/rbac
+    displayName: 'Run RBAC Client Tests'
     condition: succeededOrFailed()
 
   - script: 'npm run test:integration'
@@ -163,7 +170,6 @@ jobs:
     inputs:
       testResultsFiles: 'clients/rbac/lib/test/junit_results.xml'
       testRunTitle: 'Client - RBAC Tests - $(Node_Version)'
-    enabled: false
     continueOnError: true
     condition: succeededOrFailed()
 

@@ -134,7 +134,8 @@ void adjustWidth(inout float width, vec2 d2, vec2 org) {
 export function addAdjustWidth(vert: VertexShaderBuilder) {
   vert.addUniform("u_aaSamples", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_aaSamples", (attr, params) => {
-      attr.setUniform1i(params.target.compositor.antialiasSamples);
+      const numSamples = System.instance.frameBufferStack.currentFbMultisampled ? params.target.compositor.antialiasSamples : 1;
+      attr.setUniform1i(numSamples);
     });
   });
   vert.addFunction(adjustWidth);

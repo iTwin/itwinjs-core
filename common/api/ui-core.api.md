@@ -163,7 +163,7 @@ export const calculateBackdropFilterBlur: (proximityScale: number) => number;
 export const calculateBoxShadowOpacity: (proximityScale: number) => number;
 
 // @internal
-export const calculateProximityScale: (proximity: number, threshold?: number) => number;
+export const calculateProximityScale: (proximity: number, snap?: boolean, threshold?: number) => number;
 
 // @internal
 export const calculateToolbarOpacity: (proximityScale: number) => number;
@@ -890,10 +890,7 @@ export enum HorizontalAlignment {
 }
 
 // @public
-export class HorizontalTabs extends React.PureComponent<TabsProps> {
-    // @internal (undocumented)
-    render(): JSX.Element;
-}
+export function HorizontalTabs(props: TabsProps): JSX.Element;
 
 // @public
 export function Icon(props: IconProps): JSX.Element | null;
@@ -1185,6 +1182,7 @@ export class LocalUiSettings implements UiSettings {
 // @public
 export interface MainTabsProps extends TabsProps {
     mainClassName: string;
+    orientation: Orientation;
 }
 
 // @public
@@ -1344,6 +1342,9 @@ export enum Orientation {
 
 // @internal (undocumented)
 export type OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent;
+
+// @internal (undocumented)
+export function placementToPosition(placement: TooltipPlacement | undefined): RelativePosition;
 
 // @internal
 export class Point implements PointProps {
@@ -1865,7 +1866,12 @@ export interface SvgSpriteProps extends CommonProps {
 }
 
 // @public
-export class Tabs extends React.PureComponent<MainTabsProps> {
+export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
+    constructor(props: MainTabsProps);
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: MainTabsProps): void;
     // @internal (undocumented)
     render(): JSX.Element;
 }
@@ -1875,6 +1881,8 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
     activeIndex?: number;
     green?: boolean;
     labels: string[];
+    onActivateTab?: (index: number) => any;
+    // @deprecated
     onClickLabel?: (index: number) => any;
 }
 
@@ -1919,7 +1927,7 @@ export type ThemedSelectProps = {
     escapeClearsValue?: boolean;
     filterOption?: ((option: OptionType, rawInput: string) => boolean) | null;
     formatGroupLabel?: typeof formatGroupLabel;
-    formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => Node;
+    formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => React.ReactNode;
     getOptionLabel?: typeof getOptionLabel;
     getOptionValue?: typeof getOptionValue;
     hideSelectedOptions?: boolean;
@@ -2064,13 +2072,14 @@ export const TOOLBAR_OPACITY_DEFAULT = 0.5;
 export function Tooltip(props: TooltipProps): JSX.Element;
 
 // @beta
+export type TooltipPlacement = "bottom" | "left" | "right" | "top";
+
+// @beta
 export interface TooltipProps extends CommonProps {
-    // (undocumented)
-    below?: boolean;
-    // (undocumented)
-    percent?: number;
-    // (undocumented)
-    value: MessageType;
+    children?: React.ReactNode;
+    placement?: TooltipPlacement;
+    target?: HTMLElement;
+    visible?: boolean;
 }
 
 // @public
@@ -2247,6 +2256,7 @@ export function UnderlinedButton(props: UnderlinedButtonProps): JSX.Element;
 export interface UnderlinedButtonProps {
     children: string | React.ReactNode;
     className?: string;
+    onActivate?: () => void;
     onClick?: (e: React.MouseEvent) => void;
     title?: string;
 }
@@ -2265,7 +2275,7 @@ outsideEventPredicate?: (e: OutsideClickEvent) => boolean): React.RefObject<T>;
 export function useOptionalDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable | undefined): TDisposable | undefined;
 
 // @internal
-export const useProximityToMouse: (elementRef: React.RefObject<Element>) => number;
+export const useProximityToMouse: (elementSet: WidgetElementSet, snap?: boolean, threshold?: number) => number;
 
 // @internal
 export function useRefEffect<T>(callback: (instance: T | null) => (void | (() => void)), deps: ReadonlyArray<any>): (instance: T | null) => void;
@@ -2274,10 +2284,16 @@ export function useRefEffect<T>(callback: (instance: T | null) => (void | (() =>
 export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
 
 // @internal
+export function useRefState<T>(): [React.Ref<T>, T | undefined];
+
+// @internal
 export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: T | null) => void;
 
 // @internal
 export const useTargeted: (ref: React.RefObject<Element>) => boolean;
+
+// @internal (undocumented)
+export function useWidgetOpacityContext(): WidgetOpacityContextProps;
 
 // @public
 export enum VerticalAlignment {
@@ -2290,10 +2306,7 @@ export enum VerticalAlignment {
 }
 
 // @public
-export class VerticalTabs extends React.PureComponent<TabsProps> {
-    // @internal (undocumented)
-    render(): JSX.Element;
-}
+export function VerticalTabs(props: TabsProps): JSX.Element;
 
 // @public
 export function WebFontIcon(props: WebFontIconProps): JSX.Element;
@@ -2305,6 +2318,21 @@ export interface WebFontIconProps extends CommonProps {
     iconSize?: "small" | "medium" | "large" | "x-large";
     onClick?: React.MouseEventHandler<HTMLSpanElement>;
     title?: string;
+}
+
+// @internal (undocumented)
+export class WidgetElementSet extends Set<React.RefObject<Element>> {
+}
+
+// @internal
+export const WidgetOpacityContext: React.Context<WidgetOpacityContextProps>;
+
+// @internal (undocumented)
+export interface WidgetOpacityContextProps {
+    // (undocumented)
+    readonly onElementRef: (elementRef: React.RefObject<Element>) => void;
+    // (undocumented)
+    readonly proximityScale: number;
 }
 
 // @public

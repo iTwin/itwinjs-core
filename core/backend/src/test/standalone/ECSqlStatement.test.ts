@@ -2536,7 +2536,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it.only("should get NativeSql", async () => {
+  it("should get NativeSql", async () => {
     await using(ECDbTestHelper.createECDb(_outDir, "asyncmethodtest.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">

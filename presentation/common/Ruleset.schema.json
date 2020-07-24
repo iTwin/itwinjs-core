@@ -1376,7 +1376,7 @@
           "description": "Specifications of related ECClasses. Optional if `relationships` is specified."
         },
         "relationshipMeaning": {
-          "description": "Meaning of the relationship. Defaults to `RelationshipMeaning.RelatedInstance`",
+          "description": "Meaning of the relationship which tells how to categorize the related properties. Defaults to `RelationshipMeaning.RelatedInstance`.",
           "enum": [
             "RelatedInstance",
             "SameInstance"
@@ -2568,7 +2568,7 @@
           "description": "Relationship path from content class to properties' class."
         },
         "relationshipMeaning": {
-          "description": "Meaning of the relationship. Defaults to `RelationshipMeaning.RelatedInstance`",
+          "description": "Meaning of the relationship which tells how to categorize the related properties. Defaults to `RelationshipMeaning.RelatedInstance`.",
           "enum": [
             "RelatedInstance",
             "SameInstance"

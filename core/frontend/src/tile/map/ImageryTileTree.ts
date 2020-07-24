@@ -83,31 +83,29 @@ export class ImageryMapTile extends RealityTile {
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
-    const imageryTile = this as ImageryMapTile;
-    const imageryTree = imageryTile.imageryTree;
-    this.imageryTree.imageryLoader.areChildrenAvailable(imageryTile).then((available) => {
-      if (available) {
-        const columnCount = 2, rowCount = 2;
-        const level = imageryTile.quadId.level + 1;
-        const column = imageryTile.quadId.column * 2;
-        const row = imageryTile.quadId.row * 2;
-        const children = [];
-        const childrenAreLeaves = (this.depth + 1) === imageryTree.maxDepth || !this.imageryTree.imageryLoader.areChildrenAvailable(imageryTile);
-        const tilingScheme = imageryTree.tilingScheme;
-        for (let j = 0; j < rowCount; j++) {
-          for (let i = 0; i < columnCount; i++) {
-            const quadId = new QuadId(level, column + i, row + j);
-            const rectangle = tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
-            const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
-            const maximumSize = this.imageryTree.imageryLoader.maximumScreenSize;
-            children.push(new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
-          }
+
+    const imageryTree = this.imageryTree;
+    const resolveChildren = () => {
+      const columnCount = 2, rowCount = 2;
+      const level = this.quadId.level + 1;
+      const column = this.quadId.column * 2;
+      const row = this.quadId.row * 2;
+      const children = [];
+      const childrenAreLeaves = (this.depth + 1) === imageryTree.maxDepth;
+      const tilingScheme = imageryTree.tilingScheme;
+      for (let j = 0; j < rowCount; j++) {
+        for (let i = 0; i < columnCount; i++) {
+          const quadId = new QuadId(level, column + i, row + j);
+          const rectangle = tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
+          const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
+          const maximumSize = imageryTree.imageryLoader.maximumScreenSize;
+          children.push(new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
         }
-        resolve(children);
-      } else {
-        this.setLeaf();
       }
-    }).catch((_err) => { });
+      resolve(children);
+    };
+
+    imageryTree.imageryLoader.testChildAvailability(this, resolveChildren);
   }
 
   protected _collectStatistics(stats: RenderMemory.Statistics): void {
@@ -117,9 +115,10 @@ export class ImageryMapTile extends RealityTile {
   }
 
   public disposeContents() {
-    super.disposeContents();
-    if (0 === this._mapTileUsageCount)
+    if (0 === this._mapTileUsageCount) {
+      super.disposeContents();
       this.disposeTexture();
+    }
   }
 
   private disposeTexture(): void {
@@ -165,8 +164,8 @@ class ImageryTileLoader extends RealityTileLoader {
   constructor(private _imageryProvider: MapLayerImageryProvider, private _iModel: IModelConnection) {
     super();
   }
-  public computeTilePriority(_tile: Tile, _viewports: Iterable<Viewport>): number {
-    return this._imageryProvider.usesCachedTiles ? 0 : 1;
+  public computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number {
+    return 25 * (this._imageryProvider.usesCachedTiles ? 2 : 1) - tile.depth;     // Always cached first then descending by depth (high resolution/front first)
   }  // Prioritized fast, cached tiles first.
 
   public get maxDepth(): number { return this._imageryProvider.maximumZoomLevel; }
@@ -174,7 +173,7 @@ class ImageryTileLoader extends RealityTileLoader {
   public getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined { return this._imageryProvider.getLogo(vp); }
   public get maximumScreenSize(): number { return this._imageryProvider.maximumScreenSize; }
   public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> { await this._imageryProvider.getToolTip(strings, quadId, carto, tree); }
-  public async areChildrenAvailable(tile: ImageryMapTile): Promise<boolean> { return this._imageryProvider.areChildrenAvailable(tile); }
+  public testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) { return this._imageryProvider.testChildAvailability(tile, resolveChildren); }
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
   public async loadChildren(_tile: RealityTile): Promise<Tile[] | undefined> { assert(false); return undefined; }
@@ -183,6 +182,7 @@ class ImageryTileLoader extends RealityTileLoader {
 
     return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
   }
+
   public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<ImageryTileContent> {
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;

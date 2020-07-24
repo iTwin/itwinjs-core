@@ -7,35 +7,32 @@
  */
 
 import "./SendBack.scss";
+import classnames from "classnames";
 import * as React from "react";
+import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
+import { FloatingWidgetContext } from "./FloatingWidget";
 import { assert } from "../base/assert";
-import { NineZoneDispatchContext } from "../base/NineZone";
-import { toolSettingsTabId } from "../base/NineZoneState";
-import { PanelSideContext } from "../widget-panels/Panel";
-import { FloatingWidgetIdContext } from "./FloatingWidget";
-import { ActiveTabIdContext, WidgetIdContext } from "./Widget";
 
 /** @internal */
 export const SendBack = React.memo(function SendBack() { // tslint:disable-line: variable-name no-shadowed-variable
-  const activeTabId = React.useContext(ActiveTabIdContext);
-  const widgetId = React.useContext(WidgetIdContext);
-  const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
-  const side = React.useContext(PanelSideContext);
+  const floatingWidget = React.useContext(FloatingWidgetContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
-  assert(widgetId);
-  if (activeTabId !== toolSettingsTabId)
-    return null;
+  const title = useLabel("sendWidgetHomeTitle");
+  assert(floatingWidget);
+  const className = classnames(
+    "nz-widget-sendBack",
+    floatingWidget.home.side && `nz-${floatingWidget.home.side}`,
+  );
   return (
     <button
-      className="nz-widget-sendBack"
+      className={className}
       onClick={() => {
         dispatch({
-          type: "WIDGET_SEND_BACK",
-          floatingWidgetId,
-          side,
-          widgetId,
+          type: "FLOATING_WIDGET_SEND_BACK",
+          id: floatingWidget.id,
         });
       }}
+      title={title}
     >
       <i />
     </button >

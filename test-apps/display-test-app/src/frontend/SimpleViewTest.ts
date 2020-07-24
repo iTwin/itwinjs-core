@@ -162,6 +162,7 @@ async function main() {
     filterMapTextures: true === configuration.filterMapTextures,
     filterMapDrapeTextures: false !== configuration.filterMapDrapeTextures,
     dpiAwareViewports: false !== configuration.dpiAwareViewports,
+    devicePixelRatioOverride: configuration.devicePixelRatioOverride,
     dpiAwareLOD: true === configuration.dpiAwareLOD,
     doIdleWork: false !== configuration.doIdleWork,
     useWebGL2: false !== configuration.useWebGL2,
@@ -191,6 +192,7 @@ async function main() {
   tileAdminProps.tileExpirationTime = configuration.tileExpirationSeconds;
   tileAdminProps.maximumLevelsToSkip = configuration.maxTilesToSkip;
   tileAdminProps.alwaysRequestEdges = true === configuration.alwaysLoadEdges;
+  tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
 
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();

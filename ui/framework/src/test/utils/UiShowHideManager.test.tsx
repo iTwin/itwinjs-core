@@ -93,6 +93,25 @@ describe("UiShowHideManager", () => {
       remove();
     });
 
+    it("snapWidgetOpacity should return default of false", () => {
+      expect(UiShowHideManager.snapWidgetOpacity).to.be.false;
+    });
+
+    it("snapWidgetOpacity should set & return correct value", () => {
+      const spyMethod = sinon.spy();
+      const remove = UiFramework.onUiVisibilityChanged.addListener(spyMethod);
+
+      UiShowHideManager.snapWidgetOpacity = true;
+      expect(UiShowHideManager.snapWidgetOpacity).to.be.true;
+      spyMethod.calledOnce.should.true;
+
+      UiShowHideManager.snapWidgetOpacity = false;
+      expect(UiShowHideManager.snapWidgetOpacity).to.be.false;
+      spyMethod.calledTwice.should.true;
+
+      remove();
+    });
+
     it("inactivityTime should return default", () => {
       expect(UiShowHideManager.inactivityTime).to.eq(INACTIVITY_TIME_DEFAULT);
     });

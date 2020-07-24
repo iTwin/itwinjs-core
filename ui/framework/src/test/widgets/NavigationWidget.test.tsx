@@ -18,6 +18,7 @@ import { CoreTools } from "../../ui-framework/tools/CoreToolDefinitions";
 import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
 import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
 import TestUtils from "../TestUtils";
+import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
 
 describe("NavigationWidget", () => {
 
@@ -177,6 +178,16 @@ describe("NavigationWidget", () => {
         <NavigationAidHost />
       </FrameworkVersion>);
     wrapper.unmount();
+  });
+
+  it("NavigationAidHost should render in 2.0 mode with snapWidgetOpacity", () => {
+    UiShowHideManager.snapWidgetOpacity = true;
+    const wrapper = mount(
+      <FrameworkVersion version="2">
+        <NavigationAidHost />
+      </FrameworkVersion>);
+    wrapper.unmount();
+    UiShowHideManager.snapWidgetOpacity = false;
   });
 
 });

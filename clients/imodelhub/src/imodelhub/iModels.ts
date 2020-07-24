@@ -61,6 +61,10 @@ export class HubIModel extends WsgInstance {
   /** Extent of iModel. Array of coordinates: [0] - south latitude, [1] - west longitude, [2] - north latitude, [3] - east longitude */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Extent")
   public extent?: number[];
+
+  /** Set to true, when iModel has custom access control. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Secured")
+  public secured?: boolean;
 }
 
 /** Initialization state of seed file. Can be queried with [[IModelHandler.getInitializationState]]. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).

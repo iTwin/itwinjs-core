@@ -17,6 +17,17 @@ Now, if [RenderSystem.Options.dpiAwareLOD]($frontend) is set to `true` when supp
 
 This option has no effect if [RenderSystem.Options.dpiAwareViewports]($frontend) is overridden to be `false`.
 
+## Device pixel ratio override
+
+If [RenderSystem.Options.devicePixelRatioOverride]($frontend) is defined when supplied to [IModelApp.startup]($frontend), its numeric value will be used as the device pixel ratio instead of the system's actual device pixel ratio. This can be helpful for situations like running in the iOS Simulator where forcing a lower resolution by setting a sub-1 device pixel ratio would increase performance.
+
+Please note:
+
+* If this setting is used to decrease the effective device pixel ratio, the view will appear pixelated.
+* This setting should only be used to increase performance in situations like the iOS Simulator for testing purposes only. It should not be used in a production situation.
+
+This option has no effect if [RenderSystem.Options.dpiAwareViewports]($frontend) is overridden to be `false`.
+
 ## Background Map Enhancements
 
 ![Background Map with Wetlands and GIS layers](assets/MapLayers.png)

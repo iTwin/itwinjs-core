@@ -6,46 +6,6 @@
 @import "~@bentley/ui-core/lib/ui-core/geometry";
 @import "variables";
 
-.components-toolbar-popup-panel-container {
-  @include uicore-z-index(toolbar-panels);
-  position: absolute;
-  width: fit-content;
-  background: $buic-background-1;
-  border-color: $buic-background-5;
-  border-width: 1px;
-  border-style: solid;
-  border-radius: 3px;
-
-  &.components-direction-right {
-    left: $components-items-border-width;
-    transform: translateX($components-desktop-item-width);
-    top:0;
-  }
-
-  &.components-direction-left {
-    right: $components-items-border-width;
-    transform: translateX(-$components-desktop-item-width);
-    top:0;
-  }
-
-  &.components-direction-bottom {
-    top: $components-items-border-width;
-    transform: translateY($components-desktop-item-width);
-
-    &.components-panel-alignment-end {
-      right: $components-items-border-width;
-    }
-  }
-
-  &.components-direction-top {
-    bottom: 100%;
-
-    &.components-panel-alignment-end {
-      right: $components-items-border-width;
-    }
-  }
-}
-
 .components-toolbar-expandable-button {
   $triangle-width: 4px;
   $triangle-height: $triangle-width;
@@ -94,4 +54,14 @@
     }
   }
 
+}
+
+.components-toolbar-popupItem_popupItemPopup {
+  @include uicore-z-index(toolbar-panels);
+  width: fit-content;
+  background: $buic-background-1;
+  border-color: $buic-background-5;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 3px;
 }

@@ -86,7 +86,6 @@ export * from "./ui-core/messagebox/MessageBox";
 
 export * from "./ui-core/notification/MessageRenderer";
 export * from "./ui-core/notification/MessageType";
-export * from "./ui-core/notification/Tooltip";
 
 export * from "./ui-core/popup/Popup";
 
@@ -130,6 +129,8 @@ export * from "./ui-core/tiles/Tile";
 export * from "./ui-core/toggle/Toggle";
 export * from "./ui-core/toggle/LabeledToggle";
 
+export * from "./ui-core/tooltip/Tooltip";
+
 export { ExpansionToggle, ExpansionToggleProps } from "./ui-core/tree/ExpansionToggle";
 export { TreeBranch, TreeBranchProps } from "./ui-core/tree/Branch";
 export { TreeNode, TreeNodeProps, NodeCheckboxProps, NodeCheckboxRenderer, NodeCheckboxRenderProps } from "./ui-core/tree/Node";
@@ -163,8 +164,10 @@ export * from "./ui-core/utils/hooks/useOnOutsideClick";
 export * from "./ui-core/utils/hooks/useProximityToMouse";
 export * from "./ui-core/utils/hooks/useRefEffect";
 export * from "./ui-core/utils/hooks/useRefs";
+export * from "./ui-core/utils/hooks/useRefState";
 export * from "./ui-core/utils/hooks/useResizeObserver";
 export * from "./ui-core/utils/hooks/useTargeted";
+export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
 
 /** @docs-package-description
  * The ui-core package contains general purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
@@ -281,6 +284,10 @@ export * from "./ui-core/utils/hooks/useTargeted";
 /**
  * @docs-group-description Toggle
  * Components for working with a Toggle switch.
+ */
+/**
+ * @docs-group-description Tooltip
+ * Components for working with a Tooltip.
  */
 /**
  * @docs-group-description Tree

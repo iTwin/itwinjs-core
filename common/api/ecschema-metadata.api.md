@@ -755,7 +755,7 @@ export class ECObjectsError extends BentleyError {
     toDebugString(): string;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export enum ECObjectsStatus {
     // (undocumented)
     ClassNotFound = 35074,

@@ -12,9 +12,9 @@ import * as React from "react";
 import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, assert, createNineZoneState, createTabsState, floatingWidgetBringToFront, FloatingWidgets, FloatingWidgetState,
-  isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneState, NineZoneStateReducer, PanelSide,
-  TabState, toolSettingsTabId, WidgetPanels, WidgetState as NZ_WidgetState,
+  addPanelWidget, addTab, assert, createNineZoneState, createTabsState, findTab, floatingWidgetBringToFront, FloatingWidgets,
+  isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
+  NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
@@ -39,14 +39,14 @@ const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontsta
   return (
     <>
       <ModalFrontstageComposer stageInfo={activeModalFrontstageInfo} />
+      <WidgetPanelsToolSettings />
       <WidgetPanels
         className="uifw-widgetPanels"
         centerContent={<WidgetPanelsToolbars />}
       >
         <WidgetPanelsFrontstageContent />
       </WidgetPanels>
-      <WidgetPanelsToolSettings />
-      <WidgetPanelsStatusBar className="uifw-statusBar" />
+      <WidgetPanelsStatusBar />
       <FloatingWidgets />
     </>
   );
@@ -151,18 +151,28 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
   useSaveFrontstageSettings(frontstageDef);
   useFrontstageManager(frontstageDef);
   useSyncDefinitions(frontstageDef);
+  const labels = useLabels();
   return (
     <div className="uifw-widgetPanels-frontstage">
       <NineZone
         dispatch={dispatch}
+        labels={labels}
         state={nineZone || defaultNineZone}
-        widgetContent={widgetContent}
         toolSettingsContent={toolSettingsContent}
+        widgetContent={widgetContent}
       >
         {widgetPanelsFrontstage}
       </NineZone>
     </div>
   );
+}
+
+/** @internal */
+export function useLabels() {
+  return React.useMemo<NineZoneLabels>(() => ({
+    dockToolSettingsTitle: UiFramework.translate("widget.tooltips.dockToolSettings"),
+    sendWidgetHomeTitle: UiFramework.translate("widget.tooltips.sendHome"),
+  }), []);
 }
 
 /** @internal */
@@ -343,7 +353,7 @@ function getPanelMaxSize(maxSizeSpec: StagePanelMaxSizeSpec, panel: PanelSide, n
   return maxSizeSpec.percentage / 100 * size;
 }
 
-const stateVersion = 5; // this needs to be bumped when NineZoneState is changed (to recreate layout).
+const stateVersion = 6; // this needs to be bumped when NineZoneState is changed (to recreate layout).
 
 /** @internal */
 export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState {
@@ -408,10 +418,12 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
           frontstageId: frontstageDef.id,
           tabId: tab.id,
         }));
+        removeTab(draft, tab.id);
+        continue;
       }
       draft.tabs[tab.id] = {
         ...tab,
-        label: getWidgetLabel(widgetDef?.label || ""),
+        label: getWidgetLabel(widgetDef.label),
       };
     }
     return;
@@ -563,53 +575,6 @@ export const setWidgetLabel = produce((nineZone: Draft<NineZoneState>, id: TabSt
   const tab = nineZone.tabs[id];
   tab.label = label;
 });
-
-const panelSides: PanelSide[] = ["bottom", "left", "right", "top"];
-
-type TabLocation =
-  { widgetId: NZ_WidgetState["id"], side: PanelSide } |
-  { widgetId: NZ_WidgetState["id"], floatingWidgetId: FloatingWidgetState["id"] };
-
-/** @internal */
-export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined {
-  let widgetId;
-  for (const [, widget] of Object.entries(state.widgets)) {
-    const index = widget.tabs.indexOf(id);
-    if (index >= 0) {
-      widgetId = widget.id;
-    }
-  }
-  if (!widgetId)
-    return undefined;
-  const widgetLocation = findWidget(state, widgetId);
-  return widgetLocation ? {
-    ...widgetLocation,
-    widgetId,
-  } : undefined;
-}
-
-type WidgetLocation =
-  { side: PanelSide } |
-  { floatingWidgetId: FloatingWidgetState["id"] };
-
-/** @internal */
-export function findWidget(state: NineZoneState, id: NZ_WidgetState["id"]): WidgetLocation | undefined {
-  if (id in state.floatingWidgets.byId) {
-    return {
-      floatingWidgetId: id,
-    };
-  }
-  for (const side of panelSides) {
-    const panel = state.panels[side];
-    const index = panel.widgets.indexOf(id);
-    if (index >= 0) {
-      return {
-        side,
-      };
-    }
-  }
-  return undefined;
-}
 
 /** @internal */
 export function useSavedFrontstageState(frontstageDef: FrontstageDef) {

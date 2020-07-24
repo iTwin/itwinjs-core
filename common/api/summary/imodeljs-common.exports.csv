@@ -87,6 +87,7 @@ internal;CurrentImdlVersion
 beta;CustomAttribute
 beta;DecorationGeometryProps
 alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
+internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 alpha;DesktopAuthorizationClientConfiguration
 internal;class DevToolsRpcInterface 
@@ -493,6 +494,7 @@ beta;TweenCallback = (obj: any) => void
 beta;Tweens
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
+internal;TypeOfChange
 beta;UpdateCallback = (obj: any, t: number) => void
 beta;UpgradeOptions
 public;UrlLinkProps 

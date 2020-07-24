@@ -28,6 +28,7 @@ import { GroupButton } from '@bentley/ui-abstract';
 import { HorizontalAlignment } from '@bentley/ui-core';
 import { HSVColor } from '@bentley/imodeljs-common';
 import { I18N } from '@bentley/imodeljs-i18n';
+import { IconDefinition } from '@bentley/ui-abstract';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { immerable } from 'immer';
@@ -788,13 +789,10 @@ export interface CheckboxStateChange {
 
 // @beta
 export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorEditorState> implements TypeEditor {
-    constructor(props: PropertyEditorProps);
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
     componentDidUpdate(prevProps: PropertyEditorProps): void;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // @internal (undocumented)
@@ -805,8 +803,6 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 
 // @beta
 export class ColorPickerButton extends React.PureComponent<ColorPickerProps, ColorPickerState> {
-    // @internal
-    constructor(props: ColorPickerProps);
     // (undocumented)
     static get defaultColors(): ColorDef[];
     // @internal (undocumented)
@@ -815,6 +811,8 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     render(): JSX.Element;
     // (undocumented)
     setFocus(): void;
+    // @internal (undocumented)
+    readonly state: Readonly<ColorPickerState>;
     }
 
 // @beta
@@ -1450,14 +1448,10 @@ export interface EditorContainerProps extends CommonProps {
 
 // @beta
 export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, EnumButtonGroupEditorState> implements TypeEditor {
-    // @internal
-    constructor(props: PropertyEditorProps);
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
-    componentDidUpdate(prevProps: PropertyEditorProps, _prevState: EnumButtonGroupEditorState): void;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // @internal (undocumented)
@@ -1868,6 +1862,28 @@ export interface IImageLoader {
 
 // @public
 export type Image = LoadedImage | LoadedBinaryImage;
+
+// @beta
+export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps, ImageCheckBoxEditorState> implements TypeEditor {
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: Readonly<ImageCheckBoxEditorState>;
+}
+
+// @beta
+export class ImageCheckBoxPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get reactNode(): React.ReactNode;
+}
 
 // @public
 export type ImageFileFormat = "png" | "jpg" | "jpge";
@@ -2485,6 +2501,9 @@ export class Point3dTypeConverter extends BasePointTypeConverter {
 
 // @beta
 export function PopupItem(props: PopupItemProps): JSX.Element;
+
+// @internal (undocumented)
+export function PopupItemPopup(props: PopupItemPopupProps): JSX.Element;
 
 // @beta
 export interface PopupItemProps extends ToolbarButtonItemProps {
@@ -3904,6 +3923,9 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
     toolbarOpacitySetting?: ToolbarOpacitySetting;
     useDragInteraction?: boolean;
 }
+
+// @internal (undocumented)
+export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;
 
 // @beta
 export interface TreeActions {

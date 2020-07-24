@@ -200,6 +200,12 @@ export const ContentNodeContext: React.Context<React.ReactNode>;
 export type ContentZoneId = 5;
 
 // @internal (undocumented)
+export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Partial<DraggedTabState>): DraggedTabState;
+
+// @internal (undocumented)
+export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial<FloatingWidgetState>): FloatingWidgetState;
+
+// @internal (undocumented)
 export function createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelState;
 
 // @internal
@@ -209,7 +215,17 @@ export function createNineZoneState(args?: Partial<NineZoneState>): NineZoneStat
 export function createPanelsState(): PanelsState;
 
 // @internal (undocumented)
-export function createPanelState(side: PanelSide): PanelState;
+export function createPanelState(side: PanelSide): {
+    collapseOffset: number;
+    collapsed: boolean;
+    maxSize: number;
+    minSize: number;
+    pinned: boolean;
+    side: PanelSide;
+    size: undefined;
+    widgets: never[];
+    maxWidgetCount: number;
+};
 
 // @internal (undocumented)
 export function createTabsState(args?: Partial<TabsState>): TabsState;
@@ -237,10 +253,11 @@ export class CssProperties {
     static fromBounds(props: RectangleProps): React_2.CSSProperties;
     // (undocumented)
     static fromPosition(props: PointProps): React_2.CSSProperties;
+    // (undocumented)
+    static transformFromPosition(props: PointProps): {
+        transform: string;
+    };
 }
-
-// @internal
-export function CursorOverlay(): JSX.Element | null;
 
 // @internal (undocumented)
 export type CursorType = "ew-resize" | "ns-resize" | "grabbing";
@@ -310,6 +327,9 @@ export class DisabledResizeHandlesHelpers {
     static isTopDisabled(flags: DisabledResizeHandles): boolean;
 }
 
+// @internal (undocumented)
+export const Dock: React.NamedExoticComponent<object>;
+
 // @internal
 export function DockedToolSetting(props: ToolSettingProps): JSX.Element;
 
@@ -326,10 +346,10 @@ export interface DockedToolSettingsHandleProps extends CommonProps {
 }
 
 // @internal
-export const DockedToolSettingsOverflow: React.NamedExoticComponent<DockedToolSettingsOverflowProps>;
+export const DockedToolSettingsOverflow: React.MemoExoticComponent<React.ForwardRefExoticComponent<DockedToolSettingsOverflowProps & React.RefAttributes<HTMLDivElement>>>;
 
 // @internal
-export interface DockedToolSettingsOverflowProps extends ToolSettingProps {
+export interface DockedToolSettingsOverflowProps extends CommonProps {
     onClick?: () => void;
     onResize?: (w: number) => void;
 }
@@ -357,6 +377,8 @@ export const DraggedTabContext: React.Context<boolean>;
 
 // @internal
 export interface DraggedTabState {
+    // (undocumented)
+    readonly home: FloatingWidgetHomeState;
     // (undocumented)
     readonly position: PointProps;
     // (undocumented)
@@ -507,6 +529,12 @@ export interface ExpandableItemProps extends CommonProps {
     panel?: React.ReactNode;
 }
 
+// @internal (undocumented)
+export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined;
+
+// @internal (undocumented)
+export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined;
+
 // @internal
 export function FloatingTab(): JSX.Element;
 
@@ -522,6 +550,19 @@ export interface FloatingWidgetBringToFrontAction {
     readonly id: FloatingWidgetState["id"];
     // (undocumented)
     readonly type: "FLOATING_WIDGET_BRING_TO_FRONT";
+}
+
+// @internal (undocumented)
+export const FloatingWidgetContext: React.Context<FloatingWidgetState | undefined>;
+
+// @internal
+export interface FloatingWidgetHomeState {
+    // (undocumented)
+    readonly side: PanelSide;
+    // (undocumented)
+    readonly widgetId: WidgetState["id"] | undefined;
+    // (undocumented)
+    readonly widgetIndex: number;
 }
 
 // @internal (undocumented)
@@ -552,6 +593,14 @@ export type FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom";
 export const FloatingWidgets: React.NamedExoticComponent<object>;
 
 // @internal
+export interface FloatingWidgetSendBackAction {
+    // (undocumented)
+    readonly id: FloatingWidgetState["id"];
+    // (undocumented)
+    readonly type: "FLOATING_WIDGET_SEND_BACK";
+}
+
+// @internal
 export interface FloatingWidgetsState {
     // (undocumented)
     readonly allIds: ReadonlyArray<FloatingWidgetState["id"]>;
@@ -568,6 +617,8 @@ export const FloatingWidgetsStateContext: React.Context<FloatingWidgetsState>;
 export interface FloatingWidgetState {
     // (undocumented)
     readonly bounds: RectangleProps;
+    // (undocumented)
+    readonly home: FloatingWidgetHomeState;
     // (undocumented)
     readonly id: WidgetState["id"];
 }
@@ -769,6 +820,89 @@ export interface GroupToolProps extends CommonProps {
     label?: string;
     onClick?: () => void;
     onPointerUp?: () => void;
+}
+
+// @internal (undocumented)
+export class GrowBottom extends GrowStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, growBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export class GrowLeft extends GrowStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, growBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export class GrowRight extends GrowStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, growBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export abstract class GrowStrategy implements ResizeStrategy {
+    constructor(manager: ZonesManager);
+    // (undocumented)
+    abstract getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
+    // (undocumented)
+    abstract getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    abstract getShrinkStrategy(): ResizeStrategy;
+    // (undocumented)
+    abstract getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    readonly manager: ZonesManager;
+    // (undocumented)
+    abstract resize(bounds: RectangleProps, growBy: number): RectangleProps;
+    // (undocumented)
+    tryResize(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
+}
+
+// @internal (undocumented)
+export class GrowTop extends GrowStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, growBy: number): RectangleProps;
 }
 
 // @alpha
@@ -1050,7 +1184,7 @@ export interface NestedToolSettingsProps extends CommonProps {
 export function NineZone(props: NineZoneProps): JSX.Element;
 
 // @internal
-export type NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetSendBackAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction;
+export type NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
 
 // @internal (undocumented)
 export const NineZoneContext: React.Context<NineZoneState>;
@@ -1060,6 +1194,17 @@ export type NineZoneDispatch = (action: NineZoneActionTypes) => void;
 
 // @internal (undocumented)
 export const NineZoneDispatchContext: React.Context<NineZoneDispatch>;
+
+// @internal (undocumented)
+export interface NineZoneLabels {
+    // (undocumented)
+    dockToolSettingsTitle?: string;
+    // (undocumented)
+    sendWidgetHomeTitle?: string;
+}
+
+// @internal (undocumented)
+export const NineZoneLabelsContext: React.Context<NineZoneLabels | undefined>;
 
 // @alpha
 export class NineZoneManager {
@@ -1155,6 +1300,8 @@ export interface NineZoneProps {
     // (undocumented)
     dispatch: NineZoneDispatch;
     // (undocumented)
+    labels?: NineZoneLabels;
+    // (undocumented)
     state: NineZoneState;
     // (undocumented)
     toolSettingsContent?: React.ReactNode;
@@ -1166,19 +1313,9 @@ export interface NineZoneProps {
 export function NineZoneProvider(props: NineZoneProviderProps): JSX.Element;
 
 // @internal (undocumented)
-export interface NineZoneProviderProps {
-    // (undocumented)
-    children?: React.ReactNode;
-    // (undocumented)
-    dispatch: NineZoneDispatch;
+export interface NineZoneProviderProps extends NineZoneProps {
     // (undocumented)
     measure: () => Rectangle;
-    // (undocumented)
-    state: NineZoneState;
-    // (undocumented)
-    toolSettingsContent?: React.ReactNode;
-    // (undocumented)
-    widgetContent?: React.ReactNode;
 }
 
 // @alpha
@@ -1404,6 +1541,8 @@ export interface PanelState {
     // (undocumented)
     readonly maxSize: number;
     // (undocumented)
+    readonly maxWidgetCount: number;
+    // (undocumented)
     readonly minSize: number;
     // (undocumented)
     readonly pinned: boolean;
@@ -1504,6 +1643,15 @@ export interface ProgressProps extends CommonProps, NoChildrenProps {
     status: Status;
 }
 
+// @internal (undocumented)
+export const RECTANGULAR_DEFAULT_MIN_HEIGHT = 220;
+
+// @internal (undocumented)
+export const RECTANGULAR_DEFAULT_MIN_WIDTH = 296;
+
+// @internal (undocumented)
+export function removeTab(state: Draft<NineZoneState>, tabId: TabState["id"]): void;
+
 // @internal
 export interface ResizeAction {
     // (undocumented)
@@ -1567,6 +1715,16 @@ export enum ResizeHandle {
     Right = 2,
     // (undocumented)
     Top = 1
+}
+
+// @internal (undocumented)
+export interface ResizeStrategy {
+    // (undocumented)
+    getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    tryResize(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
 }
 
 // @internal (undocumented)
@@ -1638,6 +1796,127 @@ export interface ScrollableWidgetContentProps {
 
 // @internal (undocumented)
 export const SendBack: React.NamedExoticComponent<object>;
+
+// @internal (undocumented)
+export function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps): void;
+
+// @internal (undocumented)
+export class ShrinkBottom extends ShrinkVerticalStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, shrinkBy: number, moveBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export abstract class ShrinkHorizontalStrategy extends ShrinkStrategy {
+    // (undocumented)
+    getCurrentSize(bounds: RectangleProps): number;
+    // (undocumented)
+    getMinSize(): number;
+}
+
+// @internal (undocumented)
+export class ShrinkLeft extends ShrinkHorizontalStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, shrinkBy: number, moveBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export class ShrinkRight extends ShrinkHorizontalStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, shrinkBy: number, moveBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export abstract class ShrinkStrategy implements ResizeStrategy {
+    constructor(manager: ZonesManager);
+    // (undocumented)
+    abstract getCurrentSize(bounds: RectangleProps): number;
+    // (undocumented)
+    abstract getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
+    // (undocumented)
+    abstract getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getMaxShrinkSelfBy(bounds: RectangleProps): number;
+    // (undocumented)
+    abstract getMinSize(): number;
+    // (undocumented)
+    abstract getShrinkStrategy(): ResizeStrategy;
+    // (undocumented)
+    abstract getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    readonly manager: ZonesManager;
+    // (undocumented)
+    abstract resize(bounds: RectangleProps, shrinkBy: number, moveBy: number): RectangleProps;
+    // (undocumented)
+    tryResize(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): {
+        zones: {
+            1: import("./Zone").ZoneManagerProps;
+            2: import("./Zone").ZoneManagerProps;
+            3: import("./Zone").ZoneManagerProps;
+            4: import("./Zone").ZoneManagerProps;
+            6: import("./Zone").ZoneManagerProps;
+            7: import("./Zone").ZoneManagerProps;
+            8: import("./Zone").ZoneManagerProps;
+            9: import("./Zone").ZoneManagerProps;
+        };
+        draggedWidget?: import("./Widget").DraggedWidgetManagerProps | undefined;
+        isInFooterMode: boolean;
+        target?: import("./Zones").ZonesManagerTargetProps | undefined;
+        widgets: import("./Zones").ZonesManagerWidgetsProps;
+        zonesBounds: RectangleProps;
+        floatingZonesBounds?: RectangleProps | undefined;
+    };
+}
+
+// @internal (undocumented)
+export class ShrinkTop extends ShrinkVerticalStrategy {
+    // (undocumented)
+    getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
+    // (undocumented)
+    getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    getShrinkStrategy(): UpdateWindowResizeSettings;
+    // (undocumented)
+    getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
+    // (undocumented)
+    resize(bounds: RectangleProps, shrinkBy: number, moveBy: number): RectangleProps;
+}
+
+// @internal (undocumented)
+export abstract class ShrinkVerticalStrategy extends ShrinkStrategy {
+    // (undocumented)
+    getCurrentSize(bounds: RectangleProps): number;
+    // (undocumented)
+    getMinSize(): number;
+}
 
 // @internal (undocumented)
 export function sideToCursorType(side: PanelSide): CursorType;
@@ -1906,6 +2185,9 @@ export class Tab extends React.PureComponent<TabProps> {
     // (undocumented)
     render(): JSX.Element;
     }
+
+// @internal (undocumented)
+export const TabBarButtons: React.NamedExoticComponent<object>;
 
 // @alpha
 export class TabGroup extends React.PureComponent<TabGroupProps> {
@@ -2277,6 +2559,12 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
     }
 
 // @internal
+export interface ToolSettingsDockAction {
+    // (undocumented)
+    readonly type: "TOOL_SETTINGS_DOCK";
+}
+
+// @internal
 export interface ToolSettingsDragStartAction {
     // (undocumented)
     readonly newFloatingWidgetId: FloatingWidgetState["id"];
@@ -2288,11 +2576,17 @@ export interface ToolSettingsDragStartAction {
 export const ToolSettingsNodeContext: React.Context<React.ReactNode>;
 
 // @internal
-export const ToolSettingsOverflowPanel: React.ForwardRefExoticComponent<ToolSettingsOverflowPanelProps & React.RefAttributes<HTMLDivElement>>;
+export function ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps): JSX.Element;
 
 // @internal
-export interface ToolSettingsOverflowPanelProps extends ToolSettingProps {
+export interface ToolSettingsOverflowPanelProps extends CommonProps {
     children?: React.ReactNode;
+    // (undocumented)
+    onClose: () => void;
+    // (undocumented)
+    open: boolean;
+    // (undocumented)
+    target: HTMLElement | undefined;
 }
 
 // @beta
@@ -2402,6 +2696,24 @@ export interface TooltipProps extends CommonProps {
 export type TopPanelSide = "top";
 
 // @internal (undocumented)
+export class UpdateWindowResizeSettings implements ResizeStrategy {
+    constructor(manager: ZonesManager, resizeStrategy: ResizeStrategy);
+    // (undocumented)
+    getMaxResize(zoneId: WidgetZoneId, props: ZonesManagerProps): number;
+    // (undocumented)
+    readonly manager: ZonesManager;
+    // (undocumented)
+    readonly resizeStrategy: ResizeStrategy;
+    // (undocumented)
+    tryResize(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    tryResizeFloating(zoneId: WidgetZoneId, resizeBy: number, props: ZonesManagerProps): ZonesManagerProps;
+}
+
+// @internal
+export function useCursor(): void;
+
+// @internal (undocumented)
 export function useDoubleClick(onDoubleClick?: () => void): () => void;
 
 // @internal
@@ -2498,6 +2810,9 @@ export function useIsDraggedItem(item: DragItem): boolean;
 
 // @internal (undocumented)
 export function useIsDraggedType(type: DragItem["type"]): boolean;
+
+// @internal (undocumented)
+export function useLabel(labelKey: keyof NineZoneLabels): string | undefined;
 
 // @internal
 export function useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray<string> | undefined, (size: number) => void, (size: number) => void, (key: string) => (size: number) => void];
@@ -2678,7 +2993,7 @@ export interface WidgetDragEndAction {
 }
 
 // @internal (undocumented)
-export const WidgetIdContext: React.Context<string | undefined>;
+export const WidgetIdContext: React.Context<string>;
 
 // @beta
 export interface WidgetManagerProps {
@@ -2693,14 +3008,18 @@ export interface WidgetManagerProps {
 }
 
 // @internal (undocumented)
-export const WidgetMenu: React.ForwardRefExoticComponent<WidgetMenuProps & React.RefAttributes<HTMLDivElement>>;
+export function WidgetMenu(props: WidgetMenuProps): JSX.Element;
 
 // @internal (undocumented)
 export interface WidgetMenuProps extends CommonProps {
     // (undocumented)
     children?: React.ReactNode;
     // (undocumented)
-    onClick?: () => void;
+    onClose?: () => void;
+    // (undocumented)
+    open?: boolean;
+    // (undocumented)
+    target?: HTMLElement;
 }
 
 // @internal (undocumented)
@@ -2786,18 +3105,6 @@ export interface WidgetProviderProps {
     children?: React.ReactNode;
     // (undocumented)
     widget: WidgetState;
-}
-
-// @internal
-export interface WidgetSendBackAction {
-    // (undocumented)
-    readonly floatingWidgetId: FloatingWidgetState["id"] | undefined;
-    // (undocumented)
-    readonly side: PanelSide | undefined;
-    // (undocumented)
-    readonly type: "WIDGET_SEND_BACK";
-    // (undocumented)
-    readonly widgetId: WidgetState["id"];
 }
 
 // @internal
@@ -3212,6 +3519,8 @@ export class ZonesManager {
     // @internal (undocumented)
     setDraggedWidgetProps(draggedWidget: DraggedWidgetManagerProps | undefined, props: ZonesManagerProps): ZonesManagerProps;
     // (undocumented)
+    setFloatingZonesBounds(bounds: RectangleProps | undefined, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
     setIsInFooterMode(isInFooterMode: boolean, props: ZonesManagerProps): ZonesManagerProps;
     // @internal (undocumented)
     setToolSettingsWidgetMode<TProps extends ZonesManagerProps>(mode: ToolSettingsWidgetMode, props: TProps): TProps;
@@ -3249,6 +3558,8 @@ export class ZonesManager {
 export interface ZonesManagerProps {
     // (undocumented)
     readonly draggedWidget?: DraggedWidgetManagerProps;
+    // (undocumented)
+    readonly floatingZonesBounds?: RectangleProps;
     // (undocumented)
     readonly isInFooterMode: boolean;
     // (undocumented)

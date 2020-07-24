@@ -158,6 +158,8 @@ export enum DepthPointSource {
   ACS,
   /** Depth point from plane passing through view target point */
   TargetPoint,
+  /** Depth point from map/terrain within specified radius of pick point */
+  Map,
 }
 
 /** @alpha Options to control behavior of [[Viewport.pickDepthPoint]]. */
@@ -2909,7 +2911,7 @@ export class ScreenViewport extends Viewport {
     this.target.updateViewRect();
 
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
-    this.toolTipDiv = this.addNewDiv("overlay-tooltip", false, 40);
+    this.toolTipDiv = this.addNewDiv("overlay-tooltip", true, 40);
     this.setCursor();
     this.addLogo();
   }
@@ -2956,6 +2958,7 @@ export class ScreenViewport extends Viewport {
     switch (depthResult.source) {
       case DepthPointSource.Geometry:
       case DepthPointSource.Model:
+      case DepthPointSource.Map:
         isValidDepth = true;
         break;
       case DepthPointSource.BackgroundMap:
@@ -2997,8 +3000,12 @@ export class ScreenViewport extends Viewport {
 
     if (0 !== picker.doPick(this, pickPoint, radius, locateOpts)) {
       const hitDetail = picker.getHit(0)!;
-      const geomPlane = Plane3dByOriginAndUnitNormal.create(hitDetail.getPoint(), hitDetail.isModelHit ? this.view.getUpVector(hitDetail.getPoint()) : this.view.getZVector())!;
-      return { plane: geomPlane, source: (hitDetail.isModelHit ? DepthPointSource.Model : DepthPointSource.Geometry), sourceId: hitDetail.sourceId };
+      const hitPoint = hitDetail.getPoint();
+      if (hitDetail.isModelHit)
+        return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!, source: DepthPointSource.Model, sourceId: hitDetail.sourceId };
+      else if (hitDetail.isMapHit)
+        return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!, source: DepthPointSource.Map, sourceId: hitDetail.sourceId };
+      return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getZVector())!, source: DepthPointSource.Geometry, sourceId: hitDetail.sourceId };
     }
 
     const eyePoint = this.worldToViewMap.transform1.columnZ();

@@ -3,6 +3,5 @@ Release Tag;API Item
 alpha;BridgeJobDefArgs
 public;BridgeLoggerCategory
 alpha;BridgeRunner
-alpha;IModelBridge
-alpha;class IModelBridgeBase 
+alpha;class IModelBridge
 alpha;loggerCategory: string

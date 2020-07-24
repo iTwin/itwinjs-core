@@ -521,6 +521,18 @@ export namespace RenderSystem {
      */
     dpiAwareViewports?: boolean;
 
+    /** If defined, this will be used as the device pixel ratio instead of the system's actual device pixel ratio.
+     * This can be helpful for situations like running in the iOS Simulator where forcing a lower resolution by setting a sub-1 device pixel ratio would increase performance.
+     * @note If this setting is used to decrease the effective device pixel ratio, the view will appear pixelated.
+     * @note This setting should only be used to increase performance in situations like the iOS Simulator for testing purposes only. It should not be used in a production situation.
+     * @note This setting has no effect if [[dpiAwareViewports]] is `false`.
+     *
+     * Default value: undefined
+     *
+     * @beta
+     */
+    devicePixelRatioOverride?: number;
+
     /** If true, [[ScreenViewport]]s will take into account the DPI of the display when computing the level of detail for tile graphics and decorations.
      * This can result in sharper-looking images on high-DPI devices like mobile phones, but may reduce performance on such devices.
      * @note This setting has no effect if [[dpiAwareViewports]] is `false`.

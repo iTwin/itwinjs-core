@@ -36,6 +36,22 @@ describe("Render Compatibility", () => {
     testSys = System.create(renderSysOpts);
     expect(testSys.options.logarithmicDepthBuffer).to.be.false;
   });
+
+  it("should return webgl context if webgl2 is unsupported", () => {
+    const canvas = _createCanvas();
+    expect(canvas).to.not.be.undefined;
+    // force canvas to fail context creation if webgl2 is requested
+    const originalMethod = canvas!.getContext.bind(canvas);
+    (canvas as any).getContext = (contextId: any, args?: any) => {
+      if (contextId === "webgl2")
+        return null;
+      return originalMethod(contextId, args);
+    };
+    const context = System.createContext(canvas!, false);
+    expect(context).to.not.be.undefined;
+    expect(context instanceof WebGL2RenderingContext).to.be.false;
+    expect(context instanceof WebGLRenderingContext).to.be.true;
+  });
 });
 
 describe("Instancing", () => {

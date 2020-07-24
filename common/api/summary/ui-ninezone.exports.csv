@@ -32,17 +32,18 @@ alpha;containHorizontally: (componentBounds: RectangleProps, containerBounds: Re
 alpha;containVertically: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
 internal;ContentNodeContext: React.Context
 internal;ContentZoneId = 5
+internal;createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Partial
+internal;createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial
 internal;createHorizontalPanelState(side: HorizontalPanelSide): HorizontalPanelState
 internal;createNineZoneState(args?: Partial
 internal;createPanelsState(): PanelsState
-internal;createPanelState(side: PanelSide): PanelState
+internal;createPanelState(side: PanelSide):
 internal;createTabsState(args?: Partial
 internal;createTabState(id: TabState["id"], args?: Partial
 internal;createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState
 internal;createWidgetState(id: WidgetState["id"], args?: Partial
 internal;Css
 internal;CssProperties
-internal;CursorOverlay(): JSX.Element | null
 internal;CursorType = "ew-resize" | "ns-resize" | "grabbing"
 internal;CursorTypeContext: React.Context
 beta;Dialog 
@@ -51,11 +52,12 @@ beta;Direction
 internal;DirectionHelpers
 beta;DisabledResizeHandles
 internal;DisabledResizeHandlesHelpers
+internal;Dock: React.NamedExoticComponent
 internal;DockedToolSetting(props: ToolSettingProps): JSX.Element
 internal;DockedToolSettings(props: DockedToolSettingsProps): JSX.Element
 internal;DockedToolSettingsHandle: React.NamedExoticComponent
 internal;DockedToolSettingsHandleProps 
-internal;DockedToolSettingsOverflow: React.NamedExoticComponent
+internal;DockedToolSettingsOverflow: React.MemoExoticComponent
 internal;DockedToolSettingsOverflowProps 
 internal;DockedToolSettingsProps 
 internal;DockedToolSettingsState
@@ -85,15 +87,20 @@ alpha;ExpandableButton
 alpha;ExpandableButtonProps 
 beta;ExpandableItem 
 beta;ExpandableItemProps 
+internal;findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined
+internal;findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined
 internal;FloatingTab(): JSX.Element
 internal;FloatingWidget: React.NamedExoticComponent
 internal;floatingWidgetBringToFront(state: Draft
 internal;FloatingWidgetBringToFrontAction
+internal;FloatingWidgetContext: React.Context
+internal;FloatingWidgetHomeState
 internal;FloatingWidgetIdContext: React.Context
 internal;FloatingWidgetProps
 internal;FloatingWidgetResizeAction
 internal;FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom"
 internal;FloatingWidgets: React.NamedExoticComponent
+internal;FloatingWidgetSendBackAction
 internal;FloatingWidgetsState
 internal;FloatingWidgetsStateContext: React.Context
 internal;FloatingWidgetState
@@ -142,6 +149,11 @@ alpha;GroupTool
 alpha;GroupToolExpander 
 alpha;GroupToolExpanderProps 
 alpha;GroupToolProps 
+internal;GrowBottom 
+internal;GrowLeft 
+internal;GrowRight 
+internal;class GrowStrategy 
+internal;GrowTop 
 alpha;HandleMode
 alpha;HandleModeHelpers
 beta;HorizontalAnchor
@@ -186,10 +198,12 @@ beta;NestedStagePanelsManagerProps
 beta;NestedToolSettings 
 beta;NestedToolSettingsProps 
 internal;NineZone(props: NineZoneProps): JSX.Element
-internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetSendBackAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction
+internal;NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelResizeAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | ToolSettingsDragStartAction | ToolSettingsDockAction
 internal;NineZoneContext: React.Context
 internal;NineZoneDispatch = (action: NineZoneActionTypes) => void
 internal;NineZoneDispatchContext: React.Context
+internal;NineZoneLabels
+internal;NineZoneLabelsContext: React.Context
 alpha;NineZoneManager
 internal;NineZoneManagerHiddenWidget
 internal;NineZoneManagerHiddenWidgets =
@@ -200,7 +214,7 @@ alpha;NineZoneNestedStagePanelsManager
 alpha;NineZoneNestedStagePanelsManagerProps 
 internal;NineZoneProps
 internal;NineZoneProvider(props: NineZoneProviderProps): JSX.Element
-internal;NineZoneProviderProps
+internal;NineZoneProviderProps 
 alpha;NineZoneStagePanelManager 
 alpha;NineZoneStagePanelManagerProps 
 alpha;NineZoneStagePanelPaneManager
@@ -244,6 +258,9 @@ internal;PointerCaptorArgs
 internal;PointerCaptorEvent = MouseEvent | TouchEvent
 internal;PointerCaptorProps 
 beta;ProgressProps 
+internal;RECTANGULAR_DEFAULT_MIN_HEIGHT = 220
+internal;RECTANGULAR_DEFAULT_MIN_WIDTH = 296
+internal;removeTab(state: Draft
 internal;ResizeAction
 alpha;ResizeDirection
 alpha;ResizeDirectionHelpers
@@ -251,6 +268,7 @@ alpha;ResizeGrip
 alpha;ResizeGripProps 
 alpha;ResizeGripResizeArgs
 beta;ResizeHandle
+internal;ResizeStrategy
 internal;restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): SizeProps
 internal;RightPanelSide = "right"
 beta;SafeAreaInsets
@@ -260,6 +278,14 @@ beta;ScrollableToolSettingsProps
 internal;ScrollableWidgetContent: React.NamedExoticComponent
 internal;ScrollableWidgetContentProps
 internal;SendBack: React.NamedExoticComponent
+internal;setRectangleProps(props: Draft
+internal;ShrinkBottom 
+internal;class ShrinkHorizontalStrategy 
+internal;ShrinkLeft 
+internal;ShrinkRight 
+internal;class ShrinkStrategy 
+internal;ShrinkTop 
+internal;class ShrinkVerticalStrategy 
 internal;sideToCursorType(side: PanelSide): CursorType
 beta;Snap 
 beta;SnapMode 
@@ -290,6 +316,7 @@ beta;Status
 internal;StatusHelpers
 beta;StatusMessageProps 
 alpha;Tab 
+internal;TabBarButtons: React.NamedExoticComponent
 alpha;TabGroup 
 alpha;TabGroupProps 
 internal;TabIdContext: React.Context
@@ -342,9 +369,10 @@ alpha;ToolsArea
 alpha;ToolsAreaProps 
 internal;ToolSettingProps 
 beta;ToolSettings 
+internal;ToolSettingsDockAction
 internal;ToolSettingsDragStartAction
 internal;ToolSettingsNodeContext: React.Context
-internal;ToolSettingsOverflowPanel: React.ForwardRefExoticComponent
+internal;ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps): JSX.Element
 internal;ToolSettingsOverflowPanelProps 
 beta;ToolSettingsPopup 
 beta;ToolSettingsPopupProps 
@@ -361,6 +389,8 @@ beta;Tooltip
 beta;TooltipDefaultProps = Pick
 beta;TooltipProps 
 internal;TopPanelSide = "top"
+internal;UpdateWindowResizeSettings 
+internal;useCursor(): void
 internal;useDoubleClick(onDoubleClick?: () => void): () => void
 internal;useDrag
 internal;useDraggedItemId
@@ -379,6 +409,7 @@ internal;UseDragWidgetArgs
 internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
 internal;useIsDraggedType(type: DragItem["type"]): boolean
+internal;useLabel(labelKey: keyof NineZoneLabels): string | undefined
 internal;useOverflow(children: React.ReactNode, activeChildIndex?: number): [ReadonlyArray
 internal;usePanelTarget
 internal;UsePanelTargetArgs
@@ -414,7 +445,7 @@ internal;WidgetDragAction
 internal;WidgetDragEndAction
 internal;WidgetIdContext: React.Context
 beta;WidgetManagerProps
-internal;WidgetMenu: React.ForwardRefExoticComponent
+internal;WidgetMenu(props: WidgetMenuProps): JSX.Element
 internal;WidgetMenuProps 
 internal;WidgetOverflow: React.NamedExoticComponent
 internal;WidgetOverflowProps
@@ -430,7 +461,6 @@ internal;WidgetPanelsProps
 internal;WidgetProps 
 internal;WidgetProvider: React.NamedExoticComponent
 internal;WidgetProviderProps
-internal;WidgetSendBackAction
 internal;WidgetsState
 internal;WidgetsStateContext: React.Context
 internal;WidgetState

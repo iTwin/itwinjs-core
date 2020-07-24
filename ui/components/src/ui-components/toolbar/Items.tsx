@@ -10,10 +10,10 @@ import "./Items.scss";
 import classnames from "classnames";
 import * as React from "react";
 import {
-  calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateProximityScale, calculateToolbarOpacity, CommonProps, getToolbarBackdropFilter,
-  getToolbarBackgroundColor, getToolbarBoxShadow,
+  calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateToolbarOpacity, CommonProps,
+  getToolbarBackdropFilter, getToolbarBackgroundColor, getToolbarBoxShadow,
   TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
-  useProximityToMouse,
+  useWidgetOpacityContext,
 } from "@bentley/ui-core";
 import { ToolbarOpacitySetting, useToolbarWithOverflowDirectionContext } from "./ToolbarWithOverflow";
 import { OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
@@ -34,7 +34,6 @@ export interface ToolbarItemsProps extends CommonProps {
 export function ToolbarItems(props: ToolbarItemsProps) {
 
   const ref = React.useRef<HTMLDivElement>(null);
-  const proximity = useProximityToMouse(ref);
   const { toolbarOpacitySetting, openPopupCount, overflowDisplayActive } = useToolbarWithOverflowDirectionContext();
   const useTransparentBackground = toolbarOpacitySetting === ToolbarOpacitySetting.Transparent;
   let toolbarOpacity = useTransparentBackground ? 0 : TOOLBAR_OPACITY_DEFAULT;
@@ -42,8 +41,18 @@ export function ToolbarItems(props: ToolbarItemsProps) {
   let filterBlur = useTransparentBackground ? 0 : TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT;
   let showSeparators = toolbarOpacitySetting === ToolbarOpacitySetting.Transparent ? false : true;
 
+  const isInitialMount = React.useRef(true);
+  const { onElementRef, proximityScale } = useWidgetOpacityContext();
+
+  React.useEffect(() => {
+    // istanbul ignore else
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      onElementRef(ref);
+    }
+  }, [onElementRef]);
+
   if (toolbarOpacitySetting === ToolbarOpacitySetting.Proximity && openPopupCount < 1 && !overflowDisplayActive) {
-    const proximityScale = calculateProximityScale(proximity);
     toolbarOpacity = calculateToolbarOpacity(proximityScale);
     boxShadowOpacity = calculateBoxShadowOpacity(proximityScale);
     filterBlur = calculateBackdropFilterBlur(proximityScale);

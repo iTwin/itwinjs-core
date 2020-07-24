@@ -93,7 +93,10 @@ export interface DEPRECATED_RelatedPropertiesSpecification { // tslint:disable-l
    */
   autoExpand?: boolean;
 
-  /** Meaning of the relationship. Defaults to [[RelationshipMeaning.RelatedInstance]] */
+  /**
+   * Meaning of the relationship which tells how to categorize the related properties. Defaults to [[RelationshipMeaning.RelatedInstance]].
+   * @see [label]($docs/learning/presentation/Content/RelatedPropertiesSpecification.md#relationship-meaning-attribute)
+   */
   relationshipMeaning?: RelationshipMeaning;
 
   /**
@@ -139,7 +142,10 @@ export interface RelatedPropertiesSpecificationNew {
    */
   autoExpand?: boolean;
 
-  /** Meaning of the relationship. Defaults to [[RelationshipMeaning.RelatedInstance]] */
+  /**
+   * Meaning of the relationship which tells how to categorize the related properties. Defaults to [[RelationshipMeaning.RelatedInstance]].
+   * @see [label]($docs/learning/presentation/Content/RelatedPropertiesSpecification.md#relationship-meaning-attribute)
+   */
   relationshipMeaning?: RelationshipMeaning;
 
   /**

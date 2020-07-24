@@ -21,6 +21,7 @@ export * from "./imodelhub/Locks";
 export * from "./imodelhub/Users";
 export * from "./imodelhub/Versions";
 export * from "./imodelhub/Thumbnails";
+export * from "./imodelhub/Permissions";
 
 export * from "./imodelbank/IModelBankClient";
 export * from "./imodelbank/IModelBankFileSystemContextClient";

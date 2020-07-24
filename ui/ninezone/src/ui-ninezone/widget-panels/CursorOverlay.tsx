@@ -7,31 +7,25 @@
  */
 
 import "./CursorOverlay.scss";
-import classnames from "classnames";
 import * as React from "react";
 import { CursorTypeContext } from "../base/NineZone";
 
 /** @internal */
 export type CursorType = "ew-resize" | "ns-resize" | "grabbing";
 
-/** Renders cursor overlay to control cursor type of the application.
- * I.e. when dragging widget around "grabbing" cursor should be displayed until user releases the widget.
+/** Controls cursor type of the application.
+ * I.e. when dragging a widget "grabbing" cursor should be displayed until user drops the widget.
  * @internal
  */
-export function CursorOverlay() {
+export function useCursor() {
   const type = React.useContext(CursorTypeContext);
-  if (!type)
-    return null;
-  const cursorClassName = getCursorClassName(type);
-  const className = classnames(
-    "nz-widgetPanels-cursorOverlay",
-    cursorClassName,
-  );
-  return (
-    <div
-      className={className}
-    />
-  );
+  React.useEffect(() => {
+    const cursor = type ? `nz-${type}` : undefined;
+    cursor && document.body.classList.add(cursor);
+    return () => {
+      cursor && document.body.classList.remove(cursor);
+    };
+  }, [type]);
 }
 
 /** @internal */

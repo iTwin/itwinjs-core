@@ -18,4 +18,6 @@ export enum RelativePosition {
   TopRight = 5,
   BottomLeft = 6,
   BottomRight = 7,
+  RightTop = 8,
+  LeftTop = 9,
 }

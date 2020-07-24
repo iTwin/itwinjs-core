@@ -24,6 +24,30 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     box-sizing: border-box;
   }
 
+  map-manager-settings-container {
+    display: flex;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  .map-manager-underlays, .map-manager-overlays  {
+    display: flex;
+    align-content: center;
+    margin-top: 8px;
+
+    .map-manager-attach-layer-button {
+      background-color: transparent;
+      margin-left: auto;
+      width: 40px;
+      border: none;
+      color: $buic-foreground-body;
+
+      &:hover {
+        color: $hovered-icon-color;
+      }
+    }
+  }
+
   .core-ls {
     position: absolute;
     top: 50%;
@@ -37,6 +61,7 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     display: flex;
     flex-direction: row;
     align-items: center;
+    column-gap: 6px;
   }
 
   .map-manager-source-list-filter {
@@ -49,37 +74,13 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     margin-top: 0;
   }
 
-  .map-source-list-entry {
-    .map-source-list-entry-name {
-      flex: 1 1 auto;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
-      margin-right: 4px;
-    }
-
-    .map-source-list-entry-attach {
-      margin-right: 10px;
-      display: none;
-      width: auto;
-    }
-
-    &[aria-selected="true"] {
-      .map-source-list-entry-attach {
-        display: inline-block;
-      }
-    }
-  }
-
   .map-manager-overlays-label {
     display: block;
-    margin-top: 8px;
     margin-bottom: 4px;
   }
 
   .map-manager-underlays-label {
     display: block;
-    margin-top: 8px;
     margin-bottom: 4px;
   }
 
@@ -92,10 +93,9 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     width: 100%;
     padding-left: 4px;
     padding-right: 4px;
-    border-width: 1px;
+    border-width: 0 0 1px 0;
     border-style: solid;
     border-color: $uicore-gray-a;
-    border-radius: 3px;
     background-color: $buic-background-1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -112,56 +112,9 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     margin: 1em 0 1em 0;
   }
 
-  .map-manager-basemap {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    align-items: flex-start;
-
-    .map-manager-base-label {
-      font-size: $uicore-font-size;
-      width: auto;
-      white-space: nowrap;
-      flex: 1 1 auto;
-      margin-bottom: 4px;
-    }
-
-    .map-manager-base-item {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      width: 100%;
-
-      .uicore-reactSelectTop {
-        width: 100%;
-        line-height: inherit;
-      }
-
-      .map-manager-base-item-select {
-        height: 2.0em;
-        width: 100%;
-        min-width: 100px;
-        margin-right: 6px;
-      }
-
-      .map-manager-base-item-transparency {
-        max-width: 160px;
-        width: 160px;
-        display: flex;
-        justify-content: center;
-        margin-right: 6px;
-      }
-
-      .map-manager-base-item-color.components-color-swatch {
-        height: 2.25em;
-        width: 2.25em;
-        margin-left: 6px;
-      }
-    }
-  }
-
   .map-manager-header {
     display: flex;
+    flex-direction: column;
     height: auto;
     width: 100%;
     align-items: center;
@@ -241,13 +194,12 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  height: 2em;
+  height: 2.5em;
   width: 100%;
   padding-right: 4px;
-  border-width: 1px;
+  border-width: 0 0 1px 0;
   border-style: solid;
   border-color: $uicore-gray-a;
-  border-radius: 3px;
   background-color: $buic-background-1;
 
   .map-manager-item-label {
@@ -265,6 +217,19 @@ $hovered-icon-color: $buic-foreground-primary-tone;
 
     &:hover {
       color: $hovered-icon-color;
+    }
+
+    .core-context-menu-container {
+      .core-context-menu-item {
+        > .core-context-menu-icon {
+          flex-shrink: 1;
+          flex-grow: 0;
+          width: 0;
+        }
+        .core-slider.core-slider-minMax {
+          min-width: 100px;
+        }
+      }
     }
   }
 
@@ -380,14 +345,55 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   }
 }
 
-.map-manager-sources {
-  height: 250px;
-  min-height: 60px;
-}
-
 .map-manager-not-geo-located-text {
   width:90%;
   color: $buic-foreground-muted;
   font-style: italic;
   text-align: center;
+}
+
+.map-sources-popup-panel {
+  padding: 4px;
+  width: 400px;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  .map-manager-source-listbox-header {
+    display: flex;
+    margin-left: 1px;
+    column-gap: 4px;
+    }
+
+  ul.core-listbox {
+    background-color: $buic-background-1;
+  }
+
+  .map-manager-sources {
+    height: 250px;
+    min-height: 60px;
+
+    .map-source-list-entry {
+      .map-source-list-entry-name {
+        flex: 1 1 auto;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        margin-right: 4px;
+      }
+
+      .map-source-list-entry-attach {
+        margin-right: 10px;
+        display: none;
+        width: auto;
+      }
+
+      &[aria-selected="true"] {
+        .map-source-list-entry-attach {
+          display: inline-block;
+        }
+      }
+    }
+  }
 }

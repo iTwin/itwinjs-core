@@ -1924,6 +1924,7 @@ export enum DepthPointSource {
     Geometry = 0,
     Grid = 4,
     GroundPlane = 3,
+    Map = 7,
     Model = 1,
     TargetPoint = 6
 }
@@ -3873,7 +3874,7 @@ export class IModelApp {
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @internal
     static eventSourceOptions: EventSourceOptions;
-    // @internal (undocumented)
+    // @beta
     static get extensionAdmin(): ExtensionAdmin;
     // @internal
     static get features(): FeatureTrackingManager;
@@ -3950,7 +3951,7 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: FrontendAuthorizationClient;
-    // @internal (undocumented)
+    // @beta
     extensionAdmin?: ExtensionAdmin;
     // @internal
     features?: FeatureTrackingManager;
@@ -4557,11 +4558,13 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 export abstract class MapLayerImageryProvider {
     constructor(_settings: MapLayerSettings, _usesCachedTiles: boolean);
     // (undocumented)
-    areChildrenAvailable(tile: ImageryMapTile): Promise<boolean>;
+    protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
     // (undocumented)
     cartoRange?: MapCartoRectangle;
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): string;
+    // (undocumented)
+    protected get _filterByCartoRange(): boolean;
     // (undocumented)
     getEPSG3857Extent(row: number, column: number, zoomLevel: number): {
         left: number;
@@ -4597,6 +4600,10 @@ export abstract class MapLayerImageryProvider {
     protected _requestContext: ClientRequestContext;
     // (undocumented)
     protected readonly _settings: MapLayerSettings;
+    // (undocumented)
+    testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void): void;
+    // (undocumented)
+    protected _testChildAvailability(_tile: ImageryMapTile, resolveChildren: () => void): void;
     // (undocumented)
     get tileSize(): number;
     // (undocumented)
@@ -4715,8 +4722,6 @@ export class MapTile extends RealityTile {
     // (undocumented)
     protected _cornerRays: Ray3d[] | undefined;
     // (undocumented)
-    protected createPlanarChildren(childCorners: Point3d[][], columnCount: number, rowCount: number): MapTile[];
-    // (undocumented)
     disposeContents(): void;
     // (undocumented)
     everLoaded: boolean;
@@ -4764,7 +4769,7 @@ export class MapTile extends RealityTile {
     // (undocumented)
     get loadableTerrainTile(): MapTile;
     // (undocumented)
-    protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
+    protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void;
     // (undocumented)
     get mapLoader(): MapTileLoader;
     // (undocumented)
@@ -4788,8 +4793,6 @@ export class MapTile extends RealityTile {
     setContent(content: TerrainTileContent): void;
     // (undocumented)
     setNotFound(): void;
-    // (undocumented)
-    setReprojectedCorners(reprojectedCorners: Point3d[]): void;
     // (undocumented)
     tileFromQuadId(quadId: QuadId): MapTile | undefined;
 }
@@ -4853,7 +4856,7 @@ export class MapTileTree extends RealityTileTree {
     // (undocumented)
     addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings): void;
     // (undocumented)
-    baseColor: ColorDef;
+    baseColor?: ColorDef;
     // (undocumented)
     baseTransparent: boolean;
     // (undocumented)
@@ -4883,7 +4886,7 @@ export class MapTileTree extends RealityTileTree {
     // (undocumented)
     getBaseRealityDepth(sceneContext: SceneContext): number;
     // (undocumented)
-    getChildCorners(tile: MapTile, columnCount: number, rowCount: number): Point3d[][];
+    getCachedReprojectedPoints(gridPoints: Point3d[]): Point3d[] | undefined;
     // (undocumented)
     getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined;
     // (undocumented)
@@ -4894,6 +4897,8 @@ export class MapTileTree extends RealityTileTree {
     getLayerIndex(imageryTreeId: Id64String): number;
     // (undocumented)
     getLayerTransparency(imageryTreeId: Id64String): number;
+    // (undocumented)
+    getPlanarChildCorners(tile: MapTile, columnCount: number, rowCount: number, resolve: (childCorners: Point3d[][]) => void): void;
     // (undocumented)
     getTileRectangle(quadId: QuadId): MapCartoRectangle;
     // (undocumented)
@@ -4906,6 +4911,8 @@ export class MapTileTree extends RealityTileTree {
     isOverlay: boolean;
     // (undocumented)
     get isTransparent(): boolean;
+    // (undocumented)
+    loadReprojectionCache(tile: MapTile): Promise<void>;
     // (undocumented)
     get mapLoader(): MapTileLoader;
     // (undocumented)
@@ -4924,8 +4931,6 @@ export class MapTileTree extends RealityTileTree {
     static minReprojectionDepth: number;
     // (undocumented)
     pointAboveEllipsoid(point: Point3d): boolean;
-    // (undocumented)
-    reprojectTileChildCorners(tile: MapTile, columnCount: number, rowCount: number, children: Tile[]): Promise<void>;
     // (undocumented)
     sourceTilingScheme: MapTilingScheme;
     // (undocumented)
@@ -6206,8 +6211,6 @@ export class PlanarTilePatch {
     getRangeCorners(heightRange: Range1d, result: Point3d[]): Point3d[];
     // (undocumented)
     normal: Vector3d;
-    // (undocumented)
-    setReprojectedCorners(reprojectedCorners: Point3d[], reprojectionRange: Range3d): void;
 }
 
 // @public
@@ -6428,7 +6431,7 @@ export class RealityTile extends Tile {
     // (undocumented)
     computeLoadPriority(viewports: Iterable<Viewport>): number;
     // (undocumented)
-    computeVisibility(args: TileDrawArgs): TileVisibility;
+    computeVisibilityFactor(args: TileDrawArgs): number;
     // (undocumented)
     forceSelectRealityTile(): boolean;
     // (undocumented)
@@ -6438,6 +6441,8 @@ export class RealityTile extends Tile {
     // (undocumented)
     get graphicType(): TileGraphicType | undefined;
     // (undocumented)
+    get isLoaded(): boolean;
+    // (undocumented)
     isOccluded(_viewingSpace: ViewingSpace): boolean;
     // (undocumented)
     get isPointCloud(): boolean;
@@ -6445,6 +6450,8 @@ export class RealityTile extends Tile {
     get loadableTile(): RealityTile;
     // (undocumented)
     protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
+    // (undocumented)
+    markDisplayed(): void;
     // (undocumented)
     markUsed(args: TileDrawArgs): void;
     // (undocumented)
@@ -7131,6 +7138,7 @@ export namespace RenderSystem {
         contextAttributes?: WebGLContextAttributes;
         // @internal
         debugShaders?: boolean;
+        devicePixelRatioOverride?: number;
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
@@ -8758,6 +8766,8 @@ export abstract class TileAdmin {
     abstract addTilesForViewport(vp: Viewport, selected: Tile[], ready: Set<Tile>): void;
     // @internal (undocumented)
     abstract get alwaysRequestEdges(): boolean;
+    // @internal (undocumented)
+    abstract get alwaysSubdivideIncompleteTiles(): boolean;
     // @internal
     abstract clearTilesForViewport(vp: Viewport): void;
     // @internal
@@ -8845,6 +8855,8 @@ export abstract class TileAdmin {
 export namespace TileAdmin {
     export interface Props {
         alwaysRequestEdges?: boolean;
+        // @internal
+        alwaysSubdivideIncompleteTiles?: boolean;
         // @internal
         cancelBackendTileRequests?: boolean;
         contextPreloadParentDepth?: number;

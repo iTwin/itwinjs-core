@@ -9,6 +9,6 @@ An instance of [IModelApp]($frontend) provides the services needed by the [front
 * [Localization support](./Localization.md)
 * User settings using [Settings](./Settings.md)
 
-Applications may customize the behavior of the IModelApp services by subclassing this class and supplying different implementations of them.
+Applications may customize the behavior of the IModelApp services by providing an [IModelAppOptions]($frontend) and supplying different implementations of them.
 
-Before any interactive operations may be performed, [IModelApp.startup]($frontend) must be called (typically on a subclass of IModelApp).
+Before any interactive operations may be performed, [IModelApp.startup]($frontend) must be called (typically within the an App specific startup method).

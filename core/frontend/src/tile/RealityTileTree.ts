@@ -68,13 +68,15 @@ export class TraversalSelectionContext {
     if (tile.isReady) {
       args.markReady(tile);
       this.selected.push(tile);
+      tile.markDisplayed();
       this.displayedDescendants.push((traversalDetails.childrenSelected) ? traversalDetails.queuedChildren.slice() : []);
       traversalDetails.queuedChildren.length = 0;
       traversalDetails.childrenLoading = false;
       traversalDetails.childrenSelected = true;
     } else if (!tile.isNotFound) {
       traversalDetails.queuedChildren.push(tile);
-      this.missing.push(tile);
+      if (!tile.isLoaded)
+        this.missing.push(tile);
     }
   }
 
@@ -86,7 +88,7 @@ export class TraversalSelectionContext {
       tile.markUsed(args);
       tile.selectSecondaryTiles(args, this);
       this.preloaded.add(tile);
-      if (!tile.isReady)
+      if (!tile.isNotFound && !tile.isLoaded)
         this.missing.push(tile);
     }
   }
@@ -241,11 +243,13 @@ export class RealityTileTree extends TileTree {
 
     const baseDepth = this.getBaseRealityDepth(args.context);
 
-    if (baseDepth > 0)        // Maps may force loading of low level globe tiles.
-      rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
+    if (0 === context.missing.length) {
+      if (baseDepth > 0)        // Maps may force loading of low level globe tiles.
+        rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
 
-    if (!freezeTiles)
-      this.preloadTilesForScene(args, context, undefined);
+      if (!freezeTiles)
+        this.preloadTilesForScene(args, context, undefined);
+    }
 
     if (!freezeTiles)
       for (const tile of context.missing) {

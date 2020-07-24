@@ -8,7 +8,7 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, Dictionary, Id64Array, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
-  CurrentImdlVersion, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, NativeAppRpcInterface, RpcOperation, RpcRegistry,
+  defaultTileOptions, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, NativeAppRpcInterface, RpcOperation, RpcRegistry,
   RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds, TileTreeProps,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -96,6 +96,8 @@ export abstract class TileAdmin {
   public abstract get disableMagnification(): boolean;
   /** @internal */
   public abstract get alwaysRequestEdges(): boolean;
+  /** @internal */
+  public abstract get alwaysSubdivideIncompleteTiles(): boolean;
 
   /** @internal */
   public abstract get tileExpirationTime(): BeDuration;
@@ -461,6 +463,12 @@ export namespace TileAdmin {
      * @alpha
      */
     alwaysRequestEdges?: boolean;
+
+    /** If true, when choosing whether to sub-divide or magnify a tile for refinement, the tile will always be sub-divided if any geometry was omitted from it.
+     * Default value: false
+     * @internal
+     */
+    alwaysSubdivideIncompleteTiles?: boolean;
   }
 }
 
@@ -580,6 +588,7 @@ class Admin extends TileAdmin {
   private readonly _ignoreAreaPatterns: boolean;
   private readonly _disableMagnification: boolean;
   private readonly _alwaysRequestEdges: boolean;
+  private readonly _alwaysSubdivideIncompleteTiles: boolean;
   private readonly _maxMajorVersion: number;
   private readonly _useProjectExtents: boolean;
   private readonly _maximumLevelsToSkip: number;
@@ -652,13 +661,14 @@ class Admin extends TileAdmin {
     this._maxActiveTileTreePropsRequests = options.maxActiveTileTreePropsRequests ?? 10;
     this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
-    this._enableInstancing = false !== options.enableInstancing;
-    this._enableImprovedElision = false !== options.enableImprovedElision;
-    this._ignoreAreaPatterns = true === options.ignoreAreaPatterns;
-    this._disableMagnification = true === options.disableMagnification;
+    this._enableInstancing = options.enableInstancing ?? defaultTileOptions.enableInstancing;
+    this._enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
+    this._ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
+    this._disableMagnification = options.disableMagnification ?? defaultTileOptions.disableMagnification;
     this._alwaysRequestEdges = true === options.alwaysRequestEdges;
-    this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : CurrentImdlVersion.Major;
-    this._useProjectExtents = false !== options.useProjectExtents;
+    this._alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
+    this._maxMajorVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
+    this._useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
 
     if (undefined !== options.maximumLevelsToSkip)
       this._maximumLevelsToSkip = Math.floor(Math.max(0, options.maximumLevelsToSkip));
@@ -702,6 +712,7 @@ class Admin extends TileAdmin {
   public get maximumLevelsToSkip() { return this._maximumLevelsToSkip; }
   public get disableMagnification() { return this._disableMagnification; }
   public get alwaysRequestEdges() { return this._alwaysRequestEdges; }
+  public get alwaysSubdivideIncompleteTiles() { return this._alwaysSubdivideIncompleteTiles; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
   public get tileTreeExpirationTime() { return this._treeExpirationTime; }
   public get contextPreloadParentDepth() { return this._contextPreloadParentDepth; }

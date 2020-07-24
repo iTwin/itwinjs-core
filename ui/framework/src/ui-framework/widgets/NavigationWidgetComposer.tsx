@@ -9,7 +9,7 @@
 import * as React from "react";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
-import { CommonProps, useProximityToMouse } from "@bentley/ui-core";
+import { CommonProps, useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext } from "@bentley/ui-core";
 import { NavigationArea } from "@bentley/ui-ninezone";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ContentControl, ContentControlActivatedEventArgs } from "../content/ContentControl";
@@ -87,16 +87,25 @@ export function NavigationAidHost(props: NavigationAidHostProps) {
   const navigationAidControl = React.useMemo(() => createNavigationAidControl(activeContentControl, navigationAidId, activeContentViewport), [activeContentControl, navigationAidId, activeContentViewport]);
 
   const ref = React.useRef<HTMLDivElement>(null);
-  const proximity = useProximityToMouse(ref);
+
+  const isInitialMount = React.useRef(true);
+  const { onElementRef, proximityScale } = useWidgetOpacityContext();
+
+  React.useEffect(() => {
+    // istanbul ignore else
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      onElementRef(ref);
+    }
+  }, [onElementRef]);
+
   const divStyle: React.CSSProperties = {
     minWidth: props.minWidth ? /* istanbul ignore next */ props.minWidth : "64px",
     minHeight: props.minHeight ? /* istanbul ignore next */ props.minHeight : "64px",
   };
 
   if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) {
-    const threshold = 100;
-    const scale = ((proximity < threshold) ? threshold - proximity : /* istanbul ignore next */ 0) / threshold;
-    const navigationAidOpacity = (0.30 * scale) + 0.70;
+    const navigationAidOpacity = (0.30 * proximityScale) + 0.70;
 
     divStyle.opacity = `${navigationAidOpacity}`;
   }
@@ -127,13 +136,26 @@ export interface NavigationWidgetComposerProps extends CommonProps {
  */
 export function NavigationWidgetComposer(props: NavigationWidgetComposerProps) {
   const { navigationAidHost, horizontalToolbar, verticalToolbar, ...otherProps } = props;
+  const [elementSet] = React.useState(new WidgetElementSet());
+  const handleChildRef = React.useCallback((elementRef: React.RefObject<Element>) => {
+    elementSet.add(elementRef);
+  }, [elementSet]);
+  const proximityScale = useProximityToMouse(elementSet, UiShowHideManager.snapWidgetOpacity);
+
   return (
-    <NavigationArea
-      navigationAid={navigationAidHost ? /* istanbul ignore next */ navigationAidHost : <NavigationAidHost />}
-      horizontalToolbar={horizontalToolbar}
-      verticalToolbar={verticalToolbar}
-      {...otherProps}
-      onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
-    />
+    <WidgetOpacityContext.Provider
+      value={{
+        onElementRef: handleChildRef,
+        proximityScale,
+      }}
+    >
+      <NavigationArea
+        navigationAid={navigationAidHost ? /* istanbul ignore next */ navigationAidHost : <NavigationAidHost />}
+        horizontalToolbar={horizontalToolbar}
+        verticalToolbar={verticalToolbar}
+        {...otherProps}
+        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+      />
+    </WidgetOpacityContext.Provider>
   );
 }

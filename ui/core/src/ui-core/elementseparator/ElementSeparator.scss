@@ -55,7 +55,7 @@
   border-style: none;
   padding: 0px;
   opacity: 0;
-  @include uicore-z-index(dragdrop);
+  z-index: 1;
 
   &--vertical {
     width: 100%;

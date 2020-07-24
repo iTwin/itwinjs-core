@@ -45,6 +45,7 @@ export abstract class MapLayerImageryProvider {
   public get maximumZoomLevel(): number { return 22; }
   public get usesCachedTiles() { return this._usesCachedTiles; }
   public cartoRange?: MapCartoRectangle;
+  protected get _filterByCartoRange() { return true; }
   constructor(protected readonly _settings: MapLayerSettings, protected _usesCachedTiles: boolean) { }
 
   public async initialize(): Promise<void> {
@@ -59,8 +60,15 @@ export abstract class MapLayerImageryProvider {
   protected _missingTileData?: Uint8Array;
   public get transparentBackgroundString(): string { return this._settings.transparentBackground ? "true" : "false"; }
 
-  public async areChildrenAvailable(tile: ImageryMapTile): Promise<boolean> {
-    return (undefined === this.cartoRange || this.cartoRange.intersectsRange(tile.rectangle));
+  protected async _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean> { return true; }
+  protected _testChildAvailability(_tile: ImageryMapTile, resolveChildren: () => void) { resolveChildren(); }
+
+  public testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) {
+    if (tile.depth >= this.maximumZoomLevel || (undefined !== this.cartoRange && this._filterByCartoRange && !this.cartoRange.intersectsRange(tile.rectangle))) {
+      tile.setLeaf();
+      return;
+    }
+    this._testChildAvailability(tile, resolveChildren);
   }
 
   public async getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
@@ -279,19 +287,26 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     super(settings, false);
   }
 
+  protected get _filterByCartoRange() { return false; }      // Can't trust footprint ranges (USGS Hydro)
   public get maximumZoomLevel() { return this._maxDepthFromLod > 0 ? this._maxDepthFromLod : super.maximumZoomLevel; }
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
     return super.loadTile(row, column, zoomLevel);
   }
 
-  public async areChildrenAvailable(tile: ImageryMapTile): Promise<boolean> {
-    if (!this._tileMapSupported || tile.quadId.level < 4)
-      return true;
+  protected _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) {
+    if (!this._tileMapSupported || tile.quadId.level < 4) {
+      resolveChildren();
+      return;
+    }
 
     const quadId = tile.quadId;
-    let availability = this._availabilityMap.get(tile.quadId);
-    if (undefined !== (availability = this._availabilityMap.get(tile.quadId)))
-      return availability;
+    let availability;
+    if (undefined !== (availability = this._availabilityMap.get(tile.quadId))) {
+      if (availability)
+        resolveChildren();
+
+      return;
+    }
 
     const row = quadId.row * 2;
     const column = quadId.column * 2;
@@ -300,9 +315,8 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     const queryRow = Math.max(0, row - queryDimHalf);
     const queryColumn = Math.max(0, column - queryDimHalf);
 
-    availability = true;
-    try {
-      const json = await getJson(this._requestContext, `${this._settings.url}/tilemap/${level}/${queryRow}/${queryColumn}/${queryDim}/${queryDim}?f=json`);
+    getJson(this._requestContext, `${this._settings.url}/tilemap/${level}/${queryRow}/${queryColumn}/${queryDim}/${queryDim}?f=json`).then((json) => {
+      availability = true;
       if (Array.isArray(json.data)) {
         let index = 0;
         const data = json.data;
@@ -317,10 +331,12 @@ class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
           }
         }
       }
-    } catch {
-      this._tileMapSupported = false;
-    }
-    return availability!;
+      if (availability)
+        resolveChildren();
+
+    }).catch((_error) => {
+      resolveChildren();
+    });
   }
   private isEpsg3857Compatible(tileInfo: any) {
     if (tileInfo.spatialReference?.latestWkid !== 3857 || !Array.isArray(tileInfo.lods))

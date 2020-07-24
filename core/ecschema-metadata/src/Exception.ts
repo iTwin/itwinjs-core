@@ -2,10 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Metadata
+ */
 
 import { assert, BentleyError } from "@bentley/bentleyjs-core";
 
-/** @internal */
+/** @beta */
 export enum ECObjectsStatus {
   ECOBJECTS_ERROR_BASE = 0x88EC,
   Success = 0,

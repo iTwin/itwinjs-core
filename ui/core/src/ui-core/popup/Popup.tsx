@@ -237,6 +237,10 @@ export class Popup extends React.Component<PopupProps, PopupState> {
           return "core-popup-right";
         case RelativePosition.Bottom:
           return "core-popup-bottom";
+        case RelativePosition.LeftTop:
+          return "core-popup-left-top";
+        case RelativePosition.RightTop:
+          return "core-popup-right-top";
       }
     }
 
@@ -319,8 +323,18 @@ export class Popup extends React.Component<PopupProps, PopupState> {
         point.x = scrollX + targetRect.left - popupWidth - offset - offsetArrow;
         break;
 
+      case RelativePosition.LeftTop:
+        point.y = scrollY + targetRect.top;
+        point.x = scrollX + targetRect.left - popupWidth - offset - offsetArrow;
+        break;
+
       case RelativePosition.Right:
         point.y = scrollY + targetRect.top + (targetRect.height / 2) - (popupHeight / 2);
+        point.x = scrollX + targetRect.right + offset + offsetArrow;
+        break;
+
+      case RelativePosition.RightTop:
+        point.y = scrollY + targetRect.top;
         point.x = scrollX + targetRect.right + offset + offsetArrow;
         break;
     }
@@ -378,12 +392,16 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     if ((targetRect.left - popupWidth - leftMargin - offsetArrow - offset) < viewportRect.left) {
       if (newPosition === RelativePosition.Left)
         newPosition = RelativePosition.Right;
+      else if (newPosition === RelativePosition.LeftTop)
+        newPosition = RelativePosition.RightTop;
     }
 
     const rightMargin = parseMargin(containerStyle.marginRight);
     if ((targetRect.right + popupWidth + rightMargin + offsetArrow + offset) > viewportRect.right) {
       if (newPosition === RelativePosition.Right)
         newPosition = RelativePosition.Left;
+      else if (newPosition === RelativePosition.RightTop)
+        newPosition = RelativePosition.LeftTop;
     }
 
     return newPosition;

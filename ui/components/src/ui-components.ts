@@ -51,6 +51,7 @@ export * from "./ui-components/editors/EditorContainer";
 export * from "./ui-components/editors/EnumButtonGroupEditor";
 export * from "./ui-components/editors/EnumEditor";
 export * from "./ui-components/editors/IconEditor";
+export * from "./ui-components/editors/ImageCheckBoxEditor";
 export * from "./ui-components/editors/NumericInputEditor";
 export * from "./ui-components/editors/PropertyEditorManager";
 export * from "./ui-components/editors/SliderEditor";

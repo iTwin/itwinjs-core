@@ -100,6 +100,13 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_DPI_AWARE_VIEWPORTS)
     configuration.dpiAwareViewports = false;
 
+  const devicePixelRatioOverrideVar = process.env.SVT_DEVICE_PIXEL_RATIO_OVERRIDE;
+  if (undefined !== devicePixelRatioOverrideVar) {
+    const devicePixelRatioOverride = Number.parseFloat(devicePixelRatioOverrideVar);
+    if (!Number.isNaN(devicePixelRatioOverride))
+      configuration.devicePixelRatioOverride = devicePixelRatioOverride;
+  }
+
   if (undefined !== process.env.SVT_DPI_LOD)
     configuration.dpiAwareLOD = true;
 
@@ -125,6 +132,7 @@ function setupStandaloneConfiguration(): SVTConfiguration {
 
   configuration.disableEdges = undefined !== process.env.SVT_DISABLE_EDGE_DISPLAY;
   configuration.alwaysLoadEdges = undefined !== process.env.SVT_ALWAYS_LOAD_EDGES;
+  configuration.alwaysSubdivideIncompleteTiles = undefined !== process.env.SVT_SUBDIVIDE_INCOMPLETE;
 
   const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
   try { fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8"); } catch { }

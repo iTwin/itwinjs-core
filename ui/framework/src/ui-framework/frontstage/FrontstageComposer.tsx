@@ -63,6 +63,7 @@ export interface TargetChangeHandler {
  * @public
  */
 export interface NineZoneChangeHandler {
+  handleFloatingZonesBoundsChange(bounds: RectangleProps): void;
   handleZonesBoundsChange(bounds: RectangleProps): void;
 }
 
@@ -591,6 +592,20 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     stagePanel.panelState = panelState;
   }
 
+  public handleFloatingZonesBoundsChange(bounds: RectangleProps) {
+    this.setState((prevState) => {
+      const zones = FrontstageManager.NineZoneManager.getZonesManager().setFloatingZonesBounds(bounds, prevState.nineZone.zones);
+      if (zones === prevState.nineZone.zones)
+        return null;
+      return {
+        nineZone: {
+          ...prevState.nineZone,
+          zones,
+        },
+      };
+    });
+  }
+
   public handleZonesBoundsChange(bounds: RectangleProps): void {
     // istanbul ignore else
     if (this._isMounted)
@@ -682,11 +697,16 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private layout() {
-    const element = document.getElementById("uifw-ninezone-zones-area");
-    if (!element)
+    const zones = document.getElementById("uifw-ninezone-zones-area");
+    const floatingZones = document.getElementById("uifw-ninezone-floating-zones-area");
+    if (!zones || !floatingZones)
       return;
-    const bounds = Rectangle.create(element.getBoundingClientRect());
+    let floatingBounds = Rectangle.create(floatingZones.getBoundingClientRect());
+    const bounds = Rectangle.create(zones.getBoundingClientRect());
+    const offset = bounds.topLeft().getOffsetTo(floatingBounds.topLeft());
+    floatingBounds = floatingBounds.setPosition(offset);
     this.handleZonesBoundsChange(bounds);
+    this.handleFloatingZonesBoundsChange(floatingBounds);
   }
 
   private _handleWidgetStateChangedEvent = () => {

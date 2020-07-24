@@ -41,7 +41,7 @@ export class MapTileTree extends RealityTileTree {
   public useDepthBuffer: boolean;
   public isOverlay: boolean;
   public terrainExaggeration: number;
-  public baseColor: ColorDef;
+  public baseColor?: ColorDef;
   public baseTransparent: boolean;
   public mapTransparent: boolean;
 
@@ -97,8 +97,7 @@ export class MapTileTree extends RealityTileTree {
       this.imageryTrees.push(tree);
       this._layerSettings.set(tree.modelId, settings);
     } else {
-      // tslint:disable-next-line:no-console
-      console.log(`Ignoring Map Layer ${settings.name} as displaying it would exceed maximum: ${maxLayers}`);
+      // TBD -- Notify user that layers is being ignored?
     }
   }
   public clearImageryLayers() {
@@ -214,8 +213,8 @@ export class MapTileTree extends RealityTileTree {
     }
     return childCorners;
   }
-  public async reprojectTileChildCorners(tile: MapTile, columnCount: number, rowCount: number, children: Tile[]): Promise<void> {
-    const gridPoints = this.getMercatorFractionChildGridPoints(tile, columnCount, rowCount);
+
+  public getCachedReprojectedPoints(gridPoints: Point3d[]): Point3d[] | undefined {
     const requestProps = [];
     for (const gridPoint of gridPoints)
       requestProps.push({
@@ -224,49 +223,86 @@ export class MapTileTree extends RealityTileTree {
         z: this.bimElevationBias,
       });
 
-    let iModelCoordinates = this._gcsConverter!.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
-    if (undefined !== iModelCoordinates.missing) {
-      await this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(iModelCoordinates.missing);
-      iModelCoordinates = this._gcsConverter!.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
-      IModelApp.tileAdmin.onTileLoad.raiseEvent(tile); // If we had to wait for backend to reproject then we need to make sure that map is displayed.
-      assert(undefined === iModelCoordinates.missing);
-    }
-    for (let i = 0; i < gridPoints.length; i++)
-      gridPoints[i] = Point3d.fromJSON(iModelCoordinates.result[i]!.p);
+    const iModelCoordinates = this._gcsConverter!.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
 
-    assert(rowCount * columnCount === children.length);
-    for (let row = 0; row < rowCount; row++) {
-      for (let column = 0; column < columnCount; column++) {
-        const child = children![row * columnCount + column] as MapTile;
-        const index0 = column + row * (columnCount + 1);
-        const index1 = index0 + (columnCount + 1);
-        child.setReprojectedCorners([gridPoints[index0], gridPoints[index0 + 1], gridPoints[index1], gridPoints[index1 + 1]]);
+    if (iModelCoordinates.missing)
+      return undefined;
+
+    return iModelCoordinates.result.map((result) => Point3d.fromJSON(result!.p));
+  }
+
+  // Minimize reprojection requests by requesting this corners tile and a grid that will include all points for 4 levels of descendants.
+  // This greatly reduces the number of reprojection requests which currently require a roundtrip through the backend.
+  public async loadReprojectionCache(tile: MapTile): Promise<void> {
+    const quadId = tile.quadId;
+    const xRange = Range1d.createXX(this.sourceTilingScheme.tileXToFraction(quadId.column, quadId.level), this.sourceTilingScheme.tileXToFraction(quadId.column + 1, quadId.level));
+    const yRange = Range1d.createXX(this.sourceTilingScheme.tileYToFraction(quadId.row, quadId.level), this.sourceTilingScheme.tileYToFraction(quadId.row + 1, quadId.level));
+    const cacheDepth = 4, cacheDimension = 2 ** cacheDepth;
+    const delta = 1.0 / cacheDimension;
+    const requestProps = [];
+
+    for (let row = 0; row <= cacheDimension; row++) {
+      for (let column = 0; column <= cacheDimension; column++) {
+        let yFraction = yRange.fractionToPoint(row * delta);
+        if (!(this.sourceTilingScheme instanceof WebMercatorTilingScheme))
+          yFraction = this._mercatorTilingScheme.latitudeToYFraction(this.sourceTilingScheme.yFractionToLatitude(yFraction));
+        requestProps.push({
+          x: this._mercatorTilingScheme.xFractionToLongitude(xRange.fractionToPoint(column * delta)) * Angle.degreesPerRadian,
+          y: this._mercatorTilingScheme.yFractionToLatitude(yFraction) * Angle.degreesPerRadian,
+          z: this.bimElevationBias,
+        });
       }
     }
+
+    await this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps);
   }
+
   private static _scratchCarto = new Cartographic();
 
-  public getChildCorners(tile: MapTile, columnCount: number, rowCount: number): Point3d[][] {
-    const gridPoints = this.getMercatorFractionChildGridPoints(tile, columnCount, rowCount);
-    for (const gridPoint of gridPoints) {
-      this._mercatorFractionToDb.multiplyPoint3d(gridPoint, scratchCorner);
-      if (this.globeMode !== GlobeMode.Ellipsoid || this.cartesianRange.containsPoint(scratchCorner)) {
-        scratchCorner.clone(gridPoint);
-      } else {
-        this._mercatorTilingScheme.fractionToCartographic(gridPoint.x, gridPoint.y, MapTileTree._scratchCarto);
-        this.earthEllipsoid.radiansToPoint(MapTileTree._scratchCarto.longitude, Cartographic.parametricLatitudeFromGeodeticLatitude(MapTileTree._scratchCarto.latitude), gridPoint);
-        const cartesianDistance = this.cartesianRange.distanceToPoint(scratchCorner);
-        if (cartesianDistance < this.cartesianTransitionDistance)
-          scratchCorner.interpolate(cartesianDistance / this.cartesianTransitionDistance, gridPoint, gridPoint);
+  // Get the corners for planar children -- This generally will resolve immediately, but may require an asynchronous request for reprojecting the corners.
+  public getPlanarChildCorners(tile: MapTile, columnCount: number, rowCount: number, resolve: (childCorners: Point3d[][]) => void) {
+    const resolveCorners = (points: Point3d[], reprojected: Point3d[] | undefined = undefined) => {
+      for (let i = 0; i < points.length; i++) {
+        const gridPoint = points[i];
+        this._mercatorFractionToDb.multiplyPoint3d(gridPoint, scratchCorner);
+        if (this.globeMode !== GlobeMode.Ellipsoid || this.cartesianRange.containsPoint(scratchCorner)) {
+          (reprojected ? reprojected[i] : scratchCorner).clone(gridPoint);
+        } else {
+          this._mercatorTilingScheme.fractionToCartographic(gridPoint.x, gridPoint.y, MapTileTree._scratchCarto);
+          this.earthEllipsoid.radiansToPoint(MapTileTree._scratchCarto.longitude, Cartographic.parametricLatitudeFromGeodeticLatitude(MapTileTree._scratchCarto.latitude), gridPoint);
+          const cartesianDistance = this.cartesianRange.distanceToPoint(scratchCorner);
+          if (cartesianDistance < this.cartesianTransitionDistance)
+            scratchCorner.interpolate(cartesianDistance / this.cartesianTransitionDistance, gridPoint, gridPoint);
+        }
       }
-    }
+      resolve(this.getChildCornersFromGridPoints(points, columnCount, rowCount));
+    };
 
-    return this.getChildCornersFromGridPoints(gridPoints, columnCount, rowCount);
+    let reprojectedPoints: Point3d[] | undefined;
+    const gridPoints = this.getMercatorFractionChildGridPoints(tile, columnCount, rowCount);
+    if (this.doReprojectChildren(tile)) {
+      reprojectedPoints = this.getCachedReprojectedPoints(gridPoints);
+      if (reprojectedPoints) {
+        // If the reprojected corners are in the cache, resolve immediately.
+        resolveCorners(gridPoints, reprojectedPoints);
+      } else {
+        // If the reprojected corners are not in cache request them - but also requestt reprojection of a grid that will include descendent corners to ensure they can
+        // be reloaded without expensive reprojection requests.
+        this.loadReprojectionCache(tile).then(() => {
+          const reprojected = this.getCachedReprojectedPoints(gridPoints);
+          assert(reprojected !== undefined);     // We just cached them... they better be there now.
+          resolveCorners(gridPoints, reprojected);
+        }).catch((_error: Error) => {
+          resolveCorners(gridPoints);
+        });
+      }
+    } else {
+      resolveCorners(gridPoints);
+    }
   }
 
   public getFractionalTileCorners(quadId: QuadId): Point3d[] {
-    const corners: Point3d[] = [];             //    ----x----->
-
+    const corners: Point3d[] = [];
     corners.push(Point3d.create(this.sourceTilingScheme.tileXToFraction(quadId.column, quadId.level), this.sourceTilingScheme.tileYToFraction(quadId.row, quadId.level), 0.0));
     corners.push(Point3d.create(this.sourceTilingScheme.tileXToFraction(quadId.column + 1, quadId.level), this.sourceTilingScheme.tileYToFraction(quadId.row, quadId.level), 0.0));
     corners.push(Point3d.create(this.sourceTilingScheme.tileXToFraction(quadId.column, quadId.level), this.sourceTilingScheme.tileYToFraction(quadId.row + 1, quadId.level), 0.0));
@@ -284,6 +320,7 @@ export class MapTileTree extends RealityTileTree {
 
     return -1;
   }
+
   public getLayerTransparency(imageryTreeId: Id64String): number {
     const layerSettings = this._layerSettings.get(imageryTreeId);
     assert(undefined !== layerSettings);

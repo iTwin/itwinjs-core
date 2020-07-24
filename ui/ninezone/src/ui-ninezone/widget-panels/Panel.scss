@@ -162,6 +162,7 @@
   &.nz-collapsed {
     > div {
       position: absolute;
+      overflow: hidden;
 
       > .nz-content {
         position: absolute;

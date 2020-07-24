@@ -103,7 +103,7 @@ export type ThemedSelectProps = {
 */
   formatGroupLabel?: typeof formatGroupLabel,
   /* Formats option labels in the menu and control as React components */
-  formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => Node,
+  formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => React.ReactNode,
   /* Resolves option data to a string to be displayed as the label by components */
   getOptionLabel?: typeof getOptionLabel,
   /* Resolves option data to a string to compare options and specify value attributes */
@@ -207,7 +207,7 @@ export function ThemedSelect(props: ThemedSelectProps) {
     return noOptionLabel.current;
   }, [noOptionLabel]);
   const noOptionFunction = props.noOptionsMessage ?? defaultOptionMessage;
-  const className = classnames ("uicore-reactSelectTop", props.className);
+  const className = classnames("uicore-reactSelectTop", props.className);
   const portalTarget = !!props.isMenuFixed ? undefined : getParentSelector();
   const {
     classNamePrefix, noOptionsMessage, menuPortalTarget, isMenuFixed, styles, components,

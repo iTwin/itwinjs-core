@@ -4,7 +4,7 @@ Bentley's iTwin Service is a cloud subscription program for managing Infrastruct
 
 ## iModel.js and iTwin Subscriptions
 
-[Please see the discussion](./backend/AccessingIModels.md) of the rules for accessing iModels and the description of Snapshot iModels.
+[Please see the discussion](../backend/AccessingIModels.md) of the rules for accessing iModels and the description of Snapshot iModels.
 
 Whenever an iModel.js-based program attempts to open a **non-Snapshot** iModel, it must supply:
 
