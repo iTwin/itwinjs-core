@@ -5,7 +5,7 @@ Relationship path specification and it's *repeatable* counterpart are used to de
 ## Attributes
 
 Name | Required? | Type | Default | Meaning
--|-|-|-|-|-
+-|-|-|-|-
 `relationship` | Yes | `SingleSchemaClassSpecification` | | Specification of the relationship to follow.
 `direction` | Yes | `"Forward" \| "Backward"` | | Direction in which the relationship should be followed.
 `targetClass` | No | `SingleSchemaClassSpecification` | Other end of relationship | Specification of the related class.
