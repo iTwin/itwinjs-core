@@ -90,8 +90,8 @@ describe("iModelHub PermissionsManager", () => {
     (requestContext as any).activityId = "iModelHub PermissionHandler";
     projectId = await utils.getProjectId(requestContext, "iModelJsTest");
 
-    await utils.createIModel(requestContext, imodelName);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
+    await utils.createIModel(requestContext, imodelName, projectId);
+    imodelId = await utils.getIModelId(requestContext, imodelName, projectId);
 
     if (!fs.existsSync(utils.workDir)) {
       fs.mkdirSync(utils.workDir);
