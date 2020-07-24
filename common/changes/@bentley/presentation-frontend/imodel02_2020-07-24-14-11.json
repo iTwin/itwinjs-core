@@ -1,0 +1,21 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-frontend",
+      "comment": "Add ability to compare hierarchies based on rulesets or ruleset variables.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/presentation-frontend",
+      "comment": "Add a `RulesetManager.onRulesetModified` event that's raised when rulesets are modified.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/presentation-frontend",
+      "comment": "Add a `RulesetVariablesManager.onVariableChanged` event that's raised when ruleset variables are changed.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}
