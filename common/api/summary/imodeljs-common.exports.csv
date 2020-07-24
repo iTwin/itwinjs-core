@@ -494,6 +494,7 @@ beta;TweenCallback = (obj: any) => void
 beta;Tweens
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
+internal;TypeOfChange
 beta;UpdateCallback = (obj: any, t: number) => void
 beta;UpgradeOptions
 public;UrlLinkProps 

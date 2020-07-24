@@ -71,6 +71,7 @@ beta;IModelHubError
 beta;class IModelHubEvent 
 beta;IModelHubEventType
 internal;class IModelHubGlobalEvent 
+internal;IModelHubPermission
 beta;IModelQuery 
 beta;IModelsHandler
 beta;IModelType
@@ -90,6 +91,7 @@ alpha;MultiLock
 internal;NamedVersionCreatedEvent 
 internal;ParseEvent(response: Response): IModelHubEvent
 internal;ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent
+internal;PermissionHandler
 internal;SeedFile 
 alpha;SmallThumbnail 
 internal;SoftiModelDeleteEvent 

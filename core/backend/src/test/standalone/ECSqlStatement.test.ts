@@ -2535,4 +2535,25 @@ describe("ECSqlStatement", () => {
       }), 1);
     });
   });
+
+  it("should get NativeSql", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "asyncmethodtest.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+          <ECProperty propertyName="dt" typeName="dateTime"/>
+          <ECProperty propertyName="fooId" typeName="long" extendedTypeName="Id"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+
+      const r: ECSqlInsertResult = await ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
+        const nativesql: string = stmt.getNativeSql();
+        assert.isTrue(nativesql.startsWith("INSERT INTO [ts_Foo]"));
+        return stmt.stepForInsert();
+      });
+      assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+      assert.equal(r.id, "0x1");
+    });
+  });
 });

@@ -706,6 +706,8 @@ export interface ChangedElements {
     modelIds?: Id64String[];
     // (undocumented)
     opcodes: number[];
+    // (undocumented)
+    type: number[];
 }
 
 // @internal (undocumented)
@@ -6701,6 +6703,20 @@ export class TypeDefinition extends RelatedElement {
 export interface TypeDefinitionElementProps extends DefinitionElementProps {
     // (undocumented)
     recipe?: RelatedElementProps;
+}
+
+// @internal (undocumented)
+export enum TypeOfChange {
+    // (undocumented)
+    Geometry = 2,
+    // (undocumented)
+    Hidden = 16,
+    // (undocumented)
+    Indirect = 8,
+    // (undocumented)
+    Placement = 4,
+    // (undocumented)
+    Property = 1
 }
 
 // @beta (undocumented)

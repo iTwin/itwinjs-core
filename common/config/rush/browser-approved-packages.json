@@ -615,10 +615,6 @@
       "allowedCategories": [ "backend", "integration-testing", "tools" ]
     },
     {
-      "name": "popper.js",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "postcss-flexbugs-fixes",
       "allowedCategories": [ "internal", "tools" ]
     },
@@ -841,10 +837,6 @@
     {
       "name": "terser-webpack-plugin",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "tooltip.js",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "tree-kill",

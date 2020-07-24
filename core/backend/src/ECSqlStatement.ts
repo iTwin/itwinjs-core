@@ -104,6 +104,16 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     this._stmt.reset();
   }
 
+  /** Get the Native SQL statement
+   * @internal
+   */
+  public getNativeSql(): string {
+    if (!this._stmt)
+      throw new Error("ECSqlStatement is not prepared");
+
+    return this._stmt.getNativeSql();
+  }
+
   /** Call this function when finished with this statement. This releases the native resources held by the statement.
    *
    * > Do not call this method directly on a statement that is being managed by a statement cache.
