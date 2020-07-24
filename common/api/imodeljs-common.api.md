@@ -1443,6 +1443,9 @@ export interface DecorationGeometryProps {
 // @alpha
 export const defaultDesktopAuthorizationClientExpiryBuffer: number;
 
+// @internal (undocumented)
+export const defaultTileOptions: TileOptions;
+
 // @public
 export interface DefinitionElementProps extends ElementProps {
     // (undocumented)

@@ -87,6 +87,7 @@ internal;CurrentImdlVersion
 beta;CustomAttribute
 beta;DecorationGeometryProps
 alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
+internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 alpha;DesktopAuthorizationClientConfiguration
 internal;class DevToolsRpcInterface 
