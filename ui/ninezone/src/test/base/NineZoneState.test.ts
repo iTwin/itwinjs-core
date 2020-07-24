@@ -9,7 +9,7 @@ import {
   addFloatingWidget, addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createVerticalPanelState,
   isHorizontalPanelState, NineZoneStateReducer,
 } from "../../ui-ninezone";
-import { createDraggedTabState, createFloatingWidgetState, createTabState, createWidgetState, findTab, toolSettingsTabId } from "../../ui-ninezone/base/NineZoneState";
+import { createDraggedTabState, createFloatingWidgetState, createTabState, createWidgetState, findTab, removeTab, toolSettingsTabId } from "../../ui-ninezone/base/NineZoneState";
 
 describe("isHorizontalPanelState", () => {
   it("returns true based on side property", () => {
@@ -1070,5 +1070,15 @@ describe("findTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     const tab = findTab(nineZone, "t1");
     should().not.exist(tab);
+  });
+});
+
+describe("removeTab", () => {
+  it("should not remove when tab is not found", () => {
+    const state = createNineZoneState();
+    const newState = produce(state, (draft) => {
+      removeTab(draft, "t1");
+    });
+    newState.should.eq(state);
   });
 });

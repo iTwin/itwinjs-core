@@ -895,6 +895,32 @@ describe("restoreNineZoneState", () => {
     spy.firstCall.args[2]!().should.matchSnapshot();
   });
 
+  it("should remove tab if widgetDef is not found", () => {
+    const frontstageDef = new FrontstageDef();
+    sinon.stub(frontstageDef, "findWidgetDef").withArgs("t2").returns(new WidgetDef({}));
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "w1");
+    state = addTab(state, "w1", "t1");
+    state = addTab(state, "w1", "t2");
+    const savedState = {
+      ...createSavedNineZoneState(state),
+      tabs: {
+        t1: {
+          id: "t1",
+          preferredFloatingWidgetSize: undefined,
+        },
+        t2: {
+          id: "t2",
+          preferredFloatingWidgetSize: undefined,
+        },
+      },
+    };
+    const newState = restoreNineZoneState(frontstageDef, savedState);
+    (newState.tabs.t1 === undefined).should.true;
+    newState.widgets.w1.tabs.indexOf("t1").should.eq(-1);
+    newState.widgets.w1.tabs.indexOf("t2").should.eq(0);
+  });
+
   it("should restore tabs", () => {
     const frontstageDef = new FrontstageDef();
     const widgetDef = new WidgetDef({});

@@ -14,7 +14,7 @@ import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui
 import {
   addPanelWidget, addTab, assert, createNineZoneState, createTabsState, findTab, floatingWidgetBringToFront, FloatingWidgets,
   isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
-  NineZoneStateReducer, PanelSide, panelSides, TabState, toolSettingsTabId, WidgetPanels,
+  NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
@@ -418,10 +418,12 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
           frontstageId: frontstageDef.id,
           tabId: tab.id,
         }));
+        removeTab(draft, tab.id);
+        continue;
       }
       draft.tabs[tab.id] = {
         ...tab,
-        label: getWidgetLabel(widgetDef?.label || ""),
+        label: getWidgetLabel(widgetDef.label),
       };
     }
     return;

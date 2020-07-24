@@ -1649,6 +1649,9 @@ export const RECTANGULAR_DEFAULT_MIN_HEIGHT = 220;
 // @internal (undocumented)
 export const RECTANGULAR_DEFAULT_MIN_WIDTH = 296;
 
+// @internal (undocumented)
+export function removeTab(state: Draft<NineZoneState>, tabId: TabState["id"]): void;
+
 // @internal
 export interface ResizeAction {
     // (undocumented)
