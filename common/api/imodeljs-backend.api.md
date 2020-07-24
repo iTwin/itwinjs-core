@@ -1534,6 +1534,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     dispose(): void;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
+    // @internal
     getNativeSql(): string;
     getRow(): any;
     getValue(columnIx: number): ECSqlValue;
