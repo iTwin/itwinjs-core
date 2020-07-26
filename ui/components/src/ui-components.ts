@@ -121,6 +121,7 @@ export * from "./ui-components/color/HueSlider";
 export * from "./ui-components/color/AlphaSlider";
 export * from "./ui-components/color/SaturationPicker";
 export * from "./ui-components/color/ColorPickerButton";
+export * from "./ui-components/color/ColorPickerDialog";
 
 export * from "./ui-components/iconpicker/IconPickerButton";
 

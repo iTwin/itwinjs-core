@@ -6,10 +6,10 @@ import * as React from "react";
 import { IModelApp, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Button, ButtonType, Input, Listbox, ListboxItem, LoadingSpinner, OutsideClickEvent, Popup, SpinnerSize, useOnOutsideClick, WebFontIcon } from "@bentley/ui-core";
-import { UiComponents } from "@bentley/ui-components";
+import { ModalDialogManager } from "@bentley/ui-framework";
 import { useSourceMapContext } from "./MapLayerManager";
 import { MapUrlDialog } from "./MapUrlDialog";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 
 // cSpell:ignore droppable Sublayer
 
@@ -21,10 +21,10 @@ interface AttachLayerPanelProps {
 function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps) {
   const [layerNameToAdd, setLayerNameToAdd] = React.useState<string | undefined>();
   const [sourceFilterString, setSourceFilterString] = React.useState<string | undefined>();
-  const [placeholderLabel] = React.useState(UiComponents.translate("filteringInput:placeholder"));
-  const [addCustomLayerLabel] = React.useState("Custom");
-  const [addCustomLayerToolTip] = React.useState("Attach Custom Layer");
-  const [loadingMapSources] = React.useState("Loading Map Sources");
+  const [placeholderLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.SearchPlaceholder"));
+  const [addCustomLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Custom"));
+  const [addCustomLayerToolTip] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttachCustomLayer"));
+  const [loadingMapSources] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.LoadingMapSources"));
   const [loading, setLoading] = React.useState(false);
 
   const handleFilterTextChanged = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,8 +152,8 @@ export interface AttachLayerPopupButtonProps {
 
 /** @internal */
 export function AttachLayerPopupButton({ isOverlay }: AttachLayerPopupButtonProps) {
-  const [showAttachLayerLabel] = React.useState("Attach map layer");
-  const [hideAttachLayerLabel] = React.useState("Close source map layers");
+  const [showAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AttachLayerPopup.Attach"));
+  const [hideAttachLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AttachLayerPopup.Close"));
   const [popupOpen, setPopupOpen] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 

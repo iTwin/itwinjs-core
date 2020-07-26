@@ -127,6 +127,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/map-layers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/oidc-signin-tool",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
@@ -180,23 +184,23 @@
     },
     {
       "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/ui-components",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/ui-core",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@bentley/ui-framework",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "@bentley/ui-ninezone",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@bentley/usage-logging-client",
@@ -320,7 +324,7 @@
     },
     {
       "name": "classnames",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "commander",
@@ -656,7 +660,7 @@
     },
     {
       "name": "react",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "react-autosuggest",
@@ -664,11 +668,11 @@
     },
     {
       "name": "react-beautiful-dnd",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "react-compound-slider",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "react-data-grid",
@@ -692,7 +696,7 @@
     },
     {
       "name": "react-dom",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "react-highlight-words",
@@ -716,7 +720,7 @@
     },
     {
       "name": "react-select",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "react-split-pane",

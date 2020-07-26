@@ -4,19 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { ConfigurableCreateInfo, ConfigurableUiManager, useActiveViewport, WidgetControl } from "@bentley/ui-framework";
-import { MapLayerManager } from "./MapLayerManager";
+import { useActiveViewport } from "@bentley/ui-framework";
 import { FillCentered } from "@bentley/ui-core";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { MapLayerManager } from "./MapLayerManager";
 
 /**
- * Manager Map Layers
+ * Widget to Manage Map Layers
+ * @beta
  */
-function MapLayersWidget() {
-  const [notGeoLocatedMsg] = React.useState("Imodel must be geo-located to work with maps");
+export function MapLayersWidget() {
+  const [notGeoLocatedMsg] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.NotSupported"));
   const activeViewport = useActiveViewport();
   const ref = React.useRef<HTMLDivElement>(null);
 
-  if (activeViewport && !!activeViewport?.iModel.isGeoLocated)
+  if (activeViewport && !!activeViewport?.iModel.isGeoLocated && activeViewport.view.isSpatialView)
     return (
       <div ref={ref} className="map-manager-layer-host">
         <MapLayerManager activeViewport={activeViewport} getContainerForClone={() => {
@@ -26,19 +28,6 @@ function MapLayersWidget() {
     );
 
   return (
-
     <FillCentered><div className="map-manager-not-geo-located-text">{notGeoLocatedMsg}</div></FillCentered>
   );
 }
-
-/** MapLayersWidgetControl the provides a widget to attach and remove maps. */
-export class MapLayersWidgetControl extends WidgetControl {
-  public static id = "MapLayersWidget";
-  constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
-
-    this.reactNode = <MapLayersWidget />;
-  }
-}
-
-ConfigurableUiManager.registerControl(MapLayersWidgetControl.id, MapLayersWidgetControl);

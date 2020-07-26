@@ -62,6 +62,8 @@ beta;CheckBoxInfo
 beta;CheckboxStateChange
 beta;ColorEditor 
 beta;ColorPickerButton 
+beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element
+beta;ColorPickerDialogProps
 beta;ColorPickerProps 
 beta;ColorPropertyEditor 
 beta;ColorSwatch(props: ColorSwatchProps): JSX.Element

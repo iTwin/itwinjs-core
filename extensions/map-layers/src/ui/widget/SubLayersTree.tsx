@@ -6,10 +6,15 @@ import * as React from "react";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import { CheckBoxState, ImageCheckBox, Input, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@bentley/ui-core";
-import { AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, HighlightableTreeProps, ITreeDataProvider, SelectionMode, TreeCheckboxStateChangeEventArgs, TreeDataProvider, TreeEventHandler, TreeModelSource, TreeNodeItem, TreeNodeLoader, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, UiComponents, useVisibleTreeNodes } from "@bentley/ui-components";
+import {
+  AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, HighlightableTreeProps, ITreeDataProvider,
+  SelectionMode, TreeCheckboxStateChangeEventArgs, TreeDataProvider, TreeEventHandler, TreeModelSource, TreeNodeItem, TreeNodeLoader,
+  TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useVisibleTreeNodes,
+} from "@bentley/ui-components";
+import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
 import { StyleMapLayerSettings } from "./MapLayerManager";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
-import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./SubLayersTree.scss";
 
 interface ToolbarProps {
@@ -31,7 +36,7 @@ function Toolbar(props: ToolbarProps) {
 }
 
 export function SubLayersPanel({ mapLayer, viewport }: { mapLayer: StyleMapLayerSettings, viewport: ScreenViewport | undefined }) {
-  const [noneAvailableLabel] = React.useState("No Sub-layers Available");
+  const [noneAvailableLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.NoSubLayers"));
   if (!viewport || (undefined === mapLayer.subLayers || 0 === mapLayer.subLayers.length)) {
     return <div className="map-manager-sublayer-panel">
       <div>{noneAvailableLabel}</div>
@@ -61,15 +66,13 @@ function getStyleMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean
 }
 
 /**
- * This component demonstrates how use `ControlledTree` with custom checkbox rendering.
- * It uses `SubLayersDataProvider` to get fake data to show.
- *
- * In order to override default rendering in `ControlledTree` custom 'treeRenderer' should
- * be passed to it. In this component 'nodeWithEyeCheckboxTreeRenderer' is used. It uses default
- * `TreeRenderer` with overridden node renderer.
+ * Tree Control that displays sub-layer hierarchy
+ * @internal
  */
 export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
-  const [placeholderLabel] = React.useState(UiComponents.translate("filteringInput:placeholder"));
+  const [placeholderLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.SearchPlaceholder"));
+  const [allOnLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.AllOn"));
+  const [allOffLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.AllOff"));
   const [mapLayer, setMapLayer] = React.useState(props.mapLayer);
   const [layerFilterString, setLayerFilterString] = React.useState<string>("");
 
@@ -100,7 +103,6 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     if (displayStyle && vp) {
       const indexInDisplayStyle = displayStyle ? displayStyle.findMapLayerIndexByNameAndUrl(mapLayer.name, mapLayer.url, mapLayer.isOverlay) : -1;
       displayStyle.changeMapSubLayerProps({ visible: true }, -1, indexInDisplayStyle, mapLayer.isOverlay);
-      // toggleAllCategories(IModelApp.viewManager, props.iModel, true, undefined, true, filteredProvider);
       vp.invalidateRenderPlan();
       const updatedMapLayer = displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayer.isOverlay);
       if (updatedMapLayer) {
@@ -138,10 +140,10 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
         }
       >
         {[
-          <button key="show-all-btn" title="Turn on all Sub-layers" onClick={showAll}>
+          <button key="show-all-btn" title={allOnLabel} onClick={showAll}>
             <WebFontIcon iconName="icon-visibility" />
           </button>,
-          <button key="hide-all-btn" title="Turn off all Sub-layers" onClick={hideAll}>
+          <button key="hide-all-btn" title={allOffLabel} onClick={hideAll}>
             <WebFontIcon iconName="icon-visibility-hide-2" />
           </button>,
         ]}

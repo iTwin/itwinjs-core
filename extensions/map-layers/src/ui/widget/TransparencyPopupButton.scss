@@ -31,4 +31,8 @@
     color: $buic-foreground-activehover;
     cursor: auto;
   }
+  &:focus {
+    box-shadow: $uicore-button-focus-boxshadow;
+    outline: none;
+  }
 }

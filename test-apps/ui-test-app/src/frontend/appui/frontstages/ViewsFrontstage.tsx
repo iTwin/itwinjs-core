@@ -45,7 +45,6 @@ import { ViewportWidget } from "../widgets/ViewportWidget";
 import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
-import { MapLayersWidgetControl } from "../widgets/maplayers/MapLayersWidget";
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static stageId = "ViewsFrontstage";
@@ -315,7 +314,6 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={450}
             widgets={
               [
-                <Widget id={MapLayersWidgetControl.id} label="Maps" control={MapLayersWidgetControl} iconSpec="icon-map" />,
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
                   id={ViewsFrontstage.unifiedSelectionPropertyGridId}
                   control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}

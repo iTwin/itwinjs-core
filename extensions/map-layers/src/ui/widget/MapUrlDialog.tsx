@@ -8,10 +8,14 @@ import * as React from "react";
 import { Dialog, DialogButtonType, Input, Select } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { IModelApp, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./MapUrlDialog.scss";
 
 export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, onOkResult: () => void }) {
-  const [dialogTitle] = React.useState("Attach Custom Layer");
+  const [dialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttachCustomLayer"));
+  const [typeLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Type"));
+  const [nameLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.Name"));
+  const [urlLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.URL"));
   const [mapTypes] = React.useState(["ArcGIS", "WMS", "WMTS", "TileURL"]);
   const [mapType, setMapType] = React.useState("ArcGIS");
 
@@ -33,15 +37,17 @@ export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, on
       if (validation.status === MapLayerSourceStatus.Valid) {
         source.subLayers = validation.subLayers;
         vp.displayStyle.attachMapLayer(source, isOverlay);
-
         vp.invalidateRenderPlan();
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Map layer ${source.name} attached from URL: ${source.url}`));
+        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttacheInfo");
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `[${source.name}] ${msg} ${source.url}`));
         onOkResult();
       } else {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Map layer validation failed for URL: ${source.url}`));
+        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.ValidationError");
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${msg} ${source.url}`));
       }
     }).catch((error) => {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Error ${error} occurred attaching MapLayer from URL: ${source.url}`));
+      const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.AttachError");
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${msg} ${source.url}-${error}`));
     });
 
   }, [isOverlay, onOkResult]);
@@ -90,11 +96,11 @@ export function MapUrlDialog({ isOverlay, onOkResult }: { isOverlay: boolean, on
       >
         <div>
           <div className="map-layer-source-url">
-            <span className="map-layer-source-label">Type:</span>
+            <span className="map-layer-source-label">{typeLabel}</span>
             <Select className="map-manager-base-select" options={mapTypes} value={mapType} onChange={handleMapTypeSelection} />
-            <span className="map-layer-source-label">Name:</span>
+            <span className="map-layer-source-label">{nameLabel}</span>
             <Input placeholder="Enter Map Name" onChange={onNameChange} />
-            <span className="map-layer-source-label">Url:</span>
+            <span className="map-layer-source-label">{urlLabel}</span>
             <Input placeholder="Enter Map Source URL" onChange={onUrlChange} />
           </div>
         </div>

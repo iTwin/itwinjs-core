@@ -8,6 +8,7 @@ import { RelativePosition } from "@bentley/ui-abstract";
 import { OutsideClickEvent, Popup, useOnOutsideClick, WebFontIcon } from "@bentley/ui-core";
 import { SubLayersPanel } from "./SubLayersTree";
 import { StyleMapLayerSettings } from "./MapLayerManager";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 
 // cSpell:ignore droppable Sublayer
 
@@ -19,8 +20,9 @@ export interface SubLayersPopupButtonProps {
 
 /** @internal */
 export function SubLayersPopupButton({ mapLayerSettings, activeViewport }: SubLayersPopupButtonProps) {
-  const [showSubLayersLabel] = React.useState("Show Sub-layers");
-  const [hideSubLayersLabel] = React.useState("Hide Sub-layers");
+
+  const [showSubLayersLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.Show"));
+  const [hideSubLayersLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.Hide"));
   const [popupOpen, setPopupOpen] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 

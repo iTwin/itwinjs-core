@@ -30,10 +30,6 @@ export class SubLayersDataProvider implements ITreeDataProvider {
     };
   }
 
-  //  private subLayerById(allSubLayers: MapSubLayerProps[], id?: SubLayerId) {
-  //    return id === undefined ? undefined : allSubLayers.find((subLayer) => subLayer.id === id);
-  //  }
-
   private loadChildNodes(allSubLayers: MapSubLayerProps[], parentId?: SubLayerId) {
     const filteredProps = allSubLayers.filter((props) => parentId === props.parent);
     if (filteredProps.length) {

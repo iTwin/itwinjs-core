@@ -7,14 +7,14 @@
 import * as React from "react";
 import { ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
 import { DisplayStyleState } from "@bentley/imodeljs-frontend";
-import { ColorSwatch } from "@bentley/ui-components";
+import { ColorPickerDialog, ColorSwatch } from "@bentley/ui-components";
 import { OptionType, ThemedSelect } from "@bentley/ui-core";
 import { ActionMeta, ValueType } from "react-select/src/types";
 import { ModalDialogManager } from "@bentley/ui-framework";
-import { BasemapColorDialog } from "./BasemapColorDialog";
 import { TransparencyPopupButton } from "./TransparencyPopupButton";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./BasemapPanel.scss";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 
 function getBaseMapFromStyle(displayStyle: DisplayStyleState | undefined) {
   if (!displayStyle)
@@ -32,7 +32,7 @@ interface BaseOption extends OptionType {
 
 /** @internal */
 export function BasemapPanel() {
-  const [useColorLabel] = React.useState("Solid Fill Color");
+  const [useColorLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.ColorFill"));
   const { activeViewport, bases } = useSourceMapContext();
 
   const [baseMapTransparencyValue, setBaseMapTransparencyValue] = React.useState(() => {
@@ -74,7 +74,7 @@ export function BasemapPanel() {
   const baseIsColor = React.useMemo(() => typeof selectedBaseMap === "number", [selectedBaseMap]);
   const baseIsMap = React.useMemo(() => !baseIsColor && (selectedBaseMap !== undefined), [baseIsColor, selectedBaseMap]);
   const bgColor = React.useMemo(() => baseIsColor ? selectedBaseMap as number : presetColors[0].toJSON(), [baseIsColor, selectedBaseMap, presetColors]);
-
+  const [colorDialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:ColorDialog.Title"));
   const selectedBaseMapValue = React.useMemo(() => {
     if (baseIsMap) {
       const mapName = (selectedBaseMap! as MapLayerProps).name!;
@@ -86,6 +86,7 @@ export function BasemapPanel() {
   }, [selectedBaseMap, baseMapOptions, baseIsMap]);
 
   const handleBackgroundColorDialogOk = React.useCallback((bgColorDef: ColorDef) => {
+    ModalDialogManager.closeDialog();
     if (activeViewport) {
       activeViewport.displayStyle.changeBaseMapProps(bgColorDef);
       activeViewport.invalidateRenderPlan();
@@ -93,9 +94,14 @@ export function BasemapPanel() {
     }
   }, [activeViewport]);
 
+  const handleBackgroundColorDialogCancel = React.useCallback(() => {
+    ModalDialogManager.closeDialog();
+  }, []);
+
   const handleBgColorClick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
-    ModalDialogManager.openDialog(<BasemapColorDialog color={newColor} colorPresets={presetColors} onOkResult={handleBackgroundColorDialogOk} />);
+    ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors}
+      onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel} />);
   }, [presetColors, handleBackgroundColorDialogOk]);
 
   const handleBaseMapSelection = React.useCallback((value: ValueType<BaseOption>, action: ActionMeta<BaseOption>) => {
@@ -115,14 +121,17 @@ export function BasemapPanel() {
     }
   }, [bases, activeViewport, bgColor]);
 
+  const [baseLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.BaseLayer"));
+  const [selectBaseMapLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.SelectBaseMap"));
+
   return (
     <>
       <div className="map-manager-base-header">
-        <span className="map-manager-base-label">Base Layer</span>
+        <span className="map-manager-base-label">{baseLayerLabel}</span>
         <TransparencyPopupButton transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange} />
       </div>
       <div className="map-manager-base-item" >
-        <ThemedSelect options={baseMapOptions} closeMenuOnSelect placeholder="Select base map" value={selectedBaseMapValue} onChange={handleBaseMapSelection} />
+        <ThemedSelect options={baseMapOptions} closeMenuOnSelect placeholder={selectBaseMapLabel} value={selectedBaseMapValue} onChange={handleBaseMapSelection} />
         {
           baseIsColor &&
           <ColorSwatch className="map-manager-base-item-color" colorDef={ColorDef.fromJSON(bgColor)} round={false} onColorPick={handleBgColorClick} />

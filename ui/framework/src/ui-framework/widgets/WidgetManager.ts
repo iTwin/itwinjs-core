@@ -204,7 +204,7 @@ export class WidgetManager {
 
     let widgetDefs = widgetInfos.map((info) => info.widgetDef);
 
-    // Consult the providers
+    // Consult the registered WidgetProviders
     this._providers.forEach((p, index) => {
       const wds = p.getWidgetDefs(stageId, stageUsage, location, definedSection);
       if (wds) {
@@ -216,7 +216,7 @@ export class WidgetManager {
       }
     });
 
-    // Consult the UiItemsManager to get any "addon" widgets
+    // Consult the UiItemsManager to get any Abstract widgets
     if (location in StagePanelLocation) {
       const widgets = UiItemsManager.getWidgets(stageId, stageUsage, location as StagePanelLocation, definedSection);
       const updatedWidgets = UiItemsArbiter.updateWidgets(widgets);

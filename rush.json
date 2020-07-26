@@ -407,6 +407,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/map-layers",
+      "projectFolder": "extensions/map-layers",
+      "reviewCategory": "extensions",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "internal-tools",
       "projectFolder": "tools/internal",
       "reviewCategory": "internal",

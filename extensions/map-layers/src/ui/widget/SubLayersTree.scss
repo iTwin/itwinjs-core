@@ -44,6 +44,10 @@
       &:hover {
         color: var(--buic-accessory-primary-tint);
       }
+      &:focus {
+        box-shadow: $uicore-button-focus-boxshadow;
+        outline: none;
+      }
     }
   }
 

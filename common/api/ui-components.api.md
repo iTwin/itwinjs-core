@@ -816,6 +816,23 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     }
 
 // @beta
+export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element;
+
+// @beta
+export interface ColorPickerDialogProps {
+    // (undocumented)
+    color: ColorDef;
+    // (undocumented)
+    colorPresets?: ColorDef[];
+    // (undocumented)
+    dialogTitle: string;
+    // (undocumented)
+    onCancelResult: () => void;
+    // (undocumented)
+    onOkResult: (selectedColor: ColorDef) => void;
+}
+
+// @beta
 export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     activeColor: ColorDef;
     colorDefs?: ColorDef[];

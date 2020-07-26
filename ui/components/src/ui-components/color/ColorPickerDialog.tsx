@@ -2,28 +2,47 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// cSpell:ignore Modeless WMTS
+/** @packageDocumentation
+ * @module Color
+ */
+
+// cSpell:ignore colorpicker
 
 import * as React from "react";
 import { Dialog, DialogButtonType } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
 import { ColorDef, HSVColor } from "@bentley/imodeljs-common";
-import { ColorSwatch, HueSlider, SaturationPicker } from "@bentley/ui-components";
-import "./BasemapColorDialog.scss";
+import { ColorSwatch } from "./Swatch";
+import { HueSlider } from "./HueSlider";
+import { SaturationPicker } from "./SaturationPicker";
+import "./ColorPickerDialog.scss";
 
-export function BasemapColorDialog({ color, onOkResult, colorPresets }: { color: ColorDef, onOkResult: (selectedColor: ColorDef) => void, colorPresets?: ColorDef[] }) {
-  const [dialogTitle] = React.useState("Specify Base Color");
+/** Properties for the [[ColorPickerDialog]] React component
+ * @beta
+ */
+export interface ColorPickerDialogProps {
+  dialogTitle: string;
+  color: ColorDef;
+  onOkResult: (selectedColor: ColorDef) => void;
+  onCancelResult: () => void;
+  colorPresets?: ColorDef[];
+}
+
+/**
+ * Color Picker Dialog to use as modal dialog.
+ * @beta
+ */
+// istanbul ignore next
+export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps) {
   const [bgColor, setBgColor] = React.useState(color);
-
-  const handleOk = React.useCallback(() => {
-    ModalDialogManager.closeDialog();
-    onOkResult(bgColor);
-  }, [onOkResult, bgColor]);
   const dialogContainer = React.useRef<HTMLDivElement>(null);
 
+  const handleOk = React.useCallback(() => {
+    onOkResult(bgColor);
+  }, [onOkResult, bgColor]);
   const handleCancel = React.useCallback(() => {
-    ModalDialogManager.closeDialog();
-  }, []);
+    if (onCancelResult)
+      onCancelResult();
+  }, [onCancelResult]);
 
   const handlePresetColorPick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
@@ -64,23 +83,23 @@ export function BasemapColorDialog({ color, onOkResult, colorPresets }: { color:
         maxWidth={400}
       >
         <div>
-          <div className="basemap-color">
-            <div className="basemap-color-top">
+          <div className="components-colorpicker-dialog">
+            <div className="components-colorpicker-dialog-top">
               <SaturationPicker hsv={bgColor.toHSV()} onSaturationChange={handleHueOrSaturationChange} />
             </div>
-            <div className="basemap-color-bottom">
-              <div className="basemap-color-bottom-left">
+            <div className="components-colorpicker-dialog-bottom">
+              <div className="components-colorpicker-dialog-bottom-left">
                 <HueSlider hsv={bgColor.toHSV()} onHueChange={handleHueOrSaturationChange} isHorizontal={true} />
               </div>
-              <div className="basemap-color-bottom-right">
+              <div className="components-colorpicker-dialog-bottom-right">
                 <ColorSwatch style={colorSwatchStyle} colorDef={bgColor} round={false} />
               </div>
             </div>
           </div>
           {
             colorPresets && colorPresets.length &&
-            <div className="basemap-color-presets">
-              {colorPresets.map((preset, index) => <ColorSwatch className="basemap-color-swatch" key={index} colorDef={preset} round={false} onColorPick={handlePresetColorPick} />)}
+            <div className="components-colorpicker-dialog-presets">
+              {colorPresets.map((preset, index) => <ColorSwatch className="components-colorpicker-dialog-swatch" key={index} colorDef={preset} round={false} onColorPick={handlePresetColorPick} />)}
             </div>
           }
         </div>

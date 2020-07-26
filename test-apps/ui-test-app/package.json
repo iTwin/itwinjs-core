@@ -95,6 +95,7 @@
     "@bentley/ui-components": "2.4.0-dev.14",
     "@bentley/ui-ninezone": "2.4.0-dev.14",
     "@bentley/ui-framework": "2.4.0-dev.14",
+    "@bentley/map-layers": "2.4.0-dev.14",
     "classnames": "^2.2.5",
     "lorem-ipsum": "^2.0.3",
     "mobx": "^5.8.0",

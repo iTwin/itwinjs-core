@@ -14,10 +14,11 @@ import {
 import { ContextMenu, ContextMenuItem, Icon, Slider } from "@bentley/ui-core";
 import { assert } from "@bentley/ui-ninezone";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";
-import "./MapLayerManager.scss";
 import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";
 import { MapSettingsPanel } from "./MapSettingsPanel";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import "./MapLayerManager.scss";
 
 /** @internal */
 export interface SourceMapContextProps {
@@ -62,9 +63,9 @@ export interface StyleMapLayerSettings {
 
 function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, activeViewport }: { mapLayerSettings: StyleMapLayerSettings, onMenuItemSelection: (action: string, mapLayerSettings: StyleMapLayerSettings) => void, activeViewport: ScreenViewport }) {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
-  const settingsRef = React.useRef<HTMLElement>(null);
-  const [labelDetach] = React.useState("Detach");
-  const [labelZoomToLayer] = React.useState("Zoom To Layer");
+  const settingsRef = React.useRef<HTMLButtonElement>(null);
+  const [labelDetach] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:LayerMenu.Detach"));
+  const [labelZoomToLayer] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:LayerMenu.ZoomToLayer"));
   const [hasRangeData, setHasRangeData] = React.useState<boolean | undefined>();
   const [transparency, setTransparency] = React.useState(mapLayerSettings.transparency);
 
@@ -130,7 +131,7 @@ function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, activeVie
 
   return (
     <>
-      <span data-testid="map-layer-settings" className="map-layer-settings icon icon-more-vertical-2" ref={settingsRef} onClick={onSettingsClick} ></span>
+      <button data-testid="map-layer-settings" className="map-layer-settings icon icon-more-vertical-2" ref={settingsRef} onClick={onSettingsClick} ></button>
       <ContextMenu opened={isSettingsOpen && (undefined !== hasRangeData)} onOutsideClick={handleCloseSetting} >
         <ContextMenuItem key={0} className={hasRangeData ? "" : "core-context-menu-disabled"} onSelect={handleZoomToLayer}>{labelZoomToLayer}</ContextMenuItem>
         <ContextMenuItem key={1} onSelect={handleRemoveLayer}>{labelDetach}</ContextMenuItem>
@@ -192,11 +193,11 @@ interface MapLayerManagerProps {
 export function MapLayerManager(props: MapLayerManagerProps) {
   const [mapSources, setMapSources] = React.useState<MapLayerSource[] | undefined>();
   const [baseSources, setBaseSources] = React.useState<MapLayerSource[] | undefined>();
-  const [overlaysLabel] = React.useState("Overlay Layers");
-  const [underlaysLabel] = React.useState("Background Layers");
-  const [noBackgroundMapsSpecifiedLabel] = React.useState("No Background layers specified");
-  const [noUnderlaysSpecifiedLabel] = React.useState("No Overlay layers specified");
-  const [toggleVisibility] = React.useState("Toggle Visibility");
+  const [overlaysLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.OverlayLayers"));
+  const [underlaysLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.BackgroundLayers"));
+  const [noBackgroundMapsSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoBackgroundLayers"));
+  const [noUnderlaysSpecifiedLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.NoOverlayLayers"));
+  const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.ToggleVisibility"));
   const { activeViewport } = props;
   // map layer settings from display style
   const [backgroundMapLayers, setBackgroundMapLayers] = React.useState<StyleMapLayerSettings[] | undefined>(getMapLayerSettingsFromStyle(activeViewport?.displayStyle, true));
@@ -248,26 +249,12 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       case "delete":
         activeViewport.displayStyle.detachMapLayerByIndex(indexInDisplayStyle, mapLayerSettings.isOverlay);
         break;
-      case "move-top":
-        activeViewport.displayStyle.moveMapLayerToTop(indexInDisplayStyle, mapLayerSettings.isOverlay);
-        break;
-      case "move-bottom":
-        activeViewport.displayStyle.moveMapLayerToBottom(indexInDisplayStyle, mapLayerSettings.isOverlay);
-        break;
-      case "swap-mode":
-        const layerProps = activeViewport.displayStyle.mapLayerAtIndex(indexInDisplayStyle, mapLayerSettings.isOverlay)?.toJSON();
-        if (layerProps) {
-          activeViewport.displayStyle.detachMapLayerByIndex(indexInDisplayStyle, mapLayerSettings.isOverlay);
-          activeViewport.displayStyle.attachMapLayer(layerProps, !mapLayerSettings.isOverlay);
-        }
-        break;
-      case "toggle-transparent-background":
-        activeViewport.displayStyle.changeMapLayerProps({ transparentBackground: !mapLayerSettings.transparentBackground }, indexInDisplayStyle, mapLayerSettings.isOverlay);
-        break;
       case "zoom-to-layer":
         activeViewport.displayStyle.viewMapLayerRange(indexInDisplayStyle, mapLayerSettings.isOverlay, activeViewport).then((status) => {
-          if (!status)
-            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `No range is defined for Map Layer: ${mapLayerSettings.name}`));
+          if (!status) {
+            const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.NoRangeDefined");
+            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `${msg} [${mapLayerSettings.name}]`));
+          }
         }).catch((_error) => { });
         break;
     }
@@ -377,7 +364,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
             <SubLayersPopupButton mapLayerSettings={overlayMapLayers![rubric.source.index]} activeViewport={activeViewport} />
           }
         </div>
-        <span className="map-manager-item-settings-button"><MapLayerSettingsMenu activeViewport={activeViewport} mapLayerSettings={overlayMapLayers[rubric.source.index]} onMenuItemSelection={handleOnMenuItemSelection} /></span>
+        <MapLayerSettingsMenu activeViewport={activeViewport} mapLayerSettings={overlayMapLayers[rubric.source.index]} onMenuItemSelection={handleOnMenuItemSelection} />
       </div>
     );
   };
@@ -396,7 +383,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
             <SubLayersPopupButton mapLayerSettings={backgroundMapLayers![rubric.source.index]} activeViewport={activeViewport} />
           }
         </div>
-        <span className="map-manager-item-settings-button"><MapLayerSettingsMenu activeViewport={activeViewport} mapLayerSettings={backgroundMapLayers![rubric.source.index]} onMenuItemSelection={handleOnMenuItemSelection} /></span>
+        <MapLayerSettingsMenu activeViewport={activeViewport} mapLayerSettings={backgroundMapLayers![rubric.source.index]} onMenuItemSelection={handleOnMenuItemSelection} />
       </div>
     );
   };

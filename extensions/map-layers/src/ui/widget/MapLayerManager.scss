@@ -8,7 +8,7 @@ $divider-color: $buic-background-toolbutton-stroke;
 $hovered-icon-color: $buic-foreground-primary-tone;
 
 .map-manager-layer-host {
-  margin: 6px;
+  margin: 0 6px;
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
@@ -41,9 +41,14 @@ $hovered-icon-color: $buic-foreground-primary-tone;
       width: 40px;
       border: none;
       color: $buic-foreground-body;
+      margin-right: 2px;
 
       &:hover {
         color: $hovered-icon-color;
+      }
+      &:focus {
+        box-shadow: $uicore-button-focus-boxshadow;
+        outline: none;
       }
     }
   }
@@ -218,7 +223,10 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     &:hover {
       color: $hovered-icon-color;
     }
-
+    &:focus {
+      box-shadow: $uicore-button-focus-boxshadow;
+      outline: none;
+    }
     .core-context-menu-container {
       .core-context-menu-item {
         > .core-context-menu-icon {
@@ -239,30 +247,45 @@ $hovered-icon-color: $buic-foreground-primary-tone;
 
   button.map-manager-item-visibility {
     border: none;
+    margin: 0 2px;
     background-color: $buic-background-1;
     color: $buic-foreground-body;
 
     &:hover {
       color: $hovered-icon-color;
     }
+    &:focus {
+      outline: none;
+      box-shadow: $uicore-button-focus-boxshadow;
+    }
   }
 }
 
 .map-layer-settings {
-  margin-left: auto;
-  font-size: $uicore-font-size;
+  border: none;
+  background-color: $buic-background-1;
   color: $buic-foreground-body;
-  cursor: pointer;
+  margin-left: 2px;
+  &:hover {
+    color: $hovered-icon-color;
+  }
+  &:focus {
+    box-shadow: $uicore-button-focus-boxshadow;
+    outline: none;
+  }
 }
 
 .map-manager-item-sub-layer-button {
-  width: 40px;
   border: none;
   background-color: $buic-background-1;
   color: $buic-foreground-body;
 
   &:hover {
     color: $hovered-icon-color;
+  }
+  &:focus {
+    box-shadow: $uicore-button-focus-boxshadow;
+    outline: none;
   }
 }
 
@@ -296,11 +319,6 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   /* Required for text-overflow to do anything */
   white-space: nowrap;
   overflow: hidden;
-}
-
-.map-manager-sublayer-visibility {
-  width: 40px;
-  margin-right: 14px;
 }
 
 .map-layer-settings-popup-panel {

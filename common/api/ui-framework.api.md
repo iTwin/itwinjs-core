@@ -323,6 +323,9 @@ export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionBut
 // @public
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
 
+// @internal (undocumented)
+export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<WidgetDef>, side: PanelSide, preferredWidgetIndex: number): NineZoneState;
+
 // @public
 export class AppNotificationManager extends NotificationManager {
     clearToolTip(): void;
@@ -6050,6 +6053,9 @@ export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
 
 // @beta
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
+
+// @internal (undocumented)
+export function useItemsManager(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
 export function useLabels(): NineZoneLabels;

@@ -7,13 +7,13 @@
  * @module Frontstage
  */
 import "./Frontstage.scss";
-import produce, { Draft } from "immer";
+import produce, { castDraft, Draft } from "immer";
 import * as React from "react";
-import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
+import { StagePanelLocation, UiItemProviderRegisteredEventArgs, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {
-  addPanelWidget, addTab, assert, createNineZoneState, createTabsState, findTab, floatingWidgetBringToFront, FloatingWidgets,
-  isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
+  addPanelWidget, addTab, assert, createNineZoneState, createTabsState, createWidgetState, findTab, floatingWidgetBringToFront, FloatingWidgets,
+  getUniqueId, isHorizontalPanelSide, NineZone, NineZoneActionTypes, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
@@ -150,6 +150,7 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
   useSavedFrontstageState(frontstageDef);
   useSaveFrontstageSettings(frontstageDef);
   useFrontstageManager(frontstageDef);
+  useItemsManager(frontstageDef);
   useSyncDefinitions(frontstageDef);
   const labels = useLabels();
   return (
@@ -189,6 +190,36 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
   for (const widget of widgets) {
     const label = getWidgetLabel(widget.label);
     state = addTab(state, widgetId, widget.id, {
+      label,
+    });
+  }
+  return state;
+}
+
+/** @internal */
+// istanbul ignore next
+export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<WidgetDef>, side: PanelSide, preferredWidgetIndex: number): NineZoneState {
+  if (widgetDefs.length === 0)
+    return state;
+  const panel = state.panels[side];
+  let widgetId;
+  if (panel.maxWidgetCount === panel.widgets.length) {
+    // Append to existing widget.
+    widgetId = panel.widgets[preferredWidgetIndex];
+  } else {
+    // Create a new panel widget.
+    const widget = createWidgetState(getUniqueId(), { activeTabId: widgetDefs[0].id });
+    widgetId = widget.id;
+    state = produce(state, (draft) => {
+      draft.panels[side].widgets.splice(preferredWidgetIndex, 0, widget.id);
+      draft.widgets[widget.id] = castDraft(widget);
+    });
+  }
+
+  // Append tabs to the widget.
+  for (const widgetDef of widgetDefs) {
+    const label = getWidgetLabel(widgetDef.label);
+    state = addTab(state, widgetId, widgetDef.id, {
       label,
     });
   }
@@ -729,6 +760,49 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
       FrontstageManager.onWidgetLabelChangedEvent.removeListener(listener);
     };
   }, [frontstageDef]);
+}
+
+/** @internal */
+// istanbul ignore next
+export function useItemsManager(frontstageDef: FrontstageDef) {
+  React.useEffect(() => {
+    const handleUiProviderRegisteredEvent = (ev: UiItemProviderRegisteredEventArgs): void => {
+      const itemsProvider = UiItemsManager.getUiItemsProvider(ev.providerId);
+      if (itemsProvider && itemsProvider.provideWidgets) {
+        const initialState = frontstageDef.nineZoneState;
+        frontstageDef.updateWidgetDefs();
+
+        if (!initialState)
+          return;
+        let state = initialState;
+
+        state = appendWidgets(state, determineNewWidgets(frontstageDef.centerLeft?.widgetDefs, initialState), "left", 0);
+        state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomLeft?.widgetDefs, initialState), "left", 1);
+        state = appendWidgets(state, determineNewWidgets(frontstageDef.leftPanel?.widgetDefs, initialState), "left", 2);
+
+        state = appendWidgets(state, determineNewWidgets(frontstageDef.centerRight?.widgetDefs, initialState), "right", 0);
+        state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomRight?.widgetDefs, initialState), "right", 1);
+        state = appendWidgets(state, determineNewWidgets(frontstageDef.rightPanel?.widgetDefs, initialState), "right", 2);
+
+        state = appendWidgets(state, determineNewWidgets(frontstageDef.topPanel?.widgetDefs, initialState), "top", 0);
+        state = appendWidgets(state, determineNewWidgets(frontstageDef.topMostPanel?.widgetDefs, initialState), "top", 1); // tslint:disable-line: deprecation
+
+        state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomPanel?.widgetDefs, initialState), "bottom", 0);
+        state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomMostPanel?.widgetDefs, initialState), "bottom", 1); // tslint:disable-line: deprecation
+
+        frontstageDef.nineZoneState = state;
+      }
+    };
+    UiItemsManager.onUiProviderRegisteredEvent.addListener(handleUiProviderRegisteredEvent);
+    return () => {
+      UiItemsManager.onUiProviderRegisteredEvent.removeListener(handleUiProviderRegisteredEvent);
+    };
+  }, [frontstageDef]);
+}
+
+// istanbul ignore next
+function determineNewWidgets(defs: readonly WidgetDef[] | undefined, state: NineZoneState) {
+  return (defs || []).filter((def) => !(def.id in state.tabs));
 }
 
 /** @internal */

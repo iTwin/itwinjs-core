@@ -10,6 +10,7 @@ import { IModelApp, NotifyMessageDetails, OutputMessagePriority, ViewState3d } f
 import { BackgroundMapProps, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapSettingsPanel.scss";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 
 function getHeightOriginModeKey(mode: TerrainHeightOriginMode): string {
   if (TerrainHeightOriginMode.Geodetic === mode)
@@ -28,7 +29,9 @@ function getHeightOriginModeFromKey(mode: string): TerrainHeightOriginMode {
 }
 
 function displayElevationError(): void {
-  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "invalidElevationError", "invalidElevationDetails"));
+  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error,
+    MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.InvalidElevationError"),
+    MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.InvalidElevationDetails")));
 }
 
 export function MapSettingsPanel() {
@@ -68,9 +71,9 @@ export function MapSettingsPanel() {
   const [groundBias, setGroundBias] = React.useState(() => backgroundMapSettings.groundBias);
 
   const terrainHeightOptions = React.useRef({
-    geodetic: "GPS (Geodetic/Ellipsoid)",
-    geoid: "Sea Level (Geoid)",
-    ground: "Ground",
+    geodetic: MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationTypeGeodetic"),
+    geoid: MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationTypeGeoid"),
+    ground: MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationTypeGround"),
   });
 
   const updateTerrainSettings = React.useCallback((props: TerrainProps) => {
@@ -146,38 +149,48 @@ export function MapSettingsPanel() {
       event.preventDefault();
   }, []);
 
+  const [showMapLayersLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ShowMapLayers"));
+  const [settingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Settings"));
+  const [transparencyLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Transparency"));
+  const [terrainLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Terrain"));
+  const [elevationOffsetLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationOffset"));
+  const [useDepthBufferLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.UseDepthBuffer"));
+  const [modelHeightLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ModelHeight"));
+  const [heightOriginLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.HeightOrigin"));
+  const [exaggerationLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.Exaggeration"));
+
   return (
     <>
       <div className="map-manager-settings-header">
-        <ExpandableBlock title="Settings" className="map-expandable-blocks-block" isExpanded={showSettings} onClick={toggleShowSettings}>
+        <ExpandableBlock title={settingsLabel} className="map-expandable-blocks-block" isExpanded={showSettings} onClick={toggleShowSettings}>
           <div className="map-manager-settings-panel">
-            <span className="map-manager-settings-label">{"Maps Display"}</span>
+            <span className="map-manager-settings-label">{showMapLayersLabel}</span>
             <Toggle onChange={handleVisibilityChange} isOn={basemapVisible} className="map-manager-base-settings-toggle" />
 
-            <span className="map-manager-settings-label">{"Transparency"}</span>
+            <span className="map-manager-settings-label">{transparencyLabel}</span>
             <Slider min={0} max={100} showMinMax showTooltip values={[transparency * 100]} onChange={handleAlphaChange} step={1} />
 
-            <span className="map-manager-settings-label">{"Use Terrain"}</span>
+            <span className="map-manager-settings-label">{terrainLabel}</span>
             <Toggle onChange={onToggleTerrain} isOn={applyTerrain} />
 
             {!applyTerrain && (
               <>
-                <span className="map-manager-settings-label">{"Elevation Offset (meters)"}</span>
+                <span className="map-manager-settings-label">{elevationOffsetLabel}</span>
                 <NumericInput strict={false} value={groundBias} onChange={handleElevationChange} onKeyDown={onKeyDown} />
 
-                <span className="map-manager-settings-label">{"Use Depth Buffer"}</span>
+                <span className="map-manager-settings-label">{useDepthBufferLabel}</span>
                 <Toggle onChange={onToggleUseDepthBuffer} isOn={useDepthBuffer} />
               </>
             )}
             {applyTerrain && (
               <>
-                <span className="map-manager-settings-label">{"Model Height (meters)"}</span>
+                <span className="map-manager-settings-label">{modelHeightLabel}</span>
                 <NumericInput strict={false} value={terrainOrigin} onChange={handleHeightOriginChange} onKeyDown={onKeyDown} />
 
-                <span className="map-manager-settings-label">{"Height Origin"}</span>
+                <span className="map-manager-settings-label">{heightOriginLabel}</span>
                 <Select options={terrainHeightOptions.current} value={heightOriginMode} onChange={handleElevationTypeSelected} />
 
-                <span className="map-manager-settings-label">Exaggeration</span>
+                <span className="map-manager-settings-label">{exaggerationLabel}</span>
                 <NumericInput strict={false} value={exaggeration} onChange={handleExaggerationChange} onKeyDown={onKeyDown} />
               </>
             )}

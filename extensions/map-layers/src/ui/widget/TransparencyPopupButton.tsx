@@ -5,8 +5,8 @@
 
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { Icon, Popup, Slider } from "@bentley/ui-core";
-
+import { Popup, Slider, WebFontIcon } from "@bentley/ui-core";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./TransparencyPopupButton.scss";
 
 /** @alpha */
@@ -22,7 +22,8 @@ export interface TransparencyPopupButtonProps {
 /** @alpha */
 export function TransparencyPopupButton({ transparency, onTransparencyChange, buttonToolTip }: TransparencyPopupButtonProps) {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
-  const toolTipLabel = React.useMemo(() => buttonToolTip ? buttonToolTip : "Set transparency", [buttonToolTip]);
+  const [defaultTransparencyLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:TransparencyPopup.SetTransparency"));
+  const toolTipLabel = React.useMemo(() => buttonToolTip ? buttonToolTip : defaultTransparencyLabel, [buttonToolTip, defaultTransparencyLabel]);
 
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const togglePopupDisplay = React.useCallback((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -47,7 +48,7 @@ export function TransparencyPopupButton({ transparency, onTransparencyChange, bu
   return (
     <>
       <button title={toolTipLabel} className="map-transparency-popup-button" onClick={togglePopupDisplay} ref={buttonRef}>
-        <Icon iconSpec={"icon icon-visibility-semi-transparent"} />
+        <WebFontIcon iconName="icon-visibility-semi-transparent" />
       </button>
       <Popup
         isOpen={isSettingsOpen}
