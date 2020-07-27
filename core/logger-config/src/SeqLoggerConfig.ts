@@ -33,6 +33,7 @@ export interface SeqConfig {
  * @beta
  */
 export class SeqLoggerConfig {
+  private static _seqStream?: any;
 
   /** Create a bunyan logger that streams to seq.
    * ```
@@ -62,13 +63,15 @@ export class SeqLoggerConfig {
     // NB: Define only one seq bunyan stream! Otherwise, we will get logging messages coming out multiple times, once for each stream. (https://github.com/trentm/node-bunyan/issues/334)
     // This one stream must accept messages at all levels. That is why we set it to "trace". That is just its lower limit.
     seqStreamParams.level = "trace";
+    const seqStream = seq.createStream(seqStreamParams);
 
     const bunyanLogger = bunyan.createLogger({
       name: loggerName,
       streams: [
-        seq.createStream(seqStreamParams),
+        seqStream,
       ],
     });
+    this._seqStream = seqStream;
 
     // Write to stdout
     if (logToStdout)
@@ -87,5 +90,12 @@ export class SeqLoggerConfig {
       if (!validProps.includes(prop))
         throw new BentleyError(IModelStatus.BadArg, "unrecognized SeqConfig property: " + prop);
     }
+  }
+
+  /** @internal Used to flush all pending seq logs right before exiting. */
+  public static async shutdownSeq() {
+    const stream = this._seqStream;
+    const noop = async () => { };
+    return (stream?.stream?._logger?.close ?? noop)();
   }
 }
