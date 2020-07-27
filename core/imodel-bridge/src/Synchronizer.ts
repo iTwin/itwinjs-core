@@ -332,11 +332,29 @@ export class Synchronizer {
   }
 
   private detectDeletedElementsInFile() {
-    // first check to see if the file we are interested in was unchanged. If so, then do nothing
-    // somehow to need to get the repositoryLinkId of the sourceFile we're working on.
+    for (const value of this._links.values()) {
+      if (value.itemState === ItemState.Unchanged || value.itemState === ItemState.New) {
+        continue;
+      }
+      this.detectDeletedElementsForScope(value.element.id);
+    }
+  }
 
-    // then, query for all aspects in the XSA that have a scope of that repositoryLinkId (or whose scope is ultimately scoped to that repositoryLinkId)
-    // any that were not seen this time, delete them.
+  private detectDeletedElementsForScope(scopeId: Id64String) {
+    const sql = `SELECT aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=?`;
+    const toDelete: Id64String[] = new Array<Id64String>();
+    this.imodel.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindId(1, scopeId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        // If the element is in a scope that was processed and we didn't visit it, delete it
+        const elementId = statement.getValue(0).getId();
+        if (!(this._seenElements.includes(elementId))) {
+          toDelete.push(elementId);
+        }
+        this.detectDeletedElementsForScope(elementId);
+      }
+    });
+    this.imodel.elements.deleteElement(toDelete);
   }
 
   private updateResultInIModelForOneElement(results: SynchronizationResults): IModelStatus {
