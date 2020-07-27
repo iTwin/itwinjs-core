@@ -36,10 +36,12 @@ readDirectory(extractDir, [ignoreFunction], (error, inputFileNames) => {
     const inputLines = inputFileContents.split("\n");
     let outputFileName = undefined;
     let outputLines = [];
+    let startIndent = 0;
 
     for (const inputLine of inputLines) {
       const startIndex = inputLine.indexOf(__PUBLISH_EXTRACT_START__);
       if (startIndex > 0) {
+        startIndent = startIndex - 3;
         if (outputFileName)
           throw new Error("Nested " + __PUBLISH_EXTRACT_START__);
 
@@ -60,7 +62,7 @@ readDirectory(extractDir, [ignoreFunction], (error, inputFileNames) => {
         outputFileName = undefined;
         outputLines = [];
       } else if (outputFileName) {
-        outputLines.push(inputLine);
+        outputLines.push(inputLine.substring(startIndent).replace(/\s+$/gm, ""));
       }
     }
 
