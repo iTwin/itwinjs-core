@@ -33,6 +33,7 @@
   "dependencies": {
     "@bentley/backend-itwin-client": "2.4.0-dev.15",
     "@bentley/bentleyjs-core": "2.4.0-dev.15",
+    "@bentley/context-registry-client": "2.4.0-dev.15",
     "@bentley/extension-client": "2.4.0-dev.15",
     "@bentley/ecschema-metadata": "2.4.0-dev.15",
     "@bentley/geometry-core": "2.4.0-dev.15",

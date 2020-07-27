@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ContextRegistryClient, ContextRegistryRequestQueryOptions, Project } from "../../ContextRegistryClient";
+import { ContextRegistryClient, ContextRegistryRequestQueryOptions, Project, Team } from "../../ContextRegistryClient";
 import { TestConfig } from "../TestConfig";
 
 chai.should();
@@ -61,6 +61,11 @@ describe("ContextRegistryClient (#integration)", () => {
   it("should get a list of invited projects (#integration)", async () => {
     const invitedProjects: Project[] = await contextRegistry.getInvitedProjects(requestContext);
     chai.expect(invitedProjects.length).greaterThan(0);
+  });
+
+  it("should get a team", async () => {
+    const team: Team = await contextRegistry.getTeam(requestContext);
+    chai.expect(team).not.to.be.undefined;
   });
 
 });

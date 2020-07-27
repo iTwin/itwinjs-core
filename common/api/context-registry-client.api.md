@@ -11,7 +11,7 @@ import { WsgClient } from '@bentley/itwin-client';
 import { WsgInstance } from '@bentley/itwin-client';
 
 // @beta
-export class Asset extends CommonContext {
+export class Asset extends CommonAssetProjectContext {
     // (undocumented)
     assetType?: string;
 }
@@ -25,13 +25,13 @@ export class Context extends WsgInstance {
     // (undocumented)
     dataLocationId?: string;
     // (undocumented)
-    image?: string;
-    // (undocumented)
     name?: string;
     // (undocumented)
     number?: string;
     // (undocumented)
     status?: number;
+    // (undocumented)
+    teamId?: string;
     // (undocumented)
     ultimateRefId?: string;
 }
@@ -47,6 +47,7 @@ export class ContextRegistryClient extends WsgClient {
     getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project>;
     getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]>;
     protected getRelyingPartyUrl(): string;
+    getTeam(requestContext: AuthorizedClientRequestContext): Promise<Team>;
     protected getUrlSearchKey(): string;
     // (undocumented)
     static readonly searchKey: string;
@@ -67,17 +68,23 @@ export enum ContextType {
     // (undocumented)
     Project = 3,
     // (undocumented)
+    Team = 1,
+    // (undocumented)
     Unknown = 0
 }
 
 // @beta
-export class Project extends CommonContext {
+export class Project extends CommonAssetProjectContext {
     // (undocumented)
     assetId?: string;
     // (undocumented)
     isRbacEnabled?: boolean;
     // (undocumented)
     type?: string;
+}
+
+// @beta
+export class Team extends CommonContext {
 }
 
 
