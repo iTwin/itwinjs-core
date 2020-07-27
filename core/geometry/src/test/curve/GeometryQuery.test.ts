@@ -19,7 +19,7 @@ import { PointString3d } from "../../curve/PointString3d";
 import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
 import { StrokeCountSection } from "../../curve/Query/StrokeCountChain";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { TransitionSpiral3d } from "../../curve/TransitionSpiral";
+import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
 import { GeometryHandler, NullGeometryHandler, RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";

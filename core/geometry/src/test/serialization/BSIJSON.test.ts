@@ -16,7 +16,7 @@ import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { PointString3d } from "../../curve/PointString3d";
-import { TransitionSpiral3d } from "../../curve/TransitionSpiral";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { BeJSONFunctions } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
@@ -511,7 +511,7 @@ describe("ExerciseGeometryHandler", () => {
     ck.testUndefined(tempHandler.handleBSplineSurface3dH(Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2, 1.0, 1.1, 0.9, 1.0)!));
     ck.testUndefined(tempHandler.handleIndexedPolyface(IndexedPolyface.create()));
     ck.testUndefined(tempHandler.handleTransitionSpiral(
-      TransitionSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1), AngleSweep.create360(), Segment1d.create(0, 1),
+      IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1), AngleSweep.create360(), Segment1d.create(0, 1),
       Transform.createIdentity())!));
     ck.testUndefined(tempHandler.handleSphere(Sample.createSpheres()[0]));
     ck.testUndefined(tempHandler.handleCone(Sample.createCones()[0]));

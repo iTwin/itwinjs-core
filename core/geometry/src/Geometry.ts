@@ -774,5 +774,11 @@ export class Geometry {
     if (x > a) return a;
     return x;
   }
-
+  /**
+   * Case-insensitive string comparison.
+   * * Return true if the toUpperCase values match.
+   */
+  public static equalStringNoCase(string1: string, string2: string): boolean {
+    return string1.toUpperCase() === string2.toUpperCase();
+  }
 }

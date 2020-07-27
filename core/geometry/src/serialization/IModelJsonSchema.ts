@@ -23,9 +23,9 @@ import { Loop } from "../curve/Loop";
 import { ParityRegion } from "../curve/ParityRegion";
 import { Path } from "../curve/Path";
 import { PointString3d } from "../curve/PointString3d";
-import { TransitionSpiral3d } from "../curve/TransitionSpiral";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
+import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { UnionRegion } from "../curve/UnionRegion";
-// import { Geometry, Angle, AxisOrder, BSIJSONValues } from "../Geometry";
 import { AngleProps, AngleSweepProps, AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -48,7 +48,8 @@ import { RotationalSweep } from "../solid/RotationalSweep";
 import { RuledSweep } from "../solid/RuledSweep";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
-
+import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
+// cspell:word bagof
 /* tslint:disable: object-literal-key-quotes no-console*/
 /**
  * `ImodelJson` namespace has classes for serializing and deserialization json objects
@@ -320,7 +321,14 @@ export namespace IModelJson {
     startRadius?: number;
     /** Radius at end  (0 for straight line) */
     endRadius?: number;
-    /** length along curve */
+    /** length along curve.
+     * REMARK: "length" is preferred.  "curveLength" is deprecated.
+     */
+    length?: number;
+    /**
+     * Deprecated synonym for `length` property.
+     * @deprecated
+     */
     curveLength?: number;
     /** Fractional part of active interval.
      * * There has been name confusion between native and typescript .... accept any variant ..
@@ -332,12 +340,15 @@ export namespace IModelJson {
      * @deprecated
      */
     fractionInterval?: number[];
-    /** TransitionSpiral type.   Default is `"clothoid"` */
-    type?: string; //   one of:   "clothoid" | "biquadratic" | "bloss" | "cosine" | "sine";
-    /** A fractional portion of the spiral may be selected.
-     * * If this is missing, fraction range is `[0,1]`
+    /**
+     * DEPRECATED -- use activeFractionInterval.   Reader looks for both, writer produces activeFractionInterval
+     * @deprecated
      */
     intervalFractions?: [number, number];
+    /** TransitionSpiral type.
+     * * expected names are given in `IntegratedSpiralTypeName` and `DirectSpiralTypeName`
+     */
+    type?: string;
   }
 
   /**
@@ -619,8 +630,8 @@ export namespace IModelJson {
     private static parseStringProperty(json: any, propertyName: string, defaultValue?: string | undefined): string | undefined {
       if (json.hasOwnProperty(propertyName)) {
         const value = json[propertyName];
-        if (value.type === "string")
-          return value;
+        // if (value instanceof string)
+        return value;
       }
       return defaultValue;
     }
@@ -709,22 +720,38 @@ export namespace IModelJson {
       const endBearing = Reader.parseAngleProperty(data, "endBearing");
       const startRadius = Reader.parseNumberProperty(data, "startRadius");
       const endRadius = Reader.parseNumberProperty(data, "endRadius");
-      const length = Reader.parseNumberProperty(data, "curveLength", undefined);
+      let length = Reader.parseNumberProperty(data, "length", undefined);
+      if (length === undefined)
+        length = Reader.parseNumberProperty(data, "curveLength", undefined);
 
       let interval = Reader.parseSegment1dProperty(data, "activeFractionInterval", undefined);
       if (!interval)
         interval = Reader.parseSegment1dProperty(data, "fractionInterval", undefined);
       if (!interval)
         interval = Reader.parseSegment1dProperty(data, "activeInterval", undefined);
-      const spiralType = Reader.parseStringProperty(data, "spiralType", "clothoid");
-      if (origin)
-        return TransitionSpiral3d.create(
+      const spiralType = Reader.parseStringProperty(data, "type", "clothoid")!;
+      // REMARK:  Our job is to parse and pass data along -- inscrutable validation happens in the implementation classes . . .
+      if (origin) {
+        let candidate: TransitionSpiral3d | undefined;
+        candidate = IntegratedSpiral3d.createFrom4OutOf5(
           spiralType,
           startRadius, endRadius,
           startBearing, endBearing,
           length,
           interval,
           Transform.createOriginAndMatrix(origin, axes));
+        if (candidate)
+          return candidate;
+        candidate = DirectSpiral3d.createFromLengthAndRadius(
+          spiralType,
+          startRadius, endRadius,
+          startBearing, endBearing,
+          length,
+          interval,
+          Transform.createOriginAndMatrix(origin, axes));
+        if (candidate)
+          return candidate;
+      }
       return undefined;
     }
     /**
@@ -1291,40 +1318,61 @@ export namespace IModelJson {
       // TODO: HANDLE NONRIGID TRANSFORM !!
       // the spiral may have indication of how it was defined.  If so, use defined/undefined state of the original data
       // as indication of what current data to use.  (Current data may have changed due to transforms.)
-      const originalProperties = data.originalProperties;
+      if (data instanceof DirectSpiral3d) {
+        const value: TransitionSpiralProps = {
+          origin: data.localToWorld.origin.toJSON(),
+          type: data.spiralType,
+        };
+        Writer.insertOrientationFromMatrix(value, data.localToWorld.matrix, true);
 
-      const value: TransitionSpiralProps = {
-        origin: data.localToWorld.origin.toJSON(),
-        type: data.getSpiralType()!,
-      };
-      Writer.insertOrientationFromMatrix(value, data.localToWorld.matrix, true);
+        if (!data.activeFractionInterval.isExact01)
+          value.activeFractionInterval = [data.activeFractionInterval.x0, data.activeFractionInterval.x1];
+        // Object.defineProperty(value, "fractionInterval", { value: [data.activeFractionInterval.x0, data.activeFractionInterval.x1] });
+        value.startRadius = 0;
+        value.endRadius = data.nominalR1;
+        value.length = data.nominalL1;
+        return { "transitionSpiral": value };
 
-      if (!data.activeFractionInterval.isExact01)
-        value.activeFractionInterval = [data.activeFractionInterval.x0, data.activeFractionInterval.x1];
-      // Object.defineProperty(value, "fractionInterval", { value: [data.activeFractionInterval.x0, data.activeFractionInterval.x1] });
+      } else if (data instanceof IntegratedSpiral3d) {
+        // TODO: HANDLE NONRIGID TRANSFORM !!
+        // the spiral may have indication of how it was defined.  If so, use defined/undefined state of the original data
+        // as indication of what current data to use.  (Current data may have changed due to transforms.)
+        const originalProperties = data.designProperties;
 
-      // if possible, do selective output of defining data (omit exactly one out of the 5, matching original definition)
-      if (originalProperties !== undefined && originalProperties.numDefinedProperties() === 4) {
-        if (originalProperties.radius0 !== undefined)
+        const value: TransitionSpiralProps = {
+          origin: data.localToWorld.origin.toJSON(),
+          type: data.spiralType,
+        };
+        Writer.insertOrientationFromMatrix(value, data.localToWorld.matrix, true);
+
+        if (!data.activeFractionInterval.isExact01)
+          value.activeFractionInterval = [data.activeFractionInterval.x0, data.activeFractionInterval.x1];
+        // Object.defineProperty(value, "fractionInterval", { value: [data.activeFractionInterval.x0, data.activeFractionInterval.x1] });
+
+        // if possible, do selective output of defining data (omit exactly one out of the 5, matching original definition)
+        if (originalProperties !== undefined && originalProperties.numDefinedProperties() === 4) {
+          if (originalProperties.radius0 !== undefined)
+            value.startRadius = data.radius01.x0;
+          if (originalProperties.radius1 !== undefined)
+            value.endRadius = data.radius01.x1;
+          if (originalProperties.bearing0 !== undefined)
+            value.startBearing = data.bearing01.startAngle.toJSON();
+          if (originalProperties.bearing1 !== undefined)
+            value.endBearing = data.bearing01.endAngle.toJSON();
+          if (originalProperties.curveLength !== undefined)
+            value.length = data.curveLength();
+        } else {
+          // uh oh ... no original data, but the spiral itself knows all 5 values.  We don't know which to consider primary.
+          // DECISION -- put everything out, let readers make sense if they can. (It should be consistent ?)
           value.startRadius = data.radius01.x0;
-        if (originalProperties.radius1 !== undefined)
           value.endRadius = data.radius01.x1;
-        if (originalProperties.bearing0 !== undefined)
           value.startBearing = data.bearing01.startAngle.toJSON();
-        if (originalProperties.bearing1 !== undefined)
           value.endBearing = data.bearing01.endAngle.toJSON();
-        if (originalProperties.curveLength !== undefined)
-          value.curveLength = data.curveLength();
-      } else {
-        // uh oh ... no original data, but the spiral itself knows all 5 values.  We don't know which to consider primary.
-        // DECISION -- put everything out, let readers make sense if they can. (It should be consistent ?)
-        value.startRadius = data.radius01.x0;
-        value.endRadius = data.radius01.x1;
-        value.startBearing = data.bearing01.startAngle.toJSON();
-        value.endBearing = data.bearing01.endAngle.toJSON();
-        value.curveLength = data.curveLength();
+          value.length = data.curveLength();
+        }
+        return { "transitionSpiral": value };
       }
-      return { "transitionSpiral": value };
+      return undefined;
     }
 
     /** Convert strongly typed instance to tagged json */

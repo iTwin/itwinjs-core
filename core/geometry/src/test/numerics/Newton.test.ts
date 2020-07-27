@@ -8,7 +8,7 @@ import { Newton1dUnbounded, NewtonEvaluatorRtoRD } from "../../numerics/Newton";
 import { Checker } from "../Checker";
 
 /* tslint:disable:no-console */
-
+// cspell:word currentdFdX
 export class HornerEvaluator extends NewtonEvaluatorRtoRD {
   private _coefficients: number[];
   // Constructor CAPTURES the caller's array . .

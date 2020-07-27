@@ -28,7 +28,6 @@ import { Loop } from "../curve/Loop";
 import { ParityRegion } from "../curve/ParityRegion";
 import { Path } from "../curve/Path";
 import { PointString3d } from "../curve/PointString3d";
-import { TransitionSpiral3d } from "../curve/TransitionSpiral";
 import { UnionRegion } from "../curve/UnionRegion";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
@@ -56,6 +55,9 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
+import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
+import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 
 /* tslint:disable:no-console */
 /**
@@ -1814,37 +1816,57 @@ export class Sample {
     // 5 spirals exercise the intricate "4 out of 5" input rules for spirals . ..
     const r1 = 1000.0;
     const r0 = 0.0;
-    const averageCurvature = TransitionSpiral3d.averageCurvatureR0R1(r0, r1);
+    const averageCurvature = IntegratedSpiral3d.averageCurvatureR0R1(r0, r1);
     const arcLength = 100.0;
     const dThetaRadians = arcLength * averageCurvature;
 
     return [
-      TransitionSpiral3d.create("clothoid", r0, r1,
+      IntegratedSpiral3d.createFrom4OutOf5("clothoid", r0, r1,
         Angle.createDegrees(0), Angle.createRadians(dThetaRadians),
         undefined,
         undefined, Transform.createIdentity())!,
-      TransitionSpiral3d.create("clothoid", r0, r1,
+      IntegratedSpiral3d.createFrom4OutOf5("bloss", r0, r1,
         Angle.createDegrees(0), undefined,
         arcLength,
         undefined, Transform.createIdentity())!,
-      TransitionSpiral3d.create("clothoid", r0, r1,
+      IntegratedSpiral3d.createFrom4OutOf5("clothoid", r0, r1,
         undefined, Angle.createRadians(dThetaRadians),
         arcLength,
         undefined, Transform.createIdentity())!,
-      TransitionSpiral3d.create("clothoid", r0, undefined,
+      IntegratedSpiral3d.createFrom4OutOf5("biquadratic", r0, undefined,
         Angle.createDegrees(0), Angle.createRadians(dThetaRadians),
         arcLength,
         undefined, Transform.createIdentity())!,
-      TransitionSpiral3d.create("clothoid", undefined, r1,
+      IntegratedSpiral3d.createFrom4OutOf5("sine", undefined, r1,
         Angle.createDegrees(0), Angle.createRadians(dThetaRadians),
         arcLength,
         undefined, Transform.createIdentity())!,
-      TransitionSpiral3d.create("clothoid", r0, r1,
+      IntegratedSpiral3d.createFrom4OutOf5("cosine", r0, r1,
         Angle.createDegrees(0), Angle.createRadians(dThetaRadians), undefined,
         Segment1d.create(0, 0.5),
         Transform.createOriginAndMatrix(Point3d.create(1, 2, 0),
           Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))!))!,
-    ];
+      DirectSpiral3d.createFromLengthAndRadius("Arema", r0, r1,
+        Angle.createDegrees(0), undefined, arcLength,
+        undefined,
+        Transform.createOriginAndMatrix(Point3d.create(1, 2, 0),
+          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))!))!,
+      DirectSpiral3d.createFromLengthAndRadius("ChineseCubic", r0, r1,
+        Angle.createDegrees(0), undefined, arcLength,
+        undefined,
+        Transform.createOriginAndMatrix(Point3d.create(1, 2, 0),
+          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))!))!,
+      DirectSpiral3d.createFromLengthAndRadius("JapaneseCubic", r0, r1,
+        Angle.createDegrees(0), undefined, arcLength,
+        undefined,
+        Transform.createOriginAndMatrix(Point3d.create(1, 2, 0),
+          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))!))!,
+      DirectSpiral3d.createFromLengthAndRadius("DirectHalfCosine", r0, r1,
+        Angle.createDegrees(0), undefined, arcLength,
+        undefined,
+        Transform.createOriginAndMatrix(Point3d.create(1, 2, 0),
+          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(15))!))!,
+      DirectSpiral3d.createCzechCubic(Transform.createIdentity(), arcLength, r1)!];
   }
   /** Create a Bezier curve with significant twist effects
    * * r and theta are circle in xy plane at steps in thetaStepper
@@ -2238,7 +2260,7 @@ export class Sample {
     result.push(CoordinateXYZ.create(pointA));
     result.push(Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC)!);
     result.push(PointString3d.create(pointA, pointB));
-    result.push(TransitionSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 100), AngleSweep.createStartEndDegrees(0, 5), Segment1d.create(0, 0.5), Transform.createIdentity())!);
+    result.push(IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 100), AngleSweep.createStartEndDegrees(0, 5), Segment1d.create(0, 0.5), Transform.createIdentity())!);
     result.push(LineString3d.create(pointABCD));
     result.push(BezierCurve3d.create(pointABC)!);
     result.push(BezierCurve3dH.create(pointABC)!);

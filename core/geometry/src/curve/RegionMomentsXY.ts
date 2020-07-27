@@ -22,7 +22,7 @@ import { LineString3d } from "./LineString3d";
 import { Loop } from "./Loop";
 import { ParityRegion } from "./ParityRegion";
 import { StrokeOptions } from "./StrokeOptions";
-import { TransitionSpiral3d } from "./TransitionSpiral";
+import { TransitionSpiral3d } from "./spiral/TransitionSpiral3d";
 import { UnionRegion } from "./UnionRegion";
 
 /**

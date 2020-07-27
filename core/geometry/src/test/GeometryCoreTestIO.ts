@@ -35,7 +35,7 @@ export class GeometryCoreTestIO {
         fs.mkdirSync(path);
     }
     const fullPath = path + "/" + fileName + ".imjs";
-    // console.log("saveGeometry::    " + fullPath);
+    console.log("saveGeometry::    " + fullPath);
 
     const imjs = IModelJson.Writer.toIModelJson(geometry);
     fs.writeFileSync(fullPath, prettyPrint(imjs));
