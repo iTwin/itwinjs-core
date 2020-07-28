@@ -64,6 +64,7 @@
     "@bentley/imodelhub-client": "2.5.0-dev.0",
     "@bentley/imodeljs-common": "2.5.0-dev.0",
     "@bentley/imodeljs-backend": "2.5.0-dev.0",
+    "@bentley/rbac-client": "2.5.0-dev.0",
     "chai-string": "^1.5.0",
     "chalk": "^3.0.0",
     "commander": "^2.14.1",

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/product-settings-client",
+      "comment": "add missing rbac-client dep",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/product-settings-client",
+  "email": "arun.george@bentley.com"
+}

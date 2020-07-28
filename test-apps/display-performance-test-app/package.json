@@ -46,6 +46,7 @@
     "@bentley/imodeljs-frontend": "2.5.0-dev.0",
     "@bentley/imodeljs-backend": "2.5.0-dev.0",
     "@bentley/projectshare-client": "2.5.0-dev.0",
+    "@bentley/rbac-client": "2.5.0-dev.0",
     "@bentley/ui-abstract": "2.5.0-dev.0",
     "body-parser": "^1.18.2"
   },

@@ -45,6 +45,7 @@
     "@bentley/context-registry-client": "2.5.0-dev.0",
     "@bentley/imodelhub-client": "2.5.0-dev.0",
     "@bentley/oidc-signin-tool": "2.5.0-dev.0",
+    "@bentley/rbac-client": "2.5.0-dev.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

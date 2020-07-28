@@ -43,6 +43,7 @@
     "@bentley/imodeljs-quantity": "^2.5.0-dev.0",
     "@bentley/orbitgt-core": "^2.5.0-dev.0",
     "@bentley/product-settings-client": "^2.5.0-dev.0",
+    "@bentley/rbac-client": "^2.5.0-dev.0",
     "@bentley/ui-abstract": "^2.5.0-dev.0",
     "@bentley/webgl-compatibility": "^2.5.0-dev.0"
   },
@@ -63,6 +64,7 @@
     "@bentley/imodeljs-quantity": "2.5.0-dev.0",
     "@bentley/orbitgt-core": "2.5.0-dev.0",
     "@bentley/product-settings-client": "2.5.0-dev.0",
+    "@bentley/rbac-client": "2.5.0-dev.0",
     "@bentley/ui-abstract": "2.5.0-dev.0",
     "@bentley/webgl-compatibility": "2.5.0-dev.0",
     "@types/chai": "^4.1.4",

@@ -41,6 +41,7 @@
     "@bentley/imodeljs-common": "2.5.0-dev.0",
     "@bentley/imodelhub-client": "2.5.0-dev.0",
     "@bentley/itwin-client": "2.5.0-dev.0",
+    "@bentley/rbac-client": "2.5.0-dev.0",
     "fast-sha256": "1.3.0",
     "electron": "^8.2.1",
     "tar": "^4.4.8",

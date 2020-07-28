@@ -42,7 +42,8 @@
     "@bentley/imodelhub-client": "^2.5.0-dev.0",
     "@bentley/backend-itwin-client": "^2.5.0-dev.0",
     "@bentley/imodeljs-common": "^2.5.0-dev.0",
-    "@bentley/context-registry-client": "^2.5.0-dev.0"
+    "@bentley/context-registry-client": "^2.5.0-dev.0",
+    "@bentley/rbac-client": "^2.5.0-dev.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -58,6 +59,7 @@
     "@bentley/oidc-signin-tool": "2.5.0-dev.0",
     "@bentley/build-tools": "2.5.0-dev.0",
     "@bentley/config-loader": "2.5.0-dev.0",
+    "@bentley/rbac-client": "2.5.0-dev.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",

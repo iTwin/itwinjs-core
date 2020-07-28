@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema2ts",
+      "comment": "add missing rbac-client dep",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema2ts",
+  "email": "arun.george@bentley.com"
+}
