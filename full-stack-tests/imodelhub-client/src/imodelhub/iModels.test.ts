@@ -233,6 +233,7 @@ function mockUpdateiModel(contextId: string, imodel: HubIModel) {
 
 describe("iModelHub iModelsHandler", () => {
   let projectId: string;
+  let assetId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients iModels test";
@@ -254,6 +255,7 @@ describe("iModelHub iModelsHandler", () => {
 
     (requestContext as any).activityId = "iModelHub iModelsHandler";
     projectId = await utils.getProjectId(requestContext, "iModelJsTest");
+    assetId = await utils.getAssetId(requestContext, undefined);
 
     if (!fs.existsSync(utils.workDir)) {
       fs.mkdirSync(utils.workDir);
@@ -275,6 +277,8 @@ describe("iModelHub iModelsHandler", () => {
 
   after(async () => {
     RequestGlobalOptions.timeout = backupTimeout;
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContext, assetId, createIModelName);
   });
 
   it("should get list of IModels (#iModelBank)", async () => {
@@ -761,7 +765,6 @@ describe("iModelHub iModelsHandler", () => {
   });
 
   it("should create an iModel in the Asset (#iModelBank)", async () => {
-    const assetId = await utils.getAssetId(requestContext, undefined);
     await utils.deleteIModelByName(requestContext, assetId, createIModelName);
 
     const description = "Test iModel created by imodeljs-clients tests";

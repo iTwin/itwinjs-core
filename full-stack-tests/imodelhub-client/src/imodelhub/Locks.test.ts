@@ -24,6 +24,7 @@ function mockDeleteAllLocks(imodelId: GuidString, briefcaseId: number) {
 }
 
 describe("iModelHubClient LockHandler (#iModelBank)", () => {
+  let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients Locks test";
@@ -37,9 +38,10 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
+    contextId = await utils.getProjectId(requestContext);
     // Does not create an imodel right now, but should in the future
-    await utils.createIModel(requestContext, imodelName, undefined, true);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
+    await utils.createIModel(requestContext, imodelName, contextId, true);
+    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
     iModelClient = utils.getDefaultClient();
     briefcases = (await utils.getBriefcases(requestContext, imodelId, 2));
     lastObjectId = await utils.getLastLockObjectId(requestContext, imodelId);
@@ -59,6 +61,11 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
       await iModelClient.locks.update(requestContext, imodelId,
         [utils.generateLock(briefcases[1].briefcaseId!, lastObjectId, LockType.Model, LockLevel.Shared, briefcases[1].fileId)]);
     }
+  });
+
+  after(async () => {
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 
   afterEach(() => {
