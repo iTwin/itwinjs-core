@@ -51,6 +51,7 @@ export * from "./ui-components/editors/EditorContainer";
 export * from "./ui-components/editors/EnumButtonGroupEditor";
 export * from "./ui-components/editors/EnumEditor";
 export * from "./ui-components/editors/IconEditor";
+export * from "./ui-components/editors/ImageCheckBoxEditor";
 export * from "./ui-components/editors/NumericInputEditor";
 export * from "./ui-components/editors/PropertyEditorManager";
 export * from "./ui-components/editors/SliderEditor";
@@ -120,6 +121,7 @@ export * from "./ui-components/color/HueSlider";
 export * from "./ui-components/color/AlphaSlider";
 export * from "./ui-components/color/SaturationPicker";
 export * from "./ui-components/color/ColorPickerButton";
+export * from "./ui-components/color/ColorPickerDialog";
 
 export * from "./ui-components/iconpicker/IconPickerButton";
 

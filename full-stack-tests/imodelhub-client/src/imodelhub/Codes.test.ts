@@ -28,6 +28,7 @@ function containsCode(codes: HubCode[], wantCode: HubCode) {
 }
 
 describe("iModelHub CodeHandler", () => {
+  let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
@@ -42,12 +43,18 @@ describe("iModelHub CodeHandler", () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    await utils.createIModel(requestContext, imodelName);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
+    contextId = await utils.getProjectId(requestContext);
+    await utils.createIModel(requestContext, imodelName, contextId);
+    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
     iModelClient = utils.getDefaultClient();
     const briefcases = await utils.getBriefcases(requestContext, imodelId, 2);
     briefcaseId = briefcases[0].briefcaseId!;
     briefcaseId2 = briefcases[1].briefcaseId!;
+  });
+
+  after(async () => {
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 
   afterEach(() => {
@@ -373,6 +380,7 @@ function createTestSequence(type: CodeSequenceType) {
 }
 
 describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
+  let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
@@ -383,11 +391,17 @@ describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
     const accessToken = await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    await utils.createIModel(requestContext, imodelName);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
+    contextId = await utils.getProjectId(requestContext);
+    await utils.createIModel(requestContext, imodelName, contextId);
+    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
     iModelClient = utils.getDefaultClient();
     const briefcases = await utils.getBriefcases(requestContext, imodelId, 1);
     briefcaseId = briefcases[0].briefcaseId!;
+  });
+
+  after(async () => {
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 
   it("should acquire code with next available index value", async () => {

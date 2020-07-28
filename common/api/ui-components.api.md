@@ -28,6 +28,7 @@ import { GroupButton } from '@bentley/ui-abstract';
 import { HorizontalAlignment } from '@bentley/ui-core';
 import { HSVColor } from '@bentley/imodeljs-common';
 import { I18N } from '@bentley/imodeljs-i18n';
+import { IconDefinition } from '@bentley/ui-abstract';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { immerable } from 'immer';
@@ -175,12 +176,15 @@ export interface AsyncValueProcessingResult {
 
 // @public
 export abstract class BasePointTypeConverter extends TypeConverter {
+    constructor(componentConverterName?: string);
+    // (undocumented)
+    componentConverterName: string;
     // (undocumented)
     protected abstract constructPoint(_values: Primitives.Point): ConvertedPrimitives.Point | undefined;
     // (undocumented)
     convertFromString(value: string): ConvertedPrimitives.Point2d | ConvertedPrimitives.Point3d | undefined;
     // (undocumented)
-    convertToString(value?: Primitives.Point): string;
+    convertToString(value?: Primitives.Point): string | Promise<string>;
     // (undocumented)
     protected abstract getVectorLength(point: Primitives.Point): number | undefined;
     // (undocumented)
@@ -785,13 +789,10 @@ export interface CheckboxStateChange {
 
 // @beta
 export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorEditorState> implements TypeEditor {
-    constructor(props: PropertyEditorProps);
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
     componentDidUpdate(prevProps: PropertyEditorProps): void;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // @internal (undocumented)
@@ -802,8 +803,6 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 
 // @beta
 export class ColorPickerButton extends React.PureComponent<ColorPickerProps, ColorPickerState> {
-    // @internal
-    constructor(props: ColorPickerProps);
     // (undocumented)
     static get defaultColors(): ColorDef[];
     // @internal (undocumented)
@@ -812,7 +811,26 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     render(): JSX.Element;
     // (undocumented)
     setFocus(): void;
+    // @internal (undocumented)
+    readonly state: Readonly<ColorPickerState>;
     }
+
+// @beta
+export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element;
+
+// @beta
+export interface ColorPickerDialogProps {
+    // (undocumented)
+    color: ColorDef;
+    // (undocumented)
+    colorPresets?: ColorDef[];
+    // (undocumented)
+    dialogTitle: string;
+    // (undocumented)
+    onCancelResult: () => void;
+    // (undocumented)
+    onOkResult: (selectedColor: ColorDef) => void;
+}
 
 // @beta
 export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
@@ -1447,14 +1465,10 @@ export interface EditorContainerProps extends CommonProps {
 
 // @beta
 export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, EnumButtonGroupEditorState> implements TypeEditor {
-    // @internal
-    constructor(props: PropertyEditorProps);
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
-    componentDidUpdate(prevProps: PropertyEditorProps, _prevState: EnumButtonGroupEditorState): void;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
     // (undocumented)
     getPropertyValue(): Promise<PropertyValue | undefined>;
     // @internal (undocumented)
@@ -1865,6 +1879,28 @@ export interface IImageLoader {
 
 // @public
 export type Image = LoadedImage | LoadedBinaryImage;
+
+// @beta
+export class ImageCheckBoxEditor extends React.PureComponent<PropertyEditorProps, ImageCheckBoxEditorState> implements TypeEditor {
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: Readonly<ImageCheckBoxEditorState>;
+}
+
+// @beta
+export class ImageCheckBoxPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get reactNode(): React.ReactNode;
+}
 
 // @public
 export type ImageFileFormat = "png" | "jpg" | "jpge";
@@ -2464,6 +2500,7 @@ export interface PlayerButtonProps extends CommonProps {
 
 // @public
 export class Point2dTypeConverter extends BasePointTypeConverter {
+    constructor(componentConverterName?: string);
     // (undocumented)
     protected constructPoint(values: Primitives.Point): ConvertedPrimitives.Point2d | undefined;
     // (undocumented)
@@ -2472,6 +2509,7 @@ export class Point2dTypeConverter extends BasePointTypeConverter {
 
 // @public
 export class Point3dTypeConverter extends BasePointTypeConverter {
+    constructor(componentConverterName?: string);
     // (undocumented)
     protected constructPoint(values: Primitives.Point): ConvertedPrimitives.Point3d | undefined;
     // (undocumented)
@@ -2480,6 +2518,9 @@ export class Point3dTypeConverter extends BasePointTypeConverter {
 
 // @beta
 export function PopupItem(props: PopupItemProps): JSX.Element;
+
+// @internal (undocumented)
+export function PopupItemPopup(props: PopupItemPopupProps): JSX.Element;
 
 // @beta
 export interface PopupItemProps extends ToolbarButtonItemProps {
@@ -3900,6 +3941,9 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
     useDragInteraction?: boolean;
 }
 
+// @internal (undocumented)
+export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;
+
 // @beta
 export interface TreeActions {
     // (undocumented)
@@ -4385,6 +4429,8 @@ export class TypeConverterManager {
     static getConverter(typename: string): TypeConverter;
     // (undocumented)
     static registerConverter(typename: string, converter: new () => TypeConverter): void;
+    // (undocumented)
+    static unregisterConverter(typename: string): void;
 }
 
 // @beta

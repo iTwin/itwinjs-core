@@ -103,8 +103,7 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
     return (
       <PanelTarget />
     );
-  const maxWidgetCount = getMaxWidgetCount(panel.side);
-  const showTargets = panel.widgets.length < maxWidgetCount;
+  const showTargets = panel.widgets.length < panel.maxWidgetCount;
   const className = classnames(
     "nz-widgetPanels-panel",
     `nz-${panel.side}`,
@@ -150,12 +149,6 @@ export const WidgetPanelComponent = React.memo<WidgetPanelComponentProps>(functi
     </div>
   );
 });
-
-function getMaxWidgetCount(side: PanelSide) {
-  if (side === "left" || side === "right")
-    return 3;
-  return 2;
-}
 
 /** @internal */
 export const PanelSideContext = React.createContext<PanelSide | undefined>(undefined); // tslint:disable-line: variable-name

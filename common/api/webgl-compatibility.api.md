@@ -14,6 +14,8 @@ export class Capabilities {
     // (undocumented)
     get isWebGL2(): boolean;
     // (undocumented)
+    get maxAntialiasSamples(): number;
+    // (undocumented)
     get maxColorAttachments(): number;
     // (undocumented)
     get maxDepthType(): DepthType;
@@ -123,6 +125,7 @@ export enum WebGLFeature {
 // @beta
 export interface WebGLRenderCompatibilityInfo {
     contextErrorMessage?: string;
+    createdContext?: WebGLRenderingContext | WebGL2RenderingContext | undefined;
     missingOptionalFeatures: WebGLFeature[];
     missingRequiredFeatures: WebGLFeature[];
     status: WebGLRenderCompatibilityStatus;

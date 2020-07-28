@@ -45,9 +45,9 @@ describe("Dialog", () => {
       const container = component.getByTestId("core-dialog-title");
       expect(container.style.fontWeight).to.equal("bold");
     });
-    it("should render with active FocusTrap", () => {
-      const component = render(<Dialog opened={true} modal={true} trapFocus={true} />);
-      expect(component.getByTestId("focus-trap-div")).to.exist;
+    it("should render with trapFocus", () => {
+      const component = render(<Dialog opened={true} trapFocus={true} modal={true} />);
+      expect(component.getByTestId("focus-trap-div")).to.exist; /* Not a sufficient test - should test 'active' prop, but RTL doesn't support it */
     });
   });
 

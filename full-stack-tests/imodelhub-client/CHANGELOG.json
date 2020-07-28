@@ -2,6 +2,24 @@
   "name": "@bentley/imodelhub-client-tests",
   "entries": [
     {
+      "version": "2.4.0",
+      "tag": "@bentley/imodelhub-client-tests_v2.4.0",
+      "date": "Tue, 28 Jul 2020 16:26:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "iModelHub permissions handler"
+          },
+          {
+            "comment": "Tests to ensure correct behavior regarding iModel type and filtering"
+          },
+          {
+            "comment": "Added unit tests to ensure correct url encoding"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.3.3",
       "tag": "@bentley/imodelhub-client-tests_v2.3.3",
       "date": "Thu, 23 Jul 2020 12:57:15 GMT",

@@ -1,6 +1,23 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:24 GMT
+
+### Updates
+
+- Add support for a basic single selection aria compliant listbox.
+- Checkboxes in lists & trees are out of place
+- Disabled component styling. Fixed Dialog focus problems.
+- Map Layer UX 
+- Allowing Input component user to override the type
+- Fix ThemeSelect formatOptionLabel prop to return React.ReactNode.
+- Added Arrow key navigation in Tabs components. Added ItemKeyboardNavigator.
+- Add aria props into ThemedSelectProps for accessibility. addclassName prop to ThemedSelectProps as requested for styling purposes.
+- Changed toolbar opacity processing to affect all components in widget.
+- Add border prop to ImageCheckBox
+- Replace slider specific Tooltip with generic Tooltip.
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT

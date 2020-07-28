@@ -218,12 +218,14 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   }
 
   private _onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // istanbul ignore else
     if (e.key === "Escape") {
       e.preventDefault();
       e.stopPropagation();
       this._resetToOriginalValue();
     }
 
+    // istanbul ignore else
     if (e.key !== "Enter") {
       // istanbul ignore next
       if (IModelApp.notifications)

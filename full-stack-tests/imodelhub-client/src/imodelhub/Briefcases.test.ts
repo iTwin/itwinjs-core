@@ -66,6 +66,7 @@ function mockDeleteBriefcase(imodelId: GuidString, briefcaseId: number) {
 
 describe("iModelHub BriefcaseHandler", () => {
   let requestContext: AuthorizedClientRequestContext;
+  let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients Briefcases test";
@@ -78,8 +79,9 @@ describe("iModelHub BriefcaseHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
     (requestContext as any).activityId = "iModelHub BriefcaseHandler";
 
-    await utils.createIModel(requestContext, imodelName);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
+    contextId = await utils.getProjectId(requestContext);
+    await utils.createIModel(requestContext, imodelName, contextId);
+    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
     iModelClient = utils.getDefaultClient();
     if (!TestConfig.enableMocks) {
       const briefcases = await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().ownedByMe());
@@ -106,6 +108,11 @@ describe("iModelHub BriefcaseHandler", () => {
     if (!fs.existsSync(utils.workDir)) {
       fs.mkdirSync(utils.workDir);
     }
+  });
+
+  after(async () => {
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 
   afterEach(() => {

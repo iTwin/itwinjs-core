@@ -378,6 +378,26 @@ describe("<Popup />", () => {
       wrapper.unmount();
     });
 
+    it("should render LeftTop", () => {
+      const target = document.createElement("div");
+      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(100, 0, 150, 0));
+      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.LeftTop} target={target} />);
+      wrapper.setProps({ isOpen: true });
+      const popup = wrapper.find("div.core-popup-left-top");
+      expect(popup.length).be.eq(1);
+      wrapper.state("position").should.eq(RelativePosition.LeftTop);
+      wrapper.unmount();
+    });
+
+    it("should render RightTop", () => {
+      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.RightTop} target={targetElement} />);
+      wrapper.setProps({ isOpen: true });
+      const popup = wrapper.find("div.core-popup-right-top");
+      expect(popup.length).be.eq(1);
+      wrapper.state("position").should.eq(RelativePosition.RightTop);
+      wrapper.unmount();
+    });
+
     it("should render Bottom then Right", () => {
       const wrapper = mount(<Popup position={RelativePosition.Bottom} target={targetElement} />);
       wrapper.setProps({ isOpen: true });
@@ -399,6 +419,7 @@ describe("<Popup />", () => {
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Bottom} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.Top);
+      wrapper.unmount();
     });
 
     it("should reposition BottomLeft to TopLeft", () => {
@@ -408,6 +429,7 @@ describe("<Popup />", () => {
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.BottomLeft} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.TopLeft);
+      wrapper.unmount();
     });
 
     it("should reposition BottomRight to TopRight", () => {
@@ -417,6 +439,7 @@ describe("<Popup />", () => {
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.BottomRight} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.TopRight);
+      wrapper.unmount();
     });
 
     it("should reposition Top to Bottom", () => {
@@ -426,6 +449,7 @@ describe("<Popup />", () => {
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Top} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.Bottom);
+      wrapper.unmount();
     });
 
     it("should reposition TopLeft to BottomLeft", () => {
@@ -435,6 +459,7 @@ describe("<Popup />", () => {
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopLeft} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.BottomLeft);
+      wrapper.unmount();
     });
 
     it("should reposition TopLeft to BottomLeft", () => {
@@ -444,6 +469,7 @@ describe("<Popup />", () => {
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopLeft} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.BottomLeft);
+      wrapper.unmount();
     });
 
     it("should reposition TopRight to BottomRight", () => {
@@ -453,6 +479,7 @@ describe("<Popup />", () => {
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopRight} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.BottomRight);
+      wrapper.unmount();
     });
 
     it("should reposition Left to Right", () => {
@@ -462,6 +489,17 @@ describe("<Popup />", () => {
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Left} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.Right);
+      wrapper.unmount();
+    });
+
+    it("should reposition LeftTop to RightTop", () => {
+      sandbox.stub(window, "scrollX").get(() => 100);
+      const target = document.createElement("div");
+      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(80, 0, 0, 0));
+      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.LeftTop} target={target} />);
+      wrapper.setProps({ isOpen: true });
+      wrapper.state("position").should.eq(RelativePosition.RightTop);
+      wrapper.unmount();
     });
 
     it("should reposition Right to Left", () => {
@@ -471,6 +509,17 @@ describe("<Popup />", () => {
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Right} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.Left);
+      wrapper.unmount();
+    });
+
+    it("should reposition RightTop to LeftTop", () => {
+      sandbox.stub(window, "innerWidth").get(() => 1000);
+      const target = document.createElement("div");
+      sinon.stub(target, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 1010, 0));
+      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.RightTop} target={target} />);
+      wrapper.setProps({ isOpen: true });
+      wrapper.state("position").should.eq(RelativePosition.LeftTop);
+      wrapper.unmount();
     });
 
     it("should not reposition on bottom overflow", () => {
@@ -480,6 +529,7 @@ describe("<Popup />", () => {
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Top} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.Top);
+      wrapper.unmount();
     });
 
     it("should not reposition on right overflow", () => {
@@ -489,6 +539,7 @@ describe("<Popup />", () => {
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Left} target={target} />);
       wrapper.setProps({ isOpen: true });
       wrapper.state("position").should.eq(RelativePosition.Left);
+      wrapper.unmount();
     });
   });
 

@@ -107,6 +107,7 @@ export class AngleSweep implements BeJSONFunctions {
     clone(): AngleSweep;
     cloneComplement(reverseDirection?: boolean, result?: AngleSweep): AngleSweep;
     cloneMinusRadians(radians: number): AngleSweep;
+    static create(data?: AngleSweep | Angle): AngleSweep;
     static create360(startRadians?: number): AngleSweep;
     static createFullLatitude(): AngleSweep;
     static createStartEnd(startAngle: Angle, endAngle: Angle, result?: AngleSweep): AngleSweep;
@@ -1427,6 +1428,7 @@ export class CurveFactory {
     static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse?: boolean): boolean;
     static assembleArcChainOnEllipsoid(ellipsoid: Ellipsoid, pathPoints: GeodesicPathPoint[], fractionForIntermediateNormal?: number): Path;
     static createArcPointTangentPoint(pointA: Point3d, tangentA: Vector3d, pointB: Point3d): Arc3d | undefined;
+    static createArcPointTangentRadius(pointA: Point3d, tangentA: Vector3d, radius: number, upVector?: Vector3d, sweep?: Angle | AngleSweep): Arc3d | undefined;
     static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge?: boolean): Path | undefined;
     static createMiteredPipeSections(centerline: IndexedXYZCollection, radius: number): Arc3d[];
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
@@ -1652,6 +1654,51 @@ export class Degree4PowerPolynomial {
     static fromRootsAndC4(root0: number, root1: number, root2: number, root3: number, c4?: number): Degree4PowerPolynomial;
 }
 
+// @beta
+export class DirectSpiral3d extends TransitionSpiral3d {
+    constructor(localToWorld: Transform, spiralType: string | undefined, originalProperties: TransitionConditionalProperties | undefined, nominalL1: number, nominalR1: number, activeFractionInterval: Segment1d | undefined, evaluator: XYCurveEvaluator);
+    get activeStrokes(): LineString3d;
+    clone(): DirectSpiral3d;
+    cloneTransformed(transform: Transform): DirectSpiral3d;
+    computeStrokeCountForOptions(options?: StrokeOptions): number;
+    // (undocumented)
+    static createArema(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
+    // (undocumented)
+    static createChineseCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
+    static createCzechCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
+    // (undocumented)
+    static createDirectHalfCosine(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
+    static createFromLengthAndRadius(spiralType: string, radius0: number | undefined, radius1: number | undefined, bearing0: Angle | undefined, _bearing1: Angle | undefined, arcLength: number | undefined, activeInterval: undefined | Segment1d, localToWorld: Transform): TransitionSpiral3d | undefined;
+    // (undocumented)
+    static createJapaneseCubic(localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d): DirectSpiral3d | undefined;
+    static createTruncatedClothoid(spiralType: string, localToWorld: Transform, numXTerm: number, numYTerm: number, originalProperties: TransitionConditionalProperties | undefined, nominalL1: number, nominalR1: number, activeInterval: Segment1d | undefined): DirectSpiral3d | undefined;
+    curveLength(): number;
+    readonly curvePrimitiveType = "transitionSpiral";
+    dispatchToGeometryHandler(handler: GeometryHandler): any;
+    emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void;
+    emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
+    endPoint(): Point3d;
+    // @internal
+    get evaluator(): XYCurveEvaluator;
+    extendRange(rangeToExtend: Range3d, transform?: Transform): void;
+    fractionToPoint(activeFraction: number, result?: Point3d): Point3d;
+    fractionToPointAnd2Derivatives(activeFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
+    fractionToPointAndDerivative(activeFraction: number, result?: Ray3d): Ray3d;
+    isAlmostEqual(other: any): boolean;
+    isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
+    isSameGeometryClass(other: any): boolean;
+    get nominalL1(): number;
+    get nominalR1(): number;
+    quickLength(): number;
+    refreshComputedProperties(): void;
+    reverseInPlace(): void;
+    startPoint(): Point3d;
+    tryTransformInPlace(transformA: Transform): boolean;
+}
+
+// @beta
+export type DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine";
+
 // @public
 export enum DuplicateFacetClusterSelector {
     SelectAll = 2,
@@ -1818,6 +1865,7 @@ export class Geometry {
     static distanceXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): number;
     static dotProductXYXY(ux: number, uy: number, vx: number, vy: number): number;
     static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
+    static equalStringNoCase(string1: string, string2: string): boolean;
     static readonly fullCircleRadiansMinusSmallAngle: number;
     static readonly hugeCoordinate = 1000000000000;
     static hypotenuseSquaredXY(x: number, y: number): number;
@@ -1864,6 +1912,7 @@ export class Geometry {
     static maxAbsXYZ(x: number, y: number, z: number): number;
     static maxXY(a: number, b: number): number;
     static maxXYZ(a: number, b: number, c: number): number;
+    static meanCurvatureOfRadii(r0: number, r1: number): number;
     static minXY(a: number, b: number): number;
     static modulo(a: number, period: number): number;
     static resolveNumber(value: number | undefined, defaultValue?: number): number;
@@ -2034,6 +2083,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     pushWrap(numWrap: number): void;
     pushXY(x: number, y: number): void;
     resize(pointCount: number): void;
+    reverseInPlace(): void;
     scaleInPlace(factor: number): void;
     setAtCheckedPointIndex(pointIndex: number, value: XAndY): boolean;
     setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number): boolean;
@@ -2392,7 +2442,7 @@ export namespace IModelJson {
     }
     export interface RuledSweepProps {
         capped?: boolean;
-        countour: [CurveCollectionProps];
+        contour: [CurveCollectionProps];
     }
     export interface SolidPrimitiveProps {
         box?: BoxProps;
@@ -2421,11 +2471,16 @@ export namespace IModelJson {
         sweepAngle?: AngleProps;
     }
     export interface TransitionSpiralProps extends AxesProps {
+        activeFractionInterval?: number[];
+        // @deprecated
         curveLength?: number;
         endBearing?: AngleProps;
         endRadius?: number;
+        // @deprecated
         fractionInterval?: number[];
+        // @deprecated
         intervalFractions?: [number, number];
+        length?: number;
         origin: XYZProps;
         startBearing?: AngleProps;
         startRadius?: number;
@@ -2615,6 +2670,47 @@ export class IndexedXYZCollectionPolygonOps {
     static reorderCutLoops(loops: CutLoopMergeContext): void;
     static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator, xyz: IndexedReadWriteXYZCollection, xyzPositive: IndexedReadWriteXYZCollection, xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d): void;
     }
+
+// @beta
+export class IntegratedSpiral3d extends TransitionSpiral3d {
+    get activeStrokes(): LineString3d;
+    bearing01: AngleSweep;
+    clone(): IntegratedSpiral3d;
+    cloneTransformed(transform: Transform): TransitionSpiral3d;
+    computeStrokeCountForOptions(options?: StrokeOptions): number;
+    static createFrom4OutOf5(spiralType: string | undefined, radius0: number | undefined, radius1: number | undefined, bearing0: Angle | undefined, bearing1: Angle | undefined, arcLength: number | undefined, fractionInterval: undefined | Segment1d, localToWorld: Transform): IntegratedSpiral3d | undefined;
+    static createRadiusRadiusBearingBearing(radius01: Segment1d, bearing01: AngleSweep, activeFractionInterval: Segment1d, localToWorld: Transform, typeName?: string): IntegratedSpiral3d | undefined;
+    curveLength(): number;
+    readonly curvePrimitiveType = "transitionSpiral";
+    static readonly defaultSpiralType = "clothoid";
+    dispatchToGeometryHandler(handler: GeometryHandler): any;
+    emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void;
+    emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
+    endPoint(): Point3d;
+    extendRange(rangeToExtend: Range3d, transform?: Transform): void;
+    fractionToBearingRadians(activeFraction: number): number;
+    fractionToCurvature(activeFraction: number): number;
+    fractionToFrenetFrame(activeFraction: number, result?: Transform): Transform;
+    fractionToPoint(activeFraction: number, result?: Point3d): Point3d;
+    fractionToPointAnd2Derivatives(activeFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
+    fractionToPointAndDerivative(activeFraction: number, result?: Ray3d): Ray3d;
+    globalFractionToBearingRadians(fraction: number): number;
+    globalFractionToCurvature(fraction: number): number;
+    static initWorkSpace(): void;
+    isAlmostEqual(other?: GeometryQuery): boolean;
+    isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
+    isSameGeometryClass(other: any): boolean;
+    quickLength(): number;
+    radius01: Segment1d;
+    refreshComputedProperties(): void;
+    reverseInPlace(): void;
+    setFrom(other: IntegratedSpiral3d): IntegratedSpiral3d;
+    startPoint(): Point3d;
+    tryTransformInPlace(transformA: Transform): boolean;
+}
+
+// @beta
+export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine";
 
 // @public
 export enum InverseMatrixState {
@@ -3493,6 +3589,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     setOriginAndVectorsXYZ(x0: number, y0: number, z0: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): Plane3dByOriginAndVectors;
     toJSON(): any;
     toRigidFrame(result?: Transform): Transform | undefined;
+    transformInPlace(transform: Transform): void;
     unitNormal(result?: Vector3d): Vector3d | undefined;
     unitNormalRay(result?: Ray3d): Ray3d | undefined;
     vectorU: Vector3d;
@@ -4661,6 +4758,7 @@ export class Sample {
 
 // @public
 export class Segment1d {
+    absoluteDelta(): number;
     clampDirectedTo01(): boolean;
     clipBy01FunctionValuesPositive(f0: number, f1: number): boolean;
     clone(): Segment1d;
@@ -4685,6 +4783,11 @@ export interface SignedLoops {
     negativeAreaLoops: Loop[];
     positiveAreaLoops: Loop[];
     slivers: Loop[];
+}
+
+// @internal
+export class SimpleNewton {
+    static runNewton1D(x: number, func: (x: number) => number | undefined, derivative: (x: number) => number | undefined, absoluteTolerance?: number): number | undefined;
 }
 
 // @internal
@@ -5013,70 +5116,32 @@ export type TransformProps = number[][] | number[] | {
     matrix: Matrix3dProps;
 };
 
-// @alpha
-export class TransitionConditionalProperties {
-    constructor(radius0: number | undefined, radius1: number | undefined, bearing0: Angle | undefined, bearing1: Angle | undefined, arcLength: number | undefined);
-    applyScaleFactor(a: number): void;
-    bearing0: Angle | undefined;
-    bearing1: Angle | undefined;
-    clone(): TransitionConditionalProperties;
-    curveLength: number | undefined;
-    isAlmostEqual(other: TransitionConditionalProperties): boolean;
-    numDefinedProperties(): number;
-    radius0: number | undefined;
-    radius1: number | undefined;
-    tryResolveAnySingleUnknown(): boolean;
-}
-
-// @alpha
-export class TransitionSpiral3d extends CurvePrimitive {
-    constructor(spiralType: string | undefined, radius01: Segment1d, bearing01: AngleSweep, activeFractionInterval: Segment1d, localToWorld: Transform, arcLength: number, properties: TransitionConditionalProperties | undefined);
-    activeFractionInterval: Segment1d;
-    get activeStrokes(): LineString3d;
+// @beta
+export abstract class TransitionSpiral3d extends CurvePrimitive {
+    protected constructor(spiralType: string | undefined, localToWorld: Transform, activeFractionInterval: Segment1d | undefined, designProperties: TransitionConditionalProperties | undefined);
+    // (undocumented)
+    get activeFractionInterval(): Segment1d;
+    protected _activeFractionInterval: Segment1d;
+    protected applyRigidPartOfTransform(transformA: Transform): {
+        rigidAxes: Matrix3d;
+        scale: number;
+    } | undefined;
     static averageCurvature(radiusLimits: Segment1d): number;
     static averageCurvatureR0R1(r0: number, r1: number): number;
-    bearing01: AngleSweep;
-    clone(): TransitionSpiral3d;
-    cloneTransformed(transform: Transform): TransitionSpiral3d;
-    computeStrokeCountForOptions(options?: StrokeOptions): number;
-    static create(spiralType: string | undefined, radius0: number | undefined, radius1: number | undefined, bearing0: Angle | undefined, bearing1: Angle | undefined, arcLength: number | undefined, fractionInterval: undefined | Segment1d, localToWorld: Transform): TransitionSpiral3d | undefined;
-    static createRadiusRadiusBearingBearing(radius01: Segment1d, bearing01: AngleSweep, activeFractionInterval: Segment1d, localToWorld: Transform): TransitionSpiral3d;
     static curvatureToRadius(curvature: number): number;
-    curveLength(): number;
-    readonly curvePrimitiveType = "transitionSpiral";
-    static readonly defaultSpiralType = "clothoid";
-    dispatchToGeometryHandler(handler: GeometryHandler): any;
-    emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void;
-    emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
-    endPoint(): Point3d;
-    extendRange(rangeToExtend: Range3d, transform?: Transform): void;
-    fractionToBearingRadians(activeFraction: number): number;
-    fractionToCurvature(activeFraction: number): number;
-    fractionToFrenetFrame(activeFraction: number, result?: Transform): Transform;
-    fractionToPoint(activeFraction: number, result?: Point3d): Point3d;
-    fractionToPointAnd2Derivatives(activeFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
-    fractionToPointAndDerivative(activeFraction: number, result?: Ray3d): Ray3d;
-    getSpiralType(): string;
-    globalFractionToBearingRadians(fraction: number): number;
-    globalFractionToCurvature(fraction: number): number;
-    static initWorkSpace(): void;
-    isAlmostEqual(other: GeometryQuery): boolean;
-    isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
-    isSameGeometryClass(other: any): boolean;
-    localToWorld: Transform;
-    get originalProperties(): TransitionConditionalProperties | undefined;
-    quickLength(): number;
-    radius01: Segment1d;
+    get designProperties(): TransitionConditionalProperties | undefined;
+    protected _designProperties: TransitionConditionalProperties | undefined;
+    // (undocumented)
+    get localToWorld(): Transform;
+    protected _localToWorld: Transform;
     static radius0LengthSweepRadiansToRadius1(radius0: number, arcLength: number, sweepRadians: number): number;
     static radius1LengthSweepRadiansToRadius0(radius1: number, arcLength: number, sweepRadians: number): number;
     static radiusRadiusLengthToSweepRadians(radius0: number, radius1: number, arcLength: number): number;
     static radiusRadiusSweepRadiansToArcLength(radius0: number, radius1: number, sweepRadians: number): number;
     static radiusToCurvature(radius: number): number;
-    refreshComputedProperties(): void;
-    reverseInPlace(): void;
-    setFrom(other: TransitionSpiral3d): TransitionSpiral3d;
-    startPoint(): Point3d;
-    tryTransformInPlace(transformA: Transform): boolean;
+    // (undocumented)
+    get spiralType(): string;
+    protected _spiralType: string;
 }
 
 // @internal

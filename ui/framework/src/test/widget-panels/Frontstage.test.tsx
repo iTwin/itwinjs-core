@@ -6,21 +6,20 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import produce, { castDraft } from "immer";
+import produce from "immer";
+import { act, renderHook } from "@testing-library/react-hooks";
+import { Logger } from "@bentley/bentleyjs-core";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
-import { addFloatingWidget, addPanelWidget, addTab, createNineZoneState, createWidgetState, NineZoneState } from "@bentley/ui-ninezone";
-import { act, renderHook } from "@testing-library/react-hooks";
+import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZoneState } from "@bentley/ui-ninezone";
 import {
-  ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, expandWidget, findTab, FrontstageDef,
-  FrontstageManager, getPanelSide, getWidgetId, initializeNineZoneState, isFrontstageStateSettingResult, ModalFrontstageComposer,
-  packNineZoneState, restoreNineZoneState, setPanelSize, setWidgetState, showWidget, StagePanelDef, StagePanelZoneDef, StagePanelZonesDef,
-  UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState, useSavedFrontstageState,
-  useSaveFrontstageSettings, useSyncDefinitions, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
+  ActiveFrontstageDefProvider, addPanelWidgets, addWidgets, expandWidget, FrontstageDef,
+  FrontstageManager, getPanelSide, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult,
+  ModalFrontstageComposer, packNineZoneState, restoreNineZoneState, setPanelSize, setWidgetState, showWidget, StagePanelDef, StagePanelZoneDef,
+  StagePanelZonesDef, UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState,
+  useSavedFrontstageState, useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, WidgetDef, WidgetPanelsFrontstage, WidgetState, ZoneDef,
 } from "../../ui-framework";
 import TestUtils, { UiSettingsStub } from "../TestUtils";
-import { Logger } from "@bentley/bentleyjs-core";
-import { initializePanel, useUpdateNineZoneSize } from "../../ui-framework/widget-panels/Frontstage";
 
 function createSavedNineZoneState(args?: Partial<NineZoneState>) {
   return {
@@ -120,6 +119,14 @@ describe("ModalFrontstageComposer", () => {
 });
 
 describe("ActiveFrontstageDefProvider", () => {
+  before(async () => {
+    await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should render", () => {
     const frontstageDef = new FrontstageDef();
     const wrapper = shallow(<ActiveFrontstageDefProvider frontstageDef={frontstageDef} />);
@@ -336,13 +343,7 @@ describe("useSaveFrontstageSettings", () => {
     });
     const frontstageDef = new FrontstageDef();
     frontstageDef.nineZoneState = produce(createNineZoneState(), (draft) => {
-      draft.draggedTab = {
-        position: {
-          x: 0,
-          y: 0,
-        },
-        tabId: "t1",
-      };
+      draft.draggedTab = createDraggedTabState("t1");
     });
     renderHook(() => useSaveFrontstageSettings(frontstageDef), {
       wrapper: (props) => <UiSettingsProvider {...props} uiSettings={uiSettings} />,
@@ -870,19 +871,6 @@ describe("expandWidget ", () => {
   });
 });
 
-describe("findTab", () => {
-  it("should return undefined if tab is not found", () => {
-    let nineZone = produce(createNineZoneState(), (draft) => {
-      draft.widgets.w1 = castDraft(createWidgetState("w1", {
-        tabs: ["t1"],
-      }));
-    });
-    nineZone = addTab(nineZone, "w1", "t1");
-    const tab = findTab(nineZone, "t1");
-    (tab === undefined).should.true;
-  });
-});
-
 describe("restoreNineZoneState", () => {
   const sandbox = sinon.createSandbox();
 
@@ -898,12 +886,39 @@ describe("restoreNineZoneState", () => {
       tabs: {
         t1: {
           id: "t1",
+          preferredFloatingWidgetSize: undefined,
         },
       },
     };
     restoreNineZoneState(frontstageDef, savedState);
     spy.calledOnce.should.true;
     spy.firstCall.args[2]!().should.matchSnapshot();
+  });
+
+  it("should remove tab if widgetDef is not found", () => {
+    const frontstageDef = new FrontstageDef();
+    sinon.stub(frontstageDef, "findWidgetDef").withArgs("t2").returns(new WidgetDef({}));
+    let state = createNineZoneState();
+    state = addPanelWidget(state, "left", "w1");
+    state = addTab(state, "w1", "t1");
+    state = addTab(state, "w1", "t2");
+    const savedState = {
+      ...createSavedNineZoneState(state),
+      tabs: {
+        t1: {
+          id: "t1",
+          preferredFloatingWidgetSize: undefined,
+        },
+        t2: {
+          id: "t2",
+          preferredFloatingWidgetSize: undefined,
+        },
+      },
+    };
+    const newState = restoreNineZoneState(frontstageDef, savedState);
+    (newState.tabs.t1 === undefined).should.true;
+    newState.widgets.w1.tabs.indexOf("t1").should.eq(-1);
+    newState.widgets.w1.tabs.indexOf("t2").should.eq(0);
   });
 
   it("should restore tabs", () => {
@@ -915,6 +930,7 @@ describe("restoreNineZoneState", () => {
       tabs: {
         t1: {
           id: "t1",
+          preferredFloatingWidgetSize: undefined,
         },
       },
     };
@@ -935,6 +951,7 @@ describe("restoreNineZoneState", () => {
       tabs: {
         t1: {
           id: "t1",
+          preferredFloatingWidgetSize: undefined,
         },
       },
     };
@@ -955,6 +972,7 @@ describe("restoreNineZoneState", () => {
       tabs: {
         t1: {
           id: "t1",
+          preferredFloatingWidgetSize: undefined,
         },
       },
     };

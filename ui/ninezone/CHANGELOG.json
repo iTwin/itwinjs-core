@@ -2,6 +2,30 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "2.4.0",
+      "tag": "@bentley/ui-ninezone_v2.4.0",
+      "date": "Tue, 28 Jul 2020 16:26:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Contain floating widget bounds."
+          },
+          {
+            "comment": "Ability to provide title for dock tool settings button."
+          },
+          {
+            "comment": "Persist floating widget size."
+          },
+          {
+            "comment": "Add send home button to floating widgets."
+          },
+          {
+            "comment": "Use Popup components for widget overflow and tool settings overflow popups."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.3.3",
       "tag": "@bentley/ui-ninezone_v2.3.3",
       "date": "Thu, 23 Jul 2020 12:57:15 GMT",

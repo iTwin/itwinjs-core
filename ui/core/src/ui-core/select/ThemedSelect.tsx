@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import Component, { components } from "react-select";
+import classnames from "classnames";
 import { getParentSelector } from "./modalHelper";
 import { MenuProps } from "react-select/src/components/Menu";
 import { ActionMeta, FocusEventHandler, InputActionMeta, KeyboardEventHandler, ValueType } from "react-select/src/types";
@@ -43,6 +44,10 @@ export type OptionsType = Array<OptionType>;
  * @beta
  */
 export type ThemedSelectProps = {
+  /* Aria label (for assistive tech) */
+  "aria-label"?: string,
+  /* HTML ID of an element that should be used as the label (for assistive tech) */
+  "aria-labelledby"?: string,
   /* Focus the control when it is mounted */
   autoFocus?: boolean,
   /* Remove the currently focused option when the user presses backspace */
@@ -51,6 +56,8 @@ export type ThemedSelectProps = {
   blurInputOnSelect?: boolean,
   /* When the user reaches the top/bottom of the menu, prevent scroll on the scroll-parent  */
   captureMenuScroll?: boolean,
+  /* Sets a className attribute on the outer component */
+  className?: string,
   /* Close the select menu when the user selects an option */
   closeMenuOnSelect?: boolean,
   /*
@@ -96,7 +103,7 @@ export type ThemedSelectProps = {
 */
   formatGroupLabel?: typeof formatGroupLabel,
   /* Formats option labels in the menu and control as React components */
-  formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => Node,
+  formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => React.ReactNode,
   /* Resolves option data to a string to be displayed as the label by components */
   getOptionLabel?: typeof getOptionLabel,
   /* Resolves option data to a string to compare options and specify value attributes */
@@ -192,7 +199,7 @@ const ThemedMenu = (props: MenuProps<any>) => { // tslint:disable-line:variable-
  * @beta
  */
 export function ThemedSelect(props: ThemedSelectProps) {
-  const noOptionLabel = React.useRef<string|undefined>();
+  const noOptionLabel = React.useRef<string | undefined>();
   const defaultOptionMessage = React.useCallback(() => {
     if (!noOptionLabel.current) {
       noOptionLabel.current = UiCore.translate("reactselect.noSelectOption");
@@ -200,6 +207,7 @@ export function ThemedSelect(props: ThemedSelectProps) {
     return noOptionLabel.current;
   }, [noOptionLabel]);
   const noOptionFunction = props.noOptionsMessage ?? defaultOptionMessage;
+  const className = classnames("uicore-reactSelectTop", props.className);
   const portalTarget = !!props.isMenuFixed ? undefined : getParentSelector();
   const {
     classNamePrefix, noOptionsMessage, menuPortalTarget, isMenuFixed, styles, components,
@@ -207,7 +215,7 @@ export function ThemedSelect(props: ThemedSelectProps) {
   } = props as any;
   const zIndex = getCssVariableAsNumber("--uicore-z-index-dialog-popup");
   return (
-    <div className="uicore-reactSelectTop">
+    <div className={className}>
       <Component
         classNamePrefix="react-select"
         noOptionsMessage={noOptionFunction}

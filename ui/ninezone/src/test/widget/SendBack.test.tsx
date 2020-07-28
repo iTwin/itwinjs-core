@@ -5,39 +5,33 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { ActiveTabIdContext, NineZoneDispatch, NineZoneDispatchContext, SendBack, WidgetIdContext } from "../../ui-ninezone";
+import { createFloatingWidgetState, FloatingWidgetContext, NineZoneDispatch, NineZoneDispatchContext, SendBack } from "../../ui-ninezone";
 
 describe("SendBack", () => {
   it("should render", () => {
     const { container } = render(
-      <ActiveTabIdContext.Provider value="nz-tool-settings-tab">
-        <WidgetIdContext.Provider value="w1">
-          <SendBack />
-        </WidgetIdContext.Provider>
-      </ActiveTabIdContext.Provider>,
+      <FloatingWidgetContext.Provider value={createFloatingWidgetState("w1")}>
+        <SendBack />
+      </FloatingWidgetContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
 
-  it("should dispatch WIDGET_SEND_BACK", () => {
+  it("should dispatch TOOL_SETTINGS_DOCK", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     const { container } = render(
       <NineZoneDispatchContext.Provider value={dispatch}>
-        <ActiveTabIdContext.Provider value="nz-tool-settings-tab">
-          <WidgetIdContext.Provider value="w1">
-            <SendBack />
-          </WidgetIdContext.Provider>
-        </ActiveTabIdContext.Provider>
+        <FloatingWidgetContext.Provider value={createFloatingWidgetState("w1")}>
+          <SendBack />
+        </FloatingWidgetContext.Provider>,
       </NineZoneDispatchContext.Provider>,
     );
     const button = container.getElementsByClassName("nz-widget-sendBack")[0];
     fireEvent.click(button);
 
     dispatch.calledOnceWithExactly({
-      type: "WIDGET_SEND_BACK",
-      floatingWidgetId: undefined,
-      side: undefined,
-      widgetId: "w1",
+      type: "FLOATING_WIDGET_SEND_BACK",
+      id: "w1",
     }).should.true;
   });
 });

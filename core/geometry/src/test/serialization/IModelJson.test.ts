@@ -17,7 +17,8 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { IndexedPolyface } from "../../polyface/Polyface";
-
+// cspell:word geomlibs
+// cspell:word BSIJSON
 // directory containing imjs files produced by native geomlibs tests:
 const iModelJsonNativeSamplesDirectory = "./src/test/iModelJsonSamples/fromNative/";
 // directory containing imjs files produced by prior executions of this test file:
@@ -177,7 +178,7 @@ describe("CreateIModelJsonSamples", () => {
     expect(ck.getNumErrors()).equals(0);
 
   });
-  // exericse the secondary ArcBy3Points property, with various point formats . ..
+  // exercise the secondary ArcBy3Points property, with various point formats . ..
   it("ArcByStartMiddleEnd", () => {
     const ck = new Checker();
     const json = {
@@ -270,7 +271,7 @@ describe("CreateIModelJsonSamples", () => {
         }
       }
       if (Checker.noisy.printJSONSuccess) {
-        console.log(" imjs => geoemtry files from " + sourceDirectory);
+        console.log(" imjs => geometry files from " + sourceDirectory);
         console.log("*************** " + numValuePassed + " files passed out of " + numItems + " checked");
       }
     }

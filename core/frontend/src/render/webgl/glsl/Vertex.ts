@@ -124,7 +124,7 @@ export function addNormalMatrix(vert: VertexShaderBuilder) {
   vert.addUniform("u_frustumScale", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_frustumScale", (uniform, params) => {
       const scale = params.target.uniforms.branch.top.frustumScale;
-      uniform.setUniform2fv([ scale.x, scale.y ]);
+      uniform.setUniform2fv([scale.x, scale.y]);
     });
   });
 

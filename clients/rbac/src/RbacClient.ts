@@ -29,6 +29,7 @@ export class Permission extends WsgInstance {
 
 /** iModelHub Permission
  * @internal
+ * @deprecated IModelHub permissions checking logic moved to @bentley/imodelhub-client package, PermissionHandler class
  */
 export enum IModelHubPermission {
   None = 0,
@@ -38,13 +39,15 @@ export enum IModelHubPermission {
   Delete = 1 << 3,
   ManageResources = 1 << 4,
   ManageVersions = 1 << 5,
+  View = 1 << 6,
+  ConfigureIModelAccess = 1 << 7,
 }
 
 /** Client API to access the iTwin services.
  * @internal
  */
 export class RbacClient extends WsgClient {
-  public static readonly searchKey: string = "RBAC.URL";
+  public static readonly searchKey: string = "RBAC.Url.APIM";
   public static readonly configRelyingPartyUri = "imjs_rbac_relying_party_uri";
 
   public constructor() {
@@ -88,7 +91,7 @@ export class RbacClient extends WsgClient {
     if (!userInfo)
       throw new Error("Invalid access token");
 
-    const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userInfo.id + "/Project";
+    const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userInfo.id + "/Context";
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     requestContext.enter();
 
@@ -102,6 +105,76 @@ export class RbacClient extends WsgClient {
       },
     };
 
+    return this.executePermissionsRequest(requestContext, url, options);
+  }
+
+  /**
+   * Get the permissions of the specified object
+   * @param requestContext The client request context.
+   * @param objectId Id of the specified object.
+   * @param objectTypeId ObjectType Id of the specified object.
+   */
+  public async getObjectPermissions(requestContext: AuthorizedClientRequestContext, objectId: string, objectTypeId: string): Promise<Permission[]> {
+    requestContext.enter();
+
+    const userInfo = requestContext.accessToken.getUserInfo();
+    if (!userInfo)
+      throw new Error("Invalid access token");
+
+    const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userInfo.id + "/Object";
+    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    requestContext.enter();
+
+    const filterStr = `$id+eq+'${objectId}'+and+typeid+eq+'${objectTypeId}'`;
+    const options: any = {
+      method: "GET",
+      headers: { authorization: requestContext.accessToken.toTokenString() },
+      qs: {
+        $select: "Permission.*",
+        $filter: filterStr,
+      },
+    };
+
+    return this.executePermissionsRequest(requestContext, url, options);
+  }
+
+  /**
+   * Get the ObjectType Id for the given service
+   * @param requestContext The client request context.
+   * @param objectTypeName ObjectType name.
+   * @param serviceGPRId GPR Id of the service.
+   */
+  public async getObjectTypeId(requestContext: AuthorizedClientRequestContext, objectTypeName: string, serviceGPRId: number): Promise<string> {
+    requestContext.enter();
+
+    const userInfo = requestContext.accessToken.getUserInfo();
+    if (!userInfo)
+      throw new Error("Invalid access token");
+
+    const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/ObjectType";
+    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    requestContext.enter();
+
+    const filterStr = `Name+eq+'${objectTypeName}'+and+ServiceGPRId+eq+${serviceGPRId}`;
+    const options: any = {
+      method: "GET",
+      headers: { authorization: requestContext.accessToken.toTokenString() },
+      qs: {
+        $filter: filterStr,
+      },
+    };
+
+    const instances = await this.executeRequest(requestContext, url, options);
+    requestContext.enter();
+
+    return instances[0].instanceId;
+  }
+
+  /**
+   * Execute request to RBAC expecting exactly one result instance.
+   */
+  private async executeRequest(requestContext: AuthorizedClientRequestContext, url: string, options: any): Promise<any> {
+    requestContext.enter();
     await this.setupOptionDefaults(options);
 
     const res: Response = await request(requestContext, url, options);
@@ -111,8 +184,22 @@ export class RbacClient extends WsgClient {
       throw new Error("Expected an array of instances to be returned");
 
     const instances = res.body.instances;
-    if (!instances || instances.length !== 1)
-      throw new Error("Project with specified id was not found");
+    if (!instances)
+      throw new Error("Instances array is empty");
+    if (instances.length !== 1)
+      throw new Error("Instances array must have exactly 1 result");
+
+    return instances;
+  }
+
+  /**
+   * Execute request to RBAC and parse Permissions.
+   */
+  private async executePermissionsRequest(requestContext: AuthorizedClientRequestContext, url: string, options: any): Promise<Permission[]> {
+    requestContext.enter();
+
+    const instances = await this.executeRequest(requestContext, url, options);
+    requestContext.enter();
 
     const permissions: Permission[] = new Array<Permission>();
     for (const relationshipInstance of instances[0].relationshipInstances) {
@@ -128,7 +215,9 @@ export class RbacClient extends WsgClient {
    * Get the permissions relevant to iModelHub for a specified project
    * @param requestContext The client request context.
    * @param projectId Id of the specified project.
+   * @deprecated This method does not accommodate new permissions per iModel logic. Use [[IModelHubClient.permissions]] methods to get context or iModel permissions.
    */
+  // tslint:disable-next-line: deprecation
   public async getIModelHubPermissions(requestContext: AuthorizedClientRequestContext, projectId: GuidString): Promise<IModelHubPermission> {
     requestContext.enter();
 
@@ -136,32 +225,39 @@ export class RbacClient extends WsgClient {
     const permissionInstances: Permission[] = await this.getPermissions(requestContext, projectId, iModelHubServiceGPRId);
     requestContext.enter();
 
+    // tslint:disable:deprecation
     let permissions: IModelHubPermission = IModelHubPermission.None;
     for (const permissionInstance of permissionInstances) {
       switch (permissionInstance.instanceId) {
         case "IMHS_Create_iModel":
-          permissions = permissions | IModelHubPermission.Create;
+          permissions = permissions | IModelHubPermission.Create | IModelHubPermission.View | IModelHubPermission.Read | IModelHubPermission.Modify;
           break;
         case "IMHS_Read_iModel":
-          permissions = permissions | IModelHubPermission.Read;
+          permissions = permissions | IModelHubPermission.Read | IModelHubPermission.View;
           break;
         case "IMHS_Modify_iModel":
-          permissions = permissions | IModelHubPermission.Modify;
+          permissions = permissions | IModelHubPermission.Modify | IModelHubPermission.View | IModelHubPermission.Read;
           break;
         case "IMHS_Delete_iModel":
-          permissions = permissions | IModelHubPermission.Delete;
+          permissions = permissions | IModelHubPermission.Delete | IModelHubPermission.View | IModelHubPermission.Read;
           break;
         case "IMHS_ManageResources":
-          permissions = permissions | IModelHubPermission.ManageResources;
+          permissions = permissions | IModelHubPermission.ManageResources | IModelHubPermission.View | IModelHubPermission.Read | IModelHubPermission.Modify;
           break;
         case "IMHS_Manage_Versions":
-          permissions = permissions | IModelHubPermission.ManageVersions;
+          permissions = permissions | IModelHubPermission.ManageVersions | IModelHubPermission.View | IModelHubPermission.Read | IModelHubPermission.Modify;
+          break;
+        case "IMHS_Web_View":
+          permissions = permissions | IModelHubPermission.View;
+          break;
+        case "IMHS_iModel_Perm":
+          permissions = permissions | IModelHubPermission.ConfigureIModelAccess;
           break;
         default:
       }
     }
+    // tslint:enable:deprecation
 
     return permissions;
   }
-
 }

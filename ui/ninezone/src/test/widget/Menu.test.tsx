@@ -8,7 +8,7 @@ import { render } from "@testing-library/react";
 import { WidgetMenu } from "../../ui-ninezone";
 import { createDOMRect } from "../Utils";
 
-describe("WidgetPanelWidgetMenu ", () => {
+describe("WidgetMenu ", () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(() => {
@@ -16,13 +16,16 @@ describe("WidgetPanelWidgetMenu ", () => {
   });
 
   it("should render", () => {
-    const { container } = render(
-      <WidgetMenu>
+    render(
+      <WidgetMenu
+        open
+      >
         <div>A</div>
         <div>B</div>
       </WidgetMenu>,
     );
-    container.firstChild!.should.matchSnapshot();
+    const menu = document.getElementsByClassName("nz-widget-menu")[0];
+    menu.should.matchSnapshot();
   });
 
   it("should render to right", () => {
@@ -31,13 +34,16 @@ describe("WidgetPanelWidgetMenu ", () => {
       left: 49,
     });
     sandbox.stub(document.body, "clientWidth").get(() => 100);
-    const { container } = render(
-      <WidgetMenu>
+    render(
+      <WidgetMenu
+        open
+      >
         <div>A</div>
         <div>B</div>
       </WidgetMenu>,
     );
-    container.firstChild!.should.matchSnapshot();
+    const menu = document.getElementsByClassName("nz-widget-menu")[0];
+    menu.should.matchSnapshot();
   });
 
   it("should render to bottom", () => {
@@ -46,12 +52,15 @@ describe("WidgetPanelWidgetMenu ", () => {
       top: 49,
     });
     sandbox.stub(document.body, "clientHeight").get(() => 100);
-    const { container } = render(
-      <WidgetMenu>
+    render(
+      <WidgetMenu
+        open
+      >
         <div>A</div>
         <div>B</div>
       </WidgetMenu>,
     );
-    container.firstChild!.should.matchSnapshot();
+    const menu = document.getElementsByClassName("nz-widget-menu")[0];
+    menu.should.matchSnapshot();
   });
 });

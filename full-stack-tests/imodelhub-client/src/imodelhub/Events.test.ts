@@ -87,6 +87,7 @@ function mockDeleteEventSubscription(imodelId: GuidString, subscriptionId: strin
 }
 
 describe("iModelHub EventHandler", () => {
+  let contextId: string;
   let imodelId: GuidString;
   let subscription: EventSubscription;
   let briefcaseId: number;
@@ -100,9 +101,15 @@ describe("iModelHub EventHandler", () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    await utils.createIModel(requestContext, imodelName);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
+    contextId = await utils.getProjectId(requestContext);
+    await utils.createIModel(requestContext, imodelName, contextId);
+    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
     briefcaseId = (await utils.getBriefcases(requestContext, imodelId, 1))[0].briefcaseId!;
+  });
+
+  after(async () => {
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 
   afterEach(() => {

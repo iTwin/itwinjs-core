@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/map-layers",
+  "entries": [
+    {
+      "version": "2.4.0",
+      "tag": "@bentley/map-layers_v2.4.0",
+      "date": "Tue, 28 Jul 2020 16:26:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add map-layer extension that can also be used as a package. Adds 'Map Layers' widget."
+          }
+        ]
+      }
+    }
+  ]
+}

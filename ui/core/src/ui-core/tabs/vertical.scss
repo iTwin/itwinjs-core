@@ -35,6 +35,11 @@
         background-clip:    content-box;
         box-sizing:         border-box;
       }
+
+      &:focus {
+        background-color: $buic-background-active-overlay;
+        outline: none;
+      }
     }
 
     &.core-active {
@@ -42,15 +47,9 @@
 
         color:              $buic-foreground-primary;
         background-color:   $buic-background-tab-active;
-      }
-    }
-  }
 
-  &:focus {
-    > li {
-      &.core-active {
-        > a {
-          background-color: $buic-background-focus-overlay;
+        &:focus {
+          background-color: $buic-background-active-overlay;
         }
       }
     }

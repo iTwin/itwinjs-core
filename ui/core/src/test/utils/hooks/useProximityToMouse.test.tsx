@@ -7,18 +7,23 @@ import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateProximityScale, calculateToolbarOpacity, getToolbarBackdropFilter,
-  getToolbarBackgroundColor, getToolbarBoxShadow, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
-  useProximityToMouse,
+  calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateProximityScale, calculateToolbarOpacity,
+  getToolbarBackdropFilter, getToolbarBackgroundColor, getToolbarBoxShadow,
+  TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
+  useProximityToMouse, WidgetElementSet,
 } from "../../../ui-core/utils/hooks/useProximityToMouse";
+import { TestUtils } from "../../TestUtils";
 
 // tslint:disable-next-line: variable-name
 const ProximityToMouse = (props: { children?: (proximity: number) => React.ReactNode }) => {
   const ref = React.useRef<HTMLDivElement>(null);
-  const proximity = useProximityToMouse(ref);
+  const elementSet = new WidgetElementSet();
+  elementSet.add(ref);
+  useProximityToMouse(elementSet, true);
+
   return (
     <div ref={ref} >
-      {props.children && props.children(proximity)}
+      {props.children}
     </div>
   );
 };
@@ -45,14 +50,14 @@ describe("useProximityToMouse", () => {
     spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
   });
 
-  it("should add event listeners", () => {
-    const spy = sandbox.spy(document, "addEventListener");
+  it("should trigger useEffect handler processing", () => {
     const sut = mount(<ProximityToMouse />);
 
     // trigger useEffect handler processing
-    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 90 }));
+    document.dispatchEvent(TestUtils.createBubbledEvent("pointermove", { pageX: 50, pageY: 50 }));
+    document.dispatchEvent(TestUtils.createBubbledEvent("pointermove", { pageX: 60, pageY: 60 }));
+    document.dispatchEvent(TestUtils.createBubbledEvent("pointermove", { pageX: 150, pageY: 110 }));
 
-    spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
     sut.unmount();
   });
 });
@@ -62,14 +67,20 @@ describe("calculateProximityScale", () => {
     let proximityScale = calculateProximityScale(50);
     expect(proximityScale).to.eq(0.50);
 
-    proximityScale = calculateProximityScale(50, 100);
+    proximityScale = calculateProximityScale(50, false, 100);
     expect(proximityScale).to.eq(0.50);
 
-    proximityScale = calculateProximityScale(100, 200);
+    proximityScale = calculateProximityScale(100, false, 200);
     expect(proximityScale).to.eq(0.50);
 
-    proximityScale = calculateProximityScale(100, 60);
+    proximityScale = calculateProximityScale(100, false, 60);
     expect(proximityScale).to.eq(0.0);
+
+    proximityScale = calculateProximityScale(50, true, 100);
+    expect(proximityScale).to.eq(1.0);
+
+    proximityScale = calculateProximityScale(200, true, 100);
+    expect(proximityScale).to.eq(0);
   });
 });
 

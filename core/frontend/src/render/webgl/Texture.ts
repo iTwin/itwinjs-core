@@ -74,12 +74,12 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-    if (params.anisotropicFilter)
-      System.instance.setMaxAnisotropy(params.anisotropicFilter);
   } else {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);
+  }
+  if (params.anisotropicFilter) {
+    System.instance.setMaxAnisotropy(params.anisotropicFilter);
   }
 
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, params.wrapMode);
@@ -231,7 +231,7 @@ class Texture2DCreateParams {
     }
 
     return new Texture2DCreateParams(targetWidth, targetHeight, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
-      (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, element), props.useMipMaps, props.interpolate);
+      (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, element), props.useMipMaps, props.interpolate, props.anisotropicFilter);
   }
 
   private static getImageProperties(isTranslucent: boolean, type: RenderTexture.Type): TextureImageProperties {
@@ -242,7 +242,7 @@ class Texture2DCreateParams {
     const maxAnisotropicFilterLevel = 16;
 
     const wrapMode = RenderTexture.Type.Normal === type ? GL.Texture.WrapMode.Repeat : GL.Texture.WrapMode.ClampToEdge;
-    const useMipMaps: TextureFlag = (!isSky && !isTile && !isThematic) ? true : undefined;
+    const useMipMaps: TextureFlag = (!isSky && !isTile && !isFilteredTile && !isThematic) ? true : undefined;
     const interpolate: TextureFlag = isThematic ? undefined : true;
     const format = isTranslucent ? GL.Texture.Format.Rgba : GL.Texture.Format.Rgb;
     const anisotropicFilter = isFilteredTile ? maxAnisotropicFilterLevel : undefined;

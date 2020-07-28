@@ -81,8 +81,17 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public abstract get viewRect(): ViewRect;
 
   public get devicePixelRatio(): number { return 1; }
-  public cssPixelsToDevicePixels(cssPixels: number): number {
-    return Math.floor(cssPixels * this.devicePixelRatio);
+  public cssPixelsToDevicePixels(cssPixels: number, floor = true): number {
+    const pix = cssPixels * this.devicePixelRatio;
+    return floor ? Math.floor(pix) : pix;
+  }
+
+  /** Given the size of a logical pixel in meters, convert it to the size of a physical pixel in meters, if [[RenderSystem.dpiAwareLOD]] is `true`.
+   * Used when computing LOD for graphics.
+   * @internal
+   */
+  public adjustPixelSizeForLOD(cssPixelSize: number): number {
+    return this.renderSystem.dpiAwareLOD ? this.cssPixelsToDevicePixels(cssPixelSize, false) : cssPixelSize;
   }
 
   public abstract get wantInvertBlackBackground(): boolean;
@@ -92,6 +101,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
 
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
   public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
+
+  public get antialiasSamples(): number { return 1; }
+  public set antialiasSamples(_numSamples: number) { }
 
   /** Update the solar shadow map. If a SceneContext is supplied, shadows are enabled; otherwise, shadows are disabled. */
   public updateSolarShadows(_context: SceneContext | undefined): void { }

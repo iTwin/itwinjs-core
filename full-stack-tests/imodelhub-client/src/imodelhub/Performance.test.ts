@@ -6,8 +6,10 @@ import { GuidString, Id64, Logger } from "@bentley/bentleyjs-core";
 import { Briefcase, CodeQuery, CodeState, HubCode, IModelClient, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
 import { AccessToken, AuthenticationError, AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
 import * as utils from "./TestUtils";
+import { TestConfig } from "../TestConfig";
 
 describe.skip("iModelHub Performance tests", () => {
+  let contextId: string;
   let imodelId: GuidString;
   const imodelName = "imodeljs-clients Performance test";
   let briefcase1: Briefcase;
@@ -19,8 +21,9 @@ describe.skip("iModelHub Performance tests", () => {
     const accessToken: AccessToken = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    await utils.createIModel(requestContext, imodelName, undefined, recreate);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
+    contextId = await utils.getProjectId(requestContext);
+    await utils.createIModel(requestContext, imodelName, contextId, recreate);
+    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
     const briefcases = await utils.getBriefcases(requestContext, imodelId, 2);
     briefcase1 = briefcases[0];
     briefcase2 = briefcases[1];
@@ -28,6 +31,11 @@ describe.skip("iModelHub Performance tests", () => {
 
   before(async () => {
     await setup(true);
+  });
+
+  after(async () => {
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 
   async function reserveCodes(statingCount: number, count: number, perRequest: number, briefcase: Briefcase, codeScope: string) {

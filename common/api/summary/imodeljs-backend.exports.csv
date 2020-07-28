@@ -192,6 +192,7 @@ beta;IModelImportOptions
 internal;IModelJsAdditionalFeatureData 
 public;IModelJsFs
 public;IModelJsFsStats
+alpha;IModelSchemaLoader
 beta;IModelTransformer 
 beta;IModelTransformOptions
 internal;class InformationCarrierElement 

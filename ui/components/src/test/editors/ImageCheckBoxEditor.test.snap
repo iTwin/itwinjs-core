@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<ImageCheckBoxEditor /> renders correctly 1`] = `
+<ImageCheckBox
+  border={true}
+  checked={false}
+  className="components-cell-editor components-imagecheckbox-editor"
+  data-testid="components-imagecheckbox-editor"
+  imageOff=""
+  imageOn=""
+  onClick={[Function]}
+/>
+`;

@@ -18,6 +18,7 @@ import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetProvider } from "./Widget";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
+import { CssProperties } from "../utilities/Css";
 
 /** @internal */
 export type FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom";
@@ -33,15 +34,13 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
   const { id, bounds } = props.floatingWidget;
   const { minimized } = props.widget;
   const style = React.useMemo(() => {
-    const { left, top } = bounds;
     const boundsRect = Rectangle.create(bounds);
-    const height = boundsRect.getHeight();
-    const width = boundsRect.getWidth();
+    const { height, width } = boundsRect.getSize();
+    const position = boundsRect.topLeft();
     return {
+      ...CssProperties.transformFromPosition(position),
       height: minimized ? undefined : height,
       width,
-      left,
-      top,
     };
   }, [bounds, minimized]);
   const className = React.useMemo(() => classnames(
@@ -49,14 +48,16 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
   ), [minimized]);
   return (
     <FloatingWidgetIdContext.Provider value={id}>
-      <WidgetProvider
-        widget={props.widget}
-      >
-        <FloatingWidgetComponent
-          className={className}
-          style={style}
-        />
-      </WidgetProvider>
+      <FloatingWidgetContext.Provider value={props.floatingWidget}>
+        <WidgetProvider
+          widget={props.widget}
+        >
+          <FloatingWidgetComponent
+            className={className}
+            style={style}
+          />
+        </WidgetProvider>
+      </FloatingWidgetContext.Provider>
     </FloatingWidgetIdContext.Provider>
   );
 });
@@ -64,6 +65,10 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
 /** @internal */
 export const FloatingWidgetIdContext = React.createContext<FloatingWidgetState["id"] | undefined>(undefined); // tslint:disable-line: variable-name
 FloatingWidgetIdContext.displayName = "nz:FloatingWidgetIdContext";
+
+/** @internal */
+export const FloatingWidgetContext = React.createContext<FloatingWidgetState | undefined>(undefined); // tslint:disable-line: variable-name
+FloatingWidgetContext.displayName = "nz:FloatingWidgetContext";
 
 const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // tslint:disable-line: no-shadowed-variable variable-name
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);

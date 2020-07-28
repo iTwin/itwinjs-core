@@ -754,7 +754,8 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   }
 
   public supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: MeasureAreaByPointsTool._orientationName, value: this._orientationValue });
+    const initialValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, MeasureAreaByPointsTool._orientationName);
+    initialValue && (this._orientationValue = initialValue);
     const toolSettings = new Array<DialogItem>();
     toolSettings.push({ value: this._orientationValue, property: MeasureAreaByPointsTool._getEnumAsOrientationDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
     return toolSettings;

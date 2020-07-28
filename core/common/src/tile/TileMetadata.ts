@@ -52,6 +52,17 @@ export interface TileOptions {
 }
 
 /** @internal */
+export const defaultTileOptions: TileOptions = Object.freeze({
+  maximumMajorTileFormatVersion: CurrentImdlVersion.Major,
+  enableInstancing: true,
+  enableImprovedElision: true,
+  ignoreAreaPatterns: false,
+  useProjectExtents: true,
+  disableMagnification: false,
+  alwaysSubdivideIncompleteTiles: false,
+});
+
+/** @internal */
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number {
   // The `formatVersion` input is from the backend, telling us precisely the maximum major+minor version it can produce.
   // Ensure we do not request tiles of a newer major version than backend can supply or it can read; and also limit major version

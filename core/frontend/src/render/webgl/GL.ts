@@ -213,7 +213,6 @@ export namespace GL {
 
     export enum Format {
       DepthComponent16 = WebGLRenderingContext.DEPTH_COMPONENT16,
-      // Currently this is the only supported format
     }
   }
 
@@ -232,6 +231,13 @@ export namespace GL {
     Color = WebGLRenderingContext.COLOR_BUFFER_BIT,
     Depth = WebGLRenderingContext.DEPTH_BUFFER_BIT,
     Stencil = WebGLRenderingContext.STENCIL_BUFFER_BIT,
+  }
+
+  export namespace MultiSampling {
+    export enum Filter {
+      Nearest = WebGLRenderingContext.NEAREST,
+      Linear = WebGLRenderingContext.LINEAR,
+    }
   }
 
   export const POLYGON_OFFSET_FILL = WebGLRenderingContext.POLYGON_OFFSET_FILL;

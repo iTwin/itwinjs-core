@@ -631,6 +631,10 @@
           ],
           "type": "string"
         },
+        "suppressSimilarAncestorsCheck": {
+          "description": "Suppress similar ancestor nodes' checking when creating nodes based on this specification.\n\nBy default we stop creating hierarchy at the node that has a similar ancestor representing\nthe same ECInstance and created using the same specification to prevent creating infinite\nhierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider\nthe hierarchy infinite.",
+          "type": "boolean"
+        },
         "type": {
           "description": "Type of the node.",
           "type": "string"
@@ -725,6 +729,10 @@
             "CustomQueryInstanceNodes"
           ],
           "type": "string"
+        },
+        "suppressSimilarAncestorsCheck": {
+          "description": "Suppress similar ancestor nodes' checking when creating nodes based on this specification.\n\nBy default we stop creating hierarchy at the node that has a similar ancestor representing\nthe same ECInstance and created using the same specification to prevent creating infinite\nhierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider\nthe hierarchy infinite.",
+          "type": "boolean"
         }
       },
       "required": [
@@ -804,6 +812,10 @@
         "supportedSchemas": {
           "$ref": "#/definitions/SchemasSpecification",
           "description": "Specification of schemas whose instances should be returned."
+        },
+        "suppressSimilarAncestorsCheck": {
+          "description": "Suppress similar ancestor nodes' checking when creating nodes based on this specification.\n\nBy default we stop creating hierarchy at the node that has a similar ancestor representing\nthe same ECInstance and created using the same specification to prevent creating infinite\nhierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider\nthe hierarchy infinite.",
+          "type": "boolean"
         }
       },
       "required": [
@@ -897,6 +909,10 @@
         "supportedSchemas": {
           "$ref": "#/definitions/SchemasSpecification",
           "description": "Specification of schemas whose instances should be returned."
+        },
+        "suppressSimilarAncestorsCheck": {
+          "description": "Suppress similar ancestor nodes' checking when creating nodes based on this specification.\n\nBy default we stop creating hierarchy at the node that has a similar ancestor representing\nthe same ECInstance and created using the same specification to prevent creating infinite\nhierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider\nthe hierarchy infinite.",
+          "type": "boolean"
         }
       },
       "required": [
@@ -1225,6 +1241,10 @@
             "type": "string"
           },
           "type": "array"
+        },
+        "suppressSimilarAncestorsCheck": {
+          "description": "Suppress similar ancestor nodes' checking when creating nodes based on this specification.\n\nBy default we stop creating hierarchy at the node that has a similar ancestor representing\nthe same ECInstance and created using the same specification to prevent creating infinite\nhierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider\nthe hierarchy infinite.",
+          "type": "boolean"
         }
       },
       "required": [
@@ -1356,7 +1376,7 @@
           "description": "Specifications of related ECClasses. Optional if `relationships` is specified."
         },
         "relationshipMeaning": {
-          "description": "Meaning of the relationship. Defaults to `RelationshipMeaning.RelatedInstance`",
+          "description": "Meaning of the relationship which tells how to categorize the related properties. Defaults to `RelationshipMeaning.RelatedInstance`.",
           "enum": [
             "RelatedInstance",
             "SameInstance"
@@ -1907,6 +1927,10 @@
             "InstanceNodesOfSpecificClasses"
           ],
           "type": "string"
+        },
+        "suppressSimilarAncestorsCheck": {
+          "description": "Suppress similar ancestor nodes' checking when creating nodes based on this specification.\n\nBy default we stop creating hierarchy at the node that has a similar ancestor representing\nthe same ECInstance and created using the same specification to prevent creating infinite\nhierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider\nthe hierarchy infinite.",
+          "type": "boolean"
         }
       },
       "required": [
@@ -2447,6 +2471,10 @@
             "RelatedInstanceNodes"
           ],
           "type": "string"
+        },
+        "suppressSimilarAncestorsCheck": {
+          "description": "Suppress similar ancestor nodes' checking when creating nodes based on this specification.\n\nBy default we stop creating hierarchy at the node that has a similar ancestor representing\nthe same ECInstance and created using the same specification to prevent creating infinite\nhierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider\nthe hierarchy infinite.",
+          "type": "boolean"
         }
       },
       "required": [
@@ -2540,7 +2568,7 @@
           "description": "Relationship path from content class to properties' class."
         },
         "relationshipMeaning": {
-          "description": "Meaning of the relationship. Defaults to `RelationshipMeaning.RelatedInstance`",
+          "description": "Meaning of the relationship which tells how to categorize the related properties. Defaults to `RelationshipMeaning.RelatedInstance`.",
           "enum": [
             "RelatedInstance",
             "SameInstance"

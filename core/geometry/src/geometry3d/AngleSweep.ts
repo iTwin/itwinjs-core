@@ -42,6 +42,18 @@ export class AngleSweep implements BeJSONFunctions {
   public get startAngle() { return Angle.createRadians(this._radians0); }
   /** Return the (strongly typed) end angle */
   public get endAngle() { return Angle.createRadians(this._radians1); }
+  /** Create a sweep as one of
+   * * A clone of a given sweep
+   * * 0 to given angle
+   * * full circle if no arg given (sweep 0 to 360 degrees)
+   */
+  public static create(data?: AngleSweep | Angle): AngleSweep {
+    if (data instanceof AngleSweep)
+      return data.clone();
+    if (data instanceof Angle)
+      return new AngleSweep(0, data.radians);
+    return AngleSweep.create360();
+  }
   /** (private) constructor with start and end angles in radians.
    *  * Use explicitly named static methods to clarify intent and units of inputs:
    *

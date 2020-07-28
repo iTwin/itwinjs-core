@@ -148,11 +148,13 @@ export class FeatureOverrides implements WebGLDisposable {
       const feature = map.getPackedFeature(i);
       const dataIndex = i * 4 * 2;
 
-      const app = ovr.getAppearance(
+      const app = this.target.currentBranch.getFeatureAppearance(
+        ovr,
         feature.elementId.lower, feature.elementId.upper,
         feature.subCategoryId.lower, feature.subCategoryId.upper,
         feature.geometryClass,
-        modelIdParts.lower, modelIdParts.upper, map.type, feature.animationNodeId);
+        modelIdParts.lower, modelIdParts.upper,
+        map.type, feature.animationNodeId);
 
       // NB: If the appearance is fully transparent, then:
       //  - For normal ("primary") models, getAppearance() returns undefined.

@@ -50,6 +50,7 @@
     background-color: $buic-background-control-disabled;
     color: $buic-text-color-disabled;
     cursor: not-allowed;
+    opacity: $uicore-opacity-disabled;
   }
 
   &:focus {

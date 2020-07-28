@@ -490,7 +490,7 @@ export class BriefcaseManager {
         }
         // Validate that the briefcase id is set to standalone
         if (briefcaseId !== BriefcaseIdValue.Standalone) {
-          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOffline: The briefcase found is not valid", Logger.logError, loggerCategory, () => ({
+          throw new IModelError(BentleyStatus.ERROR, "BriefcaseManager.initializeBriefcaseOfline: The briefcase found is not valid", Logger.logError, loggerCategory, () => ({
             pathname: bcPathname, syncMode, briefcaseId,
           }));
         }

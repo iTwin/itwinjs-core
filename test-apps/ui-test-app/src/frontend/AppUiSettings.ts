@@ -13,6 +13,7 @@ export class AppUiSettings {
   public colorTheme: UiSetting<string>;
   public autoHideUi: UiSetting<boolean>;
   public useProximityOpacity: UiSetting<boolean>;
+  public snapWidgetOpacity: UiSetting<boolean>;
   public dragInteraction: UiSetting<boolean>;
   public frameworkVersion: UiSetting<string>;
 
@@ -29,6 +30,10 @@ export class AppUiSettings {
     this.useProximityOpacity = new UiSetting<boolean>(AppUiSettings._settingNamespace, "UseProximityOpacity",
       () => UiShowHideManager.useProximityOpacity, (value: boolean) => UiShowHideManager.useProximityOpacity = value);
     this._settings.push(this.useProximityOpacity);
+
+    this.snapWidgetOpacity = new UiSetting<boolean>(AppUiSettings._settingNamespace, "snapWidgetOpacity",
+      () => UiShowHideManager.snapWidgetOpacity, (value: boolean) => UiShowHideManager.snapWidgetOpacity = value);
+    this._settings.push(this.snapWidgetOpacity);
 
     this.dragInteraction = new UiSetting<boolean>(AppUiSettings._settingNamespace, "DragInteraction",
       () => SampleAppIModelApp.store.getState().sampleAppState.dragInteraction,

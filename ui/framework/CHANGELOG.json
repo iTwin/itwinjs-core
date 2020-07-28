@@ -2,6 +2,36 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.4.0",
+      "tag": "@bentley/ui-framework_v2.4.0",
+      "date": "Tue, 28 Jul 2020 16:26:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed size of Checkbox & cursor for ViewAttributes checkboxes"
+          },
+          {
+            "comment": "Map Layer UX"
+          },
+          {
+            "comment": "Update 2.0 fronstage logic to monitor extensions and refresh widgets."
+          },
+          {
+            "comment": "Changed toolbar opacity processing to affect all components in widget."
+          },
+          {
+            "comment": "Fix stage panel initialization when defaultState is Off."
+          },
+          {
+            "comment": "Address LGTM warnings in UI code."
+          },
+          {
+            "comment": "Remove not found widget tabs when restoring layout."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.3.3",
       "tag": "@bentley/ui-framework_v2.3.3",
       "date": "Thu, 23 Jul 2020 12:57:15 GMT",

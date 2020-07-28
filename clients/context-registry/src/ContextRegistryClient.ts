@@ -14,6 +14,7 @@ import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQ
  */
 export enum ContextType {
   Unknown,
+  Team = 1,
   Asset = 2,
   Project = 3,
 }
@@ -25,9 +26,6 @@ export enum ContextType {
 export class Context extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ContextTypeId")
   public contextTypeId?: ContextType;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.Image")
-  public image?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
@@ -41,6 +39,9 @@ export class Context extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.DataLocationId")
   public dataLocationId?: string;
 
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.TeamId")
+  public teamId?: string;
+
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Status")
   public status?: number;
 
@@ -52,8 +53,31 @@ export class Context extends WsgInstance {
  * @beta
  */
 abstract class CommonContext extends Context {
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.CountryCode")
+  public countryCode?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.RegisteredDate")
+  public registeredDate?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.LastModifiedDate")
+  public lastModifiedDate?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.RegisteredBy")
+  public registeredBy?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.LastModifiedBy")
+  public lastModifiedBy?: string;
+}
+
+/**
+ * @beta
+ */
+abstract class CommonAssetProjectContext extends CommonContext {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Industry")
   public industry?: string;
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Image")
+  public image?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Location")
   public location?: string;
@@ -64,24 +88,22 @@ abstract class CommonContext extends Context {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Longitude")
   public longitude?: string;
 
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.CountryCode")
-  public countryCode?: string;
-
   @ECJsonTypeMap.propertyToJson("wsg", "properties.TimeZoneLocation")
   public timeZoneLocation?: string;
+}
 
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.RegisteredDate")
-  public registeredDate?: string;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.LastModifiedDate")
-  public lastModifiedDate?: string;
+/** An iTwin context of type team. Represents an organization or team working on multiple projects.
+ * @beta
+ */
+@ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Team", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+export class Team extends CommonContext {
 }
 
 /** An iTwin context of type project. Represents time-constrained work done on an [[Asset]].
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class Project extends CommonContext {
+export class Project extends CommonAssetProjectContext {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AssetId")
   public assetId?: string;
 
@@ -96,7 +118,7 @@ export class Project extends CommonContext {
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Asset", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class Asset extends CommonContext {
+export class Asset extends CommonAssetProjectContext {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AssetType")
   public assetType?: string;
 }
@@ -212,5 +234,22 @@ export class ContextRegistryClient extends WsgClient {
   public async getAssets(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset[]> {
     requestContext.enter();
     return this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Asset", queryOptions);
+  }
+
+  /** Gets the iTwin team context that the authorized user belongs to.
+   * @param requestContext The client request context
+   * @returns Resolves to the found team. Rejects if no team or more than one team is found.
+   */
+  public async getTeam(requestContext: AuthorizedClientRequestContext): Promise<Team> {
+    requestContext.enter();
+    const teams = await this.getInstances<Team>(requestContext, Team, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Team?isDefault=true");
+    requestContext.enter();
+
+    if (teams.length === 0)
+      throw new Error("Could not find a team for the current user");
+    if (teams.length > 1)
+      throw new Error("More than one default team found");
+
+    return teams[0];
   }
 }

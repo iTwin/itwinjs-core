@@ -1,6 +1,17 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:24 GMT
+
+### Updates
+
+- Contain floating widget bounds.
+- Ability to provide title for dock tool settings button.
+- Persist floating widget size.
+- Add send home button to floating widgets.
+- Use Popup components for widget overflow and tool settings overflow popups.
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT

@@ -23,7 +23,6 @@ import { WidgetIdContext } from "./Widget";
 export const WidgetTabBar = React.memo(function WidgetTabBar() { // tslint:disable-line: variable-name no-shadowed-variable
   const dispatch = React.useContext(NineZoneDispatchContext);
   const id = React.useContext(WidgetIdContext);
-  assert(id);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   const widgetId = floatingWidgetId === undefined ? id : floatingWidgetId;
   const onDrag = React.useCallback<NonNullable<UseDragWidgetArgs["onDrag"]>>((dragBy) => {

@@ -4,30 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, Config, Id64String, isElectronRenderer, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
-import {
-  BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient,
-  isFrontendAuthorizationClient,
-} from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration, FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { BentleyCloudRpcManager, DesktopAuthorizationClientConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import {
-  AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp,
-  IModelAppOptions, IModelConnection, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
-} from "@bentley/imodeljs-frontend";
+import { AccuSnap, AuthorizedFrontendRequestContext, DesktopAuthorizationClient, ExternalServerExtensionLoader, IModelApp, IModelAppOptions, IModelConnection, RenderSystem, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { PresentationUnitSystem } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalUiSettings, UiSettings } from "@bentley/ui-core";
-import {
-  ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkReducer,
-  FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
-  IModelAppUiSettings, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager,
-  ToolbarDragInteractionContext, UiFramework, UiSettingsProvider,
-} from "@bentley/ui-framework";
+import { ActionsUnion, AppNotificationManager, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkReducer, FrameworkRootState, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager, IModelAppUiSettings, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
+// To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
+import { MapLayersUI } from "@bentley/map-layers";
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
 import * as React from "react";
@@ -37,9 +30,11 @@ import { Store } from "redux"; // createStore,
 import getSupportedRpcs from "../common/rpcs";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { ActiveSettingsManager } from "./api/ActiveSettingsManager";
+import { ErrorHandling } from "./api/ErrorHandling";
 import { AppUi } from "./appui/AppUi";
 import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
 import { IModelViewportControl } from "./appui/contentviews/IModelViewport";
+import { EditFrontstage } from "./appui/frontstages/editing/EditFrontstage";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { AppUiSettings } from "./AppUiSettings";
@@ -47,20 +42,15 @@ import { AppViewManager } from "./favorites/AppViewManager"; // Favorite Propert
 import { ElementSelectionListener } from "./favorites/ElementSelectionListener"; // Favorite Properties Support
 import "./index.scss";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
-import { Tool1 } from "./tools/Tool1";
-import { Tool2 } from "./tools/Tool2";
-import { ToolWithSettings } from "./tools/ToolWithSettings";
-import { UiProviderTool } from "./tools/UiProviderTool";
-
-import { PresentationUnitSystem } from "@bentley/presentation-common";
-import { FrontendDevTools } from "@bentley/frontend-devtools";
-import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { DeleteElementTool } from "./tools/editing/DeleteElementTool";
 import { MoveElementTool } from "./tools/editing/MoveElementTool";
 import { PlaceBlockTool } from "./tools/editing/PlaceBlockTool";
 import { PlaceLineStringTool } from "./tools/editing/PlaceLineStringTool";
-import { ErrorHandling } from "./api/ErrorHandling";
-import { EditFrontstage } from "./appui/frontstages/editing/EditFrontstage";
+import { Tool1 } from "./tools/Tool1";
+import { Tool2 } from "./tools/Tool2";
+import { ToolWithSettings } from "./tools/ToolWithSettings";
+import { UiProviderTool } from "./tools/UiProviderTool";
+import { HyperModeling } from "@bentley/hypermodeling-frontend";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -250,7 +240,7 @@ export class SampleAppIModelApp {
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
 
     await MarkupApp.initialize();
-
+    await FrontendDevTools.initialize();
     // Favorite Properties Support
     SampleAppIModelApp._selectionSetListener.initialize();
 
@@ -260,6 +250,8 @@ export class SampleAppIModelApp {
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
+    // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
+    await MapLayersUI.initialize();
   }
 
   // cSpell:enable

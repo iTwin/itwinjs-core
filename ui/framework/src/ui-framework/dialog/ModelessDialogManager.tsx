@@ -11,6 +11,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { CommonProps, getCssVariableAsNumber } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 
 // cSpell:ignore ZINDEX modeless
 
@@ -68,6 +69,13 @@ export class ModelessDialogManager {
    * @param id The id of the Dialog to open
    */
   public static openDialog(dialog: React.ReactNode, id: string): void {
+    const dialogInfo = ModelessDialogManager._dialogMap.get(id);
+    if (dialogInfo) {
+      const message = `Dialog with id of '${id}' already opened`;
+      Logger.logInfo(UiFramework.loggerCategory(this), `openDialog: ${message}`);
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, message, undefined, OutputMessageType.Toast));
+      return;
+    }
     ModelessDialogManager._dialogMap.set(id, { reactNode: dialog, zIndex: ++ModelessDialogManager._topZIndex });
     ModelessDialogManager._idArray.push(id);
     ModelessDialogManager.dialogManager.openDialog(dialog, id);

@@ -1,6 +1,11 @@
 # Change Log - @bentley/frontend-authorization-client
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:24 GMT
+
+*Version update only*
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT

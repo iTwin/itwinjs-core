@@ -15,6 +15,7 @@ import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
+import { System } from "./render/webgl/System";
 
 /** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
  * Decorators generate [[Decorations]].
@@ -306,13 +307,31 @@ export class ViewManager {
   public forEachViewport(func: (vp: ScreenViewport) => void) { this._viewports.forEach((vp) => func(vp)); }
 
   /** Force each registered [[Viewport]] to regenerate its [[Decorations]] on the next frame. */
-  public invalidateDecorationsAllViews(): void { this.forEachViewport((vp) => vp.invalidateDecorations()); }
+  public invalidateDecorationsAllViews(): void {
+    this.forEachViewport((vp) => vp.invalidateDecorations());
+  }
+
+  /** Force each registered [[Viewport]] to regenerate its [[FeatureSymbology.Overrides]] on the next frame.
+   * @alpha
+   */
+  public invalidateSymbologyOverridesAllViews(): void {
+    this.forEachViewport((vp) => vp.setFeatureOverrideProviderChanged());
+  }
+
   /** @internal */
-  public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.markSelectionSetDirty()); }
+  public onSelectionSetChanged(_iModel: IModelConnection) {
+    this.forEachViewport((vp) => vp.markSelectionSetDirty());
+  }
+
   /** @internal */
-  public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.invalidateScene()); }
+  public invalidateViewportScenes(): void {
+    this.forEachViewport((vp) => vp.invalidateScene());
+  }
+
   /** @internal */
-  public validateViewportScenes(): void { this.forEachViewport((vp) => vp.setValidScene()); }
+  public validateViewportScenes(): void {
+    this.forEachViewport((vp) => vp.setValidScene());
+  }
 
   /** @internal */
   public invalidateScenes(): void {
@@ -500,5 +519,14 @@ export class ViewManager {
   public refreshForModifiedModels(modelIds: Id64Arg | undefined): void {
     for (const vp of this._viewports)
       vp.refreshForModifiedModels(modelIds);
+  }
+
+  /** Turn on or off antialiasing in each [[Viewport]] registered with the ViewManager.
+   * Setting numSamples to 1 turns it off, setting numSamples > 1 turns it on with that many samples.
+   * @beta
+   */
+  public setAntialiasingAllViews(numSamples: number): void {
+    this.forEachViewport((vp) => vp.antialiasSamples = numSamples);
+    System.instance.antialiasSamples = numSamples;
   }
 }

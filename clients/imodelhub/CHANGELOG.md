@@ -1,6 +1,16 @@
 # Change Log - @bentley/imodelhub-client
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:24 GMT
+
+### Updates
+
+- Modify BasicAccessToken with class decorator TokenPrefix
+- iModelHub permissions handler
+- Added support for iModel type, type filtering and template filtering
+- Added url encoding for query segments that may contain special characters
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT

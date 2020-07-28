@@ -18,7 +18,7 @@ function waitUntilTimeHasPassed() {
   }
 }
 
-describe("FeatureOverrides tests", () => {
+describe("FeatureOverrides", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
   let vp: ScreenViewport;
@@ -93,8 +93,8 @@ describe("FeatureOverrides tests", () => {
   });
 });
 
-describe("FeatureTable tests", () => {
-  it("should pack and unpack a FeatureTable", () => {
+describe("FeatureTable", () => {
+  it("should pack and unpack", () => {
     const features: Feature[] = [
       new Feature("0x1", "0x1", GeometryClass.Primary),
       new Feature("0x2", "0x1", GeometryClass.Primary),

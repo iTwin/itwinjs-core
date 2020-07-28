@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext,
-  PanelWidget, Widget, WidgetIdContext,
+  PanelWidget, Widget, WidgetIdContext, WidgetStateContext,
 } from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
 import { NineZoneProvider } from "../Providers";
@@ -20,66 +20,105 @@ describe("PanelWidget", () => {
     sandbox.restore();
   });
 
-  it("should dispatch PANEL_WIDGET_DRAG_START", () => {
-    sandbox.stub(NineZoneModule, "getUniqueId").returns("newId");
-    const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    const { container } = render(
-      <NineZoneProvider
-        state={nineZone}
-        dispatch={dispatch}
-      >
-        <PanelSideContext.Provider value="left">
-          <PanelWidget widgetId="w1" />
-        </PanelSideContext.Provider>
-      </NineZoneProvider>,
-    );
+  describe("PANEL_WIDGET_DRAG_START", () => {
+    it("should dispatch", () => {
+      sandbox.stub(NineZoneModule, "getUniqueId").returns("newId");
+      const dispatch = sinon.stub<NineZoneDispatch>();
+      let nineZone = createNineZoneState();
+      nineZone = addPanelWidget(nineZone, "left", "w1");
+      const { container } = render(
+        <NineZoneProvider
+          state={nineZone}
+          dispatch={dispatch}
+        >
+          <PanelSideContext.Provider value="left">
+            <PanelWidget widgetId="w1" />
+          </PanelSideContext.Provider>
+        </NineZoneProvider>,
+      );
 
-    const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
-    const handle = titleBar.getElementsByClassName("nz-handle")[0];
-    act(() => {
-      fireEvent.mouseDown(handle);
-      fireEvent.mouseMove(handle);
+      const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
+      const handle = titleBar.getElementsByClassName("nz-handle")[0];
+      act(() => {
+        fireEvent.mouseDown(handle);
+        fireEvent.mouseMove(handle);
+      });
+
+      dispatch.calledOnceWithExactly(sinon.match({
+        type: "PANEL_WIDGET_DRAG_START",
+        id: "w1",
+        newFloatingWidgetId: "newId",
+      })).should.true;
     });
 
-    dispatch.calledOnceWithExactly(sinon.match({
-      type: "PANEL_WIDGET_DRAG_START",
-      id: "w1",
-      newFloatingWidgetId: "newId",
-    })).should.true;
-  });
+    it("should adjust bounds to keep widget under pointer", () => {
+      const dispatch = sinon.stub<NineZoneDispatch>();
+      let nineZone = createNineZoneState();
+      nineZone = addPanelWidget(nineZone, "left", "w1");
+      const { container } = render(
+        <NineZoneProvider
+          state={nineZone}
+          dispatch={dispatch}
+        >
+          <PanelSideContext.Provider value="left">
+            <PanelWidget widgetId="w1" />
+          </PanelSideContext.Provider>
+        </NineZoneProvider>,
+      );
 
-  it("should adjust bounds to keep widget under pointer", () => {
-    const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    const { container } = render(
-      <NineZoneProvider
-        state={nineZone}
-        dispatch={dispatch}
-      >
-        <PanelSideContext.Provider value="left">
-          <PanelWidget widgetId="w1" />
-        </PanelSideContext.Provider>
-      </NineZoneProvider>,
-    );
+      const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
+      const handle = titleBar.getElementsByClassName("nz-handle")[0];
+      act(() => {
+        fireEvent.mouseDown(handle, { clientX: 230 });
+        fireEvent.mouseMove(handle);
+      });
 
-    const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
-    const handle = titleBar.getElementsByClassName("nz-handle")[0];
-    act(() => {
-      fireEvent.mouseDown(handle, { clientX: 230 });
-      fireEvent.mouseMove(handle);
+      dispatch.calledOnce.should.true;
+      dispatch.firstCall.args[0].type.should.eq("PANEL_WIDGET_DRAG_START");
+      const action = dispatch.firstCall.args[0] as PanelWidgetDragStartAction;
+      action.bounds.should.eql({
+        top: 0,
+        bottom: 200,
+        left: 50,
+        right: 250,
+      });
     });
 
-    dispatch.calledOnce.should.true;
-    dispatch.firstCall.args[0].type.should.eq("PANEL_WIDGET_DRAG_START");
-    const action = dispatch.firstCall.args[0] as PanelWidgetDragStartAction;
-    action.bounds.should.eql({
-      top: 0,
-      bottom: 200,
-      left: 50,
-      right: 250,
+    it("should use preferredFloatingWidgetSize of active tab", () => {
+      const dispatch = sinon.stub<NineZoneDispatch>();
+      let nineZone = createNineZoneState();
+      nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
+      nineZone = addTab(nineZone, "w1", "t1", {
+        preferredFloatingWidgetSize: {
+          height: 400,
+          width: 500,
+        },
+      });
+      const { container } = render(
+        <NineZoneProvider
+          state={nineZone}
+          dispatch={dispatch}
+        >
+          <PanelSideContext.Provider value="left">
+            <PanelWidget widgetId="w1" />
+          </PanelSideContext.Provider>
+        </NineZoneProvider>,
+      );
+
+      const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
+      const handle = titleBar.getElementsByClassName("nz-handle")[0];
+      act(() => {
+        fireEvent.mouseDown(handle);
+        fireEvent.mouseMove(handle);
+      });
+
+      const action = dispatch.firstCall.args[0] as PanelWidgetDragStartAction;
+      action.bounds.should.eql({
+        top: 0,
+        bottom: 400,
+        left: 0,
+        right: 500,
+      });
     });
   });
 
@@ -118,11 +157,13 @@ describe("PanelWidget", () => {
         state={nineZone}
         dispatch={dispatch}
       >
-        <WidgetIdContext.Provider value="w1">
-          <FloatingWidgetIdContext.Provider value="fw1">
-            <Widget />
-          </FloatingWidgetIdContext.Provider>
-        </WidgetIdContext.Provider>
+        <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+          <WidgetIdContext.Provider value="w1">
+            <FloatingWidgetIdContext.Provider value="fw1">
+              <Widget />
+            </FloatingWidgetIdContext.Provider>
+          </WidgetIdContext.Provider>
+        </WidgetStateContext.Provider>
       </NineZoneProvider>,
     );
 

@@ -495,7 +495,7 @@ export class AccuSnap implements Decorator {
     if (!hit)
       return false;
 
-    if (hit.isModelHit)
+    if (hit.isModelHit || hit.isMapHit)
       return false;       // Avoid annoying flashing of reality models.
 
     const snap = AccuSnap.toSnapDetail(hit);
@@ -613,7 +613,7 @@ export class AccuSnap implements Decorator {
 
   /** @internal */
   public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, hitList?: HitList<HitDetail>, out?: LocateResponse): Promise<SnapDetail | undefined> {
-    if (thisHit.isModelHit || thisHit.isClassifier) {
+    if (thisHit.isModelHit || thisHit.isMapHit || thisHit.isClassifier) {
       if (snapModes.includes(SnapMode.Nearest)) {
         if (out) out.snapStatus = SnapStatus.Success;
         return new SnapDetail(thisHit, SnapMode.Nearest, SnapHeat.InRange);
@@ -955,7 +955,7 @@ export class AccuSnap implements Decorator {
     }
 
     const hit = IModelApp.tentativePoint.getCurrSnap();
-    if (hit && !hit.isModelHit) // Don't hilite reality models.
+    if (hit && !(hit.isModelHit || hit.isMapHit)) // Don't hilite reality models.
       hit.draw(context);
   }
 

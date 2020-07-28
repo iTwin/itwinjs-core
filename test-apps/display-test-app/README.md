@@ -136,6 +136,10 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
 * SVT_DISABLE_DPI_AWARE_VIEWPORTS
   * If defined, do not respect the DPI of the system when rendering viewports.
+* SVT_DEVICE_PIXEL_RATIO_OVERRIDE
+  * If defined, the pixel ratio used instead of the system's actual device pixel ratio.
+* SVT_DPI_LOD
+  * If defined, account for the device DPI when computing level of detail for tiles and decoration graphics.
 * SVT_NO_CANCEL_TILE_REQUESTS
   * If defined, do not cancel tile requests on backend when cancelled on front-end.
 * SVT_DISABLE_EDGE_DISPLAY
@@ -170,6 +174,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * **dta record fps** *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
 * **dta zoom selected** - zoom the selected viewport to the elements in the selection set.
 * **dta incident markers** - toggle incident marker demo in the selected viewport.
+* **dta path decoration** - toggle drawing a small path decoration in the selected viewport for testing purposes.
 * **dta markup** - toggle markup on the selected viewport.
 * **dta output shaders** - output debug information for compiled shaders. Requires SVT_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
   * `d=output\directory\` - directory into which to put the output files.
@@ -191,3 +196,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
   * `priority=`: Display priority of the attachment in [-500,500]. Defaults to zero.
   * `image=`: Display as a raster image, even if view is orthographic. Perspective views always draw as raster images.
   * `background=`: Preserve background color when drawing as a raster image.
+* **dta aspect skew decorator** *apply=0|1* - Toggle a decorator that draws a simple bspline curve based on the project extents, for testing the effect of aspect ratio skew on the curve stroke tolerance. Use in conjunction with `fdt aspect skew` to adjust the skew. If `apply` is 0, then the skew will have no effect on the curve's level of detail; otherwise a higher aspect ratio skew should produce higher-resolution curve graphics.
+* **dta classifyclip selected** *inside* - Color code elements from the current selection set based on their containment with the current view clip. Inside - Green, Outside - Red, Overlap - Blue. Specify optional inside arg to only determine inside or outside, not overlap. Disable clip in the view settings to select elements outside clip, use clip tool panel EDIT button to redisplay clip decoration after processing selection. Use key-in again without a clip or selection set to clear the color override.
+
+

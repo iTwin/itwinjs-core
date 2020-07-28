@@ -184,7 +184,7 @@ export class TextareaEditor extends React.PureComponent<PropertyEditorProps, Tex
 }
 
 /** Textarea Property Editor registered for the "text" and "string" type names and "multi-line" editor name.
- * It uses the [[ToggleEditor]] React component.
+ * It uses the [[Textarea]] React component.
  * @beta
  */
 export class TextareaPropertyEditor extends PropertyEditorBase {

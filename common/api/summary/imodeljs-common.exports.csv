@@ -20,6 +20,8 @@ public;BackgroundMapProps
 public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
 public;BackgroundMapSettings
 public;BackgroundMapType
+alpha;BaseLayerProps = MapLayerProps | ColorDefProps
+alpha;BaseLayerSettings = MapLayerSettings | ColorDef
 beta;BatchType
 public;class BentleyCloudRpcConfiguration 
 public;BentleyCloudRpcManager 
@@ -85,6 +87,7 @@ internal;CurrentImdlVersion
 beta;CustomAttribute
 beta;DecorationGeometryProps
 alpha;defaultDesktopAuthorizationClientExpiryBuffer: number
+internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 alpha;DesktopAuthorizationClientConfiguration
 internal;class DevToolsRpcInterface 
@@ -245,6 +248,12 @@ public;LinePixels
 public;LineStyle
 beta;LineStyleProps 
 public;LocalAlignedBox3d = Range3d
+alpha;MapImageryProps
+alpha;MapImagerySettings
+alpha;MapLayerProps
+alpha;MapLayerSettings
+alpha;MapSubLayerProps
+alpha;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
@@ -436,6 +445,7 @@ public;SubCategoryAppearance
 public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
+alpha;SubLayerId = string | number
 public;SyncMode
 public;TerrainHeightOriginMode
 public;TerrainProps
@@ -484,6 +494,7 @@ beta;TweenCallback = (obj: any) => void
 beta;Tweens
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
+internal;TypeOfChange
 beta;UpdateCallback = (obj: any, t: number) => void
 beta;UpgradeOptions
 public;UrlLinkProps 

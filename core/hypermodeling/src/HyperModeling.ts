@@ -164,13 +164,12 @@ export class HyperModeling {
    */
   public static async isSupportedForIModel(imodel: IModelConnection): Promise<boolean> {
     try {
-      for await (const _row of imodel.query("SELECT ECInstanceId FROM bis.SectionDrawingLocation LIMIT 1"))
-        return true;
+      const nRows = await imodel.queryRowCount("SELECT ECInstanceId FROM bis.SectionDrawingLocation LIMIT 1");
+      return nRows > 0;
     } catch (_) {
-      // An iModel with an older version of BisCore will produce an expected "table not found" on the SectionDrawingLocation ECClass.
+      // An iModel with a version of BisCore older than 1.0.11 will produce an expected "table not found" on the SectionDrawingLocation ECClass.
+      return false;
     }
-
-    return false;
   }
 
   /** Returns whether hypermodeling is currently enabled for the specified viewport.

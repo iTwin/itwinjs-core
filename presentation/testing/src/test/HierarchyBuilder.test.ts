@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
+import { ExtendedHierarchyRequestOptions, LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
 import { HierarchyBuilder, NodeMappingFunc } from "../presentation-testing/HierarchyBuilder";
@@ -17,12 +17,13 @@ async function getRootNodes() {
     hasChildren: true,
     key: { type: "", pathFromRoot: ["root"] },
   };
-  return [root];
+  return { nodes: [root], count: 1 };
 }
 
-async function getChildrenNodes({ }, parentKey: NodeKey) {
-  if (parentKey.pathFromRoot[0] !== "root" || parentKey.pathFromRoot.length !== 1)
-    return [];
+async function getChildrenNodes(opts: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>) {
+  if (opts.parentKey?.pathFromRoot[0] !== "root" || opts?.parentKey.pathFromRoot.length !== 1)
+    return { nodes: [], count: 0 };
+
   const child1: Node = {
     label: LabelDefinition.fromLabelString("Child 1"),
     key: { type: "", pathFromRoot: ["root", "child1"] },
@@ -31,7 +32,7 @@ async function getChildrenNodes({ }, parentKey: NodeKey) {
     label: LabelDefinition.fromLabelString("Child 2"),
     key: { type: "", pathFromRoot: ["root", "child2"] },
   };
-  return [child1, child2];
+  return { nodes: [child1, child2], count: 2 };
 }
 
 describe("HierarchyBuilder", () => {
@@ -59,7 +60,7 @@ describe("HierarchyBuilder", () => {
     context("without data", () => {
       beforeEach(() => {
         Presentation.setPresentationManager(presentationManagerMock.object);
-        presentationManagerMock.setup(async (manager) => manager.getNodes(moq.It.isAny(), undefined)).returns(async () => []);
+        presentationManagerMock.setup(async (manager) => manager.getNodesAndCount(moq.It.isAny())).returns(async () => ({ nodes: [], count: 0 }));
       });
 
       it("returns empty list when rulesetId is given", async () => {
@@ -77,8 +78,8 @@ describe("HierarchyBuilder", () => {
 
     context("with data", () => {
       beforeEach(() => {
-        presentationManagerMock.setup(async (manager) => manager.getNodes(moq.It.isAny(), undefined)).returns(getRootNodes);
-        presentationManagerMock.setup(async (manager) => manager.getNodes(moq.It.isAny(), moq.It.isAny())).returns(getChildrenNodes);
+        presentationManagerMock.setup(async (manager) => manager.getNodesAndCount(moq.It.is((opts) => opts.parentKey === undefined))).returns(getRootNodes);
+        presentationManagerMock.setup(async (manager) => manager.getNodesAndCount(moq.It.is((opts) => opts.parentKey !== undefined))).returns(getChildrenNodes);
         Presentation.setPresentationManager(presentationManagerMock.object);
       });
 

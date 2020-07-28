@@ -55,6 +55,7 @@ function sortStatistics(value: UserStatistics[]) {
 
 describe("iModelHubClient UserStatisticsHandler", () => {
   const requestContexts: AuthorizedClientRequestContext[] = [];
+  let contextId: string;
   let imodelId: GuidString;
 
   const imodelName = "imodeljs-clients Statistics test";
@@ -74,8 +75,9 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     requestContexts.push(new AuthorizedClientRequestContext(superAccessToken));
     requestContexts.push(new AuthorizedClientRequestContext(managerAccessToken));
 
-    await utils.createIModel(requestContexts[0], imodelName, undefined, true);
-    imodelId = await utils.getIModelId(requestContexts[0], imodelName);
+    contextId = await utils.getProjectId(requestContexts[0]);
+    await utils.createIModel(requestContexts[0], imodelName, contextId, true);
+    imodelId = await utils.getIModelId(requestContexts[0], imodelName, contextId);
 
     if (!TestConfig.enableMocks) {
       // generate data for user statistics
@@ -92,6 +94,11 @@ describe("iModelHubClient UserStatisticsHandler", () => {
         await utils.createLocks(requestContexts[1], imodelId, briefcases[0], user2OwnedLocksCount);
       }
     }
+  });
+
+  after(async () => {
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContexts[0], contextId, imodelName);
   });
 
   afterEach(() => {

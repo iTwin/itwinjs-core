@@ -47,7 +47,7 @@ export class Checker {
     quarticRoots: false,
     cubicRoots: false,
     printJSONSuccess: false,
-    printJSONFailure: false,
+    printJSONFailure: true,
     spirals: false,
     cluster: false,
     clipPlane: false,
@@ -263,10 +263,10 @@ export class Checker {
     return false;
   }
 
-  public testIsFinite(dataA: any, ...params: any[]): boolean {
+  public testIsFinite(dataA: any, ...params: any[]): dataA is number {
     if (Number.isFinite(dataA))
       return this.announceOK();
-    this.announceError("Expect undefined", dataA, params);
+    this.announceError("Expect number", dataA, params);
 
     return false;
   }
@@ -418,6 +418,13 @@ export class Checker {
     if (dataA === dataB)
       return this.announceOK();
     return this.announceError("Expect exact number", dataA, dataB, params);
+  }
+
+  // return true for exact numeric equality
+  public testString(dataA: string, dataB: string, ...params: any[]): boolean {
+    if (dataA === dataB)
+      return this.announceOK();
+    return this.announceError("Expect exact string", dataA, dataB, params);
   }
 
   // return true if numbers are nearly identical, tolerance e * (1 + abs(dataA) + abs (dataB)) for e = 8e-16

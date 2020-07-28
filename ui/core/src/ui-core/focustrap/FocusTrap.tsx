@@ -146,6 +146,7 @@ export function FocusTrap(props: FocusTrapProps) {
   const isInitialMount = React.useRef(true);
 
   React.useEffect(() => {
+    // istanbul ignore else
     if (isInitialMount.current) {
       isInitialMount.current = false;
       if (props.active) {

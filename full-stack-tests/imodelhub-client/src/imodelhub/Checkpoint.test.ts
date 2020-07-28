@@ -35,6 +35,7 @@ function mockCheckpoint(mergedChangeSetId: string, mockUrl: boolean = false): Ch
 }
 
 describe("iModelHub CheckpointHandler", () => {
+  let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
@@ -47,8 +48,9 @@ describe("iModelHub CheckpointHandler", () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    await utils.createIModel(requestContext, imodelName);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
+    contextId = await utils.getProjectId(requestContext);
+    await utils.createIModel(requestContext, imodelName, contextId);
+    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
     iModelClient = utils.getDefaultClient();
     briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
 
@@ -65,6 +67,11 @@ describe("iModelHub CheckpointHandler", () => {
     if (!fs.existsSync(utils.workDir)) {
       fs.mkdirSync(utils.workDir);
     }
+  });
+
+  after(async () => {
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 
   afterEach(() => {

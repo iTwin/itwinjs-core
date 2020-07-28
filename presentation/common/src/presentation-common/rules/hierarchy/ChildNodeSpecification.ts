@@ -83,6 +83,18 @@ export interface ChildNodeSpecificationBase {
    */
   doNotSort?: boolean;
 
+  /**
+   * Suppress similar ancestor nodes' checking when creating nodes based on this specification.
+   *
+   * By default we stop creating hierarchy at the node that has a similar ancestor representing
+   * the same ECInstance and created using the same specification to prevent creating infinite
+   * hierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider
+   * the hierarchy infinite.
+   *
+   * @beta
+   */
+  suppressSimilarAncestorsCheck?: boolean;
+
   /** Specifications of related instances that can be used in content creation. */
   relatedInstances?: RelatedInstanceSpecification[];
 

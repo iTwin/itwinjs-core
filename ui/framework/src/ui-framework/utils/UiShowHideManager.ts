@@ -24,6 +24,7 @@ export class UiShowHideManager {
   private static _inactivityTime: number = INACTIVITY_TIME_DEFAULT;
   private static _timeout: NodeJS.Timeout;
   private static _useProximityOpacity: boolean = true;
+  private static _snapWidgetOpacity: boolean = false;
 
   /** Determines if the Ui is visible */
   public static get isUiVisible() {
@@ -75,6 +76,15 @@ export class UiShowHideManager {
   }
   public static set useProximityOpacity(value: boolean) {
     UiShowHideManager._useProximityOpacity = value;
+    UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
+  }
+
+  /** Determines whether the opacity of a toolbar should snap. Defaults to false. */
+  public static get snapWidgetOpacity(): boolean {
+    return UiShowHideManager._snapWidgetOpacity;
+  }
+  public static set snapWidgetOpacity(value: boolean) {
+    UiShowHideManager._snapWidgetOpacity = value;
     UiFramework.onUiVisibilityChanged.emit({ visible: UiFramework.getIsUiVisible() });
   }
 

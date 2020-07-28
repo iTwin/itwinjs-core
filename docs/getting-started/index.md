@@ -23,8 +23,6 @@ The starter application is located in the [desktop-starter](https://github.com/i
 ## 3. Build and run a sample app
 > `npm install`
 
-> `npm run build`
-
 > `npm start`
 
 &nbsp;

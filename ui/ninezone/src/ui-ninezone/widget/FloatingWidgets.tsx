@@ -9,6 +9,7 @@
 import * as React from "react";
 import { FloatingWidgetsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { FloatingWidget } from "./FloatingWidget";
+import { FloatingTab } from "./FloatingTab";
 
 /** This component renders all floating widgets.
  * @internal
@@ -27,6 +28,7 @@ export const FloatingWidgets = React.memo(function FloatingWidgets() { // tslint
           widget={widget}
         />;
       })}
+      <FloatingTab />
     </>
   );
 });

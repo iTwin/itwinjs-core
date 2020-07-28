@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 
 /** CSS helpers.
  * @internal
@@ -40,10 +40,16 @@ export class CssProperties {
 
   /** @returns CSS properties that describe position (top, left). */
   public static fromPosition(props: PointProps): React.CSSProperties {
-    const point = Point.create(props);
     return {
-      left: point.x,
-      top: point.y,
+      left: props.x,
+      top: props.y,
+    };
+  }
+
+  /** @returns CSS transform property. */
+  public static transformFromPosition(props: PointProps) {
+    return {
+      transform: `translate(${props.x}px, ${props.y}px)`,
     };
   }
 }

@@ -1,0 +1,63 @@
+{
+  "name": "@bentley/map-layers",
+  "version": "2.4.0",
+  "description": "Extension that adds a Map Layers Widget",
+  "main": "lib/map-layers.js",
+  "typings": "lib/map-layers",
+  "scripts": {
+    "prebuild": "npm run pseudolocalize && npm run copy:assets",
+    "build": "npm run prebuild && tsc 1>&2 && npm run build:extension",
+    "build:extension": "extension-webpack-tools build -s ./src/map-layers.ts -o ./lib/extension --sourceMap",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/locales/**/*\" ./lib/extension/locales/",
+    "cover": "",
+    "docs": "",
+    "lint": "tslint -p . 1>&2",
+    "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./lib/extension/locales/en-PSEUDO",
+    "test": ""
+  },
+  "keywords": [
+    "iModel",
+    "BIM",
+    "maps",
+    "extension"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@bentley/build-tools": "2.4.0",
+    "@bentley/extension-webpack-tools": "2.4.0",
+    "@types/react": "^16.8.0",
+    "@types/classnames": "^2.2.3",
+    "@types/react-select": "^3.0.4",
+    "@types/react-beautiful-dnd": "^12.1.2",
+    "cpx": "^1.5.0",
+    "rimraf": "^3.0.2",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.7.4"
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "2.4.0",
+    "@bentley/geometry-core": "2.4.0",
+    "@bentley/itwin-client": "2.4.0",
+    "@bentley/imodeljs-common": "2.4.0",
+    "@bentley/imodeljs-i18n": "2.4.0",
+    "@bentley/imodeljs-frontend": "2.4.0",
+    "@bentley/imodeljs-quantity": "2.4.0",
+    "@bentley/ui-abstract": "2.4.0",
+    "@bentley/ui-components": "2.4.0",
+    "@bentley/ui-core": "2.4.0",
+    "@bentley/ui-framework": "2.4.0",
+    "@bentley/ui-ninezone": "2.4.0",
+    "classnames": "^2.2.5",
+    "react": "^16.8.0",
+    "react-compound-slider": "^2.5.0",
+    "react-dom": "^16.8.0",
+    "react-beautiful-dnd": "^13.0.0",
+    "react-select": "^3.0.4"
+  }
+}

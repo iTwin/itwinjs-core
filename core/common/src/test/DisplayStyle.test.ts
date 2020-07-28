@@ -3,23 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
+import { expect } from "chai";
 import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
 import { ColorDef } from "../ColorDef";
 import { DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, MonochromeMode } from "../DisplayStyleSettings";
-import { SpatialClassificationProps } from "../SpatialClassificationProps";
+import { MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../imodeljs-common";
 import { LightSettings, LightSettingsProps } from "../LightSettings";
+import { LinePixels } from "../LinePixels";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
 import { RgbColor } from "../RgbColor";
 import { SolarShadowSettings, SolarShadowSettingsProps } from "../SolarShadows";
+import { SpatialClassificationProps } from "../SpatialClassificationProps";
 import { TerrainHeightOriginMode } from "../TerrainSettings";
+import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicDisplaySensorSettings, ThematicGradientColorScheme, ThematicGradientMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
-import { LinePixels } from "../LinePixels";
-import {
-  ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicDisplaySensorSettings, ThematicGradientColorScheme, ThematicGradientMode,
-} from "../ThematicDisplay";
 
 describe("PlanProjectionSettings", () => {
   it("round-trips through JSON", () => {
@@ -180,6 +179,115 @@ describe("DisplayStyleSettings", () => {
   });
 });
 
+const testMapSubLayer0 = { name: "TestName", title: "TestTitle", visible: true };
+const testMapSubLayer1 = { name: "TestName", title: "TestTitle", visible: true, id: 0, parent: -1, children: [1, 2, 3] };
+describe("MapSubLayerSettings", () => {
+  const expectMatch = (output: MapSubLayerProps, expected: MapSubLayerProps) => {
+    expect(output.id).to.equal(expected.id);
+    expect(output.name).to.equal(expected.name);
+    expect(output.title).to.equal(expected.title);
+    expect(output.parent).to.equal(expected.parent);
+    expect(output.visible).to.equal(expected.visible);
+
+    if (expected.children) {
+      expect(output.children).not.to.be.undefined;
+      expect(expected.children.length).to.equal(output.children!.length);
+      for (let i = 0; i < expected.children!.length; i++)
+        expect(expected.children[i]).to.equal(output.children![i]);
+    }
+
+  };
+  it("round-trips through JSON", () => {
+
+    const roundTrip = (input: MapSubLayerProps | undefined, expected: MapSubLayerProps | "input") => {
+      if (!input)
+        input = {};
+
+      if ("input" === expected)
+        expected = JSON.parse(JSON.stringify(input)) as MapSubLayerProps;
+      const settings = MapSubLayerSettings.fromJSON(input)!;
+      expect(settings).not.to.be.undefined;
+      const output = settings.toJSON();
+      expectMatch(output, expected);
+    };
+    roundTrip(testMapSubLayer0, "input");
+    roundTrip(testMapSubLayer1, "input");
+  });
+  it("clones", () => {
+    const clone = (input: MapSubLayerProps, changed: MapSubLayerProps, expected: MapSubLayerProps) => {
+      const settings = MapSubLayerSettings.fromJSON(input);
+      const output = settings!.clone(changed);
+      expectMatch(output.toJSON(), expected);
+    };
+
+    // Turn off visibility
+    clone(testMapSubLayer0, { visible: false }, { name: "TestName", title: "TestTitle", visible: false });
+    clone(testMapSubLayer1, { visible: false }, { name: "TestName", title: "TestTitle", visible: false, id: 0, parent: -1, children: [1, 2, 3] });
+  });
+});
+const testMapLayer0 = { name: "TestName", url: "www.bentley.com", formatId: "WMS" };
+const testMapLayer1 = { name: "TestName", url: "www.bentley.com", formatId: "WMTS", transparency: .5, transparentBackground: false };
+const testMapLayer2 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1] };
+const testMapLayer3 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", userName: "TestUser", password: "TestPassword", subLayers: [testMapSubLayer0, testMapSubLayer1] };
+const testMapLayer4 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", userName: "TestUser", password: "TestPassword", subLayers: [testMapSubLayer0, testMapSubLayer1], isBase: true };
+const legacyMapLayer = MapLayerSettings.fromMapSettings(BackgroundMapSettings.fromJSON({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } }));
+
+describe("MapLayerSettings", () => {
+  const expectMatches = (output: MapLayerProps, expected: MapLayerProps) => {
+    expect(output.name).to.equal(expected.name);
+    expect(output.visible).to.equal(expected.visible);
+    expect(output.url).to.equal(expected.url);
+    expect(output.transparency).to.equal(expected.transparency);
+    expect(output.transparentBackground).to.equal(expected.transparentBackground);
+    expect(output.isBase).to.equal(expected.isBase);
+    expect(output.userName).to.equal(expected.userName);
+    expect(output.password).to.equal(expected.password);
+
+    if (expected.subLayers) {
+      expect(output.subLayers).not.to.be.undefined;
+      expect(expected.subLayers.length).to.equal(output.subLayers!.length);
+      for (let i = 0; i < expected.subLayers.length; i++)
+        expect(JSON.stringify(expected.subLayers[i])).to.equal(JSON.stringify(output.subLayers![i]));
+    }
+  };
+  it("round-trips through JSON", () => {
+    const roundTrip = (input: MapLayerProps | undefined, expected: MapLayerProps | "input") => {
+      if (!input)
+        input = {};
+
+      if ("input" === expected)
+        expected = JSON.parse(JSON.stringify(input)) as MapLayerProps;
+
+      const settings = MapLayerSettings.fromJSON(input)!;
+      expect(settings).not.to.be.undefined;
+      const output = settings.toJSON();
+      expectMatches(output, expected);
+    };
+    roundTrip(testMapLayer0, "input");
+    roundTrip(testMapLayer1, "input");
+    roundTrip(testMapLayer2, "input");
+    roundTrip(testMapLayer3, "input");
+    roundTrip(testMapLayer4, "input");
+    roundTrip(legacyMapLayer, "input");
+  });
+
+  it("clones", () => {
+    const clone = (input: MapLayerProps, changed: MapLayerProps, expected: MapLayerProps) => {
+      const settings = MapLayerSettings.fromJSON(input);
+      const output = settings!.clone(changed);
+      expectMatches(output.toJSON(), expected);
+    };
+
+    // Turn off visibility
+    clone(testMapLayer0, { visible: false }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: undefined });
+    clone(testMapLayer3, { visible: false }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", userName: "TestUser", password: "TestPassword", subLayers: [testMapSubLayer0, testMapSubLayer1], visible: undefined });
+
+    // Set transparency
+    clone(testMapLayer0, { transparency: .5 }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", transparency: .5 });
+    clone(testMapLayer3, { transparency: .5 }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", userName: "TestUser", password: "TestPassword", subLayers: [testMapSubLayer0, testMapSubLayer1], transparency: .5 });
+  });
+});
+
 describe("BackgroundMapSettings", () => {
   it("round-trips through JSON", () => {
     const roundTrip = (input: BackgroundMapProps | undefined, expected: BackgroundMapProps | "input") => {
@@ -203,7 +311,7 @@ describe("BackgroundMapSettings", () => {
       // We used to omit the terrain settings entirely if they matched the defaults. Now we always include them.
       const outTerrain = output.terrainSettings;
       expect(outTerrain).not.to.be.undefined;
-      const expTerrain = expected.terrainSettings ?? { };
+      const expTerrain = expected.terrainSettings ?? {};
 
       if (outTerrain) {
         if (undefined === expTerrain.heightOriginMode) {
@@ -275,7 +383,7 @@ describe("BackgroundMapSettings", () => {
     roundTrip({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } }, "input");
     roundTrip({ terrainSettings: { heightOriginMode: -99 } }, {});
 
-    roundTrip({ terrainSettings: { nonLocatable: false } }, { });
+    roundTrip({ terrainSettings: { nonLocatable: false } }, {});
     roundTrip({ terrainSettings: { nonLocatable: true } }, "input");
 
     roundTrip({
@@ -593,10 +701,10 @@ describe("DisplayStyleSettings overrides", () => {
     },
     thematic: {
       displayMode: ThematicDisplayMode.Height,
-      axis: [ -1, 0, 1 ],
+      axis: [-1, 0, 1],
       range: undefined,
       sensorSettings: undefined,
-      sunDirection: [ 1, 0, -1 ],
+      sunDirection: [1, 0, -1],
       gradientSettings: {
         mode: 0,
         colorScheme: 0,
@@ -643,7 +751,7 @@ describe("DisplayStyleSettings overrides", () => {
       normalChannelName: undefined,
       scalarChannelName: undefined,
       scalarThematicSettings: undefined,
-      scalarRange: [ 1, 5 ],
+      scalarRange: [1, 5],
     },
     analysisFraction: 0.2,
     scheduleScript: [{
@@ -651,7 +759,7 @@ describe("DisplayStyleSettings overrides", () => {
       realityModelUrl: "altavista.com",
       elementTimelines: [{
         batchId: 64,
-        elementIds: [ "0xabc", "0xdef" ],
+        elementIds: ["0xabc", "0xdef"],
       }],
     }],
     subCategoryOvr: [{
@@ -662,7 +770,7 @@ describe("DisplayStyleSettings overrides", () => {
       weight: 10,
       transp: 0.5,
     }],
-    excludedElements: [ "0x4", "0x8", "0x10" ],
+    excludedElements: ["0x4", "0x8", "0x10"],
     contextRealityModels: [{
       tilesetUrl: "google.com",
       name: "google",
@@ -689,13 +797,13 @@ describe("DisplayStyleSettings overrides", () => {
         colorScheme: 0,
         customKeys: [],
       },
-      axis: [ -1, 0, 1 ],
-      sunDirection: [ 1, 0, -1 ],
-      range: [1, 100 ],
+      axis: [-1, 0, 1],
+      sunDirection: [1, 0, -1],
+      range: [1, 100],
       sensorSettings: {
         distanceCutoff: 12,
         sensors: [
-          { position: [ 10, 20, 30 ], value: 0.5 },
+          { position: [10, 20, 30], value: 0.5 },
         ],
       },
     },
@@ -723,7 +831,7 @@ describe("DisplayStyleSettings overrides", () => {
     const vfNoMap = { ...vfNoMapNoDec, acs: true, grid: false };
 
     roundTrip({ includeAll: true }, { ...settings.toJSON(), viewflags });
-    roundTrip({ }, { ...baseProps, viewflags: vfNoMapNoDec });
+    roundTrip({}, { ...baseProps, viewflags: vfNoMapNoDec });
     roundTrip({ includeBackgroundMap: true }, { ...baseProps, ...mapProps, viewflags: vfNoDec });
     roundTrip({ includeDrawingAids: true }, { ...baseProps, viewflags: vfNoMap });
     roundTrip({ includeBackgroundMap: true, includeDrawingAids: true }, { ...baseProps, ...mapProps, viewflags });
@@ -757,7 +865,7 @@ describe("DisplayStyleSettings overrides", () => {
       viewflags,
       analysisStyle: {
         inputName: undefined,
-        inputRange: [ 2, 4 ],
+        inputRange: [2, 4],
         displacementChannelName: "displacement",
         displacementScale: 2.5,
         normalChannelName: "normal",
@@ -776,7 +884,7 @@ describe("DisplayStyleSettings overrides", () => {
         realityModelUrl: "askjeeves.com",
         elementTimelines: [{
           batchId: 54,
-          elementIds: [ "0x1", "0x2", "0x3", "0x4" ],
+          elementIds: ["0x1", "0x2", "0x3", "0x4"],
         }],
       }],
     });
@@ -824,7 +932,7 @@ describe("DisplayStyleSettings overrides", () => {
       }],
     });
 
-    test({ viewflags, excludedElements: [ "0xdeadbeef", "0xbaadf00d" ] });
+    test({ viewflags, excludedElements: ["0xdeadbeef", "0xbaadf00d"] });
 
     test({
       viewflags,
@@ -838,9 +946,9 @@ describe("DisplayStyleSettings overrides", () => {
       viewflags,
       thematic: {
         displayMode: ThematicDisplayMode.Slope,
-        axis: [ 0, 0.5, 1 ],
-        range: [ 12, 24 ],
-        sunDirection: [ 0, 1, 0 ],
+        axis: [0, 0.5, 1],
+        range: [12, 24],
+        sunDirection: [0, 1, 0],
         gradientSettings: {
           mode: 1,
           colorScheme: 1,
@@ -884,7 +992,7 @@ describe("DisplayStyleSettings overrides", () => {
       },
     });
 
-    test({ viewflags, solarShadows: { bias: 0.4, color: ColorByName.blue} });
+    test({ viewflags, solarShadows: { bias: 0.4, color: ColorByName.blue } });
 
     test({
       viewflags,

@@ -165,7 +165,7 @@ export class ViewsFrontstage extends FrontstageProvider {
   private get _additionalNavigationVerticalToolbarItems() {
     return [
       ToolbarHelper.createToolbarItemFromItemDef(200, this._viewSelectorItemDef),
-      ToolbarHelper.createToolbarItemFromItemDef(200,
+      ToolbarHelper.createToolbarItemFromItemDef(210,
         new GroupItemDef({
           label: "Layout Demos",
           panelLabel: "Layout Demos",
@@ -252,7 +252,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           <Zone
             allowsMerging
             defaultState={ZoneState.Minimized}
-            initialWidth={350}
+            initialWidth={400}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
@@ -291,7 +291,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           <Zone
             allowsMerging
             defaultState={ZoneState.Minimized}
-            initialWidth={450}
+            initialWidth={400}
             widgets={
               [
                 <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
@@ -311,19 +311,13 @@ export class ViewsFrontstage extends FrontstageProvider {
         }
         bottomRight={
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
+            initialWidth={450}
             widgets={
               [
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
                   id={ViewsFrontstage.unifiedSelectionPropertyGridId}
                   control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
                   applicationData={{ iModelConnection: this.iModelConnection }}
-                // syncEventIds={[SyncUiEventId.SelectionSetChanged]}
-                // stateFunc={(): WidgetState => {
-                //   const activeContentControl = ContentViewManager.getActiveContentControl();
-                //   if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0))
-                //     return WidgetState.Open;
-                //   return WidgetState.Closed;
-                // }}
                 />,
                 <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               ]}

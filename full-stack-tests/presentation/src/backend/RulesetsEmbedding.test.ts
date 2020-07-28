@@ -143,7 +143,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    const rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: RULESET_1.id });
+    const rootNodes = await Presentation.getManager().getNodes({ requestContext: ClientRequestContext.current, imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 
@@ -153,14 +153,14 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    let rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: RULESET_1.id });
+    let rootNodes = await Presentation.getManager().getNodes({ requestContext: ClientRequestContext.current, imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
 
     const rulesetElement = imodel.elements.getElement(insertId);
     rulesetElement.setJsonProperty("id", faker.random.uuid());
     imodel.elements.updateElement(rulesetElement);
 
-    rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: RULESET_1.id });
+    rootNodes = await Presentation.getManager().getNodes({ requestContext: ClientRequestContext.current, imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 

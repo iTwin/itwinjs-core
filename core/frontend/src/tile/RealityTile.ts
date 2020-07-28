@@ -7,16 +7,14 @@
  */
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipMaskXYZRangePlanes, ClipPlaneContainment, ClipShape, ClipVector, Transform } from "@bentley/geometry-core";
-import { BoundingSphere, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Transform } from "@bentley/geometry-core";
+import { ColorDef } from "@bentley/imodeljs-common";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
-import {
-  RealityTileTree, Tile, TileContent, TileDrawArgs, TileGraphicType, TileParams, TileRequest, TileTreeLoadStatus, TileVisibility, TraversalDetails,
-  TraversalSelectionContext,
-} from "./internal";
+import { RealityTileTree, Tile, TileContent, TileDrawArgs, TileGraphicType, TileParams, TileRequest, TileTreeLoadStatus, TraversalDetails, TraversalSelectionContext } from "./internal";
+import { TileLoadStatus } from "./Tile";
 
 /** @internal */
 export interface RealityTileParams extends TileParams {
@@ -24,16 +22,13 @@ export interface RealityTileParams extends TileParams {
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
-const scratchWorldFrustum = new Frustum();
-const scratchRootFrustum = new Frustum();
-const scratchWorldSphere = new BoundingSphere();
-const scratchRootSphere = new BoundingSphere();
 /**
  * A specialization of tiles that represent reality tiles.  3D Tilesets and maps use this class and have their own optimized traversal and lifetime management.
  * @internal
  */
 export class RealityTile extends Tile {
   public readonly transformToRoot?: Transform;
+  private _everDisplayed = false;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
@@ -52,9 +47,14 @@ export class RealityTile extends Tile {
   public get graphicType(): TileGraphicType | undefined { return undefined; }     // If undefined, use tree type.
   public get maxDepth(): number { return this.realityRoot.loader.maxDepth; }
   public get isPointCloud() { return this.realityRoot.loader.containsPointClouds; }
+  public get isLoaded() { return this.loadStatus === TileLoadStatus.Ready; }      // Reality tiles may depend on secondary tiles (maps) so can ge loaded but not ready.
 
   public markUsed(args: TileDrawArgs): void {
     args.markUsed(this);
+  }
+
+  public markDisplayed(): void {
+    this._everDisplayed = true;
   }
 
   public isOccluded(_viewingSpace: ViewingSpace): boolean {
@@ -141,7 +141,7 @@ export class RealityTile extends Tile {
       return false;
 
     for (const child of this.realityChildren) {
-      if (child.isReady && TileVisibility.Visible === child.computeVisibility(args)) {
+      if (child.isReady && child.computeVisibilityFactor(args) > 0) {
         scratchLoadedChildren.push(child);
       } else if (!child.getLoadedRealityChildren(args))
         return false;
@@ -151,8 +151,8 @@ export class RealityTile extends Tile {
   public forceSelectRealityTile(): boolean { return false; }
 
   public selectRealityTiles(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
-    const vis = this.computeVisibility(args);
-    if (TileVisibility.OutsideFrustum === vis)
+    const visibility = this.computeVisibilityFactor(args);
+    if (visibility < 0)
       return;
 
     if (this.realityRoot.loader.forceTileLoad(this) && !this.isReady) {
@@ -160,18 +160,23 @@ export class RealityTile extends Tile {
       return;
     }
 
-    if (this.isDisplayable && (vis === TileVisibility.Visible || this.isLeaf || this._anyChildNotFound || this.forceSelectRealityTile())) {
-      context.selectOrQueue(this, args, traversalDetails);
+    if (this.isDisplayable && (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile())) {
+      if (!this.isOccluded(args.viewingSpace)) {
+        context.selectOrQueue(this, args, traversalDetails);
 
-      if (!this.isReady) {      // This tile is visible but not loaded - Use higher resolution children if present
-        if (this.getLoadedRealityChildren(args))
-          context.select(scratchLoadedChildren, args);
-        scratchLoadedChildren.length = 0;
+        if (!this.isReady) {      // This tile is visible but not loaded - Use higher resolution children if present
+          if (this.getLoadedRealityChildren(args))
+            context.select(scratchLoadedChildren, args);
+          scratchLoadedChildren.length = 0;
+        }
       }
     } else {
       this.selectRealityChildren(context, args, traversalDetails);
-      if (this.isDisplayable && this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
-        context.selectOrQueue(this, args, traversalDetails);
+      if (this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
+        const minimumVisibleFactor = .25;     // If the tile has not yet been displayed in this viewport -- display only if it is within 25% of visible. Avoid overly tiles popping into view unexpectedly (terrain)
+
+        if (visibility > minimumVisibleFactor || this._everDisplayed)
+          context.selectOrQueue(this, args, traversalDetails);
       }
     }
   }
@@ -188,63 +193,35 @@ export class RealityTile extends Tile {
         child.purgeContents(olderThan);
   }
 
-  private testContainment(frustumPlanes: FrustumPlanes, range: ElementAlignedBox3d, args: TileDrawArgs, sphere?: BoundingSphere): FrustumPlanes.Containment {
-    const box = Frustum.fromRange(range, scratchRootFrustum);
-    const worldBox = box.transformBy(args.location, scratchWorldFrustum);
-    const worldSphere = sphere ? sphere.transformBy(args.location, scratchWorldSphere) : undefined;
+  public computeVisibilityFactor(args: TileDrawArgs): number {
+    if (this.isEmpty || this.isRegionCulled(args))
+      return -1;
 
-    // TBD - keep track of partial containment so we can avoid inside test if parent inside.
+    // some nodes are merely for structure and don't have any geometry
+    if (!this.isDisplayable)
+      return 0;
 
-    // Test against frustum.
-    const containment = frustumPlanes.computeFrustumContainment(worldBox, worldSphere);
-    if (FrustumPlanes.Containment.Outside === containment)
-      return FrustumPlanes.Containment.Outside;
+    if (this.isLeaf)
+      return this.hasContentRange && this.isContentCulled(args) ? -1 : 1;
 
-    // Test against TileTree's own clip volume, if any.
-    if (undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(box.points))
-      return FrustumPlanes.Containment.Outside;
-
-    // Test against view clip, if any (will be undefined if TileTree does not want view clip applied to it).
-    if (undefined !== args.viewClip && ClipPlaneContainment.StronglyOutside === args.viewClip.classifyPointContainment(worldBox.points))
-      return FrustumPlanes.Containment.Outside;
-
-    return containment;
-  }
-
-  public computeVisibility(args: TileDrawArgs): TileVisibility {
-    let visibility = super.computeVisibility(args);
-    if (visibility === TileVisibility.Visible && this.isOccluded(args.viewingSpace)) // Add occlusion test to allow tile to determine occlusion (globe).
-      visibility = TileVisibility.OutsideFrustum;
-
-    return visibility;
+    return this.maximumSize / args.getPixelSize(this);
   }
 
   public preloadTilesInFrustum(args: TileDrawArgs, context: TraversalSelectionContext, preloadSizeModifier: number) {
-    scratchRootSphere.init(this.center, this.radius);
-    if (FrustumPlanes.Containment.Outside === this.testContainment(args.frustumPlanes, this.range, args, scratchRootSphere))
+    const visibility = this.computeVisibilityFactor(args);
+    if (visibility < 0)
       return;
 
-    if (this.isDisplayable) {
-      const pixelSize = args.getPixelSize(this);
-      const maxSize = this.maximumSize * args.tileSizeModifier * preloadSizeModifier;
-
-      if (this.realityRoot.loader.forceTileLoad(this) && !this.isReady && !this.isOccluded(args.viewingSpace)) {    // Force load if necessary (tile required for availability).
-        context.preload(this, args);
-        return;
+    if (visibility * preloadSizeModifier > 1) {
+      context.preload(this, args);
+    } else {
+      const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
+      if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
+        args.markChildrenLoading();
+      } else if (undefined !== this.realityChildren) {
+        for (const child of this.realityChildren)
+          child.preloadTilesInFrustum(args, context, preloadSizeModifier);
       }
-
-      if (pixelSize < maxSize) {
-        if (!this.hasContentRange || this.testContainment(args.frustumPlanes, this.contentRange, args) !== FrustumPlanes.Containment.Outside)
-          context.preload(this, args);
-        return;
-      }
-    }
-    const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
-    if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
-      args.markChildrenLoading();
-    } else if (undefined !== this.realityChildren) {
-      for (const child of this.realityChildren)
-        child.preloadTilesInFrustum(args, context, preloadSizeModifier);
     }
   }
 

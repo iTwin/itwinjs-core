@@ -6,6 +6,7 @@
  * @module Zone
  */
 
+import produce from "immer";
 import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { Cell, CellProps } from "../../utilities/Cell";
 import { DisabledResizeHandles } from "../../utilities/DisabledResizeHandles";
@@ -19,6 +20,7 @@ import {
   getDefaultWidgetManagerProps, getDefaultWidgetVerticalAnchor, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps,
 } from "./Widget";
 import { getDefaultZoneManagerProps, getWindowResizeSettings, ZoneManager, ZoneManagerProps } from "./Zone";
+import { setRectangleProps } from "../../base/NineZoneState";
 
 /** Widget zone id.
  *
@@ -94,6 +96,7 @@ export interface ZonesManagerProps {
   readonly widgets: ZonesManagerWidgetsProps;
   readonly zones: ZonesManagerZonesProps;
   readonly zonesBounds: RectangleProps;
+  readonly floatingZonesBounds?: RectangleProps;
 }
 
 /** Returns default [[ZonesManagerProps]] object.
@@ -358,17 +361,21 @@ export class ZonesManager {
     if (!draggedWidget)
       return props;
 
+    const draggedZone = this.findZoneWithWidget(draggedWidget.id, props);
     if (!props.target) {
+      if (draggedZone && draggedZone.floating && props.floatingZonesBounds) {
+        const bounds = Rectangle.create(draggedZone.floating.bounds);
+        const contained = bounds.containIn(props.floatingZonesBounds);
+        props = this.setZoneFloatingBounds(draggedZone.id, contained.toProps(), props);
+      }
       return {
         ...props,
         draggedWidget: undefined,
       };
     }
 
-    const draggedZone = this.findZoneWithWidget(draggedWidget.id, props);
     if (!draggedZone)
       return props;
-
     switch (props.target.type) {
       case ZoneTargetType.Merge: {
         const targetZone = props.zones[props.target.zoneId];
@@ -481,6 +488,36 @@ export class ZonesManager {
     };
   }
 
+  public setFloatingZonesBounds(bounds: RectangleProps | undefined, props: ZonesManagerProps): ZonesManagerProps {
+    props = produce(props, (draft) => {
+      if (draft.floatingZonesBounds) {
+        if (!bounds)
+          draft.floatingZonesBounds = undefined;
+        else {
+          setRectangleProps(draft.floatingZonesBounds, bounds);
+        }
+      } else {
+        draft.floatingZonesBounds = bounds && Rectangle.create(bounds).toProps();
+      }
+    });
+    const draggedZone = props.draggedWidget && this.findZoneWithWidget(props.draggedWidget.id, props);
+    for (const zId of widgetZoneIds) {
+      const zone = props.zones[zId];
+      const floating = zone.floating;
+      if (draggedZone?.id === zId)
+        continue;
+      if (!floating)
+        continue;
+      if (!props.floatingZonesBounds)
+        continue;
+
+      const floatingBounds = Rectangle.create(floating.bounds).containIn(props.floatingZonesBounds);
+      props = this.setZoneFloatingBounds(zId, floatingBounds.toProps(), props);
+    }
+
+    return props;
+  }
+
   public setZonesBounds(zonesBounds: RectangleProps, props: ZonesManagerProps): ZonesManagerProps {
     const newBounds = Rectangle.create(zonesBounds);
     if (newBounds.equals(props.zonesBounds))
@@ -501,8 +538,8 @@ export class ZonesManager {
       if (!floating)
         continue;
 
-      const floatingBounds = Rectangle.create(floating.bounds).offset(offset).toProps();
-      props = this.setZoneFloatingBounds(zId, floatingBounds, props);
+      const floatingBounds = Rectangle.create(floating.bounds).offset(offset);
+      props = this.setZoneFloatingBounds(zId, floatingBounds.toProps(), props);
     }
 
     return props;

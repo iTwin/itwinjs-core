@@ -6,12 +6,17 @@
 
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { Content } from '@bentley/presentation-common';
+import { ContentDescriptorRequestOptions } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
+import { DisplayLabelRequestOptions } from '@bentley/presentation-common';
+import { DisplayLabelsRequestOptions } from '@bentley/presentation-common';
 import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
 import { EventSource } from '@bentley/imodeljs-frontend';
+import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
+import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { Field } from '@bentley/presentation-common';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { HierarchyUpdateInfo } from '@bentley/presentation-common';
@@ -167,24 +172,54 @@ export class PresentationManager implements IDisposable {
     static create(props?: PresentationManagerProps): PresentationManager;
     // (undocumented)
     dispose(): void;
+    // @deprecated
     getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
+    // @beta (undocumented)
+    getContent(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>): Promise<Content | undefined>;
+    // @deprecated
     getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<{
         content: Content;
         size: number;
     } | undefined>;
+    // @beta (undocumented)
+    getContentAndSize(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>): Promise<{
+        content: Content;
+        size: number;
+    } | undefined>;
+    // @deprecated
     getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
+    // @beta (undocumented)
+    getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet>): Promise<Descriptor | undefined>;
+    // @deprecated
     getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
+    // @beta (undocumented)
+    getContentSetSize(requestOptions: ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<number>;
+    // @deprecated
     getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<LabelDefinition>;
+    // @beta (undocumented)
+    getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition>;
+    // @deprecated
     getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]>;
+    // @beta (undocumented)
+    getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]>;
     getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
     getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
-    getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey): Promise<Node[]>;
-    getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey): Promise<{
-        nodes: Node[];
+    // @deprecated
+    getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: NodeKey | undefined): Promise<Node[]>;
+    getNodes(requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>): Promise<Node[]>;
+    // @deprecated
+    getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: NodeKey | undefined): Promise<{
         count: number;
+        nodes: Node[];
     }>;
-    getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: NodeKey): Promise<number>;
+    getNodesAndCount(requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>): Promise<{
+        count: number;
+        nodes: Node[];
+    }>;
+    // @deprecated
+    getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey: NodeKey | undefined): Promise<number>;
+    getNodesCount(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>): Promise<number>;
     // @alpha
     getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<PagedResponse<DisplayValueGroup>>;
     // @alpha

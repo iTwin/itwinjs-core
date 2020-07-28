@@ -20,6 +20,8 @@
     "NoElements": "No Elements Found",
     "ByApp": "Element not valid for tool",
     "Transient": "Decoration is not valid for this tool",
+    "RealityModel": "Reality model is not valid for this tool",
+    "Map": "Map is not valid for this tool",
     "NotSnappable": "Not snappable with current snap mode(s)",
     "NotLocatable": "Element is not locatable",
     "ExternalIModel": "iModel is not locatable",

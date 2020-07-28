@@ -6,8 +6,14 @@
     "ToggleWiremesh": {
       "keyin": "fdt toggle wiremesh"
     },
+    "ToggleDPIForLOD": {
+      "keyin": "fdt dpi lod"
+    },
     "ToggleReadPixels": {
       "keyin": "fdt toggle readpixels"
+    },
+    "ToggleLogZ": {
+      "keyin": "fdt toggle logz"
     },
     "ToggleDrapeFrustum": {
       "keyin": "fdt toggle drapefrustum"
@@ -84,6 +90,9 @@
     "ToggleToolTips": {
       "keyin": "fdt tooltips"
     },
+    "ToggleTerrain": {
+      "keyin": "fdt toggle terrain"
+    },
     "ChangeHiliteSettings": {
       "keyin": "fdt hilite settings"
     },
@@ -144,6 +153,51 @@
     "ElementIdFromSourceAspectId": {
       "keyin": "fdt elemId from sourceId"
     },
+    "AttachMapLayerTool": {
+      "keyin": "fdt attach maplayer"
+    },
+    "AttachMapOverlayTool": {
+      "keyin": "fdt attach mapoverlay"
+    },
+    "AttachWmsMapLayerTool": {
+      "keyin": "fdt attach wms maplayer"
+    },
+    "AttachWmtsMapLayerTool": {
+      "keyin": "fdt attach wmts maplayer"
+    },
+    "MapLayerZoom": {
+      "keyin": "fdt zoom maplayer"
+    },
+    "AttachArcGISMapLayerTool": {
+      "keyin": "fdt attach arcgis maplayer"
+    },
+    "AttachTileURLMapLayerTool": {
+      "keyin": "fdt attach tileurl maplayer"
+    },
+    "SetMapBaseTool": {
+      "keyin": "fdt set map base url"
+    },
+    "SetMapBaseColorTool": {
+      "keyin": "fdt set map base color"
+    },
+    "SetMapBaseTransparencyTool": {
+      "keyin": "fdt set map base transparency"
+    },
+    "DetachMapLayersTool": {
+      "keyin": "fdt detach maplayers"
+    },
+    "SetMapLayerTransparency": {
+      "keyin": "fdt set mapLayer transparency"
+    },
+    "SetMapSubLayerVisibility": {
+      "keyin": "fdt set mapsublayer visibility"
+    },
+    "SetMapLayerVisibility": {
+      "keyin": "fdt set mapLayer visibility"
+    },
+    "ReorderMapLayers": {
+      "keyin": "fdt reorder maplayer"
+    },
     "Toggle3dManipulations": {
       "keyin": "fdt 3dmanip"
     },
@@ -170,6 +224,9 @@
     },
     "SaveRenderingStyle": {
       "keyin": "fdt save rendering style"
+    },
+    "SetAASamples": {
+      "keyin": "fdt aasamples"
     }
   }
 }

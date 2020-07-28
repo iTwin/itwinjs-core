@@ -30,6 +30,7 @@ function configMockSettings() {
     return;
 
   Config.App.set("imjs_imodelhub_url", "https://mockimodelhub.com");
+  Config.App.set("imjs_rbac_url", "https://mockrbac.com");
   Config.App.set("imjs_buddi_url", "https://mockbuddi.com");
   Config.App.set("imjs_buddi_resolve_url_using_region", 0);
   Config.App.set("imjs_test_serviceAccount1_user_name", "test");
@@ -180,6 +181,20 @@ export class IModelHubUrlMock {
   }
 }
 
+export class RbacUrlMock {
+  public static getUrl(): string {
+    configMockSettings();
+    return Config.App.get("imjs_rbac_url", "");
+  }
+
+  public static mockGetUrl() {
+    if (!TestConfig.enableMocks)
+      return;
+    const url = RbacUrlMock.getUrl();
+    UrlDiscoveryMock.mockGetUrl("RBAC.Url.APIM", Config.App.get("imjs_buddi_resolve_url_using_region"), url);
+  }
+}
+
 export function getDefaultClient() {
   IModelHubUrlMock.mockGetUrl();
   return getCloudEnv().isIModelHub ? getImodelHubClient() : imodelBankClient;
@@ -303,11 +318,11 @@ export async function deleteIModelByName(requestContext: AuthorizedClientRequest
   }
 }
 
-export async function getIModelId(requestContext: AuthorizedClientRequestContext, imodelName: string): Promise<GuidString> {
+export async function getIModelId(requestContext: AuthorizedClientRequestContext, imodelName: string, projectId?: string): Promise<GuidString> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
-  const projectId = await getProjectId(requestContext);
+  projectId = projectId ?? await getProjectId(requestContext);
 
   const client = getDefaultClient();
   const imodels = await client.iModels.get(requestContext, projectId, new IModelQuery().byName(imodelName));

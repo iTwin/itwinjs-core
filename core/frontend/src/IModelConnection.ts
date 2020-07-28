@@ -6,17 +6,10 @@
  * @module IModelConnection
  */
 
-import {
-  assert, BeEvent, BentleyStatus, DbResult, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
-} from "@bentley/bentleyjs-core";
+import { assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
-import {
-  AxisAlignedBox3d, BriefcaseProps, Cartographic, CodeSpec, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap, FontMapProps,
-  GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcProps,
-  IModelStatus, IModelVersion, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams,
-  NativeAppRpcInterface, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation,
-  RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
-} from "@bentley/imodeljs-common";
+import { AxisAlignedBox3d, BentleyStatus, BriefcaseProps, Cartographic, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementProps, EntityQueryParams, FontMap, FontMapProps, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcProps, IModelStatus, IModelVersion, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NativeAppRpcInterface, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface } from "@bentley/imodeljs-common";
+import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { EditingFunctions } from "./EditingFunctions";
 import { EntityState } from "./EntityState";
 import { EventSource, EventSourceManager } from "./EventSource";
@@ -80,6 +73,10 @@ export abstract class IModelConnection extends IModel {
   public readonly subcategories: SubCategoriesCache;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
+  /** The map location.
+   * @internal
+   */
+  public backgroundMapLocation = new BackgroundMapLocation();
   /** The Geographic location services available for this iModelConnection
    * @internal
    */
@@ -522,6 +519,9 @@ export abstract class IModelConnection extends IModel {
     // setEcefLocation is invoked from IModel constructor...
     if (this.tiles)
       this.tiles.onEcefChanged();
+
+    if (this.backgroundMapLocation && this.ecefLocation)
+      this.backgroundMapLocation.onEcefChanged(this.ecefLocation);
   }
 }
 
@@ -1149,6 +1149,7 @@ export namespace IModelConnection {
       if (undefined === ctor)
         throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps);
 
+      await this._iModel.backgroundMapLocation.initialize(this._iModel);
       const viewState = ctor.createFromProps(viewProps, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector
       return viewState;

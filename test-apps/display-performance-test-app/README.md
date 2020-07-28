@@ -88,6 +88,7 @@ You can specify any render option that is part of the RenderSystem.Options inter
 * preserveShaderSourceCode - If true, preserve the shader source code as internal strings, useful for debugging purposes.
 * displaySolarShadows - If true, display solar shadows. (this will only cause shadows to be displayed if shadows are enabled in the view flags)
 * useWebGL2 - If true, attempt to use a WebGL2 rendering context.
+* antialiasSamples - If > 1 and using WebGL2, antialias the rendered image with the given number of samples.
 
 You can specify any tile property that is part of the TileAdmin.Props interface. The types of tile properties that can be specified include (but are not limited to):
 
@@ -343,7 +344,9 @@ The 'Render Options' column contains a string representation of the render optio
 * +optSurf      - (no longer supported) the optimized shaders will be used when in 3d views if the render mode is wireframe or if both the render mode is smooth shade and visible edges are turned off.
 * +cullActVol   - (no longer supported) When a clip volume is applied to the view, geometry will be tested against the clip volume on the CPU and not drawn if it is entirely clipped, improving performance
 * +shadeSrc     - This preserves the shader source code as internal strings, useful for debugging purposes
-* +solShd       - Display solar shadows when the shadows view flag is enabled
+* -solShd       - Do not display solar shadows when the shadows view flag is enabled
+* +webGL2       - use a WebGL2 context
+* +aaX          - Use antialiasing with the number of samples set to X (if X is <= 1 then antialiasing is turned off)
 
 The 'Tile Props' column contains a string representation of the tile properties that have been set. This string representation may consist of any or all of the following:
 

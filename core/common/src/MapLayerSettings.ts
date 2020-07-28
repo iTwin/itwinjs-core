@@ -1,0 +1,330 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module DisplayStyles
+ */
+
+import { BackgroundMapSettings, BackgroundMapType } from "./BackgroundMapSettings";
+
+/** @alpha */
+export type SubLayerId = string | number;
+
+/** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].
+ * A map sub layer represents a set of objects within the layer that can be controlled seperately.  These
+ * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
+ * @see [[MapLayerProps]]
+ * @alpha
+ */
+export interface MapSubLayerProps {
+  name?: string;
+  title?: string;
+  visible?: boolean;
+  id?: SubLayerId;
+  parent?: SubLayerId;
+  children?: SubLayerId[];
+}
+
+/** Normalized representation of a [[MapSubLayerProps]] for which values
+ * have been validated and default values have been applied where explicit values not defined.
+ * A map sub layer represents a set of objects within the layer that can be controlled seperately.  These
+ * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
+ * [[MapSubLayers]] can represent a hierarchy, in this case a sub layer is visible only if all its ancestors are also visible.
+ * @see [[MapLayerSettings]]
+ * @alpha
+ */
+export class MapSubLayerSettings {
+  /** Typically Name is a single word used for machine-to-machine communication while the Title is for the benefit of humans (WMS) */
+  public readonly name: string;
+  /** Title. */
+  public readonly title?: string;
+  /** If true the sub layer is visible.  If part of a hierarchy, a sub layer is visible only if its ancestors are also visible. */
+  public readonly visible: boolean;
+  /** A unique string or number that may be used to identify the sub layer (ArcGIS) */
+  public readonly id: SubLayerId;
+  /** One or more sublayer children */
+  public readonly children?: SubLayerId[];
+  /** sublayer parent. */
+  public readonly parent?: SubLayerId;
+
+  constructor(name: string, title?: string, visible?: boolean, id?: SubLayerId, parent?: SubLayerId, children?: SubLayerId[]) {
+    this.name = name;
+    this.title = title;
+    this.visible = visible !== undefined && visible;
+    this.id = (id === undefined) ? this.name : id;
+    this.parent = parent;
+    this.children = children;
+  }
+  /** Construct from JSON, performing validation and applying default values for undefined fields. */
+  public static fromJSON(json: MapSubLayerProps): MapSubLayerSettings | undefined {
+    if (undefined === json || undefined === json.name)
+      return undefined;
+    return new MapSubLayerSettings(json.name, json.title, json.visible, (json.id === json.name) ? undefined : json.id, json.parent, json.children);
+  }
+  public toJSON(): MapSubLayerProps {
+    return {
+      name: this.name,
+      title: this.title,
+      visible: this.visible,
+      id: (this.id === this.name) ? undefined : this.id,
+      parent: this.parent,
+      children: this.children,
+    };
+  }
+  /** Creating a copy of this MapSubLayer, optionally modifying some if its properties */
+  public clone(changedProps: MapSubLayerProps): MapSubLayerSettings {
+    if (undefined === changedProps)
+      return this;
+
+    const props = {
+      name: undefined !== changedProps.name ? changedProps.name : this.name,
+      id: undefined !== changedProps.id ? changedProps.id : this.id,
+      visible: undefined !== changedProps.visible ? changedProps.visible : this.visible,
+      parent: undefined !== changedProps.parent ? changedProps.parent : this.parent,
+      children: undefined !== changedProps.children ? changedProps.children.slice() : this.children?.slice(),
+      title: undefined !== changedProps.title ? changedProps.title : this.title,
+    };
+    return MapSubLayerSettings.fromJSON(props)!;
+  }
+  /** @internal */
+  public displayMatches(other: MapSubLayerSettings): boolean {
+    return this.name === other.name && this.visible === other.visible;
+  }
+  /** return true if this sublayer is named. */
+  public get isNamed(): boolean { return this.name.length > 0; }
+  /** return true if this sublayer is a leaf (has no children) */
+  public get isLeaf(): boolean { return this.children === undefined || this.children.length === 0; }
+  /** return a string representing this sublayer id (converting to string if underlying id is number) */
+  public get idString(): string { return (typeof this.id === "number") ? this.id.toString(10) : this.id; }
+}
+
+/** JSON representation of the settings associated with a map layer.  One or more map layers may be included within a [[MapImageryProps]] object.
+ * @see [[MapImageryProps]]
+ * @alpha
+ */
+export interface MapLayerProps {
+  /** Controls visibility of layer */
+  visible?: boolean;
+  /** Identifies the map layers source. */
+  formatId?: string;
+  /** Name */
+  name?: string;
+  /** URL */
+  url?: string;
+  /** Source layers. If undefined all layers are displayed. */
+  subLayers?: MapSubLayerProps[];
+  /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: 0. */
+  transparency?: number;
+  /** True to indicate background is tranparent */
+  transparentBackground?: boolean;
+  /** Maximum zoom level */
+  maxZoom?: number;
+  /** Is a base layer */
+  isBase?: boolean;
+  /** User name - if required for authentication. */
+  userName?: string;
+  /** Password - if required for authentication */
+  password?: string;
+}
+
+/** Normalized representation of a [[MapLayerProps]] for which values have been  validated and default values have been applied where explicit values not defined.
+ * One or more map layers may be included within [[MapImagerySettings]] object.
+ * @see [[MapImagerySettings]]
+ * @alpha
+ */
+export class MapLayerSettings {
+  public readonly visible: boolean;
+  public readonly formatId: string;
+  public readonly name: string;
+  public readonly url: string;
+  public readonly transparency: number;
+  public readonly subLayers: MapSubLayerSettings[];
+  public readonly transparentBackground: boolean;
+  public readonly isBase: boolean;
+  public readonly userName?: string;
+  public readonly password?: string;
+  // tslint:disable-next-line: no-unnecessary-initializer
+  private constructor(url: string, name: string, formatId: string = "WMS", visible = true, jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0, transparentBackground = true, isBase = false, userName?: string, password?: string) {
+    this.formatId = formatId;
+    this.name = name;
+    this.visible = visible;
+    this.transparentBackground = transparentBackground;
+    this.isBase = isBase;
+    this.subLayers = new Array<MapSubLayerSettings>();
+    if (jsonSubLayers !== undefined) {
+      for (const jsonSubLayer of jsonSubLayers) {
+        const subLayer = MapSubLayerSettings.fromJSON(jsonSubLayer);
+        if (undefined !== subLayer)
+          this.subLayers.push(subLayer);
+      }
+      this.userName = userName;
+      this.password = password;
+    }
+
+    this.transparency = transparency;
+    this.url = url;
+  }
+  /** Construct from JSON, performing validation and applying default values for undefined fields. */
+  public static fromJSON(json?: MapLayerProps): MapLayerSettings | undefined {
+    if (json === undefined || json.url === undefined || undefined === json.name)
+      return undefined;
+
+    const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
+    return new MapLayerSettings(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, json.userName, json.password);
+  }
+  /** return JSON representation of this MapLayerSettings object */
+  public toJSON(): MapLayerProps {
+    const props: MapLayerProps = {};
+    if (this.subLayers) {
+      props.subLayers = [];
+      this.subLayers.forEach((subLayer) => {
+        const subLayerJson = subLayer.toJSON();
+        if (subLayerJson)
+          props.subLayers!.push(subLayerJson);
+      });
+    }
+    props.formatId = this.formatId;
+    props.name = this.name;
+    props.url = this.url;
+    props.userName = this.userName;
+    props.password = this.password;
+    if (0 !== this.transparency)
+      props.transparency = this.transparency;
+    if (this.transparentBackground === false)
+      props.transparentBackground = this.transparentBackground;
+    if (this.isBase === true)
+      props.isBase = this.isBase;
+
+    return props;
+  }
+  /** @internal */
+  private static mapTypeName(type: BackgroundMapType) {   // TBD.. Localization.
+    switch (type) {
+      case BackgroundMapType.Aerial:
+        return "Aerial Imagery";
+      default:
+      case BackgroundMapType.Hybrid:
+        return "Aerial Imagery with labels";
+      case BackgroundMapType.Street:
+        return "Streets";
+    }
+  }
+  /** Create a [[MapLayerSettings]] object from the image settings within a [[BackgroundMapSettings]] object (providerName and mapType).  */
+  public static fromMapSettings(mapSettings: BackgroundMapSettings): MapLayerSettings {
+    let formatId: string, url: string, name: string;
+    switch (mapSettings.providerName) {
+      case "BingProvider":
+      default:
+        formatId = "BingMaps";
+
+        let imagerySet;
+        switch (mapSettings.mapType) {
+          case BackgroundMapType.Street:
+            imagerySet = "Road";
+            break;
+          case BackgroundMapType.Aerial:
+            imagerySet = "Aerial";
+            break;
+          case BackgroundMapType.Hybrid:
+          default:
+            imagerySet = "AerialWithLabels";
+            break;
+        }
+        name = `Bing Maps: ${MapLayerSettings.mapTypeName(mapSettings.mapType)}`;
+        url = `https://dev.virtualearth.net/REST/v1/Imagery/Metadata/${imagerySet}?o=json&incl=ImageryProviders&key={bingKey}`;
+        break;
+
+      case "MapBoxProvider":
+        formatId = "MapboxImagery";
+        name = `MapBox: ${MapLayerSettings.mapTypeName(mapSettings.mapType)}`;
+        switch (mapSettings.mapType) {
+          case BackgroundMapType.Street:
+            url = "https://api.mapbox.com/v4/mapbox.streets/";
+            break;
+          case BackgroundMapType.Aerial:
+            url = "https://api.mapbox.com/v4/mapbox.satellite/";
+            break;
+          case BackgroundMapType.Hybrid:
+            url = "https://api.mapbox.com/v4/mapbox.streets-satellite/";
+            break;
+        }
+        break;
+    }
+    return MapLayerSettings.fromJSON({ name, formatId, url, transparency: mapSettings.transparency === false ? 0.0 : mapSettings.transparency, transparentBackground: false, isBase: true })!;
+  }
+
+  /** Create a copy of this MapLayerSettings, optionally modifying some of its properties.
+   * @param changedProps JSON representation of the properties to change.
+   * @returns A MapLayerSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
+   */
+  public clone(changedProps: MapLayerProps): MapLayerSettings {
+    if (undefined === changedProps)
+      return this;
+
+    const props = {
+      name: undefined !== changedProps.name ? changedProps.name : this.name,
+      formatId: undefined !== changedProps.formatId ? changedProps.formatId : this.formatId,
+      visible: undefined !== changedProps.visible ? changedProps.visible : this.visible,
+      url: undefined !== changedProps.url ? changedProps.url : this.url,
+      transparency: undefined !== changedProps.transparency ? changedProps.transparency : this.transparency,
+      transparentBackground: undefined !== changedProps.transparentBackground ? changedProps.transparentBackground : this.transparentBackground,
+      subLayers: undefined !== changedProps.subLayers ? changedProps.subLayers : this.subLayers,
+      userName: undefined !== changedProps.userName ? changedProps.userName : this.userName,
+      password: undefined !== changedProps.password ? changedProps.password : this.password,
+    };
+    return MapLayerSettings.fromJSON(props)!;
+  }
+
+  /** @internal */
+  public displayMatches(other: MapLayerSettings): boolean {
+    if (!this.matchesNameAndUrl(other.name, other.url) || this.visible !== other.visible || this.transparency !== other.transparency || this.transparentBackground !== other.transparentBackground || this.subLayers.length !== other.subLayers.length)
+      return false;
+
+    for (let i = 0; i < this.subLayers.length; i++)
+      if (!this.subLayers[i].displayMatches(other.subLayers[i]))
+        return false;
+
+    return true;
+  }
+
+  /** @internal */
+  public matchesNameAndUrl(name: string, url: string): boolean {
+    return this.name === name && this.url === url;
+  }
+
+  /** Return a sublayer matching id -- or undefined if not found */
+  public subLayerById(id?: SubLayerId): MapSubLayerSettings | undefined {
+    return id === undefined ? undefined : this.subLayers.find((subLayer) => subLayer.id === id);
+  }
+
+  /** Return true if sublayer is visible -- testing ancestors for visibility if they exist. */
+  public isSubLayerVisible(subLayer: MapSubLayerSettings): boolean {
+    if (!subLayer.visible)
+      return false;
+    const parent = this.subLayerById(subLayer.parent);
+    return parent === undefined || this.isSubLayerVisible(parent);
+  }
+
+  /** Return true if all sublayers are visible. */
+  public get allSubLayersInvisible(): boolean {
+    if (this.subLayers.length === 0)
+      return false;
+    return this.subLayers.every((subLayer) => !subLayer.isLeaf || !this.isSubLayerVisible(subLayer));
+  }
+
+  /** Return the children for a sublayer */
+  public getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined {
+    if (!subLayer.children)
+      return undefined;
+
+    const children = new Array<MapSubLayerSettings>();
+    subLayer.children.forEach((childId) => {
+      const child = this.subLayerById(childId);
+      if (child !== undefined)
+        children.push(child);
+    });
+
+    return children;
+  }
+}

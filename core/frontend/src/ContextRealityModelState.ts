@@ -116,7 +116,6 @@ export class ContextRealityModelState {
     return this.name === name && this.url === url;
   }
 }
-
 /**
  * Returns a list of reality data associated to the given iTwin context
  * @param contextId id of associated iTwin context

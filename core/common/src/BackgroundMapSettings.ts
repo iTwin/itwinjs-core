@@ -36,7 +36,7 @@ export enum GlobeMode {
  * @public
  */
 export interface BackgroundMapProps {
-  /** The elevation of the map in meters relative to sea level. Default value: 0. */
+  /** The elevation of the map in meters relative the WGS84 ellipsoid. Default value: 0. */
   groundBias?: number;
   /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider". Support for additional providers may be added in the future.
    *
@@ -69,7 +69,7 @@ export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
  * @public
  */
 export class BackgroundMapSettings {
-  /** Elevation in meters, relative to sea level. */
+  /** Elevation in meters, relative to WGS84 Ellipsoid.. */
   public readonly groundBias: number;
   /** Identifies the provider from which map image will be obtained. */
   public readonly providerName: BackgroundMapProviderName;

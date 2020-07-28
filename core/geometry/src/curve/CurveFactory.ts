@@ -27,6 +27,7 @@ import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { Loop } from "./Loop";
 import { Path } from "./Path";
+import { Angle } from "../geometry3d/Angle";
 
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
@@ -308,6 +309,28 @@ export class CurveFactory {
       }
     }
     return arcs;
+  }
+  /**
+   * Create a circular arc from start point, tangent at start, radius, optional plane normal, arc sweep
+   * * The vector from start point to center is in the direction of upVector crossed with tangentA.
+   * @param pointA start point
+   * @param tangentA vector in tangent direction at the start
+   * @param radius signed radius.
+   * @param upVector optional out-of-plane vector.  Defaults to positive Z
+   * @param sweep angular range.  If single `Angle` is given, start angle is at 0 degrees (the start point).
+   *
+   */
+  public static createArcPointTangentRadius(pointA: Point3d, tangentA: Vector3d, radius: number, upVector?: Vector3d, sweep?: Angle | AngleSweep): Arc3d | undefined {
+    if (upVector === undefined)
+      upVector = Vector3d.unitZ();
+    const vector0 = upVector.unitCrossProduct(tangentA);
+    if (vector0 === undefined)
+      return undefined;
+    const center = pointA.plusScaled(vector0, radius);
+    // reverse the A-to-center vector and bring it up to scale ...
+    vector0.scaleInPlace(-radius);
+    const vector90 = tangentA.scaleToLength(Math.abs(radius))!; // (Cannot fail -- prior unitCrossProduct would have failed first)
+    return Arc3d.create(center, vector0, vector90, AngleSweep.create(sweep));
   }
 }
 /**

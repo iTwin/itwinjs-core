@@ -7,7 +7,7 @@ import { IModelApp } from "../../../IModelApp";
 import { MockRender } from "../../../render/MockRender";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { TileAdmin } from "../../../tile/internal";
-import { System } from "../../../webgl";
+import { System } from "../../../render/webgl/System";
 
 function _createCanvas(): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas") as HTMLCanvasElement;
@@ -35,6 +35,22 @@ describe("Render Compatibility", () => {
     renderSysOpts = { logarithmicDepthBuffer: true, disabledExtensions: ["EXT_frag_depth"], useWebGL2: false };
     testSys = System.create(renderSysOpts);
     expect(testSys.options.logarithmicDepthBuffer).to.be.false;
+  });
+
+  it("should return webgl context if webgl2 is unsupported", () => {
+    const canvas = _createCanvas();
+    expect(canvas).to.not.be.undefined;
+    // force canvas to fail context creation if webgl2 is requested
+    const originalMethod = canvas!.getContext.bind(canvas);
+    (canvas as any).getContext = (contextId: any, args?: any) => {
+      if (contextId === "webgl2")
+        return null;
+      return originalMethod(contextId, args);
+    };
+    const context = System.createContext(canvas!, false);
+    expect(context).to.not.be.undefined;
+    expect(context instanceof WebGL2RenderingContext).to.be.false;
+    expect(context instanceof WebGLRenderingContext).to.be.true;
   });
 });
 

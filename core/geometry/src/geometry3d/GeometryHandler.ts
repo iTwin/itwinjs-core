@@ -24,7 +24,7 @@ import { Loop } from "../curve/Loop";
 import { ParityRegion } from "../curve/ParityRegion";
 import { Path } from "../curve/Path";
 import { PointString3d } from "../curve/PointString3d";
-import { TransitionSpiral3d } from "../curve/TransitionSpiral";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
 import { UnionRegion } from "../curve/UnionRegion";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { Box } from "../solid/Box";

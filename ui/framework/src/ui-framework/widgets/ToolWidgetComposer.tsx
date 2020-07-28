@@ -9,7 +9,7 @@
 import * as React from "react";
 import widgetIconSvg from "@bentley/icons-generic/icons/home.svg?sprite";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
-import { calculateProximityScale, CommonProps, Icon, useProximityToMouse } from "@bentley/ui-core";
+import { CommonProps, Icon, useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext } from "@bentley/ui-core";
 import { AppButton, ToolsArea } from "@bentley/ui-ninezone";
 import { BackstageManager } from "../backstage/BackstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
@@ -34,28 +34,29 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
   const isInitialMount = React.useRef(true);
   const useSmallAppButton = "1" !== useFrameworkVersion();
   const divClassName = useSmallAppButton ? "uifw-app-button-small" : undefined;
+  const { onElementRef, proximityScale } = useWidgetOpacityContext();
+  const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    if (isInitialMount.current)
+    if (isInitialMount.current) {
       isInitialMount.current = false;
-    else {
+      onElementRef(ref);
+    } else {
       setIcon(props.icon ? props.icon : IconSpecUtilities.createSvgIconSpec(widgetIconSvg));
     }
-  }, [props.icon]);
+  }, [props.icon, onElementRef]);
 
-  const ref = React.useRef<HTMLDivElement>(null);
-  const proximity = useProximityToMouse(ref);
-  let proximityScale: number | undefined;
+  let buttonProximityScale: number | undefined;
 
   if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) {
-    proximityScale = calculateProximityScale(proximity);
+    buttonProximityScale = proximityScale;
   }
 
   return (
     <div ref={ref} className={divClassName}>
       <AppButton
         small={useSmallAppButton}
-        mouseProximity={proximityScale}
+        mouseProximity={buttonProximityScale}
         onClick={backstageToggleCommand.execute}
         icon={
           <Icon iconSpec={icon} />
@@ -85,13 +86,26 @@ export interface ToolWidgetComposerProps extends CommonProps {
  */
 export function ToolWidgetComposer(props: ToolWidgetComposerProps) {
   const { cornerItem, horizontalToolbar, verticalToolbar, ...otherProps } = props;
+  const [elementSet] = React.useState(new WidgetElementSet());
+  const handleChildRef = React.useCallback((elementRef: React.RefObject<Element>) => {
+    elementSet.add(elementRef);
+  }, [elementSet]);
+  const proximityScale = useProximityToMouse(elementSet, UiShowHideManager.snapWidgetOpacity);
+
   return (
-    <ToolsArea
-      button={cornerItem}
-      horizontalToolbar={horizontalToolbar}
-      verticalToolbar={verticalToolbar}
-      {...otherProps}
-      onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
-    />
+    <WidgetOpacityContext.Provider
+      value={{
+        onElementRef: handleChildRef,
+        proximityScale,
+      }}
+    >
+      <ToolsArea
+        button={cornerItem}
+        horizontalToolbar={horizontalToolbar}
+        verticalToolbar={verticalToolbar}
+        {...otherProps}
+        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+      />
+    </WidgetOpacityContext.Provider>
   );
 }

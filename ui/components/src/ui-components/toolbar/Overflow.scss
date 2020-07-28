@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/z-index";
 @import "variables";
 
 .components-toolbar-button-item.components-ellipsis-icon {
@@ -38,4 +39,11 @@
       background-color: currentColor;
     }
   }
+}
+
+.components-toolbar-overflow_popup {
+  border: none;
+  background: none;
+
+  @include uicore-z-index(toolbar-panels);
 }

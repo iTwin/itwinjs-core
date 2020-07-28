@@ -1,0 +1,70 @@
+{
+  "AttachLayerPopup": {
+    "Attach": "Attach map layer",
+    "Close": "Close source map layers pop-up"
+  },
+  "Basemap": {
+    "BaseLayer": "Base Layer",
+    "ColorFill": "Solid Fill Color",
+    "SelectBaseMap": "Select Map for base layer"
+  },
+  "ColorDialog": {
+    "Title": "Specify Base Color"
+  },
+  "CustomAttach": {
+    "AttachCustomLayer": "Attach Custom Layer",
+    "AttachError": "Error occurred attaching MapLayer from URL:",
+    "AttacheInfo": "Map layer attached from URL:",
+    "Custom": "Custom",
+    "LoadingMapSources": "Loading Map Sources",
+    "Name": "Name",
+    "SearchPlaceholder": "Search...",
+    "Type": "Type",
+    "URL": "URL",
+    "ValidationError": "Map layer validation failed for URL:"
+  },
+  "Messages": {
+    "NotSupported": "No active viewport or geo-located Imodel available.",
+    "NoRangeDefined": "No range is defined for Map Layer",
+    "Start": "Map Layers Extension Loaded"
+  },
+  "Widget": {
+    "BackgroundLayers": "Background Layers",
+    "Label": "Map Layers",
+    "NoOverlayLayers": "No Overlay layers specified",
+    "NoBackgroundLayers": "No Background layers specified",
+    "OverlayLayers": "Overlay Layers",
+    "ToggleVisibility": "Toggle Visibility"
+  },
+  "LayerMenu": {
+    "Detach": "Detach",
+    "ZoomToLayer": "Zoom to layer"
+  },
+  "Settings": {
+    "ElevationOffset": "Elevation Offset (meters)",
+    "ElevationTypeGeodetic": "GPS (Geodetic/Ellipsoid)",
+    "ElevationTypeGeoid": "Sea Level (Geoid)",
+    "ElevationTypeGround": "Ground",
+    "Exaggeration": "Exaggeration",
+    "HeightOrigin": "Height Origin",
+    "InvalidElevationError": "Invalid Elevation",
+    "InvalidElevationDetails": "Please enter a valid number for elevation.",
+    "ModelHeight": "Model Height (meters)",
+    "Settings": "Settings",
+    "ShowMapLayers": "Show Map Layers",
+    "Terrain": "Use Terrain",
+    "Transparency": "Transparency",
+    "UseDepthBuffer": "Use Depth Buffer"
+  },
+  "SubLayers": {
+    "AllOn": "Turn on all Sub-layers",
+    "AllOff": "Turn off all Sub-layers",
+    "Hide": "Hide Sub-layers",
+    "NoSubLayers": "No Sub-layers Available",
+    "SearchPlaceholder": "Search...",
+    "Show": "Show Sub-layers"
+  },
+  "TransparencyPopup": {
+    "SetTransparency": "Set transparency"
+  }
+}

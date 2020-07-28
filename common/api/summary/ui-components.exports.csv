@@ -62,6 +62,8 @@ beta;CheckBoxInfo
 beta;CheckboxStateChange
 beta;ColorEditor 
 beta;ColorPickerButton 
+beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element
+beta;ColorPickerDialogProps
 beta;ColorPickerProps 
 beta;ColorPropertyEditor 
 beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
@@ -167,6 +169,8 @@ alpha;IconPickerProps
 alpha;IconPropertyEditor 
 public;IImageLoader
 public;Image = LoadedImage | LoadedBinaryImage
+beta;ImageCheckBoxEditor 
+beta;ImageCheckBoxPropertyEditor 
 public;ImageFileFormat = "png" | "jpg" | "jpge"
 public;ImageSourceType = "svg" | "url" | "binary" | "core-icon" | "webfont-icon"
 public;ImmediatelyLoadedTreeNodeItem 
@@ -249,6 +253,7 @@ internal;PlayerButtonProps
 public;Point2dTypeConverter 
 public;Point3dTypeConverter 
 beta;PopupItem(props: PopupItemProps): JSX.Element
+internal;PopupItemPopup(props: PopupItemPopupProps): JSX.Element
 beta;PopupItemProps 
 beta;PopupItemWithDrag(props: PopupItemWithDragProps): JSX.Element
 beta;PopupItemWithDragProps 
@@ -388,6 +393,7 @@ beta;ToolbarProps
 beta;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React.Context
 beta;ToolbarWithOverflowProps 
+internal;toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition
 beta;TreeActions
 beta;TreeCellUpdatedArgs
 beta;TreeCheckboxStateChangeEventArgs

@@ -116,6 +116,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _drawNonLocatable = true;
   private _currentlyDrawingClassifier?: PlanarClassifier;
   private _analysisFraction: number = 0;
+  private _antialiasSamples = 1;
   public isFadeOutActive = false;
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
@@ -154,6 +155,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
     this._compositor = SceneCompositor.create(this);  // compositor is created but not yet initialized... we are still undisposed
     this.renderRect = rect ? rect : new ViewRect();  // if the rect is undefined, expect that it will be updated dynamically in an OnScreenTarget
+    if (undefined !== System.instance.antialiasSamples)
+      this._antialiasSamples = System.instance.antialiasSamples;
+    else
+      this._antialiasSamples = (undefined !== System.instance.options.antialiasSamples ? System.instance.options.antialiasSamples : 1);
   }
 
   public get compositor() { return this._compositor; }
@@ -192,6 +197,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._animationBranches = undefined;
   }
 
+  public get antialiasSamples(): number { return this._antialiasSamples; }
+  public set antialiasSamples(numSamples: number) { this._antialiasSamples = numSamples; }
+
   public get solarShadowMap(): SolarShadowMap { return this.compositor.solarShadowMap; }
   public get isDrawingShadowMap(): boolean { return this.solarShadowMap.isEnabled && this.solarShadowMap.isDrawing; }
   public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
@@ -222,17 +230,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this._worldDecorations;
   }
 
-  public get currentViewFlags(): ViewFlags { return this.uniforms.branch.top.viewFlags; }
-  public get currentTransform(): Transform { return this.uniforms.branch.top.transform; }
+  public get currentBranch(): BranchState { return this.uniforms.branch.top; }
+  public get currentViewFlags(): ViewFlags { return this.currentBranch.viewFlags; }
+  public get currentTransform(): Transform { return this.currentBranch.transform; }
   public get currentClipVolume(): ClipVolume | undefined { return this.uniforms.branch.clipVolume; }
   public get currentTransparencyThreshold(): number { return this.currentEdgeSettings.transparencyThreshold; }
-  public get currentEdgeSettings(): EdgeSettings { return this.uniforms.branch.top.edgeSettings; }
+  public get currentEdgeSettings(): EdgeSettings { return this.currentBranch.edgeSettings; }
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.monochrome ? ShaderFlags.Monochrome : ShaderFlags.None; }
-  public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this.uniforms.branch.top.symbologyOverrides; }
-  public get currentPlanarClassifier(): PlanarClassifier | undefined { return this.uniforms.branch.top.planarClassifier; }
+  public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this.currentBranch.symbologyOverrides; }
+  public get currentPlanarClassifier(): PlanarClassifier | undefined { return this.currentBranch.planarClassifier; }
   public get currentlyDrawingClassifier(): PlanarClassifier | undefined { return this._currentlyDrawingClassifier; }
   public get currentTextureDrape(): TextureDrape | undefined {
-    const drape = this.uniforms.branch.top.textureDrape;
+    const drape = this.currentBranch.textureDrape;
     return undefined !== drape && drape.isReady ? drape : undefined;
   }
   public get currentPlanarClassifierOrDrape(): PlanarClassifier | TextureDrape | undefined {
@@ -631,7 +640,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._readPixelsSelector = Pixel.Selector.Feature;
 
       const vf = this.getViewFlagsForReadPixels();
-      const top = this.uniforms.branch.top;
+      const top = this.currentBranch;
       const state = new BranchState({
         viewFlags: vf,
         symbologyOverrides: top.symbologyOverrides,
@@ -751,7 +760,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     let result: Pixel.Buffer | undefined;
     const fbo = FrameBuffer.create([texture]);
     if (undefined !== fbo) {
-      this.renderSystem.frameBufferStack.execute(fbo, true, () => {
+      this.renderSystem.frameBufferStack.execute(fbo, true, false, () => {
         this._drawNonLocatable = !excludeNonLocatable;
         result = this.readPixelsFromFbo(rect, selector);
         this._drawNonLocatable = true;
@@ -788,7 +797,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
     const vf = this.getViewFlagsForReadPixels();
-    const top = this.uniforms.branch.top;
+    const top = this.currentBranch;
     const state = new BranchState({
       viewFlags: vf,
       symbologyOverrides: top.symbologyOverrides,
@@ -830,7 +839,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
     // ###TODO: This was never right, was it? Some branches in the scene ignore the clip volume...
-    // if (undefined !== this._activeClipVolume && this.uniforms.branch.top.showClipVolume && this.clips.isValid)
+    // if (undefined !== this._activeClipVolume && this.currentBranch.showClipVolume && this.clips.isValid)
     //   if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
     //     return undefined;
 
@@ -852,7 +861,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         this.performanceMetrics.beginOperation("Finish GPU Queue");
         const gl = this.renderSystem.context;
         const bytes = new Uint8Array(4);
-        this.renderSystem.frameBufferStack.execute(this._fbo!, true, () => {
+        this.renderSystem.frameBufferStack.execute(this._fbo!, true, false, () => {
           gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
         });
         this.performanceMetrics.endOperation();
@@ -884,7 +893,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     const context = this.renderSystem.context;
     let didSucceed = true;
-    this.renderSystem.frameBufferStack.execute(this._fbo, true, () => {
+    this.renderSystem.frameBufferStack.execute(this._fbo, true, false, () => {
       try {
         context.readPixels(x, y, w, h, context.RGBA, context.UNSIGNED_BYTE, out);
       } catch (e) {
@@ -1127,6 +1136,9 @@ export class OnScreenTarget extends Target {
     if (false === this.renderSystem.options.dpiAwareViewports)
       return 1.0;
 
+    if (undefined !== this.renderSystem.options.devicePixelRatioOverride)
+      return this.renderSystem.options.devicePixelRatioOverride;
+
     return window.devicePixelRatio || 1.0;
   }
 
@@ -1168,7 +1180,7 @@ export class OnScreenTarget extends Target {
 
     // Render to our framebuffer
     const system = this.renderSystem;
-    system.frameBufferStack.push(this._fbo!, true);
+    system.frameBufferStack.push(this._fbo!, true, false);
 
     const viewRect = this.viewRect;
 
@@ -1319,7 +1331,7 @@ export class OffScreenTarget extends Target {
 
   protected _beginPaint(): void {
     assert(this._fbo !== undefined);
-    this.renderSystem.frameBufferStack.push(this._fbo!, true);
+    this.renderSystem.frameBufferStack.push(this._fbo!, true, false);
   }
 
   protected _endPaint(): void {

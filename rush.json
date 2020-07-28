@@ -407,6 +407,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/map-layers",
+      "projectFolder": "extensions/map-layers",
+      "reviewCategory": "extensions",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "internal-tools",
       "projectFolder": "tools/internal",
       "reviewCategory": "internal",
@@ -457,12 +464,6 @@
     {
       "packageName": "imodel-from-geojson",
       "projectFolder": "test-apps/imodel-from-geojson",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "wms-extension-example",
-      "projectFolder": "extensions/wms",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

@@ -897,4 +897,22 @@ describe("MiscAngles", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("Angle.fromJSON", () => {
+    const ck = new Checker();
+    // verify that numeric tests with NaN return false ...
+    ck.testFalse(Number.NaN > 0, "NaN > 0");
+    ck.testFalse(Number.NaN < 0, "NaN < 0");
+    ck.testFalse(Number.NaN === 0, "NaN === 0");
+    ck.testExactNumber(0, Angle.adjustDegrees0To360(Number.NaN));
+    ck.testExactNumber(0, Angle.adjustDegreesSigned180(Number.NaN));
+    ck.testExactNumber(0, Angle.adjustRadians0To2Pi(Number.NaN));
+    ck.testExactNumber(0, Angle.adjustRadiansMinusPiPlusPi(Number.NaN));
+
+    ck.testExactNumber(0, Angle.adjustDegrees0To360((undefined as unknown) as number));
+    ck.testExactNumber(0, Angle.adjustDegreesSigned180((undefined as unknown) as number));
+    ck.testExactNumber(0, Angle.adjustRadians0To2Pi((undefined as unknown) as number));
+    ck.testExactNumber(0, Angle.adjustRadiansMinusPiPlusPi((undefined as unknown) as number));
+
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

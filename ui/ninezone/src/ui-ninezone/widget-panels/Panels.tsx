@@ -12,10 +12,9 @@ import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { PanelsStateContext } from "../base/NineZone";
 import { WidgetContentRenderers } from "../widget/ContentRenderer";
-import { FloatingTab } from "../widget/FloatingTab";
 import { AppContent } from "./AppContent";
 import { CenterContent } from "./CenterContent";
-import { CursorOverlay } from "./CursorOverlay";
+import { useCursor } from "./CursorOverlay";
 import { panelSides, WidgetPanel } from "./Panel";
 
 /** Properties of [[WidgetPanels]] component.
@@ -47,6 +46,7 @@ export const WidgetPanels = React.memo<WidgetPanelsProps>(function WidgetPanels(
 /** @internal */
 const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsComponent(props) { // tslint:disable-line: variable-name no-shadowed-variable
   const panels = React.useContext(PanelsStateContext);
+  useCursor();
   const className = classnames(
     "nz-widgetPanels-panels",
     props.className,
@@ -70,8 +70,6 @@ const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsCompo
           />
         );
       })}
-      <FloatingTab />
-      <CursorOverlay />
     </div>
   );
 });

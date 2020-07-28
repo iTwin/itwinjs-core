@@ -32,7 +32,7 @@
     },
     {
       "name": "@bentley/context-registry-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/ecschema-locaters",
@@ -127,6 +127,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/map-layers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/oidc-signin-tool",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
@@ -167,6 +171,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/rbac-client",
+      "allowedCategories": [ "common", "integration-testing" ]
+    },
+    {
       "name": "@bentley/react-scripts",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -176,23 +184,23 @@
     },
     {
       "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/ui-components",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "@bentley/ui-core",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@bentley/ui-framework",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "extensions", "internal" ]
     },
     {
       "name": "@bentley/ui-ninezone",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@bentley/usage-logging-client",
@@ -316,7 +324,7 @@
     },
     {
       "name": "classnames",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "commander",
@@ -373,10 +381,6 @@
     {
       "name": "electron",
       "allowedCategories": [ "backend", "internal", "tools" ]
-    },
-    {
-      "name": "electron-chromedriver",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "enzyme",
@@ -615,10 +619,6 @@
       "allowedCategories": [ "backend", "integration-testing", "tools" ]
     },
     {
-      "name": "popper.js",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "postcss-flexbugs-fixes",
       "allowedCategories": [ "internal", "tools" ]
     },
@@ -660,15 +660,19 @@
     },
     {
       "name": "react",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "react-autosuggest",
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-beautiful-dnd",
+      "allowedCategories": [ "extensions", "internal" ]
+    },
+    {
       "name": "react-compound-slider",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "react-data-grid",
@@ -692,7 +696,7 @@
     },
     {
       "name": "react-dom",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "react-highlight-words",
@@ -716,7 +720,7 @@
     },
     {
       "name": "react-select",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "react-split-pane",
@@ -839,10 +843,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "tooltip.js",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "tree-kill",
       "allowedCategories": [ "tools" ]
     },
@@ -941,6 +941,10 @@
     {
       "name": "webpack-sources",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "wms-capabilities",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "ws",

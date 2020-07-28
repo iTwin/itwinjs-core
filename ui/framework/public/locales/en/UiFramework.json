@@ -193,7 +193,8 @@
     "hidEdges": "Hidden Edges",
     "monochrome": "Monochrome Display",
     "ambientOcclusion": "Ambient Occlusion",
-    "shadows": "Shadows"
+    "shadows": "Shadows",
+    "backgroundMap": "Background Map"
   },
   "visibilityWidget": {
     "modeltree": "Model Tree",
@@ -247,5 +248,11 @@
     "mouse": "Mouse",
     "touch": "Touch",
     "pin": "Pin"
+  },
+  "widget": {
+    "tooltips": {
+      "dockToolSettings": "Dock to top",
+      "sendHome": "Send to panel"
+    }
   }
 }

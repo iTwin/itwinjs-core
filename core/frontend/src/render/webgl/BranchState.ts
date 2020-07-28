@@ -8,7 +8,7 @@
 
 import { dispose } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { HiddenLine, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { BatchType, GeometryClass, HiddenLine, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { ViewClipSettings } from "../ViewClipSettings";
@@ -40,6 +40,7 @@ export interface BranchStateOptions {
    */
   is3d: boolean;
   frustumScale?: { x: number; y: number; };
+  readonly appearanceProvider?: FeatureSymbology.AppearanceProvider;
 }
 
 /**
@@ -59,6 +60,7 @@ export class BranchState {
   public get iModel() { return this._opts.iModel; }
   public get is3d() { return this._opts.is3d; }
   public get frustumScale() { return this._opts.frustumScale!; }
+  public get appearanceProvider() { return this._opts.appearanceProvider; }
   public get showClipVolume(): boolean { return this.viewFlags.clipVolume; }
 
   public get symbologyOverrides() {
@@ -104,7 +106,17 @@ export class BranchState {
     const is3d = branch.frustum?.is3d ?? prev.is3d;
     const frustumScale = branch.frustum?.scale ?? prev.frustumScale;
 
-    return new BranchState({ viewFlags, transform, symbologyOverrides, clipVolume, planarClassifier, textureDrape, edgeSettings, iModel, is3d, frustumScale });
+    // The branch can augment the symbology overrides. If it doesn't want to, allow its parent to do so, unless this branch supplies its own symbology overrides.
+    const appearanceProvider = branch.appearanceProvider ?? (branch.branch.symbologyOverrides ? undefined : prev.appearanceProvider);
+
+    return new BranchState({ viewFlags, transform, symbologyOverrides, clipVolume, planarClassifier, textureDrape, edgeSettings, iModel, is3d, frustumScale, appearanceProvider });
+  }
+
+  public getFeatureAppearance(overrides: FeatureSymbology.Overrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureSymbology.Appearance | undefined {
+    if (this._opts.appearanceProvider)
+      return this._opts.appearanceProvider.getFeatureAppearance(overrides, elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+
+    return overrides.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
   }
 
   public static createForDecorations(): BranchState {

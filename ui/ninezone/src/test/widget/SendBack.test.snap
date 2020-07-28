@@ -2,7 +2,7 @@
 
 exports[`SendBack should render 1`] = `
 <button
-  class="nz-widget-sendBack"
+  class="nz-widget-sendBack nz-left"
 >
   <i />
 </button>

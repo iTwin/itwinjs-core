@@ -7,7 +7,7 @@
 
 .nz-widget-floatingWidget {
   position: absolute;
-  @include uicore-z-index(tool-settings-popup);
+  @include uicore-z-index(dragged-widget);
 
   &.nz-minimized {
     flex-grow: 0;

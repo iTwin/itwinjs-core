@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { should } from "chai";
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
-import { PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import {
-  DisabledResizeHandles, DraggedWidgetManager, getClosedWidgetTabIndex, getZoneCell, HorizontalAnchor, ToolSettingsWidgetMode, WidgetZoneId,
-  ZoneManager, ZonesManager, ZonesManagerProps, ZoneTargetType,
+  DisabledResizeHandles, DraggedWidgetManager, getClosedWidgetTabIndex, getColumnZones, getZoneCell, HorizontalAnchor, ResizeHandle,
+  ResizeStrategy, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManager, ZonesManager, ZonesManagerProps, ZoneTargetType,
 } from "../../../ui-ninezone";
-import { ResizeHandle } from "../../../ui-ninezone/widget/Stacked";
-import { ResizeStrategy } from "../../../ui-ninezone/zones/manager/ResizeStrategy";
-import { getColumnZones, widgetZoneIds } from "../../../ui-ninezone/zones/manager/Zones";
 import { TestProps } from "./TestProps";
 
 describe("ZonesManager", () => {
@@ -326,6 +324,12 @@ describe("ZonesManager", () => {
             },
           },
         },
+        zonesBounds: {
+          bottom: 1000,
+          left: 0,
+          right: 1000,
+          top: 0,
+        },
       };
       const sut = new ZonesManager();
       const newProps = sut.handleWidgetTabDragEnd(props);
@@ -388,6 +392,43 @@ describe("ZonesManager", () => {
       sut.handleWidgetTabDragEnd(props);
 
       spy.calledOnceWithExactly(9, sinon.match.any).should.true;
+    });
+
+    it("should contain floating bounds to floatingZonesBounds", () => {
+      const props: ZonesManagerProps = {
+        ...TestProps.defaultProps,
+        draggedWidget: { id: 9, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
+        zones: {
+          ...TestProps.defaultProps.zones,
+          9: {
+            ...TestProps.defaultProps.zones[9],
+            floating: {
+              bounds: {
+                bottom: 800,
+                left: 50,
+                right: 1000,
+                top: 0,
+              },
+              stackId: 1,
+            },
+          },
+        },
+        floatingZonesBounds: {
+          left: 100,
+          top: 0,
+          bottom: 2000,
+          right: 2000,
+        },
+      };
+      const sut = new ZonesManager();
+      const newProps = sut.handleWidgetTabDragEnd(props);
+      should().exist(newProps.zones[9].floating);
+      newProps.zones[9].floating?.bounds.should.eql({
+        left: 100,
+        top: 0,
+        right: 1050,
+        bottom: 800,
+      });
     });
   });
 
@@ -1350,6 +1391,88 @@ describe("ZonesManager", () => {
     });
   });
 
+  describe("setFloatingZonesBounds", () => {
+    const floatingOpenedZone6: ZonesManagerProps = {
+      ...TestProps.floatingOpenedZone6,
+      zones: {
+        ...TestProps.floatingOpenedZone6.zones,
+        6: {
+          ...TestProps.floatingOpenedZone6.zones[6],
+          floating: {
+            bounds: {
+              left: 900,
+              top: 800,
+              right: 1000,
+              bottom: 1000,
+            },
+            stackId: 1,
+          },
+        },
+      },
+    };
+
+    it("should reset bounds", () => {
+      const props: ZonesManagerProps = {
+        ...TestProps.floatingOpenedZone6,
+        floatingZonesBounds: new Rectangle().toProps(),
+      };
+      const sut = new ZonesManager();
+      const newProps = sut.setFloatingZonesBounds(undefined, props);
+
+      should().not.exist(newProps.floatingZonesBounds);
+    });
+
+    it("should update bounds", () => {
+      const props: ZonesManagerProps = {
+        ...TestProps.floatingOpenedZone6,
+        floatingZonesBounds: new Rectangle().toProps(),
+      };
+      const sut = new ZonesManager();
+      const newProps = sut.setFloatingZonesBounds(new Rectangle(100), props);
+
+      newProps.floatingZonesBounds?.left.should.eq(100);
+    });
+
+    it("should init bounds", () => {
+      const props: ZonesManagerProps = {
+        ...TestProps.floatingOpenedZone6,
+        floatingZonesBounds: undefined,
+      };
+      const sut = new ZonesManager();
+      const newProps = sut.setFloatingZonesBounds(new Rectangle(100), props);
+
+      newProps.floatingZonesBounds?.left.should.eq(100);
+    });
+
+    it("should contain floating zones", () => {
+      const sut = new ZonesManager();
+      const newProps = sut.setFloatingZonesBounds(new Rectangle(0, 0, 500, 500), floatingOpenedZone6);
+
+      newProps.zones[6].floating?.bounds.should.eql({
+        left: 400,
+        top: 300,
+        right: 500,
+        bottom: 500,
+      });
+    });
+
+    it("should not contain dragged zone", () => {
+      const props: ZonesManagerProps = {
+        ...floatingOpenedZone6,
+        draggedWidget: {
+          id: 6,
+          isUnmerge: false,
+          lastPosition: new Point(),
+          tabIndex: 0,
+        },
+      };
+      const sut = new ZonesManager();
+      const newProps = sut.setFloatingZonesBounds(new Rectangle(0, 0, 500, 500), props);
+
+      newProps.zones[6].floating?.bounds.should.eq(props.zones[6].floating?.bounds);
+    });
+  });
+
   describe("setZonesBounds", () => {
     it("should not modify props if last bounds are equal", () => {
       managerProps.setup((x) => x.zonesBounds).returns(() => new Rectangle(100, 50, 766, 383));
@@ -1367,6 +1490,51 @@ describe("ZonesManager", () => {
 
       newProps.should.not.eq(TestProps.floatingOpenedZone6);
       setZoneFloatingBounds.callCount.should.eq(1);
+    });
+
+    it("should not contain dragged zone", () => {
+      const props: ZonesManagerProps = {
+        ...TestProps.floatingOpenedZone6,
+        zones: {
+          ...TestProps.floatingOpenedZone6.zones,
+          6: {
+            ...TestProps.floatingOpenedZone6.zones[6],
+            floating: {
+              bounds: {
+                left: 900,
+                top: 800,
+                right: 1000,
+                bottom: 1000,
+              },
+              stackId: 1,
+            },
+          },
+        },
+        zonesBounds: {
+          left: 0,
+          top: 0,
+          bottom: 1000,
+          right: 1000,
+        },
+        draggedWidget: {
+          id: 6,
+          isUnmerge: false,
+          lastPosition: {
+            x: 0,
+            y: 0,
+          },
+          tabIndex: 0,
+        },
+      };
+      const sut = new ZonesManager();
+      const newProps = sut.setZonesBounds(new Rectangle(0, 0, 500, 500), props);
+
+      newProps.zones[6].floating?.bounds.should.eql({
+        left: 900,
+        top: 800,
+        right: 1000,
+        bottom: 1000,
+      });
     });
   });
 

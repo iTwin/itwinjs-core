@@ -32,11 +32,23 @@ describe("<UnderlinedButton />", () => {
   });
 
   it("handles onClick", () => {
-    const spy = sinon.spy();
+    const spyClick = sinon.spy();
+    const spyActivate = sinon.spy();
 
-    const button = render(<UnderlinedButton onClick={spy}>Test text</UnderlinedButton>);
+    const button = render(<UnderlinedButton onClick={spyClick} onActivate={spyActivate}>Test text</UnderlinedButton>);
 
     fireEvent.click(button.container.childNodes[0] as HTMLElement);
+
+    expect(spyClick).to.have.been.calledOnce;
+    expect(spyActivate).to.have.been.calledOnce;
+  });
+
+  it("handles onActivate", () => {
+    const spy = sinon.spy();
+
+    const button = render(<UnderlinedButton onActivate={spy}>Test text</UnderlinedButton>);
+
+    fireEvent.keyUp(button.container.childNodes[0] as HTMLElement, { key: "Enter" });
 
     expect(spy).to.have.been.calledOnce;
   });

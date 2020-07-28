@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module Framework
  */
-import { BriefcaseDb, /*ECSqlStatement,*/ Element, ElementOwnsChildElements, ExternalSourceAspect, IModelDb, RepositoryLink } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, ECSqlStatement, Element, ElementOwnsChildElements, ExternalSourceAspect, IModelDb, RepositoryLink } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { DbOpcode, /*DbResult,*/ Guid, GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { DbOpcode, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Code, ExternalSourceAspectProps, IModel, IModelError, RelatedElement, RepositoryLinkProps } from "@bentley/imodeljs-common";
 import { BridgeLoggerCategory } from "./BridgeLoggerCategory";
 import { assert } from "console";
@@ -76,10 +76,11 @@ export interface SynchronizationResults {
  * @alpha
  */
 export class Synchronizer {
-  private _elementsSeen: any = {};
+  private _seenElements: Id64String[] = new Array<Id64String>();
+  private _unchangedSources: Id64String[] = new Array<Id64String>();
   private _links = new Map<string, SynchronizationResults>();
 
-  public constructor(public readonly imodel: IModelDb, protected _requestContext?: AuthorizedClientRequestContext) {
+  public constructor(public readonly imodel: IModelDb, private _supportsMultipleFilesPerChannel: boolean, protected _requestContext?: AuthorizedClientRequestContext) {
     if (imodel.isBriefcaseDb() && undefined === _requestContext) {
 
       throw new IModelError(IModelStatus.BadArg, "RequestContext must be set when working with a BriefcaseDb", Logger.logError, loggerCategory);
@@ -171,6 +172,9 @@ export class Synchronizer {
     }
     results.id = ids.elementId;
     results.state = ItemState.Unchanged;
+    if ("DocumentWithBeGuid" === sourceKind) {
+      this._unchangedSources.push(ids.elementId);
+    }
     return results;
   }
 
@@ -188,7 +192,7 @@ export class Synchronizer {
   public updateIModel(results: SynchronizationResults, scope: Id64String, sourceItem: SourceItem, kind: string): IModelStatus {
     let status: IModelStatus = IModelStatus.Success;
     if (ItemState.Unchanged === results.itemState) {
-      this.onElementSeen(results.element.id, results.element.code.scope);
+      this.onElementSeen(results.element.id);
       return status;
     }
 
@@ -255,7 +259,7 @@ export class Synchronizer {
     this.getLocksAndCodes(results.element!);
     results.element.insert(); // throws on error
 
-    this.onElementSeen(results.element.id, results.element.code.scope);
+    this.onElementSeen(results.element.id);
     if (undefined === results.childElements) {
       return IModelStatus.Success;
     }
@@ -283,38 +287,79 @@ export class Synchronizer {
     return this.updateResultsInIModelForChildren(results);
   }
 
-  public onElementSeen(id: Id64String, scope: Id64String) {
-    if (!(scope in this._elementsSeen)) {
-      this._elementsSeen[scope] = [];
-    }
-    this._elementsSeen[scope].push(id);
+  /** Records that this particular element was visited during this synchronization. This information will later be used to determine which
+   * previously existing elements no longer exist and should be deleted.
+   * @alpha
+   */
+  public onElementSeen(id: Id64String) {
+    this._seenElements.push(id);
   }
 
+  /** Deletes elements from a BriefcaseDb that were previously converted but not longer exist in the source data.
+   * @alpha
+   */
   public detectDeletedElements() {
-    // const elementsToDelete: Id64String[] = [];
-    // // select distinct scope.ids
-    // // any returned id that isn't a key in _elementsSeen, get all elements in that scope and delete them
-    // // then get all remaining elements and scopes
-    // // any returned pair that isn't in _elementsSeen, delete it
-    // const sql = `aspect.Element.Id, aspect.Scope.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Kind !='DocumentWithBeGuid'`;
-    // this.imodel.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
-    //   while (DbResult.BE_SQLITE_ROW === statement.step()) {
-    //     const elementId: Id64String = statement.getValue(0).getId();
-    //     const scopeId: Id64String = statement.getValue(1).getId();
-    //     if (!(scopeId in this._elementsSeen)) {
-    //       elementsToDelete.push(elementId);
-    //     }
-    //   }
-    // });
+    if (this.imodel.isSnapshotDb()) {
+      return;
+    }
 
-    // elementsToDelete.forEach((elementId: Id64String) => {
-    //   this.imodel.elements.deleteElement(elementId);
-    // });
+    if (this._supportsMultipleFilesPerChannel) {
+      this.detectDeletedElementsInFile();
+    } else {
+      this.detectDeletedElementsInChannel();
+    }
+  }
+
+  private detectDeletedElementsInChannel() {
+    // This detection only is called for bridges that support a single source file per channel. If we skipped that file because it was unchanged, then we don't need to delete anything
+    if (this._unchangedSources.length !== 0) {
+      return;
+    }
+    const sql = `SELECT aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Kind !='DocumentWithBeGuid'`;
+    const toDelete: Id64String[] = new Array<Id64String>();
+    const db = this.imodel as BriefcaseDb;
+    this.imodel.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        // If the element is in the current channel and we didn't visit it, delete it
+        const elementId = statement.getValue(0).getId();
+        const elementChannelRoot = db.concurrencyControl.channel.getChannelOfElement(db.elements.getElement(elementId));
+        if (elementChannelRoot.channelRoot === db.concurrencyControl.channel.channelRoot && !(this._seenElements.includes(elementId))) {
+          toDelete.push(elementId);
+        }
+      }
+    });
+    this.imodel.elements.deleteElement(toDelete);
+  }
+
+  private detectDeletedElementsInFile() {
+    for (const value of this._links.values()) {
+      if (value.itemState === ItemState.Unchanged || value.itemState === ItemState.New) {
+        continue;
+      }
+      this.detectDeletedElementsForScope(value.element.id);
+    }
+  }
+
+  private detectDeletedElementsForScope(scopeId: Id64String) {
+    const sql = `SELECT aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=?`;
+    const toDelete: Id64String[] = new Array<Id64String>();
+    this.imodel.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindId(1, scopeId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        // If the element is in a scope that was processed and we didn't visit it, delete it
+        const elementId = statement.getValue(0).getId();
+        if (!(this._seenElements.includes(elementId))) {
+          toDelete.push(elementId);
+        }
+        this.detectDeletedElementsForScope(elementId);
+      }
+    });
+    this.imodel.elements.deleteElement(toDelete);
   }
 
   private updateResultInIModelForOneElement(results: SynchronizationResults): IModelStatus {
     assert(results.element !== undefined, "don't call this function if you don't have an element");
-    this.onElementSeen(results.element.id, results.element.code.scope);
+    this.onElementSeen(results.element.id);
     const existing = this.imodel.elements.tryGetElement(results.element.id);
     if (undefined === existing) {
       return IModelStatus.BadArg;

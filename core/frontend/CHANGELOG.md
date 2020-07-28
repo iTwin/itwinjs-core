@@ -1,6 +1,23 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:24 GMT
+
+### Updates
+
+- Added ability to enable antialiasing
+- remove linewidth adjustment for non-antialiased lines (like in transparent pass).
+- GraphicBuilder optionally accounts for the view's aspect ratio skew when computing level of detail.
+- Support Map Layer Settings.
+- Implement devicePixelRatioOverride on RenderSystem.Options.
+- RenderSystem option controlling whether device pixel ratio is taken into account when computing level of detail for tiles and decoration graphics.
+- Changes to support new HitDetail.isMapHit classificiation.
+- Optimize reality tile loading.
+- Decoration optimization: internally include range in order to reduce performance impact of pickable decorations.
+- overlay-tooltip should use overflow:hidden
+- Address LGTM warnings in UI code.
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT

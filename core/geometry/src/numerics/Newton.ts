@@ -97,7 +97,7 @@ export abstract class AbstractNewtonIterator {
  * @internal
  */
 export abstract class NewtonEvaluatorRtoRD {
-/** evaluate the function and its derivative at x. */
+  /** evaluate the function and its derivative at x. */
   public abstract evaluate(x: number): boolean;
   /** most recent function value */
   public currentF!: number;
@@ -151,7 +151,7 @@ export class Newton1dUnbounded extends AbstractNewtonIterator {
  * @internal
  */
 export abstract class NewtonEvaluatorRtoR {
-/** Evaluate function value into member currentF */
+  /** Evaluate function value into member currentF */
   public abstract evaluate(x: number): boolean;
   /** Most recent function evaluation. */
   public currentF!: number;
@@ -270,5 +270,42 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
     return Geometry.maxAbsXY(
       this._currentStep.x / (1.0 + Math.abs(this._currentUV.x)),
       this._currentStep.y / (1.0 + Math.abs(this._currentUV.y)));
+  }
+}
+/**
+ * SimpleNewton has static methods for newton methods with evaluated functions presented as immediate arguments (not function object)
+ * @internal
+ */
+export class SimpleNewton {
+  /** Run a one-dimensional newton iteration with separate functions for function and derivative.
+   * * completion is at 2 (TWO) successive passes at (absoluteTolerance + relTol * abs (x)), where relTol is chosen internally.
+   * * absoluteTolerance is usually aggressively tight -- should come into play only for x near zero.
+   * * The relTol is fluffy (for instance around 1e-11) but in properly converging cases the extra pass after first success
+   *    normally moves to full machine precision.
+   * * This is an open-loop newton -- it just runs, and returns undefined if anything bad happens.
+   */
+  public static runNewton1D(x: number, func: (x: number) => number | undefined, derivative: (x: number) => number | undefined, absoluteTolerance: number = 1.0e-15): number | undefined {
+    let numConverged = 0;
+    let tolerance: number;
+    const relTol = 1.0e-11;
+    for (let iteration = 0; iteration < 20; iteration++) {
+      const f = func(x);
+      const df = derivative(x);
+      if (f !== undefined && df !== undefined) {
+        const dx = Geometry.conditionalDivideCoordinate(f, df);
+        if (dx === undefined)
+          return undefined;
+        x -= dx;
+        tolerance = absoluteTolerance + Math.abs(x) * relTol;
+        if (Math.abs(dx) < tolerance) {
+          numConverged++;
+          if (dx === 0.0 || numConverged > 1)   // bypass convergence count on true 0 dx !
+            return x;
+        } else {
+          numConverged = 0;
+        }
+      }
+    }
+    return undefined;
   }
 }

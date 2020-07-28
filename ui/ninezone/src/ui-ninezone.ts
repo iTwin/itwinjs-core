@@ -96,10 +96,12 @@ export * from "./ui-ninezone/utilities/Direction";
 export * from "./ui-ninezone/utilities/DisabledResizeHandles";
 export * from "./ui-ninezone/utilities/SafeAreaInsets";
 
+export * from "./ui-ninezone/widget/Buttons";
 export * from "./ui-ninezone/widget/Content";
 export * from "./ui-ninezone/widget/ContentContainer";
 export * from "./ui-ninezone/widget/ContentManager";
 export * from "./ui-ninezone/widget/ContentRenderer";
+export * from "./ui-ninezone/widget/Dock";
 export * from "./ui-ninezone/widget/FloatingTab";
 export * from "./ui-ninezone/widget/FloatingWidget";
 export * from "./ui-ninezone/widget/FloatingWidgets";
@@ -150,6 +152,7 @@ export * from "./ui-ninezone/zones/Outline";
 export * from "./ui-ninezone/zones/Zone";
 export * from "./ui-ninezone/zones/Zones";
 
+export * from "./ui-ninezone/zones/manager/ResizeStrategy";
 export * from "./ui-ninezone/zones/manager/Widget";
 export * from "./ui-ninezone/zones/manager/Zone";
 export * from "./ui-ninezone/zones/manager/Zones";

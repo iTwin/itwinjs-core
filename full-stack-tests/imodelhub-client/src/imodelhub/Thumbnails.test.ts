@@ -40,8 +40,8 @@ interface TestParameters {
   size: ThumbnailSize;
 }
 
-async function getIModelId(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
-  return utils.getIModelId(requestContext, name);
+async function getIModelId(requestContext: AuthorizedClientRequestContext, name: string, projectId: string): Promise<string> {
+  return utils.getIModelId(requestContext, name, projectId);
 }
 
 describe("iModelHub ThumbnailHandler (#unit)", () => {
@@ -61,7 +61,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
 
     _projectId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, imodelName, _projectId);
-    imodelId = await getIModelId(requestContext, imodelName);
+    imodelId = await getIModelId(requestContext, imodelName, _projectId);
 
     if (TestConfig.enableMocks) {
       versions = Array(3).fill(0).map(() => utils.generateVersion());
@@ -94,11 +94,13 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     // }
   });
 
-  after(() => {
+  after(async () => {
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
       imodelHubClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContext, _projectId, imodelName);
   });
 
   afterEach(() => {

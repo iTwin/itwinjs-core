@@ -374,8 +374,10 @@ export namespace Mesh {
 /** @internal */
 export class MeshList extends Array<Mesh> {
   public readonly features?: FeatureTable;
-  constructor(features?: FeatureTable) {
+  public readonly range?: Range3d;
+  constructor(features?: FeatureTable, range?: Range3d) {
     super();
     this.features = features;
+    this.range = range;
   }
 }

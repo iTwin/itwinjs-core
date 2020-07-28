@@ -2,28 +2,31 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken, IncludePrefix, UserInfo } from "@bentley/itwin-client";
+import { AccessToken, IncludePrefix, ITwinClientLoggerCategory, TokenPrefix, UserInfo } from "@bentley/itwin-client";
+const loggerCategory = ITwinClientLoggerCategory.Authorization;
 
 /**
  * Implements AccessToken that uses Basic access authentication
  * @internal
  */
+@TokenPrefix("Basic")
 export class BasicAccessToken extends AccessToken {
-  private _prefix: string = "Basic ";
-  private _token: string;
 
+  constructor(tokenStr?: string) {
+    super(tokenStr, undefined, undefined, undefined);
+    this.setPrefix("Basic");
+  }
   /**
    * Create a BasicAccessToken from user credentials
    * @param userCredentials User credentials containing email and password of the user.
    */
   public static fromCredentials(userCredentials: any): AccessToken {
     const basicToken = new BasicAccessToken("");
-    basicToken._token = Buffer.from(userCredentials.email + ":" + userCredentials.password).toString("base64");
+    basicToken._tokenString = Buffer.from(userCredentials.email + ":" + userCredentials.password).toString("base64");
     return basicToken;
   }
-
   /**
    * Creates a token to be used in Authorization header.
    * @param includePrefix Set to Yes if prefix (Basic) should be included before the token.
@@ -31,9 +34,21 @@ export class BasicAccessToken extends AccessToken {
   public toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
     let token: string = "";
     if (includePrefix === IncludePrefix.Yes)
-      token += this._prefix;
-    token += this._token;
+      token += this._prefix + " ";
+
+    token += this._tokenString;
     return token;
+  }
+  /**
+   * initialize the tokenString field of the current instance of BasicAccessToken
+   * @param tokenStr String representation of the token
+   */
+  public initFromTokenString(tokenStr: string): void {
+    if (!tokenStr.startsWith(this._prefix)) {
+      throw new BentleyError(AuthStatus.Error, "Invalid access token", Logger.logError, loggerCategory, () => ({ tokenStr }));
+    }
+    const userPass = tokenStr.substr(this._prefix.length + 1);
+    this._tokenString = userPass;
   }
 }
 

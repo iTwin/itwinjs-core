@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Validation
+ */
 
 import { ECStringConstants } from "../Constants";
 import { ECClassModifier, PrimitiveType, primitiveTypeToString, SchemaItemType, schemaItemTypeToString } from "../ECObjects";
@@ -349,8 +352,15 @@ export async function* incompatibleUnitPropertyOverride(property: AnyProperty): 
     if (unit.key.matches(baseUnit.key))
       return;
 
-    return new Diagnostics.IncompatibleUnitPropertyOverride(property, [property.class.fullName, property.name, baseClass.fullName,
-      baseKoq.fullName, baseUnit.fullName, unit.fullName, koq.fullName]);
+    return new Diagnostics.IncompatibleUnitPropertyOverride(property, [
+      property.class.fullName,
+      property.name,
+      baseClass.fullName,
+      baseKoq.fullName,
+      baseUnit.fullName,
+      unit.fullName,
+      koq.fullName,
+    ]);
   }
 
   for await (const baseClass of property.class.getAllBaseClasses()) {

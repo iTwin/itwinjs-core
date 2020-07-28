@@ -161,7 +161,7 @@ $bottom-position: 4px;
     .rail-tooltip {
       position: absolute;
       margin-left: -11px;
-      top: 50%;
+      top: 0;
       transform: translateY(-50%);
       z-index: 1;
     }
@@ -211,12 +211,6 @@ $bottom-position: 4px;
       font-size: 22px;
       margin: 0 5px 2px 0;
       cursor: default;
-
-      &:hover {
-        .sunrise-tip {
-          visibility: visible;
-        }
-      }
     }
 
     .sunrise {
@@ -406,7 +400,6 @@ $bottom-position: 4px;
   display: inline-block;
   border-bottom: 1px dotted #222;
   font-size: 14px;
-  visibility: hidden;
 }
 
 .solar-tooltip-text {
@@ -433,4 +426,8 @@ $bottom-position: 4px;
     border-style: solid;
     border-color: #222 transparent transparent transparent;
   }
+}
+
+.core-tooltip-tooltip.components-rail-tooltip {
+  pointer-events: none;
 }

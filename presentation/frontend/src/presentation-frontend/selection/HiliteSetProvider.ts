@@ -10,7 +10,7 @@ import { once } from "lodash";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, ContentFlags, ContentRequestOptions, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset,
+  Content, ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset,
 } from "@bentley/presentation-common";
 import { Presentation } from "../Presentation";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager"; /* tslint:disable-line:no-direct-imports */
@@ -63,18 +63,19 @@ export class HiliteSetProvider {
   public static create(props: HiliteSetProviderProps) { return new HiliteSetProvider(props); }
 
   private async getRecords(keys: KeySet): Promise<Item[]> {
-    const options: ContentRequestOptions<IModelConnection> = {
-      imodel: this._imodel,
-      rulesetOrId: HILITE_RULESET.id,
-    };
     const descriptor: DescriptorOverrides = {
       displayType: DefaultContentDisplayTypes.Viewport,
       contentFlags: ContentFlags.KeysOnly,
       hiddenFieldNames: [],
     };
+    const options = {
+      imodel: this._imodel,
+      rulesetOrId: HILITE_RULESET.id,
+      descriptor,
+    };
     const contentPromises = new Array<Promise<Content | undefined>>();
     keys.forEachBatch(DEFAULT_KEYS_BATCH_SIZE, (batch: KeySet) => {
-      contentPromises.push(Presentation.presentation.getContent(options, descriptor, batch));
+      contentPromises.push(Presentation.presentation.getContent({ ...options, keys: batch }));
     });
     return (await Promise.all(contentPromises)).reduce((items, content) => {
       if (content)

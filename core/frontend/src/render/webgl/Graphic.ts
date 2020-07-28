@@ -209,6 +209,7 @@ export class Branch extends Graphic {
   public readonly edgeSettings?: EdgeSettings;
   public readonly iModel?: IModelConnection; // used chiefly for readPixels to identify context of picked Ids.
   public readonly frustum?: GraphicBranchFrustum;
+  public readonly appearanceProvider?: FeatureSymbology.AppearanceProvider;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -221,6 +222,7 @@ export class Branch extends Graphic {
     if (!opts)
       return;
 
+    this.appearanceProvider = opts.appearanceProvider;
     this.clips = opts.clipVolume as any;
     this.iModel = opts.iModel;
     this.frustum = opts.frustum;

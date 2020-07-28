@@ -94,8 +94,8 @@ describe("iModelHub VersionHandler", () => {
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, imodelName, contextId, false, true);
     await utils.createIModel(requestContext, imodelName2, contextId, false, true);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
-    imodelId2 = await utils.getIModelId(requestContext, imodelName2);
+    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
+    imodelId2 = await utils.getIModelId(requestContext, imodelName2, contextId);
     iModelClient = utils.getDefaultClient();
     briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
     if (!TestConfig.enableMocks) {
@@ -105,7 +105,7 @@ describe("iModelHub VersionHandler", () => {
       if (changeSetCount > 9) {
         // Recreate iModel if can't create any new changesets
         await utils.createIModel(requestContext, imodelName, contextId, true, true);
-        imodelId = await utils.getIModelId(requestContext, imodelName);
+        imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
         briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
       }
       // Prepared second iModel
@@ -128,6 +128,10 @@ describe("iModelHub VersionHandler", () => {
     if (!TestConfig.enableMocks) {
       if (baselineiModelName)
         await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
+      if (TestConfig.enableIModelBank) {
+        await utils.deleteIModelByName(requestContext, contextId, imodelName);
+        await utils.deleteIModelByName(requestContext, contextId, imodelName2);
+      }
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
       iModelClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
@@ -161,8 +165,8 @@ describe("iModelHub VersionHandler", () => {
     let baselineiModelId = Guid.createValue();
     if (!TestConfig.enableMocks) {
       baselineiModelName = baselineVersionsiModelNamePrefix + Guid.createValue();
-      await utils.createIModel(requestContext, baselineiModelName);
-      baselineiModelId = await utils.getIModelId(requestContext, baselineiModelName);
+      await utils.createIModel(requestContext, baselineiModelName, contextId);
+      baselineiModelId = await utils.getIModelId(requestContext, baselineiModelName, contextId);
     }
 
     // Create baseline version
@@ -269,5 +273,22 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(!!version.id);
     chai.expect(version.changeSetId).to.be.equal(version.changeSetId!);
     chai.expect(version.name).to.be.equal(version.name!);
+  });
+
+  it("should handle special characters in get by name query", async () => {
+    const mockedChangeSets = Array(1).fill(0).map(() => utils.generateChangeSet());
+    utils.mockGetChangeSet(imodelId, false, "?$top=1000", ...mockedChangeSets);
+    const changeSetsCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
+    const changeSet = (await utils.createChangeSets(requestContext, imodelId, briefcase, changeSetsCount, 1))[0];
+
+    const versionName = "Д";
+    utils.mockCreateVersion(imodelId, versionName, changeSet.id);
+    const version: Version = await iModelClient.versions.create(requestContext, imodelId, changeSet.id!, versionName);
+    chai.assert(!!version);
+
+    const mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
+    utils.mockGetVersions(imodelId, `?$filter=Name+eq+%27%D0%94%27`, ...mockedVersions);
+    const versions: Version[] = await iModelClient.versions.get(requestContext, imodelId, new VersionQuery().byName(versionName));
+    chai.expect(versions.length).to.be.equal(1);
   });
 });

@@ -6,13 +6,12 @@ import { assert, expect } from "chai";
 import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 import {
-  GraphicType, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+  GraphicType, IModelApp, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
 } from "@bentley/imodeljs-frontend";
 import {
   DisplayParams, Geometry, Mesh, MeshBuilder, PolyfacePrimitive, PolyfacePrimitiveList, PrimitiveBuilder, StrokesPrimitiveList,
   StrokesPrimitivePointLists, ToleranceRatio, Triangle,
 } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
@@ -64,7 +63,7 @@ describe("Mesh Builder Tests", () => {
 
   it("addStrokePointLists", () => {
     const viewport = ScreenViewport.create(viewDiv, spatialView);
-    const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);

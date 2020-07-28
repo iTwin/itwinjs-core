@@ -166,6 +166,10 @@ export class ChangedElementsDb implements IDisposable {
     this.nativeDb.closeDb();
   }
 
+  public cleanCaches(): void {
+    this.nativeDb.cleanCaches();
+  }
+
   /** @internal */
   public get nativeDb(): IModelJsNative.ChangedElementsECDb {
     if (!this._nativeDb)

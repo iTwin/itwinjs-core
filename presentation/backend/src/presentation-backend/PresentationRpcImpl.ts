@@ -10,17 +10,23 @@ import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-cor
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import {
-  ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides, DisplayValueGroup, DisplayValueGroupJSON,
-  DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
-  LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse,
-  PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareRpcOptions, PresentationError, PresentationRpcInterface,
-  PresentationRpcResponse, PresentationStatus, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRpcRequestOptions,
+  ContentDescriptorRpcRequestOptions, ContentJSON, ContentRpcRequestOptions, Descriptor, DescriptorJSON, DescriptorOverrides,
+  DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions,
+  ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, InstanceKeyJSON,
+  isContentDescriptorRequestOptions, isDisplayLabelRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, ItemJSON,
+  KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, LabelRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement,
+  NodePathElementJSON, Paged, PagedResponse, PageOptions, PartialHierarchyModification, PartialHierarchyModificationJSON,
+  PresentationDataCompareRpcOptions, PresentationError, PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset, SelectionInfo,
+  SelectionScope, SelectionScopeRpcRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
 
-type ContentGetter<TResult = any> = (requestContext: ClientRequestContext, requestOptions: any) => TResult;
+type ContentGetter<TResult = any, TOptions = any> = (requestOptions: TOptions) => TResult;
+
+/** @internal */
+export const MAX_ALLOWED_PAGE_SIZE = 1000;
 
 /**
  * The backend implementation of PresentationRpcInterface. All it's basically
@@ -79,7 +85,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return imodel;
   }
 
-  private async makeRequest<TOptions extends { rulesetOrId?: Ruleset | string, clientId?: string }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
+  private async makeRequest<TRpcOptions extends { rulesetOrId?: Ruleset | string, clientId?: string }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
     Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${JSON.stringify(requestOptions)}`);
     const requestContext = ClientRequestContext.current;
     let imodel: IModelDb;
@@ -90,7 +96,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     }
 
     const { clientId, ...options } = requestOptions;
-    const resultPromise = request(requestContext, { ...options, imodel })
+    const resultPromise = request({ ...options, imodel, requestContext })
       .then((result: TResult) => this.successResponse(result))
       .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message));
 
@@ -110,148 +116,238 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   public async getNodesAndCount(token: IModelRpcProps, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: NodeKeyJSON) {
-    return this.makeRequest(token, "getNodesAndCount", requestOptions, async (requestContext, options) => {
-      const result = await this.getManager(requestOptions.clientId).getNodesAndCount(requestContext, options, nodeKeyFromJson(parentKey));
-      requestContext.enter();
-      return { ...result, nodes: result.nodes.map(Node.toJSON) };
+    return this.makeRequest(token, "getNodesAndCount", requestOptions, async (options) => {
+      options = { ...options, parentKey: nodeKeyFromJson(parentKey) };
+      const [nodes, count] = await Promise.all([
+        this.getManager(requestOptions.clientId).getNodes(options),
+        this.getManager(requestOptions.clientId).getNodesCount(options),
+      ]);
+      return { count, nodes: nodes.map(Node.toJSON) };
     });
   }
 
   public async getNodes(token: IModelRpcProps, requestOptions: Paged<HierarchyRpcRequestOptions>, parentKey?: NodeKeyJSON): PresentationRpcResponse<NodeJSON[]> {
-    return this.makeRequest(token, "getNodes", requestOptions, async (requestContext, options) => {
-      const nodes = await this.getManager(requestOptions.clientId).getNodes(requestContext, options, nodeKeyFromJson(parentKey));
-      requestContext.enter();
+    return this.makeRequest(token, "getNodes", requestOptions, async (options) => {
+      const nodes = await this.getManager(requestOptions.clientId).getNodes({ ...options, parentKey: nodeKeyFromJson(parentKey) });
       return nodes.map(Node.toJSON);
     });
   }
 
-  public async getNodesCount(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions, parentKey?: NodeKeyJSON): PresentationRpcResponse<number> {
-    return this.makeRequest(token, "getNodesCount", requestOptions, async (requestContext, options) =>
-      this.getManager(requestOptions.clientId).getNodesCount(requestContext, options, nodeKeyFromJson(parentKey)),
+  public async getNodesCount(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions | ExtendedHierarchyRpcRequestOptions, parentKey?: NodeKeyJSON): PresentationRpcResponse<number> {
+    return this.makeRequest(token, "getNodesCount", requestOptions, async (options) =>
+      this.getManager(requestOptions.clientId).getNodesCount({ ...options, parentKey: nodeKeyFromJson(isExtendedHierarchyRequestOptions<never, NodeKeyJSON>(options) ? options.parentKey : parentKey) }),
     );
   }
 
+  public async getPagedNodes(token: IModelRpcProps, requestOptions: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<NodeJSON>> {
+    return this.makeRequest(token, "getPagedNodes", requestOptions, async (options) => {
+      options = enforceValidPageSize({
+        ...options,
+        parentKey: nodeKeyFromJson(options.parentKey),
+      });
+      const [nodes, count] = await Promise.all([
+        this.getManager(requestOptions.clientId).getNodes(options),
+        this.getManager(requestOptions.clientId).getNodesCount(options),
+      ]);
+      return { total: count, items: nodes.map(Node.toJSON) };
+    });
+  }
+
   public async getNodePaths(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions, paths: InstanceKeyJSON[][], markedIndex: number): PresentationRpcResponse<NodePathElementJSON[]> {
-    return this.makeRequest(token, "getNodePaths", requestOptions, async (requestContext, options) => {
-      const result = await this.getManager(requestOptions.clientId).getNodePaths(requestContext, options, paths, markedIndex);
-      requestContext.enter();
+    return this.makeRequest(token, "getNodePaths", { ...requestOptions, paths, markedIndex }, async (options) => {
+      const result = await this.getManager(requestOptions.clientId).getNodePaths(options);
       return result.map(NodePathElement.toJSON);
     });
   }
 
   public async getFilteredNodePaths(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions, filterText: string): PresentationRpcResponse<NodePathElementJSON[]> {
-    return this.makeRequest(token, "getFilteredNodePaths", requestOptions, async (requestContext, options) => {
-      const result = await this.getManager(requestOptions.clientId).getFilteredNodePaths(requestContext, options, filterText);
-      requestContext.enter();
+    return this.makeRequest(token, "getFilteredNodePaths", { ...requestOptions, filterText }, async (options) => {
+      const result = await this.getManager(requestOptions.clientId).getFilteredNodePaths(options);
       return result.map(NodePathElement.toJSON);
     });
   }
 
   public async loadHierarchy(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
-    return this.makeRequest(token, "loadHierarchy", requestOptions, async (requestContext, options) => {
+    return this.makeRequest(token, "loadHierarchy", requestOptions, async (options) => {
       const manager = this.getManager(requestOptions.clientId);
       // note: we intentionally don't await here - don't want frontend waiting for this task to complete
       // tslint:disable-next-line:no-floating-promises
-      manager.loadHierarchy(requestContext, options)
+      manager.loadHierarchy(options)
         .catch((e) => Logger.logWarning(PresentationBackendLoggerCategory.PresentationManager, `Error loading '${manager.getRulesetId(requestOptions.rulesetOrId)}' hierarchy: ${e}`));
     });
   }
 
-  public async getContentDescriptor(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions, displayType: string, keys: KeySetJSON, selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined> {
-    return this.makeRequest(token, "getContentDescriptor", requestOptions, async (requestContext, options) => {
-      const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(requestContext, options, displayType, KeySet.fromJSON(keys), selection);
-      requestContext.enter();
+  public async getContentDescriptor(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions | ContentDescriptorRpcRequestOptions, displayType?: string, keys?: KeySetJSON, selection?: SelectionInfo): PresentationRpcResponse<DescriptorJSON | undefined> {
+    return this.makeRequest(token, "getContentDescriptor", requestOptions, async (options) => {
+      if (isContentDescriptorRequestOptions<never, KeySetJSON>(options)) {
+        options = { ...options, keys: KeySet.fromJSON(options.keys) };
+      } else {
+        options = {
+          ...options,
+          displayType: displayType!,
+          keys: KeySet.fromJSON(keys!),
+          selection,
+        };
+      }
+      const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(options);
       if (descriptor)
         return descriptor.toJSON();
       return undefined;
     });
   }
 
-  public async getContentSetSize(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): PresentationRpcResponse<number> {
-    return this.makeRequest(token, "getContentSetSize", requestOptions, async (requestContext, options) =>
-      this.getManager(requestOptions.clientId).getContentSetSize(requestContext, options, descriptorFromJson(descriptorOrOverrides), KeySet.fromJSON(keys)),
-    );
+  public async getContentSetSize(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions | ExtendedContentRpcRequestOptions, descriptorOrOverrides?: DescriptorJSON | DescriptorOverrides, keys?: KeySetJSON): PresentationRpcResponse<number> {
+    return this.makeRequest(token, "getContentSetSize", requestOptions, async (options) => {
+      if (isExtendedContentRequestOptions<never, DescriptorJSON, KeySetJSON>(options)) {
+        options = {
+          ...options,
+          descriptor: descriptorFromJson(options.descriptor),
+          keys: KeySet.fromJSON(options.keys),
+        };
+      } else {
+        options = {
+          ...options,
+          descriptor: descriptorFromJson(descriptorOrOverrides!),
+          keys: KeySet.fromJSON(keys!),
+        };
+      }
+      return this.getManager(requestOptions.clientId).getContentSetSize(options);
+    });
   }
 
-  public async getContentAndSize(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON) {
-    return this.makeRequest(token, "getContentAndSize", requestOptions, async (requestContext, options) => {
-      const result = await this.getManager(requestOptions.clientId).getContentAndSize(requestContext, options, descriptorFromJson(descriptorOrOverrides), KeySet.fromJSON(keys));
-      requestContext.enter();
-      if (result.content)
-        return { ...result, content: result.content.toJSON() };
-      return { ...result, content: undefined };
+  public async getContentAndSize(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): PresentationRpcResponse<{ size: number, content: ContentJSON | undefined }> {
+    return this.makeRequest(token, "getContentAndSize", requestOptions, async (options) => {
+      options = {
+        ...options,
+        descriptor: descriptorFromJson(descriptorOrOverrides),
+        keys: KeySet.fromJSON(keys),
+      };
+      const [size, content] = await Promise.all([
+        this.getManager(requestOptions.clientId).getContentSetSize(options),
+        this.getManager(requestOptions.clientId).getContent(options),
+      ]);
+      if (content)
+        return { size: size!, content: content.toJSON() };
+      return { size: 0, content: undefined };
     });
   }
 
   public async getContent(token: IModelRpcProps, requestOptions: Paged<ContentRpcRequestOptions>, descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, keys: KeySetJSON): PresentationRpcResponse<ContentJSON | undefined> {
-    return this.makeRequest(token, "getContent", requestOptions, async (requestContext, options) => {
-      const content = await this.getManager(requestOptions.clientId).getContent(requestContext, options, descriptorFromJson(descriptorOrOverrides), KeySet.fromJSON(keys));
-      requestContext.enter();
+    return this.makeRequest(token, "getContent", requestOptions, async (options) => {
+      const content = await this.getManager(requestOptions.clientId).getContent({ ...options, descriptor: descriptorFromJson(descriptorOrOverrides), keys: KeySet.fromJSON(keys) });
       if (content)
         return content.toJSON();
       return undefined;
     });
   }
 
+  public async getPagedContent(token: IModelRpcProps, requestOptions: Paged<ExtendedContentRpcRequestOptions>): PresentationRpcResponse<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined> {
+    return this.makeRequest(token, "getPagedContent", requestOptions, async (options) => {
+      options = enforceValidPageSize({
+        ...options,
+        descriptor: descriptorFromJson(options.descriptor),
+        keys: KeySet.fromJSON(options.keys),
+      });
+
+      const [size, content] = await Promise.all([
+        this.getManager(requestOptions.clientId).getContentSetSize(options),
+        this.getManager(requestOptions.clientId).getContent(options),
+      ]);
+
+      if (!content)
+        return undefined;
+
+      return {
+        descriptor: content.descriptor.toJSON(),
+        contentSet: {
+          total: size!,
+          items: content.contentSet.map((i) => i.toJSON()),
+        },
+      };
+    });
+  }
+
+  public async getPagedContentSet(token: IModelRpcProps, requestOptions: Paged<ExtendedContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> {
+    const content = await this.getPagedContent(token, requestOptions);
+    return this.successResponse(content.result ? content.result.contentSet : { total: 0, items: [] });
+  }
+
   public async getDistinctValues(token: IModelRpcProps, requestOptions: ContentRpcRequestOptions, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): PresentationRpcResponse<string[]> {
-    return this.makeRequest(token, "getDistinctValues", requestOptions, async (requestContext, options) =>
-      this.getManager(requestOptions.clientId).getDistinctValues(requestContext, options, Descriptor.fromJSON(descriptor)!, KeySet.fromJSON(keys), fieldName, maximumValueCount),
-    );
+    return this.makeRequest(token, "getDistinctValues", requestOptions, async (options) => {
+      const { requestContext, ...optionsNoRequestContext } = options;
+      return this.getManager(requestOptions.clientId).getDistinctValues(requestContext, optionsNoRequestContext, Descriptor.fromJSON(descriptor)!, KeySet.fromJSON(keys), fieldName, maximumValueCount);
+    });
   }
 
   public async getPagedDistinctValues(token: IModelRpcProps, requestOptions: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> {
-    return this.makeRequest(token, "getPagedDistanctValues", requestOptions, async (requestContext, options) => {
-      options = {
+    return this.makeRequest(token, "getPagedDistinctValues", requestOptions, async (options) => {
+      options = enforceValidPageSize({
         ...options,
         descriptor: Descriptor.fromJSON(options.descriptor),
         keys: KeySet.fromJSON(options.keys),
-      };
-      const response = await this.getManager(requestOptions.clientId).getPagedDistinctValues(requestContext, options);
-      requestContext.enter();
+      });
+      const response = await this.getManager(requestOptions.clientId).getPagedDistinctValues(options);
       return {
-        total: response.total,
+        ...response,
         items: response.items.map(DisplayValueGroup.toJSON),
       };
     });
   }
 
-  public async getDisplayLabelDefinition(token: IModelRpcProps, requestOptions: LabelRpcRequestOptions, key: InstanceKeyJSON): PresentationRpcResponse<LabelDefinitionJSON> {
-    return this.makeRequest(token, "getDisplayLabelDefinition", requestOptions, async (requestContext, options) => {
-      const label = await this.getManager(requestOptions.clientId).getDisplayLabelDefinition(requestContext, options, InstanceKey.fromJSON(key));
-      requestContext.enter();
+  public async getDisplayLabelDefinition(token: IModelRpcProps, requestOptions: LabelRpcRequestOptions | DisplayLabelRpcRequestOptions, key?: InstanceKeyJSON): PresentationRpcResponse<LabelDefinitionJSON> {
+    return this.makeRequest(token, "getDisplayLabelDefinition", requestOptions, async (options) => {
+      const label = await this.getManager(requestOptions.clientId).getDisplayLabelDefinition({ ...options, key: isDisplayLabelRequestOptions(options) ? options.key : key! });
       return LabelDefinition.toJSON(label);
     });
   }
 
   public async getDisplayLabelDefinitions(token: IModelRpcProps, requestOptions: LabelRpcRequestOptions, keys: InstanceKeyJSON[]): PresentationRpcResponse<LabelDefinitionJSON[]> {
-    return this.makeRequest(token, "getDisplayLabelDefinitions", requestOptions, async (requestContext, options) => {
-      const labels = await this.getManager(requestOptions.clientId).getDisplayLabelDefinitions(requestContext, options, keys.map(InstanceKey.fromJSON));
-      requestContext.enter();
+    return this.makeRequest(token, "getDisplayLabelDefinitions", requestOptions, async (options) => {
+      const labels = await this.getManager(requestOptions.clientId).getDisplayLabelDefinitions({ ...options, keys: keys.map(InstanceKey.fromJSON) });
       return labels.map(LabelDefinition.toJSON);
     });
   }
 
+  public async getPagedDisplayLabelDefinitions(token: IModelRpcProps, requestOptions: DisplayLabelsRpcRequestOptions): PresentationRpcResponse<PagedResponse<LabelDefinitionJSON>> {
+    const pageOpts = enforceValidPageSize({ paging: { start: 0, size: requestOptions.keys.length } });
+    if (pageOpts.paging.size < requestOptions.keys.length)
+      requestOptions.keys.splice(pageOpts.paging.size);
+    return this.makeRequest(token, "getPagedDisplayLabelDefinitions", requestOptions, async (options) => {
+      const labels = await this.getManager(requestOptions.clientId).getDisplayLabelDefinitions({ ...options, keys: options.keys.map(InstanceKey.fromJSON) });
+      return {
+        total: options.keys.length,
+        items: labels.map(LabelDefinition.toJSON),
+      };
+    });
+  }
+
   public async getSelectionScopes(token: IModelRpcProps, requestOptions: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> {
-    return this.makeRequest(token, "getSelectionScopes", requestOptions, async (requestContext, options) =>
-      this.getManager(requestOptions.clientId).getSelectionScopes(requestContext, options),
+    return this.makeRequest(token, "getSelectionScopes", requestOptions, async (options) =>
+      this.getManager(requestOptions.clientId).getSelectionScopes(options),
     );
   }
 
   public async computeSelection(token: IModelRpcProps, requestOptions: SelectionScopeRpcRequestOptions, ids: Id64String[], scopeId: string): PresentationRpcResponse<KeySetJSON> {
-    return this.makeRequest(token, "computeSelection", requestOptions, async (requestContext, options) => {
-      const keys = await this.getManager(requestOptions.clientId).computeSelection(requestContext, options, ids, scopeId);
-      requestContext.enter();
+    return this.makeRequest(token, "computeSelection", { ...requestOptions, ids, scopeId }, async (options) => {
+      const keys = await this.getManager(requestOptions.clientId).computeSelection(options);
       return keys.toJSON();
     });
   }
 
   public async compareHierarchies(token: IModelRpcProps, requestOptions: PresentationDataCompareRpcOptions): PresentationRpcResponse<PartialHierarchyModificationJSON[]> {
-    return this.makeRequest(token, "compareHierarchies", requestOptions, async (requestContext, options) =>
-      (await this.getManager(requestOptions.clientId).compareHierarchies(requestContext, options))
-        .map(PartialHierarchyModification.toJSON),
-    );
+    return this.makeRequest(token, "compareHierarchies", requestOptions, async (options) => {
+      const result = await this.getManager(requestOptions.clientId).compareHierarchies(options);
+      return result.map(PartialHierarchyModification.toJSON);
+    });
   }
 }
+
+const enforceValidPageSize = <TOptions extends Paged<object>>(requestOptions: TOptions): TOptions & { paging: PageOptions } => {
+  const requestedPageSize = requestOptions.paging?.size ?? 0;
+  if (requestedPageSize === 0 || requestedPageSize > MAX_ALLOWED_PAGE_SIZE)
+    return { ...requestOptions, paging: { ...requestOptions.paging, size: MAX_ALLOWED_PAGE_SIZE } };
+  return requestOptions as (TOptions & { paging: PageOptions });
+};
 
 const nodeKeyFromJson = (json: NodeKeyJSON | undefined): NodeKey | undefined => {
   if (!json)

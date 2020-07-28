@@ -35,7 +35,11 @@
         padding-right: $bar-size;
         box-sizing: border-box;
         background-clip: content-box;
+      }
 
+      &:focus {
+        background-color: $buic-background-active-overlay;
+        outline: none;
       }
     }
 
@@ -52,6 +56,10 @@
 
         color:              $buic-foreground-primary;
         background-color:   $buic-background-tab-active;
+
+        &:focus {
+          background-color: $buic-background-active-overlay;
+        }
       }
     }
   }

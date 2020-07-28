@@ -437,7 +437,7 @@ describe("<ToolbarWithOverflow />", () => {
       expect(renderedComponent.queryByText("Entry3")).not.to.be.null;
 
       // find first item and click it.
-      const firstAction = renderedComponent.container.querySelector(".components-toolbar-item-expandable-group-tool-item");
+      const firstAction = document.querySelector(".components-toolbar-item-expandable-group-tool-item");
       expect(firstAction).not.to.be.null;
 
       fireEvent.click(firstAction!);
@@ -506,7 +506,7 @@ describe("<ToolbarWithOverflow />", () => {
       expect(button).not.to.be.null;
       fireEvent.click(button!);
       // renderedComponent.debug();
-      expect(renderedComponent.container.querySelectorAll(".components-toolbar-item-expandable-group-column").length).to.eq(4);
+      expect(document.querySelectorAll(".components-toolbar-item-expandable-group-column").length).to.eq(4);
     });
 
     it("group button panel w/3 cols should open when clicked", () => {
@@ -569,7 +569,7 @@ describe("<ToolbarWithOverflow />", () => {
       expect(button).not.to.be.null;
       fireEvent.click(button!);
       // renderedComponent.debug();
-      expect(renderedComponent.container.querySelectorAll(".components-toolbar-item-expandable-group-column").length).to.eq(3);
+      expect(document.querySelectorAll(".components-toolbar-item-expandable-group-column").length).to.eq(3);
     });
 
     it("group button panel w/2 cols should open when clicked", () => {
@@ -620,7 +620,7 @@ describe("<ToolbarWithOverflow />", () => {
       expect(button).not.to.be.null;
       fireEvent.click(button!);
       // renderedComponent.debug();
-      expect(renderedComponent.container.querySelectorAll(".components-toolbar-item-expandable-group-column").length).to.eq(2);
+      expect(document.querySelectorAll(".components-toolbar-item-expandable-group-column").length).to.eq(2);
     });
 
     it("nested group button panel should open when clicked", () => {
@@ -658,7 +658,7 @@ describe("<ToolbarWithOverflow />", () => {
       // renderedComponent.debug();
 
       // find first item (GroupN1) and click it.
-      const nestedGroup = renderedComponent.container.querySelector(".components-toolbar-item-expandable-group-tool-item");
+      const nestedGroup = document.querySelector(".components-toolbar-item-expandable-group-tool-item");
       expect(nestedGroup).not.to.be.null;
 
       fireEvent.click(nestedGroup!);
@@ -669,7 +669,7 @@ describe("<ToolbarWithOverflow />", () => {
       expect(renderedComponent.queryByText("EntryN3")).not.to.be.null;
       // renderedComponent.debug();
 
-      const backArrow = renderedComponent.container.querySelector(".components-toolbar-item-expandable-group-backArrow");
+      const backArrow = document.querySelector(".components-toolbar-item-expandable-group-backArrow");
       fireEvent.click(backArrow!);
 
       // renderedComponent.debug();

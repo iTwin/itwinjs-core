@@ -15,6 +15,7 @@ import { IModelHost } from "@bentley/imodeljs-backend";
 import { BentleyError, ExtensionStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelError } from "@bentley/imodeljs-common";
+import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { prettyPrint, signIn } from "./helpers";
 
 let command: "publish" | "get" | "delete" | "view" | undefined;
@@ -29,6 +30,12 @@ const argv = yargs.strict(true)
         describe: "Path to a directory containing the files to be published",
         string: true,
         demandOption: true,
+      })
+      .option("public", {
+        alias: "p",
+        describe: "Set this flag to publish a public extension",
+        boolean: true,
+        requiresArg: false,
       }),
     (a) => {
       command = "publish";
@@ -54,6 +61,12 @@ const argv = yargs.strict(true)
       .demandOption("extensionVersion")
       .option("force", {
         describe: "Force confirmation and silence interactive prompt",
+        requiresArg: false,
+      })
+      .option("public", {
+        alias: "p",
+        describe: "Set this flag to delete a public extension",
+        boolean: true,
         requiresArg: false,
       }),
     () => { command = "delete"; })
@@ -99,7 +112,7 @@ const argv = yargs.strict(true)
   const requestContext = new AuthorizedClientRequestContext(token);
   const client = new ExtensionClient();
 
-  const contextId = argv.contextId ?? "00000000-0000-0000-0000-000000000000";
+  let contextId = argv.contextId ?? "00000000-0000-0000-0000-000000000000";
 
   switch (command) {
     case "get":
@@ -146,6 +159,12 @@ const argv = yargs.strict(true)
           name = argv.extensionName!;
           version = argv.extensionVersion!;
         }
+
+        if (!argv.public && argv.contextId === undefined) {
+          const contextRegistryClient: ContextRegistryClient = new ContextRegistryClient();
+          contextId = (await contextRegistryClient.getTeam(requestContext)).wsgId;
+        }
+
         process.stdout.write("Ready to upload.\n");
         await client.createExtension(requestContext, contextId, name, version, checksum, buffer);
         process.stdout.write("Uploading extension...\n");
@@ -171,6 +190,11 @@ const argv = yargs.strict(true)
       }
       break;
     case "delete":
+      if (!argv.public && argv.contextId === undefined) {
+        const contextRegistryClient: ContextRegistryClient = new ContextRegistryClient();
+        contextId = (await contextRegistryClient.getTeam(requestContext)).wsgId;
+      }
+
       const rl = readline.createInterface(process.stdin, process.stdout);
       const input = argv.force ? "Yes" : await new Promise<string>((resolve) => {
         rl.question(

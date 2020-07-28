@@ -10,6 +10,7 @@ Name | Required? | Type | Default | Meaning | Performance Notes
 `queries` | No | [`QuerySpecification[]`](#query-specifications) | `[]` | Specifications of queries used to create the content.
 `hideNodesInHierarchy` | No | `boolean` | `false` | Hide nodes provided by this specification and directly show their children. | Expensive
 `hideIfNoChildren` | No | `boolean` | `false` | Hide nodes if they don't have children. | Expensive
+`suppressSimilarAncestorsCheck` | No | `boolean` | `false` | Suppress similar ancestor nodes' checking when creating nodes based on this specification. [See more](./InfiniteHierarchiesPrevention.md)
 *Ordering* |
 `priority` | No | `number` | `1000` | Changes the order of specifications used to create nodes for specific branch.
 `doNotSort` | No | `boolean` | `false` | Suppress default sorting of nodes returned by this specification. | Improves
@@ -18,7 +19,7 @@ Name | Required? | Type | Default | Meaning | Performance Notes
 `groupByLabel` | No | `boolean` | `true` | Group instances by label | Expensive
 *Misc.* |
 `hasChildren` | No | `"Always" \| "Never" \| "Unknown"` | `"Unknown"` | Tells the rules engine that nodes produced using this specification always or never have children. | Improves
-`relatedInstances` | No | `RelatedInstanceSpecification[]` | `[]` | Specifications of [related instances](../RelatedInstanceSpecification.md) that can be used in nodes' creation.
+`relatedInstances` | No | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md) | `[]` | Specifications of [related instances](../RelatedInstanceSpecification.md) that can be used in nodes' creation.
 `nestedRules` | No | [`ChildNodeRule[]`](./ChildNodeRule.md) | `[]` | Specifications of [nested child node rules](./Terminology.md#nested-rules).
 
 ## Query Specifications

@@ -17,16 +17,9 @@ $header-height: 50px;
     padding: 0;
   }
 
-  .nzdemo-panel-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 5px;
-  }
-
   .nzdemo-widgetPanels {
     flex: 1 1 auto;
     min-height: 0;
-    order: 2;
   }
 
   .nz-widgetPanels-content {
@@ -57,8 +50,6 @@ $header-height: 50px;
   }
 
   .nzdemo-footer {
-    order: 3;
-
     .nzdemo-footer-content {
       display: flex;
       align-items: center;
@@ -86,4 +77,10 @@ $header-height: 50px;
     background: lawngreen;
     position: relative;
   }
+}
+
+.nzdemo-panel-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 5px;
 }

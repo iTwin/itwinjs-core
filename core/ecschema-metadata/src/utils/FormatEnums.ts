@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Metadata
+ */
 
 /** The regular expression to parse [format strings]($docs/bis/ec/kindofquantity.md#format-string)
  * provided in serialized formats as well as the full name of an [[OverrideFormat]].

@@ -10,27 +10,42 @@ import * as React from "react";
 import { Point } from "../Point";
 import { Rectangle } from "../Rectangle";
 
-/** Returns the shortest distance from the element to the mouse.
+/** @internal */
+export class WidgetElementSet extends Set<React.RefObject<Element>> { }
+
+/** Returns the proximity scale associated with the shortest distance from the element(s) to the mouse.
  * @internal
  */
-export const useProximityToMouse = (elementRef: React.RefObject<Element>) => {
-  const [proximity, setProximity] = React.useState(0);
+export const useProximityToMouse = (elementSet: WidgetElementSet, snap: boolean = false, threshold = PROXIMITY_THRESHOLD_DEFAULT) => {
+  const [proximityScale, setProximityScale] = React.useState(1.0);
+
   React.useEffect(() => {
     const handleDocumentPointerMove = (e: PointerEvent) => {
-      // istanbul ignore else
-      if (elementRef.current) {
-        const clientRect = elementRef.current.getBoundingClientRect();
-        const rectangle = Rectangle.create(clientRect);
-        const point = new Point(e.pageX, e.pageY);
-        setProximity(rectangle.getShortestDistanceToPoint(point));
+      let shortestProximity = Number.MAX_SAFE_INTEGER;
+
+      for (const ref of elementSet) {
+        // istanbul ignore else
+        if (ref.current) {
+          const clientRect = ref.current.getBoundingClientRect();
+          const rectangle = Rectangle.create(clientRect);
+          const point = new Point(e.pageX, e.pageY);
+          shortestProximity = Math.min(rectangle.getShortestDistanceToPoint(point), shortestProximity);
+        }
       }
+
+      const scale = calculateProximityScale(shortestProximity, snap, threshold);
+      if (scale !== proximityScale)
+        setProximityScale(scale);
     };
+
     document.addEventListener("pointermove", handleDocumentPointerMove);
+
     return () => {
       document.removeEventListener("pointermove", handleDocumentPointerMove);
     };
-  }, [elementRef]);
-  return proximity;
+  }, [elementSet, proximityScale, snap, threshold]);
+
+  return proximityScale;
 };
 
 /** Default proximity threshold.
@@ -56,8 +71,10 @@ export const TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT = 10;
 /** Calculates a proximity scale for further calculations given the proximity and threshold.
  * @internal
  */
-export const calculateProximityScale = (proximity: number, threshold = PROXIMITY_THRESHOLD_DEFAULT): number => {
-  const scale = ((proximity < threshold) ? threshold - proximity : 0) / threshold;
+export const calculateProximityScale = (proximity: number, snap: boolean = false, threshold = PROXIMITY_THRESHOLD_DEFAULT): number => {
+  let scale = ((proximity < threshold) ? threshold - proximity : 0) / threshold;
+  if (snap && scale > 0)
+    scale = 1.0;
   return scale;
 };
 

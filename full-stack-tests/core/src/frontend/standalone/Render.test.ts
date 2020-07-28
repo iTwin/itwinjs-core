@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipVector, Point2d, Point3d } from "@bentley/geometry-core";
+import { ClipVector, Point2d, Point3d, Transform } from "@bentley/geometry-core";
 import {
   ColorDef, Hilite, RenderMode, RgbColor, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
-  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicType, IModelApp, IModelConnection, IModelTileTree, OffScreenViewport,
+  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, IModelTileTree, OffScreenViewport,
   Pixel, RenderMemory, RenderSystem, SnapshotConnection, SpatialViewState, TileAdmin, TileLoadStatus, TileTree, TileTreeSet, Viewport, ViewRect,
   ViewState3d,
 } from "@bentley/imodeljs-frontend";
@@ -857,6 +857,126 @@ describe("Render mirukuru", () => {
           }
         }
       }
+    });
+  });
+
+  it("should augment symbology", async () => {
+    await testOnScreenViewport("0x24", imodel, 200, 150, async (vp) => {
+      // Draw unlit surfaces only - a white slab on a black background.
+      const vf = vp.viewFlags.clone();
+      vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
+      vp.viewFlags = vf;
+
+      const expectSurfaceColor = async (color: ColorDef) => {
+        await vp.waitForAllTilesToRender();
+
+        const colors = vp.readUniqueColors();
+        expect(colors.length).to.equal(2);
+        expect(colors.contains(Color.fromRgba(0, 0, 0, 0xff))).to.be.true;
+
+        const expected = Color.fromRgba(color.colors.r, color.colors.g, color.colors.b, 0xff);
+        expect(colors.contains(expected)).to.be.true;
+      };
+
+      // No overrides yet.
+      await expectSurfaceColor(ColorDef.white);
+
+      // Override System.createGraphicBranch to use an AppearanceProvider that always overrides color to red.
+      const overrideColor = (color: ColorDef) => () => FeatureSymbology.Appearance.fromRgb(color);
+      const appearanceProvider: FeatureSymbology.AppearanceProvider = { getFeatureAppearance: overrideColor(ColorDef.red) };
+      const createGraphicBranch = IModelApp.renderSystem.createGraphicBranch;
+      IModelApp.renderSystem.createGraphicBranch = (branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) => {
+        options = options ?? { };
+        return createGraphicBranch.call(IModelApp.renderSystem, branch, transform, { ...options, appearanceProvider });
+      };
+
+      // The viewport doesn't yet know its overrides need updating.
+      await expectSurfaceColor(ColorDef.white);
+
+      // Update symbology overrides. The viewport doesn't yet know the scene has changed.
+      IModelApp.viewManager.invalidateSymbologyOverridesAllViews();
+      await expectSurfaceColor(ColorDef.white);
+
+      // Invalidate scene. The viewport will create new graphic branch with our appearance provider, but doesn't know that it needs to recompute the symbology overrides.
+      IModelApp.viewManager.invalidateViewportScenes();
+      await expectSurfaceColor(ColorDef.white);
+
+      // Invalidate both scene and overrides. The viewport will create new graphic branch with our appearance provider.
+      IModelApp.viewManager.invalidateViewportScenes();
+      IModelApp.viewManager.invalidateSymbologyOverridesAllViews();
+      await expectSurfaceColor(ColorDef.red);
+
+      // If a branch is nested in another branch, then:
+      //  - If the child has no symbology overrides:
+      //    - It uses its own AppearanceProvider, or its parents if it has none.
+      //  - Otherwise, it uses its own AppearanceProvider, or none.
+      interface OvrAug { ovr?: ColorDef; aug?: ColorDef; }
+      const testNestedBranch = async (parent: OvrAug | undefined, child: OvrAug | undefined, expected: ColorDef) => {
+        const applyOvrs = (branch: GraphicBranch, ovraug?: OvrAug) => {
+          if (ovraug?.ovr) {
+            branch.symbologyOverrides = new FeatureSymbology.Overrides(vp);
+            branch.symbologyOverrides.setDefaultOverrides(FeatureSymbology.Appearance.fromRgb(ovraug.ovr));
+          }
+        };
+
+        const getBranchOptions = (opts?: GraphicBranchOptions, ovraug?: OvrAug) => {
+          if (ovraug?.aug)
+            opts = { ...opts, appearanceProvider: { getFeatureAppearance: overrideColor(ovraug.aug) } };
+
+          return opts;
+        };
+
+        // Nest the branch inside a parent branch.
+        IModelApp.renderSystem.createGraphicBranch = (branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) => {
+          options = options ?? { };
+          const childOptions = getBranchOptions(options, child);
+          applyOvrs(branch, child);
+          const childBranch = createGraphicBranch.call(IModelApp.renderSystem, branch, transform, childOptions);
+
+          const childGraphics = new GraphicBranch();
+          childGraphics.add(childBranch);
+          applyOvrs(childGraphics, parent);
+          const parentOptions = getBranchOptions(undefined, parent);
+          return createGraphicBranch.call(IModelApp.renderSystem, childGraphics, Transform.createIdentity(), parentOptions);
+        };
+
+        vp.invalidateScene();
+        vp.setFeatureOverrideProviderChanged();
+        await expectSurfaceColor(expected);
+      };
+
+      interface TestCase {
+        parent?: OvrAug;
+        child?: OvrAug;
+        color: ColorDef;
+      }
+
+      const testCases: TestCase[] = [
+        // Nothing overridden.
+        { color: ColorDef.white },
+
+        // Child has overrides and/or appearance provider. Provider always wins if defined.
+        { child: { ovr: ColorDef.blue }, color: ColorDef.blue },
+        { child: { aug: ColorDef.green }, color: ColorDef.green },
+        { child: { ovr: ColorDef.blue, aug: ColorDef.green }, color: ColorDef.green },
+
+        // Parent has overrides and/or appearance provider. Child inherits them. Provider always wins if defined.
+        { parent: { ovr: ColorDef.blue }, color: ColorDef.blue },
+        { parent: { aug: ColorDef.green }, color: ColorDef.green },
+        { parent: { ovr: ColorDef.blue, aug: ColorDef.green }, color: ColorDef.green },
+
+        // If child has overrides, parent's overrides and/or provider have no effect on it.
+        { child: { ovr: ColorDef.blue }, parent: { ovr: ColorDef.red, aug: ColorDef.green }, color: ColorDef.blue },
+
+        // If child has provider, it wins over parent's overrides if defined.
+        { child: { aug: ColorDef.red }, parent: { ovr: ColorDef.green, aug: ColorDef.blue }, color: ColorDef.red },
+      ];
+
+      for (const testCase of testCases)
+        await testNestedBranch(testCase.parent, testCase.child, testCase.color);
+
+      // Reset System.createGraphicBranch.
+      IModelApp.renderSystem.createGraphicBranch = createGraphicBranch;
     });
   });
 

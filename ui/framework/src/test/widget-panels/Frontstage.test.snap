@@ -6,6 +6,12 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
 >
   <NineZone
     dispatch={[Function]}
+    labels={
+      Object {
+        "dockToolSettingsTitle": "widget.tooltips.dockToolSettings",
+        "sendWidgetHomeTitle": "widget.tooltips.sendHome",
+      }
+    }
     state={
       Object {
         "draggedTab": undefined,
@@ -18,6 +24,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
             "collapseOffset": 100,
             "collapsed": false,
             "maxSize": 600,
+            "maxWidgetCount": 2,
             "minSize": 100,
             "pinned": true,
             "side": "bottom",
@@ -29,6 +36,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
             "collapseOffset": 100,
             "collapsed": false,
             "maxSize": 600,
+            "maxWidgetCount": 3,
             "minSize": 200,
             "pinned": true,
             "side": "left",
@@ -39,6 +47,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
             "collapseOffset": 100,
             "collapsed": false,
             "maxSize": 600,
+            "maxWidgetCount": 3,
             "minSize": 200,
             "pinned": true,
             "side": "right",
@@ -49,6 +58,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
             "collapseOffset": 100,
             "collapsed": false,
             "maxSize": 600,
+            "maxWidgetCount": 2,
             "minSize": 100,
             "pinned": true,
             "side": "top",
@@ -65,6 +75,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
           "nz-tool-settings-tab": Object {
             "id": "nz-tool-settings-tab",
             "label": "Tool Settings",
+            "preferredFloatingWidgetSize": undefined,
           },
         },
         "toolSettings": Object {
@@ -149,6 +160,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
       "side": "bottom",
@@ -160,6 +172,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
       "side": "left",
@@ -170,6 +183,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
       "side": "right",
@@ -180,6 +194,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
       "side": "top",
@@ -196,6 +211,7 @@ Object {
     "nz-tool-settings-tab": Object {
       "id": "nz-tool-settings-tab",
       "label": "Tool Settings",
+      "preferredFloatingWidgetSize": undefined,
     },
   },
   "toolSettings": Object {
@@ -215,10 +231,15 @@ Object {
     "byId": Object {
       "w1": Object {
         "bounds": Object {
-          "bottom": 400,
+          "bottom": 0,
           "left": 0,
-          "right": 200,
-          "top": 100,
+          "right": 0,
+          "top": 0,
+        },
+        "home": Object {
+          "side": "left",
+          "widgetId": undefined,
+          "widgetIndex": 0,
         },
         "id": "w1",
       },
@@ -229,6 +250,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
       "side": "bottom",
@@ -240,6 +262,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
       "side": "left",
@@ -250,6 +273,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
       "side": "right",
@@ -260,6 +284,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
       "side": "top",
@@ -275,6 +300,7 @@ Object {
   "tabs": Object {
     "t1": Object {
       "id": "t1",
+      "preferredFloatingWidgetSize": undefined,
     },
   },
   "toolSettings": Object {
@@ -312,6 +338,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
       "side": "bottom",
@@ -323,6 +350,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
       "side": "left",
@@ -333,6 +361,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
       "side": "right",
@@ -343,6 +372,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
       "side": "top",
@@ -359,10 +389,12 @@ Object {
     "nz-tool-settings-tab": Object {
       "id": "nz-tool-settings-tab",
       "label": "Tool Settings",
+      "preferredFloatingWidgetSize": undefined,
     },
     "t1": Object {
       "id": "t1",
       "label": "Widget",
+      "preferredFloatingWidgetSize": undefined,
     },
   },
   "toolSettings": Object {
@@ -384,6 +416,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
       "side": "bottom",
@@ -395,6 +428,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
       "side": "left",
@@ -405,6 +439,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 3,
       "minSize": 200,
       "pinned": true,
       "side": "right",
@@ -415,6 +450,7 @@ Object {
       "collapseOffset": 100,
       "collapsed": false,
       "maxSize": 600,
+      "maxWidgetCount": 2,
       "minSize": 100,
       "pinned": true,
       "side": "top",
@@ -431,6 +467,7 @@ Object {
     "nz-tool-settings-tab": Object {
       "id": "nz-tool-settings-tab",
       "label": "Tool Settings",
+      "preferredFloatingWidgetSize": undefined,
     },
   },
   "toolSettings": Object {

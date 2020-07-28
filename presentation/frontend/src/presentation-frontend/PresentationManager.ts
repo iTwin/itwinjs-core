@@ -9,11 +9,14 @@
 import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { EventSource, EventSourceManager, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayValueGroup, DistinctValuesRequestOptions,
-  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged,
-  PagedResponse, PartialHierarchyModification, PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface,
-  PresentationRpcRequestOptions, PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset,
-  RulesetVariable, SelectionInfo, UpdateInfo,
+  Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
+  DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
+  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
+  isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, KeySet, LabelDefinition,
+  LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
+  PresentationDataCompareOptions, PresentationError, PresentationRpcEvents, PresentationRpcInterface, PresentationRpcRequestOptions,
+  PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RequestPriority, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo,
+  UpdateInfo,
 } from "@bentley/presentation-common";
 import { LocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
@@ -247,47 +250,50 @@ export class PresentationManager implements IDisposable {
   }
 
   /**
-   * Retrieves nodes.
-   * @param requestOptions options for the request
-   * @param parentKey    Key of the parent node.
-   * @return A promise object that returns either a nodes response object with nodes and nodes count on success or an error string on error.
-   */
-  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey) {
-    await this.onConnection(requestOptions.imodel);
-
-    const parentKeyJson = parentKey ? NodeKey.toJSON(parentKey) : undefined;
-    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getNodesAndCount(this.toRpcTokenOptions(options), parentKeyJson);
-    return { ...result, nodes: this._localizationHelper.getLocalizedNodes(result.nodes.map(Node.fromJSON)) };
-  }
-
-  /**
    * Retrieves nodes
-   * @param requestOptions options for the request
-   * @param parentKey    Key of the parent node if requesting for child nodes
-   * @return A promise object that returns either an array of nodes on success or an error string on error.
+   * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
    */
-  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey): Promise<Node[]> {
+  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: NodeKey | undefined): Promise<Node[]>; // tslint:disable-line:unified-signatures
+  /** Retrieves nodes */
+  public async getNodes(requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>): Promise<Node[]>;
+  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection> | ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>, parentKey?: NodeKey): Promise<Node[]> {
     await this.onConnection(requestOptions.imodel);
-
-    const parentKeyJson = parentKey ? NodeKey.toJSON(parentKey) : undefined;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getNodes(this.toRpcTokenOptions(options), parentKeyJson);
-    return this._localizationHelper.getLocalizedNodes(result.map(Node.fromJSON));
+    const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(isExtendedHierarchyRequestOptions(options) ? options.parentKey : parentKey) });
+    const result = await buildPagedResponse(options.paging, (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
+    return this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON));
   }
 
   /**
    * Retrieves nodes count.
-   * @param requestOptions options for the request
-   * @param parentKey Key of the parent node if requesting for child nodes count.
-   * @return A promise object that returns the number of nodes.
+   * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
    */
-  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: NodeKey): Promise<number> {
+  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey: NodeKey | undefined): Promise<number>; // tslint:disable-line:unified-signatures
+  /** Retrieves nodes count. */
+  public async getNodesCount(requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>): Promise<number>;
+  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection> | ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>, parentKey?: NodeKey): Promise<number> {
     await this.onConnection(requestOptions.imodel);
-
-    const parentKeyJson = parentKey ? NodeKey.toJSON(parentKey) : undefined;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    return this._requestsHandler.getNodesCount(this.toRpcTokenOptions(options), parentKeyJson);
+    const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(isExtendedHierarchyRequestOptions(options) ? options.parentKey : parentKey) });
+    return this._requestsHandler.getNodesCount(rpcOptions);
+  }
+
+  /**
+   * Retrieves total nodes count and a single page of nodes.
+   * @deprecated Use an overload with [[ExtendedHierarchyRequestOptions]]
+   */
+  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: NodeKey | undefined): Promise<{ count: number, nodes: Node[] }>; // tslint:disable-line:unified-signatures
+  /** Retrieves total nodes count and a single page of nodes. */
+  public async getNodesAndCount(requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>): Promise<{ count: number, nodes: Node[] }>;
+  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection> | ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>, parentKey?: NodeKey): Promise<{ count: number, nodes: Node[] }> {
+    await this.onConnection(requestOptions.imodel);
+    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+    const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(isExtendedHierarchyRequestOptions(options) ? options.parentKey : parentKey) });
+    const result = await buildPagedResponse(options.paging, (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
+    return {
+      count: result.total,
+      nodes: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
+    };
   }
 
   /**
@@ -324,7 +330,7 @@ export class PresentationManager implements IDisposable {
    * Loads the whole hierarchy.
    * @param requestOptions options for the request. If `requestOptions.priority` is not set, it defaults to `RequestPriority.Preload`.
    * @return A promise object that resolves as soon as the load request is queued (not when loading finishes)
-   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
+   * @alpha Will be removed in 3.0.
    */
   public async loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void> {
     await this.onConnection(requestOptions.imodel);
@@ -336,72 +342,98 @@ export class PresentationManager implements IDisposable {
   }
 
   /**
-   * Retrieves the content descriptor which can be used to get content.
-   * @param requestOptions options for the request
-   * @param displayType  The preferred display type of the return content.
-   * @param keys         Keys of ECInstances to get the content for.
-   * @param selection    Optional selection info in case the content is being requested due to selection change.
-   * @return A promise object that returns either a descriptor on success or an error string on error.
+   * Retrieves the content descriptor which describes the content and can be used to customize it.
+   * @deprecated Use an overload with [[ContentDescriptorRequestOptions]]
    */
-  public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined> {
+  public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
+  /** @beta */
+  public async getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet>): Promise<Descriptor | undefined>;
+  public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection> | ContentDescriptorRequestOptions<IModelConnection, KeySet>, displayType?: string, keys?: KeySet, selection?: SelectionInfo): Promise<Descriptor | undefined> {
     await this.onConnection(requestOptions.imodel);
-
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getContentDescriptor(this.toRpcTokenOptions(options), displayType, keys.toJSON(), selection);
+    const rpcOptions = isContentDescriptorRequestOptions(options)
+      ? this.toRpcTokenOptions({
+        ...options,
+        keys: options.keys.toJSON(),
+      })
+      : this.toRpcTokenOptions({
+        ...options,
+        displayType: displayType!,
+        keys: keys!.toJSON(),
+        selection,
+      });
+    const result = await this._requestsHandler.getContentDescriptor(rpcOptions);
     return Descriptor.fromJSON(result);
   }
 
   /**
-   * Retrieves the content set size based on the supplied content descriptor override.
-   * @param requestOptions          options for the request
-   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
-   * @param keys                    Keys of ECInstances to get the content for.
-   * @return A promise object that returns either a number on success or an error string on error.
-   * Even if concrete implementation returns content in pages, this function returns the total
-   * number of records in the content set.
+   * Retrieves content set size based on the supplied content descriptor override.
+   * @deprecated Use an overload with [[ExtendedContentRequestOptions]]
    */
-  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number> {
+  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
+  /** @beta */
+  public async getContentSetSize(requestOptions: ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<number>;
+  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection> | ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>, descriptorOrOverrides?: Descriptor | DescriptorOverrides, keys?: KeySet): Promise<number> {
     await this.onConnection(requestOptions.imodel);
-
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    return this._requestsHandler.getContentSetSize(this.toRpcTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
+    const rpcOptions = this.toRpcTokenOptions({
+      ...options,
+      descriptor: createDescriptorParam(isExtendedContentRequestOptions(requestOptions) ? requestOptions.descriptor : descriptorOrOverrides!),
+      keys: (isExtendedContentRequestOptions(requestOptions) ? requestOptions.keys : keys!).toJSON(),
+    });
+    return this._requestsHandler.getContentSetSize(rpcOptions);
   }
 
   /**
    * Retrieves the content based on the supplied content descriptor override.
-   * @param requestOptions          options for the request
-   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
-   * @param keys                    Keys of ECInstances to get the content for.
-   * @return A promise object that returns either content on success or an error string on error.
+   * @deprecated Use an overload with [[ExtendedContentRequestOptions]]
    */
-  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined> {
-    await this.onConnection(requestOptions.imodel);
-
-    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getContent(this.toRpcTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
-    return this._localizationHelper.getLocalizedContent(Content.fromJSON(result));
+  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
+  /** @beta */
+  public async getContent(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>): Promise<Content | undefined>;
+  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection> | ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>, argsDescriptor?: Descriptor | DescriptorOverrides, argsKeys?: KeySet): Promise<Content | undefined> {
+    return (await (isExtendedContentRequestOptions(requestOptions)
+      ? this.getContentAndSize(requestOptions)
+      : this.getContentAndSize(requestOptions, argsDescriptor!, argsKeys!)) // tslint:disable-line:deprecation
+    )?.content;
   }
 
   /**
    * Retrieves the content and content set size based on the supplied content descriptor override.
-   * @param requestOptions          Options for the request.
-   * @param descriptorOrOverrides   Content descriptor or its overrides specifying how the content should be customized
-   * @param keys                    Keys of ECInstances to get the content for.
-   * @returns A promise object that returns either content and content set size on success or an error string on error.
+   * @deprecated Use an overload with [[ExtendedContentRequestOptions]]
    */
-  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<{ content: Content, size: number } | undefined> {
+  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<{ content: Content, size: number } | undefined>;
+  /** @beta */
+  public async getContentAndSize(requestOptions: Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>): Promise<{ content: Content, size: number } | undefined>;
+  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection> | ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>, argsDescriptor?: Descriptor | DescriptorOverrides, argsKeys?: KeySet): Promise<{ content: Content, size: number } | undefined> {
     await this.onConnection(requestOptions.imodel);
-
+    const descriptorOrOverrides = isExtendedContentRequestOptions(requestOptions) ? requestOptions.descriptor : argsDescriptor!;
+    const keys = isExtendedContentRequestOptions(requestOptions) ? requestOptions.keys : argsKeys!;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getContentAndSize(this.toRpcTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
-    const localizedContent = this._localizationHelper.getLocalizedContent(Content.fromJSON(result.content));
-    return localizedContent ? { content: localizedContent, size: result.size } : undefined;
-  }
-
-  private createDescriptorParam(descriptorOrOverrides: Descriptor | DescriptorOverrides) {
-    if (descriptorOrOverrides instanceof Descriptor)
-      return descriptorOrOverrides.createStrippedDescriptor();
-    return descriptorOrOverrides;
+    const rpcOptions = this.toRpcTokenOptions({
+      ...options,
+      descriptor: createDescriptorParam(descriptorOrOverrides),
+      keys: keys.toJSON(),
+    });
+    let descriptor = (descriptorOrOverrides instanceof Descriptor) ? descriptorOrOverrides : undefined;
+    const result = await buildPagedResponse(options.paging, async (partialPageOptions, requestIndex) => {
+      if (0 === requestIndex && !descriptor) {
+        const content = await this._requestsHandler.getPagedContent({ ...rpcOptions, paging: partialPageOptions });
+        if (content) {
+          descriptor = Descriptor.fromJSON(content.descriptor);
+          return content.contentSet;
+        }
+        return { total: 0, items: [] };
+      }
+      return this._requestsHandler.getPagedContentSet({ ...rpcOptions, paging: partialPageOptions });
+    });
+    if (!descriptor)
+      return undefined;
+    const items = result.items.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => (item !== undefined));
+    return {
+      size: result.total,
+      content: this._localizationHelper.getLocalizedContent(new Content(descriptor, items)),
+    };
   }
 
   /**
@@ -428,36 +460,76 @@ export class PresentationManager implements IDisposable {
   public async getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet>): Promise<PagedResponse<DisplayValueGroup>> {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
-    const result = await this._requestsHandler.getPagedDistinctValues({
+    const rpcOptions = {
       ...this.toRpcTokenOptions(options),
       descriptor: options.descriptor.createStrippedDescriptor(),
       keys: options.keys.toJSON(),
-    });
+    };
+    const result = await buildPagedResponse(requestOptions.paging, (partialPageOptions) => this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging: partialPageOptions }));
     return {
-      total: result.total,
+      ...result,
       items: result.items.map(DisplayValueGroup.fromJSON),
     };
   }
 
   /**
    * Retrieves display label definition of specific item
-   * @param requestOptions options for the request
-   * @param key Key of instance to get label for
+   * @deprecated Use an overload with [[DisplayLabelRequestOptions]]
    */
-  public async getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<LabelDefinition> {
+  public async getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<LabelDefinition>;
+  /** @beta */
+  public async getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition>;
+  public async getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection> | DisplayLabelRequestOptions<IModelConnection, InstanceKey>, key?: InstanceKey): Promise<LabelDefinition> {
     await this.onConnection(requestOptions.imodel);
-    const result = await this._requestsHandler.getDisplayLabelDefinition(this.toRpcTokenOptions(requestOptions), InstanceKey.toJSON(key));
+    const rpcOptions = this.toRpcTokenOptions({ ...requestOptions, key: InstanceKey.toJSON(isDisplayLabelRequestOptions(requestOptions) ? requestOptions.key : key!) });
+    const result = await this._requestsHandler.getDisplayLabelDefinition(rpcOptions);
     return this._localizationHelper.getLocalizedLabelDefinition(LabelDefinition.fromJSON(result));
   }
   /**
    * Retrieves display label definition of specific items
-   * @param requestOptions options for the request
-   * @param keys Keys of instances to get labels for
+   * @deprecated Use an overload with [[DisplayLabelsRequestOptions]]
    */
-  public async getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]> {
+  public async getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]>;
+  /** @beta */
+  public async getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]>;
+  public async getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection> | DisplayLabelsRequestOptions<IModelConnection, InstanceKey>, keys?: InstanceKey[]): Promise<LabelDefinition[]> {
     await this.onConnection(requestOptions.imodel);
-    const result = await this._requestsHandler.getDisplayLabelDefinitions(this.toRpcTokenOptions(requestOptions), keys.map(InstanceKey.toJSON));
-    return this._localizationHelper.getLocalizedLabelDefinitions(result.map(LabelDefinition.fromJSON));
+    const rpcOptions = this.toRpcTokenOptions({ ...requestOptions, keys: (isDisplayLabelsRequestOptions(requestOptions) ? requestOptions.keys : keys!).map(InstanceKey.toJSON) });
+    const result = await buildPagedResponse(undefined, (partialPageOptions) => {
+      const partialKeys = (!partialPageOptions.start) ? rpcOptions.keys : rpcOptions.keys.slice(partialPageOptions.start);
+      return this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
+    });
+    return this._localizationHelper.getLocalizedLabelDefinitions(result.items.map(LabelDefinition.fromJSON));
   }
 
 }
+
+const createDescriptorParam = (descriptorOrOverrides: Descriptor | DescriptorOverrides) => {
+  if (descriptorOrOverrides instanceof Descriptor)
+    return descriptorOrOverrides.createStrippedDescriptor();
+  return descriptorOrOverrides;
+};
+
+const optionalNodeKeyToJson = (key: NodeKey | undefined): NodeKeyJSON | undefined => key ? NodeKey.toJSON(key) : undefined;
+
+/** @internal */
+export const buildPagedResponse = async <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>): Promise<PagedResponse<TItem>> => {
+  const requestedPageStart = requestedPage?.start ?? 0;
+  const requestedPageSize = requestedPage?.size ?? 0;
+  let pageStart = requestedPageStart;
+  let pageSize = requestedPageSize;
+  let totalCount;
+  let requestIndex = 0;
+  const items = new Array<TItem>();
+  while (true) {
+    const partialResult = await getter({ start: pageStart, size: pageSize }, requestIndex++);
+    totalCount = partialResult.total;
+    items.push(...partialResult.items);
+    if (requestedPageSize !== 0 && items.length >= requestedPageSize || items.length >= (partialResult.total - requestedPageStart))
+      break;
+    if (requestedPageSize !== 0)
+      pageSize -= partialResult.items.length;
+    pageStart += partialResult.items.length;
+  }
+  return { total: totalCount, items };
+};

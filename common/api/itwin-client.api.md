@@ -15,7 +15,7 @@ import { LogFunction } from '@bentley/bentleyjs-core';
 
 // @beta
 export class AccessToken {
-    constructor(jwt: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo);
+    constructor(tokenString?: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo);
     static fromJson(jsonObj: any): AccessToken;
     // @internal
     static fromTokenResponseJson(tokenResponse: any, userProfileResponse?: any): AccessToken;
@@ -26,8 +26,15 @@ export class AccessToken {
     getStartsAt(): Date | undefined;
     // @internal (undocumented)
     getUserInfo(): UserInfo | undefined;
+    initFromTokenString(tokenStr: string): void;
+    // (undocumented)
+    protected _prefix: string;
+    // (undocumented)
+    protected setPrefix(prefix: string): void;
     // @internal (undocumented)
     setUserInfo(userInfo: UserInfo): void;
+    // (undocumented)
+    protected _tokenString?: string;
     toTokenString(includePrefix?: IncludePrefix): string;
     }
 
@@ -367,6 +374,9 @@ export abstract class SamlToken {
 export class SasUrlExpired extends BentleyError {
     constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
 }
+
+// @internal
+export function TokenPrefix(prefix: string): (constructor: any) => void;
 
 // @internal
 export class UrlDiscoveryClient extends Client {

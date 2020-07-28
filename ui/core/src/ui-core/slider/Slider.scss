@@ -19,6 +19,10 @@ $uicore-slider-minmax-margin:   6px;
   align-items: center;
   width: 100%;
 
+  span.uicore-text-body[data-testid="core-slider-min"] {
+    margin-right: 4px;
+  }
+
   &.core-slider-tickLabels {
     margin-bottom: 9px;
   }
@@ -85,8 +89,9 @@ $uicore-slider-minmax-margin:   6px;
       background: $buic-background-control;
       box-sizing: border-box;
       outline: none;
+      padding: 0;
 
-      &:hover {
+      &:hover:not([disabled]) {
         border-color: $buic-foreground-focus;
       }
 
@@ -113,14 +118,20 @@ $uicore-slider-minmax-margin:   6px;
   }
 
   &.core-disabled {
+    cursor: not-allowed;
+    opacity: $uicore-opacity-disabled;
+
     .core-slider {
-      .core-slider-railOuter {
+      .core-slider-rail {
         cursor: not-allowed;
       }
 
       .core-slider-track {
-        background: $buic-foreground-disabled;
         cursor: not-allowed;
+
+        >.core-slider-track-inner {
+          background: $buic-foreground-disabled;
+        }
       }
 
       .core-slider-handle {
@@ -141,4 +152,10 @@ $uicore-slider-minmax-margin:   6px;
       color: $buic-foreground-disabled;
     }
   }
+}
+
+.core-slider_track-tooltip-container {
+  position: absolute;
+  left: 0;
+  top: 0;
 }

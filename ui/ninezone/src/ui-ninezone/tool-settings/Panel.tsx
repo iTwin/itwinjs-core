@@ -9,32 +9,38 @@
 import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ToolSettingProps } from "./Setting";
+import { CommonProps, Popup } from "@bentley/ui-core";
 
 /** Properties of [[ToolSettingsOverflowPanel]] component.
  * @internal
  */
-export interface ToolSettingsOverflowPanelProps extends ToolSettingProps {
+export interface ToolSettingsOverflowPanelProps extends CommonProps {
   /** Panel content. */
   children?: React.ReactNode;
+  onClose: () => void;
+  target: HTMLElement | undefined;
+  open: boolean;
 }
 
 /** Displays overflown tool settings.
  * @internal
  */
-// tslint:disable-next-line: variable-name
-export const ToolSettingsOverflowPanel = React.forwardRef<HTMLDivElement, ToolSettingsOverflowPanelProps>((props, ref) => {
+export function ToolSettingsOverflowPanel(props: ToolSettingsOverflowPanelProps) {
   const className = classnames(
     "nz-toolSettings-panel",
     props.className,
   );
   return (
-    <div
+    <Popup
       className={className}
-      ref={ref}
+      isOpen={props.open}
+      offset={0}
+      onClose={props.onClose}
       style={props.style}
+      showShadow={false}
+      target={props.target}
     >
       {props.children}
-    </div>
+    </Popup>
   );
-});
+}

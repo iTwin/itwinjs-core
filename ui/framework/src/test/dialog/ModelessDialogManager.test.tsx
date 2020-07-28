@@ -45,6 +45,8 @@ describe("ModelessDialogManager", () => {
     expect(ModelessDialogManager.activeDialog).to.eq(reactNode);
 
     expect(ModelessDialogManager.dialogCount).to.eq(1);
+    ModelessDialogManager.openDialog(reactNode, dialogId);
+    expect(ModelessDialogManager.dialogCount).to.eq(1);
 
     expect(ModelessDialogManager.dialogs.length).to.eq(1);
     expect(ModelessDialogManager.dialogs[0].reactNode).to.eq(reactNode);

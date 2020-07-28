@@ -346,7 +346,7 @@ export class SelectionTool extends PrimitiveTool {
             if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
               continue; // no geometry at this location...
 
-            if (undefined !== pixel.featureTable && pixel.featureTable.modelId === pixel.elementId)
+            if (!vp.isPixelSelectable(pixel))
               continue; // reality model, terrain, etc - not selectable
 
             if (undefined !== outline && !offset.containsPoint(testPoint))
@@ -479,7 +479,7 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
-    if (hit !== undefined && !hit.isModelHit) { // model hit = terrain, reality models, background maps, etc - not selectable
+    if (hit !== undefined && !hit.isModelHit && !hit.isMapHit) { // model hit = terrain, reality models, background maps, etc - not selectable
       if (EventHandled.Yes === await this.selectDecoration(ev, hit))
         return EventHandled.Yes;
 
@@ -521,12 +521,10 @@ export class SelectionTool extends PrimitiveTool {
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit
       if (undefined === autoHit || autoHit.isSameHit(lastHit)) {
         const response = new LocateResponse();
-        let nextHit = await IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
-        if (undefined !== nextHit && nextHit.isModelHit) {
-          // Ignore reality models, terrain, maps, etc.
-          // Let's assume we won't get 2 model hits in the same hit list.
+        let nextHit;
+        do {
           nextHit = await IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
-        }
+        } while (undefined !== nextHit && (nextHit.isModelHit || nextHit.isMapHit)); // Ignore reality models, terrain, maps, etc.
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
         if (SelectionMode.Replace === this.selectionMode || undefined !== nextHit)
@@ -619,9 +617,10 @@ export class SelectionTool extends PrimitiveTool {
       return undefined;
 
     // load latest values from session
-    IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperties(this.toolId, [
-      { propertyName: SelectionTool._modesName, value: this._selectionModeValue },
-    ]);
+    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [SelectionTool._modesName])?.forEach((value) => {
+      if (value.propertyName === SelectionTool._modesName)
+        this._selectionModeValue = value.value;
+    });
 
     // Make sure a mode of SelectionMode.Remove is valid
     if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {

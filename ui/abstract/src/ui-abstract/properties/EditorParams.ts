@@ -26,6 +26,7 @@ export enum PropertyEditorParamTypes {
   Slider = "UiAbstract-Slider",
   // SuppressUnitLabel = "UiAbstract-SuppressUnitLabel",
   SuppressEditorLabel = "UiAbstract-SuppressEditorLabel",
+  CheckBoxImages = "UiAbstract-CheckBoxImages",
 }
 
 /**
@@ -244,6 +245,16 @@ export interface IconEditorParams extends BasePropertyEditorParams {
   definition: IconDefinition;
 }
 
+/**
+ * Parameters for ImageCheckBoxEditor
+ * @beta
+ */
+export interface ImageCheckBoxParams extends BasePropertyEditorParams {
+  type: PropertyEditorParamTypes.CheckBoxImages;
+  imageOn: string;
+  imageOff: string;
+
+}
 // /**
 //  * Parameters used with boolean properties to indicate icon overrides.
 //  * @alpha

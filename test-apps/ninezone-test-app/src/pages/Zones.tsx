@@ -1131,7 +1131,7 @@ class Content extends React.PureComponent {
   }
 
   public componentWillUnmount() {
-    window.removeEventListener("resize", this._handleWindowResize, true);
+    window.removeEventListener("resize", this._handleWindowResize);
   }
 
   public render() {
@@ -2324,6 +2324,7 @@ const getNestedStagePanel = (type: ExampleStagePanelType): NestedStagePanelKey<E
 const initialTheme: Theme = "light";
 
 interface ZonesExampleProps {
+  floatingZonesMeasurerRef: React.Ref<HTMLDivElement>;
   getContainerSize: () => SizeProps;
   getDisabledResizeHandles: (zoneId: WidgetZoneId) => DisabledResizeHandles;
   getDropTarget: (zoneId: WidgetZoneId) => ZoneTargetType | undefined;
@@ -2426,6 +2427,14 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
             </StagePanels>
           </StagePanels>
           {this.renderStatusZone()}
+          <div
+            ref={this.props.floatingZonesMeasurerRef}
+            style={{
+              height: "100%",
+              width: "100%",
+              position: "absolute",
+            }}
+          />
         </Zones>
       </ToolGroupSelectionContext.Provider>
     );
@@ -2847,6 +2856,7 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
 
   private _nineZone = new NineZoneManager();
   private _widgetContentRefs = new Map<WidgetZoneId, React.Ref<HTMLDivElement>>();
+  private _floatingZonesMeasurer = React.createRef<HTMLDivElement>();
   private _zonesMeasurer = React.createRef<HTMLDivElement>();
   private _zoneBounds: RectangleProps = { bottom: 0, left: 0, right: 0, top: 0 };
 
@@ -2991,6 +3001,7 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
       <>
         <Content />
         <ZonesExample
+          floatingZonesMeasurerRef={this._floatingZonesMeasurer}
           getContainerSize={this._handleGetContainerSize}
           getDisabledResizeHandles={this._handleGetDisabledResizeHandles}
           getDropTarget={this._getDropTarget}
@@ -3438,12 +3449,17 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
   }
 
   private _handleResize = () => {
-    if (!this._zonesMeasurer.current)
+    if (!this._zonesMeasurer.current || !this._floatingZonesMeasurer.current)
       return;
-    const zoneBounds = Rectangle.create(this._zonesMeasurer.current.getBoundingClientRect());
+    const zonesBounds = Rectangle.create(this._zonesMeasurer.current.getBoundingClientRect());
+    let floatingZonesBounds = Rectangle.create(this._floatingZonesMeasurer.current.getBoundingClientRect());
+    const offset = zonesBounds.topLeft().getOffsetTo(floatingZonesBounds.topLeft());
+    floatingZonesBounds = floatingZonesBounds.setPosition(offset);
     this.setState((prevState) => {
       const zonesManager = this._nineZone.getZonesManager();
-      const zones = zonesManager.setZonesBounds(zoneBounds, prevState.nineZone.zones);
+      let zones = prevState.nineZone.zones;
+      zones = zonesManager.setZonesBounds(zonesBounds, zones);
+      zones = zonesManager.setFloatingZonesBounds(floatingZonesBounds, zones);
       if (zones === prevState.nineZone.zones)
         return null;
       return {
@@ -3453,7 +3469,7 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
         },
       };
     }, () => {
-      this._zoneBounds = zoneBounds;
+      this._zoneBounds = zonesBounds;
     });
   }
 

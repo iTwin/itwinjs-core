@@ -147,6 +147,7 @@ import { Readable } from 'stream';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
+import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
 import { SectionDrawingProps } from '@bentley/imodeljs-common';
 import { SectionLocationProps } from '@bentley/imodeljs-common';
@@ -617,6 +618,8 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
 // @internal
 export class ChangedElementsDb implements IDisposable {
     constructor();
+    // (undocumented)
+    cleanCaches(): void;
     closeDb(): void;
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
     // (undocumented)
@@ -1531,6 +1534,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     dispose(): void;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
+    // @internal
+    getNativeSql(): string;
     getRow(): any;
     getValue(columnIx: number): ECSqlValue;
     get isPrepared(): boolean;
@@ -2607,11 +2612,14 @@ export class IModelExporter {
     exportRelationship(relClassFullName: string, relInstanceId: Id64String): void;
     exportRelationships(baseRelClassFullName: string): void;
     exportRepositoryLinks(): void;
+    exportSchemas(): void;
     exportSubModels(parentModelId: Id64String): void;
     protected get handler(): IModelExportHandler;
     registerHandler(handler: IModelExportHandler): void;
     readonly sourceDb: IModelDb;
     wantGeometry: boolean;
+    wantSystemSchemas: boolean;
+    wantTemplateModels: boolean;
 }
 
 // @beta
@@ -2628,10 +2636,12 @@ export abstract class IModelExportHandler {
     protected onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
     protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
+    protected onExportSchema(_schema: Schema_2): void;
     protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     protected shouldExportElement(_element: Element): boolean;
     protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
     protected shouldExportRelationship(_relationship: Relationship): boolean;
+    protected shouldExportSchema(_schema: Schema_2): boolean;
 }
 
 // @public
@@ -2651,6 +2661,8 @@ export class IModelHost {
     // @internal
     static elementEditors: Map<string, IElementEditor>;
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    // @alpha
+    static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // @internal (undocumented)
     static get isNativeAppBackend(): boolean;
     // @internal (undocumented)
@@ -2661,9 +2673,13 @@ export class IModelHost {
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @internal (undocumented)
     static get platform(): typeof IModelJsNative;
+    // @alpha
+    static removeCrashReportProperty(name: string): void;
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
     static sessionId: GuidString;
+    // @alpha
+    static setCrashReportProperty(name: string, value: string): void;
     static shutdown(): Promise<void>;
     static snapshotFileNameResolver?: FileNameResolver;
     static startup(configuration?: IModelHostConfiguration): Promise<void>;
@@ -2796,6 +2812,14 @@ export class IModelJsFsStats {
 }
 
 export { IModelJsNative }
+
+// @alpha
+export class IModelSchemaLoader {
+    // @internal
+    constructor(_iModel: IModelDb);
+    getSchema<T extends Schema_2>(schemaName: string): T;
+    tryGetSchema<T extends Schema_2>(schemaName: string): T | undefined;
+}
 
 // @beta
 export class IModelTransformer extends IModelExportHandler {

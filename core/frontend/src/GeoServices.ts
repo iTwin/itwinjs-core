@@ -100,8 +100,8 @@ class GCtoIMCResultCache {
       // keep track of how many came from the cache (mostly for tests).
       response.fromCache = request.geoCoords.length - missing.length;
 
-      // Avoiding requesting too many points at once, exceeding max request length (this definition of "too many" should be safely conservative)
-      const maxPointsPerRequest = 200;
+      // Avoiding requesting too many points at once, exceeding max request length (this definition of "too many" should be safely conservative)  - but enough to load 4 levels of tile corners.
+      const maxPointsPerRequest = 300;
       const promises: Array<Promise<void>> = [];
       for (let i = 0; i < missing.length; i += maxPointsPerRequest) {
         const remainingRequest = { sourceDatum: this._sourceDatum, geoCoords: missing.slice(i, i + maxPointsPerRequest) };

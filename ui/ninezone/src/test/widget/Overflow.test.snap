@@ -2,17 +2,17 @@
 
 exports[`WidgetOverflow should open panel 1`] = `
 <div
-  class="nz-widget-overflow"
+  aria-modal="true"
+  class="core-popup core-popup-bottom-left nz-widget-menu"
+  data-testid="core-popup"
+  role="dialog"
+  style="top: 0px; left: 0px;"
+  tabindex="-1"
 >
   <div
-    class="nz-button"
-  >
-    <div
-      class="nz-icon"
-    />
-  </div>
-  <div
-    class="nz-widget-menu nz-left nz-top"
+    data-testid="focus-trap-div"
+    style="outline: none;"
+    tabindex="0"
   >
     <div>
       A
@@ -21,6 +21,10 @@ exports[`WidgetOverflow should open panel 1`] = `
       B
     </div>
   </div>
+  <div
+    data-testid="focus-trap-limit-div"
+    tabindex="0"
+  />
 </div>
 `;
 

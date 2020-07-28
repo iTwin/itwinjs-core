@@ -7,17 +7,20 @@
  */
 import * as path from "path";
 import { DbResult, GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { Schema } from "@bentley/ecschema-metadata";
 import { ChangeSet } from "@bentley/imodelhub-client";
 import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { Element, GeometricElement, RepositoryLink } from "./Element";
+import { Element, GeometricElement, RecipeDefinitionElement, RepositoryLink } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { IModelSchemaLoader } from "./IModelSchemaLoader";
 import { DefinitionModel, Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 
@@ -105,6 +108,17 @@ export abstract class IModelExportHandler {
   /** Called when a relationship should be deleted. */
   protected onDeleteRelationship(_relInstanceId: Id64String): void { }
 
+  /** If `true` is returned, then the schema will be exported.
+   * @note This method can optionally be overridden to exclude an individual schema from the export. The base implementation always returns `true`.
+   */
+  protected shouldExportSchema(_schema: Schema): boolean { return true; }
+
+  /** Called when an schema should be exported.
+   * @param schema The schema to export
+   * @note This should be overridden to actually do the export.
+   */
+  protected onExportSchema(_schema: Schema): void { }
+
   /** Helper method that allows IModelExporter to call protected methods in IModelExportHandler.
    * @internal
    */
@@ -124,6 +138,15 @@ export class IModelExporter {
    * @see [ElementLoadProps.wantGeometry]($common)
    */
   public wantGeometry: boolean = true;
+  /** A flag that indicates whether template models should be exported or not.
+   * @note If only exporting *instances* then template models can be skipped since they are just definitions that are cloned to create new instances.
+   * @see [Model.isTemplate]($backend)
+   */
+  public wantTemplateModels: boolean = true;
+  /** A flag that indicates whether *system* schemas should be exported or not. The default is `false`.
+   * @see [[exportSchemas]]
+   */
+  public wantSystemSchemas: boolean = false;
   /** Optionally cached entity change information */
   private _sourceDbChanges?: ChangedInstanceIds;
   /** The handler called by this IModelExporter. */
@@ -190,11 +213,13 @@ export class IModelExporter {
     this._excludedRelationshipClasses.add(this.sourceDb.getJsClass<typeof Relationship>(classFullName));
   }
 
-  /** Export all entity types from the source iModel. */
+  /** Export all entity instance types from the source iModel.
+   * @note [[exportSchemas]] must be called separately.
+   */
   public exportAll(): void {
     this.exportCodeSpecs();
     this.exportFonts();
-    this.exportModelContainer(IModel.repositoryModelId);
+    this.exportModelContainer(this.sourceDb.models.getModel(IModel.repositoryModelId));
     this.exportElement(IModel.rootSubjectId);
     this.exportRepositoryLinks();
     this.exportSubModels(IModel.repositoryModelId);
@@ -237,6 +262,28 @@ export class IModelExporter {
     for (const relInstanceId of this._sourceDbChanges.relationship.deleteIds) {
       this.handler.callProtected.onDeleteRelationship(relInstanceId);
     }
+  }
+
+  /** Export schemas from the source iModel.
+   * @note This must be called separately from [[exportAll]] or [[exportChanges]].
+   */
+  public exportSchemas(): void {
+    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
+    const sql = "SELECT Name FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId"; // ensure schema dependency order
+    let readyToExport: boolean = this.wantSystemSchemas ? true : false;
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const schemaName: string = statement.getValue(0).getString();
+        const schema: Schema = schemaLoader.getSchema(schemaName);
+        if (!readyToExport) {
+          readyToExport = schema.fullName === BisCoreSchema.schemaName; // schemas prior to BisCore are considered *system* schemas
+        }
+        if (readyToExport && this.handler.callProtected.shouldExportSchema(schema)) {
+          Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
+          this.handler.callProtected.onExportSchema(schema);
+        }
+      }
+    });
   }
 
   /** For logging, indicate the change type if known. */
@@ -340,28 +387,31 @@ export class IModelExporter {
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
   public exportModel(modeledElementId: Id64String): void {
+    const model: Model = this.sourceDb.models.getModel(modeledElementId);
+    if (model.isTemplate && !this.wantTemplateModels) {
+      return;
+    }
     const modeledElement: Element = this.sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportModel()`);
     if (this.shouldExportElement(modeledElement)) {
-      this.exportModelContainer(modeledElementId);
+      this.exportModelContainer(model);
       this.exportModelContents(modeledElementId);
       this.exportSubModels(modeledElementId);
     }
   }
 
   /** Export the model (the container only) from the source iModel. */
-  private exportModelContainer(modeledElementId: Id64String): void {
+  private exportModelContainer(model: Model): void {
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
-      if (this._sourceDbChanges.model.insertIds.has(modeledElementId)) {
+      if (this._sourceDbChanges.model.insertIds.has(model.id)) {
         isUpdate = false;
-      } else if (this._sourceDbChanges.model.updateIds.has(modeledElementId)) {
+      } else if (this._sourceDbChanges.model.updateIds.has(model.id)) {
         isUpdate = true;
       } else {
         return; // not in changeSet, don't export
       }
     }
-    const model: Model = this.sourceDb.models.getModel(modeledElementId);
     this.handler.callProtected.onExportModel(model, isUpdate);
   }
 
@@ -419,6 +469,10 @@ export class IModelExporter {
         Logger.logInfo(loggerCategory, `Excluded element by Category`);
         return false;
       }
+    }
+    if (!this.wantTemplateModels && (element instanceof RecipeDefinitionElement)) {
+      Logger.logInfo(loggerCategory, `Excluded recipe because wantTemplate=false`);
+      return false;
     }
     for (const excludedElementClass of this._excludedElementClasses) {
       if (element instanceof excludedElementClass) {

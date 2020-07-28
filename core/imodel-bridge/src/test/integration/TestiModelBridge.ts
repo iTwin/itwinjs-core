@@ -16,7 +16,7 @@ import {
 import { Box, Cone, LinearSweep, Loop, Point3d, SolidPrimitive, StandardViewIndex, Vector3d } from "@bentley/geometry-core";
 
 import { ItemState, SourceItem, SynchronizationResults } from "../../Synchronizer";
-import { IModelBridgeBase } from "../../IModelBridge";
+import { IModelBridge } from "../../IModelBridge";
 import { TestBridgeLoggerCategory } from "./TestBridgeLoggerCategory";
 import { TestBridgeSchema } from "./TestBridgeSchema";
 import { TestBridgeGroupModel } from "./TestBridgeModels";
@@ -31,7 +31,7 @@ import * as fs from "fs";
 
 const loggerCategory: string = TestBridgeLoggerCategory.Bridge;
 
-class TestBridge extends IModelBridgeBase {
+class TestBridge extends IModelBridge {
   private _data: any;
   private _sourceDataState: ItemState = ItemState.New;
   private _sourceData?: string;
@@ -45,10 +45,7 @@ class TestBridge extends IModelBridgeBase {
     return this._repositoryLink;
   }
   public async initializeJob(): Promise<void> {
-    const documentStatus = this.getDocumentStatus(); // This will create a repositoryLink for the sourceData if one does not already exist
-    this._sourceDataState = documentStatus.itemState;
-    this._repositoryLink = documentStatus.element;
-    if (ItemState.New === documentStatus.itemState) {
+    if (ItemState.New === this._sourceDataState) {
       this.createGroupModel();
       this.createPhysicalModel();
       this.createDefinitionModel();
@@ -89,16 +86,16 @@ class TestBridge extends IModelBridgeBase {
   }
 
   public async updateExistingData() {
-    if (this._sourceDataState === ItemState.Unchanged) {
-      return;
-    }
-
     const groupModelId = this.queryGroupModel();
     const physicalModelId = this.queryPhysicalModel();
     const definitionModelId = this.queryDefinitionModel();
     if (undefined === groupModelId || undefined === physicalModelId || undefined === definitionModelId) {
       const error = "Unable to find model Id for " + undefined === groupModelId ? ModelNames.Group : (undefined === physicalModelId ? ModelNames.Physical : ModelNames.Definition);
       throw new IModelError(IModelStatus.BadArg, error, Logger.logError, loggerCategory);
+    }
+
+    if (this._sourceDataState === ItemState.Unchanged) {
+      return;
     }
 
     if (this._sourceDataState === ItemState.New) {
@@ -356,9 +353,9 @@ class TestBridge extends IModelBridgeBase {
         id: group.guid,
         checksum: hash.MD5(str),
       };
-      const results = this.synchronizer.detectChanges(this.repositoryLink.id, "Group", sourceItem);
+      const results = this.synchronizer.detectChanges(groupModelId, "Group", sourceItem);
       if (results.state === ItemState.Unchanged) {
-        this.synchronizer.onElementSeen(results.id!, this.repositoryLink.id);
+        this.synchronizer.onElementSeen(results.id!);
         continue;
       }
       if (group.name === undefined) {
@@ -402,7 +399,7 @@ class TestBridge extends IModelBridgeBase {
     };
     const results = this.synchronizer.detectChanges(physicalModelId, "Tile", sourceItem);
     if (results.state === ItemState.Unchanged) {
-      this.synchronizer.onElementSeen(results.id!, physicalModelId);
+      this.synchronizer.onElementSeen(results.id!);
       return;
     }
     if (tile.casingMaterial === undefined) {

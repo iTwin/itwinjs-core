@@ -54,6 +54,7 @@ function mockCreateChangeSet(imodelId: GuidString, changeSet: ChangeSet) {
 }
 
 describe("iModelHub ChangeSetHandler", () => {
+  let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
@@ -73,15 +74,16 @@ describe("iModelHub ChangeSetHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
     (requestContext as any).activityId = "iModelHub ChangeSetHandler";
 
-    await utils.createIModel(requestContext, imodelName);
-    imodelId = await utils.getIModelId(requestContext, imodelName);
+    contextId = await utils.getProjectId(requestContext);
+    await utils.createIModel(requestContext, imodelName, contextId);
+    imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
     iModelClient = utils.getDefaultClient();
     if (!TestConfig.enableMocks) {
       const changeSetCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
       if (changeSetCount + newChangeSetsPerTestSuit >= maxChangeSetCount) {
         // Recreate iModel if can not create any new changesets
-        await utils.createIModel(requestContext, imodelName, undefined, true);
-        imodelId = await utils.getIModelId(requestContext, imodelName);
+        await utils.createIModel(requestContext, imodelName, contextId, true);
+        imodelId = await utils.getIModelId(requestContext, imodelName, contextId);
       }
     }
     briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
@@ -102,6 +104,11 @@ describe("iModelHub ChangeSetHandler", () => {
     if (!fs.existsSync(utils.workDir)) {
       fs.mkdirSync(utils.workDir);
     }
+  });
+
+  after(async () => {
+    if (TestConfig.enableIModelBank)
+      await utils.deleteIModelByName(requestContext, contextId, imodelName);
   });
 
   afterEach(() => {

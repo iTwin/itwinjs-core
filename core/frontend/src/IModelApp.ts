@@ -37,7 +37,6 @@ import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./Sheet";
 import { TentativePoint } from "./TentativePoint";
-import { TerrainProvider } from "./TerrainProvider";
 import { TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
@@ -50,6 +49,7 @@ import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
+import { MapLayerFormatRegistry } from "./tile/map/MapLayerFormatRegistry";
 
 // tslint:disable-next-line: no-var-requires
 require("./IModeljs-css");
@@ -98,9 +98,9 @@ export interface IModelAppOptions {
   quantityFormatter?: QuantityFormatter;
   /** @internal */
   renderSys?: RenderSystem | RenderSystem.Options;
-  /** @internal */
-  terrainProvider?: TerrainProvider;
-  /** @internal */
+  /** If present, supplies the [[ExtensionAdmin]] for this session.
+   * @beta
+   */
   extensionAdmin?: ExtensionAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
@@ -172,7 +172,6 @@ export class IModelApp {
   private static _tentativePoint: TentativePoint;
   private static _tileAdmin: TileAdmin;
   private static _toolAdmin: ToolAdmin;
-  private static _terrainProvider?: TerrainProvider;
   private static _viewManager: ViewManager;
   private static _uiAdmin: UiAdmin;
   private static _wantEventLoop = false;
@@ -196,6 +195,10 @@ export class IModelApp {
   public static readonly tools = new ToolRegistry();
   /** A uniqueId for this session */
   public static sessionId: GuidString;
+  /** The [[MapLayerProviderRegistry]] for this session.
+   * @internal
+   */
+  public static mapLayerFormatRegistry = new MapLayerFormatRegistry();
   /** The [[RenderSystem]] for this session. */
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
@@ -240,9 +243,9 @@ export class IModelApp {
   public static get iModelClient(): IModelClient { return this._imodelClient; }
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
-  /** @internal */
-  public static get terrainProvider() { return this._terrainProvider; }
-  /** @internal */
+  /** The [[ExtensionAdmin]] for this session.
+   * @beta
+   */
   public static get extensionAdmin() { return this._extensionAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
@@ -370,7 +373,6 @@ export class IModelApp {
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
     this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin({});
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
-    this._terrainProvider = opts.terrainProvider;
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._features = (opts.features !== undefined) ? opts.features : new FeatureTrackingManager();
     this._featureToggles = (opts.featureToggles !== undefined) ? opts.featureToggles : new FeatureToggleClient();
@@ -385,7 +387,6 @@ export class IModelApp {
       this.tentativePoint,
       this.extensionAdmin,
       this.quantityFormatter,
-      this._terrainProvider,
       this.uiAdmin,
     ].forEach((sys) => {
       if (sys)

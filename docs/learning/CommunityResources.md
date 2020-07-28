@@ -6,11 +6,15 @@ Feedback and questions about iModel.js are welcome and encouraged.
 
 The iModel.js development team closely monitors our GitHub:
 
-- [Discussion Forums](https://github.com/imodeljs/imodeljs/discussions)
+- [Discussion Forums](https://github.com/imodeljs/imodeljs/labels/discussion)
 - [Enhancement Requests](https://github.com/imodeljs/imodeljs/labels/enhancement)
 - [Bug Reports](https://github.com/imodeljs/imodeljs/labels/bug)
 
 See the CONTRIBUTING.md file in the root of the imodeljs repository for additional instructions.
+
+### Questions and Advice
+
+Programming questions and requests for programming advice are best asked on [Stack Overflow](https://stackoverflow.com/tags/imodeljs).
 
 ### Guidance
 

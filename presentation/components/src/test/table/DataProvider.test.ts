@@ -115,7 +115,7 @@ describe("TableDataProvider", () => {
 
     it("resets filtering, sorting, memoized columns and raises onColumnsChanged event when 'descriptor' flag is set", async () => {
       const onColumnsChangedSpy = sinon.spy(provider.onColumnsChanged, "raiseEvent");
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => createRandomDescriptor());
 
       provider.filterExpression = faker.random.words();
@@ -181,7 +181,7 @@ describe("TableDataProvider", () => {
 
     it("sets sorting properties", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => source);
 
       await provider.sort(0, SortDirection.Descending);
@@ -245,14 +245,14 @@ describe("TableDataProvider", () => {
     it("throws when trying to sort by invalid column", async () => {
       const source = createRandomDescriptor();
       source.fields = [];
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => source);
       await expect(provider.sort(0, SortDirection.NoSort)).to.eventually.be.rejectedWith(PresentationError);
     });
 
     it("invalidates descriptor configuration and content", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => source);
       const invalidateCacheMock = moq.Mock.ofInstance(provider.invalidateCache);
       provider.invalidateCache = invalidateCacheMock.object;
@@ -262,7 +262,7 @@ describe("TableDataProvider", () => {
 
     it("sets sorting properties", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => source);
       await provider.sort(0, SortDirection.Descending);
       expect(provider.sortColumnKey).to.eq((await provider.getColumns())[0].key);
@@ -279,7 +279,7 @@ describe("TableDataProvider", () => {
 
     it("returns valid sorting column", async () => {
       const source = createRandomDescriptor();
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => source);
       await provider.sort(0, SortDirection.Descending);
       const sortingColumn = await provider.sortColumn;

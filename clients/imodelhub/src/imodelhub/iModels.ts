@@ -54,9 +54,17 @@ export class HubIModel extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.iModelTemplate")
   public iModelTemplate?: string;
 
+  /** Type of the iModel */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Type")
+  public iModelType?: IModelType;
+
   /** Extent of iModel. Array of coordinates: [0] - south latitude, [1] - west longitude, [2] - north latitude, [3] - east longitude */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Extent")
   public extent?: number[];
+
+  /** Set to true, when iModel has custom access control. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Secured")
+  public secured?: boolean;
 }
 
 /** Initialization state of seed file. Can be queried with [[IModelHandler.getInitializationState]]. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
@@ -77,6 +85,16 @@ export enum InitializationState {
   CodeTooLong = 5,
   /** Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($backend). */
   SeedFileIsBriefcase = 6,
+}
+
+/** iModel type
+ * @beta
+ */
+export enum IModelType {
+  /** iModel has no type. */
+  Undefined = 0,
+  /** iModel contains metadata used for other iModel creation. */
+  Library = 1,
 }
 
 /** SeedFile
@@ -234,7 +252,31 @@ export class IModelQuery extends InstanceIdQuery {
    */
   public byName(name: string) {
     ArgumentCheck.defined("name", name);
-    this.addFilter(`Name+eq+'${name}'`);
+    this.addFilter(`Name+eq+'${encodeURIComponent(name)}'`);
+    return this;
+  }
+
+  /**
+   * Query iModel by its type.
+   * @param iModelType Type of the iModel.
+   * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if iModelType is undefined.
+   */
+  public byiModelType(iModelType: IModelType) {
+    ArgumentCheck.defined("iModelType", iModelType);
+    this.addFilter(`Type+eq+${iModelType}`);
+    return this;
+  }
+
+  /**
+   * Query iModel by its template.
+   * @param type Type of the iModel.
+   * @returns This query.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if iModelTemplate is undefined or empty.
+   */
+  public byiModelTemplate(iModelTemplate: string) {
+    ArgumentCheck.defined("iModelTemplate", iModelTemplate, true);
+    this.addFilter(`iModelTemplate+eq+'${encodeURIComponent(iModelTemplate)}'`);
     return this;
   }
 }
@@ -275,6 +317,9 @@ export interface IModelCreateOptions {
   timeOutInMilliseconds?: number;
   /** Template used to create the seed file. Works only when path is not provided. Creates iModel from empty file by default. */
   template?: CloneIModelTemplate | EmptyIModelTemplate;
+
+  /** Type of iModel. */
+  iModelType?: IModelType;
 
   /** Extent of iModel. Array of coordinates: [0] - south latitude, [1] - west longitude, [2] - north latitude, [3] - east longitude */
   extent?: number[];
@@ -405,9 +450,10 @@ export class IModelsHandler {
    * @param iModelName Name of the iModel on the Hub.
    * @param description Description of the iModel on the Hub.
    * @param iModelTemplate iModel template.
+   * @param iModelType iModel type.
    * @internal
    */
-  private async createIModelInstance(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, description?: string, iModelTemplate?: string, extent?: number[]): Promise<HubIModel> {
+  private async createIModelInstance(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]): Promise<HubIModel> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, `Creating iModel with name ${iModelName}`, () => ({ contextId }));
 
@@ -420,6 +466,8 @@ export class IModelsHandler {
       iModel.iModelTemplate = iModelTemplate;
     if (extent)
       iModel.extent = extent;
+    if (iModelType)
+      iModel.iModelType = iModelType;
 
     try {
       imodel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId), iModel);
@@ -588,7 +636,7 @@ export class IModelsHandler {
       throw IModelHubClientError.fileNotFound();
 
     const template = IModelsHandler._defaultCreateOptionsProvider.templateToString(createOptions);
-    const imodel = await this.createIModelInstance(requestContext, contextId, name, createOptions.description, template, createOptions.extent);
+    const imodel = await this.createIModelInstance(requestContext, contextId, name, createOptions.description, template, createOptions.iModelType, createOptions.extent);
     requestContext.enter();
 
     if (createOptions.template === iModelTemplateEmpty) {

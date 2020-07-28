@@ -8,13 +8,14 @@
 
 import { castDraft, Draft, produce } from "immer";
 import { Point, PointProps, Rectangle, RectangleProps, SizeProps } from "@bentley/ui-core";
-import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, VerticalPanelSide } from "../widget-panels/Panel";
+import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "./assert";
 
 /** @internal future */
 export interface TabState {
   readonly id: string;
   readonly label: string;
+  readonly preferredFloatingWidgetSize: SizeProps | undefined;
 }
 
 /** @internal future */
@@ -32,12 +33,21 @@ export interface WidgetState {
 export interface FloatingWidgetState {
   readonly bounds: RectangleProps;
   readonly id: WidgetState["id"];
+  readonly home: FloatingWidgetHomeState;
+}
+
+/** @internal future */
+export interface FloatingWidgetHomeState {
+  readonly widgetIndex: number;
+  readonly widgetId: WidgetState["id"] | undefined;
+  readonly side: PanelSide;
 }
 
 /** @internal future */
 export interface DraggedTabState {
   readonly tabId: TabState["id"];
   readonly position: PointProps;
+  readonly home: FloatingWidgetHomeState;
 }
 
 /** @internal future */
@@ -116,6 +126,7 @@ export interface PanelState {
   readonly side: PanelSide;
   readonly size: number | undefined;
   readonly widgets: ReadonlyArray<WidgetState["id"]>;
+  readonly maxWidgetCount: number;
 }
 
 /** @internal future */
@@ -205,6 +216,12 @@ export interface FloatingWidgetBringToFrontAction {
 }
 
 /** @internal future */
+export interface FloatingWidgetSendBackAction {
+  readonly type: "FLOATING_WIDGET_SEND_BACK";
+  readonly id: FloatingWidgetState["id"];
+}
+
+/** @internal future */
 export interface PanelWidgetDragStartAction {
   readonly type: "PANEL_WIDGET_DRAG_START";
   readonly newFloatingWidgetId: FloatingWidgetState["id"];
@@ -225,14 +242,6 @@ export interface WidgetDragEndAction {
   readonly type: "WIDGET_DRAG_END";
   readonly floatingWidgetId: FloatingWidgetState["id"];
   readonly target: WidgetTargetState;
-}
-
-/** @internal future */
-export interface WidgetSendBackAction {
-  readonly type: "WIDGET_SEND_BACK";
-  readonly floatingWidgetId: FloatingWidgetState["id"] | undefined;
-  readonly side: PanelSide | undefined;
-  readonly widgetId: WidgetState["id"];
 }
 
 /** @internal future */
@@ -282,6 +291,11 @@ export interface ToolSettingsDragStartAction {
 }
 
 /** @internal future */
+export interface ToolSettingsDockAction {
+  readonly type: "TOOL_SETTINGS_DOCK";
+}
+
+/** @internal future */
 export type NineZoneActionTypes =
   ResizeAction |
   PanelToggleCollapsedAction |
@@ -291,16 +305,17 @@ export type NineZoneActionTypes =
   PanelInitializeAction |
   FloatingWidgetResizeAction |
   FloatingWidgetBringToFrontAction |
+  FloatingWidgetSendBackAction |
   PanelWidgetDragStartAction |
   WidgetDragAction |
   WidgetDragEndAction |
-  WidgetSendBackAction |
   WidgetTabClickAction |
   WidgetTabDoubleClickAction |
   WidgetTabDragStartAction |
   WidgetTabDragAction |
   WidgetTabDragEndAction |
-  ToolSettingsDragStartAction;
+  ToolSettingsDragStartAction |
+  ToolSettingsDockAction;
 
 /** @internal */
 export const toolSettingsTabId = "nz-tool-settings-tab";
@@ -369,17 +384,23 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       return;
     }
     case "PANEL_WIDGET_DRAG_START": {
+      const panel = state.panels[action.side];
+      const widgetIndex = panel.widgets.indexOf(action.id);
+
       state.floatingWidgets.allIds.push(action.newFloatingWidgetId);
       state.floatingWidgets.byId[action.newFloatingWidgetId] = {
-        bounds: action.bounds,
+        bounds: Rectangle.create(action.bounds).toProps(),
         id: action.newFloatingWidgetId,
+        home: {
+          side: action.side,
+          widgetId: undefined,
+          widgetIndex,
+        },
       };
       state.widgets[action.newFloatingWidgetId] = state.widgets[action.id];
       state.widgets[action.newFloatingWidgetId].id = action.newFloatingWidgetId;
       delete state.widgets[action.id];
 
-      const panel = state.panels[action.side];
-      const widgetIndex = panel.widgets.indexOf(action.id);
       panel.widgets.splice(widgetIndex, 1);
 
       const expandedWidget = panel.widgets.find((widgetId) => {
@@ -410,6 +431,9 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       }
       const draggedWidget = state.widgets[action.floatingWidgetId];
       if (isWidgetTargetTabState(target)) {
+        if (isToolSettingsFloatingWidget(state, target.widgetId)) {
+          state.floatingWidgets.byId[target.widgetId].home = floatingWidget.home;
+        }
         const targetWidget = state.widgets[target.widgetId];
         targetWidget.tabs.splice(target.tabIndex, 0, ...draggedWidget.tabs);
       } else if (isWidgetTargetWidgetState(target)) {
@@ -431,15 +455,6 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       state.floatingWidgets.allIds.splice(idIndex, 1);
       return;
     }
-    case "WIDGET_SEND_BACK": {
-      if (isWidgetToolSettingsState(state.toolSettings)) {
-        removeWidgetTab(state, action.widgetId, action.floatingWidgetId, action.side, toolSettingsTabId);
-        state.toolSettings = {
-          type: "docked",
-        };
-      }
-      return;
-    }
     case "FLOATING_WIDGET_RESIZE": {
       const { resizeBy } = action;
       const floatingWidget = state.floatingWidgets.byId[action.id];
@@ -447,24 +462,57 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const bounds = Rectangle.create(floatingWidget.bounds);
       const newBounds = bounds.inset(-resizeBy.left, -resizeBy.top, -resizeBy.right, -resizeBy.bottom);
       setRectangleProps(floatingWidget.bounds, newBounds);
+
+      const widget = state.widgets[action.id];
+      const size = newBounds.getSize();
+      const tab = widget.activeTabId ? state.tabs[widget.activeTabId] : undefined;
+      tab && initSizeProps(tab, "preferredFloatingWidgetSize", size);
       return;
     }
     case "FLOATING_WIDGET_BRING_TO_FRONT": {
       floatingWidgetBringToFront(state, action.id);
       return;
     }
-    case "WIDGET_TAB_CLICK": {
-      const panel = action.side ? state.panels[action.side] : undefined;
-      const widget = state.widgets[action.widgetId];
-      const active = action.id === widget.activeTabId;
+    case "FLOATING_WIDGET_SEND_BACK": {
+      const floatingWidget = state.floatingWidgets.byId[action.id];
+      const widget = state.widgets[action.id];
+      const home = floatingWidget.home;
+      const panel = state.panels[home.side];
+      let homeWidget;
+      if (home.widgetId) {
+        homeWidget = state.widgets[home.widgetId];
+      } else if (panel.widgets.length === panel.maxWidgetCount) {
+        const id = panel.widgets[home.widgetIndex];
+        homeWidget = state.widgets[id];
+      }
 
-      state.widgets[widget.id].activeTabId = action.id;
+      if (homeWidget) {
+        homeWidget.tabs.push(...widget.tabs);
+        removeWidget(state, widget.id);
+      } else {
+        panel.widgets.splice(home.widgetIndex, 0, widget.id);
+        removeFloatingWidget(state, widget.id);
+      }
+      return;
+    }
+    case "WIDGET_TAB_CLICK": {
+      const widget = state.widgets[action.widgetId];
+      const isActive = action.id === widget.activeTabId;
+      const floatingWidget = state.floatingWidgets.byId[action.widgetId];
+      if (floatingWidget) {
+        const size = Rectangle.create(floatingWidget.bounds).getSize();
+        const activeTab = state.tabs[action.id];
+        initSizeProps(activeTab, "preferredFloatingWidgetSize", size);
+      }
+
+      setWidgetActiveTabId(state, widget.id, action.id);
       if (widget.minimized) {
         widget.minimized = false;
         return;
       }
 
-      if (active && panel) {
+      const panel = action.side ? state.panels[action.side] : undefined;
+      if (isActive && panel) {
         for (const wId of panel.widgets) {
           const w = state.widgets[wId];
           w.minimized = true;
@@ -482,7 +530,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         return !state.widgets[wId].minimized;
       }, 0);
       if (widget.minimized) {
-        widget.activeTabId = action.id;
+        setWidgetActiveTabId(state, widget.id, action.id);
         for (const wId of panelWidgets) {
           const w = state.widgets[wId];
           w.minimized = w.id !== widget.id;
@@ -490,7 +538,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         return;
       }
       if (!active) {
-        widget.activeTabId = action.id;
+        setWidgetActiveTabId(state, widget.id, action.id);
         return;
       }
       if (maximized.length > 1)
@@ -501,9 +549,24 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     }
     case "WIDGET_TAB_DRAG_START": {
       const tabId = action.id;
+      let home: FloatingWidgetHomeState | undefined;
+      if (action.floatingWidgetId) {
+        const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
+        home = floatingWidget.home;
+      } else {
+        assert(action.side);
+        const panel = state.panels[action.side];
+        const widgetIndex = panel.widgets.indexOf(action.widgetId);
+        home = {
+          side: action.side,
+          widgetId: action.widgetId,
+          widgetIndex,
+        };
+      }
       state.draggedTab = {
         tabId,
-        position: action.position,
+        position: Point.create(action.position).toProps(),
+        home,
       };
       removeWidgetTab(state, action.widgetId, action.floatingWidgetId, action.side, action.id);
       return;
@@ -519,7 +582,12 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       assert(state.draggedTab);
       const target = action.target;
       if (isTabTargetTabState(target)) {
-        state.widgets[target.widgetId].tabs.splice(target.tabIndex, 0, action.id);
+        if (isToolSettingsFloatingWidget(state, target.widgetId)) {
+          const floatingWidget = state.floatingWidgets.byId[target.widgetId];
+          floatingWidget.home = state.draggedTab.home;
+        }
+        const targetWidget = state.widgets[target.widgetId];
+        targetWidget.tabs.splice(target.tabIndex, 0, action.id);
       } else if (isTabTargetPanelState(target)) {
         state.panels[target.side].widgets.push(target.newWidgetId);
         state.widgets[target.newWidgetId] = {
@@ -537,12 +605,14 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           tabs: [action.id],
         };
       } else {
+        const tab = state.tabs[state.draggedTab.tabId];
         const nzBounds = Rectangle.createFromSize(state.size);
-        const bounds = Rectangle.createFromSize(target.size).offset(state.draggedTab.position);
+        const bounds = Rectangle.createFromSize(tab.preferredFloatingWidgetSize || target.size).offset(state.draggedTab.position);
         const containedBounds = bounds.containIn(nzBounds);
         state.floatingWidgets.byId[target.newFloatingWidgetId] = {
           bounds: containedBounds.toProps(),
           id: target.newFloatingWidgetId,
+          home: state.draggedTab.home,
         };
         state.floatingWidgets.allIds.push(target.newFloatingWidgetId);
         state.widgets[target.newFloatingWidgetId] = {
@@ -557,6 +627,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     }
     case "TOOL_SETTINGS_DRAG_START": {
       if (isDockedToolSettingsState(state.toolSettings)) {
+        const tab = state.tabs[toolSettingsTabId];
         state.toolSettings = {
           type: "widget",
         };
@@ -566,22 +637,53 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           minimized: false,
           tabs: [toolSettingsTabId],
         };
+        const size = tab.preferredFloatingWidgetSize || { height: 200, width: 300 };
         state.floatingWidgets.byId[action.newFloatingWidgetId] = {
-          bounds: Rectangle.createFromSize({ height: 200, width: 300 }).offset({ x: 0, y: 0 }).toProps(),
+          bounds: Rectangle.createFromSize(size).toProps(),
           id: action.newFloatingWidgetId,
+          home: {
+            side: "left",
+            widgetId: undefined,
+            widgetIndex: 0,
+          },
         };
         state.floatingWidgets.allIds.push(action.newFloatingWidgetId);
       }
       return;
     }
+    case "TOOL_SETTINGS_DOCK": {
+      removeTab(state, toolSettingsTabId);
+      state.toolSettings = {
+        type: "docked",
+      };
+      return;
+    }
   }
 });
+
+function isToolSettingsFloatingWidget(state: Draft<NineZoneState>, id: WidgetState["id"]) {
+  const widget = state.widgets[id];
+  return (widget.tabs.length === 1 &&
+    widget.tabs[0] === toolSettingsTabId &&
+    id in state.floatingWidgets.byId
+  );
+}
 
 /** @internal */
 export function floatingWidgetBringToFront(state: Draft<NineZoneState>, floatingWidgetId: FloatingWidgetState["id"]) {
   const idIndex = state.floatingWidgets.allIds.indexOf(floatingWidgetId);
   const spliced = state.floatingWidgets.allIds.splice(idIndex, 1);
   state.floatingWidgets.allIds.push(spliced[0]);
+}
+
+/** @internal */
+export function removeTab(state: Draft<NineZoneState>, tabId: TabState["id"]) {
+  const location = findTab(state, tabId);
+  if (!location)
+    return;
+  const floatingWidgetId = "floatingWidgetId" in location ? location.floatingWidgetId : undefined;
+  const side = "side" in location ? location.side : undefined;
+  return removeWidgetTab(state, location.widgetId, floatingWidgetId, side, tabId);
 }
 
 function removeWidgetTab(
@@ -599,7 +701,7 @@ function removeWidgetTab(
 
   tabs.splice(tabIndex, 1);
   if (tabId === widget.activeTabId) {
-    widget.activeTabId = widget.tabs.length > 0 ? widget.tabs[0] : undefined;
+    setWidgetActiveTabId(state, widget.id, widget.tabs.length > 0 ? widget.tabs[0] : undefined);
   }
 
   if (tabs.length === 0) {
@@ -621,6 +723,32 @@ function removeWidgetTab(
         firstWidget.minimized = false;
       }
     }
+    delete state.widgets[widgetId];
+  }
+}
+
+function removeWidget(state: Draft<NineZoneState>, id: WidgetState["id"]) {
+  delete state.widgets[id];
+  removeFloatingWidget(state, id);
+}
+
+function removeFloatingWidget(state: Draft<NineZoneState>, id: FloatingWidgetState["id"]) {
+  delete state.floatingWidgets.byId[id];
+  const index = state.floatingWidgets.allIds.indexOf(id);
+  index >= 0 && state.floatingWidgets.allIds.splice(index, 1);
+}
+
+function setWidgetActiveTabId(
+  state: Draft<NineZoneState>,
+  widgetId: WidgetState["id"],
+  tabId: WidgetState["activeTabId"],
+) {
+  state.widgets[widgetId].activeTabId = tabId;
+  const floatingWidget = state.floatingWidgets.byId[widgetId];
+  if (floatingWidget && tabId) {
+    const size = Rectangle.create(floatingWidget.bounds).getSize();
+    const activeTab = state.tabs[tabId];
+    initSizeProps(activeTab, "preferredFloatingWidgetSize", size);
   }
 }
 
@@ -678,10 +806,39 @@ export function createWidgetState(id: WidgetState["id"], args?: Partial<WidgetSt
 }
 
 /** @internal */
+export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial<FloatingWidgetState>): FloatingWidgetState {
+  return {
+    bounds: new Rectangle().toProps(),
+    id,
+    home: {
+      side: "left",
+      widgetId: undefined,
+      widgetIndex: 0,
+    },
+    ...args,
+  };
+}
+
+/** @internal */
 export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState {
   return {
     id,
     label: "",
+    preferredFloatingWidgetSize: undefined,
+    ...args,
+  };
+}
+
+/** @internal */
+export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Partial<DraggedTabState>): DraggedTabState {
+  return {
+    tabId,
+    home: {
+      side: "left",
+      widgetId: undefined,
+      widgetIndex: 0,
+    },
+    position: new Point().toProps(),
     ...args,
   };
 }
@@ -699,15 +856,8 @@ export function addPanelWidget(state: NineZoneState, side: PanelSide, id: Widget
 export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], floatingWidgetArgs?: Partial<FloatingWidgetState>,
   widgetArgs?: Partial<WidgetState>,
 ): NineZoneState {
-  const floatingWidget: FloatingWidgetState = {
-    bounds: new Rectangle(0, 100, 200, 400).toProps(),
-    id,
-    ...floatingWidgetArgs,
-  };
-  const widget = {
-    ...createWidgetState(id),
-    ...widgetArgs,
-  };
+  const floatingWidget = createFloatingWidgetState(id, floatingWidgetArgs);
+  const widget = createWidgetState(id, widgetArgs);
   return produce(state, (stateDraft) => {
     stateDraft.floatingWidgets.byId[id] = floatingWidget;
     stateDraft.floatingWidgets.allIds.push(id);
@@ -728,7 +878,7 @@ export function addTab(state: NineZoneState, widgetId: WidgetState["id"], id: Ta
 }
 
 /** @internal */
-export function createPanelState(side: PanelSide): PanelState {
+export function createPanelState(side: PanelSide) {
   return {
     collapseOffset: 100,
     collapsed: false,
@@ -738,6 +888,7 @@ export function createPanelState(side: PanelSide): PanelState {
     side,
     size: undefined,
     widgets: [],
+    maxWidgetCount: getMaxWidgetCount(side),
   };
 }
 
@@ -792,11 +943,8 @@ function isDockedToolSettingsState(state: ToolSettingsState): state is DockedToo
   return state.type === "docked";
 }
 
-function isWidgetToolSettingsState(state: ToolSettingsState): state is WidgetToolSettingsState {
-  return state.type === "widget";
-}
-
-function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps) {
+/** @internal */
+export function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps) {
   props.left = bounds.left;
   props.right = bounds.right;
   props.top = bounds.top;
@@ -811,4 +959,68 @@ function setPointProps(props: Draft<PointProps>, point: PointProps) {
 function setSizeProps(props: Draft<SizeProps>, size: SizeProps) {
   props.height = size.height;
   props.width = size.width;
+}
+
+type KeysOfType<T, Type> = { [K in keyof T]: T[K] extends Type ? K : never }[keyof T];
+function initSizeProps<T, K extends KeysOfType<T, SizeProps | undefined>>(obj: T, key: K, size: SizeProps) {
+  if (obj[key]) {
+    setSizeProps(obj[key], size);
+    return;
+  }
+  (obj[key] as SizeProps) = {
+    height: size.height,
+    width: size.width,
+  };
+}
+
+function getMaxWidgetCount(side: PanelSide) {
+  if (side === "left" || side === "right")
+    return 3;
+  return 2;
+}
+
+type TabLocation =
+  { widgetId: WidgetState["id"], side: PanelSide } |
+  { widgetId: WidgetState["id"], floatingWidgetId: FloatingWidgetState["id"] };
+
+/** @internal */
+export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined {
+  let widgetId;
+  for (const [, widget] of Object.entries(state.widgets)) {
+    const index = widget.tabs.indexOf(id);
+    if (index >= 0) {
+      widgetId = widget.id;
+      break;
+    }
+  }
+  if (!widgetId)
+    return undefined;
+  const widgetLocation = findWidget(state, widgetId);
+  return widgetLocation ? {
+    ...widgetLocation,
+    widgetId,
+  } : undefined;
+}
+
+type WidgetLocation =
+  { side: PanelSide } |
+  { floatingWidgetId: FloatingWidgetState["id"] };
+
+/** @internal */
+export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined {
+  if (id in state.floatingWidgets.byId) {
+    return {
+      floatingWidgetId: id,
+    };
+  }
+  for (const side of panelSides) {
+    const panel = state.panels[side];
+    const index = panel.widgets.indexOf(id);
+    if (index >= 0) {
+      return {
+        side,
+      };
+    }
+  }
+  return undefined;
 }

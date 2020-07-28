@@ -8,7 +8,7 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, Dictionary, Id64Array, PriorityQueue } from "@bentley/bentleyjs-core";
 import {
-  CurrentImdlVersion, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, NativeAppRpcInterface, RpcOperation, RpcRegistry,
+  defaultTileOptions, getMaximumMajorTileFormatVersion, IModelTileRpcInterface, NativeAppRpcInterface, RpcOperation, RpcRegistry,
   RpcResponseCacheControl, ServerTimeoutError, TileTreeContentIds, TileTreeProps,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -661,14 +661,14 @@ class Admin extends TileAdmin {
     this._maxActiveTileTreePropsRequests = options.maxActiveTileTreePropsRequests ?? 10;
     this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
-    this._enableInstancing = false !== options.enableInstancing;
-    this._enableImprovedElision = false !== options.enableImprovedElision;
-    this._ignoreAreaPatterns = true === options.ignoreAreaPatterns;
-    this._disableMagnification = true === options.disableMagnification;
+    this._enableInstancing = options.enableInstancing ?? defaultTileOptions.enableInstancing;
+    this._enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
+    this._ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
+    this._disableMagnification = options.disableMagnification ?? defaultTileOptions.disableMagnification;
     this._alwaysRequestEdges = true === options.alwaysRequestEdges;
-    this._alwaysSubdivideIncompleteTiles = true === options.alwaysSubdivideIncompleteTiles;
-    this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : CurrentImdlVersion.Major;
-    this._useProjectExtents = false !== options.useProjectExtents;
+    this._alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
+    this._maxMajorVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
+    this._useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
 
     if (undefined !== options.maximumLevelsToSkip)
       this._maximumLevelsToSkip = Math.floor(Math.max(0, options.maximumLevelsToSkip));

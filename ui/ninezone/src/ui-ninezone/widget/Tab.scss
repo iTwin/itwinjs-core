@@ -40,7 +40,7 @@
       }
     }
 
-    &:not(:last-child) {
+    &:not(.nz-last) {
       margin-bottom: 0.5em;
     }
   }

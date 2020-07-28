@@ -51,7 +51,6 @@ import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
-import { FloatingWidgetState } from '@bentley/ui-ninezone';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -72,6 +71,7 @@ import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NestedStagePanelKey } from '@bentley/ui-ninezone';
 import { NestedStagePanelsManagerProps } from '@bentley/ui-ninezone';
 import { NineZoneDispatch } from '@bentley/ui-ninezone';
+import { NineZoneLabels } from '@bentley/ui-ninezone';
 import { NineZoneManager } from '@bentley/ui-ninezone';
 import { NineZoneManagerProps } from '@bentley/ui-ninezone';
 import { NineZoneStagePanelManagerProps } from '@bentley/ui-ninezone';
@@ -167,7 +167,6 @@ import { ViewState } from '@bentley/imodeljs-frontend';
 import { ViewStateProp } from '@bentley/ui-components';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
 import { WidgetState as WidgetState_2 } from '@bentley/ui-abstract';
-import { WidgetState as WidgetState_3 } from '@bentley/ui-ninezone';
 import { WidgetZoneId } from '@bentley/ui-ninezone';
 import { XAndY } from '@bentley/geometry-core';
 import { ZoneManagerProps } from '@bentley/ui-ninezone';
@@ -323,6 +322,9 @@ export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionBut
 
 // @public
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
+
+// @internal (undocumented)
+export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<WidgetDef>, side: PanelSide, preferredWidgetIndex: number): NineZoneState;
 
 // @public
 export class AppNotificationManager extends NotificationManager {
@@ -1495,7 +1497,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
 export class DefaultViewOverlay extends React.Component<Props, State> {
     constructor(props: any);
     // (undocumented)
-    componentDidMount(): Promise<void>;
+    componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -1715,6 +1717,11 @@ export const expandWidget: <Base extends {
             readonly x: number;
             readonly y: number;
         };
+        readonly home: {
+            readonly widgetIndex: number;
+            readonly widgetId: string | undefined;
+            readonly side: "bottom" | "left" | "top" | "right";
+        };
     } | undefined;
     readonly floatingWidgets: {
         readonly byId: {
@@ -1726,6 +1733,11 @@ export const expandWidget: <Base extends {
                     readonly bottom: number;
                 };
                 readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: "bottom" | "left" | "top" | "right";
+                };
             };
         };
         readonly allIds: readonly string[];
@@ -1741,6 +1753,7 @@ export const expandWidget: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly left: {
             readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
@@ -1751,6 +1764,7 @@ export const expandWidget: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly right: {
             readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
@@ -1761,6 +1775,7 @@ export const expandWidget: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly top: {
             readonly span: boolean;
@@ -1772,12 +1787,17 @@ export const expandWidget: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
     };
     readonly tabs: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly preferredFloatingWidgetSize: {
+                readonly width: number;
+                readonly height: number;
+            } | undefined;
         };
     };
     readonly toolSettings: {
@@ -1807,12 +1827,6 @@ export interface ExtensibleToolbarProps {
     // (undocumented)
     usage: ToolbarUsage;
 }
-
-// @internal (undocumented)
-export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined;
-
-// @internal (undocumented)
-export function findWidget(state: NineZoneState, id: WidgetState_3["id"]): WidgetLocation | undefined;
 
 // @public
 export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
@@ -2049,6 +2063,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     getGhostOutlineBounds(zoneId: WidgetZoneId): RectangleProps | undefined;
     // (undocumented)
     getZoneDef(zoneId: number): ZoneDef | undefined;
+    // (undocumented)
+    handleFloatingZonesBoundsChange(bounds: RectangleProps): void;
     // @alpha (undocumented)
     handlePanelInitialize(panelLocation: StagePanelLocation_2, size: number): void;
     // @alpha (undocumented)
@@ -3670,6 +3686,8 @@ export class NestedFrontstage {
 // @public
 export interface NineZoneChangeHandler {
     // (undocumented)
+    handleFloatingZonesBoundsChange(bounds: RectangleProps): void;
+    // (undocumented)
     handleZonesBoundsChange(bounds: RectangleProps): void;
 }
 
@@ -4283,6 +4301,11 @@ export const setPanelSize: <Base extends {
             readonly x: number;
             readonly y: number;
         };
+        readonly home: {
+            readonly widgetIndex: number;
+            readonly widgetId: string | undefined;
+            readonly side: "bottom" | "left" | "top" | "right";
+        };
     } | undefined;
     readonly floatingWidgets: {
         readonly byId: {
@@ -4294,6 +4317,11 @@ export const setPanelSize: <Base extends {
                     readonly bottom: number;
                 };
                 readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: "bottom" | "left" | "top" | "right";
+                };
             };
         };
         readonly allIds: readonly string[];
@@ -4309,6 +4337,7 @@ export const setPanelSize: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly left: {
             readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
@@ -4319,6 +4348,7 @@ export const setPanelSize: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly right: {
             readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
@@ -4329,6 +4359,7 @@ export const setPanelSize: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly top: {
             readonly span: boolean;
@@ -4340,12 +4371,17 @@ export const setPanelSize: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
     };
     readonly tabs: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly preferredFloatingWidgetSize: {
+                readonly width: number;
+                readonly height: number;
+            } | undefined;
         };
     };
     readonly toolSettings: {
@@ -4378,6 +4414,11 @@ export const setWidgetLabel: <Base extends {
             readonly x: number;
             readonly y: number;
         };
+        readonly home: {
+            readonly widgetIndex: number;
+            readonly widgetId: string | undefined;
+            readonly side: "bottom" | "left" | "top" | "right";
+        };
     } | undefined;
     readonly floatingWidgets: {
         readonly byId: {
@@ -4389,6 +4430,11 @@ export const setWidgetLabel: <Base extends {
                     readonly bottom: number;
                 };
                 readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: "bottom" | "left" | "top" | "right";
+                };
             };
         };
         readonly allIds: readonly string[];
@@ -4404,6 +4450,7 @@ export const setWidgetLabel: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly left: {
             readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
@@ -4414,6 +4461,7 @@ export const setWidgetLabel: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly right: {
             readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
@@ -4424,6 +4472,7 @@ export const setWidgetLabel: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly top: {
             readonly span: boolean;
@@ -4435,12 +4484,17 @@ export const setWidgetLabel: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
     };
     readonly tabs: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly preferredFloatingWidgetSize: {
+                readonly width: number;
+                readonly height: number;
+            } | undefined;
         };
     };
     readonly toolSettings: {
@@ -4470,6 +4524,11 @@ export const setWidgetState: <Base extends {
             readonly x: number;
             readonly y: number;
         };
+        readonly home: {
+            readonly widgetIndex: number;
+            readonly widgetId: string | undefined;
+            readonly side: "bottom" | "left" | "top" | "right";
+        };
     } | undefined;
     readonly floatingWidgets: {
         readonly byId: {
@@ -4481,6 +4540,11 @@ export const setWidgetState: <Base extends {
                     readonly bottom: number;
                 };
                 readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: "bottom" | "left" | "top" | "right";
+                };
             };
         };
         readonly allIds: readonly string[];
@@ -4496,6 +4560,7 @@ export const setWidgetState: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly left: {
             readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
@@ -4506,6 +4571,7 @@ export const setWidgetState: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly right: {
             readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
@@ -4516,6 +4582,7 @@ export const setWidgetState: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly top: {
             readonly span: boolean;
@@ -4527,12 +4594,17 @@ export const setWidgetState: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
     };
     readonly tabs: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly preferredFloatingWidgetSize: {
+                readonly width: number;
+                readonly height: number;
+            } | undefined;
         };
     };
     readonly toolSettings: {
@@ -4626,6 +4698,11 @@ export const showWidget: <Base extends {
             readonly x: number;
             readonly y: number;
         };
+        readonly home: {
+            readonly widgetIndex: number;
+            readonly widgetId: string | undefined;
+            readonly side: "bottom" | "left" | "top" | "right";
+        };
     } | undefined;
     readonly floatingWidgets: {
         readonly byId: {
@@ -4637,6 +4714,11 @@ export const showWidget: <Base extends {
                     readonly bottom: number;
                 };
                 readonly id: string;
+                readonly home: {
+                    readonly widgetIndex: number;
+                    readonly widgetId: string | undefined;
+                    readonly side: "bottom" | "left" | "top" | "right";
+                };
             };
         };
         readonly allIds: readonly string[];
@@ -4652,6 +4734,7 @@ export const showWidget: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly left: {
             readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
@@ -4662,6 +4745,7 @@ export const showWidget: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly right: {
             readonly side: import("@bentley/ui-ninezone").VerticalPanelSide;
@@ -4672,6 +4756,7 @@ export const showWidget: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
         readonly top: {
             readonly span: boolean;
@@ -4683,12 +4768,17 @@ export const showWidget: <Base extends {
             readonly pinned: boolean;
             readonly size: number | undefined;
             readonly widgets: readonly string[];
+            readonly maxWidgetCount: number;
         };
     };
     readonly tabs: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly preferredFloatingWidgetSize: {
+                readonly width: number;
+                readonly height: number;
+            } | undefined;
         };
     };
     readonly toolSettings: {
@@ -5903,6 +5993,8 @@ export class UiShowHideManager {
     static set showHidePanels(showHide: boolean);
     static showUiAndCancelTimer(): void;
     static showUiAndResetTimer(): void;
+    static get snapWidgetOpacity(): boolean;
+    static set snapWidgetOpacity(value: boolean);
     static get useProximityOpacity(): boolean;
     static set useProximityOpacity(value: boolean);
     }
@@ -5961,6 +6053,12 @@ export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
 
 // @beta
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
+
+// @internal (undocumented)
+export function useItemsManager(frontstageDef: FrontstageDef): void;
+
+// @internal (undocumented)
+export function useLabels(): NineZoneLabels;
 
 // @internal (undocumented)
 export function useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispatch;

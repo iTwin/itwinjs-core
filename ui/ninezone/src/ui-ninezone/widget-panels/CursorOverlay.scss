@@ -4,26 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/z-index";
 
-.nz-widgetPanels-cursorOverlay {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
+$nz-cursors: (
+  ew-resize,
+  ns-resize,
+  grabbing,
+);
 
-  @include uicore-z-index(cursor-overlay);
+body {
+  @each $cursor in $nz-cursors {
+    &.nz-#{$cursor} {
+      * {
+      cursor: $cursor !important;
+      }
+    }
+  }
 }
 
 .nz-widgetPanels-cursorOverlay_cursor {
-  &.nz-ew-resize {
-    cursor: ew-resize;
-  }
-
-  &.nz-ns-resize {
-    cursor: ns-resize;
-  }
-
-  &.nz-grabbing {
-    cursor: grabbing;
+  @each $cursor in $nz-cursors {
+    &.nz-#{$cursor} {
+      cursor: $cursor;
+    }
   }
 }

@@ -93,8 +93,8 @@ describe("HiliteSetProvider", () => {
       const resultContent = new Content(createRandomDescriptor(), [
         new Item([resultKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.isKeySet(new KeySet([persistentKey])))).returns(async () => resultContent);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.isKeySet(new KeySet([persistentKey])))).returns(async () => undefined);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => resultContent);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.be.undefined;
@@ -108,8 +108,8 @@ describe("HiliteSetProvider", () => {
       const resultContent = new Content(createRandomDescriptor(), [
         new Item([resultKey], "", "", undefined, {}, {}, [], { isModel: true }),
       ]);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.isKeySet(new KeySet([persistentKey])))).returns(async () => resultContent);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.isKeySet(new KeySet([persistentKey])))).returns(async () => undefined);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => resultContent);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.deep.eq([resultKey.id]);
@@ -123,8 +123,8 @@ describe("HiliteSetProvider", () => {
       const resultContent = new Content(createRandomDescriptor(), [
         new Item([resultKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
       ]);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.isKeySet(new KeySet([persistentKey])))).returns(async () => resultContent);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.isKeySet(new KeySet([persistentKey])))).returns(async () => undefined);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => resultContent);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([persistentKey]));
       expect(result.models).to.be.undefined;
@@ -144,8 +144,8 @@ describe("HiliteSetProvider", () => {
         new Item([resultSubCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
         new Item([resultElementKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.isKeySet(new KeySet([persistentKey])))).returns(async () => resultContent);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.isKeySet(new KeySet([persistentKey])))).returns(async () => undefined);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => resultContent);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny())).returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([transientKey, persistentKey]));
       expect(result.models).to.deep.eq([resultModelKey.id]);
@@ -164,10 +164,10 @@ describe("HiliteSetProvider", () => {
       const resultContent1 = new Content(createRandomDescriptor(), [
         new Item([elementKey], "", "", undefined, {}, {}, [], {}), // element
       ]);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.It.is((keys) => keys.size === DEFAULT_KEYS_BATCH_SIZE))).returns(async () => resultContent1);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE))).returns(async () => resultContent1);
 
       // second request returns no content
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.It.is((keys) => keys.size === DEFAULT_KEYS_BATCH_SIZE))).returns(async () => undefined);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.is((opts) => opts.keys.size === DEFAULT_KEYS_BATCH_SIZE))).returns(async () => undefined);
 
       // third request returns content with subcategory and model keys
       const subCategoryKey = createRandomECInstanceKey();
@@ -176,7 +176,7 @@ describe("HiliteSetProvider", () => {
         new Item([subCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
         new Item([modelKey], "", "", undefined, {}, {}, [], { isModel: true }),
       ]);
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.It.is((keys) => keys.size === 1))).returns(async () => resultContent2);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.is((opts) => opts.keys.size === 1))).returns(async () => resultContent2);
 
       const result = await provider.getHiliteSet(new KeySet(inputKeys));
       expect(result.models).to.deep.eq([modelKey.id]);

@@ -4,5 +4,6 @@ exports[`<HorizontalTabs /> renders correctly 1`] = `
 <Tabs
   labels={Array []}
   mainClassName="uicore-tabs-horizontal"
+  orientation={0}
 />
 `;

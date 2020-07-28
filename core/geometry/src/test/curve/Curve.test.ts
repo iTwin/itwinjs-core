@@ -21,7 +21,8 @@ import { Path } from "../../curve/Path";
 import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
 import { StrokeCountMap } from "../../curve/Query/StrokeCountMap";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { TransitionSpiral3d } from "../../curve/TransitionSpiral";
+import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -42,6 +43,7 @@ import { Sphere } from "../../solid/Sphere";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
+import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
 
 /* tslint:disable:no-console */
 
@@ -158,6 +160,7 @@ class ExerciseCurve {
       let point = curve.fractionToPoint(f);
       let pointA = curveA.fractionToPoint(1.0 - f);
       if (!ck.testPoint3d(point, pointA, "Reverse Curve", curve, f)) {
+        console.log("Reverse in place trap", curveA);
         point = curve.fractionToPoint(f);
         pointA = curveA.fractionToPoint(1.0 - f);
       }
@@ -493,19 +496,24 @@ class ExerciseCurve {
     ExerciseCurve.exerciseClosestPoint(ck, bezierCurve3d, 0.1);
 
     if (Checker.noisy.testTransitionSpiral) {
-      const spiral = TransitionSpiral3d.createRadiusRadiusBearingBearing(
-        Segment1d.create(0, 1000),
-        AngleSweep.createStartEndDegrees(0, 10),
-        Segment1d.create(0, 1),
-        Transform.createIdentity());
-      if (ck.testPointer(spiral) && spiral) {
-        ExerciseCurve.exerciseCurvePlaneIntersections(ck, spiral);
-        ExerciseCurve.exerciseFractionToPoint(ck, spiral, true, false);
-        ExerciseCurve.exerciseStroke(ck, spiral);
-        ExerciseCurve.exerciseClosestPoint(ck, spiral, 0.3);
+      for (const spiral of [
+        DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), 100, 300, undefined),
+        DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), 100, 300, undefined),
+        DirectSpiral3d.createArema(Transform.createIdentity(), 100, 300, undefined),
+        IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+          Segment1d.create(0, 1000),
+          AngleSweep.createStartEndDegrees(0, 10),
+          Segment1d.create(0, 1),
+          Transform.createIdentity())]) {
+        if (ck.testPointer(spiral) && spiral) {
+          ExerciseCurve.exerciseCurvePlaneIntersections(ck, spiral);
+          ExerciseCurve.exerciseFractionToPoint(ck, spiral, (spiral instanceof IntegratedSpiral3d), false);
+          ExerciseCurve.exerciseStroke(ck, spiral);
+          ExerciseCurve.exerciseClosestPoint(ck, spiral, 0.3);
+        }
       }
-    }
 
+    }
   }
 }
 
@@ -722,11 +730,11 @@ describe("CurvePrimitive.Newton", () => {
 describe("CurvePrimitive.TransitionSpiral", () => {
   it("CurvePrimitive.TransitionSpiral", () => {
     const ck = new Checker();
-    const c = TransitionSpiral3d.createRadiusRadiusBearingBearing(
+    const c = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
       Segment1d.create(0, 100),
       AngleSweep.createStartEndDegrees(0, 5),
       Segment1d.create(0, 1),
-      Transform.createIdentity());
+      Transform.createIdentity())!;
     const point0 = c.fractionToPointAndDerivative(0);
     const point1 = Ray3d.createZero();
     const numStroke = 50;

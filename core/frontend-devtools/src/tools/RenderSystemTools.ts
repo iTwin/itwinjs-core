@@ -8,6 +8,7 @@
  */
 
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, RenderSystemDebugControl, Tool } from "@bentley/imodeljs-frontend";
+import { parseToggle } from "./parseToggle";
 
 /** Executes some code against a RenderSystemDebugControl obtained from the IModelApp's RenderSystem.
  * @beta
@@ -53,5 +54,33 @@ export class CompileShadersTool extends RenderSystemDebugControlTool {
   public execute(control: RenderSystemDebugControl): void {
     const compiled = control.compileAllShaders();
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(compiled ? OutputMessagePriority.Info : OutputMessagePriority.Error, (compiled ? "No" : "Some") + " compilation errors occurred."));
+  }
+}
+
+/** Toggles whether or not device pixel ratio should be taken into account when computing LOD for tiles and decoration graphics.
+ * @see [RenderSystem.Options.dpiAwareLOD]($frontend)
+ * @beta
+ */
+export class ToggleDPIForLODTool extends RenderSystemDebugControlTool {
+  public static toolId = "ToggleDPIForLOD";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  private _enable?: boolean;
+
+  public execute(control: RenderSystemDebugControl): void {
+    const enable = this._enable ?? !control.dpiAwareLOD;
+    control.dpiAwareLOD = enable;
+    IModelApp.viewManager.invalidateViewportScenes();
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const enable = parseToggle(args[0]);
+    if (typeof enable !== "string") {
+      this._enable = enable;
+      this.run([]);
+    }
+
+    return true;
   }
 }

@@ -64,6 +64,8 @@ export interface SeqConfig {
 // @beta
 export class SeqLoggerConfig {
     static createBunyanSeqLogger(seqConfig: SeqConfig, loggerName: string, logToStdout?: boolean): any;
+    // @internal
+    static shutdownSeq(): Promise<any>;
     static validateProps(seqConfig: any): void;
 }
 

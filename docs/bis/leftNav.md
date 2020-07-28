@@ -54,6 +54,7 @@
 
 ### EC
 
+- [Overview](./ec/index.md)
 - [ECSchema](./ec/ec-schema.md)
 - [ECClass](./ec/ec-class.md)
 - [ECEntityClass](./ec/ec-entity-class.md)

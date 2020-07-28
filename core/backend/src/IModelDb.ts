@@ -924,8 +924,18 @@ export abstract class IModelDb extends IModel {
    */
   public async getGeometryContainment(requestContext: ClientRequestContext, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
     requestContext.enter();
-    const resultString: string = this.nativeDb.getGeometryContainment(JSON.stringify(props));
-    return JSON.parse(resultString) as GeometryContainmentResponseProps;
+    return new Promise<GeometryContainmentResponseProps>((resolve, reject) => {
+      if (!this.isOpen) {
+        reject(new Error("not open"));
+      } else {
+        this.nativeDb.getGeometryContainment(JSON.stringify(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, GeometryContainmentResponseProps>) => {
+          if (ret.error !== undefined)
+            reject(new Error(ret.error.message));
+          else
+            resolve(ret.result);
+        });
+      }
+    });
   }
 
   /** Get the mass properties for the supplied elements

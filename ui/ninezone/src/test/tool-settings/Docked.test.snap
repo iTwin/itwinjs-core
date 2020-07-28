@@ -190,71 +190,17 @@ exports[`DockedToolSettings should render overflown entries 1`] = `
 
 exports[`DockedToolSettings should render panel container 1`] = `
 <div
-  class="nz-toolSettings-docked"
+  aria-modal="true"
+  class="core-popup core-popup-bottom nz-toolSettings-panel"
+  data-testid="core-popup"
+  role="dialog"
+  style="top: 0px; left: 0px;"
+  tabindex="-1"
 >
   <div
-    class="nz-toolSettings-handle"
-  >
-    <div
-      class="nz-row"
-    >
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-    </div>
-    <div
-      class="nz-row"
-    >
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-    </div>
-    <div
-      class="nz-row"
-    >
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-    </div>
-  </div>
-  <div
-    class="nz-toolSettings-setting"
-  >
-    Entry 1
-  </div>
-  <div
-    class="nz-toolSettings-setting"
-  >
-    Entry 2
-  </div>
-  <div
-    class="nz-toolSettings-overflow"
-  >
-    <div
-      class="nz-base-ellipsis"
-    >
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-      <div
-        class="nz-dot"
-      />
-    </div>
-  </div>
-  <div
-    class="nz-toolSettings-panel"
+    data-testid="focus-trap-div"
+    style="outline: none;"
+    tabindex="0"
   >
     <div
       class="panel-container"
@@ -262,6 +208,10 @@ exports[`DockedToolSettings should render panel container 1`] = `
       Entry 3
     </div>
   </div>
+  <div
+    data-testid="focus-trap-limit-div"
+    tabindex="0"
+  />
 </div>
 `;
 

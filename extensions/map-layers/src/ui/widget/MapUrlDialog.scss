@@ -1,0 +1,34 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/index";
+
+$divider-color: $buic-background-toolbutton-stroke;
+$hovered-icon-color: $buic-foreground-primary-tone;
+
+.map-layer-source-url {
+  * {
+    box-sizing: border-box;
+  }
+
+  height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+
+  .map-layer-source-label{
+    font-size: $uicore-font-size;
+    color: $buic-foreground-body;
+    padding-right: 6px;
+    flex: initial;
+    width: fit-content;
+    white-space: nowrap;
+  }
+
+  .map-layer-source-editor{
+    width: 100%;
+    height: 100%;
+  }
+}

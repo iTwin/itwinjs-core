@@ -186,7 +186,7 @@ describe("ModelsTree", () => {
 
       it("should match snapshot", async () => {
         setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node"), isCheckboxVisible: true }]);
-        visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
         const result = render(<ModelsTree iModel={imodelMock.object} dataProvider={dataProvider} modelsVisibilityHandler={visibilityHandlerMock.object} />);
         await waitForElement(() => result.getByText("test-node"), { container: result.container });
         expect(result.baseElement).to.matchSnapshot();
@@ -201,7 +201,7 @@ describe("ModelsTree", () => {
 
       it("renders nodes as unchecked when they're not displayed", async () => {
         setupDataProviderForEachNodeType();
-        visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
@@ -212,7 +212,7 @@ describe("ModelsTree", () => {
 
       it("renders nodes as checked when they're displayed", async () => {
         setupDataProviderForEachNodeType();
-        visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: true }));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: true }));
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
@@ -266,8 +266,8 @@ describe("ModelsTree", () => {
       it("calls visibility handler's `changeVisibility` on node checkbox state changes to 'checked'", async () => {
         const node = createModelNode();
         setupDataProvider([node]);
-        visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
-        visibilityHandlerMock.setup(async (x) => x.changeVisibility(node, moq.It.isAny(), true)).returns(async () => { }).verifiable();
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        visibilityHandlerMock.setup((x) => x.changeVisibility(node, moq.It.isAny(), true)).returns(async () => { }).verifiable();
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
@@ -282,7 +282,7 @@ describe("ModelsTree", () => {
         const modelNode = createModelNode();
         setupDataProvider([modelNode]);
 
-        visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
@@ -306,12 +306,14 @@ describe("ModelsTree", () => {
 
       it("disposes visibility handler when new is provided", async () => {
         const node = createModelNode();
+        const disposeSpy = sinon.spy();
         setupDataProvider([node]);
 
-        visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        visibilityHandlerMock.setup((x) => x.dispose).returns(() => disposeSpy);
 
         const newVisibilityHandlerMock = moq.Mock.ofType<VisibilityHandler>();
-        newVisibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        newVisibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
@@ -319,7 +321,7 @@ describe("ModelsTree", () => {
         result.rerender(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={newVisibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
 
-        visibilityHandlerMock.verify((x) => x.dispose(), moq.Times.once());
+        expect(disposeSpy).to.be.calledOnce;
       });
 
       describe("selection", () => {
@@ -327,7 +329,7 @@ describe("ModelsTree", () => {
         it("adds node to unified selection", async () => {
           const element = createElementNode();
           setupDataProvider([element]);
-          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
           const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} />);
           await waitForElement(() => result.getByText("element"));
@@ -340,7 +342,7 @@ describe("ModelsTree", () => {
         it("adds element node to unified selection according to `selectionPredicate`", async () => {
           const element = createElementNode();
           setupDataProvider([element]);
-          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element;
 
@@ -357,7 +359,7 @@ describe("ModelsTree", () => {
           const node2 = createModelNode();
           node2.id = "model2";
           setupDataProvider([node1, node2]);
-          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Model;
 
@@ -376,7 +378,7 @@ describe("ModelsTree", () => {
         it("adds subject node to unified selection according to `selectionPredicate`", async () => {
           const subject = createSubjectNode();
           setupDataProvider([subject]);
-          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Subject;
 
@@ -392,7 +394,7 @@ describe("ModelsTree", () => {
           const node = createElementNode();
           (node as any).extendedData = undefined;
           setupDataProvider([node]);
-          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Unknown;
 
@@ -407,7 +409,7 @@ describe("ModelsTree", () => {
         it("adds element class grouping node to unified selection according to `selectionPredicate`", async () => {
           const node = createElementClassGroupingNode([createRandomId(), createRandomId()]);
           setupDataProvider([node]);
-          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Grouping);
 
@@ -422,7 +424,7 @@ describe("ModelsTree", () => {
         it("does not add category node to unified selection according to `selectionPredicate`", async () => {
           const node = createCategoryNode();
           setupDataProvider([node]);
-          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Model;
 
@@ -440,7 +442,7 @@ describe("ModelsTree", () => {
 
         beforeEach(() => {
           dataProvider.getNodeKey = (node: TreeNodeItem) => (node as any)["__presentation-components/key"];
-          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
         });
 
         it("filters nodes", async () => {

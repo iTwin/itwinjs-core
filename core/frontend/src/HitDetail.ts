@@ -144,6 +144,9 @@ export class HitDetail {
   public get isModelHit(): boolean {
     return this.modelId === this.sourceId;
   }
+  // return whether the hit point is from map.
+  public get isMapHit(): boolean { return undefined !== this.viewport.displayStyle.mapLayerFromHit(this); }
+
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {
     const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction, this.subCategoryId, this.geometryClass, this.modelId, this._iModel, this.tileId, this.isClassifier);

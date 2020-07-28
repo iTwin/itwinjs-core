@@ -2,6 +2,24 @@
   "name": "@bentley/frontend-devtools",
   "entries": [
     {
+      "version": "2.4.0",
+      "tag": "@bentley/frontend-devtools_v2.4.0",
+      "date": "Tue, 28 Jul 2020 16:26:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ability to enable antialiasing"
+          },
+          {
+            "comment": "Add tools for manipulating Map Layers."
+          },
+          {
+            "comment": "Key-in for toggling whether device pixel ratio is accounted for when computing LOD for tiles and decorations."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.3.3",
       "tag": "@bentley/frontend-devtools_v2.3.3",
       "date": "Thu, 23 Jul 2020 12:57:15 GMT",

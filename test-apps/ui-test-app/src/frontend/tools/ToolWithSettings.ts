@@ -13,8 +13,8 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import {
-  ColorEditorParams, DialogItem, DialogItemValue, DialogPropertyItem, DialogPropertySyncItem, InputEditorSizeParams, PropertyChangeResult,
-  PropertyChangeStatus, PropertyDescription, PropertyEditorParamTypes, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent, UiDataProvider,
+  ColorEditorParams, DialogItem, DialogItemValue, DialogPropertyItem, DialogPropertySyncItem, ImageCheckBoxParams, InputEditorSizeParams,
+  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, PropertyEditorParamTypes, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent, UiDataProvider,
 } from "@bentley/ui-abstract";
 import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
 
@@ -264,6 +264,38 @@ export class ToolWithSettings extends PrimitiveTool {
 
   public set lock(option: boolean) {
     this._lockValue.value = option;
+  }
+
+  // ------------- boolean based toggle button ---------------
+  private static _imageCheckBoxName = "imageCheckBox";
+  private static _getImageCheckBoxDescription = (): PropertyDescription => {
+    return {
+      name: ToolWithSettings._imageCheckBoxName,
+      displayLabel: "",
+      typename: "boolean",
+      editor: {
+        name: "image-check-box",
+        params: [{
+          type: PropertyEditorParamTypes.CheckBoxImages,
+          imageOff: "icon-clear-night",
+          imageOn: "icon-clear-day",
+        } as ImageCheckBoxParams, {
+          type: PropertyEditorParamTypes.SuppressEditorLabel,
+          suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams,
+        ],
+      },
+    };
+  }
+
+  private _imageCheckBoxValue: DialogItemValue = { value: true };
+
+  public get imageCheckBoxValue(): boolean {
+    return this._imageCheckBoxValue.value as boolean;
+  }
+
+  public set imageCheckBoxValue(option: boolean) {
+    this._imageCheckBoxValue.value = option;
   }
 
   // ------------- text based edit field ---------------
@@ -576,6 +608,7 @@ export class ToolWithSettings extends PrimitiveTool {
     toolSettings.push({ value: this._lengthValue, property: this._lengthDescription, editorPosition: { rowPriority: 20, columnIndex: 2 }, isDisabled: false, lockProperty: lengthLock });
     toolSettings.push({ value: this._surveyLengthValue, property: this._surveyLengthDescription, editorPosition: { rowPriority: 21, columnIndex: 2 }, isDisabled: readonly });
     toolSettings.push({ value: this._angleValue, property: new AngleDescription(), editorPosition: { rowPriority: 25, columnIndex: 2 } });
+    toolSettings.push({ value: this._imageCheckBoxValue, property: ToolWithSettings._getImageCheckBoxDescription(), editorPosition: { rowPriority: 30, columnIndex: 2 } });
     return toolSettings;
   }
 
@@ -599,6 +632,9 @@ export class ToolWithSettings extends PrimitiveTool {
   public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
     if (updatedValue.propertyName === ToolWithSettings._lockToggleName) {
       this.lock = updatedValue.value.value as boolean;
+      this.showInfoFromUi(updatedValue);
+    } else if (updatedValue.propertyName === ToolWithSettings._imageCheckBoxName) {
+      this.imageCheckBoxValue = updatedValue.value.value as boolean;
       this.showInfoFromUi(updatedValue);
     } else if (updatedValue.propertyName === ToolWithSettings._cityName) {
       this.city = updatedValue.value.value as string;

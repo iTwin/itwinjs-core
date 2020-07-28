@@ -54,7 +54,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     const nzBounds = measure();
     let bounds = Rectangle.create(ref.current.getBoundingClientRect());
     bounds = bounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
-    const position = bounds.topLeft().toProps();
+    const position = bounds.topLeft();
     const size = widgetContext.measure();
     const widgetSize = restrainInitialWidgetSize(size, nzBounds.getSize());
     handleDragStart({

@@ -158,6 +158,8 @@ export enum DepthPointSource {
   ACS,
   /** Depth point from plane passing through view target point */
   TargetPoint,
+  /** Depth point from map/terrain within specified radius of pick point */
+  Map,
 }
 
 /** @alpha Options to control behavior of [[Viewport.pickDepthPoint]]. */
@@ -1083,6 +1085,20 @@ export abstract class Viewport implements IDisposable {
     this.invalidateRenderPlan();
   }
 
+  /** Turn on or off antialiasing in each [[Viewport]] registered with the ViewManager.
+   * Setting numSamples to 1 turns it off, setting numSamples > 1 turns it on with that many samples.
+   * @beta
+   */
+  public get antialiasSamples(): number {
+    return undefined !== this._target ? this._target.antialiasSamples : 1;
+  }
+  public set antialiasSamples(numSamples: number) {
+    if (undefined !== this._target) {
+      this._target.antialiasSamples = numSamples;
+      this.invalidateRenderPlan();
+    }
+  }
+
   /** return true if viewing globe (globeMode is 3D and eye location is far above globe
    * @alpha
    */
@@ -1431,17 +1447,19 @@ export abstract class Viewport implements IDisposable {
     }
   }
   /** @internal */
-  public getToolTip(hit: HitDetail): HTMLElement | string {
-    let toolTip: string | HTMLElement = "";
+  public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    const promises = new Array<Promise<string | HTMLElement | undefined>>();
     if (this.displayStyle) {
-      this.displayStyle.forEachTileTreeRef((model) => {
-        const thisToolTip = model.getToolTip(hit);
-        if (thisToolTip !== undefined)
-          toolTip = thisToolTip;
+      this.displayStyle.forEachTileTreeRef(async (tree) => {
+        promises.push(tree.getToolTip(hit));
       });
     }
+    const results = await Promise.all(promises);
+    for (const result of results)
+      if (result !== undefined)
+        return result;
 
-    return toolTip;
+    return "";
   }
 
   /** @internal */
@@ -2365,6 +2383,7 @@ export abstract class Viewport implements IDisposable {
    * one pixel of the view represents more spatial area at the back of the Frustum than the front.)
    * @param point The point to test, in World coordinates. If undefined, the center of the view in NPC space is used.
    * @returns The width of a view pixel at the supplied world point, in meters.
+   * @note A "pixel" refers to a logical (CSS) pixel, not a device pixel.
    */
   public getPixelSizeAtPoint(point?: Point3d): number {
     if (point === undefined)
@@ -2584,6 +2603,16 @@ export abstract class Viewport implements IDisposable {
       receiver(undefined);
     else
       this.target.readPixels(rect, selector, receiver, excludeNonLocatable);
+  }
+  /** @internal */
+  public isPixelSelectable(pixel: Pixel.Data) {
+    if (undefined === pixel.featureTable || undefined === pixel.elementId)
+      return false;
+
+    if (pixel.featureTable.modelId === pixel.elementId)
+      return false;    // Reality Models not selectable
+
+    return undefined === this.displayStyle.mapLayerFromIds(pixel.featureTable.modelId, pixel.elementId);  // Maps no selectable.
   }
 
   /** Read the current image from this viewport from the rendering system. If a view rectangle outside the actual view is specified, the entire view is captured.
@@ -2882,7 +2911,7 @@ export class ScreenViewport extends Viewport {
     this.target.updateViewRect();
 
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
-    this.toolTipDiv = this.addNewDiv("overlay-tooltip", false, 40);
+    this.toolTipDiv = this.addNewDiv("overlay-tooltip", true, 40);
     this.setCursor();
     this.addLogo();
   }
@@ -2929,6 +2958,7 @@ export class ScreenViewport extends Viewport {
     switch (depthResult.source) {
       case DepthPointSource.Geometry:
       case DepthPointSource.Model:
+      case DepthPointSource.Map:
         isValidDepth = true;
         break;
       case DepthPointSource.BackgroundMap:
@@ -2970,8 +3000,12 @@ export class ScreenViewport extends Viewport {
 
     if (0 !== picker.doPick(this, pickPoint, radius, locateOpts)) {
       const hitDetail = picker.getHit(0)!;
-      const geomPlane = Plane3dByOriginAndUnitNormal.create(hitDetail.getPoint(), hitDetail.isModelHit ? this.view.getUpVector(hitDetail.getPoint()) : this.view.getZVector())!;
-      return { plane: geomPlane, source: (hitDetail.isModelHit ? DepthPointSource.Model : DepthPointSource.Geometry), sourceId: hitDetail.sourceId };
+      const hitPoint = hitDetail.getPoint();
+      if (hitDetail.isModelHit)
+        return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!, source: DepthPointSource.Model, sourceId: hitDetail.sourceId };
+      else if (hitDetail.isMapHit)
+        return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!, source: DepthPointSource.Map, sourceId: hitDetail.sourceId };
+      return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getZVector())!, source: DepthPointSource.Geometry, sourceId: hitDetail.sourceId };
     }
 
     const eyePoint = this.worldToViewMap.transform1.columnZ();

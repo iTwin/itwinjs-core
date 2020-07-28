@@ -19,6 +19,7 @@ import { DisplayParams } from "../DisplayParams";
 import { GeometryOptions } from "../Primitives";
 import { GeometryAccumulator } from "./GeometryAccumulator";
 import { Geometry } from "./GeometryPrimitives";
+import { MeshList } from "../mesh/MeshPrimitives";
 
 function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
   const pts3d: Point3d[] = [];
@@ -154,6 +155,8 @@ export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: RenderGraphic[] = [];
 
   public finishGraphic(accum: GeometryAccumulator): RenderGraphic {
+    let meshes: MeshList | undefined;
+    let range: Range3d | undefined;
     let featureTable: FeatureTable | undefined;
     if (!accum.isEmpty) {
       // Overlay decorations don't test Z. Tools like to layer multiple primitives on top of one another; they rely on the primitives rendering
@@ -161,26 +164,40 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       // No point generating edges for graphics that are always rendered in smooth shade mode.
       const options = GeometryOptions.createForGraphicBuilder(this);
       const tolerance = this.computeTolerance(accum);
-      featureTable = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickId);
+      meshes = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickId);
+      if (undefined !== meshes) {
+        featureTable = meshes.features;
+        range = meshes.range;
+      }
     }
 
     let graphic = (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
     if (undefined !== featureTable) {
-      const range = new Range3d(); // ###TODO compute range...
-      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), range);
+      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), (range !== undefined) ? range : new Range3d());
     }
 
     return graphic;
   }
 
   public computeTolerance(accum: GeometryAccumulator): number {
+    let pixelSize = 1.0;
+    if (!this.isViewCoordinates) {
+      // Compute the horizontal distance in meters between two adjacent pixels at the center of the geometry.
+      const range = accum.geometries!.computeRange();
+      const pt = range.low.interpolate(0.5, range.high);
+      pixelSize = this.viewport.getPixelSizeAtPoint(pt);
+      pixelSize = this.viewport.target.adjustPixelSizeForLOD(pixelSize);
+
+      if (this.applyAspectRatioSkew) {
+        // Aspect ratio skew > 1.0 stretches the view in Y. In that case use the smaller vertical pixel distance for our stroke tolerance.
+        const skew = this.viewport.view.getAspectRatioSkew();
+        if (skew > 1)
+          pixelSize /= skew;
+      }
+    }
+
     const toleranceMult = 0.25;
-    if (this.isViewCoordinates) return toleranceMult;
-    if (!this.viewport) return 20;
-    const range = accum.geometries!.computeRange(); // NB: Already multiplied by transform...
-    // NB: Geometry::CreateFacetOptions() will apply any scale factors from transform...no need to do it here.
-    const pt = range.low.interpolate(0.5, range.high);
-    return this.viewport!.getPixelSizeAtPoint(pt) * toleranceMult;
+    return pixelSize * toleranceMult;
   }
 
   public reset(): void { this.primitives = []; }

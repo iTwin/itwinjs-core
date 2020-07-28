@@ -5,6 +5,11 @@
         "keyin": "dta drawing aid points"
       }
     },
+    "Fence": {
+      "ClassifySelected": {
+        "keyin": "dta classifyclip selected"
+      }
+    },
     "Markup": {
       "keyin": "dta markup",
       "TestSelect": {
@@ -56,6 +61,9 @@
     "ToggleIncidentMarkers": {
       "keyin": "dta incident markers"
     },
+    "TogglePathDecoration": {
+      "keyin": "dta path decoration"
+    },
     "ShutDown": {
       "keyin": "dta shutdown"
     },
@@ -91,6 +99,9 @@
     },
     "ToggleTimePointComparison": {
       "keyin": "dta timepoint comparison"
+    },
+    "ToggleAspectRatioSkewDecorator": {
+      "keyin": "dta aspect skew decorator"
     }
   }
 }

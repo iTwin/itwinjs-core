@@ -1,6 +1,19 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:24 GMT
+
+### Updates
+
+- Fixed size of Checkbox & cursor for ViewAttributes checkboxes
+- Map Layer UX
+- Update 2.0 fronstage logic to monitor extensions and refresh widgets.
+- Changed toolbar opacity processing to affect all components in widget.
+- Fix stage panel initialization when defaultState is Off.
+- Address LGTM warnings in UI code.
+- Remove not found widget tabs when restoring layout.
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT
