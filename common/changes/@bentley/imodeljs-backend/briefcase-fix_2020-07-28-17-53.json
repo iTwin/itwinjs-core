@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "VSTS#419723: Accomodated \"bad\" checkpoints that may have serialized transactions preventing their use in ReadWrite cases. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

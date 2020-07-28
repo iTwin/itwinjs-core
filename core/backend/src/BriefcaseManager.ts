@@ -1182,6 +1182,14 @@ export class BriefcaseManager {
       if (DbResult.BE_SQLITE_OK !== res)
         throw new IModelError(res, "Unable to open Db", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
 
+      // Note: A defect in applying change sets caused some checkpoints to be created with Txns - we need to clear these out
+      // at least until these checkpoints aren't being used - VSTS#419723. The error typically is a worry only
+      // for ReadWrite applications, and can be evantually phased out based on the occurence of the log warning below.
+      if (nativeDb.hasPendingTxns()) {
+        Logger.logWarning(loggerCategory, "Checkpoint with Txns found - deleting them", () => briefcase.getDebugInfo());
+        nativeDb.deleteAllTxns();
+      }
+
       if (nativeDb.getBriefcaseId() !== briefcase.briefcaseId)
         nativeDb.resetBriefcaseId(briefcase.briefcaseId);
 
