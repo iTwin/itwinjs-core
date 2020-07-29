@@ -87,6 +87,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       scope: basicSettings.scope,
       post_logout_redirect_uri: basicSettings.postSignoutRedirectUri,
       response_type: basicSettings.responseType,
+      automaticSilentRenew: true,
     };
 
     if (advancedSettings) {
@@ -335,7 +336,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Raised when the automatic silent renew has failed.
    */
   protected _onSilentRenewError = () => {
-    this._onUserStateChanged(undefined);
   }
 
   /**
