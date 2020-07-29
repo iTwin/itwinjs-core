@@ -2,6 +2,48 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.4.0",
+      "tag": "@bentley/ui-core_v2.4.0",
+      "date": "Tue, 28 Jul 2020 16:26:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for a basic single selection aria compliant listbox."
+          },
+          {
+            "comment": "Checkboxes in lists & trees are out of place"
+          },
+          {
+            "comment": "Disabled component styling. Fixed Dialog focus problems."
+          },
+          {
+            "comment": "Map Layer UX "
+          },
+          {
+            "comment": "Allowing Input component user to override the type"
+          },
+          {
+            "comment": "Fix ThemeSelect formatOptionLabel prop to return React.ReactNode."
+          },
+          {
+            "comment": "Added Arrow key navigation in Tabs components. Added ItemKeyboardNavigator."
+          },
+          {
+            "comment": "Add aria props into ThemedSelectProps for accessibility. addclassName prop to ThemedSelectProps as requested for styling purposes."
+          },
+          {
+            "comment": "Changed toolbar opacity processing to affect all components in widget."
+          },
+          {
+            "comment": "Add border prop to ImageCheckBox"
+          },
+          {
+            "comment": "Replace slider specific Tooltip with generic Tooltip."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.3.3",
       "tag": "@bentley/ui-core_v2.3.3",
       "date": "Thu, 23 Jul 2020 12:57:15 GMT",

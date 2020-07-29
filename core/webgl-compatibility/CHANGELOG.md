@@ -1,6 +1,14 @@
 # Change Log - @bentley/webgl-compatibility
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:24 GMT
+
+### Updates
+
+- Added maxSamples for antialiasing
+- WebglRenderCompatiblityInfo now includes context used for generating it
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT

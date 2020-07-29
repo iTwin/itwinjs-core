@@ -1,6 +1,13 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:24 GMT
+
+### Updates
+
+- Add overloads of `PresentationManager` methods that take a single object with all the parameters.
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT
@@ -204,7 +211,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Fixed `PresentationRpcImpl.computeSelection` for "model", "category" and "element" scope to return specific class names instead of "BisCore:Model", "BisCore:Category" or "BisCore:Element"
 - Allow requesting content with descriptor overrides instead of descriptor. This allows to competely avoid a descriptor request when content customization requirements are the same for all kinds of content
 - Do not attempt to handle transient element ids when computing selection based on scope
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

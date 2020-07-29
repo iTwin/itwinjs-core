@@ -2,6 +2,48 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.4.0",
+      "tag": "@bentley/imodeljs-frontend_v2.4.0",
+      "date": "Tue, 28 Jul 2020 16:26:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ability to enable antialiasing"
+          },
+          {
+            "comment": "remove linewidth adjustment for non-antialiased lines (like in transparent pass)."
+          },
+          {
+            "comment": "GraphicBuilder optionally accounts for the view's aspect ratio skew when computing level of detail."
+          },
+          {
+            "comment": "Support Map Layer Settings."
+          },
+          {
+            "comment": "Implement devicePixelRatioOverride on RenderSystem.Options."
+          },
+          {
+            "comment": "RenderSystem option controlling whether device pixel ratio is taken into account when computing level of detail for tiles and decoration graphics."
+          },
+          {
+            "comment": "Changes to support new HitDetail.isMapHit classificiation."
+          },
+          {
+            "comment": "Optimize reality tile loading."
+          },
+          {
+            "comment": "Decoration optimization: internally include range in order to reduce performance impact of pickable decorations."
+          },
+          {
+            "comment": "overlay-tooltip should use overflow:hidden"
+          },
+          {
+            "comment": "Address LGTM warnings in UI code."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.3.3",
       "tag": "@bentley/imodeljs-frontend_v2.3.3",
       "date": "Thu, 23 Jul 2020 12:57:15 GMT",

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/backend-webpack-tools"
+    }
+  ],
+  "packageName": "@bentley/backend-webpack-tools",
+  "email": "Paul.Connelly@bentley.com"
+}

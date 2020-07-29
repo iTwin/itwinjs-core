@@ -1,96 +1,52 @@
-# 2.3.0 Change Notes
+# 2.4.0 Change Notes
 
-## Thematic display
+## Hypermodeling marker filtering
 
-### New gradient modes
+Some iModels contain thousands of [SectionDrawingLocation]($backend)s. When hypermodeling is used with such iModels, this may result in display of thousands of [SectionMarker]($hypermodeling)s. While markers located close together will automatically cluster, and [SectionMarkerConfig]($hypermodeling) supports filtering markers based on model, category, or section type, some applications may want to apply their own filtering logic. They can now do so by implementing [SectionMarkerHandler]($hypermodeling) to customize the visibility of the markers.
 
-Thematic display supports several new gradient mode values for the `mode` property of [ThematicGradientSettings]($common):
-* `ThematicGradientMode.Stepped` applies a stepped color gradient to the scene.
-* `ThematicGradientMode.SteppedWithDelimiter` applies a stepped color gradient to the scene with delimiters (lines between the color steps).
-* `ThematicGradientMode.IsoLines` applies isolines to the scene to achieve an effect similar to a contour map.
+## Device pixel ratio
 
-Note: Gradient modes `ThematicGradientMode.SteppedWithDelimiter` and `ThematicGradientMode.IsoLines` cannot be used with thematic display mode values other than `ThematicDisplayMode.Height`.
+[Device pixel ratio](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio) is the ratio of physical (screen) pixels to logical (CSS) pixels. For example, most mobile devices have a device pixel ratio of 2, causing UI controls to display at twice the size while still appearing sharp on the screen. Similarly, a desktop computer with a 4k monitor always has a 4k physical resolution, but the operating system may allow the UI to be arbitrarily scaled to the user's preferences. In such cases the number of logical pixels will not match the number of physical pixels.
 
-![stepped thematic gradient mode applied to height](./assets/thematic_stepped.png)
-<p align="center">Stepped thematic gradient mode applied to height</p>
+Previously, when iModel.js computed the appropriate level of detail for tiles and decoration graphics, it exclusively used the logical resolution, ignoring device pixel ratio. On high-DPI devices this causes lower-resolution graphics to be displayed, resulting in a less detailed image.
 
-![stepped-with-delimiter thematic gradient mode applied to height](./assets/thematic_steppedWithDelimiter.png)
-<p align="center">Stepped-with-delimiter thematic gradient mode applied to height</p>
+Now, if [RenderSystem.Options.dpiAwareLOD]($frontend) is set to `true` when supplied to [IModelApp.startup]($frontend), level of detail computations will take device pixel ratio into account. This will result in a sharper image on high-DPI displays. However, it may also reduce display performance, especially on mobile devices, due to more tiles of higher resolution being displayed.
 
-![isoline thematic gradient mode applied to height](./assets/thematic_isolines.png)
-<p align="center">Isoline thematic gradient mode applied to height</p>
+This option has no effect if [RenderSystem.Options.dpiAwareViewports]($frontend) is overridden to be `false`.
 
-### New display modes
+## Device pixel ratio override
 
-Thematic display supports several new display mode values for the `displayMode` property of [ThematicDisplay]($common):
-* `ThematicDisplayMode.Slope` applies a color gradient to surface geometry based on the slope of the surface relative to a specified axis. The slope value is calculated based on the angle between the surface and the axis specified in the associated [ThematicDisplay]($common) object.
-* `ThematicDisplayMode.HillShade` applies a color gradient to surface geometry based on the direction of a sun shining on the surface.
-  * [ThematicDisplay]($common) has a new property named `sunDirection`, a 3d vector, which describes the solar direction used by this display mode.
-  * If desired, in order to create a sun direction from azimuth and altitude values, a new API function is available: [calculateSolarDirectionFromAngles]($common). This function takes an azimuth and altitude as input and returns a solar direction vector.
+If [RenderSystem.Options.devicePixelRatioOverride]($frontend) is defined when supplied to [IModelApp.startup]($frontend), its numeric value will be used as the device pixel ratio instead of the system's actual device pixel ratio. This can be helpful for situations like running in the iOS Simulator where forcing a lower resolution by setting a sub-1 device pixel ratio would increase performance.
 
-![slope display mode applied relative to a Z axis with a range of 0 to 90 degrees and a blue-red color scheme](./assets/thematic_slope.png)
-<p align="center">Slope display mode applied relative to a Z axis with a range of 0 to 90 degrees and a blue-red color scheme</p>
+Please note:
 
-![hillshade display mode applied with a monochrome color scheme](./assets/thematic_hillshade.png)
-<p align="center">Hillshade display mode applied with a monochrome color scheme</p>
+* If this setting is used to decrease the effective device pixel ratio, the view will appear pixelated.
+* This setting should only be used to increase performance in situations like the iOS Simulator for testing purposes only. It should not be used in a production situation.
 
-## Hyper-modeling
+This option has no effect if [RenderSystem.Options.dpiAwareViewports]($frontend) is overridden to be `false`.
 
-The hyper-modeling [Extension]($frontend) has been replaced by the `hypermodeling-frontend` package to permit customization of its behavior.
+## Background Map Enhancements
 
-* Use [HyperModeling.initialize]($hypermodeling) to initialize the package before using any of its APIs.
-* Use [HyperModeling.startOrStop]($hypermodeling) to enable or disable hypermodeling for a [Viewport]($frontend).
-* Use [HyperModelingConfig]($hypermodeling) to customize the package's behavior.
+![Background Map with Wetlands and GIS layers](assets/MapLayers.png)
 
-## Rendering styles
+Support for map imagery from WMS, WMTS, ArcGIS, AzureMaps, MapBox and file based tiled map servers is added in this version.  This imagery is seperated into base map, background layers and overlay layers.  The visibility and transparency of these layers can be individually controlled.  Map servers can either provide fixed, potentially cached tiles based on a predefined tiling scheme (WMTS, AzureMaps, MapBox) or produce images on demand (WMS, ArcGIS MapServer).  In general cached tile servers are more performant while the servers that produce images on demand are more flexible and may potentially include hierarchical sublayers that can be filtered seperately.
 
-A [DisplayStyle]($backend) defines how the contents of a [ViewDefinition]($backend) are rendered. However, the display style contains some data that is specific to the containing iModel, or to the project to which the iModel belongs. It can be very useful to be able to define various "rendering styles" that can be applied to any display style in any iModel or project to change the lighting, thematic display settings, and other visual aspects of the view. To facilitate this, three new methods have been introduced:
+### BaseMap
 
-* [DisplayStyleSettings.toOverrides]($common) to selectively capture a subset of the settings as a JSON object;
-* [DisplayStyleSettings.applyOverrides]($common) to selectively override a subset of the display style settings; and
-* [Viewport.overrideDisplayStyle]($frontend) to apply overrides to the viewport's display style and ensure the results become immediately visible.
+The base map imagery can now be provided by any map imagery source or set to be a single color.  The transparency of the base map can be controlled seperately from the background map. [DisplayStyleState]($frontend) methods `changeBaseMapProps` and `changeBaseMapTransparency` are provided to control the baseMap display.   The `changeBackgroundMapProps` method continues to supports changing map properties that are not related to imagery. If `changeBackgroundMapProps` is used to change the legacy map imagery settings (`providerName` and `providerData.mapType`), the base map properties are set appropriately.  The  [DisplayStyleState]($frontend) `backgroundMapBase` property contains the base map imagery settings.
 
-A "rendering style" is simply a partial [DisplayStyle3dSettingsProps]($common). When applied to a [DisplayStyleSettings]($common), any settings explicitly defined by the rendering style will be overridden; the remainder will retain their original values.
+### Map Layers
 
-Examples of some general-purpose rendering styles can be found in [display-test-app](https://github.com/imodeljs/imodeljs/blob/master/test-apps/display-test-app/src/frontend/ViewAttributes.ts).
+Map Layers can be either **background** layers displayed on top of the base map but below all iModel geometry or **overlay** layers displayed on top of the iModel geometry.  The  [DisplayStyleState]($frontend) properties `backgroundMapLayers` and `overlayMapLayers` contain the background and overlay layers.  A set of  [DisplayStyleState]($frontend) methods, `attachMapLayer`, `detachMapLayerByIndex`, `changeMapLayerProps`, `changeMapSubLayerProps` etc are provided to manipulate these layers.
 
-## Multiple feature override providers
+## Antialiasing
 
-[Viewport]($frontend) now allows multiple [FeatureOverrideProvider]($frontend)s to be registered at any given time. Use [Viewport.addFeatureOverrideProvider]($frontend) to register a provider and [Viewport.dropFeatureOverrideProvider]($frontend) to unregister it. To query for a registered provider, use [Viewport.findFeatureOverrideProvider]($frontend) or [Viewport.findFeatureOverrideProviderOfType]($frontend).
+Antialiasing can now be turned on and off per view by setting [Viewport.antialiasSamples]($frontend) to the number of desired samples.  A value of 1 will turn off antialiasing, and a value > 1 will turn it on and attempt to use that many samples (restricted by the given hardware constraints).
 
-When multiple providers are registered, no attempt is made to reconcile conflicts between two providers overriding the same [Feature]($common) - that is left to the application. Note that most [FeatureSymbology.Overrides]($frontend) methods like `overrideModel` take an optional `replaceExisting` argument indicating whether or not to replace an existing override for the same entity, so if you have two providers, one of which should never overwrite changes made by the other, that one should pass `false` for `replaceExisting` while the other one should pass `true` (the default).
+[ViewManager.setAntialiasingAllViews]($frontend) can be used to set the antialiasing samples in all currnet views as well as all future views created.
 
-This change necessitates the deprecation of [Viewport.featureOverrideProvider]($frontend), previously used to get or set the sole provider. This property will be removed in a future version. For now, the getter will return a provider if and only if exactly one provider is currently registered. The setter will remove all existing providers and, if a new provider is supplied, register it as the sole provider. We recommend migrating to the new APIs. You can do so as follows:
-- Replace `viewport.featureOverrideProvider = myProvider` with `viewport.addFeatureOverrideProvider(myProvider)`.
-- Replace `viewport.featureOverrideProvider = undefined` with `viewport.dropFeatureOverrideProvider(myProvider)`.
-- Replace calls to the getter with a call to `findFeatureOverrideProvider` or `findFeatureOverrideProviderOfType`. For example:
-```ts
-  class MyProvider implements FeatureOverrideProvider {
-    public id: string;
-    public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, vp: Viewport): void { /* ... */ }
-  }
+![example of no antialiasing on left, and antialiasing with 8 samples on the right](./assets/AntialiasExample1.png)
+<p align="center">Example: no antialiasing on left, and antialiasing with 8 samples on the right</p>
 
-  // If you know that at most one provider of type MyProvider should be registered at any one time:
-  let provider = viewport.findFeatureOverrideProviderOfType<MyProvider>(MyProvider);
-  // Or, if you can identify your provider by some other means, like a property:
-  provider = viewport.findFeatureOverrideProvider((x) => x instanceof MyProvider && x.id === "my provider");
-```
-
-## ECSql Enhancements
-
-Added the following expressions and functions:
-
-1. `<type> IS [NOT] (type-list)` - Filter parent type by subtype
-    * [Lesson 9: Type Filter](../learning/ECSQLTutorial/TypeFilter.md)
-1. `CASE-WHEN-THEN-ELSE` - Conditional expression
-    * [Lesson 10: Conditional Expressions](../learning/ECSQLTutorial/ConditionalExpr.md)
-1. `IIF()`  - Conditional expression
-    * [Lesson 10: Conditional Expressions](../learning/ECSQLTutorial/ConditionalExpr.md)
-1. `ec_classname()` - Get formatted class names for a ECClassId
-    * [Lesson 11: Built-In functions](../learning/ECSQLTutorial/BuiltInFunctions.md)
-1. `ec_classid())` - Get ECClassId from a  qualified classname.
-    * [Lesson 11: Built-In functions](../learning/ECSQLTutorial/BuiltInFunctions.md)
-
-## Schema upgrades
-
-Domain schemas can now be upgraded when opening BriefcaseDb-s and StandaloneDb-s. See new [UpgradeOptions]($common) options that can be passed in to the [BriefcaseDb.open]($backend) call.
+![example of no antialiasing on left, and antialiasing with 4 samples on the right](./assets/AntialiasExample2.png)
+<p align="center">Example: no antialiasing on left, and antialiasing with 4 samples on the right</p>

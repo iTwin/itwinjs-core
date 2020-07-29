@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/webgl-compatibility"
+    }
+  ],
+  "packageName": "@bentley/webgl-compatibility",
+  "email": "Paul.Connelly@bentley.com"
+}

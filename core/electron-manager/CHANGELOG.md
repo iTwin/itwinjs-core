@@ -1,6 +1,11 @@
 # Change Log - @bentley/electron-manager
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:23 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:23 GMT
+
+*Version update only*
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT
@@ -44,9 +49,9 @@ Wed, 06 May 2020 13:17:49 GMT
 
 - Update to Electron 8
 - react to changes in imodeljs-clients
-- FrontendAuthorizationClient does not extend IDisposable.
+- FrontendAuthorizationClient does not extend IDisposable. 
 - Update minimum Node version to 10.16.0
-- Renamed OIDC constructs for consistency; Removed SAML support.
+- Renamed OIDC constructs for consistency; Removed SAML support. 
 - order imports.
 - Upgrade to Rush 5.23.2
 - Update electron version to ^8.2.1
@@ -72,7 +77,7 @@ Wed, 12 Feb 2020 17:45:50 GMT
 
 ### Updates
 
-- Setup oidc client for backend use in electron applications.
+- Setup oidc client for backend use in electron applications. 
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT
@@ -154,7 +159,7 @@ Mon, 13 May 2019 15:52:05 GMT
 
 - Adds parameter for api-extractor to validate missing release tags
 - Fix broken links
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

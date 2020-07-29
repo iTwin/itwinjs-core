@@ -2,6 +2,33 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.4.0",
+      "tag": "@bentley/imodeljs-backend_v2.4.0",
+      "date": "Tue, 28 Jul 2020 16:26:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "apply changeset performance tests with own iModels and data"
+          },
+          {
+            "comment": "Element geometry clip containment tests and interactive test tool."
+          },
+          {
+            "comment": "Changes to support imodel-bridge"
+          },
+          {
+            "comment": "Add IModelExporter.exportSchemas"
+          },
+          {
+            "comment": "Add ability for IModelExporter to skip template models"
+          },
+          {
+            "comment": "Allow app to set additional crash report properties dynamically"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.3.3",
       "tag": "@bentley/imodeljs-backend_v2.3.3",
       "date": "Thu, 23 Jul 2020 12:57:15 GMT",

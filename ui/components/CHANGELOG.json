@@ -2,6 +2,36 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.4.0",
+      "tag": "@bentley/ui-components_v2.4.0",
+      "date": "Tue, 28 Jul 2020 16:26:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Map Layer UX"
+          },
+          {
+            "comment": "Add color picker dialog."
+          },
+          {
+            "comment": "Changed toolbar opacity processing to affect all components in widget."
+          },
+          {
+            "comment": "Add ImageCheckBoxEditor."
+          },
+          {
+            "comment": "Set border prop on ImageCheckBox when use in the editor"
+          },
+          {
+            "comment": "Use 'Double' type converter for point components. Also add possibility to supply custom components' converter for `Point2dTypeConverter` and `Point3dTypeConverter`."
+          },
+          {
+            "comment": "Use Tooltip and Popup for timeline and toolbars."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.3.3",
       "tag": "@bentley/ui-components_v2.3.3",
       "date": "Thu, 23 Jul 2020 12:57:15 GMT",

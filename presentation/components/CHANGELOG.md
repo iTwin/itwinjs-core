@@ -1,6 +1,11 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:24 GMT
+
+*Version update only*
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT
@@ -417,7 +422,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it.
+- Deprecated dev-cors-proxy-server and use of it. 
 - Fix filtered tree rendering "0 matches found" when there's no filtering applied and data provider returns 0 nodes
 - Updated to TypeScript 3.1
 - React to Tree API changes

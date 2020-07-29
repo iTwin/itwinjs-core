@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/projectshare-client"
+    }
+  ],
+  "packageName": "@bentley/projectshare-client",
+  "email": "Paul.Connelly@bentley.com"
+}

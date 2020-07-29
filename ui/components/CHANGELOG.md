@@ -1,6 +1,19 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:24 GMT
+
+### Updates
+
+- Map Layer UX
+- Add color picker dialog.
+- Changed toolbar opacity processing to affect all components in widget.
+- Add ImageCheckBoxEditor.
+- Set border prop on ImageCheckBox when use in the editor
+- Use 'Double' type converter for point components. Also add possibility to supply custom components' converter for `Point2dTypeConverter` and `Point3dTypeConverter`.
+- Use Tooltip and Popup for timeline and toolbars.
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT
@@ -53,7 +66,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Fix toolbar overflow panel display.
-- Update to only show group separators if toolbar is not transparent.
+- Update to only show group separators if toolbar is not transparent. 
 - Fix toolbar error when scaling up UI.
 - Property grid horizontal layout updated according to UX requirements.
 - Fixed Table filter renderers after react-select version upgrade
@@ -525,7 +538,7 @@ Wed, 19 Dec 2018 18:26:14 GMT
 - Added DragDrop tests, added component withDragDrop HOC tests
 - Synchronizing navigation aids with view definition changes
 - Simplified property pane tooltips and improved Property Pane performance.
-- Simplified struct and array tooltips in Table component.
+- Simplified struct and array tooltips in Table component. 
 - Fix BeInspireTree's event listening functions to handle array inputs
 - Fix BeInspireTree's muting events with allowed number of triggers
 - Cache BeInspireTree.visible() result for better performance
@@ -655,7 +668,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it.
+- Deprecated dev-cors-proxy-server and use of it. 
 - Fix: Do not start search if input field is empty
 - Use strongly typed enums for identifying keyboard keys
 - PropertyGrid property editing and unit tests

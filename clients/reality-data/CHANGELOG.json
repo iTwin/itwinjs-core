@@ -2,6 +2,18 @@
   "name": "@bentley/reality-data-client",
   "entries": [
     {
+      "version": "2.4.0",
+      "tag": "@bentley/reality-data-client_v2.4.0",
+      "date": "Tue, 28 Jul 2020 16:26:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "EF VSTS#360712 - [RDS] Incorrect calc for blob expiration in RealityDataClient (PW Context Share)"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.3.3",
       "tag": "@bentley/reality-data-client_v2.3.3",
       "date": "Thu, 23 Jul 2020 12:57:15 GMT",

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@bentley/build-tools"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "Paul.Connelly@bentley.com"
+}

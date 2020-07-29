@@ -1,6 +1,16 @@
 # Change Log - @bentley/imodelhub-client
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:24 GMT
+
+### Updates
+
+- Modify BasicAccessToken with class decorator TokenPrefix
+- iModelHub permissions handler
+- Added support for iModel type, type filtering and template filtering
+- Added url encoding for query segments that may contain special characters
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT
@@ -41,17 +51,17 @@ Thu, 28 May 2020 22:48:59 GMT
 
 - Added FailedToGetProductSettings error
 - Download ChangeSets in chunks
-- Simplified logging for monitoring briefcase operations.
+- Simplified logging for monitoring briefcase operations. 
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
 - Changed ChangeSets download API
 - Added unlink for file handler
-- Updated docs.
+- Updated docs. 
 - Changeset download get sas url just before starting download
 - react to changes in imodeljs-clients
 - update imodelbank auth clients to implement FrontendAuthorizationClient

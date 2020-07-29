@@ -1,6 +1,13 @@
 # Change Log - @bentley/build-tools
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:23 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:23 GMT
+
+### Updates
+
+- Trim trailing newlines. Align text with open tag.
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT

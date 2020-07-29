@@ -1,6 +1,15 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Thu, 23 Jul 2020 12:57:15 GMT and should not be manually modified.
+This log was last generated on Tue, 28 Jul 2020 16:26:24 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 28 Jul 2020 16:26:24 GMT
+
+### Updates
+
+- Correct recursion in angle adjustments when input is NaN
+- Implement "Direct" spirals (RLCubic, Arema, DirectHalfCosine)
+- Implement Clothoid, Bloss, Biquadratic, Sine and Cosine spirals within TransitionSpiral3d
 
 ## 2.3.3
 Thu, 23 Jul 2020 12:57:15 GMT
@@ -146,7 +155,7 @@ Fri, 22 Nov 2019 14:03:34 GMT
 
 ### Updates
 
-- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal
+- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal 
 - Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections
 - Intersect Ray with Sphere
 - Spherical patch range; optional result in range3d.corners()
@@ -277,7 +286,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Triangulation bug (multiple holes not linked correctly)
 - Fix broken links
 - Put sourcemap in npm package.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - New code for regularizing a single face.
 - Upgrade TypeDoc dependency to 0.14.2
 
