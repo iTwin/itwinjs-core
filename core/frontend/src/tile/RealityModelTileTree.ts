@@ -394,9 +394,10 @@ export namespace RealityModelTileTree {
       if (undefined !== ecefLocation) {
         const carto = Cartographic.fromEcef(realityToEcef.getOrigin());
         const ypr = YawPitchRollAngles.createFromMatrix3d(rootTransform.matrix);
-        // If the reality model is located in the same region and height then align the cartesian systems as otherwise different origins
-        // will result in a misalignment from the curvature of the earth.
-        if (undefined !== ypr && undefined !== carto && Math.abs(ypr.pitch.degrees) < .5 && Math.abs(ypr.roll.degrees) < .5 && carto.height < 300.0) {
+        // If the reality model is located in the same region and height and their is significant misalighment in their orientation,
+        //  then align the cartesian systems as otherwise different origins
+        // can result in a misalignment from the curvature of the earth. (EWR - large point cloud)
+        if (undefined !== ypr && undefined !== carto && (Math.abs(ypr.pitch.degrees) > 1.0E-6 || Math.abs(ypr.roll.degrees) > 1.0E-6) && carto.height < 300.0) {
           ypr.pitch.setRadians(0);
           ypr.roll.setRadians(0);
           ypr.toMatrix3d(rootTransform.matrix);
