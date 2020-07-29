@@ -120,7 +120,7 @@ export type RulesetVariableRpcRequestOptions = PresentationRpcRequestOptions<{ r
  * Data structure for comparing presentation data after ruleset or ruleset variable changes.
  * @alpha
  */
-export type PresentationDataCompareRpcOptions = PresentationRpcRequestOptions<PresentationDataCompareOptions<never>>;
+export type PresentationDataCompareRpcOptions = PresentationRpcRequestOptions<PresentationDataCompareOptions<any, NodeKeyJSON>>;
 
 /**
  * Interface used for communication between Presentation backend and frontend.
@@ -132,7 +132,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // tslint:disable-line: naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.4.0";
+  public static interfaceVersion = "2.5.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.

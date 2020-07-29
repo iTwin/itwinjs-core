@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// tslint:disable: no-direct-imports
 import { expect } from "chai";
 import * as path from "path";
-// tslint:disable: no-direct-imports
 import * as React from "react";
 import * as sinon from "sinon";
 import { BeEvent, Id64, Id64String, using } from "@bentley/bentleyjs-core";
@@ -17,7 +17,8 @@ import {
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { Presentation, PresentationManager, RulesetManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
+import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
+import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import {
   HierarchyBuilder, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
 } from "@bentley/presentation-testing";
@@ -49,8 +50,7 @@ describe("ModelsTree", () => {
 
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
-    const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
-    const rulesetManagerMock = moq.Mock.ofType<RulesetManager>();
+    let presentationManagerMock: moq.IMock<PresentationManager>;
     let dataProvider: IPresentationTreeDataProvider;
 
     beforeEach(() => {
@@ -58,8 +58,6 @@ describe("ModelsTree", () => {
 
       imodelMock.reset();
       selectionManagerMock.reset();
-      presentationManagerMock.reset();
-      rulesetManagerMock.reset();
       dataProvider = {
         imodel: imodelMock.object,
         rulesetId: "",
@@ -77,8 +75,8 @@ describe("ModelsTree", () => {
       selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
       selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAny())).returns(() => new KeySet());
       Presentation.setSelectionManager(selectionManagerMock.object);
-      presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetManagerMock.object);
-      presentationManagerMock.setup((x) => x.onHierarchyUpdate).returns(() => new BeEvent());
+
+      presentationManagerMock = mockPresentationManager().presentationManager;
       Presentation.setPresentationManager(presentationManagerMock.object);
     });
 

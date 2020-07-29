@@ -9,12 +9,10 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
-import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  Content, ContentUpdateInfo, DefaultContentDisplayTypes, Descriptor, Item, KeySet, PresentationError, Ruleset, SortDirection as ContentSortDirection,
-  ValuesDictionary,
+  Content, DefaultContentDisplayTypes, Descriptor, Item, KeySet, PresentationError, SortDirection as ContentSortDirection, ValuesDictionary,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -25,6 +23,7 @@ import { SortDirection } from "@bentley/ui-core";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { PresentationTableDataProvider, TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE } from "../../presentation-components/table/DataProvider";
+import { mockPresentationManager } from "../_helpers/UiComponents";
 
 /**
  * This is just a helper class to provide public access to
@@ -40,30 +39,29 @@ describe("TableDataProvider", () => {
   let rulesetId: string;
   let provider: Provider;
   let invalidateCacheSpy: sinon.SinonSpy<[CacheInvalidationProps], void>;
-  let onContentUpdateEvent: BeEvent<(ruleset: Ruleset, info: ContentUpdateInfo) => void>;
-  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+  let presentationManagerMock: moq.IMock<PresentationManager>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
-  before(async () => {
+  before(() => {
     rulesetId = faker.random.word();
+  });
+
+  beforeEach(async () => {
+    const mocks = mockPresentationManager();
+    presentationManagerMock = mocks.presentationManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setI18nManager(new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     }));
     await initializeLocalization();
-  });
 
-  after(() => {
-    Presentation.terminate();
-  });
-
-  beforeEach(() => {
-    onContentUpdateEvent = new BeEvent();
-    presentationManagerMock.reset();
-    presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => onContentUpdateEvent);
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
     provider.keys = new KeySet([createRandomECInstanceKey()]);
     invalidateCacheSpy = sinon.spy(provider, "invalidateCache");
+  });
+
+  afterEach(() => {
+    Presentation.terminate();
   });
 
   const createEmptyContentItem = (): Item => {

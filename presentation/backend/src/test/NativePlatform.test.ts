@@ -226,8 +226,11 @@ describe("default NativePlatform", () => {
     it("calls addon", async () => {
       const options = {
         prevRulesetId: "1",
+        prevRulesetVariables: "[]",
         currRulesetId: "2",
+        currRulesetVariables: "[]",
         locale: "test",
+        expandedNodeKeys: "[]",
       };
       addonMock
         .setup((x) => x.compareHierarchies(moq.It.isAny(), options, moq.It.isAny()))
@@ -240,8 +243,11 @@ describe("default NativePlatform", () => {
     it("throws on error response", async () => {
       const options = {
         prevRulesetId: "1",
+        prevRulesetVariables: "[]",
         currRulesetId: "2",
+        currRulesetVariables: "[]",
         locale: "test",
+        expandedNodeKeys: "[]",
       };
       addonMock
         .setup((x) => x.compareHierarchies(moq.It.isAny(), options, moq.It.isAny()))

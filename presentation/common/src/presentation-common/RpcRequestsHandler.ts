@@ -171,8 +171,8 @@ export class RpcRequestsHandler implements IDisposable {
     return this.request<KeySetJSON, SelectionScopeRequestOptions<IModelRpcProps>>(
       this.rpcClient, this.rpcClient.computeSelection, options, ids, scopeId);
   }
-  public async compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps>): Promise<PartialHierarchyModificationJSON[]> {
-    return this.request<PartialHierarchyModificationJSON[], PresentationDataCompareOptions<IModelRpcProps>>(
+  public async compareHierarchies(options: PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>): Promise<PartialHierarchyModificationJSON[]> {
+    return this.request<PartialHierarchyModificationJSON[], PresentationDataCompareOptions<IModelRpcProps, NodeKeyJSON>>(
       this.rpcClient, this.rpcClient.compareHierarchies, options);
   }
 }

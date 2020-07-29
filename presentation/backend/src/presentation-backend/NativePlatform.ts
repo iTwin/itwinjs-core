@@ -44,7 +44,7 @@ export interface NativePlatformDefinition extends IDisposable {
   getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): VariableValueJSON;
   setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): void;
   getUpdateInfo(): UpdateInfoJSON | undefined;
-  compareHierarchies(requestContext: ClientRequestContext, db: any, options: { prevRulesetId: string, currRulesetId: string, locale: string }): Promise<PartialHierarchyModificationJSON[]>;
+  compareHierarchies(requestContext: ClientRequestContext, db: any, options: { prevRulesetId: string, prevRulesetVariables: string, currRulesetId: string, currRulesetVariables: string, expandedNodeKeys: string, locale: string }): Promise<PartialHierarchyModificationJSON[]>;
 }
 
 /** @internal */
@@ -145,7 +145,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public getUpdateInfo() {
       return this.handleResult(this._nativeAddon.getUpdateInfo());
     }
-    public async compareHierarchies(requestContext: ClientRequestContext, db: any, options: { prevRulesetId: string, currRulesetId: string, locale: string }): Promise<PartialHierarchyModificationJSON[]> {
+    public async compareHierarchies(requestContext: ClientRequestContext, db: any, options: { prevRulesetId: string, prevRulesetVariables: string, currRulesetId: string, currRulesetVariables: string, expandedNodeKeys: string, locale: string }): Promise<PartialHierarchyModificationJSON[]> {
       return new Promise((resolve, reject) => {
         requestContext.enter();
         this._nativeAddon.compareHierarchies(db, options, (response) => {

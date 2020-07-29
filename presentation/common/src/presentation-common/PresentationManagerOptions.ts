@@ -191,12 +191,12 @@ export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TI
  * Data structure for comparing presentation data after ruleset or ruleset variable changes.
  * @alpha
  */
-export interface PresentationDataCompareOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
+export interface PresentationDataCompareOptions<TIModel, TNodeKey> extends RequestOptionsWithRuleset<TIModel> {
   prev: {
-    rulesetOrId: Ruleset | string;
-  } | {
-    rulesetVariables: RulesetVariable[];
+    rulesetOrId?: Ruleset | string;
+    rulesetVariables?: RulesetVariable[];
   };
+  expandedNodeKeys?: TNodeKey[];
 }
 
 /**

@@ -5,6 +5,7 @@
 // tslint:disable:no-direct-imports
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as chai from "chai";
+import chaiSubset from "chai-subset";
 import * as cpx from "cpx";
 import * as fs from "fs";
 import * as path from "path";
@@ -25,6 +26,7 @@ import { PresentationFrontendLoggerCategory, PresentationManagerProps as Present
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
 
 chai.use(sinonChai);
+chai.use(chaiSubset);
 
 IModelJsConfig.init(true);
 
@@ -104,6 +106,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
 
   await initializeTesting(presentationTestingInitProps);
+  console.log(`Backend PID: ${process.pid}`); // tslint:disable-line: no-console
 };
 
 export const initialize = async (backendTimeout: number = 0) => {

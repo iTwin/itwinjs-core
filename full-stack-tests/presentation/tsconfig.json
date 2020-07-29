@@ -1,13 +1,15 @@
 {
   "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
   "compilerOptions": {
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
+    "target": "es2017",
+    "module": "commonjs",
     "esModuleInterop": true,
-    "outDir": "./lib"
+    "skipLibCheck": true,
+    "outDir": "./lib",
+    "jsx": "react"
   },
   "include": [
-    "src/**/*.ts"
+    "./src/**/*.ts*"
   ],
   "exclude": [
     "lib",

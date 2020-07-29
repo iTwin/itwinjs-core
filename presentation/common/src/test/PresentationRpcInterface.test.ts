@@ -313,6 +313,7 @@ describe("PresentationRpcInterface", () => {
           rulesetOrId: "test1",
         },
         rulesetOrId: "test2",
+        expandedNodeKeys: [],
       };
       await rpcInterface.compareHierarchies(token, options);
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());

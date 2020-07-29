@@ -7,9 +7,13 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { Ruleset } from "@bentley/presentation-common";
+import {
+  HierarchyUpdateInfo, PartialHierarchyModification, RegisteredRuleset, Ruleset, UPDATE_FULL, VariableValue,
+} from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { PagedTreeNodeLoader, usePagedTreeNodeLoader, useTreeModelSource } from "@bentley/ui-components";
+import {
+  isTreeModelNode, PagedTreeNodeLoader, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, useTreeModelSource,
+} from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
@@ -28,11 +32,19 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
    * Note: The prop is already defined in `PresentationTreeDataProviderProps` but specified here again to make it required.
    */
   pagingSize: number;
+
   /**
    * Should node loader initiate loading of the whole hierarchy as soon as it's created.
    * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
    */
   preloadingEnabled?: boolean;
+
+  /**
+   * Auto-update the hierarchy when ruleset, ruleset variables or data in the iModel changes.
+   * @alpha
+   */
+  enableHierarchyAutoUpdate?: boolean;
+
   /**
    * Used for testing
    * @internal
@@ -48,25 +60,97 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
  */
 export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader<IPresentationTreeDataProvider> {
   const [resetCounter, setResetCounter] = useState(0);
+  const reset = useCallback(() => setResetCounter((value) => ++value), []);
+
   const dataProvider = useDisposable(useCallback(
     () => {
       return createDataProvider(props);
     },
     [resetCounter, ...Object.values(props)], /* eslint-disable-line react-hooks/exhaustive-deps */ /* re-create the data-provider whenever any prop changes */
   ));
-
-  // WIP: for now just re-create the data provider whenever `onHierarchyUpdate` event is fired
-  const resetDataProvider = useCallback((ruleset: Ruleset) => {
-    const propsRulesetId = (typeof props.ruleset === "object") ? props.ruleset.id : props.ruleset;
-    if (propsRulesetId === ruleset.id)
-      setResetCounter((value) => ++value);
-  }, [props.ruleset]);
-  useEffect(() => {
-    return Presentation.presentation.onHierarchyUpdate.addListener(resetDataProvider);
-  }, [resetDataProvider]);
-
   const modelSource = useTreeModelSource(dataProvider);
+
+  useModelSourceUpdateOnIModelHierarchyUpdate({ modelSource, dataProvider, reset, enable: props.enableHierarchyAutoUpdate });
+  useModelSourceUpdateOnRulesetModification({ modelSource, dataProvider, reset, enable: props.enableHierarchyAutoUpdate });
+  useModelSourceUpdateOnRulesetVariablesChange({ modelSource, dataProvider, reset, enable: props.enableHierarchyAutoUpdate });
+
   return usePagedTreeNodeLoader(dataProvider, props.pagingSize, modelSource);
+}
+
+interface ModelSourceUpdateProps {
+  enable?: boolean;
+  modelSource: TreeModelSource;
+  dataProvider: IPresentationTreeDataProvider;
+  reset: () => void;
+}
+
+function useModelSourceUpdateOnIModelHierarchyUpdate(props: ModelSourceUpdateProps) {
+  const { modelSource, dataProvider, reset } = props;
+  const onIModelHierarchyChanged = useCallback(async (args: { ruleset: Ruleset, updateInfo: HierarchyUpdateInfo }) => {
+    if (args.ruleset.id === dataProvider.rulesetId) {
+      if (args.updateInfo === UPDATE_FULL)
+        reset();
+      else
+        updateModelSource(modelSource, args.updateInfo, reset);
+    }
+  }, [modelSource, dataProvider, reset]);
+  useEffect(() => {
+    return props.enable ? Presentation.presentation.onIModelHierarchyChanged.addListener(onIModelHierarchyChanged) : undefined;
+  }, [onIModelHierarchyChanged, props.enable]);
+}
+
+function useModelSourceUpdateOnRulesetModification(props: ModelSourceUpdateProps) {
+  const onRulesetModified = useCallback(async (curr: RegisteredRuleset, prev: Ruleset) => {
+    if (curr.id === props.dataProvider.rulesetId) {
+      const compareResult = await Presentation.presentation.compareHierarchies({
+        imodel: props.dataProvider.imodel,
+        prev: {
+          rulesetOrId: prev,
+        },
+        rulesetOrId: curr.toJSON(),
+        expandedNodeKeys: getExpandedNodeKeys(props.modelSource, props.dataProvider),
+      });
+      updateModelSource(props.modelSource, compareResult, props.reset);
+    }
+  }, [props.modelSource, props.dataProvider, props.reset]);
+  useEffect(() => {
+    return props.enable ? Presentation.presentation.rulesets().onRulesetModified.addListener(onRulesetModified) : undefined;
+  }, [onRulesetModified, props.enable]);
+}
+
+function useModelSourceUpdateOnRulesetVariablesChange(props: ModelSourceUpdateProps) {
+  const onRulesetVariableChanged = useCallback(async (variableId: string, prevValue: VariableValue) => {
+    // note: we should probably debounce these events while accumulating changed variables in case multiple vars are changed
+    const prevVariables = (await Presentation.presentation.vars(props.dataProvider.rulesetId).getAllVariables())
+      .map((v) => (v.id === variableId) ? { ...v, value: prevValue } : v);
+    const compareResult = await Presentation.presentation.compareHierarchies({
+      imodel: props.dataProvider.imodel,
+      prev: {
+        rulesetVariables: prevVariables,
+      },
+      rulesetOrId: props.dataProvider.rulesetId,
+      expandedNodeKeys: getExpandedNodeKeys(props.modelSource, props.dataProvider),
+    });
+    updateModelSource(props.modelSource, compareResult, props.reset);
+  }, [props.modelSource, props.dataProvider, props.reset]);
+  useEffect(() => {
+    return props.enable ? Presentation.presentation.vars(props.dataProvider.rulesetId).onVariableChanged.addListener(onRulesetVariableChanged) : undefined;
+  }, [props.dataProvider.rulesetId, onRulesetVariableChanged, props.enable]);
+}
+
+function updateModelSource(_modelSource: TreeModelSource, _hierarchyModifications: PartialHierarchyModification[], reset: () => void) {
+  // WIP: this should smartly update model source based on hierarchy modifications, but for
+  // now we just call `reset` which completely re-creates the data provider and model source
+  reset();
+}
+
+function getExpandedNodeKeys(modelSource: TreeModelSource, dataProvider: IPresentationTreeDataProvider) {
+  const expandedItems = new Array<TreeNodeItem>();
+  for (const node of modelSource.getVisibleNodes()) {
+    if (isTreeModelNode(node) && node.isExpanded)
+      expandedItems.push(node.item);
+  }
+  return expandedItems.map((item) => dataProvider.getNodeKey(item));
 }
 
 function createDataProvider(props: PresentationTreeNodeLoaderProps): IPresentationTreeDataProvider {

@@ -13,9 +13,8 @@ import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  ArrayTypeDescription, CategoryDescription, Content, ContentFlags, ContentUpdateInfo, Descriptor, Field, Item, NestedContentField,
-  NestedContentValue, PresentationError, PropertiesField, Property, PropertyValueFormat, RegisteredRuleset, Ruleset, StructTypeDescription,
-  ValuesDictionary,
+  ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Descriptor, Field, Item, NestedContentField, NestedContentValue,
+  PresentationError, PropertiesField, Property, PropertyValueFormat, RegisteredRuleset, StructTypeDescription, ValuesDictionary,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
@@ -29,6 +28,7 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
+import { mockPresentationManager } from "../_helpers/UiComponents";
 
 const favoritesCategoryName = "Favorite";
 /**
@@ -61,34 +61,36 @@ describe("PropertyDataProvider", () => {
 
   let rulesetId: string;
   let provider: Provider;
-  let onContentUpdateEvent: BeEvent<(ruleset: Ruleset, info: ContentUpdateInfo) => void>;
-  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
-  const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
-  const favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
+  let rulesetsManagerMock: moq.IMock<RulesetManager>;
+  let presentationManagerMock: moq.IMock<PresentationManager>;
+  let favoritePropertiesManagerMock: moq.IMock<FavoritePropertiesManager>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
-  before(async () => {
+  before(() => {
     rulesetId = faker.random.word();
+  });
+
+  beforeEach(async () => {
+    const mocks = mockPresentationManager();
+    rulesetsManagerMock = mocks.rulesetsManager;
+    presentationManagerMock = mocks.presentationManager;
+    Presentation.setPresentationManager(presentationManagerMock.object);
+
+    favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
+    favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => moq.Mock.ofType<BeEvent<() => void>>().object);
+
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
     Presentation.setI18nManager(new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     }));
     await initializeLocalization();
-  });
 
-  after(() => {
-    Presentation.terminate();
-  });
-
-  beforeEach(() => {
-    onContentUpdateEvent = new BeEvent();
-    presentationManagerMock.reset();
-    presentationManagerMock.setup((x) => x.onContentUpdate).returns(() => onContentUpdateEvent);
-    presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
-    favoritePropertiesManagerMock.reset();
-    favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => moq.Mock.ofType<BeEvent<() => void>>().object);
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
+  });
+
+  afterEach(() => {
+    Presentation.terminate();
   });
 
   describe("constructor", () => {
