@@ -94,10 +94,12 @@ function exerciseIModelJSon(ck: Checker, g: any, doParse: boolean = false, noisy
       const g1 = IModelJson.Reader.parse(imData) as GeometryQuery;
       if (!g1 || !g.isAlmostEqual(g1)) {
         ck.announceError("IModelJson round trip error", g, prettyPrint(imData), prettyPrint(g1));
+        IModelJson.Reader.parse(imData);
         console.log("*********** round trip data *********");
         console.log(prettyPrint(g));
         console.log(prettyPrint(imData));
         console.log(prettyPrint(g1));
+        g.isAlmostEqual(g1);
         console.log("=====================================");
 
         const imData1 = IModelJson.Writer.toIModelJson(g);

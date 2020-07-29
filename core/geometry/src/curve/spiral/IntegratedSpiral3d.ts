@@ -11,7 +11,7 @@ import { Segment1d } from "../../geometry3d/Segment1d";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Transform } from "../../geometry3d/Transform";
 import { LineString3d } from "../LineString3d";
-import { NormalizedTransition } from "../NormalizedTransition";
+import { NormalizedTransition } from "./NormalizedTransition";
 import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
 import { Quadrature } from "../../numerics/Quadrature";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
@@ -31,7 +31,7 @@ import { GeometryQuery } from "../GeometryQuery";
  * * Integrating (cos(theta), sin(theta)) gives displacement from the start point, and thus the actual curve position.
  * * The curvature functions of interest are all symmetric snap functions in the NormalizedTransition class.
  * * `TransitionConditionalProperties` implements the computations of the interrelationship of radii, bearing, and length.
- * @beta
+ * @public
  */
 export class IntegratedSpiral3d extends TransitionSpiral3d {
   /** String name for schema properties */
@@ -96,8 +96,10 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     const fraction = this.activeFractionInterval.fractionToPoint(activeFraction);
     return this.bearing01.startRadians + fraction * this._arcLength01 * (this._curvature01.x0 + 0.5 * fraction * (this._curvature01.x1 - this._curvature01.x0));
   }
-  /** Return the curvature at given fraction of the active interval ... */
-  public fractionToCurvature(activeFraction: number): number {
+  /** Return the curvature at given fraction of the active interval ...
+   * * The `undefined` result is to match the abstract class -- it cannot actually occur.
+   */
+  public fractionToCurvature(activeFraction: number): number | undefined {
     // BUG? active interval
     return this._curvature01.fractionToPoint(this.activeFractionInterval.fractionToPoint(activeFraction));
   }
@@ -382,7 +384,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     const c = Math.cos(radians);
     const s = Math.sin(radians);
     const delta = this.activeFractionInterval.signedDelta();
-    const a = this._arcLength01 * delta;
+    const a = delta;
     const b = a * delta;
     const vectorX = this.localToWorld.matrix.multiplyXY(a * c, a * s);
     const vectorY = this.localToWorld.matrix.multiplyXY(-b * s, b * c);

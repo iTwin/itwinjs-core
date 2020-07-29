@@ -96,8 +96,8 @@ internal;DeepCompare
 internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
-beta;DirectSpiral3d 
-beta;DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine"
+public;DirectSpiral3d 
+public;DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine"
 public;DuplicateFacetClusterSelector
 public;Ellipsoid 
 public;EllipsoidPatch 
@@ -132,8 +132,8 @@ public;class IndexedXYCollection
 public;class IndexedXYZCollection
 public;IndexedXYZCollectionInterval 
 public;IndexedXYZCollectionPolygonOps
-beta;IntegratedSpiral3d 
-beta;IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine"
+public;IntegratedSpiral3d 
+public;IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine"
 public;InverseMatrixState
 public;IStrokeHandler
 public;JointOptions
@@ -242,7 +242,7 @@ internal;TorusImplicit
 public;TorusPipe 
 public;Transform 
 public;TransformProps = number[][] | number[] |
-beta;class TransitionSpiral3d 
+public;class TransitionSpiral3d 
 internal;Triangulator
 internal;TriDiagonalSystem
 internal;TrigPolynomial

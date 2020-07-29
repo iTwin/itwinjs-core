@@ -1350,6 +1350,7 @@ export namespace IModelJson {
         // Object.defineProperty(value, "fractionInterval", { value: [data.activeFractionInterval.x0, data.activeFractionInterval.x1] });
 
         // if possible, do selective output of defining data (omit exactly one out of the 5, matching original definition)
+        // EXCEPT do not omit final radius .. readers want it?
         if (originalProperties !== undefined && originalProperties.numDefinedProperties() === 4) {
           if (originalProperties.radius0 !== undefined)
             value.startRadius = data.radius01.x0;
@@ -1361,6 +1362,8 @@ export namespace IModelJson {
             value.endBearing = data.bearing01.endAngle.toJSON();
           if (originalProperties.curveLength !== undefined)
             value.length = data.curveLength();
+          if (value.endRadius === undefined)
+            value.endRadius = data.radius01.x1;
         } else {
           // uh oh ... no original data, but the spiral itself knows all 5 values.  We don't know which to consider primary.
           // DECISION -- put everything out, let readers make sense if they can. (It should be consistent ?)

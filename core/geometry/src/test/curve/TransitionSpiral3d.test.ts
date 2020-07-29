@@ -22,7 +22,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { ClothoidSeriesRLEvaluator, CzechSpiralEvaluator, DirectHalfCosineSpiralEvaluator } from "../../curve/spiral/ClothoidSeries";
 import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
-import { NormalizedBiQuadraticTransition, NormalizedBlossTransition, NormalizedClothoidTransition, NormalizedCosineTransition, NormalizedSineTransition } from "../../curve/NormalizedTransition";
+import { NormalizedBiQuadraticTransition, NormalizedBlossTransition, NormalizedClothoidTransition, NormalizedCosineTransition, NormalizedSineTransition } from "../../curve/spiral/NormalizedTransition";
 import { LineString3d } from "../../curve/LineString3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -125,8 +125,8 @@ describe("TransitionSpiral3d", () => {
     const bearingA = spiralA.fractionToBearingRadians(f0);
     const bearingB = spiralB.fractionToBearingRadians(0.0);
     ck.testCoordinate(bearingA, bearingB, "spiral bearing at fraction " + [f0, 0.0]);
-    const curvatureA = spiralA.fractionToCurvature(f0);
-    const curvatureB = spiralB.fractionToCurvature(0.0);
+    const curvatureA = spiralA.fractionToCurvature(f0)!;
+    const curvatureB = spiralB.fractionToCurvature(0.0)!;
     ck.testCoordinate(curvatureA, curvatureB, "spiral curvature at fraction " + [f0, 0.0]);
 
     expect(ck.getNumErrors()).equals(0);
@@ -552,6 +552,67 @@ describe("TransitionSpiral3d", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "SampleConstruction");
   });
+  it("LineSpiralSpiralLine", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    const pointA = Point3d.create(100, -100);
+    const pointB = Point3d.create(500, 0);
+    for (const pointC of [Point3d.create(800, 500), Point3d.create(600, 600)]) {
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointA, pointB, pointC), x0, y0);
+      const spirals = CurveFactory.createLineSpiralSpiralLine("clothoid", pointA, pointB, pointC);
+      if (spirals) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, spirals, x0, y0);
+        for (const spiral of spirals) {
+          if (spiral instanceof IntegratedSpiral3d) {
+            {
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral.activeStrokes, x0, y0);
+            }
+
+          }
+        }
+      }
+      x0 += 1000;
+    }
+    expect(ck.getNumErrors()).equals(0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "LineSpiralSpiralLine");
+  });
+
+  it("LineSpiralArcSpiralLine", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    const pointA = Point3d.create(100, -100);
+    const pointB = Point3d.create(500, 0);
+    const lengthArray = [200, 275];
+    const radius = 500;
+    for (const pointC of [Point3d.create(800, 500), Point3d.create(600, 600)]) {
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(pointA, pointB, pointC), x0, y0);
+      const spirals = CurveFactory.createLineSpiralArcSpiralLine("clothoid", pointA, pointB, pointC, lengthArray[0], lengthArray[1], radius);
+      if (spirals) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, spirals, x0, y0);
+        let spiralCounter = 0;
+        for (const spiral of spirals) {
+          if (spiral instanceof IntegratedSpiral3d) {
+            {
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral.activeStrokes, x0, y0);
+              const c1 = spiral.fractionToCurvature(1.0)!;
+              ck.testCoordinate(radius, Math.abs (1 / c1), "confirm curvature at junction.");
+              ck.testCoordinate(lengthArray[spiralCounter], spiral.curveLength(), " confirm spiralLength");
+              spiralCounter++;
+            }
+
+          }
+        }
+      }
+      x0 += 1000;
+    }
+    expect(ck.getNumErrors()).equals(0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "LineSpiralArcSpiralLine");
+  });
+
 });
 function xyString(name: string, x: number, y: number): string {
   return ("  (" + name + "  " + x + "  " + y + ")");

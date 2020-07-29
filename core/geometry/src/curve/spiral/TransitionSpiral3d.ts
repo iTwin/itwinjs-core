@@ -24,7 +24,7 @@ import { Geometry } from "../../Geometry";
  *   * cosine: half of a cosine wave, centered around 0.5
  *   * sine: full period of a sine wave added to the line f(u)=u
  * *
- * @beta
+ * @public
  */
 export type IntegratedSpiralTypeName = "clothoid"
   | "bloss"
@@ -36,7 +36,7 @@ export type IntegratedSpiralTypeName = "clothoid"
 /**
  * This is the set of valid type names for "direct" spirals.
  * "Direct" spirals can evaluate fractionToPoint by direct equations, i.e. not requiring the numeric integrations in "Integrated" spiral types.
- * @beta
+ * @public
  */
 export type DirectSpiralTypeName = "Arema"
   | "JapaneseCubic"  // 1 term from each of the X,Y clothoid series expansions:  y = x^3 / (6RL)
@@ -53,7 +53,7 @@ export type DirectSpiralTypeName = "Arema"
  *   * DirectSpiral3d -- a spiral implemented with direct calculation of x,y from fractional position along the spiral.
  *     * The direct spiral types are enumerated in the `DirectSpiralType`
  * * The method set for CurvePrimitive support includes a `handleTransitionSpiral(g: TransitionSpiral3d)` which receives all the spiral types.
- * @beta
+ * @public
  */
 export abstract class TransitionSpiral3d extends CurvePrimitive {
   /** string name of spiral type */

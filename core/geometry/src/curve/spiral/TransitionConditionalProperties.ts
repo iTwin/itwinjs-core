@@ -19,7 +19,7 @@ import { TransitionSpiral3d } from "./TransitionSpiral3d";
  * * The relationship is the equation
  * ** `sweepRadians = arcLength * average Curvature = arcLength * 0.5 * (curvature0 + curvature1)`
  * * That is, regardless of any curvature properties other than symmetry, specifying any 3 of the quantities fully determines the remaining one.
- * @beta
+ * @public
  */
 export class TransitionConditionalProperties {
   /** radius (or 0 at start) */
@@ -69,10 +69,22 @@ export class TransitionConditionalProperties {
       this.bearing1 === undefined ? undefined : this.bearing1.clone(),
       this.curveLength);
   }
+  /** Return true if all components are defined and agree equationally. */
+  public getIsValidCompleteSet() {
+    if (this.curveLength !== undefined && this.bearing0 !== undefined && this.bearing1 !== undefined
+      && this.radius0 !== undefined && this.radius1 !== undefined) {
+      const length1 = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(this.radius0, this.radius1,
+        this.bearing1.radians - this.bearing0.radians);
+      return Geometry.isSameCoordinate(this.curveLength, length1);
+    }
+    return false;
+  }
   /** Examine which properties are defined and compute the (single) undefined.
    * @returns Return true if the input state had precisely one undefined member.
    */
   public tryResolveAnySingleUnknown(): boolean {
+    if (this.getIsValidCompleteSet())
+      return true;
     if (this.bearing0 && this.bearing1) {
       const sweepRadians = this.bearing1.radians - this.bearing0.radians;
       if (this.curveLength === undefined && this.radius0 !== undefined && this.radius1 !== undefined) {

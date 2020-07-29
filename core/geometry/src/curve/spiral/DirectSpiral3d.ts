@@ -26,7 +26,7 @@ import { Angle } from "../../geometry3d/Angle";
  * * Typical names with various term counts are:
  *   * Arema, ChineseCubic -- 2 terms of each series.
  *   * JapaneseCubic - 1 term of each series
- * @beta
+ * @public
  */
 export class DirectSpiral3d extends TransitionSpiral3d {
 

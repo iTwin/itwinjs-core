@@ -9,7 +9,7 @@
 
 // import { Geometry, Angle, AngleSweep } from "../Geometry";
 
-import { AxisOrder, Geometry } from "../Geometry";
+import { AxisIndex, AxisOrder, Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
@@ -28,6 +28,12 @@ import { LineString3d } from "./LineString3d";
 import { Loop } from "./Loop";
 import { Path } from "./Path";
 import { Angle } from "../geometry3d/Angle";
+import { IntegratedSpiralTypeName } from "./spiral/TransitionSpiral3d";
+import { Transform } from "../geometry3d/Transform";
+import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
+import { Segment1d } from "../geometry3d/Segment1d";
+import { SmallSystem } from "../numerics/Polynomials";
+import { Vector2d } from "../geometry3d/Point2dVector2d";
 
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
@@ -331,6 +337,126 @@ export class CurveFactory {
     vector0.scaleInPlace(-radius);
     const vector90 = tangentA.scaleToLength(Math.abs(radius))!; // (Cannot fail -- prior unitCrossProduct would have failed first)
     return Arc3d.create(center, vector0, vector90, AngleSweep.create(sweep));
+  }
+
+  /**
+   * Compute 2 spirals (all in XY) for a symmetric line-to-line transition.
+   * * First spiral begins at given start point.
+   * * first tangent aims at shoulder
+   * * outbound spiral joins line from shoulder to target.
+   * @param spiralType name of spiral type.
+   * @param startPoint inbound start point.
+   * @param shoulder point target point for (both) spiral-to-line tangencies
+   * @return array with the computed spirals, or undefined if failure.
+   */
+  public static createLineSpiralSpiralLine
+    (
+      spiralType: IntegratedSpiralTypeName,
+      startPoint: Point3d,
+      shoulderPoint: Point3d,
+      targetPoint: Point3d,
+  ): GeometryQuery[] | undefined {
+    const vectorAB = Vector3d.createStartEnd(startPoint, shoulderPoint);
+    const vectorBC0 = Vector3d.createStartEnd(shoulderPoint, targetPoint);
+    const referenceLength = vectorAB.magnitude();
+    const radiansAB = Math.atan2(vectorAB.y, vectorAB.x);
+    const lineTurnRadians = vectorAB.angleToXY(vectorBC0);
+    const spiralTurnRadians = 0.5 * lineTurnRadians.radians;
+    const radiansBC = radiansAB + lineTurnRadians.radians;
+    const axesA = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansAB));
+    const frameA = Transform.createRefs(startPoint.clone(), axesA);
+    // We know how much it has to turn, and but not the length or end radius.
+    // make a spiral of referenceLength and scale it back to the junction line
+    const spiralARefLength = IntegratedSpiral3d.createFrom4OutOf5(spiralType, 0.0, undefined,
+      Angle.createRadians(0), Angle.createRadians(spiralTurnRadians), referenceLength, undefined, frameA);
+    if (spiralARefLength) {
+      const midPlanePerpendicularRadians = radiansAB + spiralTurnRadians;
+      const midPlanePerpendicularVector = Vector3d.createPolar(1.0, Angle.createRadians(midPlanePerpendicularRadians));
+      const altitudeB = midPlanePerpendicularVector.dotProductStartEnd(startPoint, shoulderPoint);
+      const altitudeSpiralEnd = midPlanePerpendicularVector.dotProductStartEnd(startPoint, spiralARefLength.endPoint());
+      const scaleFactor = altitudeB / altitudeSpiralEnd;
+      const spiralA = IntegratedSpiral3d.createFrom4OutOf5(spiralType, 0.0, undefined,
+        Angle.createRadians(0), Angle.createRadians(spiralTurnRadians), referenceLength * scaleFactor, undefined, frameA)!;
+      const distanceAB = vectorAB.magnitude();
+      const vectorBC = Vector3d.createStartEnd(shoulderPoint, targetPoint);
+      vectorBC.scaleToLength(distanceAB, vectorBC);
+      const pointC = shoulderPoint.plus(vectorBC);
+      const axesC = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansBC + Math.PI));
+      const frameC = Transform.createRefs(pointC, axesC);
+      const spiralC = IntegratedSpiral3d.createFrom4OutOf5(spiralType,
+        0, -spiralA.radius01.x1, Angle.zero(), undefined, spiralA.curveLength(), Segment1d.create(1, 0), frameC)!;
+      return [spiralA, spiralC];
+    }
+    return undefined;
+  }
+  /**
+   * Compute 2 spirals and an arc (all in XY) for a symmetric line-to-line transition.
+   * Spiral lengths and arc radius are given.   (e.g. from design speed standards.)
+   * @param spiralType name of spiral type.
+   * @param pointA inbound start point.
+   * @param pointB shoulder (target)  point for (both) spiral-to-line tangencies
+   * @param lengthA inbound spiral length
+   * @param lengthB outbound spiral length
+   * @return array with the computed spirals, or undefined if failure.
+   */
+  public static createLineSpiralArcSpiralLine
+    (
+      spiralType: IntegratedSpiralTypeName,
+      pointA: Point3d,
+      pointB: Point3d,
+      pointC: Point3d,
+      lengthA: number,
+      lengthB: number,
+      arcRadius: number,
+  ): GeometryQuery[] | undefined {
+    const vectorAB = Vector3d.createStartEnd(pointA, pointB); vectorAB.z = 0;
+    const vectorCB = Vector3d.createStartEnd(pointC, pointB); vectorCB.z = 0;
+    const unitAB = vectorAB.normalize();
+    const unitCB = vectorCB.normalize();
+    if (unitAB === undefined || unitCB === undefined)
+      return undefined;
+    const unitPerpAB = unitAB.unitPerpendicularXY();
+    const unitPerpCB = unitCB.unitPerpendicularXY();
+    const thetaABC = vectorAB.angleToXY(vectorCB);
+    const sideA = Geometry.split3WaySign(thetaABC.radians, 1, -1, -1);
+    const sideB = - sideA;
+    const radiusA = sideA * Math.abs(arcRadius);
+    const radiusB = sideB * Math.abs(arcRadius);
+    const spiralA = IntegratedSpiral3d.createFrom4OutOf5(spiralType,
+      0, radiusA, Angle.zero(), undefined, lengthA, undefined, Transform.createIdentity())!;
+    const spiralB = IntegratedSpiral3d.createFrom4OutOf5(spiralType,
+      0, radiusB, Angle.zero(), undefined, lengthB, undefined, Transform.createIdentity())!;
+    const spiralEndA = spiralA.fractionToPointAndUnitTangent(1.0);
+    const spiralEndB = spiralB.fractionToPointAndUnitTangent(1.0);
+    // From the end of spiral, step away to arc center (and this is in local coordinates of each spiral)
+    const sA = spiralEndA.origin.x - radiusA * spiralEndA.direction.y;
+    const tA = spiralEndA.origin.y + radiusA * spiralEndA.direction.x;
+
+    const sB = spiralEndB.origin.x - radiusB * spiralEndB.direction.y;
+    const tB = spiralEndB.origin.y + radiusB * spiralEndB.direction.x;
+
+    // Those local coordinates are rotated to unitAB and unitBC ...
+    const vectorA = Vector3d.createAdd2Scaled(unitAB, sA, unitPerpAB, tA);
+    const vectorB = Vector3d.createAdd2Scaled(unitCB, sB, unitPerpCB, tB);
+    const uv = Vector2d.create();
+    if (SmallSystem.linearSystem2d(
+      unitAB.x, -unitCB.x,
+      unitAB.y, -unitCB.y,
+      vectorB.x - vectorA.x, vectorB.y - vectorA.y, uv)) {
+      const tangencyAB = pointB.plusScaled(unitAB, uv.x);
+      const tangencyCB = pointB.plusScaled(unitCB, uv.y);
+      const frameA = Transform.createOriginAndMatrixColumns(tangencyAB, unitAB, unitPerpAB, Vector3d.unitZ());
+      const frameB = Transform.createOriginAndMatrixColumns(tangencyCB, unitCB, unitPerpCB, Vector3d.unitZ());
+      spiralA.tryTransformInPlace(frameA);
+      spiralB.tryTransformInPlace(frameB);
+      const rayA1 = spiralA.fractionToPointAndUnitTangent(1.0);
+      const rayB0 = spiralB.fractionToPointAndUnitTangent(1.0);
+      rayB0.direction.scaleInPlace(-1.0);
+      const sweep = rayA1.direction.angleToXY(rayB0.direction);
+      const arc = CurveFactory.createArcPointTangentRadius(rayA1.origin, rayA1.direction, radiusA, undefined, sweep)!;
+      return [spiralA, arc, spiralB];
+    }
+    return undefined;
   }
 }
 /**
